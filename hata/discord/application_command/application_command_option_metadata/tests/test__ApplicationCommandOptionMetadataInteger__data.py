@@ -13,7 +13,7 @@ def test__ApplicationCommandOptionMetadataInteger__from_data():
     """
     required = True
     autocomplete = True
-    choices = [ApplicationCommandOptionChoice("19", 19), ApplicationCommandOptionChoice("18", 18)]
+    choices = [ApplicationCommandOptionChoice('19', 19), ApplicationCommandOptionChoice('18', 18)]
     max_value = 10
     min_value = 20
     
@@ -43,17 +43,17 @@ def test__ApplicationCommandOptionMetadataInteger__to_data():
     """
     required = True
     autocomplete = True
-    choices = [ApplicationCommandOptionChoice("19", 19), ApplicationCommandOptionChoice("18", 18)]
+    choices = [ApplicationCommandOptionChoice('19', 19), ApplicationCommandOptionChoice('18', 18)]
     max_value = 10
     min_value = 20
     
-    option_metadata = ApplicationCommandOptionMetadataInteger({
-        'required': required,
-        'autocomplete': autocomplete,
-        'choices': choices,
-        'max_value': max_value,
-        'min_value': min_value,
-    })
+    option_metadata = ApplicationCommandOptionMetadataInteger(
+        required = required,
+        autocomplete = autocomplete,
+        choices = choices,
+        max_value = max_value,
+        min_value = min_value,
+    )
     
     expected_output = {
         'required': required,

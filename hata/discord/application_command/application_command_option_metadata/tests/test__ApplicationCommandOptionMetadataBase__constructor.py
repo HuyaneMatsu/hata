@@ -23,18 +23,15 @@ def test__ApplicationCommandOptionMetadataBase__new__0():
     
     Case: No fields given.
     """
-    option_metadata = ApplicationCommandOptionMetadataBase({})
+    option_metadata = ApplicationCommandOptionMetadataBase()
     _asert_fields_set(option_metadata)
 
 
-def test__ApplicationCommandOptionMetadataBase__new__1():
+def test__ApplicationCommandOptionMetadataBase__from_keyword_parameters__1():
     """
-    Tests whether ``ApplicationCommandOptionMetadataBase.__new__`` works as intended.
+    Tests whether ``ApplicationCommandOptionMetadataBase.from_keyword_parameters`` works as intended.
     
-    Case: All fields given.
+    Case: No fields given.
     """
-    # No Extra fields
-    
-    option_metadata = ApplicationCommandOptionMetadataBase({
-    })
+    option_metadata = ApplicationCommandOptionMetadataBase.from_keyword_parameters({})
     _asert_fields_set(option_metadata)

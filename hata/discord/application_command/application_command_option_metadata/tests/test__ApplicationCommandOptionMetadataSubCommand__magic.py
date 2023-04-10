@@ -15,10 +15,10 @@ def test__ApplicationCommandOptionMetadataSubCommand__repr():
     ]
     default = True
     
-    option_metadata = ApplicationCommandOptionMetadataSubCommand({
-        'options': options,
-        'default': default,
-    })
+    option_metadata = ApplicationCommandOptionMetadataSubCommand(
+        options = options,
+        default = default,
+    )
     
     vampytest.assert_instance(repr(option_metadata), str)
 
@@ -33,10 +33,10 @@ def test__ApplicationCommandOptionMetadataSubCommand__hash():
     ]
     default = True
     
-    option_metadata = ApplicationCommandOptionMetadataSubCommand({
-        'options': options,
-        'default': default,
-    })
+    option_metadata = ApplicationCommandOptionMetadataSubCommand(
+        options = options,
+        default = default,
+    )
     
     vampytest.assert_instance(hash(option_metadata), int)
 
@@ -56,7 +56,7 @@ def test__ApplicationCommandOptionMetadataSubCommand__eq():
         'default': default,
     }
     
-    option_metadata = ApplicationCommandOptionMetadataSubCommand(keyword_parameters)
+    option_metadata = ApplicationCommandOptionMetadataSubCommand(**keyword_parameters)
     
     vampytest.assert_eq(option_metadata, option_metadata)
     vampytest.assert_ne(option_metadata, object())
@@ -66,6 +66,6 @@ def test__ApplicationCommandOptionMetadataSubCommand__eq():
         ('default', False),
     ):
         test_option_metadata = ApplicationCommandOptionMetadataSubCommand(
-            {**keyword_parameters, field_name: field_value}
+            **{**keyword_parameters, field_name: field_value}
         )
         vampytest.assert_ne(option_metadata, test_option_metadata)

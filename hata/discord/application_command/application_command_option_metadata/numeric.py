@@ -32,29 +32,69 @@ class ApplicationCommandOptionMetadataNumeric(ApplicationCommandOptionMetadataPr
     """
     __slots__ = ('max_value', 'min_value')
     
-    @copy_docs(ApplicationCommandOptionMetadataPrimitive.__new__)
-    def __new__(cls, keyword_parameters):
+    
+    def __new__(cls, *, autocomplete = ..., choices = ..., max_value = ..., min_value = ..., required = ...):
+        """
+        Creates a new numeric application command option metadata with the given parameters.
+        
+        Parameters
+        ----------
+        autocomplete : `bool`, Optional (Keyword only)
+            Whether the option supports auto completion.
+        
+        choices : `None`, `iterable` of ``ApplicationCommandOptionChoice``, Optional (Keyword only)
+            Choices for the user to pick from.
+        
+        max_value : `None`, `float`, `int`, Optional (Keyword only)
+            The maximal value permitted for this option.
+        
+        min_value : `None`, `float`, ``int`, Optional (Keyword only)
+            The minimum value permitted for this option.
+        
+        required : `bool`, Optional (Keyword only)
+            Whether the parameter is required.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
         # max_value
-        try:
-            max_value = keyword_parameters.pop('max_value')
-        except KeyError:
+        if max_value is ...:
             max_value = None
         else:
             max_value = validate_max_value_postprocessed(max_value, cls.TYPE)
         
         # min_value
-        try:
-            min_value = keyword_parameters.pop('min_value')
-        except KeyError:
+        if min_value is ...:
             min_value = None
         else:
             min_value = validate_min_value_postprocessed(min_value, cls.TYPE)
         
         # Construct
-        new = ApplicationCommandOptionMetadataPrimitive.__new__(cls, keyword_parameters)
+        new = ApplicationCommandOptionMetadataPrimitive.__new__(
+            cls,
+            autocomplete = autocomplete,
+            choices = choices,
+            required = required,
+        )
         new.max_value = max_value
         new.min_value = min_value
         return new
+    
+    
+    @classmethod
+    @copy_docs(ApplicationCommandOptionMetadataPrimitive.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            autocomplete = keyword_parameters.pop('autocomplete', ...),
+            choices = keyword_parameters.pop('choices', ...),
+            max_value = keyword_parameters.pop('max_value', ...),
+            min_value = keyword_parameters.pop('min_value', ...),
+            required = keyword_parameters.pop('required', ...),
+        )
     
     
     @classmethod
@@ -123,26 +163,68 @@ class ApplicationCommandOptionMetadataNumeric(ApplicationCommandOptionMetadataPr
         return new
     
     
-    @copy_docs(ApplicationCommandOptionMetadataPrimitive.copy_with)
-    def copy_with(self, keyword_parameters):
+    def copy_with(self, *, autocomplete = ..., choices = ..., max_value = ..., min_value = ..., required = ...):
+        """
+        Copies the numeric application command option metadata with the given fields.
+        
+        Parameters
+        ----------
+        autocomplete : `bool`, Optional (Keyword only)
+            Whether the option supports auto completion.
+        
+        choices : `None`, `iterable` of ``ApplicationCommandOptionChoice``, Optional (Keyword only)
+            Choices for the user to pick from.
+        
+        max_value : `None`, `float`, `int`, Optional (Keyword only)
+            The maximal value permitted for this option.
+        
+        min_value : `None`, `float`, ``int`, Optional (Keyword only)
+            The minimum value permitted for this option.
+        
+        required : `bool`, Optional (Keyword only)
+            Whether the parameter is required.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
         # max_value
-        try:
-            max_value = keyword_parameters.pop('max_value')
-        except KeyError:
+        if max_value is ...:
             max_value = self.max_value
         else:
             max_value = validate_max_value_postprocessed(max_value, type(self).TYPE)
         
         # min_value
-        try:
-            min_value = keyword_parameters.pop('min_value')
-        except KeyError:
+        if min_value is ...:
             min_value = self.min_value
         else:
             min_value = validate_min_value_postprocessed(min_value, type(self).TYPE)
         
         # Construct
-        new = ApplicationCommandOptionMetadataPrimitive.copy_with(self, keyword_parameters)
+        new = ApplicationCommandOptionMetadataPrimitive.copy_with(
+            self,
+            autocomplete = autocomplete,
+            choices = choices,
+            required = required,
+        )
         new.max_value = max_value
         new.min_value = min_value
         return new
+    
+    
+    @copy_docs(ApplicationCommandOptionMetadataPrimitive.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            autocomplete = keyword_parameters.pop('autocomplete', ...),
+            choices = keyword_parameters.pop('choices', ...),
+            max_value = keyword_parameters.pop('max_value', ...),
+            min_value = keyword_parameters.pop('min_value', ...),
+            required = keyword_parameters.pop('required', ...),
+        )

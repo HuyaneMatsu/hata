@@ -27,7 +27,7 @@ def test__ApplicationCommandOptionMetadataPrimitive__new__0():
     
     Case: No fields given.
     """
-    option_metadata = ApplicationCommandOptionMetadataPrimitive({})
+    option_metadata = ApplicationCommandOptionMetadataPrimitive()
     _asert_fields_set(option_metadata)
 
 
@@ -41,7 +41,39 @@ def test__ApplicationCommandOptionMetadataPrimitive__new__1():
     autocomplete = True
     choices = [ApplicationCommandOptionChoice('suika'), ApplicationCommandOptionChoice('suwako')]
     
-    option_metadata = ApplicationCommandOptionMetadataPrimitive({
+    option_metadata = ApplicationCommandOptionMetadataPrimitive(
+        required = required,
+        autocomplete = autocomplete,
+        choices = choices,
+    )
+    _asert_fields_set(option_metadata)
+    
+    vampytest.assert_eq(option_metadata.required, required)
+    vampytest.assert_eq(option_metadata.autocomplete, autocomplete)
+    vampytest.assert_eq(option_metadata.choices, tuple(choices))
+
+
+def test__ApplicationCommandOptionMetadataPrimitive__from_keyword_parameters__0():
+    """
+    Tests whether ``ApplicationCommandOptionMetadataPrimitive.from_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
+    option_metadata = ApplicationCommandOptionMetadataPrimitive.from_keyword_parameters({})
+    _asert_fields_set(option_metadata)
+
+
+def test__ApplicationCommandOptionMetadataPrimitive__from_keyword_parameters__1():
+    """
+    Tests whether ``ApplicationCommandOptionMetadataPrimitive.from_keyword_parameters`` works as intended.
+    
+    Case: All fields given.
+    """
+    required = True
+    autocomplete = True
+    choices = [ApplicationCommandOptionChoice('suika'), ApplicationCommandOptionChoice('suwako')]
+    
+    option_metadata = ApplicationCommandOptionMetadataPrimitive.from_keyword_parameters({
         'required': required,
         'autocomplete': autocomplete,
         'choices': choices,

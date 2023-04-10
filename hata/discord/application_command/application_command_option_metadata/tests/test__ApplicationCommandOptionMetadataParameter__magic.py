@@ -9,9 +9,9 @@ def test__ApplicationCommandOptionMetadataParameter__repr():
     """
     required = True
     
-    option_metadata = ApplicationCommandOptionMetadataParameter({
-        'required': required,
-    })
+    option_metadata = ApplicationCommandOptionMetadataParameter(
+        required = required,
+    )
     
     vampytest.assert_instance(repr(option_metadata), str)
 
@@ -22,9 +22,9 @@ def test__ApplicationCommandOptionMetadataParameter__hash():
     """
     required = True
     
-    option_metadata = ApplicationCommandOptionMetadataParameter({
-        'required': required,
-    })
+    option_metadata = ApplicationCommandOptionMetadataParameter(
+        required = required,
+    )
     
     vampytest.assert_instance(hash(option_metadata), int)
 
@@ -39,7 +39,7 @@ def test__ApplicationCommandOptionMetadataParameter__eq():
         'required': required,
     }
     
-    option_metadata = ApplicationCommandOptionMetadataParameter(keyword_parameters)
+    option_metadata = ApplicationCommandOptionMetadataParameter(**keyword_parameters)
     
     vampytest.assert_eq(option_metadata, option_metadata)
     vampytest.assert_ne(option_metadata, object())
@@ -47,5 +47,5 @@ def test__ApplicationCommandOptionMetadataParameter__eq():
     for field_name, field_value in (
         ('required', False),
     ):
-        test_option_metadata = ApplicationCommandOptionMetadataParameter({**keyword_parameters, field_name: field_value})
+        test_option_metadata = ApplicationCommandOptionMetadataParameter(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(option_metadata, test_option_metadata)

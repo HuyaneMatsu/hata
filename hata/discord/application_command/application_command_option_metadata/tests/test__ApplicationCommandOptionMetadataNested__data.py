@@ -37,9 +37,9 @@ def test__ApplicationCommandOptionMetadataNested__to_data():
         ApplicationCommandOption('seija', 'seija', ApplicationCommandOptionType.integer),
     ]
     
-    option_metadata = ApplicationCommandOptionMetadataNested({
-        'options': options,
-    })
+    option_metadata = ApplicationCommandOptionMetadataNested(
+        options = options,
+    )
     
     expected_output = {
         'options': [option.to_data(defaults = True) for option in options],

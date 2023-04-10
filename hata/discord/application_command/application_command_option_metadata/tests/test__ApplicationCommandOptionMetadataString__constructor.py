@@ -29,7 +29,7 @@ def test__ApplicationCommandOptionMetadataString__new__0():
     
     Case: No fields given.
     """
-    option_metadata = ApplicationCommandOptionMetadataString({})
+    option_metadata = ApplicationCommandOptionMetadataString()
     _asert_fields_set(option_metadata)
 
 
@@ -45,7 +45,45 @@ def test__ApplicationCommandOptionMetadataString__new__1():
     max_length = 10
     min_length = 20
     
-    option_metadata = ApplicationCommandOptionMetadataString({
+    option_metadata = ApplicationCommandOptionMetadataString(
+        required = required,
+        autocomplete = autocomplete,
+        choices = choices,
+        max_length = max_length,
+        min_length = min_length,
+    )
+    _asert_fields_set(option_metadata)
+    
+    vampytest.assert_eq(option_metadata.required, required)
+    vampytest.assert_eq(option_metadata.autocomplete, autocomplete)
+    vampytest.assert_eq(option_metadata.choices, tuple(choices))
+    vampytest.assert_eq(option_metadata.max_length, max_length)
+    vampytest.assert_eq(option_metadata.min_length, min_length)
+
+
+def test__ApplicationCommandOptionMetadataString__from_keyword_parameters__0():
+    """
+    Tests whether ``ApplicationCommandOptionMetadataString.from_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
+    option_metadata = ApplicationCommandOptionMetadataString.from_keyword_parameters({})
+    _asert_fields_set(option_metadata)
+
+
+def test__ApplicationCommandOptionMetadataString__from_keyword_parameters__1():
+    """
+    Tests whether ``ApplicationCommandOptionMetadataString.from_keyword_parameters`` works as intended.
+    
+    Case: All fields given.
+    """
+    required = True
+    autocomplete = True
+    choices = [ApplicationCommandOptionChoice('suika'), ApplicationCommandOptionChoice('suwako')]
+    max_length = 10
+    min_length = 20
+    
+    option_metadata = ApplicationCommandOptionMetadataString.from_keyword_parameters({
         'required': required,
         'autocomplete': autocomplete,
         'choices': choices,

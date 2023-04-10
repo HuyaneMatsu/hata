@@ -162,7 +162,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         else:
             name_localizations = validate_name_localizations(name_localizations)
         
-        metadata = option_type.metadata_type(keyword_parameters)
+        metadata = option_type.metadata_type.from_keyword_parameters(keyword_parameters)
         _purge_defaults_and_maybe_raise(keyword_parameters)
         
         # Construct
@@ -883,9 +883,9 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         metadata = self.metadata
         metadata_type = option_type.metadata_type
         if metadata_type is type(metadata):
-            metadata = metadata.copy_with(keyword_parameters)
+            metadata = metadata.copy_with_keyword_parameters(keyword_parameters)
         else:
-            metadata = metadata_type(keyword_parameters)
+            metadata = metadata_type.from_keyword_parameters(keyword_parameters)
         _purge_defaults_and_maybe_raise(keyword_parameters)
         
         

@@ -510,7 +510,7 @@ class ClientCompoundUserEndpoints(Compound):
         await self.http.user_move(guild_id, user_id, {'channel_id': None})
     
     
-    async def user_get(self, user, *, force_update=False):
+    async def user_get(self, user, *, force_update = False):
         """
         Gets an user by it's id. If the user is already loaded updates it.
         

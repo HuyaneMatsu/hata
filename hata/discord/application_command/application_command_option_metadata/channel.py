@@ -13,27 +13,54 @@ class ApplicationCommandOptionMetadataChannel(ApplicationCommandOptionMetadataPa
     Parameters
     ----------
     channel_types : `None`, `tuple` of ``ChannelType``
-        The accepted channel types by the option.
+        The accepted channel types by the option. Defaults to `None`
     
     required : `bool`
         Whether the parameter is required. Defaults to `False`.
     """
     __slots__ = ('channel_types',)
     
-    @copy_docs(ApplicationCommandOptionMetadataParameter.__new__)
-    def __new__(cls, keyword_parameters):
+    def __new__(cls, *, channel_types = ..., required = ...):
+        """
+        Creates a new channel application command option metadata with the given parameters.
+        
+        Parameters
+        ----------
+        channel_types : `None`, `iterable` of (``ChannelType``, `int`), Optional (Keyword only)
+            The accepted channel types by the option.
+        
+        required : `bool`, Optional (Keyword only)
+            Whether the parameter is required.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
         # channel_types
-        try:
-            channel_types = keyword_parameters.pop('channel_types')
-        except KeyError:
+        if channel_types is ...:
             channel_types = None
         else:
             channel_types = validate_channel_types(channel_types)
         
         # Construct
-        new = ApplicationCommandOptionMetadataParameter.__new__(cls, keyword_parameters)
+        new = ApplicationCommandOptionMetadataParameter.__new__(
+            cls,
+            required = required,
+        )
         new.channel_types = channel_types
         return new
+    
+    
+    @classmethod
+    @copy_docs(ApplicationCommandOptionMetadataParameter.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            channel_types = keyword_parameters.pop('channel_types', ...),
+            required = keyword_parameters.pop('required', ...),
+        )
     
     
     @classmethod
@@ -97,12 +124,31 @@ class ApplicationCommandOptionMetadataChannel(ApplicationCommandOptionMetadataPa
         return new
     
     
-    @copy_docs(ApplicationCommandOptionMetadataParameter.copy_with)
-    def copy_with(self, keyword_parameters):
+    def copy_with(self,  *, channel_types = ..., required = ...):
+        """
+        Copies the channel application command option metadata with the given fields.
+        
+        Parameters
+        ----------
+        channel_types : `None`, `iterable` of (``ChannelType``, `int`), Optional (Keyword only)
+            The accepted channel types by the option.
+        
+        required : `bool`, Optional (Keyword only)
+            Whether the parameter is required.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
         # channel_types
-        try:
-            channel_types = keyword_parameters.pop('channel_types')
-        except KeyError:
+        if channel_types is ...:
             channel_types = self.channel_types
             if (channel_types is not None):
                 channel_types = (*channel_types,)
@@ -110,6 +156,17 @@ class ApplicationCommandOptionMetadataChannel(ApplicationCommandOptionMetadataPa
             channel_types = validate_channel_types(channel_types)
         
         # Construct
-        new = ApplicationCommandOptionMetadataParameter.copy_with(self, keyword_parameters)
+        new = ApplicationCommandOptionMetadataParameter.copy_with(
+            self,
+            required = required,
+        )
         new.channel_types = channel_types
         return new
+    
+    
+    @copy_docs(ApplicationCommandOptionMetadataParameter.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            channel_types = keyword_parameters.pop('channel_types', ...),
+            required = keyword_parameters.pop('required', ...),
+        )

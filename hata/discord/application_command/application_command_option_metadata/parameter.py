@@ -17,12 +17,25 @@ class ApplicationCommandOptionMetadataParameter(ApplicationCommandOptionMetadata
     """
     __slots__ = ('required',)
     
-    @copy_docs(ApplicationCommandOptionMetadataBase.__new__)
-    def __new__(cls, keyword_parameters):
+    
+    def __new__(cls, *, required = ...):
+        """
+        Creates a new parameter application command option metadata with the given parameters.
+        
+        Parameters
+        ----------
+        required : `bool`, Optional (Keyword only)
+            Whether the parameter is required.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
         # required
-        try:
-            required = keyword_parameters.pop('required')
-        except KeyError:
+        if required is ...:
             required = False
         else:
             required = validate_required(required)
@@ -31,6 +44,14 @@ class ApplicationCommandOptionMetadataParameter(ApplicationCommandOptionMetadata
         new = object.__new__(cls)
         new.required = required
         return new
+    
+    
+    @classmethod
+    @copy_docs(ApplicationCommandOptionMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            required = keyword_parameters.pop('required', ...),
+        )
     
     
     @classmethod
@@ -79,12 +100,28 @@ class ApplicationCommandOptionMetadataParameter(ApplicationCommandOptionMetadata
         return new
     
     
-    @copy_docs(ApplicationCommandOptionMetadataBase.copy_with)
-    def copy_with(self, keyword_parameters):
+    def copy_with(self, *, required = ...):
+        """
+        Copies the parameter application command option metadata with the given fields.
+        
+        Parameters
+        ----------
+        required : `bool`, Optional (Keyword only)
+            Whether the parameter is required.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
         # required
-        try:
-            required = keyword_parameters.pop('required')
-        except KeyError:
+        if required is ...:
             required = self.required
         else:
             required = validate_required(required)
@@ -93,3 +130,10 @@ class ApplicationCommandOptionMetadataParameter(ApplicationCommandOptionMetadata
         new = object.__new__(type(self))
         new.required = required
         return new
+    
+    
+    @copy_docs(ApplicationCommandOptionMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            required = keyword_parameters.pop('required', ...),
+        )

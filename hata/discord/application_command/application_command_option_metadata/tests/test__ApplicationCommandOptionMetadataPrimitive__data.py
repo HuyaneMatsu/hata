@@ -39,11 +39,11 @@ def test__ApplicationCommandOptionMetadataPrimitive__to_data():
     autocomplete = True
     choices = [ApplicationCommandOptionChoice('suika'), ApplicationCommandOptionChoice('suwako')]
     
-    option_metadata = ApplicationCommandOptionMetadataPrimitive({
-        'required': required,
-        'autocomplete': autocomplete,
-        'choices': choices,
-    })
+    option_metadata = ApplicationCommandOptionMetadataPrimitive(
+        required = required,
+        autocomplete = autocomplete,
+        choices = choices,
+    )
     
     expected_output = {
         'required': required,

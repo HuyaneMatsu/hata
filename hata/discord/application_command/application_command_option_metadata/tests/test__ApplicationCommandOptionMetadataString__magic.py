@@ -15,13 +15,13 @@ def test__ApplicationCommandOptionMetadataString__repr():
     max_length = 10
     min_length = 20
     
-    option_metadata = ApplicationCommandOptionMetadataString({
-        'required': required,
-        'autocomplete': autocomplete,
-        'choices': choices,
-        'max_length': max_length,
-        'min_length': min_length,
-    })
+    option_metadata = ApplicationCommandOptionMetadataString(
+        required = required,
+        autocomplete = autocomplete,
+        choices = choices,
+        max_length = max_length,
+        min_length = min_length,
+    )
     
     vampytest.assert_instance(repr(option_metadata), str)
 
@@ -36,13 +36,13 @@ def test__ApplicationCommandOptionMetadataString__hash():
     max_length = 10
     min_length = 20
     
-    option_metadata = ApplicationCommandOptionMetadataString({
-        'required': required,
-        'autocomplete': autocomplete,
-        'choices': choices,
-        'max_length': max_length,
-        'min_length': min_length,
-    })
+    option_metadata = ApplicationCommandOptionMetadataString(
+        required = required,
+        autocomplete = autocomplete,
+        choices = choices,
+        max_length = max_length,
+        min_length = min_length,
+    )
     
     vampytest.assert_instance(hash(option_metadata), int)
 
@@ -65,7 +65,7 @@ def test__ApplicationCommandOptionMetadataString__eq():
         'min_length': min_length,
     }
     
-    option_metadata = ApplicationCommandOptionMetadataString(keyword_parameters)
+    option_metadata = ApplicationCommandOptionMetadataString(**keyword_parameters)
     
     vampytest.assert_eq(option_metadata, option_metadata)
     vampytest.assert_ne(option_metadata, object())
@@ -77,5 +77,5 @@ def test__ApplicationCommandOptionMetadataString__eq():
         ('max_length', 11),
         ('min_length', 12),
     ):
-        test_option_metadata = ApplicationCommandOptionMetadataString({**keyword_parameters, field_name: field_value})
+        test_option_metadata = ApplicationCommandOptionMetadataString(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(option_metadata, test_option_metadata)

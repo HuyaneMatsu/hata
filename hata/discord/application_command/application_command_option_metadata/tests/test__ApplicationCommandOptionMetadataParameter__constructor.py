@@ -23,7 +23,7 @@ def test__ApplicationCommandOptionMetadataParameter__new__0():
     
     Case: No fields given.
     """
-    option_metadata = ApplicationCommandOptionMetadataParameter({})
+    option_metadata = ApplicationCommandOptionMetadataParameter()
     _asert_fields_set(option_metadata)
 
 
@@ -35,7 +35,33 @@ def test__ApplicationCommandOptionMetadataParameter__new__1():
     """
     required = True
     
-    option_metadata = ApplicationCommandOptionMetadataParameter({
+    option_metadata = ApplicationCommandOptionMetadataParameter(
+        required = required,
+    )
+    _asert_fields_set(option_metadata)
+    
+    vampytest.assert_eq(option_metadata.required, required)
+
+
+def test__ApplicationCommandOptionMetadataParameter__from_keyword_parameters__0():
+    """
+    Tests whether ``ApplicationCommandOptionMetadataParameter.from_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
+    option_metadata = ApplicationCommandOptionMetadataParameter.from_keyword_parameters({})
+    _asert_fields_set(option_metadata)
+
+
+def test__ApplicationCommandOptionMetadataParameter__from_keyword_parameters__1():
+    """
+    Tests whether ``ApplicationCommandOptionMetadataParameter.from_keyword_parameters`` works as intended.
+    
+    Case: All fields given.
+    """
+    required = True
+    
+    option_metadata = ApplicationCommandOptionMetadataParameter.from_keyword_parameters({
         'required': required,
     })
     _asert_fields_set(option_metadata)

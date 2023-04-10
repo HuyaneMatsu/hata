@@ -22,8 +22,7 @@ def test__ApplicationCommandOptionMetadataBase__to_data():
     
     Case: include defaults
     """
-    option_metadata = ApplicationCommandOptionMetadataBase({
-    })
+    option_metadata = ApplicationCommandOptionMetadataBase()
     
     expected_output = {}
     

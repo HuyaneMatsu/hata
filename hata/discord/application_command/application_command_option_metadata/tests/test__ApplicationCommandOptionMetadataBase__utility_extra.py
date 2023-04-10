@@ -7,7 +7,7 @@ def test__ApplicationCommandOptionMetadataBase__placeholders():
     """
     Tests whether all placeholders of ``ApplicationCommandOptionMetadataBase`` work as intended.
     """
-    option_metadata = ApplicationCommandOptionMetadataBase({})
+    option_metadata = ApplicationCommandOptionMetadataBase()
     
     vampytest.assert_instance(option_metadata.autocomplete, bool)
     vampytest.assert_instance(option_metadata.channel_types, tuple, nullable = True)

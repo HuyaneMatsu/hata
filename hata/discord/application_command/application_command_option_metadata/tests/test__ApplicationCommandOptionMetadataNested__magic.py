@@ -14,9 +14,9 @@ def test__ApplicationCommandOptionMetadataNested__repr():
         ApplicationCommandOption('seija', 'seija', ApplicationCommandOptionType.integer),
     ]
     
-    option_metadata = ApplicationCommandOptionMetadataNested({
-        'options': options,
-    })
+    option_metadata = ApplicationCommandOptionMetadataNested(
+        options = options,
+    )
     
     vampytest.assert_instance(repr(option_metadata), str)
 
@@ -30,9 +30,9 @@ def test__ApplicationCommandOptionMetadataNested__hash():
         ApplicationCommandOption('seija', 'seija', ApplicationCommandOptionType.integer),
     ]
     
-    option_metadata = ApplicationCommandOptionMetadataNested({
-        'options': options,
-    })
+    option_metadata = ApplicationCommandOptionMetadataNested(
+        options = options,
+    )
     
     vampytest.assert_instance(hash(option_metadata), int)
 
@@ -50,7 +50,7 @@ def test__ApplicationCommandOptionMetadataNested__eq():
         'options': options,
     }
     
-    option_metadata = ApplicationCommandOptionMetadataNested(keyword_parameters)
+    option_metadata = ApplicationCommandOptionMetadataNested(**keyword_parameters)
     
     vampytest.assert_eq(option_metadata, option_metadata)
     vampytest.assert_ne(option_metadata, object())
@@ -58,5 +58,5 @@ def test__ApplicationCommandOptionMetadataNested__eq():
     for field_name, field_value in (
         ('options', None),
     ):
-        test_option_metadata = ApplicationCommandOptionMetadataNested({**keyword_parameters, field_name: field_value})
+        test_option_metadata = ApplicationCommandOptionMetadataNested(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(option_metadata, test_option_metadata)

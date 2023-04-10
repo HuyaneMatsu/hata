@@ -10,7 +10,7 @@ class ApplicationCommandOptionMetadataSubCommand(ApplicationCommandOptionMetadat
     """
     Sub-command parameter application command option metadata.
     
-    Parameters
+    Attributes
     ----------
     default : `bool`
         Whether the option is the default one.
@@ -20,20 +20,48 @@ class ApplicationCommandOptionMetadataSubCommand(ApplicationCommandOptionMetadat
     """
     __slots__ = ('default',)
     
-    @copy_docs(ApplicationCommandOptionMetadataNested.__new__)
-    def __new__(cls, keyword_parameters):
+    
+    def __new__(cls, *, default = ..., options = ...):
+        """
+        Creates a new sub-command application command option metadata with the given parameters.
+        
+        Parameters
+        ----------
+        default : `bool`, Optional (Keyword only)
+            Whether the option is the default one.
+        
+        options : `None`, `iterable` of ``ApplicationCommandOption``, Optional (Keyword only)
+            Contains the option's parameter or its sub-commands (or groups).
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
         # default
-        try:
-            default = keyword_parameters.pop('default')
-        except KeyError:
+        if default is ...:
             default = False
         else:
             default = validate_default(default)
         
         # Construct
-        new = ApplicationCommandOptionMetadataNested.__new__(cls, keyword_parameters)
+        new = ApplicationCommandOptionMetadataNested.__new__(
+            cls, 
+            options = options,
+        )
         new.default = default
         return new
+    
+    
+    @classmethod
+    @copy_docs(ApplicationCommandOptionMetadataNested.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            default = keyword_parameters.pop('default', ...),
+            options = keyword_parameters.pop('options', ...),
+        )
     
     
     @classmethod
@@ -87,17 +115,47 @@ class ApplicationCommandOptionMetadataSubCommand(ApplicationCommandOptionMetadat
         return new
     
     
-    @copy_docs(ApplicationCommandOptionMetadataNested.copy_with)
-    def copy_with(self, keyword_parameters):
+    def copy_with(self, *, default = ..., options = ...):
+        """
+        Copies the sub-command application command option metadata with the given fields.
+        
+        Parameters
+        ----------
+        default : `bool`, Optional (Keyword only)
+            Whether the option is the default one.
+        
+        options : `None`, `iterable` of ``ApplicationCommandOption``, Optional (Keyword only)
+            Contains the option's parameter or its sub-commands (or groups).
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
         # default
-        try:
-            default = keyword_parameters.pop('default')
-        except KeyError:
+        if default is ...:
             default = self.default
         else:
             default = validate_default(default)
         
         # Construct
-        new = ApplicationCommandOptionMetadataNested.copy_with(self, keyword_parameters)
+        new = ApplicationCommandOptionMetadataNested.copy_with(
+            self,
+            options = options,
+        )
         new.default = default
         return new
+    
+    
+    @copy_docs(ApplicationCommandOptionMetadataNested.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            default = keyword_parameters.pop('default', ...),
+            options = keyword_parameters.pop('options', ...),
+        )

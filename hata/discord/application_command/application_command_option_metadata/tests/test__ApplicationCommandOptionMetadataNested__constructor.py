@@ -25,7 +25,7 @@ def test__ApplicationCommandOptionMetadataNested__new__0():
     
     Case: No fields given.
     """
-    option_metadata = ApplicationCommandOptionMetadataNested({})
+    option_metadata = ApplicationCommandOptionMetadataNested()
     _asert_fields_set(option_metadata)
 
 
@@ -40,7 +40,36 @@ def test__ApplicationCommandOptionMetadataNested__new__1():
         ApplicationCommandOption('seija', 'seija', ApplicationCommandOptionType.integer),
     ]
     
-    option_metadata = ApplicationCommandOptionMetadataNested({
+    option_metadata = ApplicationCommandOptionMetadataNested(
+        options = options,
+    )
+    _asert_fields_set(option_metadata)
+    
+    vampytest.assert_eq(option_metadata.options, tuple(options))
+
+
+def test__ApplicationCommandOptionMetadataNested__from_keyword_parameters__0():
+    """
+    Tests whether ``ApplicationCommandOptionMetadataNested.from_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
+    option_metadata = ApplicationCommandOptionMetadataNested.from_keyword_parameters({})
+    _asert_fields_set(option_metadata)
+
+
+def test__ApplicationCommandOptionMetadataNested__from_keyword_parameters__1():
+    """
+    Tests whether ``ApplicationCommandOptionMetadataNested.from_keyword_parameters`` works as intended.
+    
+    Case: All fields given.
+    """
+    options = [
+        ApplicationCommandOption('nue', 'nue', ApplicationCommandOptionType.string),
+        ApplicationCommandOption('seija', 'seija', ApplicationCommandOptionType.integer),
+    ]
+    
+    option_metadata = ApplicationCommandOptionMetadataNested.from_keyword_parameters({
         'options': options,
     })
     _asert_fields_set(option_metadata)

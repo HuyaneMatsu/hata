@@ -13,7 +13,7 @@ def test__ApplicationCommandOptionMetadataFloat__from_data():
     """
     required = True
     autocomplete = True
-    choices = [ApplicationCommandOptionChoice("19", 19.0), ApplicationCommandOptionChoice("18", 18.0)]
+    choices = [ApplicationCommandOptionChoice('19', 19.0), ApplicationCommandOptionChoice('18', 18.0)]
     max_value = 10.0
     min_value = 20.0
     
@@ -43,17 +43,17 @@ def test__ApplicationCommandOptionMetadataFloat__to_data():
     """
     required = True
     autocomplete = True
-    choices = [ApplicationCommandOptionChoice("19", 19.0), ApplicationCommandOptionChoice("18", 18.0)]
+    choices = [ApplicationCommandOptionChoice('19', 19.0), ApplicationCommandOptionChoice('18', 18.0)]
     max_value = 10.0
     min_value = 20.0
     
-    option_metadata = ApplicationCommandOptionMetadataFloat({
-        'required': required,
-        'autocomplete': autocomplete,
-        'choices': choices,
-        'max_value': max_value,
-        'min_value': min_value,
-    })
+    option_metadata = ApplicationCommandOptionMetadataFloat(
+        required = required,
+        autocomplete = autocomplete,
+        choices = choices,
+        max_value = max_value,
+        min_value = min_value,
+    )
     
     expected_output = {
         'required': required,

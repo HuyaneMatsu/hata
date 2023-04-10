@@ -11,17 +11,17 @@ def test__ApplicationCommandOptionMetadataFloat__repr():
     """
     required = True
     autocomplete = True
-    choices = [ApplicationCommandOptionChoice("19", 19.0), ApplicationCommandOptionChoice("18", 18.0)]
+    choices = [ApplicationCommandOptionChoice('19', 19.0), ApplicationCommandOptionChoice('18', 18.0)]
     max_value = 10.0
     min_value = 20.0
     
-    option_metadata = ApplicationCommandOptionMetadataFloat({
-        'required': required,
-        'autocomplete': autocomplete,
-        'choices': choices,
-        'max_value': max_value,
-        'min_value': min_value,
-    })
+    option_metadata = ApplicationCommandOptionMetadataFloat(
+        required = required,
+        autocomplete = autocomplete,
+        choices = choices,
+        max_value = max_value,
+        min_value = min_value,
+    )
     
     vampytest.assert_instance(repr(option_metadata), str)
 
@@ -32,17 +32,17 @@ def test__ApplicationCommandOptionMetadataFloat__hash():
     """
     required = True
     autocomplete = True
-    choices = [ApplicationCommandOptionChoice("19", 19.0), ApplicationCommandOptionChoice("18", 18.0)]
+    choices = [ApplicationCommandOptionChoice('19', 19.0), ApplicationCommandOptionChoice('18', 18.0)]
     max_value = 10.0
     min_value = 20.0
     
-    option_metadata = ApplicationCommandOptionMetadataFloat({
-        'required': required,
-        'autocomplete': autocomplete,
-        'choices': choices,
-        'max_value': max_value,
-        'min_value': min_value,
-    })
+    option_metadata = ApplicationCommandOptionMetadataFloat(
+        required = required,
+        autocomplete = autocomplete,
+        choices = choices,
+        max_value = max_value,
+        min_value = min_value,
+    )
     
     vampytest.assert_instance(hash(option_metadata), int)
 
@@ -53,7 +53,7 @@ def test__ApplicationCommandOptionMetadataFloat__eq():
     """
     required = True
     autocomplete = True
-    choices = [ApplicationCommandOptionChoice("19", 19.0), ApplicationCommandOptionChoice("18", 18.0)]
+    choices = [ApplicationCommandOptionChoice('19', 19.0), ApplicationCommandOptionChoice('18', 18.0)]
     max_value = 10.0
     min_value = 20.0
     
@@ -65,7 +65,7 @@ def test__ApplicationCommandOptionMetadataFloat__eq():
         'min_value': min_value,
     }
     
-    option_metadata = ApplicationCommandOptionMetadataFloat(keyword_parameters)
+    option_metadata = ApplicationCommandOptionMetadataFloat(**keyword_parameters)
     
     vampytest.assert_eq(option_metadata, option_metadata)
     vampytest.assert_ne(option_metadata, object())
@@ -77,5 +77,5 @@ def test__ApplicationCommandOptionMetadataFloat__eq():
         ('max_value', 11.0),
         ('min_value', 12.0),
     ):
-        test_option_metadata = ApplicationCommandOptionMetadataFloat({**keyword_parameters, field_name: field_value})
+        test_option_metadata = ApplicationCommandOptionMetadataFloat(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(option_metadata, test_option_metadata)

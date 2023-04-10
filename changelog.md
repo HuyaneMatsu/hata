@@ -9,6 +9,8 @@
 - `ComponentMetadataBase.copy_with` now supports the `component_type` parameter.
 - `ActivityMetadataBase.copy_with` is now `.copy_with_keyword_parameters`. Add new `.copy_with` method.
 - `ActivityMetadataBase.copy_with` now supports the `component_type` parameter.
+- `ApplicationCommandOptionMetadataBase.copy_with` is now `.copy_with_keyword_parameters`. Add new `.copy_with` method.
+- `ApplicationCommandOptionMetadataBase.copy_with` now supports the `component_type` parameter.
 
 ##### ext.slash
 - `abort` call from a component command is now handled as intended (so always creates a new message).

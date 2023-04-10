@@ -29,7 +29,7 @@ def test__ApplicationCommandOptionMetadataFloat__new__0():
     
     Case: No fields given.
     """
-    option_metadata = ApplicationCommandOptionMetadataFloat({})
+    option_metadata = ApplicationCommandOptionMetadataFloat()
     _asert_fields_set(option_metadata)
 
 
@@ -41,11 +41,50 @@ def test__ApplicationCommandOptionMetadataFloat__new__1():
     """
     required = True
     autocomplete = True
-    choices = [ApplicationCommandOptionChoice("19", 19.0), ApplicationCommandOptionChoice("18", 18.0)]
+    choices = [ApplicationCommandOptionChoice('19', 19.0), ApplicationCommandOptionChoice('18', 18.0)]
     max_value = 10.0
     min_value = 20.0
     
-    option_metadata = ApplicationCommandOptionMetadataFloat({
+    option_metadata = ApplicationCommandOptionMetadataFloat(
+        required = required,
+        autocomplete = autocomplete,
+        choices = choices,
+        max_value = max_value,
+        min_value = min_value,
+    )
+    _asert_fields_set(option_metadata)
+    
+    vampytest.assert_eq(option_metadata.required, required)
+    vampytest.assert_eq(option_metadata.autocomplete, autocomplete)
+    vampytest.assert_eq(option_metadata.choices, tuple(choices))
+    vampytest.assert_eq(option_metadata.max_value, max_value)
+    vampytest.assert_eq(option_metadata.min_value, min_value)
+
+
+
+def test__ApplicationCommandOptionMetadataFloat__from_keyword_parameters__0():
+    """
+    Tests whether ``ApplicationCommandOptionMetadataFloat.from_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
+    option_metadata = ApplicationCommandOptionMetadataFloat.from_keyword_parameters({})
+    _asert_fields_set(option_metadata)
+
+
+def test__ApplicationCommandOptionMetadataFloat__from_keyword_parameters__1():
+    """
+    Tests whether ``ApplicationCommandOptionMetadataFloat.from_keyword_parameters`` works as intended.
+    
+    Case: All fields given.
+    """
+    required = True
+    autocomplete = True
+    choices = [ApplicationCommandOptionChoice('19', 19.0), ApplicationCommandOptionChoice('18', 18.0)]
+    max_value = 10.0
+    min_value = 20.0
+    
+    option_metadata = ApplicationCommandOptionMetadataFloat.from_keyword_parameters({
         'required': required,
         'autocomplete': autocomplete,
         'choices': choices,

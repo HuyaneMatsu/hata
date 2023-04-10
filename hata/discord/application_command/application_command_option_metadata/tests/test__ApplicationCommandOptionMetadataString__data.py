@@ -47,13 +47,13 @@ def test__ApplicationCommandOptionMetadataString__to_data():
     max_length = 10
     min_length = 20
     
-    option_metadata = ApplicationCommandOptionMetadataString({
-        'required': required,
-        'autocomplete': autocomplete,
-        'choices': choices,
-        'max_length': max_length,
-        'min_length': min_length,
-    })
+    option_metadata = ApplicationCommandOptionMetadataString(
+        required = required,
+        autocomplete = autocomplete,
+        choices = choices,
+        max_length = max_length,
+        min_length = min_length,
+    )
     
     expected_output = {
         'required': required,

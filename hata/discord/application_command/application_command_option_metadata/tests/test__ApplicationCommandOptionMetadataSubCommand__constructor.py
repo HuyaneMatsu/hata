@@ -26,7 +26,7 @@ def test__ApplicationCommandOptionMetadataSubCommand__new__0():
     
     Case: No fields given.
     """
-    option_metadata = ApplicationCommandOptionMetadataSubCommand({})
+    option_metadata = ApplicationCommandOptionMetadataSubCommand()
     _asert_fields_set(option_metadata)
 
 
@@ -42,7 +42,38 @@ def test__ApplicationCommandOptionMetadataSubCommand__new__1():
     ]
     default = True
     
-    option_metadata = ApplicationCommandOptionMetadataSubCommand({
+    option_metadata = ApplicationCommandOptionMetadataSubCommand(
+        options = options,
+        default = default,
+    )
+    _asert_fields_set(option_metadata)
+    
+    vampytest.assert_eq(option_metadata.options, tuple(options))
+
+
+def test__ApplicationCommandOptionMetadataSubCommand__from_keyword_parameters__0():
+    """
+    Tests whether ``ApplicationCommandOptionMetadataSubCommand.from_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
+    option_metadata = ApplicationCommandOptionMetadataSubCommand.from_keyword_parameters({})
+    _asert_fields_set(option_metadata)
+
+
+def test__ApplicationCommandOptionMetadataSubCommand__from_keyword_parameters__1():
+    """
+    Tests whether ``ApplicationCommandOptionMetadataSubCommand.from_keyword_parameters`` works as intended.
+    
+    Case: All fields given.
+    """
+    options = [
+        ApplicationCommandOption('nue', 'nue', ApplicationCommandOptionType.string),
+        ApplicationCommandOption('seija', 'seija', ApplicationCommandOptionType.integer),
+    ]
+    default = True
+    
+    option_metadata = ApplicationCommandOptionMetadataSubCommand.from_keyword_parameters({
         'options': options,
         'default': default,
     })

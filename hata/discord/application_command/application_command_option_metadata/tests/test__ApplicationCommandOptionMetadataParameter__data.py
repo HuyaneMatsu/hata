@@ -30,9 +30,9 @@ def test__ApplicationCommandOptionMetadataParameter__to_data():
     """
     required = True
     
-    option_metadata = ApplicationCommandOptionMetadataParameter({
-        'required': required,
-    })
+    option_metadata = ApplicationCommandOptionMetadataParameter(
+        required = required,
+    )
     
     expected_output = {
         'required': required,

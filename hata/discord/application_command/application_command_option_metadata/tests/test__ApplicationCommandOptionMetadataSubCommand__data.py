@@ -41,10 +41,10 @@ def test__ApplicationCommandOptionMetadataSubCommand__to_data():
     ]
     default = True
     
-    option_metadata = ApplicationCommandOptionMetadataSubCommand({
-        'options': options,
-        'default': default,
-    })
+    option_metadata = ApplicationCommandOptionMetadataSubCommand(
+        options = options,
+        default = default,
+    )
     
     expected_output = {
         'options': [option.to_data(defaults = True) for option in options],

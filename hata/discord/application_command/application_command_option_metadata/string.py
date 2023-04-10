@@ -35,29 +35,68 @@ class ApplicationCommandOptionMetadataString(ApplicationCommandOptionMetadataPri
     
     __slots__ = ('max_length', 'min_length')
     
-    @copy_docs(ApplicationCommandOptionMetadataPrimitive.__new__)
-    def __new__(cls, keyword_parameters):
+    def __new__(cls, *, autocomplete = ..., choices = ..., max_length = ..., min_length = ..., required = ...):
+        """
+        Creates a new string application command option metadata with the given parameters.
+        
+        Parameters
+        ----------
+        autocomplete : `bool`, Optional (Keyword only)
+            Whether the option supports auto completion.
+        
+        choices : `None`, `iterable` of ``ApplicationCommandOptionChoice``, Optional (Keyword only)
+            Choices for the user to pick from.
+        
+        max_length : `int`, Optional (Keyword only)
+            The maximum input length allowed for this option.
+        
+        min_length : `int`, Optional (Keyword only)
+            The minimum input length allowed for this option.
+        
+        required : `bool`, Optional (Keyword only)
+            Whether the parameter is required.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
         # max_length
-        try:
-            max_length = keyword_parameters.pop('max_length')
-        except KeyError:
+        if max_length is ...:
             max_length = APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT
         else:
             max_length = validate_max_length(max_length)
         
         # min_length
-        try:
-            min_length = keyword_parameters.pop('min_length')
-        except KeyError:
+        if min_length is ...:
             min_length = APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT
         else:
             min_length = validate_min_length(min_length)
         
         # Construct
-        new = ApplicationCommandOptionMetadataPrimitive.__new__(cls, keyword_parameters)
+        new = ApplicationCommandOptionMetadataPrimitive.__new__(
+            cls,
+            autocomplete = autocomplete,
+            choices = choices,
+            required = required,
+        )
         new.max_length = max_length
         new.min_length = min_length
         return new
+    
+    
+    @classmethod
+    @copy_docs(ApplicationCommandOptionMetadataPrimitive.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            autocomplete = keyword_parameters.pop('autocomplete', ...),
+            choices = keyword_parameters.pop('choices', ...),
+            max_length = keyword_parameters.pop('max_length', ...),
+            min_length = keyword_parameters.pop('min_length', ...),
+            required = keyword_parameters.pop('required', ...),
+        )
     
     
     @classmethod
@@ -126,26 +165,68 @@ class ApplicationCommandOptionMetadataString(ApplicationCommandOptionMetadataPri
         return new
     
     
-    @copy_docs(ApplicationCommandOptionMetadataPrimitive.copy_with)
-    def copy_with(self, keyword_parameters):
+    def copy_with(self, *, autocomplete = ..., choices = ..., max_length = ..., min_length = ..., required = ...):
+        """
+        Copies the string application command option metadata with the given fields.
+        
+        Parameters
+        ----------
+        autocomplete : `bool`, Optional (Keyword only)
+            Whether the option supports auto completion.
+        
+        choices : `None`, `iterable` of ``ApplicationCommandOptionChoice``, Optional (Keyword only)
+            Choices for the user to pick from.
+        
+        max_length : `int`, Optional (Keyword only)
+            The maximum input length allowed for this option.
+        
+        min_length : `int`, Optional (Keyword only)
+            The minimum input length allowed for this option.
+        
+        required : `bool`, Optional (Keyword only)
+            Whether the parameter is required.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
         # max_length
-        try:
-            max_length = keyword_parameters.pop('max_length')
-        except KeyError:
+        if max_length is ...:
             max_length = self.max_length
         else:
             max_length = validate_max_length(max_length)
         
         # min_length
-        try:
-            min_length = keyword_parameters.pop('min_length')
-        except KeyError:
+        if min_length is ...:
             min_length = self.min_length
         else:
             min_length = validate_min_length(min_length)
         
         # Construct
-        new = ApplicationCommandOptionMetadataPrimitive.copy_with(self, keyword_parameters)
+        new = ApplicationCommandOptionMetadataPrimitive.copy_with(
+            self, 
+            autocomplete = autocomplete,
+            choices = choices,
+            required = required,
+        )
         new.max_length = max_length
         new.min_length = min_length
         return new
+    
+    
+    @copy_docs(ApplicationCommandOptionMetadataPrimitive.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            autocomplete = keyword_parameters.pop('autocomplete', ...),
+            choices = keyword_parameters.pop('choices', ...),
+            max_length = keyword_parameters.pop('max_length', ...),
+            min_length = keyword_parameters.pop('min_length', ...),
+            required = keyword_parameters.pop('required', ...),
+        )

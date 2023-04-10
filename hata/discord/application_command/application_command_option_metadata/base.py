@@ -13,14 +13,9 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
     """
     __slots__ = ()
     
-    def __new__(cls, keyword_parameters):
+    def __new__(cls):
         """
-        Creates a new application command option metadata with the given keyword parameters.
-        
-        Parameters
-        ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
-            Keyword parameters passed to ``ApplicationCommandOption.__new__``.
+        Creates a new application command option metadata with the given parameters.
         
         Raises
         ------
@@ -30,6 +25,30 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
             - If a parameter of incorrect value given.
         """
         return object.__new__(cls)
+    
+    
+    @classmethod
+    def from_keyword_parameters(cls, keyword_parameters):
+        """
+        Creates a new application command option metadata with the given keyword parameters.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict` of (`str`, `object`) items
+            Keyword parameters passed to ``ApplicationCommandOption.__new__``.
+        
+        Returns
+        -------
+        self : `instance<cls>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
+        return cls()
     
     
     @classmethod
@@ -122,9 +141,27 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
         return object.__new__(type(self))
     
     
-    def copy_with(self, keyword_parameters):
+    def copy_with(self):
         """
         Copies the application command option metadata with the given fields.
+        
+        Returns
+        -------
+        new : `instance<type<cls>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
+        return self.copy()
+    
+    
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        """
+        Copies the application command option metadata with the given keyword parameters.
         
         Parameters
         ----------
@@ -142,7 +179,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
         ValueError
             - If a parameter of incorrect value given.
         """
-        return object.__new__(type(self))
+        return self.copy_with()
     
     
     autocomplete = PlaceHolder(
@@ -172,6 +209,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
         """
     )
     
+    
     choices = PlaceHolder(
         None,
         """
@@ -184,6 +222,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
         choices : `None`, `tuple` of ``ApplicationCommandOptionChoice``
         """
     )
+    
     
     default = PlaceHolder(
         False,
@@ -225,6 +264,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
         max_value : `None`, `int`, `float`
         """
     )
+    
     
     min_length = PlaceHolder(
         APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT,

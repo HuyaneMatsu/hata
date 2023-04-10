@@ -17,12 +17,25 @@ class ApplicationCommandOptionMetadataNested(ApplicationCommandOptionMetadataBas
     """
     __slots__ = ('options',)
     
-    @copy_docs(ApplicationCommandOptionMetadataBase.__new__)
-    def __new__(cls, keyword_parameters):
+    
+    def __new__(cls, *, options = ...):
+        """
+        Creates a new nested application command option metadata with the given parameters.
+        
+        Parameters
+        ----------
+        options : `None`, `iterable` of ``ApplicationCommandOption``, Optional (Keyword only)
+            Contains the option's parameter or its sub-commands (or groups).
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
         # options
-        try:
-            options = keyword_parameters.pop('options')
-        except KeyError:
+        if options is ...:
             options = None
         else:
             options = validate_options(options)
@@ -31,6 +44,14 @@ class ApplicationCommandOptionMetadataNested(ApplicationCommandOptionMetadataBas
         new = object.__new__(cls)
         new.options = options
         return new
+    
+    
+    @classmethod
+    @copy_docs(ApplicationCommandOptionMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            options = keyword_parameters.pop('options', ...),
+        )
     
     
     @classmethod
@@ -87,12 +108,28 @@ class ApplicationCommandOptionMetadataNested(ApplicationCommandOptionMetadataBas
         return new
     
     
-    @copy_docs(ApplicationCommandOptionMetadataBase.copy_with)
-    def copy_with(self, keyword_parameters):
+    def copy_with(self, *, options = ...):
+        """
+        Copies the nested application command option metadata with the given fields.
+        
+        Parameters
+        ----------
+        options : `None`, `iterable` of ``ApplicationCommandOption``, Optional (Keyword only)
+            Contains the option's parameter or its sub-commands (or groups).
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        ValueError
+            - If a parameter of incorrect value given.
+        """
         # options
-        try:
-            options = keyword_parameters.pop('options')
-        except KeyError:
+        if options is ...:
             options = self.options
             if (options is not None):
                 options = (*(option.copy() for option in options),)
@@ -103,3 +140,10 @@ class ApplicationCommandOptionMetadataNested(ApplicationCommandOptionMetadataBas
         new = object.__new__(type(self))
         new.options = options
         return new
+    
+    
+    @copy_docs(ApplicationCommandOptionMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            options = keyword_parameters.pop('options', ...),
+        )

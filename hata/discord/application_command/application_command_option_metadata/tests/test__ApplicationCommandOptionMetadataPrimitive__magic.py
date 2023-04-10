@@ -13,11 +13,11 @@ def test__ApplicationCommandOptionMetadataPrimitive__repr():
     autocomplete = True
     choices = [ApplicationCommandOptionChoice('suika'), ApplicationCommandOptionChoice('suwako')]
     
-    option_metadata = ApplicationCommandOptionMetadataPrimitive({
-        'required': required,
-        'autocomplete': autocomplete,
-        'choices': choices,
-    })
+    option_metadata = ApplicationCommandOptionMetadataPrimitive(
+        required = required,
+        autocomplete = autocomplete,
+        choices = choices,
+    )
     
     vampytest.assert_instance(repr(option_metadata), str)
 
@@ -30,11 +30,11 @@ def test__ApplicationCommandOptionMetadataPrimitive__hash():
     autocomplete = True
     choices = [ApplicationCommandOptionChoice('suika'), ApplicationCommandOptionChoice('suwako')]
     
-    option_metadata = ApplicationCommandOptionMetadataPrimitive({
-        'required': required,
-        'autocomplete': autocomplete,
-        'choices': choices,
-    })
+    option_metadata = ApplicationCommandOptionMetadataPrimitive(
+        required = required,
+        autocomplete = autocomplete,
+        choices = choices,
+    )
     
     vampytest.assert_instance(hash(option_metadata), int)
 
@@ -53,7 +53,7 @@ def test__ApplicationCommandOptionMetadataPrimitive__eq():
         'choices': choices,
     }
     
-    option_metadata = ApplicationCommandOptionMetadataPrimitive(keyword_parameters)
+    option_metadata = ApplicationCommandOptionMetadataPrimitive(**keyword_parameters)
     
     vampytest.assert_eq(option_metadata, option_metadata)
     vampytest.assert_ne(option_metadata, object())
@@ -63,5 +63,5 @@ def test__ApplicationCommandOptionMetadataPrimitive__eq():
         ('autocomplete', False),
         ('choices', None),
     ):
-        test_option_metadata = ApplicationCommandOptionMetadataPrimitive({**keyword_parameters, field_name: field_value})
+        test_option_metadata = ApplicationCommandOptionMetadataPrimitive(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(option_metadata, test_option_metadata)

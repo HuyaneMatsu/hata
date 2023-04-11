@@ -32,14 +32,6 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     ----------
     _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent_id : `int`
-        The channel's parent's identifier.
-    name : `str`
-        The channel's name.
-    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
-        The channel's permission overwrites.
-    position : `int`
-        The channel's position.
     available_tags : `None`, `tuple` of ``ForumTag``
         The available tags to assign to the child-thread channels.
     default_forum_layout : ``ForumLayout``
@@ -55,6 +47,14 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         The default slowmode applied to the channel's threads.
     flags : ``ChannelFlag``
         The channel's flags.
+    name : `str`
+        The channel's name.
+    parent_id : `int`
+        The channel's parent's identifier.
+    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
+        The channel's permission overwrites.
+    position : `int`
+        The channel's position.
     topic : `None`, `str`
         The channel's topic.
     
@@ -67,6 +67,147 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         'available_tags', 'default_forum_layout', 'default_sort_order', 'default_thread_auto_archive_after',
         'default_thread_reaction', 'default_thread_slowmode', 'flags', 'topic',
     )
+    
+    def __new__(
+        cls,
+        *,
+        available_tags = ...,
+        default_forum_layout = ...,
+        default_sort_order = ...,
+        default_thread_auto_archive_after = ...,
+        default_thread_reaction = ...,
+        default_thread_slowmode = ...,
+        flags = ...,
+        name = ...,
+        parent_id = ...,
+        permission_overwrites = ...,
+        position = ...,
+        topic = ...,
+    ):
+        """
+        Creates a new guild forum channel metadata from the given parameters.
+        
+        Parameters
+        ----------
+        available_tags : `None`, `iterable` of ``ForumTag``, Optional (Keyword only)
+            The available tags to assign to the child-thread channels.
+        default_forum_layout : ``ForumLayout``, `int`, Optional (Keyword only)
+            The default layout used to display threads of the forum.
+        default_sort_order : ``SortOrder``, `int`, Optional (Keyword only)
+            The default thread ordering of the forum.
+        default_thread_auto_archive_after : `int`, Optional (Keyword only)
+            The default duration (in seconds) for newly created threads to automatically archive the themselves.
+        default_thread_reaction : `None`, ``Emoji``, Optional (Keyword only)
+            The emoji to show in the add reaction button on a thread of the forum channel.
+        default_thread_slowmode : `int`, Optional (Keyword only)
+            The default slowmode applied to the channel's threads.
+        flags : ``ChannelFlag``, `int`, Optional (Keyword only)
+            The channel's flags.
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        topic : `None`, `str`, Optional (Keyword only)
+            The channel's topic.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # available_tags
+        if available_tags is ...:
+            available_tags = None
+        else:
+            available_tags = validate_available_tags(available_tags)
+        
+        # default_forum_layout
+        if default_forum_layout is ...:
+            default_forum_layout = ForumLayout.none
+        else:
+            default_forum_layout = validate_default_forum_layout(default_forum_layout)
+        
+        # default_sort_order
+        if default_sort_order is ...:
+            default_sort_order = SortOrder.latest_activity
+        else:
+            default_sort_order = validate_default_sort_order(default_sort_order)
+        
+        # default_thread_auto_archive_after
+        if default_thread_auto_archive_after is ...:
+            default_thread_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        else:
+            default_thread_auto_archive_after = validate_default_thread_auto_archive_after(
+                default_thread_auto_archive_after
+            )
+        
+        # default_thread_reaction
+        if default_thread_reaction is ...:
+            default_thread_reaction = None
+        else:
+            default_thread_reaction = validate_default_thread_reaction(default_thread_reaction)
+        
+        # default_thread_slowmode
+        if default_thread_slowmode is ...:
+            default_thread_slowmode = SLOWMODE_DEFAULT
+        else:
+            default_thread_slowmode = validate_default_thread_slowmode(default_thread_slowmode)
+        
+        # flags
+        if flags is ...:
+            flags = ChannelFlag()
+        else:
+            flags = validate_flags(flags)
+        
+        # topic
+        if topic is ...:
+            topic = None
+        else:
+            topic = validate_topic(topic)
+        
+        # Construct
+        self = ChannelMetadataGuildMainBase.__new__(
+            cls,
+            name = name,
+            permission_overwrites = permission_overwrites,
+            parent_id = parent_id,
+            position = position,
+        )
+        self.available_tags = available_tags
+        self.default_forum_layout = default_forum_layout
+        self.default_sort_order = default_sort_order
+        self.default_thread_auto_archive_after = default_thread_auto_archive_after
+        self.default_thread_reaction = default_thread_reaction
+        self.default_thread_slowmode = default_thread_slowmode
+        self.flags = flags
+        self.topic = topic
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataGuildMainBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            available_tags = keyword_parameters.pop('available_tags', ...),
+            default_forum_layout = keyword_parameters.pop('default_forum_layout', ...),
+            default_sort_order = keyword_parameters.pop('default_sort_order', ...),
+            default_thread_auto_archive_after = keyword_parameters.pop('default_thread_auto_archive_after', ...),
+            default_thread_reaction = keyword_parameters.pop('default_thread_reaction', ...),
+            default_thread_slowmode = keyword_parameters.pop('default_thread_slowmode', ...),
+            flags = keyword_parameters.pop('flags', ...),
+            name = keyword_parameters.pop('name', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
+            position = keyword_parameters.pop('position', ...),
+            topic = keyword_parameters.pop('topic', ...),
+        )
+    
     
     @copy_docs(ChannelMetadataGuildMainBase.__hash__)
     def __hash__(self):
@@ -354,77 +495,6 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         # forum channels do not have thread and voice related permissions
         result &= PERMISSION_THREAD_AND_VOICE_DENY
         return Permission(result)
-    
-    
-    @copy_docs(ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
-        
-        # available_tags
-        try:
-            available_tags = keyword_parameters.pop('available_tags')
-        except KeyError:
-            pass
-        else:
-            self.available_tags = validate_available_tags(available_tags)
-        
-        # default_forum_layout
-        try:
-            default_forum_layout = keyword_parameters.pop('default_forum_layout')
-        except KeyError:
-            pass
-        else:
-            self.default_forum_layout = validate_default_forum_layout(default_forum_layout)
-        
-        # default_sort_order
-        try:
-            default_sort_order = keyword_parameters.pop('default_sort_order')
-        except KeyError:
-            pass
-        else:
-            self.default_sort_order = validate_default_sort_order(default_sort_order)
-        
-        # default_thread_auto_archive_after
-        try:
-            default_thread_auto_archive_after = keyword_parameters.pop('default_thread_auto_archive_after')
-        except KeyError:
-            pass
-        else:
-            self.default_thread_auto_archive_after = validate_default_thread_auto_archive_after(
-                default_thread_auto_archive_after
-            )
-        
-        # default_thread_reaction
-        try:
-            default_thread_reaction = keyword_parameters.pop('default_thread_reaction')
-        except KeyError:
-            pass
-        else:
-            self.default_thread_reaction = validate_default_thread_reaction(default_thread_reaction)
-        
-        # default_thread_slowmode
-        try:
-            default_thread_slowmode = keyword_parameters.pop('default_thread_slowmode')
-        except KeyError:
-            pass
-        else:
-            self.default_thread_slowmode = validate_default_thread_slowmode(default_thread_slowmode)
-        
-        # flags
-        try:
-            flags = keyword_parameters.pop('flags')
-        except KeyError:
-            pass
-        else:
-            self.flags = validate_flags(flags)
-        
-        # topic
-        try:
-            topic = keyword_parameters.pop('topic')
-        except KeyError:
-            pass
-        else:
-            self.topic = validate_topic(topic)
     
     
     @copy_docs(ChannelMetadataGuildMainBase.to_data)

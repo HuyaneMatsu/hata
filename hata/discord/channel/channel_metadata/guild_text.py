@@ -19,26 +19,26 @@ class ChannelMetadataGuildText(ChannelMetadataGuildTextBase):
     ----------
     _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent_id : `int`
-        The channel's parent's identifier.
-    name : `str`
-        The channel's name.
-    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
-        The channel's permission overwrites.
-    position : `int`
-        The channel's position.
-    default_auto_archive_after : `int`
+    default_thread_auto_archive_after : `int`
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Defaults
         to `3600`. Can be one of: `3600`, `86400`, `259200`, `604800`.
     default_thread_slowmode : `int`
         Applied as `thread.slowmode` when one is created.
+    name : `str`
+        The channel's name.
     nsfw : `bool`
         Whether the channel is marked as non safe for work.
+    parent_id : `int`
+        The channel's parent's identifier.
+    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
+        The channel's permission overwrites.
+    position : `int`
+        The channel's position.
+    slowmode : `int`
+        The amount of time in seconds that a user needs to wait between it's each message. Bots and user accounts with
+        `manage_messages`, `manage_channels` permissions are unaffected.
     topic : `None`, `str`
         The channel's topic.
-    slowmode : `int`
-        The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
-        `manage_messages`, `manage_channels` permissions are unaffected.
     
     Class Attributes
     ----------------

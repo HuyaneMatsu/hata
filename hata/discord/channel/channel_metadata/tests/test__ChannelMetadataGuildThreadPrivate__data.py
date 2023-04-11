@@ -6,7 +6,7 @@ from ....utils import datetime_to_timestamp
 
 from ..guild_thread_private import ChannelMetadataGuildThreadPrivate
 
-from .test__ChannelMetadataGuildThreadPrivate__constructor import assert_fields_set
+from .test__ChannelMetadataGuildThreadPrivate__constructor import _assert_fields_set
 
 
 def test__ChannelMetadataGuildThreadPrivate__from_data():
@@ -38,9 +38,7 @@ def test__ChannelMetadataGuildThreadPrivate__from_data():
             'invitable': invitable,
         }
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildThreadPrivate)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -71,18 +69,18 @@ def test__ChannelMetadataGuildThreadPrivate__to_data():
     slowmode = 60
     invitable = True
     
-    channel_metadata = ChannelMetadataGuildThreadPrivate({
-        'parent_id': parent_id,
-        'name': name,
-        'created_at': created_at,
-        'archived': archived,
-        'archived_at': archived_at,
-        'auto_archive_after': auto_archive_after,
-        'open': open_,
-        'owner_id': owner_id,
-        'slowmode': slowmode,
-        'invitable': invitable,
-    })
+    channel_metadata = ChannelMetadataGuildThreadPrivate(
+        parent_id = parent_id,
+        name = name,
+        created_at = created_at,
+        archived = archived,
+        archived_at = archived_at,
+        auto_archive_after = auto_archive_after,
+        open = open_,
+        owner_id = owner_id,
+        slowmode = slowmode,
+        invitable = invitable,
+    )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
     
@@ -126,16 +124,16 @@ def test__ChannelMetadataGuildThreadPrivate__update_attributes():
     old_invitable = True
     new_invitable = False
     
-    channel_metadata = ChannelMetadataGuildThreadPrivate({
-        'parent_id': old_parent_id,
-        'name': old_name,
-        'archived': old_archived,
-        'archived_at': old_archived_at,
-        'auto_archive_after': old_auto_archive_after,
-        'open': old_open,
-        'slowmode': old_slowmode,
-        'invitable': old_invitable,
-    })
+    channel_metadata = ChannelMetadataGuildThreadPrivate(
+        parent_id = str(old_parent_id),
+        name = old_name,
+        archived = old_archived,
+        archived_at = old_archived_at,
+        auto_archive_after = old_auto_archive_after,
+        open = old_open,
+        slowmode = old_slowmode,
+        invitable = old_invitable,
+    )
     
     channel_metadata._update_attributes({
         'parent_id': str(new_parent_id),
@@ -181,16 +179,16 @@ def test__ChannelMetadataGuildThreadPrivate__difference_update_attributes():
     old_invitable = True
     new_invitable = False
     
-    channel_metadata = ChannelMetadataGuildThreadPrivate({
-        'parent_id': str(old_parent_id),
-        'name': old_name,
-        'archived': old_archived,
-        'archived_at': old_archived_at,
-        'auto_archive_after': old_auto_archive_after,
-        'open': old_open,
-        'slowmode': old_slowmode,
-        'invitable': old_invitable,
-    })
+    channel_metadata = ChannelMetadataGuildThreadPrivate(
+        parent_id = str(old_parent_id),
+        name = old_name,
+        archived = old_archived,
+        archived_at = old_archived_at,
+        auto_archive_after = old_auto_archive_after,
+        open = old_open,
+        slowmode = old_slowmode,
+        invitable = old_invitable,
+    )
     
     old_attributes = channel_metadata._difference_update_attributes({
         'parent_id': str(new_parent_id),
@@ -242,8 +240,6 @@ def test__ChannelMetadataGuildThreadPrivate__from_partial_data():
     channel_metadata = ChannelMetadataGuildThreadPrivate._from_partial_data({
         'name': name,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildThreadPrivate)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

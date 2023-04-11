@@ -23,6 +23,43 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
     """
     __slots__ = ('users',)
     
+    
+    def __new__(cls, *, users = ...):
+        """
+        Creates a new private base channel metadata from the given parameters.
+        
+        Parameters
+        ----------
+        users : `iterable` of ``ClientUserBase``, Optional (Keyword only)
+            The users in the channel.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # users
+        if users is ...:
+            users = []
+        else:
+            users = validate_users(users)
+        
+        # Construct
+        self = object.__new__(cls)
+        self.users = users
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            users = keyword_parameters.pop('users', ...),
+        )
+    
+    
     @copy_docs(ChannelMetadataBase.__hash__)
     def __hash__(self):
         hash_value = ChannelMetadataBase.__hash__(self)
@@ -84,19 +121,6 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
         self.users = []
         
         return self
-    
-
-    @copy_docs(ChannelMetadataBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        ChannelMetadataBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
-        
-        # users
-        try:
-            users = keyword_parameters.pop('users')
-        except KeyError:
-            pass
-        else:
-            self.users = validate_users(users)
     
     
     @copy_docs(ChannelMetadataBase.to_data)

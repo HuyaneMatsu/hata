@@ -41,7 +41,7 @@ def test__Channel__hash__1():
     name = 'Frantic'
     channel_type = ChannelType.guild_text
     
-    channel = Channel(channel_type, name = name)
+    channel = Channel(channel_type = channel_type, name = name)
     
     vampytest.assert_instance(hash(channel), int)
 

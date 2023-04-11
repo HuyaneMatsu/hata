@@ -6,7 +6,7 @@ from ..preinstanced import VideoQualityMode, VoiceRegion
 
 from ..guild_voice import ChannelMetadataGuildVoice
 
-from .test__ChannelMetadataGuildVoice__constructor import assert_fields_set
+from .test__ChannelMetadataGuildVoice__constructor import _assert_fields_set
 
 
 def test__ChannelMetadataGuildVoice__from_data():
@@ -39,9 +39,7 @@ def test__ChannelMetadataGuildVoice__from_data():
         'nsfw': nsfw,
         'video_quality_mode': video_quality_mode.value,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoice)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -75,17 +73,17 @@ def test__ChannelMetadataGuildVoice__to_data():
     nsfw = True
     video_quality_mode = VideoQualityMode.auto
     
-    channel_metadata = ChannelMetadataGuildVoice({
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'bitrate': bitrate,
-        'region': region,
-        'user_limit': user_limit,
-        'nsfw': nsfw,
-        'video_quality_mode': video_quality_mode,
-    })
+    channel_metadata = ChannelMetadataGuildVoice(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        bitrate = bitrate,
+        region = region,
+        user_limit = user_limit,
+        nsfw = nsfw,
+        video_quality_mode = video_quality_mode,
+    )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
     
@@ -135,17 +133,17 @@ def test__ChannelMetadataGuildVoice__update_attributes():
     old_video_quality_mode = VideoQualityMode.auto
     new_video_quality_mode = VideoQualityMode.full
     
-    channel_metadata = ChannelMetadataGuildVoice({
-        'parent_id': old_parent_id,
-        'name': old_name,
-        'permission_overwrites': old_permission_overwrites,
-        'position': old_position,
-        'bitrate': old_bitrate,
-        'region': old_region,
-        'user_limit': old_user_limit,
-        'nsfw': old_nsfw,
-        'video_quality_mode': old_video_quality_mode,
-    })
+    channel_metadata = ChannelMetadataGuildVoice(
+        parent_id = old_parent_id,
+        name = old_name,
+        permission_overwrites = old_permission_overwrites,
+        position = old_position,
+        bitrate = old_bitrate,
+        region = old_region,
+        user_limit = old_user_limit,
+        nsfw = old_nsfw,
+        video_quality_mode = old_video_quality_mode,
+    )
     
     channel_metadata._update_attributes({
         'parent_id': str(new_parent_id),
@@ -204,17 +202,17 @@ def test__ChannelMetadataGuildVoice__difference_update_attributes():
     old_video_quality_mode = VideoQualityMode.auto
     new_video_quality_mode = VideoQualityMode.full
     
-    channel_metadata = ChannelMetadataGuildVoice({
-        'parent_id': str(old_parent_id),
-        'name': old_name,
-        'permission_overwrites': old_permission_overwrites,
-        'position': old_position,
-        'bitrate': old_bitrate,
-        'region': old_region,
-        'user_limit': old_user_limit,
-        'nsfw': old_nsfw,
-        'video_quality_mode': old_video_quality_mode,
-    })
+    channel_metadata = ChannelMetadataGuildVoice(
+        parent_id = old_parent_id,
+        name = old_name,
+        permission_overwrites = old_permission_overwrites,
+        position = old_position,
+        bitrate = old_bitrate,
+        region = old_region,
+        user_limit = old_user_limit,
+        nsfw = old_nsfw,
+        video_quality_mode = old_video_quality_mode,
+    )
     
     old_attributes = channel_metadata._difference_update_attributes({
         'parent_id': str(new_parent_id),
@@ -277,8 +275,6 @@ def test__ChannelMetadataGuildVoice__from_partial_data():
     channel_metadata = ChannelMetadataGuildVoice._from_partial_data({
         'name': name,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoice)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

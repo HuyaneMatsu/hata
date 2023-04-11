@@ -20,16 +20,16 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
     ----------
     _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent_id : `int`
-        The channel's parent's identifier.
+    bitrate : `int`
+        The bitrate (in bits) of the voice channel.
     name : `str`
         The channel's name.
-    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
+    parent_id : `int`
+        The channel's parent's identifier.
+    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
     position : `int`
         The channel's position.
-    bitrate : `int`
-        The bitrate (in bits) of the voice channel.
     region : ``VoiceRegion``
         The voice region of the channel.
     user_limit : `int`
@@ -43,6 +43,90 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
     __slots__ = ('bitrate', 'region', 'user_limit')
     
     order_group = 2
+    
+    
+    def __new__(
+        cls,
+        *,
+        bitrate = ...,
+        name = ...,
+        parent_id = ...,
+        permission_overwrites = ...,
+        position = ...,
+        region = ...,
+        user_limit = ...,
+    ):
+        """
+        Creates a new guild voice base channel metadata from the given parameters.
+        
+        Parameters
+        ----------
+        bitrate : `int`, Optional (Keyword only)
+            The bitrate (in bits) of the voice channel.
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        region : ``VoiceRegion``, `str`, Optional (Keyword only)
+            The voice region of the channel.
+        user_limit : `int`, Optional (Keyword only)
+            The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # bitrate
+        if bitrate is ...:
+            bitrate = BITRATE_DEFAULT
+        else:
+            bitrate = validate_bitrate(bitrate)
+        
+        # region
+        if region is ...:
+            region = VoiceRegion.unknown
+        else:
+            region = validate_region(region)
+        
+        # user_limit
+        if user_limit is ...:
+            user_limit = 0
+        else:
+            user_limit = validate_user_limit(user_limit)
+        
+        # Construct
+        self = ChannelMetadataGuildMainBase.__new__(
+            cls,
+            name = name,
+            permission_overwrites = permission_overwrites,
+            parent_id = parent_id,
+            position = position,
+        )
+        self.bitrate = bitrate
+        self.region = region
+        self.user_limit = user_limit
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataGuildMainBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            bitrate = keyword_parameters.pop('bitrate', ...),
+            name = keyword_parameters.pop('name', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
+            position = keyword_parameters.pop('position', ...),
+            region = keyword_parameters.pop('region', ...),
+            user_limit = keyword_parameters.pop('user_limit', ...),
+        )
     
     
     @copy_docs(ChannelMetadataGuildMainBase.__hash__)
@@ -130,35 +214,6 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
             self.user_limit = user_limit
         
         return old_attributes
-    
-    
-    @copy_docs(ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
-        
-        # bitrate
-        try:
-            bitrate = keyword_parameters.pop('bitrate')
-        except KeyError:
-            pass
-        else:
-            self.bitrate = validate_bitrate(bitrate)
-        
-        # region
-        try:
-            region = keyword_parameters.pop('region')
-        except KeyError:
-            pass
-        else:
-            self.region = validate_region(region)
-        
-        # user_limit
-        try:
-            user_limit = keyword_parameters.pop('user_limit')
-        except KeyError:
-            pass
-        else:
-            self.user_limit = validate_user_limit(user_limit)
     
     
     @copy_docs(ChannelMetadataGuildMainBase.to_data)

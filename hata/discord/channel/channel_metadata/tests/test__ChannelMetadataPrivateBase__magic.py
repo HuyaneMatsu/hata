@@ -11,9 +11,9 @@ def test__ChannelMetadataPrivateBase__repr():
     """
     users = [User.precreate(202209150007)]
     
-    channel_metadata = ChannelMetadataPrivateBase({
-        'users': users
-    })
+    channel_metadata = ChannelMetadataPrivateBase(
+        users = users,
+    )
     
     vampytest.assert_instance(repr(channel_metadata), str)
 
@@ -25,9 +25,9 @@ def test__ChannelMetadataPrivateBase__hash():
     """
     users = [User.precreate(202209180119)]
     
-    channel_metadata = ChannelMetadataPrivateBase({
-        'users': users
-    })
+    channel_metadata = ChannelMetadataPrivateBase(
+        users = users,
+    )
     
     vampytest.assert_instance(hash(channel_metadata), int)
 
@@ -42,7 +42,7 @@ def test__ChannelMetadataPrivateBase__eq():
     
     keyword_parameters = {'users': [user_1]}
     
-    channel_metadata = ChannelMetadataPrivateBase(keyword_parameters)
+    channel_metadata = ChannelMetadataPrivateBase(**keyword_parameters)
     
     vampytest.assert_eq(channel_metadata, channel_metadata)
     vampytest.assert_ne(channel_metadata, object())
@@ -50,5 +50,5 @@ def test__ChannelMetadataPrivateBase__eq():
     for field_name, field_value in (
         ('users', [user_2]),
     ):
-        test_channel_metadata = ChannelMetadataPrivateBase({**keyword_parameters, field_name: field_value})
+        test_channel_metadata = ChannelMetadataPrivateBase(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(channel_metadata, test_channel_metadata)

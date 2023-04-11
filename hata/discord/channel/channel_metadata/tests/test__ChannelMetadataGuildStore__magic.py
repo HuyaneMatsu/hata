@@ -17,14 +17,13 @@ def test__ChannelMetadataGuildStore__repr():
     position = 7
     nsfw = True
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'nsfw': nsfw,
-    }
-    channel_metadata = ChannelMetadataGuildStore(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildStore(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        nsfw = nsfw,
+    )
     
     vampytest.assert_instance(repr(channel_metadata), str)
 
@@ -41,14 +40,13 @@ def test__ChannelMetadataGuildStore__hash():
     position = 7
     nsfw = True
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'nsfw': nsfw,
-    }
-    channel_metadata = ChannelMetadataGuildStore(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildStore(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        nsfw = nsfw,
+    )
     
     vampytest.assert_instance(hash(channel_metadata), int)
 
@@ -72,7 +70,7 @@ def test__ChannelMetadataGuildStore__eq():
         'position': position,
         'nsfw': nsfw,
     }
-    channel_metadata = ChannelMetadataGuildStore(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildStore(**keyword_parameters)
     
     vampytest.assert_eq(channel_metadata, channel_metadata)
     vampytest.assert_ne(channel_metadata, object())
@@ -89,6 +87,6 @@ def test__ChannelMetadataGuildStore__eq():
         ('position', 6),
         ('nsfw', False),
     ):
-        test_channel_metadata = ChannelMetadataGuildStore({**keyword_parameters, field_name: field_value})
+        test_channel_metadata = ChannelMetadataGuildStore(**{**keyword_parameters, field_name: field_value})
         
         vampytest.assert_ne(channel_metadata, test_channel_metadata)

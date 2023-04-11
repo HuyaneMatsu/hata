@@ -11,7 +11,9 @@ from ..guild_forum import ChannelMetadataGuildForum
 from ..preinstanced import ForumLayout, SortOrder
 
 
-def assert_fields_set(channel_metadata):
+def _assert_fields_set(channel_metadata):
+    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildForum)
+    
     vampytest.assert_instance(channel_metadata.parent_id, int)
     vampytest.assert_instance(channel_metadata.name, str)
     vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
@@ -55,27 +57,21 @@ def test__ChannelMetadataGuildForum__new__0():
     default_sort_order = SortOrder.creation_date
     default_forum_layout = ForumLayout.list
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'available_tags': available_tags,
-        'default_thread_auto_archive_after': default_thread_auto_archive_after,
-        'default_thread_reaction': default_thread_reaction,
-        'default_thread_slowmode': default_thread_slowmode,
-        'flags': flags,
-        'topic': topic,
-        'default_sort_order': default_sort_order,
-        'default_forum_layout': default_forum_layout,
-    }
-    
-    channel_metadata = ChannelMetadataGuildForum(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildForum)
-    vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+    channel_metadata = ChannelMetadataGuildForum(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        available_tags = available_tags,
+        default_thread_auto_archive_after = default_thread_auto_archive_after,
+        default_thread_reaction = default_thread_reaction,
+        default_thread_slowmode = default_thread_slowmode,
+        flags = flags,
+        topic = topic,
+        default_sort_order = default_sort_order,
+        default_forum_layout = default_forum_layout,
+    )
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -100,42 +96,25 @@ def test__ChannelMetadataGuildForum__new__1():
     
     Case: no fields given.
     """
-    keyword_parameters = {}
-    
-    channel_metadata = ChannelMetadataGuildForum(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildForum)
-    vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+    channel_metadata = ChannelMetadataGuildForum()
+    _assert_fields_set(channel_metadata)
 
 
-def test__ChannelMetadataGuildForum__create_empty():
+def test__ChannelMetadataGuildForum__from_keyword_parameters__0():
     """
-    Tests whether ``ChannelMetadataGuildForum._create_empty`` works as intended.
-    """
-    channel_metadata = ChannelMetadataGuildForum._create_empty()
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildForum)
-    
-    assert_fields_set(channel_metadata)
-
-
-def test__ChannelMetadataGuildForum__precreate__0():
-    """
-    Tests whether ``ChannelMetadataGuildForum.precreate`` works as intended.
+    Tests whether ``ChannelMetadataGuildForum.from_keyword_parameters`` works as intended.
     
     Case: all fields given.
     """
-    parent_id = 202209170075
+    parent_id = 202304110007
     name = 'Armelyrics'
     permission_overwrites = [
-        PermissionOverwrite(202209170076, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202304110008, target_type = PermissionOverwriteTargetType.user)
     ]
     position = 7
     available_tags = [
         ForumTag.precreate(
-            202209170074,
+            202304110009,
             emoji = BUILTIN_EMOJIS['heart'],
             name = 'Yup',
             moderated = False,
@@ -164,12 +143,9 @@ def test__ChannelMetadataGuildForum__precreate__0():
         'default_forum_layout': default_forum_layout,
     }
     
-    channel_metadata = ChannelMetadataGuildForum.precreate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildForum)
+    channel_metadata = ChannelMetadataGuildForum.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(channel_metadata)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -188,17 +164,22 @@ def test__ChannelMetadataGuildForum__precreate__0():
     vampytest.assert_is(channel_metadata.default_forum_layout, default_forum_layout)
 
 
-def test__ChannelMetadataGuildForum__precreate__1():
+def test__ChannelMetadataGuildForum__from_keyword_parameters__1():
     """
-    Tests whether ``ChannelMetadataGuildForum.precreate`` works as intended.
+    Tests whether ``ChannelMetadataGuildForum.from_keyword_parameters`` works as intended.
     
     Case: no fields given.
     """
     keyword_parameters = {}
     
-    channel_metadata = ChannelMetadataGuildForum.precreate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildForum)
+    channel_metadata = ChannelMetadataGuildForum.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(channel_metadata)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+
+
+def test__ChannelMetadataGuildForum__create_empty():
+    """
+    Tests whether ``ChannelMetadataGuildForum._create_empty`` works as intended.
+    """
+    channel_metadata = ChannelMetadataGuildForum._create_empty()
+    _assert_fields_set(channel_metadata)

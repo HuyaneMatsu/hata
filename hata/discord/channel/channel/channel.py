@@ -55,7 +55,7 @@ class Channel(DiscordEntity, immortal = True):
     """
     __slots__ = ('_message_history', 'guild_id', 'metadata', 'type')
     
-    def __new__(cls, channel_type = None, **keyword_parameters):
+    def __new__(cls, *, channel_type = None, **keyword_parameters):
         """
         Creates a partial channel with the given parameters.
         
@@ -171,10 +171,6 @@ class Channel(DiscordEntity, immortal = True):
         video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
             The video quality of the voice channel.
         
-        Returns
-        -------
-        channel : ``Channel``
-        
         Raises
         ------
         TypeError
@@ -182,13 +178,12 @@ class Channel(DiscordEntity, immortal = True):
         ValueError
             If an parameter's type is good, but it's value is unacceptable.
         """
-        
         if channel_type is None:
             channel_type = ChannelType.unknown
         else:
             channel_type = preconvert_preinstanced_type(channel_type, 'channel_type', ChannelType)
         
-        metadata = channel_type.metadata_type.precreate(keyword_parameters)
+        metadata = channel_type.metadata_type.from_keyword_parameters(keyword_parameters)
         
         if keyword_parameters:
             raise TypeError(
@@ -208,7 +203,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Channel data receive from Discord.
         client : `None`, ``Client`` = `None`, Optional
             The client, who received the channel's data, if any.
@@ -217,7 +212,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        self : ``Channel``
+        self : `instance<cls>`
         
         Raises
         -------
@@ -225,11 +220,11 @@ class Channel(DiscordEntity, immortal = True):
             The respective channel type cannot be instanced.
         """
         channel_id = int(data['id'])
+        channel_type = ChannelType.get(data['type'])
         
         try:
             self = CHANNELS[channel_id]
         except KeyError:
-            channel_type = ChannelType.get(data['type'])
             metadata = channel_type.metadata_type.from_data(data)
             
             self = object.__new__(cls)
@@ -247,19 +242,16 @@ class Channel(DiscordEntity, immortal = True):
                 self.guild_id = guild_id
                 self._message_history = None
                 
-                type_ = ChannelType.get(data['type'])
-                metadata = type_.metadata_type.from_data(data)
+                metadata = channel_type.metadata_type.from_data(data)
                 self.metadata = metadata
-                self.type = type_
+                self.type = channel_type
                 metadata._created(self, client)
                 
             else:
-        
-                type_ = ChannelType.get(data['type'])
-                if self.type is not type_:
-                    metadata = type_.metadata_type.from_data(data)
+                if self.type is not channel_type:
+                    metadata = channel_type.metadata_type.from_data(data)
                     self.metadata = metadata
-                    self.type = type_
+                    self.type = channel_type
                     metadata._created(self, client)
         
         return self
@@ -278,7 +270,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        self : ``Channel``
+        self : `instance<cls>`
         """
         self = cls._create_empty(channel_id, ChannelType.private, 0)
         CHANNELS[channel_id] = self
@@ -315,11 +307,11 @@ class Channel(DiscordEntity, immortal = True):
         repr_parts.append(' name = ')
         repr_parts.append(repr(metadata._get_processed_name()))
         
-        type_ = self.type
+        channel_type = self.type
         repr_parts.append(' type = ')
-        repr_parts.append(type_.name)
+        repr_parts.append(channel_type.name)
         repr_parts.append('~')
-        repr_parts.append(repr(type_.value))
+        repr_parts.append(repr(channel_type.value))
         
         if self.partial:
             repr_parts.append(' (partial)')
@@ -479,7 +471,7 @@ class Channel(DiscordEntity, immortal = True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any` = `None`, Optional
+        default : `object` = `None`, Optional
             The value what is returned when no user was found. Defaults to `None`.
         
         Returns
@@ -497,7 +489,7 @@ class Channel(DiscordEntity, immortal = True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any` = `None`, Optional
+        default : `object` = `None`, Optional
             The value what is returned when no user was found. Defaults to `None`.
         
         Returns
@@ -693,20 +685,17 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Channel data received from Discord.
         """
-        type_ = ChannelType.get(data['type'])
-        metadata_type = type_.metadata_type
+        channel_type = ChannelType.get(data['type'])
         
-        metadata = self.metadata
-        
-        if metadata_type is type(metadata):
-            metadata._update_attributes(data)
+        if channel_type is self.type:
+            self.metadata._update_attributes(data)
         else:
-            self.metadata = metadata_type.from_data(data)
+            self.metadata = channel_type.metadata_type.from_data(data)
         
-        self.type = type_
+        self.type = channel_type
     
     
     def _difference_update_attributes(self, data):
@@ -716,12 +705,12 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Channel data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `object`) items
             All item in the returned dict is optional.
             
             Might contain the following items:
@@ -786,24 +775,19 @@ class Channel(DiscordEntity, immortal = True):
             | video_quality_mode                    | ``VideoQualityMode``                                      |
             +---------------------------------------+-----------------------------------------------------------+
         """
-        type_ = ChannelType.get(data['type'])
-        metadata_type = type_.metadata_type
+        channel_type = ChannelType.get(data['type'])
         
-        metadata = self.metadata
-        
-        if metadata_type is type(metadata):
-            old_attributes = metadata._difference_update_attributes(data)
+        if channel_type is self.type:
+            old_attributes = self.metadata._difference_update_attributes(data)
             
         else:
             old_attributes = {
-                'metadata': metadata,
+                'metadata': self.metadata,
+                'type': self.type
             }
             
-            self.metadata = metadata_type.from_data(data)
-        
-        if (type_ is not self.type):
-            old_attributes['type'] = self.type
-            self.type = type_
+            self.metadata = channel_type.metadata_type.from_data(data)
+            self.type = channel_type
         
         return old_attributes
     
@@ -849,7 +833,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `None`, `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `object`) items
             Partial channel data.
         channel_id : `int`
             The channel's id.
@@ -860,15 +844,15 @@ class Channel(DiscordEntity, immortal = True):
         -------
         channel : ``Channel``
         """
-        type_ = ChannelType.get(data.get('type', -1))
-        metadata = type_.metadata_type._from_partial_data(data)
+        channel_type = ChannelType.get(data.get('type', -1))
+        metadata = channel_type.metadata_type._from_partial_data(data)
         
         self = object.__new__(cls)
         self._message_history = None
         self.id = channel_id
         self.guild_id = guild_id
         self.metadata = metadata
-        self.type = type_
+        self.type = channel_type
         
         return self
     
@@ -1687,7 +1671,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        channel : ``Channel``
+        self : `instance<cls>`
         
         Raises
         ------
@@ -1704,13 +1688,12 @@ class Channel(DiscordEntity, immortal = True):
         else:
             channel_type = preconvert_preinstanced_type(channel_type, 'channel_type', ChannelType)
         
-        metadata = channel_type.metadata_type.precreate(keyword_parameters)
+        metadata = channel_type.metadata_type.from_keyword_parameters(keyword_parameters)
         
         if keyword_parameters:
             raise TypeError(
                 f'Unused or unsettable attributes: {keyword_parameters!r}.'
             )
-        
         
         try:
             self = CHANNELS[channel_id]
@@ -1718,7 +1701,10 @@ class Channel(DiscordEntity, immortal = True):
             self = cls._create_empty(channel_id, channel_type, guild_id)
             CHANNELS[channel_id] = self
         else:
-            if not self.partial:
+            if self.partial:
+                self.type = channel_type
+            
+            else:
                 return self
         
         self.metadata = metadata
@@ -1842,7 +1828,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        message_data : `dict` of (`str`, `Any`) items
+        message_data : `dict` of (`str`, `object`) items
             Message data received from Discord.
         
         Returns
@@ -1895,7 +1881,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        message_data : `dict` of (`str`, `Any`) items
+        message_data : `dict` of (`str`, `object`) items
             Message data received from Discord.
         
         Returns
@@ -1928,7 +1914,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        message_data : `dict` of (`str`, `Any`) items
+        message_data : `dict` of (`str`, `object`) items
             The message's data to find or create.
         chained : `bool`
             Whether the created message should be chained to the channel's message history's end, if not found.

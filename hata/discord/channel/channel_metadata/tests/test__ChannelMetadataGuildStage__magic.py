@@ -22,17 +22,16 @@ def test__ChannelMetadataGuildStage__repr():
     user_limit = 4
     topic = 'crimson'
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'bitrate': bitrate,
-        'region': region,
-        'user_limit': user_limit,
-        'topic': topic,
-    }
-    channel_metadata = ChannelMetadataGuildStage(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildStage(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        bitrate = bitrate,
+        region = region,
+        user_limit = user_limit,
+        topic = topic,
+    )
     
     vampytest.assert_instance(repr(channel_metadata), str)
 
@@ -53,17 +52,16 @@ def test__ChannelMetadataGuildStage__hash():
     user_limit = 4
     topic = 'crimson'
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'bitrate': bitrate,
-        'region': region,
-        'user_limit': user_limit,
-        'topic': topic,
-    }
-    channel_metadata = ChannelMetadataGuildStage(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildStage(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        bitrate = bitrate,
+        region = region,
+        user_limit = user_limit,
+        topic = topic,
+    )
     
     vampytest.assert_instance(hash(channel_metadata), int)
 
@@ -93,7 +91,7 @@ def test__ChannelMetadataGuildStage__eq():
         'user_limit': user_limit,
         'topic': topic,
     }
-    channel_metadata = ChannelMetadataGuildStage(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildStage(**keyword_parameters)
     
     vampytest.assert_eq(channel_metadata, channel_metadata)
     vampytest.assert_ne(channel_metadata, object())
@@ -113,6 +111,6 @@ def test__ChannelMetadataGuildStage__eq():
         ('user_limit', 5),
         ('topic', 'sky')
     ):
-        test_channel_metadata = ChannelMetadataGuildStage({**keyword_parameters, field_name: field_value})
+        test_channel_metadata = ChannelMetadataGuildStage(**{**keyword_parameters, field_name: field_value})
         
         vampytest.assert_ne(channel_metadata, test_channel_metadata)

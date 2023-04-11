@@ -16,13 +16,12 @@ def test__ChannelMetadataGuildDirectory__repr():
     ]
     position = 7
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-    }
-    channel_metadata = ChannelMetadataGuildDirectory(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildDirectory(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+    )
     
     vampytest.assert_instance(repr(channel_metadata), str)
 
@@ -38,13 +37,12 @@ def test__ChannelMetadataGuildDirectory__hash():
     ]
     position = 7
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-    }
-    channel_metadata = ChannelMetadataGuildDirectory(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildDirectory(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+    )
     
     vampytest.assert_instance(hash(channel_metadata), int)
 
@@ -66,7 +64,7 @@ def test__ChannelMetadataGuildDirectory__eq():
         'permission_overwrites': permission_overwrites,
         'position': position,
     }
-    channel_metadata = ChannelMetadataGuildDirectory(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildDirectory(**keyword_parameters)
     
     vampytest.assert_eq(channel_metadata, channel_metadata)
     vampytest.assert_ne(channel_metadata, object())
@@ -82,6 +80,6 @@ def test__ChannelMetadataGuildDirectory__eq():
         ),
         ('position', 6),
     ):
-        test_channel_metadata = ChannelMetadataGuildDirectory({**keyword_parameters, field_name: field_value})
+        test_channel_metadata = ChannelMetadataGuildDirectory(**{**keyword_parameters, field_name: field_value})
         
         vampytest.assert_ne(channel_metadata, test_channel_metadata)

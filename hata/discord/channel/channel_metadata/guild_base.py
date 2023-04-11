@@ -37,6 +37,58 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     __slots__ = ('_permission_cache', 'name', 'parent_id')
     
     
+    def __new__(
+        cls,
+        *,
+        name = ...,
+        parent_id = ...,
+    ):
+        """
+        Creates a new guild base channel metadata from the given parameters.
+        
+        Parameters
+        ----------
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # name
+        if name is ...:
+            name = ''
+        else:
+            name = validate_name(name)
+        
+        # parent_id
+        if parent_id is ...:
+            parent_id = 0
+        else:
+            parent_id = validate_parent_id(parent_id)
+        
+        # Construct
+        self = object.__new__(cls)
+        self._permission_cache = None
+        self.name = name
+        self.parent_id = parent_id
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            name = keyword_parameters.pop('name', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+        )
+    
+    
     @copy_docs(ChannelMetadataBase.__hash__)
     def __hash__(self):
         hash_value = ChannelMetadataBase.__hash__(self)
@@ -336,29 +388,6 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         permissions = self._get_permissions_for(channel_entity, user)
         permission_cache[user.id] = permissions
         return permissions
-    
-    
-    @copy_docs(ChannelMetadataBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        ChannelMetadataBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
-        
-        # name
-        try:
-            name = keyword_parameters.pop('name')
-        except KeyError:
-            pass
-        else:
-            self.name = validate_name(name)
-        
-        # parent_id
-        try:
-            parent_id = keyword_parameters.pop('parent_id')
-        except KeyError:
-            pass
-        else:
-            self.parent_id = validate_parent_id(parent_id)
-        
-        return self
     
     
     @copy_docs(ChannelMetadataBase._invalidate_permission_cache)

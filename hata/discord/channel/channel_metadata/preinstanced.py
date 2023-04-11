@@ -224,7 +224,7 @@ class VoiceRegion(PreinstancedBase):
         
         Parameters
         ----------
-        id_ : `str`
+        value : `str`
             The identifier of the voice region.
         
         Returns

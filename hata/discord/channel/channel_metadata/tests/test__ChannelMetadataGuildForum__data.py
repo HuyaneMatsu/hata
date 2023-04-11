@@ -11,7 +11,7 @@ from ..flags import ChannelFlag
 from ..guild_forum import ChannelMetadataGuildForum
 from ..preinstanced import ForumLayout, SortOrder
 
-from .test__ChannelMetadataGuildForum__constructor import assert_fields_set
+from .test__ChannelMetadataGuildForum__constructor import _assert_fields_set
 
 
 def test__ChannelMetadataGuildForum__from_data():
@@ -58,9 +58,7 @@ def test__ChannelMetadataGuildForum__from_data():
         'default_sort_order': default_sort_order.value,
         'default_forum_layout': default_forum_layout.value,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildForum)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -107,20 +105,20 @@ def test__ChannelMetadataGuildForum__to_data():
     default_sort_order = SortOrder.creation_date
     default_forum_layout = ForumLayout.list
     
-    channel_metadata = ChannelMetadataGuildForum({
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'available_tags': available_tags,
-        'default_thread_auto_archive_after': default_thread_auto_archive_after,
-        'default_thread_reaction': default_thread_reaction,
-        'default_thread_slowmode': default_thread_slowmode,
-        'flags': flags,
-        'topic': topic,
-        'default_sort_order': default_sort_order,
-        'default_forum_layout': default_forum_layout,
-    })
+    channel_metadata = ChannelMetadataGuildForum(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        available_tags = available_tags,
+        default_thread_auto_archive_after = default_thread_auto_archive_after,
+        default_thread_reaction = default_thread_reaction,
+        default_thread_slowmode = default_thread_slowmode,
+        flags = flags,
+        topic = topic,
+        default_sort_order = default_sort_order,
+        default_forum_layout = default_forum_layout,
+    )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
     
@@ -195,20 +193,20 @@ def test__ChannelMetadataGuildForum__update_attributes():
     old_default_forum_layout = ForumLayout.list
     new_default_forum_layout = ForumLayout.gallery
     
-    channel_metadata = ChannelMetadataGuildForum({
-        'parent_id': old_parent_id,
-        'name': old_name,
-        'permission_overwrites': old_permission_overwrites,
-        'position': old_position,
-        'available_tags': old_available_tags,
-        'default_thread_auto_archive_after': old_default_thread_auto_archive_after,
-        'default_thread_reaction': old_default_thread_reaction,
-        'default_thread_slowmode': old_default_thread_slowmode,
-        'flags': old_flags,
-        'topic': old_topic,
-        'default_sort_order': old_default_sort_order,
-        'default_forum_layout': old_default_forum_layout,
-    })
+    channel_metadata = ChannelMetadataGuildForum(
+        parent_id = old_parent_id,
+        name = old_name,
+        permission_overwrites = old_permission_overwrites,
+        position = old_position,
+        available_tags = old_available_tags,
+        default_thread_auto_archive_after = old_default_thread_auto_archive_after,
+        default_thread_reaction = old_default_thread_reaction,
+        default_thread_slowmode = old_default_thread_slowmode,
+        flags = old_flags,
+        topic = old_topic,
+        default_sort_order = old_default_sort_order,
+        default_forum_layout = old_default_forum_layout,
+    )
     
     channel_metadata._update_attributes({
         'parent_id': str(new_parent_id),
@@ -292,20 +290,20 @@ def test__ChannelMetadataGuildForum__difference_update_attributes():
     old_default_forum_layout = ForumLayout.list
     new_default_forum_layout = ForumLayout.gallery
     
-    channel_metadata = ChannelMetadataGuildForum({
-        'parent_id': old_parent_id,
-        'name': old_name,
-        'permission_overwrites': old_permission_overwrites,
-        'position': old_position,
-        'available_tags': old_available_tags,
-        'default_thread_auto_archive_after': old_default_thread_auto_archive_after,
-        'default_thread_reaction': old_default_thread_reaction,
-        'default_thread_slowmode': old_default_thread_slowmode,
-        'flags': old_flags,
-        'topic': old_topic,
-        'default_sort_order': old_default_sort_order,
-        'default_forum_layout': old_default_forum_layout,
-    })
+    channel_metadata = ChannelMetadataGuildForum(
+        parent_id = old_parent_id,
+        name = old_name,
+        permission_overwrites = old_permission_overwrites,
+        position = old_position,
+        available_tags = old_available_tags,
+        default_thread_auto_archive_after = old_default_thread_auto_archive_after,
+        default_thread_reaction = old_default_thread_reaction,
+        default_thread_slowmode = old_default_thread_slowmode,
+        flags = old_flags,
+        topic = old_topic,
+        default_sort_order = old_default_sort_order,
+        default_forum_layout = old_default_forum_layout,
+    )
     
     old_attributes = channel_metadata._difference_update_attributes({
         'parent_id': str(new_parent_id),
@@ -383,9 +381,7 @@ def test__ChannelMetadataGuildForum__from_partial_data():
     channel_metadata = ChannelMetadataGuildForum._from_partial_data({
         'name': name,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildForum)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)
 
@@ -396,7 +392,7 @@ def test__ChannelMetadataGuildForum__difference_update_available_tags__0():
     
     Case: No metadata.
     """
-    channel_metadata = ChannelMetadataGuildForum({})
+    channel_metadata = ChannelMetadataGuildForum()
     
     data = {}
     
@@ -427,7 +423,7 @@ def test__ChannelMetadataGuildForum__difference_update_available_tags__1():
         ),
     ]
     
-    channel_metadata = ChannelMetadataGuildForum({'available_tags': forum_tags})
+    channel_metadata = ChannelMetadataGuildForum(available_tags = forum_tags)
     
     data = {
         'available_tags': [forum_tag.to_data(include_internals = True) for forum_tag in forum_tags],
@@ -477,9 +473,9 @@ def test__ChannelMetadataGuildForum__difference_update_available_tags__2():
     )
     
     
-    channel_metadata = ChannelMetadataGuildForum({
-        'available_tags': [forum_tag_0, forum_tags_1, forum_tags_3],
-    })
+    channel_metadata = ChannelMetadataGuildForum(
+        available_tags = [forum_tag_0, forum_tags_1, forum_tags_3],
+    )
     
     data = {
         'available_tags': [

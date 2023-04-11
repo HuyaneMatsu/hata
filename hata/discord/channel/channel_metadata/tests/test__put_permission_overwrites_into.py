@@ -12,7 +12,7 @@ def test__put_permission_overwrites_into():
     permission_overwrite = PermissionOverwrite(202209140017, target_type = PermissionOverwriteTargetType.user)
     
     for input_value, defaults, expected_output in (
-        ({}, False, {'permission_overwrites': []}),
+        (None, False, {'permission_overwrites': []}),
         (
             {permission_overwrite.target_id: permission_overwrite},
             False,

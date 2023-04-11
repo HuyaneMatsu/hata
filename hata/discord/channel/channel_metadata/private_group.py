@@ -13,14 +13,12 @@ from .base import CHANNEL_METADATA_ICON_SLOT
 from .private_base import ChannelMetadataPrivateBase
 
 
-class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted):
+class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass = Slotted):
     """
     Channel metadata for private channels.
     
     Attributes
     ----------
-    users : `list` of ``ClientUserBase``
-        The users in the channel.
     application_id : `int`
         The application's identifier the channel is managed by.
     icon_hash : `int`
@@ -31,6 +29,8 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
         The channel's display name. Can be empty string if the channel has no name.
     owner_id : `int`
         The group channel's owner's id.
+    users : `list` of ``ClientUserBase``
+        The users in the channel.
     
     Class Attributes
     ----------------
@@ -40,6 +40,79 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     __slots__ = ('application_id', 'name', 'owner_id')
     
     icon = CHANNEL_METADATA_ICON_SLOT
+    
+    
+    def __new__(cls, *, application_id = ..., icon = ..., name = ..., owner_id = ..., users = ...):
+        """
+        Creates a new private guild channel metadata from the given parameters.
+        
+        Parameters
+        ----------
+        application_id : `int`, ``Application``, Optional (Keyword only)
+            The application's identifier the channel is managed by.
+        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The channel's icon.
+        name : `str`, Optional (Keyword only)
+            The channel's display name. Can be empty string if the channel has no name.
+        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+            The group channel's owner's id.
+        users : `iterable` of ``ClientUserBase``, Optional (Keyword only)
+            The users in the channel.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # application_id
+        if application_id is ...:
+            application_id = 0
+        else:
+            application_id = validate_application_id(application_id)
+        
+        # icon
+        if icon is ...:
+            icon = None
+        else:
+            icon = cls.icon.validate_icon(icon, allow_data = True)
+            
+        # name
+        if name is ...:
+            name = ''
+        else:
+            name = validate_name(name)
+        
+        # owner_id
+        if owner_id is ...:
+            owner_id = 0
+        else:
+            owner_id = validate_owner_id(owner_id)
+    
+        # Construct
+        self = ChannelMetadataPrivateBase.__new__(
+            cls,
+            users = users,
+        )
+        self.application_id = application_id
+        self.icon = icon
+        self.name = name
+        self.owner_id = owner_id
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataPrivateBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            application_id = keyword_parameters.pop('application_id', ...),
+            icon = keyword_parameters.pop('icon', ...),
+            name = keyword_parameters.pop('name', ...),
+            owner_id = keyword_parameters.pop('owner_id', ...),
+            users = keyword_parameters.pop('users', ...),
+        )
+    
     
     @copy_docs(ChannelMetadataPrivateBase.__hash__)
     def __hash__(self):
@@ -69,16 +142,6 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
         
         # application_id
         self.application_id = parse_application_id(data)
-        
-        return self
-    
-    
-    @copy_docs(ChannelMetadataPrivateBase.__new__)
-    def __new__(cls, keyword_parameters):
-        self = ChannelMetadataPrivateBase.__new__(cls, keyword_parameters)
-        
-        # icon
-        self.icon = cls.icon.parse_from_keyword_parameters(keyword_parameters, allow_data = True)
         
         return self
     
@@ -216,46 +279,6 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
         self.icon_type = ICON_TYPE_NONE
         
         return self
-    
-    
-    @classmethod
-    @copy_docs(ChannelMetadataPrivateBase.precreate)
-    def precreate(cls, keyword_parameters):
-        self = super(ChannelMetadataPrivateGroup, cls).precreate(keyword_parameters)
-        
-        # icon
-        self.icon = cls.icon.parse_from_keyword_parameters(keyword_parameters)
-        
-        return self
-    
-    
-    @copy_docs(ChannelMetadataPrivateBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        ChannelMetadataPrivateBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
-        
-        # application_id
-        try:
-            application_id = keyword_parameters.pop('application_id')
-        except KeyError:
-            pass
-        else:
-            self.application_id = validate_application_id(application_id)
-        
-        # name
-        try:
-            name = keyword_parameters.pop('name')
-        except KeyError:
-            pass
-        else:
-            self.name = validate_name(name)
-        
-        # owner_id
-        try:
-            owner_id = keyword_parameters.pop('owner_id')
-        except KeyError:
-            pass
-        else:
-            self.owner_id = validate_owner_id(owner_id)
     
     
     @copy_docs(ChannelMetadataPrivateBase.to_data)

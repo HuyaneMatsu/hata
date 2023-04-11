@@ -580,19 +580,21 @@ def parse_permission_overwrites(data):
     
     Parameters
     ----------
-    data : `list` of (`dict` of (`str`, `object`) items) elements
-        A list of permission overwrites' data.
+    data : `dict` of (`str`, `object`) items
+        Channel data.
     
     Returns
     -------
-    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
+    permission_overwrites : `None`, `dict` of (`int`, ``PermissionOverwrite``) items
     """
-    permission_overwrites = {}
+    permission_overwrites = None
     
     permission_overwrites_datas = data.get('permission_overwrites', None)
     if (permission_overwrites_datas is not None) and permission_overwrites_datas:
         for permission_overwrite_data in permission_overwrites_datas:
             permission_overwrite = PermissionOverwrite.from_data(permission_overwrite_data)
+            if permission_overwrites is None:
+                permission_overwrites = {}
             permission_overwrites[permission_overwrite.target_id] = permission_overwrite
     
     return permission_overwrites
@@ -615,11 +617,15 @@ def put_permission_overwrites_into(permission_overwrites, data, defaults):
     -------
     data : `dict` of (`str`, `object`) items
     """
-    data['permission_overwrites'] = [
-        permission_overwrite.to_data(include_internals = True)
-        for permission_overwrite in permission_overwrites.values()
-    ]
+    if permission_overwrites is None:
+        permission_overwrite_datas = []
+    else:
+        permission_overwrite_datas = [
+            permission_overwrite.to_data(include_internals = True)
+            for permission_overwrite in permission_overwrites.values()
+        ]
     
+    data['permission_overwrites'] = permission_overwrite_datas
     return data
 
 
@@ -634,10 +640,10 @@ def validate_permission_overwrites(permission_overwrites):
     
     Returns
     -------
-    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
+    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
     """
     if permission_overwrites is None:
-        return {}
+        return None
     
     if (getattr(permission_overwrites, '__iter__', None) is None):
         raise TypeError(
@@ -645,7 +651,7 @@ def validate_permission_overwrites(permission_overwrites):
             f'{permission_overwrites.__class__.__name__}; {permission_overwrites!r}.'
         )
     
-    permission_overwrites_processed = {}
+    permission_overwrites_processed = None
     
     for permission_overwrite in permission_overwrites:
         if not isinstance(permission_overwrite, PermissionOverwrite):
@@ -654,6 +660,9 @@ def validate_permission_overwrites(permission_overwrites):
                 f'{permission_overwrite.__class__.__name__}; {permission_overwrite!r}; '
                 f'permission_overwrites = {permission_overwrites!r}.'
             )
+        
+        if permission_overwrites_processed is None:
+            permission_overwrites_processed = {}
         
         permission_overwrites_processed[permission_overwrite.target_id] = permission_overwrite
     

@@ -15,7 +15,7 @@ def test__ChannelMetadataBase__place_holders():
     """
     Tests whether all placeholder of ``ChannelMetadataBase`` works as intended.
     """
-    channel_metadata = ChannelMetadataBase({})
+    channel_metadata = ChannelMetadataBase()
     
     vampytest.assert_instance(channel_metadata.application_id, int)
     vampytest.assert_instance(channel_metadata.applied_tag_ids, tuple, nullable = True)

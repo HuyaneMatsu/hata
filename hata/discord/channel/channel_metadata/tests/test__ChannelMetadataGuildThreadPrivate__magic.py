@@ -20,19 +20,18 @@ def test__ChannelMetadataGuildThreadPrivate__repr():
     slowmode = 60
     invitable = True
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'created_at': created_at,
-        'archived': archived,
-        'archived_at': archived_at,
-        'auto_archive_after': auto_archive_after,
-        'open': open_,
-        'owner_id': owner_id,
-        'slowmode': slowmode,
-        'invitable': invitable,
-    }
-    channel_metadata = ChannelMetadataGuildThreadPrivate(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildThreadPrivate(
+        parent_id = parent_id,
+        name = name,
+        created_at = created_at,
+        archived = archived,
+        archived_at = archived_at,
+        auto_archive_after = auto_archive_after,
+        open = open_,
+        owner_id = owner_id,
+        slowmode = slowmode,
+        invitable = invitable,
+    )
     
     vampytest.assert_instance(repr(channel_metadata), str)
 
@@ -52,19 +51,18 @@ def test__ChannelMetadataGuildThreadPrivate__hash():
     slowmode = 60
     invitable = True
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'created_at': created_at,
-        'archived': archived,
-        'archived_at': archived_at,
-        'auto_archive_after': auto_archive_after,
-        'open': open_,
-        'owner_id': owner_id,
-        'slowmode': slowmode,
-        'invitable': invitable,
-    }
-    channel_metadata = ChannelMetadataGuildThreadPrivate(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildThreadPrivate(
+        parent_id = parent_id,
+        name = name,
+        created_at = created_at,
+        archived = archived,
+        archived_at = archived_at,
+        auto_archive_after = auto_archive_after,
+        open = open_,
+        owner_id = owner_id,
+        slowmode = slowmode,
+        invitable = invitable,
+    )
     
     vampytest.assert_instance(hash(channel_metadata), int)
 
@@ -96,7 +94,7 @@ def test__ChannelMetadataGuildThreadPrivate__eq():
         'slowmode': slowmode,
         'invitable': invitable,
     }
-    channel_metadata = ChannelMetadataGuildThreadPrivate(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildThreadPrivate(**keyword_parameters)
     
     vampytest.assert_eq(channel_metadata, channel_metadata)
     vampytest.assert_ne(channel_metadata, object())
@@ -113,6 +111,6 @@ def test__ChannelMetadataGuildThreadPrivate__eq():
         ('slowmode', 69),
         ('invitable', False),
     ):
-        test_channel_metadata = ChannelMetadataGuildThreadPrivate({**keyword_parameters, field_name: field_value})
+        test_channel_metadata = ChannelMetadataGuildThreadPrivate(**{**keyword_parameters, field_name: field_value})
         
         vampytest.assert_ne(channel_metadata, test_channel_metadata)

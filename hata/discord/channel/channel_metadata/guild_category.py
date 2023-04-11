@@ -17,7 +17,7 @@ class ChannelMetadataGuildCategory(ChannelMetadataGuildMainBase):
         The channel's parent's identifier.
     name : `str`
         The channel's name.
-    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
+    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
     position : `int`
         The channel's position.

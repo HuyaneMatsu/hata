@@ -17,11 +17,11 @@ class ChannelMetadataGuildDirectory(ChannelMetadataGuildMainBase):
     ----------
     _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent_id : `int`
-        The channel's parent's identifier.
     name : `str`
         The channel's name.
-    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
+    parent_id : `int`
+        The channel's parent's identifier.
+    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
     position : `int`
         The channel's position.

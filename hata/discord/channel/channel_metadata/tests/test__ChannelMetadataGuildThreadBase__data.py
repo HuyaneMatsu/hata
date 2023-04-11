@@ -6,7 +6,7 @@ from ....utils import datetime_to_timestamp
 
 from ..guild_thread_base import ChannelMetadataGuildThreadBase
 
-from .test__ChannelMetadataGuildThreadBase__constructor import assert_fields_set
+from .test__ChannelMetadataGuildThreadBase__constructor import _assert_fields_set
 
 
 def test__ChannelMetadataGuildThreadBase__from_data():
@@ -36,9 +36,7 @@ def test__ChannelMetadataGuildThreadBase__from_data():
             'locked': not open_,
         }
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildThreadBase)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -67,17 +65,17 @@ def test__ChannelMetadataGuildThreadBase__to_data():
     owner_id = 202209180014
     slowmode = 60
     
-    channel_metadata = ChannelMetadataGuildThreadBase({
-        'parent_id': parent_id,
-        'name': name,
-        'created_at': created_at,
-        'archived': archived,
-        'archived_at': archived_at,
-        'auto_archive_after': auto_archive_after,
-        'open': open_,
-        'owner_id': owner_id,
-        'slowmode': slowmode,
-    })
+    channel_metadata  = ChannelMetadataGuildThreadBase(
+        parent_id = parent_id,
+        name = name,
+        created_at = created_at,
+        archived = archived,
+        archived_at = archived_at,
+        auto_archive_after = auto_archive_after,
+        open = open_,
+        owner_id = owner_id,
+        slowmode = slowmode,
+    )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
     
@@ -118,15 +116,15 @@ def test__ChannelMetadataGuildThreadBase__update_attributes():
     old_slowmode = 60
     new_slowmode = 69
     
-    channel_metadata = ChannelMetadataGuildThreadBase({
-        'parent_id': old_parent_id,
-        'name': old_name,
-        'archived': old_archived,
-        'archived_at': old_archived_at,
-        'auto_archive_after': old_auto_archive_after,
-        'open': old_open,
-        'slowmode': old_slowmode,
-    })
+    channel_metadata = ChannelMetadataGuildThreadBase(
+        parent_id = str(old_parent_id),
+        name = old_name,
+        archived = old_archived,
+        archived_at = old_archived_at,
+        auto_archive_after = old_auto_archive_after,
+        open = old_open,
+        slowmode = old_slowmode,
+    )
     
     channel_metadata._update_attributes({
         'parent_id': str(new_parent_id),
@@ -168,15 +166,15 @@ def test__ChannelMetadataGuildThreadBase__difference_update_attributes():
     old_slowmode = 60
     new_slowmode = 69
     
-    channel_metadata = ChannelMetadataGuildThreadBase({
-        'parent_id': str(old_parent_id),
-        'name': old_name,
-        'archived': old_archived,
-        'archived_at': old_archived_at,
-        'auto_archive_after': old_auto_archive_after,
-        'open': old_open,
-        'slowmode': old_slowmode,
-    })
+    channel_metadata = ChannelMetadataGuildThreadBase(
+        parent_id = str(old_parent_id),
+        name = old_name,
+        archived = old_archived,
+        archived_at = old_archived_at,
+        auto_archive_after = old_auto_archive_after,
+        open = old_open,
+        slowmode = old_slowmode,
+    )
     
     old_attributes = channel_metadata._difference_update_attributes({
         'parent_id': str(new_parent_id),
@@ -224,8 +222,6 @@ def test__ChannelMetadataGuildThreadBase__from_partial_data():
     channel_metadata = ChannelMetadataGuildThreadBase._from_partial_data({
         'name': name,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildThreadBase)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

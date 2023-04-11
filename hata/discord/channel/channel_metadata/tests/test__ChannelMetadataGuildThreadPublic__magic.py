@@ -23,20 +23,19 @@ def test__ChannelMetadataGuildThreadPublic__repr():
     applied_tag_ids = [202209180080]
     flags = ChannelFlag(1)
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'created_at': created_at,
-        'archived': archived,
-        'archived_at': archived_at,
-        'auto_archive_after': auto_archive_after,
-        'open': open_,
-        'owner_id': owner_id,
-        'slowmode': slowmode,
-        'applied_tag_ids': applied_tag_ids,
-        'flags': flags,
-    }
-    channel_metadata = ChannelMetadataGuildThreadPublic(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildThreadPublic(
+        parent_id = parent_id,
+        name = name,
+        created_at = created_at,
+        archived = archived,
+        archived_at = archived_at,
+        auto_archive_after = auto_archive_after,
+        open = open_,
+        owner_id = owner_id,
+        slowmode = slowmode,
+        applied_tag_ids = applied_tag_ids,
+        flags = flags,
+    )
     
     vampytest.assert_instance(repr(channel_metadata), str)
 
@@ -57,20 +56,19 @@ def test__ChannelMetadataGuildThreadPublic__hash():
     applied_tag_ids = [202209180110]
     flags = ChannelFlag(1)
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'created_at': created_at,
-        'archived': archived,
-        'archived_at': archived_at,
-        'auto_archive_after': auto_archive_after,
-        'open': open_,
-        'owner_id': owner_id,
-        'slowmode': slowmode,
-        'applied_tag_ids': applied_tag_ids,
-        'flags': flags,
-    }
-    channel_metadata = ChannelMetadataGuildThreadPublic(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildThreadPublic(
+        parent_id = parent_id,
+        name = name,
+        created_at = created_at,
+        archived = archived,
+        archived_at = archived_at,
+        auto_archive_after = auto_archive_after,
+        open = open_,
+        owner_id = owner_id,
+        slowmode = slowmode,
+        applied_tag_ids = applied_tag_ids,
+        flags = flags,
+    )
     
     vampytest.assert_instance(hash(channel_metadata), int)
 
@@ -104,7 +102,7 @@ def test__ChannelMetadataGuildThreadPublic__eq():
         'applied_tag_ids': applied_tag_ids,
         'flags': flags,
     }
-    channel_metadata = ChannelMetadataGuildThreadPublic(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildThreadPublic(**keyword_parameters)
     
     vampytest.assert_eq(channel_metadata, channel_metadata)
     vampytest.assert_ne(channel_metadata, object())
@@ -119,9 +117,9 @@ def test__ChannelMetadataGuildThreadPublic__eq():
         ('open', False),
         ('owner_id', 202209180069),
         ('slowmode', 69),
-        ('applied_flag_ids', None),
+        ('applied_tag_ids', None),
         ('flags', ChannelFlag(6)),
     ):
-        test_channel_metadata = ChannelMetadataGuildThreadPublic({**keyword_parameters, field_name: field_value})
+        test_channel_metadata = ChannelMetadataGuildThreadPublic(**{**keyword_parameters, field_name: field_value})
         
         vampytest.assert_ne(channel_metadata, test_channel_metadata)

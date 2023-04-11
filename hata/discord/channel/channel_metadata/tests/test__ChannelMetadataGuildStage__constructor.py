@@ -6,7 +6,9 @@ from ..guild_stage import ChannelMetadataGuildStage
 from ..preinstanced import VoiceRegion
 
 
-def assert_fields_set(channel_metadata):
+def _assert_fields_set(channel_metadata):
+    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildStage)
+    
     vampytest.assert_instance(channel_metadata.parent_id, int)
     vampytest.assert_instance(channel_metadata.name, str)
     vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
@@ -35,23 +37,16 @@ def test__ChannelMetadataGuildStage__new__0():
     user_limit = 4
     topic = 'crimson'
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'bitrate': bitrate,
-        'region': region,
-        'user_limit': user_limit,
-        'topic': topic,
-    }
-    channel_metadata = ChannelMetadataGuildStage(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildStage)
-    vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
-    
+    channel_metadata = ChannelMetadataGuildStage(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        bitrate = bitrate,
+        region = region,
+        user_limit = user_limit,
+        topic = topic,
+    )
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -72,38 +67,20 @@ def test__ChannelMetadataGuildStage__new__1():
     
     Case: no fields given.
     """
-    keyword_parameters = {}
-    
-    channel_metadata = ChannelMetadataGuildStage(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildStage)
-    vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+    channel_metadata = ChannelMetadataGuildStage()
+    _assert_fields_set(channel_metadata)
 
 
-def test__ChannelMetadataGuildStage__create_empty():
+def test__ChannelMetadataGuildStage__from_keyword_parameters__0():
     """
-    Tests whether ``ChannelMetadataGuildStage._create_empty`` works as intended.
-    """
-    channel_metadata = ChannelMetadataGuildStage._create_empty()
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildStage)
-    
-    assert_fields_set(channel_metadata)
-
-
-
-def test__ChannelMetadataGuildStage__precreate__0():
-    """
-    Tests whether ``ChannelMetadataGuildStage.precreate`` works as intended.
+    Tests whether ``ChannelMetadataGuildStage.from_keyword_parameters`` works as intended.
     
     Case: all fields given.
     """
-    parent_id = 202209170169
+    parent_id = 202304110012
     name = 'Armelyrics'
     permission_overwrites = [
-        PermissionOverwrite(202209170170, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202304110013, target_type = PermissionOverwriteTargetType.user)
     ]
     position = 7
     bitrate = 50000
@@ -121,13 +98,9 @@ def test__ChannelMetadataGuildStage__precreate__0():
         'user_limit': user_limit,
         'topic': topic,
     }
-    
-    channel_metadata = ChannelMetadataGuildStage.precreate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildStage)
+    channel_metadata = ChannelMetadataGuildStage.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(channel_metadata)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -142,17 +115,22 @@ def test__ChannelMetadataGuildStage__precreate__0():
     vampytest.assert_eq(channel_metadata.topic, topic)
 
 
-def test__ChannelMetadataGuildStage__precreate__1():
+def test__ChannelMetadataGuildStage__from_keyword_parameters__1():
     """
-    Tests whether ``ChannelMetadataGuildStage.precreate`` works as intended.
+    Tests whether ``ChannelMetadataGuildStage.from_keyword_parameters`` works as intended.
     
     Case: no fields given.
     """
     keyword_parameters = {}
     
-    channel_metadata = ChannelMetadataGuildStage.precreate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildStage)
+    channel_metadata = ChannelMetadataGuildStage.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(channel_metadata)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+
+
+def test__ChannelMetadataGuildStage__create_empty():
+    """
+    Tests whether ``ChannelMetadataGuildStage._create_empty`` works as intended.
+    """
+    channel_metadata = ChannelMetadataGuildStage._create_empty()
+    _assert_fields_set(channel_metadata)

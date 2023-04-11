@@ -38,9 +38,24 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
     order_group = 0
     
-    def __new__(cls, keyword_parameters):
+    def __new__(cls):
         """
-        Creates a new partially channel metadata.
+        Creates a new base channel metadata from the given parameters.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return object.__new__(cls)
+    
+    
+    @classmethod
+    def from_keyword_parameters(cls, keyword_parameters):
+        """
+        Creates a new partially channel metadata from the given keyword parameters.
         
         Parameters
         ----------
@@ -54,9 +69,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        self = cls._create_empty()
-        self._set_attributes_from_keyword_parameters(keyword_parameters)
-        return self
+        return cls()
     
     
     @classmethod
@@ -597,33 +610,6 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         return PERMISSION_NONE
     
     
-    @classmethod
-    def precreate(cls, keyword_parameters):
-        """
-        Precreates the channel metadata. Each channel type exhaust it's own specific attributes from
-        `keyword_parameters`.
-        
-        Parameters
-        ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
-            Keyword parameters passed to ``Channel.precreate``
-        
-        Returns
-        -------
-        self : `instance<cls>`
-        
-        Raises
-        ------
-        TypeError
-            - If a parameter's type is incorrect.
-        ValueError
-            . If an parameter's value is incorrect.
-        """
-        self = cls._create_empty()
-        self._set_attributes_from_keyword_parameters(keyword_parameters)
-        return self
-    
-    
     def _get_created_at(self, channel_entity):
         """
         Returns when the channel was created.
@@ -640,18 +626,6 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         Invalidates the cached permissions of the channel.
         
         This method is only applicable for channel types with permission cache.
-        """
-        pass
-    
-    
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        """
-        Sets shared parameters used by ``.__new__` and ``._precreate˙`.
-        
-        Parameters
-        ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
-            Keyword parameters to work with.
         """
         pass
     

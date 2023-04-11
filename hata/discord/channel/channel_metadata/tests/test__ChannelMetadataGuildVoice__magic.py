@@ -23,18 +23,17 @@ def test__ChannelMetadataGuildVoice__repr():
     nsfw = True
     video_quality_mode = VideoQualityMode.auto
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'bitrate': bitrate,
-        'region': region,
-        'user_limit': user_limit,
-        'nsfw': nsfw,
-        'video_quality_mode': video_quality_mode,
-    }
-    channel_metadata = ChannelMetadataGuildVoice(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildVoice(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        bitrate = bitrate,
+        region = region,
+        user_limit = user_limit,
+        nsfw = nsfw,
+        video_quality_mode = video_quality_mode,
+    )
     
     vampytest.assert_instance(repr(channel_metadata), str)
 
@@ -55,18 +54,17 @@ def test__ChannelMetadataGuildVoice__hash():
     nsfw = True
     video_quality_mode = VideoQualityMode.auto
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'bitrate': bitrate,
-        'region': region,
-        'user_limit': user_limit,
-        'nsfw': nsfw,
-        'video_quality_mode': video_quality_mode,
-    }
-    channel_metadata = ChannelMetadataGuildVoice(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildVoice(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        bitrate = bitrate,
+        region = region,
+        user_limit = user_limit,
+        nsfw = nsfw,
+        video_quality_mode = video_quality_mode,
+    )
     
     vampytest.assert_instance(hash(channel_metadata), int)
 
@@ -98,7 +96,7 @@ def test__ChannelMetadataGuildVoice__eq():
         'nsfw': nsfw,
         'video_quality_mode': video_quality_mode,
     }
-    channel_metadata = ChannelMetadataGuildVoice(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildVoice(**keyword_parameters)
     
     vampytest.assert_eq(channel_metadata, channel_metadata)
     vampytest.assert_ne(channel_metadata, object())
@@ -119,6 +117,6 @@ def test__ChannelMetadataGuildVoice__eq():
         ('nsfw', False),
         ('video_quality_mode', VideoQualityMode.full)
     ):
-        test_channel_metadata = ChannelMetadataGuildVoice({**keyword_parameters, field_name: field_value})
+        test_channel_metadata = ChannelMetadataGuildVoice(**{**keyword_parameters, field_name: field_value})
         
         vampytest.assert_ne(channel_metadata, test_channel_metadata)

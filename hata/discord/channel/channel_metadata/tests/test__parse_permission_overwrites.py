@@ -12,9 +12,9 @@ def test__parse_permission_overwrites():
     permission_overwrite = PermissionOverwrite(202209140016, target_type = PermissionOverwriteTargetType.user)
     
     for input_data, expected_output in (
-        ({}, {}),
-        ({'permission_overwrites': None}, {}),
-        ({'permission_overwrites': []}, {}),
+        ({}, None),
+        ({'permission_overwrites': None}, None),
+        ({'permission_overwrites': []}, None),
         (
             {'permission_overwrites': [permission_overwrite.to_data(include_internals = True)]},
             {permission_overwrite.target_id: permission_overwrite},

@@ -36,21 +36,21 @@ def test__ChannelMetadataGuildForum__repr():
     default_sort_order = SortOrder.creation_date
     default_forum_layout = ForumLayout.list
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'available_tags': available_tags,
-        'default_thread_auto_archive_after': default_thread_auto_archive_after,
-        'default_thread_reaction': default_thread_reaction,
-        'default_thread_slowmode': default_thread_slowmode,
-        'flags': flags,
-        'topic': topic,
-        'default_sort_order': default_sort_order,
-        'default_forum_layout': default_forum_layout,
-    }
-    channel_metadata = ChannelMetadataGuildForum(keyword_parameters)
+
+    channel_metadata = ChannelMetadataGuildForum(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        available_tags = available_tags,
+        default_thread_auto_archive_after = default_thread_auto_archive_after,
+        default_thread_reaction = default_thread_reaction,
+        default_thread_slowmode = default_thread_slowmode,
+        flags = flags,
+        topic = topic,
+        default_sort_order = default_sort_order,
+        default_forum_layout = default_forum_layout,
+    )
     
     vampytest.assert_instance(repr(channel_metadata), str)
 
@@ -81,21 +81,21 @@ def test__ChannelMetadataGuildForum__hash():
     default_sort_order = SortOrder.creation_date
     default_forum_layout = ForumLayout.list
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'available_tags': available_tags,
-        'default_thread_auto_archive_after': default_thread_auto_archive_after,
-        'default_thread_reaction': default_thread_reaction,
-        'default_thread_slowmode': default_thread_slowmode,
-        'flags': flags,
-        'topic': topic,
-        'default_sort_order': default_sort_order,
-        'default_forum_layout': default_forum_layout,
-    }
-    channel_metadata = ChannelMetadataGuildForum(keyword_parameters)
+
+    channel_metadata = ChannelMetadataGuildForum(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        available_tags = available_tags,
+        default_thread_auto_archive_after = default_thread_auto_archive_after,
+        default_thread_reaction = default_thread_reaction,
+        default_thread_slowmode = default_thread_slowmode,
+        flags = flags,
+        topic = topic,
+        default_sort_order = default_sort_order,
+        default_forum_layout = default_forum_layout,
+    )
     
     vampytest.assert_instance(hash(channel_metadata), int)
 
@@ -140,7 +140,7 @@ def test__ChannelMetadataGuildForum__eq():
         'default_sort_order': default_sort_order,
         'default_forum_layout': default_forum_layout,
     }
-    channel_metadata = ChannelMetadataGuildForum(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildForum(**keyword_parameters)
     
     vampytest.assert_eq(channel_metadata, channel_metadata)
     vampytest.assert_ne(channel_metadata, object())
@@ -164,6 +164,6 @@ def test__ChannelMetadataGuildForum__eq():
         ('default_sort_order', SortOrder.latest_activity),
         ('default_forum_layout', ForumLayout.gallery),
     ):
-        test_channel_metadata = ChannelMetadataGuildForum({**keyword_parameters, field_name: field_value})
+        test_channel_metadata = ChannelMetadataGuildForum(**{**keyword_parameters, field_name: field_value})
         
         vampytest.assert_ne(channel_metadata, test_channel_metadata)

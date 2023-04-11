@@ -5,7 +5,9 @@ from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTarg
 from ..guild_announcements import ChannelMetadataGuildAnnouncements
 
 
-def assert_fields_set(channel_metadata):
+def _assert_fields_set(channel_metadata):
+    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildAnnouncements)
+    
     vampytest.assert_instance(channel_metadata.parent_id, int)
     vampytest.assert_instance(channel_metadata.name, str)
     vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
@@ -36,24 +38,18 @@ def test__ChannelMetadataGuildAnnouncements__new__0():
     slowmode = 30
     topic = 'rin'
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'default_thread_auto_archive_after': default_thread_auto_archive_after,
-        'default_thread_slowmode': default_thread_slowmode,
-        'nsfw': nsfw,
-        'slowmode': slowmode,
-        'topic': topic,
-    }
-    channel_metadata = ChannelMetadataGuildAnnouncements(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildAnnouncements)
-    vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
-    
+    channel_metadata = ChannelMetadataGuildAnnouncements(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        default_thread_auto_archive_after = default_thread_auto_archive_after,
+        default_thread_slowmode = default_thread_slowmode,
+        nsfw = nsfw,
+        slowmode = slowmode,
+        topic = topic,
+    )
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -75,43 +71,25 @@ def test__ChannelMetadataGuildAnnouncements__new__1():
     
     Case: no fields given.
     """
-    keyword_parameters = {}
-    
-    channel_metadata = ChannelMetadataGuildAnnouncements(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildAnnouncements)
-    vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+    channel_metadata = ChannelMetadataGuildAnnouncements()
+    _assert_fields_set(channel_metadata)
 
 
-def test__ChannelMetadataGuildAnnouncements__create_empty():
+def test__ChannelMetadataGuildAnnouncements__from_keyword_parameters__0():
     """
-    Tests whether ``ChannelMetadataGuildAnnouncements._create_empty`` works as intended.
-    """
-    channel_metadata = ChannelMetadataGuildAnnouncements._create_empty()
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildAnnouncements)
-    
-    assert_fields_set(channel_metadata)
-
-
-
-def test__ChannelMetadataGuildAnnouncements__precreate__0():
-    """
-    Tests whether ``ChannelMetadataGuildAnnouncements.precreate`` works as intended.
+    Tests whether ``ChannelMetadataGuildAnnouncements.from_keyword_parameters`` works as intended.
     
     Case: all fields given.
     """
-    parent_id = 202209170233
+    parent_id = 202304110000
     name = 'Armelyrics'
     permission_overwrites = [
-        PermissionOverwrite(202209170234, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202304110001, target_type = PermissionOverwriteTargetType.user)
     ]
     position = 7
     default_thread_auto_archive_after = 86400
     default_thread_slowmode = 60
-    nsfw = True 
+    nsfw = True
     slowmode = 30
     topic = 'rin'
     
@@ -126,13 +104,9 @@ def test__ChannelMetadataGuildAnnouncements__precreate__0():
         'slowmode': slowmode,
         'topic': topic,
     }
-    
-    channel_metadata = ChannelMetadataGuildAnnouncements.precreate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildAnnouncements)
+    channel_metadata = ChannelMetadataGuildAnnouncements.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(channel_metadata)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -148,17 +122,22 @@ def test__ChannelMetadataGuildAnnouncements__precreate__0():
     vampytest.assert_eq(channel_metadata.topic, topic)
 
 
-def test__ChannelMetadataGuildAnnouncements__precreate__1():
+def test__ChannelMetadataGuildAnnouncements__from_keyword_parameters__1():
     """
-    Tests whether ``ChannelMetadataGuildAnnouncements.precreate`` works as intended.
+    Tests whether ``ChannelMetadataGuildAnnouncements.from_keyword_parameters`` works as intended.
     
     Case: no fields given.
     """
     keyword_parameters = {}
     
-    channel_metadata = ChannelMetadataGuildAnnouncements.precreate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildAnnouncements)
+    channel_metadata = ChannelMetadataGuildAnnouncements.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(channel_metadata)
     vampytest.assert_eq(keyword_parameters, {})
     
-    assert_fields_set(channel_metadata)
+
+def test__ChannelMetadataGuildAnnouncements__create_empty():
+    """
+    Tests whether ``ChannelMetadataGuildAnnouncements._create_empty`` works as intended.
+    """
+    channel_metadata = ChannelMetadataGuildAnnouncements._create_empty()
+    _assert_fields_set(channel_metadata)

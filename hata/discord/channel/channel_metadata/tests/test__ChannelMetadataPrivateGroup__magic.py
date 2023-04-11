@@ -16,14 +16,13 @@ def test__ChannelMetadataPrivateGroup__repr():
     icon = Icon(IconType.static, 1)
     name = 'Armelyrics'
     
-    keyword_parameters = {
-        'application_id': application_id,
-        'users': users,
-        'owner_id': owner_id,
-        'name': name,
-        'icon': icon
-    }
-    channel_metadata = ChannelMetadataPrivateGroup(keyword_parameters)
+    channel_metadata = ChannelMetadataPrivateGroup(
+        application_id = application_id,
+        users = users,
+        owner_id = owner_id,
+        name = name,
+        icon = icon,
+    )
     
     vampytest.assert_instance(repr(channel_metadata), str)
 
@@ -38,14 +37,13 @@ def test__ChannelMetadataPrivateGroup__hash():
     icon = Icon(IconType.static, 1)
     name = 'Armelyrics'
     
-    keyword_parameters = {
-        'application_id': application_id,
-        'users': users,
-        'owner_id': owner_id,
-        'name': name,
-        'icon': icon,
-    }
-    channel_metadata = ChannelMetadataPrivateGroup(keyword_parameters)
+    channel_metadata = ChannelMetadataPrivateGroup(
+        application_id = application_id,
+        users = users,
+        owner_id = owner_id,
+        name = name,
+        icon = icon,
+    )
     
     vampytest.assert_instance(hash(channel_metadata), int)
 
@@ -68,7 +66,7 @@ def test__ChannelMetadataPrivateGroup__eq():
         'name': name,
         'icon': icon,
     }
-    channel_metadata = ChannelMetadataPrivateGroup(keyword_parameters)
+    channel_metadata = ChannelMetadataPrivateGroup(**keyword_parameters)
     
     vampytest.assert_eq(channel_metadata, channel_metadata)
     vampytest.assert_ne(channel_metadata, object())
@@ -80,5 +78,5 @@ def test__ChannelMetadataPrivateGroup__eq():
         ('name', 'Okuu'),
         ('application_id', 202301210007),
     ):
-        test_channel_metadata = ChannelMetadataPrivateGroup({**keyword_parameters, field_name: field_value})
+        test_channel_metadata = ChannelMetadataPrivateGroup(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(channel_metadata, test_channel_metadata)

@@ -4,7 +4,7 @@ from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTarg
 
 from ..guild_announcements import ChannelMetadataGuildAnnouncements
 
-from .test__ChannelMetadataGuildAnnouncements__constructor import assert_fields_set
+from .test__ChannelMetadataGuildAnnouncements__constructor import _assert_fields_set
 
 
 def test__ChannelMetadataGuildAnnouncements__from_data():
@@ -23,7 +23,7 @@ def test__ChannelMetadataGuildAnnouncements__from_data():
     slowmode = 30
     topic = 'rin'
     
-    channel_metadata = ChannelMetadataGuildAnnouncements.from_data({
+    data = {
         'parent_id': str(parent_id),
         'name': name,
         'permission_overwrites': [
@@ -36,10 +36,10 @@ def test__ChannelMetadataGuildAnnouncements__from_data():
         'nsfw': nsfw,
         'rate_limit_per_user': slowmode,
         'topic': topic
-    })
+    }
     
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildAnnouncements)
-    assert_fields_set(channel_metadata)
+    channel_metadata = ChannelMetadataGuildAnnouncements.from_data(data)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -73,17 +73,17 @@ def test__ChannelMetadataGuildAnnouncements__to_data():
     slowmode = 30
     topic = 'rin'
     
-    channel_metadata = ChannelMetadataGuildAnnouncements({
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'default_thread_auto_archive_after': default_thread_auto_archive_after,
-        'default_thread_slowmode': default_thread_slowmode,
-        'nsfw': nsfw,
-        'slowmode': slowmode,
-        'topic': topic,
-    })
+    channel_metadata = ChannelMetadataGuildAnnouncements(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        default_thread_auto_archive_after = default_thread_auto_archive_after,
+        default_thread_slowmode = default_thread_slowmode,
+        nsfw = nsfw,
+        slowmode = slowmode,
+        topic = topic,
+    )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
     
@@ -133,17 +133,17 @@ def test__ChannelMetadataGuildAnnouncements__update_attributes():
     old_topic = 'rin'
     new_topic = 'orin'
     
-    channel_metadata = ChannelMetadataGuildAnnouncements({
-        'parent_id': old_parent_id,
-        'name': old_name,
-        'permission_overwrites': old_permission_overwrites,
-        'position': old_position,
-        'default_thread_auto_archive_after': old_default_thread_auto_archive_after,
-        'default_thread_slowmode': old_default_thread_slowmode,
-        'nsfw': old_nsfw,
-        'slowmode': old_slowmode,
-        'topic': old_topic,
-    })
+    channel_metadata = ChannelMetadataGuildAnnouncements(
+        parent_id = old_parent_id,
+        name = old_name,
+        permission_overwrites = old_permission_overwrites,
+        position = old_position,
+        default_thread_auto_archive_after = old_default_thread_auto_archive_after,
+        default_thread_slowmode = old_default_thread_slowmode,
+        nsfw = old_nsfw,
+        slowmode = old_slowmode,
+        topic = old_topic,
+    )
     
     channel_metadata._update_attributes({
         'parent_id': str(new_parent_id),
@@ -201,17 +201,17 @@ def test__ChannelMetadataGuildAnnouncements__difference_update_attributes():
     old_topic = 'rin'
     new_topic = 'orin'
     
-    channel_metadata = ChannelMetadataGuildAnnouncements({
-        'parent_id': str(old_parent_id),
-        'name': old_name,
-        'permission_overwrites': old_permission_overwrites,
-        'position': old_position,
-        'default_thread_auto_archive_after': old_default_thread_auto_archive_after,
-        'default_thread_slowmode': old_default_thread_slowmode,
-        'nsfw': old_nsfw,
-        'slowmode': old_slowmode,
-        'topic': old_topic,
-    })
+    channel_metadata = ChannelMetadataGuildAnnouncements(
+        parent_id = old_parent_id,
+        name = old_name,
+        permission_overwrites = old_permission_overwrites,
+        position = old_position,
+        default_thread_auto_archive_after = old_default_thread_auto_archive_after,
+        default_thread_slowmode = old_default_thread_slowmode,
+        nsfw = old_nsfw,
+        slowmode = old_slowmode,
+        topic = old_topic,
+    )
     
     old_attributes = channel_metadata._difference_update_attributes({
         'parent_id': str(new_parent_id),
@@ -274,9 +274,6 @@ def test__ChannelMetadataGuildAnnouncements__from_partial_data():
     channel_metadata = ChannelMetadataGuildAnnouncements._from_partial_data({
         'name': name,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildAnnouncements)
-    
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

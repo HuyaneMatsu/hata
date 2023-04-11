@@ -21,21 +21,21 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
     ----------
     _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent_id : `int`
-        The channel's parent's identifier.
-    name : `str`
-        The channel's name.
-    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
-        The channel's permission overwrites.
-    position : `int`
-        The channel's position.
     default_thread_auto_archive_after : `int`
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Defaults
         to `3600`. Can be one of: `3600`, `86400`, `259200`, `604800`.
     default_thread_slowmode : `int`
         Applied as `thread.slowmode` when one is created.
+    name : `str`
+        The channel's name.
     nsfw : `bool`
         Whether the channel is marked as non safe for work.
+    parent_id : `int`
+        The channel's parent's identifier.
+    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
+        The channel's permission overwrites.
+    position : `int`
+        The channel's position.
     slowmode : `int`
         The amount of time in seconds that a user needs to wait between it's each message. Bots and user accounts with
         `manage_messages`, `manage_channels` permissions are unaffected.
@@ -48,6 +48,114 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         The channel's order group used when sorting channels.
     """
     __slots__ = ('default_thread_auto_archive_after', 'default_thread_slowmode', 'nsfw', 'slowmode', 'topic')
+    
+    
+    def __new__(
+        cls,
+        *,
+        default_thread_auto_archive_after = ...,
+        default_thread_slowmode = ...,
+        name = ...,
+        nsfw = ...,
+        parent_id = ...,
+        permission_overwrites = ...,
+        position = ...,
+        slowmode = ...,
+        topic = ...,
+    ):
+        """
+        Creates a new guild store channel metadata from the given parameters.
+        
+        Parameters
+        ----------
+        default_thread_auto_archive_after : `int``, Optional (Keyword only)
+            The default duration (in seconds) for newly created threads to automatically archive the themselves.
+        default_thread_slowmode : `int`
+            Applied as `thread.slowmode` when one is created.
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        nsfw : `bool`, Optional (Keyword only)
+            Whether the channel is marked as non safe for work.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        slowmode : `int`, Optional (Keyword only)
+            The amount of time in seconds that a user needs to wait between it's each message.
+        topic : `None`, `str`, Optional (Keyword only)
+            The channel's topic.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # default_thread_auto_archive_after
+        if default_thread_auto_archive_after is ...:
+            default_thread_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        else:
+            default_thread_auto_archive_after = validate_default_thread_auto_archive_after(
+                default_thread_auto_archive_after
+            )
+        
+        # default_thread_slowmode
+        if default_thread_slowmode is ...:
+            default_thread_slowmode = SLOWMODE_DEFAULT
+        else:
+            default_thread_slowmode = validate_default_thread_slowmode(default_thread_slowmode)
+        
+        # nsfw
+        if nsfw is ...:
+            nsfw = False
+        else:
+            nsfw = validate_nsfw(nsfw)
+        
+        # slowmode
+        if slowmode is ...:
+            slowmode = SLOWMODE_DEFAULT
+        else:
+            slowmode = validate_slowmode(slowmode)
+        
+        # topic
+        if topic is ...:
+            topic = None
+        else:
+            topic = validate_topic(topic)
+        
+        # Construct
+        self = ChannelMetadataGuildMainBase.__new__(
+            cls,
+            name = name,
+            permission_overwrites = permission_overwrites,
+            parent_id = parent_id,
+            position = position,
+        )
+        self.default_thread_auto_archive_after = default_thread_auto_archive_after
+        self.default_thread_slowmode = default_thread_slowmode
+        self.nsfw = nsfw
+        self.slowmode = slowmode
+        self.topic = topic
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataGuildMainBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            name = keyword_parameters.pop('name', ...),
+            default_thread_auto_archive_after = keyword_parameters.pop('default_thread_auto_archive_after', ...),
+            default_thread_slowmode = keyword_parameters.pop('default_thread_slowmode', ...),
+            nsfw = keyword_parameters.pop('nsfw', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
+            position = keyword_parameters.pop('position', ...),
+            slowmode = keyword_parameters.pop('slowmode', ...),
+            topic = keyword_parameters.pop('topic', ...),
+        )
     
     
     @copy_docs(ChannelMetadataGuildMainBase.__hash__)
@@ -176,53 +284,6 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
             self.topic = topic
         
         return old_attributes
-    
-    
-    @copy_docs(ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
-        
-        # default_thread_auto_archive_after
-        try:
-            default_thread_auto_archive_after = keyword_parameters.pop('default_thread_auto_archive_after')
-        except KeyError:
-            pass
-        else:
-            self.default_thread_auto_archive_after = validate_default_thread_auto_archive_after(
-                default_thread_auto_archive_after
-            )
-        
-        # default_thread_slowmode
-        try:
-            default_thread_slowmode = keyword_parameters.pop('default_thread_slowmode')
-        except KeyError:
-            pass
-        else:
-            self.default_thread_slowmode = validate_default_thread_slowmode(default_thread_slowmode)
-        
-        # nsfw
-        try:
-            nsfw = keyword_parameters.pop('nsfw')
-        except KeyError:
-            pass
-        else:
-            self.nsfw = validate_nsfw(nsfw)
-        
-        # slowmode
-        try:
-            slowmode = keyword_parameters.pop('slowmode')
-        except KeyError:
-            pass
-        else:
-            self.slowmode = validate_slowmode(slowmode)
-        
-        # topic
-        try:
-            topic = keyword_parameters.pop('topic')
-        except KeyError:
-            pass
-        else:
-            self.topic = validate_topic(topic)
     
     
     @copy_docs(ChannelMetadataGuildMainBase.to_data)

@@ -10,7 +10,6 @@ from ...permission.permission import (
 
 from .fields import parse_topic, put_topic_into, validate_topic
 
-from .guild_main_base import ChannelMetadataGuildMainBase
 from .guild_voice_base import ChannelMetadataGuildVoiceBase
 
 
@@ -22,22 +21,22 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
     ----------
     _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent_id : `int`
-        The channel's parent's identifier.
+    bitrate : `int`
+        The bitrate (in bits) of the voice channel.
     name : `str`
         The channel's name.
-    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
+    parent_id : `int`
+        The channel's parent's identifier.
+    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
     position : `int`
         The channel's position.
-    bitrate : `int`
-        The bitrate (in bits) of the voice channel.
     region : ``VoiceRegion``
         The voice region of the channel.
-    user_limit : `int`
-        The maximal amount of users, who can join the voice channel, or `0` if unlimited.
     topic : `None`, `str`
         The channel's topic.
+    user_limit : `int`
+        The maximal amount of users, who can join the voice channel, or `0` if unlimited.
     
     Class Attributes
     ----------------
@@ -45,6 +44,84 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         The channel's order group used when sorting channels.
     """
     __slots__ = ('topic',)
+    
+
+    def __new__(
+        cls,
+        *,
+        bitrate = ...,
+        name = ...,
+        parent_id = ...,
+        permission_overwrites = ...,
+        position = ...,
+        region = ...,
+        user_limit = ...,
+        topic = ...,
+    ):
+        """
+        Creates a new guild voice channel metadata from the given parameters.
+        
+        Parameters
+        ----------
+        bitrate : `int`, Optional (Keyword only)
+            The bitrate (in bits) of the voice channel.
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        region : ``VoiceRegion``, `str`, Optional (Keyword only)
+            The voice region of the channel.
+        user_limit : `int`, Optional (Keyword only)
+            The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+        topic : `None`, `str`, Optional (Keyword only)
+            The channel's topic.
+            
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # topic
+        if topic is ...:
+            topic = None
+        else:
+            topic = validate_topic(topic)
+        
+        # Construct
+        self = ChannelMetadataGuildVoiceBase.__new__(
+            cls,
+            bitrate = bitrate,
+            name = name,
+            permission_overwrites = permission_overwrites,
+            parent_id = parent_id,
+            position = position,
+            region = region,
+            user_limit = user_limit,
+        )
+        self.topic = topic
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataGuildVoiceBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            bitrate = keyword_parameters.pop('bitrate', ...),
+            name = keyword_parameters.pop('name', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
+            position = keyword_parameters.pop('position', ...),
+            region = keyword_parameters.pop('region', ...),
+            user_limit = keyword_parameters.pop('user_limit', ...),
+            topic = keyword_parameters.pop('topic', ...),
+        )
+    
     
     @copy_docs(ChannelMetadataGuildVoiceBase.__hash__)
     def __hash__(self):
@@ -101,19 +178,6 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         return old_attributes
     
     
-    @copy_docs(ChannelMetadataGuildVoiceBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        ChannelMetadataGuildVoiceBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
-        
-        # topic
-        try:
-            topic = keyword_parameters.pop('topic')
-        except KeyError:
-            pass
-        else:
-            self.topic = validate_topic(topic)
-    
-    
     @copy_docs(ChannelMetadataGuildVoiceBase.to_data)
     def to_data(self, *, defaults = False, include_internals = False):
         data = ChannelMetadataGuildVoiceBase.to_data(self, defaults = defaults, include_internals = include_internals)
@@ -124,7 +188,7 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         return data
     
     
-    @copy_docs(ChannelMetadataGuildMainBase._get_permissions_for)
+    @copy_docs(ChannelMetadataGuildVoiceBase._get_permissions_for)
     def _get_permissions_for(self, channel_entity, user):
         result = self._get_base_permissions_for(channel_entity, user)
         if not result & PERMISSION_MASK_VIEW_CHANNEL:
@@ -139,7 +203,7 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         return Permission(result)
     
     
-    @copy_docs(ChannelMetadataGuildMainBase._get_permissions_for_roles)
+    @copy_docs(ChannelMetadataGuildVoiceBase._get_permissions_for_roles)
     def _get_permissions_for_roles(self, channel_entity, roles):
         result = self._get_base_permissions_for_roles(channel_entity, roles)
         if not result & PERMISSION_MASK_VIEW_CHANNEL:

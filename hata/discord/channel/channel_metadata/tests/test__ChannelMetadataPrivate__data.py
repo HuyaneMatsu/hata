@@ -4,7 +4,7 @@ from ....user import User
 
 from ..private import ChannelMetadataPrivate
 
-from .test__ChannelMetadataPrivate__constructor import assert_fields_set
+from .test__ChannelMetadataPrivate__constructor import _assert_fields_set
 
 
 def test__ChannelMetadataPrivate__from_data():
@@ -16,9 +16,7 @@ def test__ChannelMetadataPrivate__from_data():
     channel_metadata = ChannelMetadataPrivate.from_data({
         'recipients': [user_1.to_data(defaults = True, include_internals = True)],
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataPrivate)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.users, [user_1])
 
@@ -31,9 +29,9 @@ def test__ChannelMetadataPrivate__to_data():
     """
     user_1 = User.precreate(202209160003)
     
-    channel_metadata = ChannelMetadataPrivate({
-        'users': [user_1],
-    })
+    channel_metadata = ChannelMetadataPrivate(
+        users = [user_1],
+    )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
     
@@ -49,7 +47,7 @@ def test__ChannelMetadataPrivate__update_attributes():
     """
     Tests whether ``ChannelMetadataPrivate._update_attributes`` works as intended.
     """
-    channel_metadata = ChannelMetadataPrivate({})
+    channel_metadata = ChannelMetadataPrivate()
     
     channel_metadata._update_attributes({})
 
@@ -58,9 +56,14 @@ def test__ChannelMetadataPrivate__difference_update_attributes():
     """
     Tests whether ``ChannelMetadataPrivate._difference_update_attributes`` works as intended.
     """
-    channel_metadata = ChannelMetadataPrivate({})
+    channel_metadata = ChannelMetadataPrivate()
     
     old_attributes = channel_metadata._difference_update_attributes({})
+    
+    vampytest.assert_eq(
+        old_attributes,
+        {},
+    )
 
 
 def test__ChannelMetadataPrivate__from_partial_data():
@@ -68,6 +71,6 @@ def test__ChannelMetadataPrivate__from_partial_data():
     Tests whether ``ChannelMetadataPrivate._from_partial_data`` works as intended.
     """
     channel_metadata = ChannelMetadataPrivate._from_partial_data({})
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
 
     vampytest.assert_instance(channel_metadata.users, list)

@@ -5,7 +5,7 @@ from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTarg
 from ..guild_stage import ChannelMetadataGuildStage
 from ..preinstanced import VoiceRegion
 
-from .test__ChannelMetadataGuildStage__constructor import assert_fields_set
+from .test__ChannelMetadataGuildStage__constructor import _assert_fields_set
 
 
 def test__ChannelMetadataGuildStage__from_data():
@@ -36,9 +36,7 @@ def test__ChannelMetadataGuildStage__from_data():
         'user_limit': user_limit,
         'topic': topic,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildStage)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -70,16 +68,16 @@ def test__ChannelMetadataGuildStage__to_data():
     user_limit = 4
     topic = 'crimson'
     
-    channel_metadata = ChannelMetadataGuildStage({
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'bitrate': bitrate,
-        'region': region,
-        'user_limit': user_limit,
-        'topic': topic,
-    })
+    channel_metadata = ChannelMetadataGuildStage(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        bitrate = bitrate,
+        region = region,
+        user_limit = user_limit,
+        topic = topic,
+    )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
     
@@ -126,16 +124,16 @@ def test__ChannelMetadataGuildStage__update_attributes():
     old_topic = 'crimson'
     new_topic = 'sky'
     
-    channel_metadata = ChannelMetadataGuildStage({
-        'parent_id': old_parent_id,
-        'name': old_name,
-        'permission_overwrites': old_permission_overwrites,
-        'position': old_position,
-        'bitrate': old_bitrate,
-        'region': old_region,
-        'user_limit': old_user_limit,
-        'topic': old_topic,
-    })
+    channel_metadata = ChannelMetadataGuildStage(
+        parent_id = old_parent_id,
+        name = old_name,
+        permission_overwrites = old_permission_overwrites,
+        position = old_position,
+        bitrate = old_bitrate,
+        region = old_region,
+        user_limit = old_user_limit,
+        topic = old_topic,
+    )
     
     channel_metadata._update_attributes({
         'parent_id': str(new_parent_id),
@@ -190,16 +188,16 @@ def test__ChannelMetadataGuildStage__difference_update_attributes():
     old_topic = 'crimson'
     new_topic = 'sky'
     
-    channel_metadata = ChannelMetadataGuildStage({
-        'parent_id': str(old_parent_id),
-        'name': old_name,
-        'permission_overwrites': old_permission_overwrites,
-        'position': old_position,
-        'bitrate': old_bitrate,
-        'region': old_region,
-        'user_limit': old_user_limit,
-        'topic': old_topic,
-    })
+    channel_metadata = ChannelMetadataGuildStage(
+        parent_id = old_parent_id,
+        name = old_name,
+        permission_overwrites = old_permission_overwrites,
+        position = old_position,
+        bitrate = old_bitrate,
+        region = old_region,
+        user_limit = old_user_limit,
+        topic = old_topic,
+    )
     
     old_attributes = channel_metadata._difference_update_attributes({
         'parent_id': str(new_parent_id),
@@ -258,8 +256,6 @@ def test__ChannelMetadataGuildStage__from_partial_data():
     channel_metadata = ChannelMetadataGuildStage._from_partial_data({
         'name': name,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildStage)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

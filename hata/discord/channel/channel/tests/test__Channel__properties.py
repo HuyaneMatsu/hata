@@ -253,7 +253,7 @@ def test__Channel__partial__0():
     
     Case: partial created with `.__new__`.
     """
-    channel = Channel(ChannelType.unknown)
+    channel = Channel(channel_type = ChannelType.unknown)
     
     partial = channel.partial
     vampytest.assert_instance(partial, bool)

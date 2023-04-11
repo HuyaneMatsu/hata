@@ -2,7 +2,7 @@ import vampytest
 
 from ..guild_base import ChannelMetadataGuildBase
 
-from .test__ChannelMetadataGuildBase__constructor import assert_fields_set
+from .test__ChannelMetadataGuildBase__constructor import _assert_fields_set
 
 
 def test__ChannelMetadataGuildBase__from_data():
@@ -16,9 +16,7 @@ def test__ChannelMetadataGuildBase__from_data():
         'parent_id': str(parent_id),
         'name': name,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildBase)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -33,10 +31,10 @@ def test__ChannelMetadataGuildBase__to_data():
     parent_id = 202209170001
     name = 'Armelyrics'
     
-    channel_metadata = ChannelMetadataGuildBase({
-        'parent_id': parent_id,
-        'name': name,
-    })
+    channel_metadata = ChannelMetadataGuildBase(
+        parent_id = parent_id,
+        name = name,
+    )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
     
@@ -58,10 +56,10 @@ def test__ChannelMetadataGuildBase__update_attributes():
     old_name = 'Armelyrics'
     new_name = 'Okuu'
     
-    channel_metadata = ChannelMetadataGuildBase({
-        'parent_id': old_parent_id,
-        'name': old_name,
-    })
+    channel_metadata = ChannelMetadataGuildBase(
+        parent_id = old_parent_id,
+        name = old_name,
+    )
     
     channel_metadata._update_attributes({
         'parent_id': str(new_parent_id),
@@ -81,10 +79,10 @@ def test__ChannelMetadataGuildBase__difference_update_attributes():
     old_name = 'Armelyrics'
     new_name = 'Okuu'
     
-    channel_metadata = ChannelMetadataGuildBase({
-        'parent_id': str(old_parent_id),
-        'name': old_name,
-    })
+    channel_metadata = ChannelMetadataGuildBase(
+        parent_id = old_parent_id,
+        name = old_name,
+    )
     
     old_attributes = channel_metadata._difference_update_attributes({
         'parent_id': str(new_parent_id),
@@ -110,8 +108,6 @@ def test__ChannelMetadataGuildBase__from_partial_data():
     channel_metadata = ChannelMetadataGuildBase._from_partial_data({
         'name': name,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildBase)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

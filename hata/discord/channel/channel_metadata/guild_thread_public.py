@@ -17,14 +17,12 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
     
     Attributes
     ----------
-    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
-        A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent_id : `int`
-        The channel's parent's identifier.
-    name : `str`
-        The channel's name.
     _created_at : `None`, `datetime`
         When the channel was created.
+    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
+        A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
+    applied_tag_ids : `None`, `tuple` of `int`
+         The tags' identifier which have been applied to the thread. Applicable for threads of a forum.
     archived : `bool`
         Whether the thread s archived.
     archived_at : `None`, `datetime`
@@ -32,21 +30,21 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
     auto_archive_after : `int`
         Duration in seconds to automatically archive the thread after recent activity. Can be one of: `3600`, `86400`,
         `259200`, `604800`.
+    flags : ``ChannelFlag``
+        The channel's flags.
+    name : `str`
+        The channel's name.
     open : `bool`
         Whether the thread channel is open.
+    owner_id : `int`
+        The channel's creator's identifier. Defaults to `0`.
+    parent_id : `int`
+        The channel's parent's identifier.
     slowmode : `int`
         The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
         `manage_messages`, `manage_channels` permissions are unaffected.
     thread_users : `None`, `dict` of (`int`, ``ClientUserBase``) items
         The users inside of the thread if any.
-    type : `int` = `12`
-        The channel's Discord side type.
-    owner_id : `int`
-        The channel's creator's identifier. Defaults to `0`.
-    applied_tag_ids : `None`, `tuple` of `int`
-         The tags' identifier which have been applied to the thread. Applicable for threads of a forum.
-    flags : ``ChannelFlag``
-        The channel's flags.
     
     Class Attributes
     ----------------
@@ -54,6 +52,104 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
         The channel's order group used when sorting channels.
     """
     __slots__ = ('applied_tag_ids', 'flags',)
+    
+    
+    def __new__(
+        cls,
+        *,
+        applied_tag_ids = ...,
+        archived = ...,
+        archived_at = ...,
+        auto_archive_after = ...,
+        flags = ...,
+        created_at = ...,
+        name = ...,
+        parent_id = ...,
+        open = ...,
+        owner_id = ...,
+        slowmode = ...,
+    ):
+        """
+        Creates a new guild public thread channel metadata from the given parameters.
+        
+        Parameters
+        ----------
+        applied_tag_ids : `None`, `iterable` of (`int`, ``ForumTag``), Optional (Keyword only)
+             The tags' identifier which have been applied to the thread.
+        archived : `bool`, Optional (Keyword only)
+            Whether the thread is archived.
+        archived_at : `None`, `datetime`, Optional (Keyword only)
+            When the thread's archive status was last changed.
+        auto_archive_after : `int`, Optional (Keyword only)
+            Duration in seconds to automatically archive the thread after recent activity.
+        flags : ``ChannelFlag``, `int`, Optional (Keyword only)
+            The channel's flags.
+        created_at : `None`, `datetime`, Optional (Keyword only)
+            When the channel was created.
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        open : `bool`, Optional (Keyword only)
+            Whether the thread channel is open.
+        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+            The channel's creator's identifier.
+        slowmode : `int`, Optional (Keyword only)
+            The amount of time in seconds what a user needs to wait between it's each message.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # applied_tag_ids
+        if applied_tag_ids is ...:
+            applied_tag_ids = None
+        else:
+            applied_tag_ids = validate_applied_tag_ids(applied_tag_ids)
+        
+        # flags
+        if flags is ...:
+            flags = ChannelFlag()
+        else:
+            flags = validate_flags(flags)
+        
+        # Construct
+        self = ChannelMetadataGuildThreadBase.__new__(
+            cls,
+            archived = archived,
+            archived_at = archived_at,
+            auto_archive_after = auto_archive_after,
+            created_at = created_at,
+            name = name,
+            open = open,
+            owner_id = owner_id,
+            parent_id = parent_id,
+            slowmode = slowmode,
+        )
+        self.applied_tag_ids = applied_tag_ids
+        self.flags = flags
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataGuildThreadBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            applied_tag_ids = keyword_parameters.pop('applied_tag_ids', ...),
+            archived = keyword_parameters.pop('archived', ...),
+            archived_at = keyword_parameters.pop('archived_at', ...),
+            auto_archive_after = keyword_parameters.pop('auto_archive_after', ...),
+            flags = keyword_parameters.pop('flags', ...),
+            created_at = keyword_parameters.pop('created_at', ...),
+            name = keyword_parameters.pop('name', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            open = keyword_parameters.pop('open', ...),
+            owner_id = keyword_parameters.pop('owner_id', ...),
+            slowmode = keyword_parameters.pop('slowmode', ...),
+        )
     
     
     @copy_docs(ChannelMetadataGuildThreadBase._is_equal_same_type)
@@ -115,27 +211,6 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
             self.flags = flags
         
         return old_attributes
-    
-    
-    @copy_docs(ChannelMetadataGuildThreadBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        ChannelMetadataGuildThreadBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
-        
-        # applied_tag_ids
-        try:
-            applied_tag_ids = keyword_parameters.pop('applied_tag_ids')
-        except KeyError:
-            pass
-        else:
-            self.applied_tag_ids = validate_applied_tag_ids(applied_tag_ids)
-        
-        # flags
-        try:
-            flags = keyword_parameters.pop('flags')
-        except KeyError:
-            pass
-        else:
-            self.flags = validate_flags(flags)
     
     
     @copy_docs(ChannelMetadataGuildThreadBase.to_data)

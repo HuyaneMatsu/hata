@@ -25,22 +25,22 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     ----------
     _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent_id : `int`
-        The channel's parent's identifier.
+    bitrate : `int`
+        The bitrate (in bits) of the voice channel.
     name : `str`
         The channel's name.
-    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
+    nsfw : `bool`
+        Whether the channel is marked as non safe for work.
+    parent_id : `int`
+        The channel's parent's identifier.
+    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
     position : `int`
         The channel's position.
-    bitrate : `int`
-        The bitrate (in bits) of the voice channel.
     region : ``VoiceRegion``
         The voice region of the channel.
     user_limit : `int`
         The maximal amount of users, who can join the voice channel, or `0` if unlimited.
-    nsfw : `bool`
-        Whether the channel is marked as non safe for work.
     video_quality_mode : ``VideoQualityMode``
         The video quality of the voice channel.
     
@@ -50,6 +50,95 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         The channel's order group used when sorting channels.
     """
     __slots__ = ('nsfw', 'video_quality_mode',)
+    
+    
+    def __new__(
+        cls,
+        *,
+        bitrate = ...,
+        name = ...,
+        nsfw = ...,
+        parent_id = ...,
+        permission_overwrites = ...,
+        position = ...,
+        region = ...,
+        user_limit = ...,
+        video_quality_mode = ...,
+    ):
+        """
+        Creates a new guild voice channel metadata from the given parameters.
+        
+        Parameters
+        ----------
+        bitrate : `int`, Optional (Keyword only)
+            The bitrate (in bits) of the voice channel.
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        nsfw : `bool`, Optional (Keyword only)
+            Whether the channel is marked as non safe for work.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        region : ``VoiceRegion``, `str`, Optional (Keyword only)
+            The voice region of the channel.
+        user_limit : `int`, Optional (Keyword only)
+            The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+        video_quality_mode : ``VideoQualityMode``, `int`, Optional (Keyword only)
+            The video quality of the voice channel.
+            
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # nsfw
+        if nsfw is ...:
+            nsfw = False
+        else:
+            nsfw = validate_nsfw(nsfw)
+        
+        # video_quality_mode
+        if video_quality_mode is ...:
+            video_quality_mode = VideoQualityMode.none
+        else:
+            video_quality_mode = validate_video_quality_mode(video_quality_mode)
+        
+        # Construct
+        self = ChannelMetadataGuildVoiceBase.__new__(
+            cls,
+            bitrate = bitrate,
+            name = name,
+            parent_id = parent_id,
+            permission_overwrites = permission_overwrites,
+            position = position,
+            region = region,
+            user_limit = user_limit,
+        )
+        self.nsfw = nsfw
+        self.video_quality_mode = video_quality_mode
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataGuildVoiceBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            bitrate = keyword_parameters.pop('bitrate', ...),
+            name = keyword_parameters.pop('name', ...),
+            nsfw = keyword_parameters.pop('nsfw', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
+            position = keyword_parameters.pop('position', ...),
+            region = keyword_parameters.pop('region', ...),
+            user_limit = keyword_parameters.pop('user_limit', ...),
+            video_quality_mode = keyword_parameters.pop('video_quality_mode', ...),
+        )
+    
     
     @copy_docs(ChannelMetadataGuildVoiceBase.__hash__)
     def __hash__(self):
@@ -119,27 +208,6 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             self.video_quality_mode = video_quality_mode
         
         return old_attributes
-    
-    
-    @copy_docs(ChannelMetadataGuildVoiceBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        ChannelMetadataGuildVoiceBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
-        
-        # nsfw
-        try:
-            nsfw = keyword_parameters.pop('nsfw')
-        except KeyError:
-            pass
-        else:
-            self.nsfw = validate_nsfw(nsfw)
-        
-        # video_quality_mode
-        try:
-            video_quality_mode = keyword_parameters.pop('video_quality_mode')
-        except KeyError:
-            pass
-        else:
-            self.video_quality_mode = validate_video_quality_mode(video_quality_mode)
     
     
     @copy_docs(ChannelMetadataGuildVoiceBase.to_data)

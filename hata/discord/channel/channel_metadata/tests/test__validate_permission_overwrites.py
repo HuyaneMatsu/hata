@@ -14,8 +14,8 @@ def test__validate_permission_overwrites__0():
     permission_overwrite = PermissionOverwrite(202209140018, target_type = PermissionOverwriteTargetType.user)
     
     for input_parameter, expected_output in (
-        (None, {}),
-        ([], {}),
+        (None, None),
+        ([], None),
         ([permission_overwrite], {permission_overwrite.target_id: permission_overwrite})
     ):
         output = validate_permission_overwrites(input_parameter)

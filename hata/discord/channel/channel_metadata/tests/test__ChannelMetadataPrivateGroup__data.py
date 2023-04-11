@@ -5,7 +5,7 @@ from ....user import User
 
 from ..private_group import ChannelMetadataPrivateGroup
 
-from .test__ChannelMetadataPrivateGroup__constructor import assert_fields_set
+from .test__ChannelMetadataPrivateGroup__constructor import _assert_fields_set
 
 
 def test__ChannelMetadataPrivateGroup__from_data():
@@ -25,9 +25,7 @@ def test__ChannelMetadataPrivateGroup__from_data():
         'icon': icon.as_base_16_hash,
         'name': name,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.application_id, application_id)
     vampytest.assert_eq(channel_metadata.users, [user_1])
@@ -48,13 +46,13 @@ def test__ChannelMetadataPrivateGroup__to_data__0():
     icon = Icon(IconType.static, 1)
     name = 'Armelyrics'
     
-    channel_metadata = ChannelMetadataPrivateGroup({
-        'application_id': application_id,
-        'users': [user_1],
-        'owner_id': owner_id,
-        'name': name,
-        'icon': icon,
-    })
+    channel_metadata = ChannelMetadataPrivateGroup(
+        application_id = application_id,
+        users = [user_1],
+        owner_id = owner_id,
+        name = name,
+        icon = icon,
+    )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
     
@@ -86,10 +84,10 @@ def test__ChannelMetadataPrivateGroup__to_data__1():
     
     name = 'Armelyrics'
     
-    channel_metadata = ChannelMetadataPrivateGroup({
-        'name': name,
-        'icon': icon,
-    })
+    channel_metadata = ChannelMetadataPrivateGroup(
+        name = name,
+        icon = icon,
+    )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
     
@@ -111,11 +109,11 @@ def test__ChannelMetadataPrivateGroup__update_attributes():
     old_name = 'Armelyrics'
     new_name = 'Okuu'
     
-    channel_metadata = ChannelMetadataPrivateGroup({
-        'owner_id': old_owner_id,
-        'name': old_name,
-        'icon': old_icon,
-    })
+    channel_metadata = ChannelMetadataPrivateGroup(
+        owner_id = old_owner_id,
+        name = old_name,
+        icon = old_icon,
+    )
     
     channel_metadata._update_attributes({
         'owner_id': str(new_owner_id),
@@ -139,11 +137,11 @@ def test__ChannelMetadataPrivateGroup__difference_update_attributes():
     old_name = 'Armelyrics'
     new_name = 'Okuu'
     
-    channel_metadata = ChannelMetadataPrivateGroup({
-        'owner_id': str(old_owner_id),
-        'name': old_name,
-        'icon': old_icon,
-    })
+    channel_metadata = ChannelMetadataPrivateGroup(
+        owner_id = old_owner_id,
+        name = old_name,
+        icon = old_icon,
+    )
     
     old_attributes = channel_metadata._difference_update_attributes({
         'owner_id': str(new_owner_id),
@@ -173,8 +171,6 @@ def test__ChannelMetadataPrivateGroup__from_partial_data():
     channel_metadata = ChannelMetadataPrivateGroup._from_partial_data({
         'name': name,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

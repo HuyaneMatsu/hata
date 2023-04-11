@@ -8,7 +8,7 @@ from ..flags import ChannelFlag
 
 from ..guild_thread_public import ChannelMetadataGuildThreadPublic
 
-from .test__ChannelMetadataGuildThreadPublic__constructor import assert_fields_set
+from .test__ChannelMetadataGuildThreadPublic__constructor import _assert_fields_set
 
 
 def test__ChannelMetadataGuildThreadPublic__from_data():
@@ -42,9 +42,7 @@ def test__ChannelMetadataGuildThreadPublic__from_data():
             'locked': not open_,
         }
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildThreadPublic)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -77,19 +75,19 @@ def test__ChannelMetadataGuildThreadPublic__to_data():
     applied_tag_ids = [202209180073]
     flags = ChannelFlag(1)
     
-    channel_metadata = ChannelMetadataGuildThreadPublic({
-        'parent_id': parent_id,
-        'name': name,
-        'created_at': created_at,
-        'archived': archived,
-        'archived_at': archived_at,
-        'auto_archive_after': auto_archive_after,
-        'open': open_,
-        'owner_id': owner_id,
-        'slowmode': slowmode,
-        'applied_tag_ids': applied_tag_ids,
-        'flags': flags,
-    })
+    channel_metadata = ChannelMetadataGuildThreadPublic(
+        parent_id = parent_id,
+        name = name,
+        created_at = created_at,
+        archived = archived,
+        archived_at = archived_at,
+        auto_archive_after = auto_archive_after,
+        open = open_,
+        owner_id = owner_id,
+        slowmode = slowmode,
+        applied_tag_ids = applied_tag_ids,
+        flags = flags,
+    )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
     
@@ -136,17 +134,17 @@ def test__ChannelMetadataGuildThreadPublic__update_attributes():
     old_flags = ChannelFlag(1)
     new_flags = ChannelFlag(6)
     
-    channel_metadata = ChannelMetadataGuildThreadPublic({
-        'parent_id': old_parent_id,
-        'name': old_name,
-        'archived': old_archived,
-        'archived_at': old_archived_at,
-        'auto_archive_after': old_auto_archive_after,
-        'open': old_open,
-        'slowmode': old_slowmode,
-        'applied_tag_ids': old_applied_tag_ids,
-        'flags': old_flags,
-    })
+    channel_metadata = ChannelMetadataGuildThreadPublic(
+        parent_id = str(old_parent_id),
+        name = old_name,
+        archived = old_archived,
+        archived_at = old_archived_at,
+        auto_archive_after = old_auto_archive_after,
+        open = old_open,
+        slowmode = old_slowmode,
+        applied_tag_ids = old_applied_tag_ids,
+        flags = old_flags,
+    )
     
     channel_metadata._update_attributes({
         'parent_id': str(new_parent_id),
@@ -196,17 +194,17 @@ def test__ChannelMetadataGuildThreadPublic__difference_update_attributes():
     old_flags = ChannelFlag(1)
     new_flags = ChannelFlag(6)
     
-    channel_metadata = ChannelMetadataGuildThreadPublic({
-        'parent_id': str(old_parent_id),
-        'name': old_name,
-        'archived': old_archived,
-        'archived_at': old_archived_at,
-        'auto_archive_after': old_auto_archive_after,
-        'open': old_open,
-        'slowmode': old_slowmode,
-        'applied_tag_ids': old_applied_tag_ids,
-        'flags': old_flags,
-    })
+    channel_metadata = ChannelMetadataGuildThreadPublic(
+        parent_id = str(old_parent_id),
+        name = old_name,
+        archived = old_archived,
+        archived_at = old_archived_at,
+        auto_archive_after = old_auto_archive_after,
+        open = old_open,
+        slowmode = old_slowmode,
+        applied_tag_ids = old_applied_tag_ids,
+        flags = old_flags,
+    )
     
     old_attributes = channel_metadata._difference_update_attributes({
         'parent_id': str(new_parent_id),
@@ -262,8 +260,6 @@ def test__ChannelMetadataGuildThreadPublic__from_partial_data():
     channel_metadata = ChannelMetadataGuildThreadPublic._from_partial_data({
         'name': name,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildThreadPublic)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

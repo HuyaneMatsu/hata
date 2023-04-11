@@ -6,14 +6,18 @@
 - `.IntegrationMetadataBase.copy_with` is now `.copy_with_keyword_parameters`. Add new `.copy_with` method.
 - `ComponentMetadataBase.__new__` is now `.from_keyword_parameters`. Add new `.__new__` method.
 - `ComponentMetadataBase.copy_with` is now `.copy_with_keyword_parameters`. Add new `.copy_with` method.
-- `ComponentMetadataBase.copy_with` now supports the `component_type` parameter.
-- `ActivityMetadataBase.copy_with` is now `.copy_with_keyword_parameters`. Add new `.copy_with` method.
+- `ActivityMetadataBase.__new__` is now `.from_keyword_parameters`. Add new `.__new__` method.
 - `ActivityMetadataBase.copy_with` now supports the `component_type` parameter.
-- `ApplicationCommandOptionMetadataBase.copy_with` is now `.copy_with_keyword_parameters`. Add new `.copy_with` method.
+- `ApplicationCommandOptionMetadataBase.__new__` is now `.from_keyword_parameters`. Add new `.__new__` method.
 - `ApplicationCommandOptionMetadataBase.copy_with` now supports the `component_type` parameter.
+- `ChannelMetadataBase.__new__` is now `.from_keyword_parameters`. Add new `.__new__` method.
 
 ##### ext.slash
 - `abort` call from a component command is now handled as intended (so always creates a new message).
+
+#### Renames, Deprecation & Removals
+
+- Remove `ChannelMetadataBase.precreate`.
 
 ## 1.3.26 *\[2023-04-07\]*
 

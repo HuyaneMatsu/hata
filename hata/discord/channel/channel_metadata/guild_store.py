@@ -18,11 +18,11 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
     ----------
     _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent_id : `int`
-        The channel's parent's identifier.
     name : `str`
         The channel's name.
-    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
+    parent_id : `int`
+        The channel's parent's identifier.
+    permission_overwrites :`None`,  `dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -35,6 +35,69 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
         The channel's order group used when sorting channels.
     """
     __slots__ = ('nsfw',)
+    
+    
+    def __new__(
+        cls,
+        *,
+        name = ...,
+        nsfw = ...,
+        parent_id = ...,
+        permission_overwrites = ...,
+        position = ...,
+    ):
+        """
+        Creates a new guild store channel metadata from the given parameters.
+        
+        Parameters
+        ----------
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        nsfw : `bool`, Optional (Keyword only)
+            Whether the channel is marked as non safe for work.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # nsfw
+        if nsfw is ...:
+            nsfw = False
+        else:
+            nsfw = validate_nsfw(nsfw)
+        
+        # Construct
+        self = ChannelMetadataGuildMainBase.__new__(
+            cls,
+            name = name,
+            permission_overwrites = permission_overwrites,
+            parent_id = parent_id,
+            position = position,
+        )
+        self.nsfw = nsfw
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataGuildMainBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            name = keyword_parameters.pop('name', ...),
+            nsfw = keyword_parameters.pop('nsfw', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
+            position = keyword_parameters.pop('position', ...),
+        )
+    
     
     @copy_docs(ChannelMetadataGuildMainBase.__hash__)
     def __hash__(self):
@@ -115,19 +178,6 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
         # store channels do not have text and voice related permissions
         result &= PERMISSION_TEXT_AND_VOICE_DENY
         return Permission(result)
-    
-    
-    @copy_docs(ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
-        
-        # nsfw
-        try:
-            nsfw = keyword_parameters.pop('nsfw')
-        except KeyError:
-            pass
-        else:
-            self.nsfw = validate_nsfw(nsfw)
     
     
     @copy_docs(ChannelMetadataGuildMainBase.to_data)

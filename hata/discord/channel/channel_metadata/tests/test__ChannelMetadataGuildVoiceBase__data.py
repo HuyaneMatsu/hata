@@ -5,7 +5,7 @@ from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTarg
 from ..guild_voice_base import ChannelMetadataGuildVoiceBase
 from ..preinstanced import VoiceRegion
 
-from .test__ChannelMetadataGuildVoiceBase__constructor import assert_fields_set
+from .test__ChannelMetadataGuildVoiceBase__constructor import _assert_fields_set
 
 
 def test__ChannelMetadataGuildVoiceBase__from_data():
@@ -34,9 +34,7 @@ def test__ChannelMetadataGuildVoiceBase__from_data():
         'rtc_region': region.value,
         'user_limit': user_limit,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoiceBase)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -66,15 +64,15 @@ def test__ChannelMetadataGuildVoiceBase__to_data():
     region = VoiceRegion.brazil
     user_limit = 4
     
-    channel_metadata = ChannelMetadataGuildVoiceBase({
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'bitrate': bitrate,
-        'region': region,
-        'user_limit': user_limit,
-    })
+    channel_metadata = ChannelMetadataGuildVoiceBase(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        bitrate = bitrate,
+        region = region,
+        user_limit = user_limit,
+    )
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
     
@@ -118,15 +116,15 @@ def test__ChannelMetadataGuildVoiceBase__update_attributes():
     old_user_limit = 4
     new_user_limit = 5
     
-    channel_metadata = ChannelMetadataGuildVoiceBase({
-        'parent_id': old_parent_id,
-        'name': old_name,
-        'permission_overwrites': old_permission_overwrites,
-        'position': old_position,
-        'bitrate': old_bitrate,
-        'region': old_region,
-        'user_limit': old_user_limit,
-    })
+    channel_metadata = ChannelMetadataGuildVoiceBase(
+        parent_id = old_parent_id,
+        name = old_name,
+        permission_overwrites = old_permission_overwrites,
+        position = old_position,
+        bitrate = old_bitrate,
+        region = old_region,
+        user_limit = old_user_limit,
+    )
     
     channel_metadata._update_attributes({
         'parent_id': str(new_parent_id),
@@ -177,15 +175,15 @@ def test__ChannelMetadataGuildVoiceBase__difference_update_attributes():
     old_user_limit = 4
     new_user_limit = 5
     
-    channel_metadata = ChannelMetadataGuildVoiceBase({
-        'parent_id': str(old_parent_id),
-        'name': old_name,
-        'permission_overwrites': old_permission_overwrites,
-        'position': old_position,
-        'bitrate': old_bitrate,
-        'region': old_region,
-        'user_limit': old_user_limit,
-    })
+    channel_metadata = ChannelMetadataGuildVoiceBase(
+        parent_id = old_parent_id,
+        name = old_name,
+        permission_overwrites = old_permission_overwrites,
+        position = old_position,
+        bitrate = old_bitrate,
+        region = old_region,
+        user_limit = old_user_limit,
+    )
     
     old_attributes = channel_metadata._difference_update_attributes({
         'parent_id': str(new_parent_id),
@@ -240,8 +238,6 @@ def test__ChannelMetadataGuildVoiceBase__from_partial_data():
     channel_metadata = ChannelMetadataGuildVoiceBase._from_partial_data({
         'name': name,
     })
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoiceBase)
-    assert_fields_set(channel_metadata)
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

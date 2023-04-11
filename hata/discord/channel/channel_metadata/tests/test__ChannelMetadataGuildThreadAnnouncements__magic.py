@@ -19,18 +19,17 @@ def test__ChannelMetadataGuildThreadAnnouncements__repr():
     owner_id = 202209180031
     slowmode = 60
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'created_at': created_at,
-        'archived': archived,
-        'archived_at': archived_at,
-        'auto_archive_after': auto_archive_after,
-        'open': open_,
-        'owner_id': owner_id,
-        'slowmode': slowmode,
-    }
-    channel_metadata = ChannelMetadataGuildThreadAnnouncements(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildThreadAnnouncements(
+        parent_id = parent_id,
+        name = name,
+        created_at = created_at,
+        archived = archived,
+        archived_at = archived_at,
+        auto_archive_after = auto_archive_after,
+        open = open_,
+        owner_id = owner_id,
+        slowmode = slowmode,
+    )
     
     vampytest.assert_instance(repr(channel_metadata), str)
 
@@ -50,18 +49,17 @@ def test__ChannelMetadataGuildThreadAnnouncements__hash():
     owner_id = 202209180103
     slowmode = 60
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'created_at': created_at,
-        'archived': archived,
-        'archived_at': archived_at,
-        'auto_archive_after': auto_archive_after,
-        'open': open_,
-        'owner_id': owner_id,
-        'slowmode': slowmode,
-    }
-    channel_metadata = ChannelMetadataGuildThreadAnnouncements(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildThreadAnnouncements(
+        parent_id = parent_id,
+        name = name,
+        created_at = created_at,
+        archived = archived,
+        archived_at = archived_at,
+        auto_archive_after = auto_archive_after,
+        open = open_,
+        owner_id = owner_id,
+        slowmode = slowmode,
+    )
     
     vampytest.assert_instance(hash(channel_metadata), int)
 
@@ -91,7 +89,7 @@ def test__ChannelMetadataGuildThreadAnnouncements__eq():
         'owner_id': owner_id,
         'slowmode': slowmode,
     }
-    channel_metadata = ChannelMetadataGuildThreadAnnouncements(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildThreadAnnouncements(**keyword_parameters)
     
     vampytest.assert_eq(channel_metadata, channel_metadata)
     vampytest.assert_ne(channel_metadata, object())
@@ -107,6 +105,6 @@ def test__ChannelMetadataGuildThreadAnnouncements__eq():
         ('owner_id', 202209180035),
         ('slowmode', 69),
     ):
-        test_channel_metadata = ChannelMetadataGuildThreadAnnouncements({**keyword_parameters, field_name: field_value})
+        test_channel_metadata = ChannelMetadataGuildThreadAnnouncements(**{**keyword_parameters, field_name: field_value})
         
         vampytest.assert_ne(channel_metadata, test_channel_metadata)

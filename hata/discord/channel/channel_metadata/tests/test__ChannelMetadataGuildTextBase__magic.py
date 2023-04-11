@@ -21,18 +21,17 @@ def test__ChannelMetadataGuildTextBase__repr():
     slowmode = 30
     topic = 'rin'
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'default_thread_auto_archive_after': default_thread_auto_archive_after,
-        'default_thread_slowmode': default_thread_slowmode,
-        'nsfw': nsfw,
-        'slowmode': slowmode,
-        'topic': topic,
-    }
-    channel_metadata = ChannelMetadataGuildTextBase(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildTextBase(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        default_thread_auto_archive_after = default_thread_auto_archive_after,
+        default_thread_slowmode = default_thread_slowmode,
+        nsfw = nsfw,
+        slowmode = slowmode,
+        topic = topic,
+    )
     
     vampytest.assert_instance(repr(channel_metadata), str)
 
@@ -53,18 +52,17 @@ def test__ChannelMetadataGuildTextBase__hash():
     slowmode = 30
     topic = 'rin'
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'default_thread_auto_archive_after': default_thread_auto_archive_after,
-        'default_thread_slowmode': default_thread_slowmode,
-        'nsfw': nsfw,
-        'slowmode': slowmode,
-        'topic': topic,
-    }
-    channel_metadata = ChannelMetadataGuildTextBase(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildTextBase(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        default_thread_auto_archive_after = default_thread_auto_archive_after,
+        default_thread_slowmode = default_thread_slowmode,
+        nsfw = nsfw,
+        slowmode = slowmode,
+        topic = topic,
+    )
     
     vampytest.assert_instance(hash(channel_metadata), int)
 
@@ -96,7 +94,7 @@ def test__ChannelMetadataGuildTextBase__eq():
         'slowmode': slowmode,
         'topic': topic,
     }
-    channel_metadata = ChannelMetadataGuildTextBase(keyword_parameters)
+    channel_metadata = ChannelMetadataGuildTextBase(**keyword_parameters)
     
     vampytest.assert_eq(channel_metadata, channel_metadata)
     vampytest.assert_ne(channel_metadata, object())
@@ -114,9 +112,9 @@ def test__ChannelMetadataGuildTextBase__eq():
         ('default_thread_auto_archive_after', 3600),
         ('default_thread_slowmode', 69),
         ('nsfw', False),
-        ('slowmode', slowmode),
+        ('slowmode', 31),
         ('topic', 'orin')
     ):
-        test_channel_metadata = ChannelMetadataGuildTextBase({**keyword_parameters, field_name: field_value})
+        test_channel_metadata = ChannelMetadataGuildTextBase(**{**keyword_parameters, field_name: field_value})
         
         vampytest.assert_ne(channel_metadata, test_channel_metadata)

@@ -25,11 +25,11 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
     ----------
     _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent_id : `int`
-        The channel's parent's identifier.
     name : `str`
         The channel's name.
-    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
+    parent_id : `int`
+        The channel's parent's identifier.
+    permission_overwrites : `None`, `dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -41,16 +41,81 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
     """
     __slots__ = ('permission_overwrites', 'position', )
     
+    
+    def __new__(
+        cls,
+        *,
+        name = ...,
+        parent_id = ...,
+        permission_overwrites = ...,
+        position = ...,
+    ):
+        """
+        Creates a new guild main base channel metadata from the given parameters.
+        
+        Parameters
+        ----------
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # permission_overwrites
+        if permission_overwrites is ...:
+            permission_overwrites = None
+        else:
+            permission_overwrites = validate_permission_overwrites(permission_overwrites)
+        
+        # position
+        if position is ...:
+            position = 0
+        else:
+            position = validate_position(position)
+        
+        # Construct
+        self = ChannelMetadataGuildBase.__new__(
+            cls,
+            name = name,
+            parent_id = parent_id,
+        )
+        self.permission_overwrites = permission_overwrites
+        self.position = position
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataGuildBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            name = keyword_parameters.pop('name', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
+            position = keyword_parameters.pop('position', ...),
+        )
+    
+    
     @copy_docs(ChannelMetadataGuildBase.__hash__)
     def __hash__(self):
         hash_value = ChannelMetadataGuildBase.__hash__(self)
         
         # permission_overwrites
         permission_overwrites = self.permission_overwrites
-        hash_value ^= len(permission_overwrites) << 8
-        
-        for permission_overwrite in permission_overwrites.values():
-            hash_value ^= hash(permission_overwrite)
+        if (permission_overwrites is not None):
+            hash_value ^= len(permission_overwrites) << 8
+            
+            for permission_overwrite in permission_overwrites.values():
+                hash_value ^= hash(permission_overwrite)
         
         # position
         hash_value ^= self.position << 24
@@ -145,31 +210,10 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
     def _create_empty(cls):
         self = super(ChannelMetadataGuildMainBase, cls)._create_empty()
         
-        self.permission_overwrites = {}
+        self.permission_overwrites = None
         self.position = 0
         
         return self
-    
-    
-    @copy_docs(ChannelMetadataGuildBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        ChannelMetadataGuildBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
-        
-        # permission_overwrites
-        try:
-            permission_overwrites = keyword_parameters.pop('permission_overwrites')
-        except KeyError:
-            pass
-        else:
-            self.permission_overwrites = validate_permission_overwrites(permission_overwrites)
-        
-        # position
-        try:
-            position = keyword_parameters.pop('position')
-        except KeyError:
-            pass
-        else:
-            self.position = validate_position(position)
     
     
     def _get_base_permissions_for(self, channel_entity, user):
@@ -207,13 +251,14 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
                 
                 # Apply everyone's if applicable
                 permission_overwrites = self.permission_overwrites
-                try:
-                    permission_overwrite_everyone = permission_overwrites[guild_id]
-                except KeyError:
-                    pass
-                else:
-                    permissions &= ~permission_overwrite_everyone.deny
-                    permissions |= permission_overwrite_everyone.allow
+                if (permission_overwrites is not None):
+                    try:
+                        permission_overwrite_everyone = permission_overwrites[guild_id]
+                    except KeyError:
+                        pass
+                    else:
+                        permissions &= ~permission_overwrite_everyone.deny
+                        permissions |= permission_overwrite_everyone.allow
             
                 return permissions
             else:
@@ -241,13 +286,14 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
         
         # Apply everyone's if applicable
         permission_overwrites = self.permission_overwrites
-        try:
-            permission_overwrite_everyone = permission_overwrites[guild_id]
-        except KeyError:
-            pass
-        else:
-            permissions &= ~permission_overwrite_everyone.deny
-            permissions |= permission_overwrite_everyone.allow
+        if (permission_overwrites is not None):
+            try:
+                permission_overwrite_everyone = permission_overwrites[guild_id]
+            except KeyError:
+                pass
+            else:
+                permissions &= ~permission_overwrite_everyone.deny
+                permissions |= permission_overwrite_everyone.allow
         
         # Apply role overwrite
         allow = 0

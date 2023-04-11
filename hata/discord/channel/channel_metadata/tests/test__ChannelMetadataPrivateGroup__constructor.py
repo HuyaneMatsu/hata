@@ -6,7 +6,9 @@ from ....user import User
 from ..private_group import ChannelMetadataPrivateGroup
 
 
-def assert_fields_set(channel_metadata):
+def _assert_fields_set(channel_metadata):
+    vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
+    
     vampytest.assert_instance(channel_metadata.application_id, int)
     vampytest.assert_instance(channel_metadata.users, list)
     vampytest.assert_instance(channel_metadata.owner_id, int)
@@ -26,19 +28,14 @@ def test__ChannelMetadataPrivateGroup__new__0():
     icon = Icon(IconType.static, 1)
     name = 'Armelyrics'
     
-    keyword_parameters = {
-        'application_id': application_id,
-        'users': users,
-        'owner_id': owner_id,
-        'name': name,
-        'icon': icon,
-    }
-    channel_metadata = ChannelMetadataPrivateGroup(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
-    vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+    channel_metadata = ChannelMetadataPrivateGroup(
+        application_id = application_id,
+        users = users,
+        owner_id = owner_id,
+        name = name,
+        icon = icon,
+    )
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.application_id, application_id)
     vampytest.assert_eq(channel_metadata.users, users)
@@ -53,36 +50,19 @@ def test__ChannelMetadataPrivateGroup__new__1():
     
     Case: no fields given.
     """
-    keyword_parameters = {}
-    
-    channel_metadata = ChannelMetadataPrivateGroup(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
-    vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+    channel_metadata = ChannelMetadataPrivateGroup()
+    _assert_fields_set(channel_metadata)
 
-def test__ChannelMetadataPrivateGroup__create_empty():
+
+def test__ChannelMetadataPrivateGroup__from_keyword_parameters__0():
     """
-    Tests whether ``ChannelMetadataPrivateGroup._create_empty`` works as intended.
-    """
-    channel_metadata = ChannelMetadataPrivateGroup._create_empty()
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
-    
-    assert_fields_set(channel_metadata)
-
-
-
-def test__ChannelMetadataPrivateGroup__precreate__0():
-    """
-    Tests whether ``ChannelMetadataPrivateGroup.precreate`` works as intended.
+    Tests whether ``ChannelMetadataPrivateGroup.from_keyword_parameters`` works as intended.
     
     Case: all fields given.
     """
-    application_id = 202301210001
-    users = [User.precreate(202209160007)]
-    owner_id = 202209160008
+    application_id = 202304110028
+    users = [User.precreate(202304110029)]
+    owner_id = 202304110030
     icon = Icon(IconType.static, 1)
     name = 'Armelyrics'
     
@@ -90,16 +70,12 @@ def test__ChannelMetadataPrivateGroup__precreate__0():
         'application_id': application_id,
         'users': users,
         'owner_id': owner_id,
+        'name': name,
         'icon': icon,
-        'name': name
     }
-    
-    channel_metadata = ChannelMetadataPrivateGroup.precreate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
+    channel_metadata = ChannelMetadataPrivateGroup.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(channel_metadata)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.application_id, application_id)
     vampytest.assert_eq(channel_metadata.users, users)
@@ -108,17 +84,22 @@ def test__ChannelMetadataPrivateGroup__precreate__0():
     vampytest.assert_eq(channel_metadata.name, name)
 
 
-def test__ChannelMetadataPrivateGroup__precreate__1():
+def test__ChannelMetadataPrivateGroup__from_keyword_parameters__1():
     """
-    Tests whether ``ChannelMetadataPrivateGroup.precreate`` works as intended.
+    Tests whether ``ChannelMetadataPrivateGroup.from_keyword_parameters`` works as intended.
     
     Case: no fields given.
     """
     keyword_parameters = {}
     
-    channel_metadata = ChannelMetadataPrivateGroup.precreate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
+    channel_metadata = ChannelMetadataPrivateGroup.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(channel_metadata)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+
+
+def test__ChannelMetadataPrivateGroup__create_empty():
+    """
+    Tests whether ``ChannelMetadataPrivateGroup._create_empty`` works as intended.
+    """
+    channel_metadata = ChannelMetadataPrivateGroup._create_empty()
+    _assert_fields_set(channel_metadata)

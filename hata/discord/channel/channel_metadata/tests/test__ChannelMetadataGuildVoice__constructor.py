@@ -7,7 +7,9 @@ from ..preinstanced import VideoQualityMode, VoiceRegion
 from ..guild_voice import ChannelMetadataGuildVoice
 
 
-def assert_fields_set(channel_metadata):
+def _assert_fields_set(channel_metadata):
+    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoice)
+    
     vampytest.assert_instance(channel_metadata.parent_id, int)
     vampytest.assert_instance(channel_metadata.name, str)
     vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
@@ -38,24 +40,18 @@ def test__ChannelMetadataGuildVoice__new__0():
     nsfw = True
     video_quality_mode = VideoQualityMode.auto
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'permission_overwrites': permission_overwrites,
-        'position': position,
-        'bitrate': bitrate,
-        'region': region,
-        'user_limit': user_limit,
-        'nsfw': nsfw,
-        'video_quality_mode': video_quality_mode,
-    }
-    channel_metadata = ChannelMetadataGuildVoice(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoice)
-    vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
-    
+    channel_metadata = ChannelMetadataGuildVoice(
+        parent_id = parent_id,
+        name = name,
+        permission_overwrites = permission_overwrites,
+        position = position,
+        bitrate = bitrate,
+        region = region,
+        user_limit = user_limit,
+        nsfw = nsfw,
+        video_quality_mode = video_quality_mode,
+    )
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -77,38 +73,20 @@ def test__ChannelMetadataGuildVoice__new__1():
     
     Case: no fields given.
     """
-    keyword_parameters = {}
-    
-    channel_metadata = ChannelMetadataGuildVoice(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoice)
-    vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+    channel_metadata = ChannelMetadataGuildVoice()
+    _assert_fields_set(channel_metadata)
 
 
-def test__ChannelMetadataGuildVoice__create_empty():
+def test__ChannelMetadataGuildVoice__from_keyword_parameters__0():
     """
-    Tests whether ``ChannelMetadataGuildVoice._create_empty`` works as intended.
-    """
-    channel_metadata = ChannelMetadataGuildVoice._create_empty()
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoice)
-    
-    assert_fields_set(channel_metadata)
-
-
-
-def test__ChannelMetadataGuildVoice__precreate__0():
-    """
-    Tests whether ``ChannelMetadataGuildVoice.precreate`` works as intended.
+    Tests whether ``ChannelMetadataGuildVoice.from_keyword_parameters`` works as intended.
     
     Case: all fields given.
     """
-    parent_id = 202209170149
+    parent_id = 202304110024
     name = 'Armelyrics'
     permission_overwrites = [
-        PermissionOverwrite(202209170150, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202304110025, target_type = PermissionOverwriteTargetType.user)
     ]
     position = 7
     bitrate = 50000
@@ -128,13 +106,9 @@ def test__ChannelMetadataGuildVoice__precreate__0():
         'nsfw': nsfw,
         'video_quality_mode': video_quality_mode,
     }
-    
-    channel_metadata = ChannelMetadataGuildVoice.precreate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoice)
+    channel_metadata = ChannelMetadataGuildVoice.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(channel_metadata)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -150,17 +124,22 @@ def test__ChannelMetadataGuildVoice__precreate__0():
     vampytest.assert_eq(channel_metadata.video_quality_mode, video_quality_mode)
 
 
-def test__ChannelMetadataGuildVoice__precreate__1():
+def test__ChannelMetadataGuildVoice__from_keyword_parameters__1():
     """
-    Tests whether ``ChannelMetadataGuildVoice.precreate`` works as intended.
+    Tests whether ``ChannelMetadataGuildVoice.from_keyword_parameters`` works as intended.
     
     Case: no fields given.
     """
     keyword_parameters = {}
     
-    channel_metadata = ChannelMetadataGuildVoice.precreate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoice)
+    channel_metadata = ChannelMetadataGuildVoice.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(channel_metadata)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+
+
+def test__ChannelMetadataGuildVoice__create_empty():
+    """
+    Tests whether ``ChannelMetadataGuildVoice._create_empty`` works as intended.
+    """
+    channel_metadata = ChannelMetadataGuildVoice._create_empty()
+    _assert_fields_set(channel_metadata)

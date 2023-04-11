@@ -5,7 +5,9 @@ import vampytest
 from ..guild_thread_private import ChannelMetadataGuildThreadPrivate
 
 
-def assert_fields_set(channel_metadata):    
+def _assert_fields_set(channel_metadata):
+    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildThreadPrivate)
+    
     vampytest.assert_instance(channel_metadata.parent_id, int)
     vampytest.assert_instance(channel_metadata.name, str)
     vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
@@ -37,24 +39,19 @@ def test__ChannelMetadataGuildThreadPrivate__new__0():
     slowmode = 60
     invitable = True
     
-    keyword_parameters = {
-        'parent_id': parent_id,
-        'name': name,
-        'created_at': created_at,
-        'archived': archived,
-        'archived_at': archived_at,
-        'auto_archive_after': auto_archive_after,
-        'open': open_,
-        'owner_id': owner_id,
-        'slowmode': slowmode,
-        'invitable': invitable,
-    }
-    channel_metadata = ChannelMetadataGuildThreadPrivate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildThreadPrivate)
-    vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+    channel_metadata = ChannelMetadataGuildThreadPrivate(
+        parent_id = parent_id,
+        name = name,
+        created_at = created_at,
+        archived = archived,
+        archived_at = archived_at,
+        auto_archive_after = auto_archive_after,
+        open = open_,
+        owner_id = owner_id,
+        slowmode = slowmode,
+        invitable = invitable,
+    )
+    _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -74,42 +71,24 @@ def test__ChannelMetadataGuildThreadPrivate__new__1():
     
     Case: no fields given.
     """
-    keyword_parameters = {}
-    
-    channel_metadata = ChannelMetadataGuildThreadPrivate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildThreadPrivate)
-    vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+    channel_metadata = ChannelMetadataGuildThreadPrivate()
+    _assert_fields_set(channel_metadata)
 
 
-def test__ChannelMetadataGuildThreadPrivate__create_empty():
+def test__ChannelMetadataGuildThreadPrivate__from_keyword_parameters__0():
     """
-    Tests whether ``ChannelMetadataGuildThreadPrivate._create_empty`` works as intended.
-    """
-    channel_metadata = ChannelMetadataGuildThreadPrivate._create_empty()
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildThreadPrivate)
-    
-    assert_fields_set(channel_metadata)
-
-
-
-def test__ChannelMetadataGuildThreadPrivate__precreate__0():
-    """
-    Tests whether ``ChannelMetadataGuildThreadPrivate.precreate`` works as intended.
+    Tests whether ``ChannelMetadataGuildThreadPrivate.from_keyword_parameters`` works as intended.
     
     Case: all fields given.
     """
-    parent_id = 202209180038
+    parent_id = 202304110022
     name = 'Armelyrics'
     created_at = DateTime(2020, 5, 14)
     archived = True
     archived_at = DateTime(2021, 5, 14)
     auto_archive_after = 86400
     open_ = True
-    owner_id = 202209180039
+    owner_id = 202304110023
     slowmode = 60
     invitable = True
     
@@ -125,13 +104,9 @@ def test__ChannelMetadataGuildThreadPrivate__precreate__0():
         'slowmode': slowmode,
         'invitable': invitable,
     }
-    
-    channel_metadata = ChannelMetadataGuildThreadPrivate.precreate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildThreadPrivate)
+    channel_metadata = ChannelMetadataGuildThreadPrivate.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(channel_metadata)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -145,17 +120,22 @@ def test__ChannelMetadataGuildThreadPrivate__precreate__0():
     vampytest.assert_eq(channel_metadata.invitable, invitable)
 
 
-def test__ChannelMetadataGuildThreadPrivate__precreate__1():
+def test__ChannelMetadataGuildThreadPrivate__from_keyword_parameters__1():
     """
-    Tests whether ``ChannelMetadataGuildThreadPrivate.precreate`` works as intended.
+    Tests whether ``ChannelMetadataGuildThreadPrivate.from_keyword_parameters`` works as intended.
     
     Case: no fields given.
     """
     keyword_parameters = {}
     
-    channel_metadata = ChannelMetadataGuildThreadPrivate.precreate(keyword_parameters)
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataGuildThreadPrivate)
+    channel_metadata = ChannelMetadataGuildThreadPrivate.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(channel_metadata)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    assert_fields_set(channel_metadata)
+
+
+def test__ChannelMetadataGuildThreadPrivate__create_empty():
+    """
+    Tests whether ``ChannelMetadataGuildThreadPrivate._create_empty`` works as intended.
+    """
+    channel_metadata = ChannelMetadataGuildThreadPrivate._create_empty()
+    _assert_fields_set(channel_metadata)

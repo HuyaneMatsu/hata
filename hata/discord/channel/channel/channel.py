@@ -12,7 +12,6 @@ from ...bases import DiscordEntity
 from ...core import CHANNELS, GUILDS
 from ...core import MESSAGES
 from ...permission.permission import PERMISSION_STAGE_MODERATOR
-from ...preconverters import preconvert_preinstanced_type, preconvert_snowflake
 from ...user import ZEROUSER, create_partial_user_from_id
 from ...utils import DATETIME_FORMAT_CODE
 
@@ -21,6 +20,9 @@ from ..forum_tag import create_forum_tag_from_id
 from ..message_history import MessageHistory, MessageHistoryCollector, message_relative_index
 
 from .preinstanced import ChannelType
+from .fields import (
+    parse_id, parse_type, put_guild_id_into, put_id_into, put_type_into, validate_guild_id, validate_id, validate_type
+)
 from .flags import (
     CHANNEL_TYPE_MASK_CONNECTABLE, CHANNEL_TYPE_MASK_GUILD, CHANNEL_TYPE_MASK_GUILD_SORTABLE,
     CHANNEL_TYPE_MASK_GUILD_SYSTEM, CHANNEL_TYPE_MASK_INVITABLE, CHANNEL_TYPE_MASK_PRIVATE, CHANNEL_TYPE_MASK_TEXTUAL,
@@ -55,13 +57,13 @@ class Channel(DiscordEntity, immortal = True):
     """
     __slots__ = ('_message_history', 'guild_id', 'metadata', 'type')
     
-    def __new__(cls, *, channel_type = None, **keyword_parameters):
+    def __new__(cls, *, channel_type = ..., **keyword_parameters):
         """
         Creates a partial channel with the given parameters.
         
         Parameters
         ----------
-        channel_type : `None`, `int`, ``ChanelType`` = `None`, Optional (Keyword only)
+        channel_type : `None`, `int`, ``ChanelType``, Optional (Keyword only)
             The channel's type.
         
         **keyword_parameters : Keyword parameters
@@ -178,10 +180,10 @@ class Channel(DiscordEntity, immortal = True):
         ValueError
             If an parameter's type is good, but it's value is unacceptable.
         """
-        if channel_type is None:
+        if channel_type is ...:
             channel_type = ChannelType.unknown
         else:
-            channel_type = preconvert_preinstanced_type(channel_type, 'channel_type', ChannelType)
+            channel_type = validate_type(channel_type)
         
         metadata = channel_type.metadata_type.from_keyword_parameters(keyword_parameters)
         
@@ -219,8 +221,8 @@ class Channel(DiscordEntity, immortal = True):
         RuntimeError
             The respective channel type cannot be instanced.
         """
-        channel_id = int(data['id'])
-        channel_type = ChannelType.get(data['type'])
+        channel_id = parse_id(data)
+        channel_type = parse_type(data)
         
         try:
             self = CHANNELS[channel_id]
@@ -688,7 +690,7 @@ class Channel(DiscordEntity, immortal = True):
         data : `dict` of (`str`, `object`) items
             Channel data received from Discord.
         """
-        channel_type = ChannelType.get(data['type'])
+        channel_type = parse_type(data)
         
         if channel_type is self.type:
             self.metadata._update_attributes(data)
@@ -775,7 +777,7 @@ class Channel(DiscordEntity, immortal = True):
             | video_quality_mode                    | ``VideoQualityMode``                                      |
             +---------------------------------------+-----------------------------------------------------------+
         """
-        channel_type = ChannelType.get(data['type'])
+        channel_type = parse_type(data)
         
         if channel_type is self.type:
             old_attributes = self.metadata._difference_update_attributes(data)
@@ -844,7 +846,7 @@ class Channel(DiscordEntity, immortal = True):
         -------
         channel : ``Channel``
         """
-        channel_type = ChannelType.get(data.get('type', -1))
+        channel_type = parse_type(data)
         metadata = channel_type.metadata_type._from_partial_data(data)
         
         self = object.__new__(cls)
@@ -898,26 +900,19 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = self.metadata.to_data(defaults = defaults, include_internals = include_internals)
         
-        # id
-        if include_internals:
-            data['id'] = str(self.id)
-        
         # type
-        data['type'] = self.type.value
+        put_type_into(self.type, data, defaults)
         
-        # guild_id
         if include_internals:
-            guild_id = self.guild_id
-            if guild_id:
-                guild_id = str(guild_id)
-            else:
-                guild_id = None
+            # id
+            put_id_into(self.id, data, defaults)
             
-            data['guild_id'] = guild_id
+            # guild_id
+            put_guild_id_into(self.guild_id, data, defaults)
         
         return data
     
@@ -1545,7 +1540,7 @@ class Channel(DiscordEntity, immortal = True):
     
     
     @classmethod
-    def precreate(cls, channel_id, *, channel_type = None, guild_id = 0, **keyword_parameters):
+    def precreate(cls, channel_id, *, channel_type = ..., guild_id = ..., **keyword_parameters):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
         the precreated channel will be picked up. If an already existing channel would be precreated, returns that
@@ -1556,10 +1551,10 @@ class Channel(DiscordEntity, immortal = True):
         channel_id : `int`, `str`
             The channel's id.
         
-        channel_type : `None`, `int`, ``ChanelType`` = `None`, Optional (Keyword only)
+        channel_type : `None`, `int`, ``ChanelType``, Optional (Keyword only)
             The channel's type.
 
-        guild_id : `int` = `0`, Optional (Keyword only)
+        guild_id : `int`, ``Guild``, Optional (Keyword only)
             The channel's parent guild's identifier.
         
         **keyword_parameters : Keyword parameters
@@ -1680,13 +1675,17 @@ class Channel(DiscordEntity, immortal = True):
         ValueError
             If an parameter's type is good, but it's value is unacceptable.
         """
-        channel_id = preconvert_snowflake(channel_id, 'channel_id')
-        guild_id = preconvert_snowflake(guild_id, 'guild_id')
+        channel_id = validate_id(channel_id)
         
-        if channel_type is None:
+        if guild_id is ...:
+            guild_id = 0
+        else:
+            guild_id = validate_guild_id(guild_id)
+        
+        if channel_type is ...:
             channel_type = ChannelType.unknown
         else:
-            channel_type = preconvert_preinstanced_type(channel_type, 'channel_type', ChannelType)
+            channel_type = validate_type(channel_type)
         
         metadata = channel_type.metadata_type.from_keyword_parameters(keyword_parameters)
         

@@ -200,6 +200,70 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         return self
     
     
+    @copy_docs(ChannelMetadataBase.copy)
+    def copy(self):
+        new = object.__new__(type(self))
+        new._permission_cache = None
+        new.parent_id = self.parent_id
+        new.name = self.name
+        return new
+    
+    
+    def copy_with(
+        self,
+        *,
+        name = ...,
+        parent_id = ...,
+    ):
+        """
+        Copies the guild base channel metadata with the given fields.
+        
+        Parameters
+        ----------
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # name
+        if name is ...:
+            name = self.name
+        else:
+            name = validate_name(name)
+        
+        # parent_id
+        if parent_id is ...:
+            parent_id = self.parent_id
+        else:
+            parent_id = validate_parent_id(parent_id)
+        
+        # Construct
+        self = object.__new__(type(self))
+        self._permission_cache = None
+        self.name = name
+        self.parent_id = parent_id
+        return self
+    
+    
+    @copy_docs(ChannelMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            name = keyword_parameters.pop('name', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+        )
+    
+    
     @copy_docs(ChannelMetadataBase._get_users)
     def _get_users(self, channel_entity):
         return [*self._iter_users(channel_entity)]

@@ -180,6 +180,105 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         return self
     
     
+    @copy_docs(ChannelMetadataGuildVoiceBase.copy)
+    def copy(self):
+        new = ChannelMetadataGuildVoiceBase.copy(self)
+        new.nsfw = self.nsfw
+        new.video_quality_mode = self.video_quality_mode
+        return new
+    
+    
+    def copy_with(
+        self,
+        *,
+        bitrate = ...,
+        name = ...,
+        nsfw = ...,
+        parent_id = ...,
+        permission_overwrites = ...,
+        position = ...,
+        region = ...,
+        user_limit = ...,
+        video_quality_mode = ...,
+    ):
+        """
+        Copies the guild voice channel metadata from the given fields.
+        
+        Parameters
+        ----------
+        bitrate : `int`, Optional (Keyword only)
+            The bitrate (in bits) of the voice channel.
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        nsfw : `bool`, Optional (Keyword only)
+            Whether the channel is marked as non safe for work.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        region : ``VoiceRegion``, `str`, Optional (Keyword only)
+            The voice region of the channel.
+        user_limit : `int`, Optional (Keyword only)
+            The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+        video_quality_mode : ``VideoQualityMode``, `int`, Optional (Keyword only)
+            The video quality of the voice channel.
+        
+        Returns
+        -------
+        instance<type<self>>
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # nsfw
+        if nsfw is ...:
+            nsfw = self.nsfw
+        else:
+            nsfw = validate_nsfw(nsfw)
+        
+        # video_quality_mode
+        if video_quality_mode is ...:
+            video_quality_mode = self.video_quality_mode
+        else:
+            video_quality_mode = validate_video_quality_mode(video_quality_mode)
+        
+        # Construct
+        new = ChannelMetadataGuildVoiceBase.copy_with(
+            self,
+            bitrate = bitrate,
+            name = name,
+            parent_id = parent_id,
+            permission_overwrites = permission_overwrites,
+            position = position,
+            region = region,
+            user_limit = user_limit,
+        )
+        new.nsfw = nsfw
+        new.video_quality_mode = video_quality_mode
+        return new
+    
+    
+    @copy_docs(ChannelMetadataGuildVoiceBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            bitrate = keyword_parameters.pop('bitrate', ...),
+            name = keyword_parameters.pop('name', ...),
+            nsfw = keyword_parameters.pop('nsfw', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
+            position = keyword_parameters.pop('position', ...),
+            region = keyword_parameters.pop('region', ...),
+            user_limit = keyword_parameters.pop('user_limit', ...),
+            video_quality_mode = keyword_parameters.pop('video_quality_mode', ...),
+        )
+    
+    
     @copy_docs(ChannelMetadataGuildVoiceBase._update_attributes)
     def _update_attributes(self, data):
         ChannelMetadataGuildVoiceBase._update_attributes(self, data)

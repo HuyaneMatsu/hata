@@ -144,6 +144,78 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
         self.nsfw = parse_nsfw(data)
     
     
+    @copy_docs(ChannelMetadataGuildMainBase.copy)
+    def copy(self):
+        new = ChannelMetadataGuildMainBase.copy(self)
+        new.nsfw = self.nsfw
+        return new
+    
+    
+    def copy_with(
+        self,
+        *,
+        name = ...,
+        nsfw = ...,
+        parent_id = ...,
+        permission_overwrites = ...,
+        position = ...,
+    ):
+        """
+        Copies the guild store channel metadata from the given fields.
+        
+        Parameters
+        ----------
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        nsfw : `bool`, Optional (Keyword only)
+            Whether the channel is marked as non safe for work.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # nsfw
+        if nsfw is ...:
+            nsfw = self.nsfw
+        else:
+            nsfw = validate_nsfw(nsfw)
+        
+        # Construct
+        new = ChannelMetadataGuildMainBase.copy_with(
+            self,
+            name = name,
+            permission_overwrites = permission_overwrites,
+            parent_id = parent_id,
+            position = position,
+        )
+        new.nsfw = nsfw
+        return new
+    
+    
+    @copy_docs(ChannelMetadataGuildMainBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            name = keyword_parameters.pop('name', ...),
+            nsfw = keyword_parameters.pop('nsfw', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
+            position = keyword_parameters.pop('position', ...),
+        )
+    
+    
     @copy_docs(ChannelMetadataGuildMainBase._difference_update_attributes)
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataGuildMainBase._difference_update_attributes(self, data)

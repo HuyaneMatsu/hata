@@ -98,22 +98,23 @@ def test__ChannelMetadataGuildVoiceBase__update_attributes():
     Tests whether ``ChannelMetadataGuildVoiceBase._update_attributes`` works as intended.
     """
     old_parent_id = 202209170132
-    new_parent_id = 202209170133
     old_name = 'Armelyrics'
-    new_name = 'Okuu'
     old_permission_overwrites = [
         PermissionOverwrite(202209170134, target_type = PermissionOverwriteTargetType.user)
     ]
+    old_position = 7
+    old_bitrate = 50000
+    old_region = VoiceRegion.brazil
+    old_user_limit = 4
+    
+    new_parent_id = 202209170133
+    new_name = 'Okuu'
     new_permission_overwrites = [
         PermissionOverwrite(202209170135, target_type = PermissionOverwriteTargetType.role)
     ]
-    old_position = 7
     new_position = 5
-    old_bitrate = 50000
     new_bitrate = 60000
-    old_region = VoiceRegion.brazil
     new_region = VoiceRegion.india
-    old_user_limit = 4
     new_user_limit = 5
     
     channel_metadata = ChannelMetadataGuildVoiceBase(

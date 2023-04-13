@@ -177,6 +177,102 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
         return self
     
     
+    @copy_docs(ChannelMetadataGuildMainBase.copy)
+    def copy(self):
+        new = ChannelMetadataGuildMainBase.copy(self)
+        new.bitrate = self.bitrate
+        new.region = self.region
+        new.user_limit = self.user_limit
+        return new
+    
+    
+    def copy_with(
+        self,
+        *,
+        bitrate = ...,
+        name = ...,
+        parent_id = ...,
+        permission_overwrites = ...,
+        position = ...,
+        region = ...,
+        user_limit = ...,
+    ):
+        """
+        Copies the guild voice base channel metadata with the given fields.
+        
+        Parameters
+        ----------
+        bitrate : `int`, Optional (Keyword only)
+            The bitrate (in bits) of the voice channel.
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        region : ``VoiceRegion``, `str`, Optional (Keyword only)
+            The voice region of the channel.
+        user_limit : `int`, Optional (Keyword only)
+            The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # bitrate
+        if bitrate is ...:
+            bitrate = self.bitrate
+        else:
+            bitrate = validate_bitrate(bitrate)
+        
+        # region
+        if region is ...:
+            region = self.region
+        else:
+            region = validate_region(region)
+        
+        # user_limit
+        if user_limit is ...:
+            user_limit = self.user_limit
+        else:
+            user_limit = validate_user_limit(user_limit)
+        
+        # Construct
+        new = ChannelMetadataGuildMainBase.copy_with(
+            self,
+            name = name,
+            permission_overwrites = permission_overwrites,
+            parent_id = parent_id,
+            position = position,
+        )
+        new.bitrate = bitrate
+        new.region = region
+        new.user_limit = user_limit
+        return new
+    
+    
+    @copy_docs(ChannelMetadataGuildMainBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            bitrate = keyword_parameters.pop('bitrate', ...),
+            name = keyword_parameters.pop('name', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
+            position = keyword_parameters.pop('position', ...),
+            region = keyword_parameters.pop('region', ...),
+            user_limit = keyword_parameters.pop('user_limit', ...),
+        )
+    
+    
     @copy_docs(ChannelMetadataGuildMainBase._update_attributes)
     def _update_attributes(self, data):
         ChannelMetadataGuildMainBase._update_attributes(self, data)

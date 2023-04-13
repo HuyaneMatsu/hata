@@ -216,6 +216,94 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
         return self
     
     
+    @copy_docs(ChannelMetadataGuildBase.copy)
+    def copy(self):
+        new = ChannelMetadataGuildBase.copy(self)
+        
+        permission_overwrites = self.permission_overwrites
+        if (permission_overwrites is not None):
+            permission_overwrites = {
+                target_id: permission_overwrite.copy()
+                for target_id, permission_overwrite in permission_overwrites.items()
+            }
+        new.permission_overwrites = permission_overwrites
+        
+        new.position = self.position
+        
+        return new
+    
+    
+    def copy_with(
+        self,
+        *,
+        name = ...,
+        parent_id = ...,
+        permission_overwrites = ...,
+        position = ...,
+    ):
+        """
+        Copies the guild main base channel metadata with the given fields.
+        
+        Parameters
+        ----------
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # permission_overwrites
+        if permission_overwrites is ...:
+            permission_overwrites = self.permission_overwrites
+            if (permission_overwrites is not None):
+                permission_overwrites = {
+                    target_id: permission_overwrite.copy()
+                    for target_id, permission_overwrite in permission_overwrites.items()
+                }
+        else:
+            permission_overwrites = validate_permission_overwrites(permission_overwrites)
+        
+        # position
+        if position is ...:
+            position = self.position
+        else:
+            position = validate_position(position)
+        
+        # Construct
+        new = ChannelMetadataGuildBase.copy_with(
+            self,
+            name = name,
+            parent_id = parent_id,
+        )
+        new.permission_overwrites = permission_overwrites
+        new.position = position
+        return new
+    
+    
+    @copy_docs(ChannelMetadataGuildBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            name = keyword_parameters.pop('name', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
+            position = keyword_parameters.pop('position', ...),
+        )
+    
+    
     def _get_base_permissions_for(self, channel_entity, user):
         """
         Base permission calculator method. Subclasses call this first, then apply their channel type related changes.

@@ -279,12 +279,148 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         self.archived = False
         self.archived_at = None
         self.auto_archive_after = AUTO_ARCHIVE_DEFAULT
-        self.open = False
+        self.open = True
         self.owner_id = 0
         self.slowmode = SLOWMODE_DEFAULT
         self.thread_users = None
         
         return self
+    
+    
+    @copy_docs(ChannelMetadataGuildBase.copy)
+    def copy(self):
+        new = ChannelMetadataGuildBase.copy(self)
+        new._created_at = self._created_at
+        new.archived = self.archived
+        new.archived_at = self.archived_at
+        new.auto_archive_after = self.auto_archive_after
+        new.open = self.open
+        new.owner_id = self.owner_id
+        new.slowmode = self.slowmode
+        new.thread_users = None
+        return new
+    
+    
+    def copy_with(
+        self,
+        *,
+        archived = ...,
+        archived_at = ...,
+        auto_archive_after = ...,
+        created_at = ...,
+        name = ...,
+        parent_id = ...,
+        open = ...,
+        owner_id = ...,
+        slowmode = ...,
+    ):
+        """
+        Copies the guild thread base channel metadata with the given fields.
+        
+        Parameters
+        ----------
+        archived : `bool`, Optional (Keyword only)
+            Whether the thread is archived.
+        archived_at : `None`, `datetime`, Optional (Keyword only)
+            When the thread's archive status was last changed.
+        auto_archive_after : `int`, Optional (Keyword only)
+            Duration in seconds to automatically archive the thread after recent activity.
+        created_at : `None`, `datetime`, Optional (Keyword only)
+            When the channel was created.
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        open : `bool`, Optional (Keyword only)
+            Whether the thread channel is open.
+        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+            The channel's creator's identifier.
+        slowmode : `int`, Optional (Keyword only)
+            The amount of time in seconds what a user needs to wait between it's each message.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # archived
+        if archived is ...:
+            archived = self.archived
+        else:
+            archived = validate_archived(archived)
+        
+        # archived_at
+        if archived_at is ...:
+            archived_at = self.archived_at
+        else:
+            archived_at = validate_archived_at(archived_at)
+        
+        # auto_archive_after
+        if auto_archive_after is ...:
+            auto_archive_after = self.auto_archive_after
+        else:
+            auto_archive_after = validate_auto_archive_after(auto_archive_after)
+        
+        # created_at
+        if created_at is ...:
+            created_at = self._created_at
+        else:
+            created_at = validate_created_at(created_at)
+        
+        # open
+        if open is ...:
+            open = self.open
+        else:
+            open = validate_open(open)
+        
+        # owner_id
+        if owner_id is ...:
+            owner_id = self.owner_id
+        else:
+            owner_id = validate_owner_id(owner_id)
+        
+        # slowmode
+        if slowmode is ...:
+            slowmode = self.slowmode
+        else:
+            slowmode = validate_slowmode(slowmode)
+        
+        # Construct
+        new = ChannelMetadataGuildBase.copy_with(
+            self,
+            name = name,
+            parent_id = parent_id,
+        )
+        new._created_at = created_at
+        new.archived = archived
+        new.archived_at = archived_at
+        new.auto_archive_after = auto_archive_after
+        new.open = open
+        new.owner_id = owner_id
+        new.slowmode = slowmode
+        new.thread_users = None
+        return new
+    
+    
+    @copy_docs(ChannelMetadataGuildBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            archived = keyword_parameters.pop('archived', ...),
+            archived_at = keyword_parameters.pop('archived_at', ...),
+            auto_archive_after = keyword_parameters.pop('auto_archive_after', ...),
+            created_at = keyword_parameters.pop('created_at', ...),
+            name = keyword_parameters.pop('name', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            open = keyword_parameters.pop('open', ...),
+            owner_id = keyword_parameters.pop('owner_id', ...),
+            slowmode = keyword_parameters.pop('slowmode', ...),
+        )
     
     
     @copy_docs(ChannelMetadataGuildBase._get_display_name)

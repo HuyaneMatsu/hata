@@ -109,26 +109,27 @@ def test__ChannelMetadataGuildTextBase__update_attributes():
     Tests whether ``ChannelMetadataGuildTextBase._update_attributes`` works as intended.
     """
     old_parent_id = 202209170198
-    new_parent_id = 202209170199
     old_name = 'Armelyrics'
-    new_name = 'Okuu'
     old_permission_overwrites = [
         PermissionOverwrite(202209170200, target_type = PermissionOverwriteTargetType.user)
     ]
+    old_position = 7
+    old_default_thread_auto_archive_after = 86400
+    old_default_thread_slowmode = 60
+    old_nsfw = True
+    old_slowmode = 30
+    old_topic = 'rin'
+    
+    new_parent_id = 202209170199
+    new_name = 'Okuu'
     new_permission_overwrites = [
         PermissionOverwrite(202209170201, target_type = PermissionOverwriteTargetType.role)
     ]
-    old_position = 7
     new_position = 5
-    old_default_thread_auto_archive_after = 86400
     new_default_thread_auto_archive_after = 3600
-    old_default_thread_slowmode = 60
     new_default_thread_slowmode = 69
-    old_nsfw = True
     new_nsfw = False
-    old_slowmode = 30
     new_slowmode = 33
-    old_topic = 'rin'
     new_topic = 'orin'
     
     channel_metadata = ChannelMetadataGuildTextBase(

@@ -45,7 +45,7 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
     """
     __slots__ = ('topic',)
     
-
+    
     def __new__(
         cls,
         *,
@@ -155,6 +155,94 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         self.topic = None
         
         return self
+    
+    
+    @copy_docs(ChannelMetadataGuildVoiceBase.copy)
+    def copy(self):
+        new = ChannelMetadataGuildVoiceBase.copy(self)
+        new.topic = self.topic
+        return new
+    
+    
+    def copy_with(
+        self,
+        *,
+        bitrate = ...,
+        name = ...,
+        parent_id = ...,
+        permission_overwrites = ...,
+        position = ...,
+        region = ...,
+        user_limit = ...,
+        topic = ...,
+    ):
+        """
+        Copies the guild voice channel metadata with the given fields.
+        
+        Parameters
+        ----------
+        bitrate : `int`, Optional (Keyword only)
+            The bitrate (in bits) of the voice channel.
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        permission_overwrites : `None`, `iterable` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        region : ``VoiceRegion``, `str`, Optional (Keyword only)
+            The voice region of the channel.
+        user_limit : `int`, Optional (Keyword only)
+            The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+        topic : `None`, `str`, Optional (Keyword only)
+            The channel's topic.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # topic
+        if topic is ...:
+            topic = self.topic
+        else:
+            topic = validate_topic(topic)
+        
+        # Construct
+        new = ChannelMetadataGuildVoiceBase.copy_with(
+            self,
+            bitrate = bitrate,
+            name = name,
+            permission_overwrites = permission_overwrites,
+            parent_id = parent_id,
+            position = position,
+            region = region,
+            user_limit = user_limit,
+        )
+        new.topic = topic
+        return new
+    
+    
+    @copy_docs(ChannelMetadataGuildVoiceBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            bitrate = keyword_parameters.pop('bitrate', ...),
+            name = keyword_parameters.pop('name', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
+            position = keyword_parameters.pop('position', ...),
+            region = keyword_parameters.pop('region', ...),
+            user_limit = keyword_parameters.pop('user_limit', ...),
+            topic = keyword_parameters.pop('topic', ...),
+        )
+    
     
     
     @copy_docs(ChannelMetadataGuildVoiceBase._update_attributes)

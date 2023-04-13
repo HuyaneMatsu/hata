@@ -151,17 +151,11 @@ def test__ChannelMetadataGuildForum__update_attributes():
     Tests whether ``ChannelMetadataGuildForum._update_attributes`` works as intended.
     """
     old_parent_id = 202209170083
-    new_parent_id = 202209170084
     old_name = 'Armelyrics'
-    new_name = 'Okuu'
     old_permission_overwrites = [
         PermissionOverwrite(202209170085, target_type = PermissionOverwriteTargetType.user)
     ]
-    new_permission_overwrites = [
-        PermissionOverwrite(202209170086, target_type = PermissionOverwriteTargetType.role)
-    ]
     old_position = 7
-    new_position = 5
     old_available_tags = [
         ForumTag.precreate(
             202209170087,
@@ -170,6 +164,20 @@ def test__ChannelMetadataGuildForum__update_attributes():
             moderated = False,
         )
     ]
+    old_default_thread_auto_archive_after = 86400
+    old_default_thread_reaction = BUILTIN_EMOJIS['monkey']
+    old_default_thread_slowmode = 60
+    old_flags = ChannelFlag(1)
+    old_topic = 'Dearest'
+    old_default_sort_order = SortOrder.creation_date
+    old_default_forum_layout = ForumLayout.list
+    
+    new_parent_id = 202209170084
+    new_name = 'Okuu'
+    new_permission_overwrites = [
+        PermissionOverwrite(202209170086, target_type = PermissionOverwriteTargetType.role)
+    ]
+    new_position = 5
     new_available_tags = [
         ForumTag.precreate(
             202209170088,
@@ -178,19 +186,12 @@ def test__ChannelMetadataGuildForum__update_attributes():
             moderated = True,
         )
     ]
-    old_default_thread_auto_archive_after = 86400
     new_default_thread_auto_archive_after = 3600
-    old_default_thread_reaction = BUILTIN_EMOJIS['monkey']
     new_default_thread_reaction = BUILTIN_EMOJIS['radio']
-    old_default_thread_slowmode = 60
     new_default_thread_slowmode = 600
-    old_flags = ChannelFlag(1)
     new_flags = ChannelFlag(4)
-    old_topic = 'Dearest'
     new_topic = 'My'
-    old_default_sort_order = SortOrder.creation_date
     new_default_sort_order = SortOrder.latest_activity
-    old_default_forum_layout = ForumLayout.list
     new_default_forum_layout = ForumLayout.gallery
     
     channel_metadata = ChannelMetadataGuildForum(

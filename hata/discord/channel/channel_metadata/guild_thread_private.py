@@ -165,8 +165,105 @@ class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
         self.invitable = True
         
         return self
-
-
+    
+    
+    @copy_docs(ChannelMetadataGuildThreadBase.copy)
+    def copy(self):
+        new = ChannelMetadataGuildThreadBase.copy(self)
+        new.invitable = self.invitable
+        return new
+    
+    
+    def copy_with(
+        self,
+        *,
+        archived = ...,
+        archived_at = ...,
+        auto_archive_after = ...,
+        created_at = ...,
+        invitable = ...,
+        name = ...,
+        parent_id = ...,
+        open = ...,
+        owner_id = ...,
+        slowmode = ...,
+    ):
+        """
+        Copies the guild public thread channel metadata with the given fields.
+        
+        Parameters
+        ----------
+        archived : `bool`, Optional (Keyword only)
+            Whether the thread is archived.
+        archived_at : `None`, `datetime`, Optional (Keyword only)
+            When the thread's archive status was last changed.
+        auto_archive_after : `int`, Optional (Keyword only)
+            Duration in seconds to automatically archive the thread after recent activity.
+        created_at : `None`, `datetime`, Optional (Keyword only)
+            When the channel was created.
+        invitable : `bool`, Optional (Keyword only)
+            Whether non-moderators can invite other non-moderators to the threads.
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        parent_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        open : `bool`, Optional (Keyword only)
+            Whether the thread channel is open.
+        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+            The channel's creator's identifier.
+        slowmode : `int`, Optional (Keyword only)
+            The amount of time in seconds what a user needs to wait between it's each message.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # invitable
+        if invitable is ...:
+            invitable = self.invitable
+        else:
+            invitable = validate_invitable(invitable)
+        
+        # Construct
+        new = ChannelMetadataGuildThreadBase.copy_with(
+            self,
+            archived = archived,
+            archived_at = archived_at,
+            auto_archive_after = auto_archive_after,
+            created_at = created_at,
+            name = name,
+            open = open,
+            owner_id = owner_id,
+            parent_id = parent_id,
+            slowmode = slowmode,
+        )
+        new.invitable = invitable
+        return new
+    
+    
+    @copy_docs(ChannelMetadataGuildThreadBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            archived = keyword_parameters.pop('archived', ...),
+            archived_at = keyword_parameters.pop('archived_at', ...),
+            auto_archive_after = keyword_parameters.pop('auto_archive_after', ...),
+            created_at = keyword_parameters.pop('created_at', ...),
+            invitable = keyword_parameters.pop('invitable', ...),
+            name = keyword_parameters.pop('name', ...),
+            parent_id = keyword_parameters.pop('parent_id', ...),
+            open = keyword_parameters.pop('open', ...),
+            owner_id = keyword_parameters.pop('owner_id', ...),
+            slowmode = keyword_parameters.pop('slowmode', ...),
+        )
+    
+    
     @copy_docs(ChannelMetadataGuildThreadBase._update_attributes)
     def _update_attributes(self, data):
         ChannelMetadataGuildThreadBase._update_attributes(self, data)

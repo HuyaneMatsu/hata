@@ -10,6 +10,77 @@ from ...forum_tag import ForumTag
 
 from ..preinstanced import ChannelType
 
+from .test__Channel__constructor import _assert_fields_set
+
+
+def test__Channel__copy():
+    """
+    Tests whether ``Channel.copy`` works as intended.
+    """
+    channel_type = ChannelType.guild_text
+    name = 'Yuuka'
+    
+    channel = Channel(
+        channel_type = channel_type,
+        name = name,
+    )
+    
+    copy = channel.copy()
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(channel, copy)
+    
+    vampytest.assert_eq(channel, copy)
+
+
+def test__Channel__copy_with__0():
+    """
+    Tests whether ``Channel.copy_with`` works as intended.
+    
+    Case: No fields given.
+    """
+    channel_type = ChannelType.guild_text
+    name = 'Yuuka'
+    
+    channel = Channel(
+        channel_type = channel_type,
+        name = name,
+    )
+    
+    copy = channel.copy_with()
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(channel, copy)
+    
+    vampytest.assert_eq(channel, copy)
+
+
+def test__Channel__copy_with__1():
+    """
+    Tests whether ``Channel.copy_with`` works as intended.
+    
+    Case: Fields given.
+    """
+    old_channel_type = ChannelType.guild_text
+    old_name = 'Yuuka'
+    
+    new_channel_type = ChannelType.guild_voice
+    new_name = 'koishi'
+    
+    channel = Channel(
+        channel_type = old_channel_type,
+        name = old_name,
+    )
+    
+    copy = channel.copy_with(
+        channel_type = new_channel_type,
+        name = new_name,
+    )
+    
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(channel, copy)
+    
+    vampytest.assert_is(copy.type, new_channel_type)
+    vampytest.assert_eq(copy.name, new_name)
+
 
 def test__Channel__get_user__0():
     """

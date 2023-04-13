@@ -285,6 +285,58 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         return object.__new__(cls)
     
     
+    def copy(self):
+        """
+        Copies the channel metadata returning a new one.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        return object.__new__(type(self))
+    
+    
+    def copy_with(self):
+        """
+        Copies the channel metadata with the given fields.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return self.copy()
+    
+    
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        """
+        Copies the channel metadata with the given keyword parameters.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict` of (`str`, `object`) items
+            Keyword parameters to copy the channel metadata with. The used ones are removed from the dictionary.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return self.copy_with()
+    
+    
     def _delete(self, channel_entity, client):
         """
         Called when the channel is deleted.

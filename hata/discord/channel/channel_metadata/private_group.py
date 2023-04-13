@@ -42,9 +42,17 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass = Slotte
     icon = CHANNEL_METADATA_ICON_SLOT
     
     
-    def __new__(cls, *, application_id = ..., icon = ..., name = ..., owner_id = ..., users = ...):
+    def __new__(
+        cls,
+        *,
+        application_id = ...,
+        icon = ...,
+        name = ...,
+        owner_id = ...,
+        users = ...,
+    ):
         """
-        Creates a new private guild channel metadata from the given parameters.
+        Creates a new private group channel metadata from the given parameters.
         
         Parameters
         ----------
@@ -279,6 +287,96 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass = Slotte
         self.icon_type = ICON_TYPE_NONE
         
         return self
+    
+    
+    @copy_docs(ChannelMetadataPrivateBase.copy)
+    def copy(self):
+        new = ChannelMetadataPrivateBase.copy(self)
+        new.application_id = self.application_id
+        new.name = self.name
+        new.owner_id = self.owner_id
+        new.icon_hash = self.icon_hash
+        new.icon_type = self.icon_type
+        return new
+    
+    
+    def copy_with(
+        self,
+        *,
+        application_id = ...,
+        icon = ...,
+        name = ...,
+        owner_id = ...,
+        users = ...,
+    ):
+        """
+        Copies the private group channel metadata with the given fields.
+        
+        Parameters
+        ----------
+        application_id : `int`, ``Application``, Optional (Keyword only)
+            The application's identifier the channel is managed by.
+        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The channel's icon.
+        name : `str`, Optional (Keyword only)
+            The channel's display name. Can be empty string if the channel has no name.
+        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+            The group channel's owner's id.
+        users : `iterable` of ``ClientUserBase``, Optional (Keyword only)
+            The users in the channel.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # application_id
+        if application_id is ...:
+            application_id = self.application_id
+        else:
+            application_id = validate_application_id(application_id)
+        
+        # icon
+        if icon is ...:
+            icon = self.icon
+        else:
+            icon = type(self).icon.validate_icon(icon, allow_data = True)
+            
+        # name
+        if name is ...:
+            name = self.name
+        else:
+            name = validate_name(name)
+        
+        # owner_id
+        if owner_id is ...:
+            owner_id = self.owner_id
+        else:
+            owner_id = validate_owner_id(owner_id)
+    
+        # Construct
+        new = ChannelMetadataPrivateBase.copy_with(
+            self,
+            users = users,
+        )
+        new.application_id = application_id
+        new.icon = icon
+        new.name = name
+        new.owner_id = owner_id
+        return new
+    
+    
+    @copy_docs(ChannelMetadataPrivateBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            application_id = keyword_parameters.pop('application_id', ...),
+            icon = keyword_parameters.pop('icon', ...),
+            name = keyword_parameters.pop('name', ...),
+            owner_id = keyword_parameters.pop('owner_id', ...),
+            users = keyword_parameters.pop('users', ...),
+        )
     
     
     @copy_docs(ChannelMetadataPrivateBase.to_data)

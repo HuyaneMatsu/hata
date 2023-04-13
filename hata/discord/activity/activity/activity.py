@@ -38,7 +38,7 @@ class Activity(RichAttributeErrorBaseType):
         ----------
         name : `None`, `str` =  `None`, Optional
             The name of the activity.
-        activity_type : `int`, ``ActivityType`` = `None`, Optional (Keyword only)
+        activity_type : `int`, ``ActivityType``, Optional (Keyword only)
             The type value of the activity.
         **keyword_parameters : Keyword parameters
             Additional parameters to pass to the activity-type specific constructor.
@@ -381,9 +381,7 @@ class Activity(RichAttributeErrorBaseType):
 
         Parameters
         ----------
-        name : `None`, `str` =  `None`, Optional
-            The name of the activity.
-        activity_type : `int`, ``ActivityType`` = `None`, Optional (Keyword only)
+        activity_type : `int`, ``ActivityType``, Optional (Keyword only)
             The type value of the activity.
         **keyword_parameters : Keyword parameters
             Additional parameters to pass to the activity-type specific constructor.
@@ -402,6 +400,8 @@ class Activity(RichAttributeErrorBaseType):
             What the player is currently doing.
         flags : ``ActivityFlag``, `int`, Optional (Keyword only)
             The flags of the activity.
+        name : `None`, `str`, Optional (Keyword only)
+            The name of the activity.
         party : `None`, ``ActivityParty``, Optional (Keyword only)
             The activity's party.
         secrets : `None`, ``ActivitySecret``, Optional (Keyword only)

@@ -24,7 +24,11 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
     __slots__ = ('users',)
     
     
-    def __new__(cls, *, users = ...):
+    def __new__(
+        cls,
+        *,
+        users = ...,
+    ):
         """
         Creates a new private base channel metadata from the given parameters.
         
@@ -121,6 +125,56 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
         self.users = []
         
         return self
+    
+    
+    @copy_docs(ChannelMetadataBase.copy)
+    def copy(self):
+        new = object.__new__(type(self))
+        new.users = self.users.copy()
+        return new
+    
+    
+    def copy_with(
+        self,
+        *,
+        users = ...,
+    ):
+        """
+        Copies the private base channel metadata with the given fields.
+        
+        Parameters
+        ----------
+        users : `iterable` of ``ClientUserBase``, Optional (Keyword only)
+            The users in the channel.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # users
+        if users is ...:
+            users = self.users.copy()
+        else:
+            users = validate_users(users)
+        
+        # Construct
+        self = object.__new__(type(self))
+        self.users = users
+        return self
+    
+    
+    @copy_docs(ChannelMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            users = keyword_parameters.pop('users', ...),
+        )
     
     
     @copy_docs(ChannelMetadataBase.to_data)

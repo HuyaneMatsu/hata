@@ -116,20 +116,8 @@ class Channel(DiscordEntity, immortal = True):
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)
             The channel's flags.
         
-        icon : `None`, ``Icon``, `str`, Optional (Keyword only)
+        icon : `None`, ``Icon``, `str`, `bytes`, Optional (Keyword only)
             The channel's icon.
-            
-            > Mutually exclusive with `icon_type` and `icon_hash` parameters.
-        
-        icon_type : ``IconType``, Optional (Keyword only)
-            The channel's icon's type.
-            
-            > Mutually exclusive with the `icon` parameter.
-        
-        icon_hash : `int`, Optional (Keyword only)
-            The channel's icon's hash.
-            
-            > Mutually exclusive with the `icon` parameter.
         
         invitable : `bool`, Optional (Keyword only)
             Whether non-moderators can invite other non-moderators to the threads.
@@ -844,7 +832,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        channel : ``Channel``
+        self : `instance<cls>`
         """
         channel_type = parse_type(data)
         metadata = channel_type.metadata_type._from_partial_data(data)
@@ -875,7 +863,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        channel : ``Channel``
+        self : `instance<cls>`
             The created partial channel.
         """
         self = object.__new__(cls)
@@ -885,6 +873,166 @@ class Channel(DiscordEntity, immortal = True):
         self.metadata = channel_type.metadata_type._create_empty()
         self.type = channel_type
         return self
+    
+    
+    def copy(self):
+        """
+        Copies the channel returning a new partial one.
+        
+        Returns
+        -------
+        new : `instance<cls>`
+        """
+        new = object.__new__(type(self))
+        new._message_history = None
+        new.id = 0
+        new.guild_id = 0
+        new.metadata = self.metadata.copy()
+        new.type = self.type
+        return new
+    
+    
+    def copy_with(self, *, channel_type = ..., **keyword_parameters):
+        """
+        Copies the channel with the given fields.
+        
+        Parameters
+        ----------
+        channel_type : `int`, ``ChannelType`` = `None`, Optional (Keyword only)
+            The new channel's type.
+        **keyword_parameters : Keyword parameters
+            Additional parameters to pass to the channel-type specific constructor.
+        
+        Other Parameters
+        ----------------
+        application_id : `int`, ``Application``, Optional (Keyword only)
+            The application's identifier the channel is managed by.
+        
+        archived : `bool`, Optional (Keyword only)
+            Whether the (thread) channel is archived.
+        
+        archived_at : `None`, `datetime`, Optional (Keyword only)
+            When the thread's archive status was last changed.
+        
+        applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
+             The tags' identifier which have been applied to the thread. Applicable for threads of a forum.
+        
+        auto_archive_after: `int`, Optional (Keyword only)
+            The channel's ``.auto_archive_after``.
+        
+        available_tags : `None`, `tuple` of ``ForumTag``, Optional (Keyword only)
+            The available tags to assign to the child-thread channels.
+        
+        created_at : `None`, `datetime`, Optional (Keyword only)
+            When the channel was created.
+        
+        bitrate : `int`, Optional (Keyword only)
+            The bitrate (in bits) of the voice channel.
+        
+        created_at : `None`, `datetime`, Optional (Keyword only)
+            When the (thread) channel was created.
+        
+        default_forum_layout : ``ForumLayout``, `int`, Optional (Keyword only)
+            The default layout used to display threads of the forum.
+        
+        default_sort_order : ``SortOrder``, `int`, Optional (Keyword only)
+            The default thread ordering of the forum.
+        
+        default_thread_auto_archive_after : `int`, Optional (Keyword only)
+            The default duration (in seconds) for newly created threads to automatically archive the themselves.
+        
+        default_thread_reaction : `None`, ``Emoji``, Optional (Keyword only)
+            The emoji to show in the add reaction button on a thread of the forum channel.
+        
+        default_thread_slowmode : `int`, Optional (Keyword only)
+            The default slowmode applied to the channel's threads.
+        
+        flags : `int`, ``ChannelFlag``, Optional (Keyword only)
+            The channel's flags.
+        
+        icon : `None`, ``Icon``, `str`, `bytes`, Optional (Keyword only)
+            The channel's icon.
+        
+        invitable : `bool`, Optional (Keyword only)
+            Whether non-moderators can invite other non-moderators to the threads.
+        
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        
+        nsfw : `bool`, Optional (Keyword only)
+            Whether the channel is marked as non safe for work.
+        
+        open : `bool`, Optional (Keyword only)
+            Whether the thread channel is open.
+        
+        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+            The channel's owner's or creator's identifier.
+        
+        parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        
+        permission_overwrites : `None`, list` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        
+        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
+            The channel's voice region.
+        
+        slowmode : `int`, Optional (Keyword only)
+            The channel's slowmode.
+        
+        topic : `None`, `str`, Optional (Keyword only)
+            The channel's topic.
+        
+        user_limit : `int`, Optional (Keyword only)
+            The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+        
+        users : `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+            The users in the channel.
+        
+        video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
+            The video quality of the voice channel.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+            - If extra or unused parameters were given.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # channel_type
+        if channel_type is ...:
+            channel_type = self.type
+        else:
+            channel_type = validate_type(channel_type)
+        
+        # metadata
+        metadata = self.metadata
+        metadata_type = channel_type.metadata_type
+        if metadata_type is type(metadata):
+            metadata = metadata.copy_with_keyword_parameters(keyword_parameters)
+        else:
+            metadata = metadata_type.from_keyword_parameters(keyword_parameters)
+        
+        if keyword_parameters:
+            raise TypeError(
+                f'Extra or unused keyword parameters: {keyword_parameters!r}.'
+            )
+        
+        new = object.__new__(type(self))
+        new._message_history = None
+        new.id = 0
+        new.guild_id = 0
+        new.metadata = metadata
+        new.type = channel_type
+        return new
     
     
     def to_data(self, *, defaults = False, include_internals = False):
@@ -1033,7 +1181,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        other : ``Channel``
+        other : `instance<type<self>>`
             The other channel entity.
         
         Returns
@@ -2086,6 +2234,7 @@ class Channel(DiscordEntity, immortal = True):
         
         return message
     
+    
     def _pop_multiple(self, delete_ids):
         """
         Removes the given messages from the channel and from `MESSAGES` as well. Returns the found messages.
@@ -2109,7 +2258,7 @@ class Channel(DiscordEntity, immortal = True):
             return found, missed
         
         messages = self.messages
-        delete_ids.sort(reverse=True)
+        delete_ids.sort(reverse = True)
         if messages is None:
             messages_length = 0
         else:

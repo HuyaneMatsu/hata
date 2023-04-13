@@ -11,6 +11,11 @@
 - `ApplicationCommandOptionMetadataBase.__new__` is now `.from_keyword_parameters`. Add new `.__new__` method.
 - `ApplicationCommandOptionMetadataBase.copy_with` now supports the `component_type` parameter.
 - `ChannelMetadataBase.__new__` is now `.from_keyword_parameters`. Add new `.__new__` method.
+- Add `ChannelMetadataBase.copy`.
+- Add `ChannelMetadataBase.copy_with`.
+- Add `ChannelMetadataBase.copy_with_keyword_parameters`.
+- Add `Channel.copy`.
+- Add `Channel.copy_with`.
 
 ##### ext.slash
 - `abort` call from a component command is now handled as intended (so always creates a new message).

@@ -1274,9 +1274,9 @@ class Message(DiscordEntity, immortal = True):
                 
                 embeds_length = len(embeds)
                 if validate:
-                    if len(embeds) > 10:
+                    if len(embeds) > 15:
                         raise ValueError(
-                            f'A message can have up to `10` embeds, got {embeds_length!r}; {embeds!r}.'
+                            f'A message can have up to `15` embeds, got {embeds_length!r}; {embeds!r}.'
                         )
                 
                 if embeds_length:

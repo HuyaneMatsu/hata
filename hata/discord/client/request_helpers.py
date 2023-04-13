@@ -623,7 +623,7 @@ def validate_content_and_embed(content, embed, is_edit):
     # 1.: None
     # 2.: Ellipsis -> None || Ellipsis
     # 3.: Embed : -> embed || [embed]
-    # 4.: list of Embed -> embed[0] || embed[:10] or None
+    # 4.: list of Embed -> embed[0] || embed[:15] or None
     # 5.: raise
     if embed is None:
         pass
@@ -645,7 +645,7 @@ def validate_content_and_embed(content, embed, is_edit):
                             f'{embed_element.__class__.__name__}; {embed_element!r}; embed={embed!r}.'
                         )
             
-            embed = embed[:10]
+            embed = embed[:15]
         else:
             embed = None
     
@@ -712,7 +712,7 @@ def validate_content_and_embed(content, embed, is_edit):
                         f'Multiple parameters were given as embed, got content={content!r}, embed={embed!r}.'
                     )
             
-            embed = content[:10]
+            embed = content[:15]
             
             if is_edit:
                 content = ...

@@ -372,9 +372,9 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
             for role in roles:
                 permissions |= role.permissions
         
-        # Apply everyone's if applicable
         permission_overwrites = self.permission_overwrites
         if (permission_overwrites is not None):
+            # Apply everyone's if applicable
             try:
                 permission_overwrite_everyone = permission_overwrites[guild_id]
             except KeyError:
@@ -382,32 +382,32 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
             else:
                 permissions &= ~permission_overwrite_everyone.deny
                 permissions |= permission_overwrite_everyone.allow
-        
-        # Apply role overwrite
-        allow = 0
-        deny = 0
-        
-        if (roles is not None):
-            for role in roles:
-                try:
-                    permission_overwrite_role = permission_overwrites[role.id]
-                except KeyError:
-                    pass
-                else:
-                    allow |= permission_overwrite_role.allow
-                    deny |= permission_overwrite_role.deny
-        
-        permissions &= ~deny
-        permissions |= allow
-        
-        # Apply user specific
-        try:
-            permission_overwrite_user = permission_overwrites[user.id]
-        except KeyError:
-            pass
-        else:
-            permissions &= ~permission_overwrite_user.deny
-            permissions |= permission_overwrite_user.allow
+            
+            # Apply role overwrite
+            allow = 0
+            deny = 0
+            
+            if (roles is not None):
+                for role in roles:
+                    try:
+                        permission_overwrite_role = permission_overwrites[role.id]
+                    except KeyError:
+                        pass
+                    else:
+                        allow |= permission_overwrite_role.allow
+                        deny |= permission_overwrite_role.deny
+            
+            permissions &= ~deny
+            permissions |= allow
+            
+            # Apply user specific
+            try:
+                permission_overwrite_user = permission_overwrites[user.id]
+            except KeyError:
+                pass
+            else:
+                permissions &= ~permission_overwrite_user.deny
+                permissions |= permission_overwrite_user.allow
         
         # Are we admin?
         if permissions & PERMISSION_MASK_ADMINISTRATOR:

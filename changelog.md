@@ -16,13 +16,26 @@
 - Add `ChannelMetadataBase.copy_with_keyword_parameters`.
 - Add `Channel.copy`.
 - Add `Channel.copy_with`.
+- Bump max embeds from 10 to 15.
+- Add `Channel.iter_channels`.
+- Add `Channel.iter_voice_users`.
+- Add `Channel.iter_audience`.
+- Add `Channel.iter_speakers`.
+- Add `Channel.iter_moderators`.
 
 ##### ext.slash
 - `abort` call from a component command is now handled as intended (so always creates a new message).
 
+#### Bug Fixes
+
+- `Channel.audience` returned the speakers.
+- `Channel.speakers` returned the audience.
+
 #### Renames, Deprecation & Removals
 
 - Remove `ChannelMetadataBase.precreate`.
+- Rename `Channel.channel_list` to `.channels` (for consistency).
+- Deprecate `Channel.channel_list`.
 
 ## 1.3.26 *\[2023-04-07\]*
 

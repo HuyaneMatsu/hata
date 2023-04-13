@@ -3,7 +3,8 @@ import vampytest
 from ....client import Client
 from ....guild import Guild
 from ....permission import Permission
-from ....user import User
+from ....role import Role
+from ....user import GuildProfile, User, VoiceState
 
 from ...channel import Channel
 from ...forum_tag import ForumTag
@@ -103,8 +104,6 @@ def test__Channel__get_user__0():
         output = channel.get_user(input_value)
         vampytest.assert_is(output, expected_output)
 
-# TODO, need permission altering
-'''
 def test__Channel__get_user__1():
     """
     Tests whether ``Channel.get_user`` works as intended.
@@ -117,8 +116,11 @@ def test__Channel__get_user__1():
     user_discriminator = 69
     
     user = User.precreate(202209200024, name = user_name, discriminator = user_discriminator)
+    user.guild_profiles[guild_id] = GuildProfile()
     channel = Channel.precreate(channel_id, channel_type = ChannelType.guild_text, guild_id = guild_id)
+    role = Role.precreate(guild_id, guild_id = guild_id, permissions = Permission().update_by_keys(view_channel = True))
     guild = Guild.precreate(guild_id)
+    guild.roles[guild_id] = role
     guild.users[user.id] = user
     
     for input_value, expected_output in (
@@ -129,7 +131,7 @@ def test__Channel__get_user__1():
         print(input_value, expected_output)
         output = channel.get_user(input_value)
         vampytest.assert_is(output, expected_output)
-'''
+
 
 def test__Channel__get_user_like__0():
     """
@@ -154,8 +156,7 @@ def test__Channel__get_user_like__0():
         vampytest.assert_is(output, expected_output)
 
 
-# TODO, need permission altering
-'''
+
 def test__Channel__get_user_like__1():
     """
     Tests whether ``Channel.get_user_like`` works as intended.
@@ -168,8 +169,11 @@ def test__Channel__get_user_like__1():
     user_discriminator = 69
     
     user = User.precreate(202209200029, name = user_name, discriminator = user_discriminator)
+    user.guild_profiles[guild_id] = GuildProfile()
     channel = Channel.precreate(channel_id, channel_type = ChannelType.guild_text, guild_id = guild_id)
+    role = Role.precreate(guild_id, guild_id = guild_id, permissions = Permission().update_by_keys(view_channel = True))
     guild = Guild.precreate(guild_id)
+    guild.roles[guild_id] = role
     guild.users[user.id] = user
     
     for input_value, expected_output in (
@@ -180,7 +184,7 @@ def test__Channel__get_user_like__1():
     ):
         output = channel.get_user_like(input_value)
         vampytest.assert_is(output, expected_output)
-'''
+
 
 def test__Channel__get_users_like__0():
     """
@@ -207,8 +211,6 @@ def test__Channel__get_users_like__0():
 
 
 
-# TODO, need permission altering
-'''
 def test__Channel__get_users_like__1():
     """
     Tests whether ``Channel.get_users_like`` works as intended.
@@ -221,8 +223,11 @@ def test__Channel__get_users_like__1():
     user_discriminator = 69
     
     user = User.precreate(202209200034, name = user_name, discriminator = user_discriminator)
+    user.guild_profiles[guild_id] = GuildProfile()
     channel = Channel.precreate(channel_id, channel_type = ChannelType.guild_text, guild_id = guild_id)
+    role = Role.precreate(guild_id, guild_id = guild_id, permissions = Permission().update_by_keys(view_channel = True))
     guild = Guild.precreate(guild_id)
+    guild.roles[guild_id] = role
     guild.users[user.id] = user
     
     for input_value, expected_output in (
@@ -234,7 +239,7 @@ def test__Channel__get_users_like__1():
         output = channel.get_users_like(input_value)
         vampytest.assert_instance(output, list)
         vampytest.assert_eq(output, expected_output)
-'''
+
 
 def test__Channel__users__0():
     """
@@ -251,8 +256,6 @@ def test__Channel__users__0():
     vampytest.assert_eq(users, [user])
 
 
-# TODO, need permission altering
-'''
 def test__Channel__users__1():
     """
     Tests whether ``Channel.users`` works as intended.
@@ -263,14 +266,17 @@ def test__Channel__users__1():
     guild_id = 202209200038
     
     user = User.precreate(202209200039)
+    user.guild_profiles[guild_id] = GuildProfile()
     channel = Channel.precreate(channel_id, channel_type = ChannelType.guild_text, guild_id = guild_id)
+    role = Role.precreate(guild_id, guild_id = guild_id, permissions = Permission().update_by_keys(view_channel = True))
     guild = Guild.precreate(guild_id)
+    guild.roles[guild_id] = role
     guild.users[user.id] = user
     
     users = channel.users
     vampytest.assert_instance(users, list)
     vampytest.assert_eq(users, [user])
-'''
+
 
 def test__Channel__iter_users__0():
     """
@@ -288,9 +294,6 @@ def test__Channel__iter_users__0():
     vampytest.assert_eq([*iter_users], [user])
 
 
-
-# TODO, need permission altering
-'''
 def test__Channel__iter_users__1():
     """
     Tests whether ``Channel.iter_users`` works as intended.
@@ -301,14 +304,16 @@ def test__Channel__iter_users__1():
     guild_id = 202209200043
     
     user = User.precreate(202209200044)
+    user.guild_profiles[guild_id] = GuildProfile()
     channel = Channel.precreate(channel_id, channel_type = ChannelType.guild_text, guild_id = guild_id)
+    role = Role.precreate(guild_id, guild_id = guild_id, permissions = Permission().update_by_keys(view_channel = True))
     guild = Guild.precreate(guild_id)
+    guild.roles[guild_id] = role
     guild.users[user.id] = user
     
     iter_users = channel.iter_users()
     vampytest.assert_true(hasattr(iter_users, '__next__'))
     vampytest.assert_eq([*iter_users], [user])
-'''
 
 
 def test__Channel__has_name_like():
@@ -613,7 +618,9 @@ def test__Channel__threads():
     guild.threads[channel_id_1] = thread_0
     guild.threads[channel_id_2] = thread_1
     
-    vampytest.assert_eq({*channel.threads}, {thread_0, thread_1})
+    output = channel.threads
+    vampytest.assert_instance(output, list)
+    vampytest.assert_eq({*output}, {thread_0, thread_1})
 
 
 def test__Channel__iter_delete__0():
@@ -770,3 +777,317 @@ def test__Channel__iter_delete__5():
     vampytest.assert_not_in(channel_id_0, guild.channels)
     vampytest.assert_not_in(channel_id_1, guild.threads)
     vampytest.assert_not_in(channel_id_2, guild.threads)
+
+
+def test__Channel__iter_channels():
+    """
+    Tests whether ``Channel.iter_channels` works as intended.
+    """
+    channel_id_0 = 202304130070
+    channel_id_1 = 202304130071
+    channel_id_2 = 202304130072
+    guild_id = 202304130073
+    
+    guild = Guild.precreate(guild_id)
+    channel = Channel.precreate(channel_id_0, channel_type = ChannelType.guild_category, guild_id = guild_id)
+    channel_0 = Channel.precreate(
+        channel_id_1, channel_type = ChannelType.guild_text, parent_id = channel_id_0, guild_id = guild_id
+    )
+    channel_1 = Channel.precreate(
+        channel_id_2, channel_type = ChannelType.guild_text, parent_id = channel_id_0, guild_id = guild_id
+    )
+    
+    guild.channels[channel_id_0] = channel
+    guild.channels[channel_id_1] = channel_0
+    guild.channels[channel_id_2] = channel_1
+    
+    vampytest.assert_eq({*channel.iter_channels()}, {channel_0, channel_1})
+
+
+def test__Channel__channels():
+    """
+    Tests whether ``Channel.channels` works as intended.
+    """
+    channel_id_0 = 202304130074
+    channel_id_1 = 202304130075
+    channel_id_2 = 202304130076
+    guild_id = 202304130077
+    
+    guild = Guild.precreate(guild_id)
+    channel = Channel.precreate(channel_id_0, channel_type = ChannelType.guild_category, guild_id = guild_id)
+    channel_0 = Channel.precreate(
+        channel_id_1, channel_type = ChannelType.guild_text, parent_id = channel_id_0, guild_id = guild_id
+    )
+    channel_1 = Channel.precreate(
+        channel_id_2, channel_type = ChannelType.guild_text, parent_id = channel_id_0, guild_id = guild_id
+    )
+    
+    guild.channels[channel_id_0] = channel
+    guild.channels[channel_id_1] = channel_0
+    guild.channels[channel_id_2] = channel_1
+    
+    output = channel.channels
+    vampytest.assert_instance(output, list)
+    vampytest.assert_eq({*output}, {channel_0, channel_1})
+
+
+def test__Channel__iter_voice_users():
+    """
+    Tests whether ``Channel.iter_voice_users`` works as intended.
+    """
+    channel_id_0 = 202304130078
+    channel_id_1 = 202304130083
+    guild_id = 202304130079
+    user_id_0 = 202304130080
+    user_id_1 = 202304130081
+    user_id_2 = 202304130082
+    
+    user_0 = User.precreate(user_id_0)
+    user_1 = User.precreate(user_id_1)
+    user_2 = User.precreate(user_id_2)
+    
+    channel_0 = Channel.precreate(channel_id_0, channel_type = ChannelType.guild_voice, guild_id = guild_id)
+    channel_1 = Channel.precreate(channel_id_1, channel_type = ChannelType.guild_voice, guild_id = guild_id)
+    
+    guild = Guild.precreate(guild_id)
+    
+    guild.voice_states[user_id_0] = VoiceState(channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_0)
+    guild.voice_states[user_id_1] = VoiceState(channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_1)
+    guild.voice_states[user_id_2] = VoiceState(channel_id = channel_id_1, guild_id = guild_id, user_id = user_id_2)
+    
+    vampytest.assert_eq({*channel_0.iter_voice_users()}, {user_0, user_1})
+
+
+def test__Channel__voice_users():
+    """
+    Tests whether ``Channel.voice_users`` works as intended.
+    """
+    channel_id_0 = 202304130084
+    channel_id_1 = 202304130085
+    guild_id = 202304130086
+    user_id_0 = 202304130087
+    user_id_1 = 202304130088
+    user_id_2 = 202304130089
+    
+    user_0 = User.precreate(user_id_0)
+    user_1 = User.precreate(user_id_1)
+    user_2 = User.precreate(user_id_2)
+    
+    channel_0 = Channel.precreate(channel_id_0, channel_type = ChannelType.guild_voice, guild_id = guild_id)
+    channel_1 = Channel.precreate(channel_id_1, channel_type = ChannelType.guild_voice, guild_id = guild_id)
+    
+    guild = Guild.precreate(guild_id)
+    
+    guild.voice_states[user_id_0] = VoiceState(channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_0)
+    guild.voice_states[user_id_1] = VoiceState(channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_1)
+    guild.voice_states[user_id_2] = VoiceState(channel_id = channel_id_1, guild_id = guild_id, user_id = user_id_2)
+    
+    output = channel_0.voice_users
+    vampytest.assert_instance(output, list)
+    vampytest.assert_eq({*output}, {user_0, user_1})
+
+
+def test__Channel__iter_audience():
+    """
+    Tests whether ``Channel.iter_audience`` works as intended.
+    """
+    channel_id_0 = 202304130090
+    channel_id_1 = 202304130091
+    guild_id = 202304130092
+    user_id_0 = 202304130093
+    user_id_1 = 202304130094
+    user_id_2 = 202304130095
+    
+    user_0 = User.precreate(user_id_0)
+    user_1 = User.precreate(user_id_1)
+    user_2 = User.precreate(user_id_2)
+    
+    channel_0 = Channel.precreate(channel_id_0, channel_type = ChannelType.guild_stage, guild_id = guild_id)
+    channel_1 = Channel.precreate(channel_id_1, channel_type = ChannelType.guild_stage, guild_id = guild_id)
+    
+    guild = Guild.precreate(guild_id)
+    
+    guild.voice_states[user_id_0] = VoiceState(
+        channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_0, speaker = False,
+    )
+    guild.voice_states[user_id_1] = VoiceState(
+        channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_1, speaker = True,
+    )
+    guild.voice_states[user_id_2] = VoiceState(
+        channel_id = channel_id_1, guild_id = guild_id, user_id = user_id_2, speaker = False,
+    )
+    
+    vampytest.assert_eq({*channel_0.iter_audience()}, {user_0})
+
+
+def test__Channel__audience():
+    """
+    Tests whether ``Channel.audience`` works as intended.
+    """
+    channel_id_0 = 202304130096
+    channel_id_1 = 202304130097
+    guild_id = 202304130098
+    user_id_0 = 202304130099
+    user_id_1 = 202304130100
+    user_id_2 = 202304130101
+    
+    user_0 = User.precreate(user_id_0)
+    user_1 = User.precreate(user_id_1)
+    user_2 = User.precreate(user_id_2)
+    
+    channel_0 = Channel.precreate(channel_id_0, channel_type = ChannelType.guild_stage, guild_id = guild_id)
+    channel_1 = Channel.precreate(channel_id_1, channel_type = ChannelType.guild_stage, guild_id = guild_id)
+    
+    guild = Guild.precreate(guild_id)
+    guild.voice_states[user_id_0] = VoiceState(
+        channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_0, speaker = False,
+    )
+    guild.voice_states[user_id_1] = VoiceState(
+        channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_1, speaker = True,
+    )
+    guild.voice_states[user_id_2] = VoiceState(
+        channel_id = channel_id_1, guild_id = guild_id, user_id = user_id_2, speaker = False,
+    )
+    
+    output = channel_0.audience
+    vampytest.assert_instance(output, list)
+    vampytest.assert_eq({*output}, {user_0})
+
+
+def test__Channel__iter_speakers():
+    """
+    Tests whether ``Channel.iter_speakers`` works as intended.
+    """
+    channel_id_0 = 202304130102
+    channel_id_1 = 202304130103
+    guild_id = 202304130104
+    user_id_0 = 202304130105
+    user_id_1 = 202304130106
+    user_id_2 = 202304130107
+    
+    user_0 = User.precreate(user_id_0)
+    user_1 = User.precreate(user_id_1)
+    user_2 = User.precreate(user_id_2)
+    
+    channel_0 = Channel.precreate(channel_id_0, channel_type = ChannelType.guild_stage, guild_id = guild_id)
+    channel_1 = Channel.precreate(channel_id_1, channel_type = ChannelType.guild_stage, guild_id = guild_id)
+    
+    guild = Guild.precreate(guild_id)
+    
+    guild.voice_states[user_id_0] = VoiceState(
+        channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_0, speaker = False,
+    )
+    guild.voice_states[user_id_1] = VoiceState(
+        channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_1, speaker = True,
+    )
+    guild.voice_states[user_id_2] = VoiceState(
+        channel_id = channel_id_1, guild_id = guild_id, user_id = user_id_2, speaker = True,
+    )
+    
+    vampytest.assert_eq({*channel_0.iter_speakers()}, {user_1})
+
+
+def test__Channel__speakers():
+    """
+    Tests whether ``Channel.speakers`` works as intended.
+    """
+    channel_id_0 = 202304130108
+    channel_id_1 = 202304130109
+    guild_id = 202304130110
+    user_id_0 = 202304130111
+    user_id_1 = 202304130112
+    user_id_2 = 202304130113
+    
+    user_0 = User.precreate(user_id_0)
+    user_1 = User.precreate(user_id_1)
+    user_2 = User.precreate(user_id_2)
+    
+    channel_0 = Channel.precreate(channel_id_0, channel_type = ChannelType.guild_stage, guild_id = guild_id)
+    channel_1 = Channel.precreate(channel_id_1, channel_type = ChannelType.guild_stage, guild_id = guild_id)
+    
+    guild = Guild.precreate(guild_id)
+    guild.voice_states[user_id_0] = VoiceState(
+        channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_0, speaker = False,
+    )
+    guild.voice_states[user_id_1] = VoiceState(
+        channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_1, speaker = True,
+    )
+    guild.voice_states[user_id_2] = VoiceState(
+        channel_id = channel_id_1, guild_id = guild_id, user_id = user_id_2, speaker = True,
+    )
+    
+    output = channel_0.speakers
+    vampytest.assert_instance(output, list)
+    vampytest.assert_eq({*output}, {user_1})
+
+
+def test__Channel__iter_moderators():
+    """
+    Tests whether ``Channel.iter_moderators`` works as intended.
+    """
+    channel_id_0 = 202304130114
+    channel_id_1 = 202304130115
+    guild_id = 202304130116
+    user_id_0 = 202304130117
+    user_id_1 = 202304130118
+    user_id_2 = 202304130119
+    role_id = 202304130120
+    
+    user_0 = User.precreate(user_id_0)
+    user_1 = User.precreate(user_id_1)
+    user_2 = User.precreate(user_id_2)
+    
+    channel_0 = Channel.precreate(channel_id_0, channel_type = ChannelType.guild_stage, guild_id = guild_id)
+    channel_1 = Channel.precreate(channel_id_1, channel_type = ChannelType.guild_stage, guild_id = guild_id)
+    
+    role = Role.precreate(role_id, guild_id = guild_id, permissions = Permission().update_by_keys(administrator = True))
+    
+    user_0.guild_profiles[guild_id] = GuildProfile(role_ids = [role_id])
+    user_1.guild_profiles[guild_id] = GuildProfile()
+    user_2.guild_profiles[guild_id] = GuildProfile(role_ids = [role_id])
+    
+    guild = Guild.precreate(guild_id)
+    guild.roles[role_id] = role
+    
+    guild.voice_states[user_id_0] = VoiceState(channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_0)
+    guild.voice_states[user_id_1] = VoiceState(channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_1)
+    guild.voice_states[user_id_2] = VoiceState(channel_id = channel_id_1, guild_id = guild_id, user_id = user_id_2)
+    
+    vampytest.assert_eq({*channel_0.iter_moderators()}, {user_0})
+
+
+def test__Channel__moderators():
+    """
+    Tests whether ``Channel.moderators`` works as intended.
+    """
+    channel_id_0 = 202304130121
+    channel_id_1 = 202304130122
+    guild_id = 202304130123
+    user_id_0 = 202304130124
+    user_id_1 = 202304130125
+    user_id_2 = 202304130126
+    role_id = 202304130127
+    
+    user_0 = User.precreate(user_id_0)
+    user_1 = User.precreate(user_id_1)
+    user_2 = User.precreate(user_id_2)
+    
+    channel_0 = Channel.precreate(channel_id_0, channel_type = ChannelType.guild_stage, guild_id = guild_id)
+    channel_1 = Channel.precreate(channel_id_1, channel_type = ChannelType.guild_stage, guild_id = guild_id)
+    
+    role = Role.precreate(role_id, guild_id = guild_id, permissions = Permission().update_by_keys(administrator = True))
+    
+    user_0.guild_profiles[guild_id] = GuildProfile(role_ids = [role_id])
+    user_1.guild_profiles[guild_id] = GuildProfile()
+    user_2.guild_profiles[guild_id] = GuildProfile(role_ids = [role_id])
+    
+    guild = Guild.precreate(guild_id)
+    guild.roles[role_id] = role
+    
+    guild.voice_states[user_id_0] = VoiceState(channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_0)
+    guild.voice_states[user_id_1] = VoiceState(channel_id = channel_id_0, guild_id = guild_id, user_id = user_id_1)
+    guild.voice_states[user_id_2] = VoiceState(channel_id = channel_id_1, guild_id = guild_id, user_id = user_id_2)
+    
+    output = channel_0.moderators
+    vampytest.assert_instance(output, list)
+    vampytest.assert_eq({*output}, {user_0})

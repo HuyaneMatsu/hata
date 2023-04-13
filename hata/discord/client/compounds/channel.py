@@ -407,7 +407,7 @@ class ClientCompoundChannelEndpoints(Compound):
         # If the channel is where it should be, we can leave.
         if (parent is not None):
             # Add `parent is not None` check for the linter
-            if (channel.parent is parent) and (parent.channel_list.index(channel) == visual_position):
+            if (channel.parent is parent) and (parent.channels.index(channel) == visual_position):
                 return
         
         # Create a display state, where each channel is listed.
@@ -417,7 +417,7 @@ class ClientCompoundChannelEndpoints(Compound):
         for index in range(len(display_state)):
             iter_channel = display_state[index]
             if iter_channel.is_guild_category():
-                display_state[index] = iter_channel, iter_channel.channel_list
+                display_state[index] = iter_channel, iter_channel.channels
         
         # Generate a state where the channels are theoretically ordered with tuples
         display_new = []

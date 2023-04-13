@@ -1548,17 +1548,18 @@ class Channel(DiscordEntity, immortal = True):
         return owner
     
     
-    @property
-    def channel_list(self):
+    def iter_channels(self):
         """
-        Returns the channels of the category in a list in their display order.
+        Iterates over the channels of the category.
         
-        Returns
-        -------
-        channels : `list` of ``Channel``
+        > Unordered.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        channel : ``Channel``
         """
-        channels = []
-        
         guild_id = self.guild_id
         if guild_id:
             try:
@@ -1570,24 +1571,47 @@ class Channel(DiscordEntity, immortal = True):
                 
                 for channel in guild.channels.values():
                     if channel.parent_id == channel_id:
-                        channels.append(channel)
-                
-                channels.sort()
-        
-        return channels
+                        yield channel
     
     
     @property
-    def voice_users(self):
+    def channels(self):
         """
-        Returns a list of the users who are in the voice channel.
+        Returns the channels of the category in a list in their display order.
         
         Returns
         -------
-        users : `list` of ``ClientUserBase``
+        channels : `list` of ``Channel``
         """
-        users = []
+        return sorted(self.iter_channels())
+    
+    
+    @property
+    def channel_list(self):
+        """
+        Deprecated and will be removed in 2023 September. Please use ``.channels`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.channel_list` is deprecated and will be removed in '
+                f'2023 September. Please use `.channels` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.channels
+    
+    
+    def iter_voice_users(self):
+        """
+        Iterates over the users who are in the voice channel.
         
+        This method is an iterable generator.
+        
+        Yields
+        -------
+        user : ``ClientUserBase``
+        """
         guild_id = self.guild_id
         if guild_id:
             try:
@@ -1599,49 +1623,31 @@ class Channel(DiscordEntity, immortal = True):
                 
                 for voice_state in guild.voice_states.values():
                     if voice_state.channel_id == channel_id:
-                        users.append(voice_state.user)
-        
-        return users
+                        yield voice_state.user
     
     
     @property
-    def audience(self):
+    def voice_users(self):
         """
-        Returns the audience in the stage channel.
+        Returns a list of the users who are in the voice channel.
         
         Returns
         -------
         users : `list` of ``ClientUserBase``
         """
-        users = []
-        
-        guild_id = self.guild_id
-        if guild_id:
-            try:
-                guild = GUILDS[guild_id]
-            except KeyError:
-                pass
-            else:
-                channel_id = self.id
-                
-                for voice_states in guild.voice_states.values():
-                    if (voice_states.channel_id == channel_id) and voice_states.speaker:
-                        users.append(voice_states.user)
-        
-        return users
+        return [*self.iter_voice_users()]
     
     
-    @property
-    def speakers(self):
+    def iter_audience(self):
         """
-        Returns the speakers in the stage channel.
+        Iterates over the audience in the stage channel.
         
-        Returns
+        This method is an iterable generator.
+        
+        Yields
         -------
-        users : `list` of ``ClientUserBase``
+        user : ``ClientUserBase``
         """
-        users = []
-        
         guild_id = self.guild_id
         if guild_id:
             try:
@@ -1653,22 +1659,67 @@ class Channel(DiscordEntity, immortal = True):
                 
                 for voice_states in guild.voice_states.values():
                     if (voice_states.channel_id == channel_id) and (not voice_states.speaker):
-                        users.append(voice_states.user)
-        
-        return users
+                        yield voice_states.user
     
     
     @property
-    def moderators(self):
+    def audience(self):
         """
-        Returns the moderators in the stage channel.
+        Returns the audience in the stage channel.
         
         Returns
         -------
         users : `list` of ``ClientUserBase``
         """
-        users = []
+        return [*self.iter_audience()]
+    
+    
+    def iter_speakers(self):
+        """
+        Iterates over the speakers in the stage channel.
         
+        This method is an iterable generator.
+        
+        Yields
+        -------
+        user : ``ClientUserBase``
+        """
+        guild_id = self.guild_id
+        if guild_id:
+            try:
+                guild = GUILDS[guild_id]
+            except KeyError:
+                pass
+            else:
+                channel_id = self.id
+                
+                for voice_states in guild.voice_states.values():
+                    if (voice_states.channel_id == channel_id) and voice_states.speaker:
+                        yield voice_states.user
+    
+    
+    @property
+    def speakers(self):
+        """
+        Returns the speakers in the stage channel.
+        
+        Returns
+        -------
+        users : `list` of ``ClientUserBase``
+        """
+        return [*self.iter_speakers()]
+    
+    
+    def iter_moderators(self):
+        """
+        Iterates over the moderators in the stage channel.
+        
+        This method is an iterable generator.
+        
+        Yields
+        -------
+        user : ``ClientUserBase``
+        """
         guild_id = self.guild_id
         if guild_id:
             try:
@@ -1682,9 +1733,19 @@ class Channel(DiscordEntity, immortal = True):
                     if (voice_states.channel_id == channel_id):
                         user = voice_states.user
                         if self.permissions_for(user) >= PERMISSION_STAGE_MODERATOR:
-                            users.append(user)
+                            yield user
+    
+    
+    @property
+    def moderators(self):
+        """
+        Returns the moderators in the stage channel.
         
-        return users
+        Returns
+        -------
+        users : `list` of ``ClientUserBase``
+        """
+        return [*self.iter_moderators()]
     
     
     @classmethod

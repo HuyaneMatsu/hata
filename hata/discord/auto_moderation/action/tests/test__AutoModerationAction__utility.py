@@ -4,7 +4,7 @@ from ....channel import Channel
 
 from ..action import AutoModerationAction
 
-from .test__AutoModerationAction__constructor import _check_is_every_attribute_set
+from .test__AutoModerationAction__constructor import _assert_fields_set
 
 
 def test__AutoModerationAction__copy():
@@ -17,7 +17,7 @@ def test__AutoModerationAction__copy():
     
     copy = action.copy()
     
-    _check_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(action, copy)
     vampytest.assert_not_is(action, copy)
@@ -35,7 +35,7 @@ def test__AutoModerationAction__copy_with__0():
     
     copy = action.copy_with()
     
-    _check_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(action, copy)
     vampytest.assert_not_is(action, copy)
@@ -56,7 +56,7 @@ def test__AutoModerationAction__copy_with__1():
         channel_id = channel_id,
     )
     
-    _check_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_not_is(action, copy)
     vampytest.assert_eq(copy.channel_id, channel_id)

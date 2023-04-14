@@ -6,7 +6,7 @@ from ....integration import Integration
 from ..connection import Connection
 from ..preinstanced import ConnectionType, ConnectionVisibility
 
-from .test__Connection__constructor import _check_is_every_attribute_set
+from .test__Connection__constructor import _assert_fields_set
 
 
 def test__Connection__from_data():
@@ -41,7 +41,7 @@ def test__Connection__from_data():
     }
     
     connection = Connection.from_data(data)
-    _check_is_every_attribute_set(connection)
+    _assert_fields_set(connection)
     vampytest.assert_eq(connection.id, connection_id)
     
     vampytest.assert_is(connection.type, connection_type)

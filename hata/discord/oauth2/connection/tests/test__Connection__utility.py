@@ -5,7 +5,7 @@ from ....integration import Integration
 from ..connection import Connection
 from ..preinstanced import ConnectionType, ConnectionVisibility
 
-from .test__Connection__constructor import _check_is_every_attribute_set
+from .test__Connection__constructor import _assert_fields_set
 
 
 def test__Connection__iter_integrations():
@@ -51,7 +51,7 @@ def test__Connection__copy():
     )
     
     copy = connection.copy()
-    _check_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(connection, copy)
     
     vampytest.assert_eq(connection, copy)
@@ -88,7 +88,7 @@ def test__Connection__copy_with__0():
     )
     
     copy = connection.copy_with()
-    _check_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(connection, copy)
     
     vampytest.assert_eq(connection, copy)
@@ -147,7 +147,7 @@ def test__Connection__copy_with__1():
         verified = new_verified,
         visibility = new_visibility,
     )
-    _check_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(connection, copy)
     
 

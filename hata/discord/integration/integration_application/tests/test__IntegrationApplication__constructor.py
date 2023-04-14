@@ -6,7 +6,7 @@ from ....user import ClientUserBase, User
 from ..integration_application import IntegrationApplication
 
 
-def _check_is_every_attribute_set(integration_application):
+def _assert_fields_set(integration_application):
     """
     Checks whether every attributes are set of the integration application.
     
@@ -30,7 +30,7 @@ def test__IntegrationApplication__new__0():
     Case: no parameters.
     """
     integration_application = IntegrationApplication()
-    _check_is_every_attribute_set(integration_application)
+    _assert_fields_set(integration_application)
 
 
 def test__IntegrationApplication__new__1():
@@ -51,7 +51,7 @@ def test__IntegrationApplication__new__1():
         name = name,
     )
     
-    _check_is_every_attribute_set(integration_application)
+    _assert_fields_set(integration_application)
     
     vampytest.assert_is(integration_application.bot, bot)
     vampytest.assert_eq(integration_application.description, description)
@@ -67,7 +67,7 @@ def test__IntegrationApplication__create_empty():
     
     integration_application = IntegrationApplication._create_empty(integration_application_id)
     
-    _check_is_every_attribute_set(integration_application)
+    _assert_fields_set(integration_application)
     vampytest.assert_eq(integration_application.id, integration_application_id)
 
 
@@ -81,7 +81,7 @@ def test__IntegrationApplication__precreate__0():
     
     integration_application = IntegrationApplication.precreate(integration_application_id)
     
-    _check_is_every_attribute_set(integration_application)
+    _assert_fields_set(integration_application)
     vampytest.assert_eq(integration_application.id, integration_application_id)
 
 
@@ -105,7 +105,7 @@ def test__IntegrationApplication__precreate__1():
         icon = icon,
         name = name,
     )
-    _check_is_every_attribute_set(integration_application)
+    _assert_fields_set(integration_application)
     vampytest.assert_eq(integration_application.id, integration_application_id)
     
     vampytest.assert_is(integration_application.bot, bot)

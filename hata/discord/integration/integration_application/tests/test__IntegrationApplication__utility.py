@@ -5,7 +5,7 @@ from ....user import User
 
 from ..integration_application import IntegrationApplication
 
-from .test__IntegrationApplication__constructor import _check_is_every_attribute_set
+from .test__IntegrationApplication__constructor import _assert_fields_set
 
 
 def test__IntegrationApplication__partial():
@@ -36,7 +36,7 @@ def test__IntegrationApplication__copy():
     )
     
     copy = integration_application.copy()
-    _check_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, integration_application)
     vampytest.assert_eq(copy, integration_application)
 
@@ -60,7 +60,7 @@ def test__IntegrationApplication__copy_with__0():
     )
     
     copy = integration_application.copy_with()
-    _check_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, integration_application)
     vampytest.assert_eq(copy, integration_application)
 
@@ -93,7 +93,7 @@ def test__IntegrationApplication__copy_with__1():
         icon = new_icon,
         name = new_name,
     )
-    _check_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, integration_application)
     
     vampytest.assert_eq(copy.bot, new_bot)

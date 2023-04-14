@@ -120,6 +120,7 @@ setup(
         'hata.discord.message',
         'hata.discord.message.attachment',
         'hata.discord.message.message_activity',
+        'hata.discord.message.message_application',
         'hata.discord.message.message_role_subscription',
         'hata.discord.oauth2',
         'hata.discord.oauth2.connection',

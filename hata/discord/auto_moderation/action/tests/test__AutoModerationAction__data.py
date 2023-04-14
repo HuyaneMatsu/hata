@@ -3,7 +3,7 @@ import vampytest
 from ..action import AutoModerationAction
 from ..preinstanced import AutoModerationActionType
 
-from .test__AutoModerationAction__constructor import _check_is_every_attribute_set
+from .test__AutoModerationAction__constructor import _assert_fields_set
 
 
 def test__AutoModerationAction__from_data__timeout():
@@ -20,7 +20,7 @@ def test__AutoModerationAction__from_data__timeout():
     }
     
     action = AutoModerationAction.from_data(data)
-    _check_is_every_attribute_set(action)
+    _assert_fields_set(action)
     
     vampytest.assert_eq(action.duration, duration)
 

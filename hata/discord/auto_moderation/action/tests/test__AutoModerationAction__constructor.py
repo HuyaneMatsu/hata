@@ -6,7 +6,7 @@ from ..action import AutoModerationAction
 from ..preinstanced import AutoModerationActionType
 
 
-def _check_is_every_attribute_set(action):
+def _assert_fields_set(action):
     """
     Asserts whether every attributes are set of the given action.
     
@@ -26,7 +26,7 @@ def test__AutoModerationAction__new__0():
     Case: No parameters.
     """
     action = AutoModerationAction()
-    _check_is_every_attribute_set(action)
+    _assert_fields_set(action)
 
 
 def test__AutoModerationAction__new__1():

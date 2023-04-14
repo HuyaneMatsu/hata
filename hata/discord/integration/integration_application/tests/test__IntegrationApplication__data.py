@@ -5,7 +5,7 @@ from ....user import User
 
 from ..integration_application import IntegrationApplication
 
-from .test__IntegrationApplication__constructor import _check_is_every_attribute_set
+from .test__IntegrationApplication__constructor import _assert_fields_set
 
 
 def test__IntegrationApplication__from_data():
@@ -29,7 +29,7 @@ def test__IntegrationApplication__from_data():
     
     integration_application = IntegrationApplication.from_data(data)
     
-    _check_is_every_attribute_set(integration_application)
+    _assert_fields_set(integration_application)
     vampytest.assert_eq(integration_application.id, integration_application_id)
     
     vampytest.assert_is(integration_application.bot, bot)

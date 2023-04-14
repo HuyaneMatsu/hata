@@ -44,3 +44,19 @@ def test__EmbedField__new__1():
     vampytest.assert_eq(field.inline, inline)
     vampytest.assert_eq(field.name, name)
     vampytest.assert_eq(field.value, value)
+
+
+def test__EmbedField__new__2():
+    """
+    Tests whether ``EmbedField.__new__`` works as intended.
+    
+    Case: name & value conversion check.
+    """
+    name = 123
+    value = 456
+    
+    field = EmbedField(name = name, value = value)
+    _assert_fields_set(field)
+    
+    vampytest.assert_eq(field.name, str(name))
+    vampytest.assert_eq(field.value, str(value))

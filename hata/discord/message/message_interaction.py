@@ -34,7 +34,7 @@ class MessageInteraction(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Message interaction data.
         guild_id : `int`
             The respective message's guild's identifier.
@@ -115,7 +115,7 @@ class MessageInteraction(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`)
+        data : `dict` of (`str`, `object`)
         """
         return {
             'id': str(self.id),

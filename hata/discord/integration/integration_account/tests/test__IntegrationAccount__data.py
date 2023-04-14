@@ -4,7 +4,7 @@ from ....user import User
 
 from ..integration_account import IntegrationAccount
 
-from .test__IntegrationAccount__constructor import _check_is_every_attribute_set
+from .test__IntegrationAccount__constructor import _assert_fields_set
 
 
 def test__IntegrationAccount__from_data():
@@ -20,7 +20,7 @@ def test__IntegrationAccount__from_data():
     }
     
     integration_account = IntegrationAccount.from_data(data)
-    _check_is_every_attribute_set(integration_account)
+    _assert_fields_set(integration_account)
     
     vampytest.assert_eq(integration_account.id, str(integration_account_id))
     vampytest.assert_eq(integration_account.name, name)

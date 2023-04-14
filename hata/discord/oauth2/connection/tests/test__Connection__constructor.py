@@ -6,7 +6,7 @@ from ..connection import Connection
 from ..preinstanced import ConnectionType, ConnectionVisibility
 
 
-def _check_is_every_attribute_set(connection):
+def _assert_fields_set(connection):
     """
     Tests whether every attribute of ``Connection`` is set.
     
@@ -37,7 +37,7 @@ def test__Connection__new__0():
     Case: No parameters.
     """
     connection = Connection()
-    _check_is_every_attribute_set(connection)
+    _assert_fields_set(connection)
 
 
 def test__Connection__new__1():
@@ -70,7 +70,7 @@ def test__Connection__new__1():
         visibility = visibility,
     )
     
-    _check_is_every_attribute_set(connection)
+    _assert_fields_set(connection)
     
     vampytest.assert_is(connection.type, connection_type)
     vampytest.assert_eq(connection.friend_sync, friend_sync)
@@ -91,7 +91,7 @@ def test__Connection__create_empty():
     connection_id = 202210080000
     
     connection = Connection._create_empty(connection_id)
-    _check_is_every_attribute_set(connection)
+    _assert_fields_set(connection)
     vampytest.assert_eq(connection.id, connection_id)
 
 
@@ -104,7 +104,7 @@ def test__Connection__precreate__0():
     """
     connection_id = 202210080001
     connection = Connection.precreate(connection_id)
-    _check_is_every_attribute_set(connection)
+    _assert_fields_set(connection)
     vampytest.assert_eq(connection.id, connection_id)
 
 
@@ -141,7 +141,7 @@ def test__Connection__precreate_1():
         visibility = visibility,
     )
     
-    _check_is_every_attribute_set(connection)
+    _assert_fields_set(connection)
     vampytest.assert_eq(connection.id, connection_id)
     
     vampytest.assert_is(connection.type, connection_type)

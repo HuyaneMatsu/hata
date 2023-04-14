@@ -3,7 +3,7 @@ import vampytest
 from ..integration_account import IntegrationAccount
 
 
-def _check_is_every_attribute_set(integration_account):
+def _assert_fields_set(integration_account):
     """
     Checks whether every attribute of the given integration account is set.
     
@@ -25,7 +25,7 @@ def test__IntegrationAccount__new__0():
     Case: no fields given.
     """
     integration_account = IntegrationAccount()
-    _check_is_every_attribute_set(integration_account)
+    _assert_fields_set(integration_account)
 
 
 def test__IntegrationAccount__new__1():
@@ -38,7 +38,7 @@ def test__IntegrationAccount__new__1():
     name = 'sana'
     
     integration_account = IntegrationAccount(integration_account_id, name)
-    _check_is_every_attribute_set(integration_account)
+    _assert_fields_set(integration_account)
     
     vampytest.assert_eq(integration_account.id, integration_account_id)
     vampytest.assert_eq(integration_account.name, name)
@@ -49,4 +49,4 @@ def test__IntegrationAccount__create_empty():
     Tests whether ``IntegrationAccount._create_empty`` works as intended.
     """
     integration_account = IntegrationAccount._create_empty()
-    _check_is_every_attribute_set(integration_account)
+    _assert_fields_set(integration_account)

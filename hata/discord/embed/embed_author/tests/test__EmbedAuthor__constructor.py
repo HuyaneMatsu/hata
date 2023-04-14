@@ -45,3 +45,17 @@ def test__EmbedAuthor__new__1():
     vampytest.assert_eq(field.icon_url, icon_url)
     vampytest.assert_eq(field.name, name)
     vampytest.assert_eq(field.url, url)
+
+
+def test__EmbedAuthor__new__2():
+    """
+    Tests whether ``EmbedAuthor.__new__`` works as intended.
+    
+    Case: name conversion check.
+    """
+    name = 123
+    
+    field = EmbedAuthor(name = name)
+    _assert_fields_set(field)
+    
+    vampytest.assert_eq(field.name, str(name))

@@ -622,7 +622,7 @@ class Message(DiscordEntity, immortal = True):
             _set_message_field(
                 self,
                 MESSAGE_FIELD_KEY_APPLICATION,
-                MessageApplication(application_data),
+                MessageApplication.from_data(application_data),
             )
         
         

@@ -100,3 +100,22 @@ def test__Embed__new__1():
     vampytest.assert_eq(embed.type, embed_type)
     vampytest.assert_eq(embed.url, url)
     vampytest.assert_eq(embed.video, video)
+
+
+def test__Embed__new__2():
+    """
+    Tests whether ``Embed.__new__`` works as intended.
+    
+    Case: title & description conversion check.
+    """
+    description = 123
+    title = 245
+    
+    embed = Embed(
+        description = description,
+        title = title,
+    )
+    _assert_fields_set(embed)
+    
+    vampytest.assert_eq(embed.description, str(description))
+    vampytest.assert_eq(embed.title, str(title))

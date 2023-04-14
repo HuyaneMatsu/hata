@@ -213,7 +213,7 @@ class Embed(RichAttributeErrorBaseType):
         if title is ...:
             title = None
         else:
-            validate_title(title)
+            title = validate_title(title)
         
         # description
         if description is ...:
@@ -232,7 +232,6 @@ class Embed(RichAttributeErrorBaseType):
             color = None
         else:
             color = validate_color(color)
-        
         
         # embed_type
         if embed_type is ...:

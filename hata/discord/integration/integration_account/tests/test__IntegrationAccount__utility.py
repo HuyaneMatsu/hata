@@ -2,7 +2,7 @@ import vampytest
 
 from ..integration_account import IntegrationAccount
 
-from .test__IntegrationAccount__constructor import _check_is_every_attribute_set
+from .test__IntegrationAccount__constructor import _assert_fields_set
 
 
 def test__IntegrationAccount__copy():
@@ -17,7 +17,7 @@ def test__IntegrationAccount__copy():
         name = name,
     )
     copy = integration_account.copy()
-    _check_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, integration_account)
     vampytest.assert_eq(copy, integration_account)
 
@@ -36,7 +36,7 @@ def test__IntegrationAccount__copy_with__0():
         name = name,
     )
     copy = integration_account.copy_with()
-    _check_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, integration_account)
     vampytest.assert_eq(copy, integration_account)
 
@@ -60,7 +60,7 @@ def test__IntegrationAccount__copy_with__1():
         integration_account_id = new_integration_account_id,
         name = new_name,
     )
-    _check_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, integration_account)
     
     vampytest.assert_eq(copy.id, new_integration_account_id)

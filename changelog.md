@@ -1,4 +1,4 @@
-## 1.3.27 *\[2023-04-??\]*
+## 1.3.27 *\[2023-04-14\]*
 
 #### Improvements
 
@@ -22,6 +22,15 @@
 - Add `Channel.iter_audience`.
 - Add `Channel.iter_speakers`.
 - Add `Channel.iter_moderators`.
+- Repurpose `MessageApplication.__init__`, rename to `.from_data`.
+- Add `MessageApplication.__new__`.
+- Add `MessageApplication.__hash__`.
+- Add `MessageApplication.__eq__`.
+- Add `MessageApplication.precreate`.
+- Add `MessageApplication.copy`.
+- Add `MessageApplication.copy_with`.
+- Add `MessageApplication._create_empty`.
+- Add `MessageApplication.partial`.
 
 ##### ext.slash
 - `abort` call from a component command is now handled as intended (so always creates a new message).
@@ -38,6 +47,7 @@
 - `Channel.speakers` returned the audience.
 - `Client.owners_access` and `Client.activate_authorization_code` used `parse_` instead of `validate_` on input
     resulting `AttributeError`. (from 1.3.25) (Gilgamesh#8939)
+- `Embed.__new__`'s `title` parameter was not converted to string as intended.
 
 #### Renames, Deprecation & Removals
 

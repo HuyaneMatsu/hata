@@ -36,10 +36,23 @@ def test__EmbedFooter__new__1():
     """
     icon_url = 'attachment://orin.png'
     text = 'orin'
-    url = 'https://orindance.party/'
     
     field = EmbedFooter(text = text, icon_url = icon_url)
     _assert_fields_set(field)
     
     vampytest.assert_eq(field.icon_url, icon_url)
     vampytest.assert_eq(field.text, text)
+
+
+def test__EmbedFooter__new__2():
+    """
+    Tests whether ``EmbedFooter.__new__`` works as intended.
+    
+    Case: text conversion check.
+    """
+    text = 123
+    
+    field = EmbedFooter(text = text)
+    _assert_fields_set(field)
+    
+    vampytest.assert_eq(field.text, str(text))

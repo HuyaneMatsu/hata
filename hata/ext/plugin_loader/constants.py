@@ -1,5 +1,6 @@
 __all__ = ('PLUGINS',)
 
+import re
 from scarletio import WeakValueDictionary
 
 
@@ -24,3 +25,5 @@ PLUGIN_ROOTS = set()
 
 
 ABSOLUTE_PATH_PLUGIN_NAME_PREFIX = '<extension>.'
+
+IN_DIRECTORY_PLUGIN_RP = re.compile('\\.[^.]+')

@@ -26,10 +26,18 @@
 ##### ext.slash
 - `abort` call from a component command is now handled as intended (so always creates a new message).
 
+##### ext.plugin_loader
+- Add `Plugin.get_module_proxy`.
+- Add `Plugin.iter_loaded_plugins_in_directory`.
+- Loading a `Plugin` of an `__init__` file now scans already loaded plugins directly under it and assigns them to the
+    module as intended. This should stop random looking `NameError`-s on reload if the file's structure is incorrect.
+
 #### Bug Fixes
 
 - `Channel.audience` returned the speakers.
 - `Channel.speakers` returned the audience.
+- `Client.owners_access` and `Client.activate_authorization_code` used `parse_` instead of `validate_` on input
+    resulting `AttributeError`. (from 1.3.25) (Gilgamesh#8939)
 
 #### Renames, Deprecation & Removals
 

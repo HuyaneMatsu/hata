@@ -128,7 +128,6 @@ def test__Channel__get_user__1():
         (user.name, user),
         (user.full_name, user),
     ):
-        print(input_value, expected_output)
         output = channel.get_user(input_value)
         vampytest.assert_is(output, expected_output)
 

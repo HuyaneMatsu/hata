@@ -8,7 +8,7 @@ from py_compile import compile as compile_module
 from scarletio import HybridValueDictionary, RichAttributeErrorBaseType, WeakSet, include
 
 from .constants import (
-    PLUGINS, PLUGIN_STATE_LOADED, PLUGIN_STATE_UNDEFINED, PLUGIN_STATE_UNLOADED,
+    IN_DIRECTORY_PLUGIN_RP, PLUGINS, PLUGIN_STATE_LOADED, PLUGIN_STATE_UNDEFINED, PLUGIN_STATE_UNLOADED,
     PLUGIN_STATE_UNSATISFIED, PLUGIN_STATE_VALUE_TO_NAME, LOADING_PLUGINS
 )
 from .exceptions import DoNotLoadPlugin
@@ -75,8 +75,10 @@ class Plugin(RichAttributeErrorBaseType):
         '_snapshot_extractions', '_spec', '_state', '_sub_module_plugins', '_take_snapshot'
     )
     
-    def __new__(cls, name, path, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
-            default_variables, ):
+    def __new__(
+        cls, name, path, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
+        default_variables
+    ):
         """
         Creates an plugin with the given parameters. If an plugin already exists with the given name, returns
         that.
@@ -486,6 +488,8 @@ class Plugin(RichAttributeErrorBaseType):
                 setattr(module, name, value)
                 added_variable_names.append(name)
         
+        for plugin in self.iter_loaded_plugins_in_directory():
+            setattr(module, plugin.short_name, plugin.get_module_proxy())
         
         active_plugins_at_start = LOADING_PLUGINS.copy()
         
@@ -975,6 +979,17 @@ class Plugin(RichAttributeErrorBaseType):
         return self._spec.get_module()
     
     
+    def get_module_proxy(self):
+        """
+        Returns a proxy to the plugin.
+        
+        Returns
+        -------
+        module_proxy : ``PluginModuleProxyType``
+        """
+        return self._spec.get_module_proxy()
+    
+    
     def is_directory(self):
         """
         Returns whether the plugin is a directory.
@@ -984,6 +999,34 @@ class Plugin(RichAttributeErrorBaseType):
         is_directory : `bool`
         """
         return split_file_name_and_extension(get_file_name(self._spec.origin))[0] == '__init__'
+    
+    
+    def iter_loaded_plugins_in_directory(self):
+        """
+        Iterates over the loaded plugins directly under this one. This one must be a directory (so an `__init__` file).
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        plugin : ``Plugin``
+        """
+        if not self.is_directory():
+            return
+        
+        self_name = self.name
+        for plugin in PLUGINS.values():
+            if not plugin.is_loaded():
+                continue
+            
+            other_name = plugin.name
+            if not other_name.startswith(self_name):
+                continue
+            
+            if IN_DIRECTORY_PLUGIN_RP.fullmatch(other_name[len(self_name):]) is None:
+                continue
+            
+            yield plugin
     
     
     def add_sub_module_plugin(self, plugin):

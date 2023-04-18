@@ -28,7 +28,7 @@ def import_plugin(plugin_name, *variable_names, **keyword_parameters):
     
     Returns
     -------
-    imported_variables : `Any`, `list` of `Any`
+    imported_variables : `object`, `list` of `object`
         The imported variable(s).
     
     Raises
@@ -105,7 +105,7 @@ def import_plugin(plugin_name, *variable_names, **keyword_parameters):
     
     if spec is None:
         raise RuntimeError(
-            f'`import_plugin` can only be called from an plugin.'
+            f'`import_plugin` can be called only from a plugin.'
         )
     
     local_name = spec.name

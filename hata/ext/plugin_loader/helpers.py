@@ -1,6 +1,5 @@
 __all__ = ()
 
-from itertools import chain
 from os import listdir as list_directory
 from os.path import (
     basename as base_name, exists, isabs as is_absolute_path_name, isdir as is_directory, isfile as is_file,
@@ -61,8 +60,14 @@ def _validate_entry_or_exit(point):
     return False
 
 
-def validate_plugin_parameters(entry_point=None, exit_point=None, extend_default_variables=True, locked=False,
-        take_snapshot_difference=True, **variables):
+def validate_plugin_parameters(
+    entry_point = None,
+    exit_point = None,
+    extend_default_variables = True,
+    locked = False,
+    take_snapshot_difference = True,
+    **variables,
+):
     """
     Validates plugin parameters.
     
@@ -215,7 +220,7 @@ def _get_plugin_name_and_path(name):
     return plugin_pair
 
 
-def _iter_plugin_names_and_paths(name, *, register_directories_as_roots=False):
+def _iter_plugin_names_and_paths(name, *, register_directories_as_roots = False):
     """
     Fetches the names and the paths of the given plugin.
     
@@ -246,7 +251,7 @@ def _iter_plugin_names_and_paths(name, *, register_directories_as_roots=False):
     """
     for name in _iter_name_maybe_iterable(name):
         if name.startswith(ABSOLUTE_PATH_PLUGIN_NAME_PREFIX):
-            yield name
+            yield None, name
             return
         
         yield from _lookup_path(name, register_directories_as_roots)
@@ -327,7 +332,7 @@ def _lookup_path(import_name_or_path, register_directories_as_roots):
     Raise
     -----
     ModuleNotFoundError
-        If `import_name_or_path` name could not be detected as en plugin.
+        If `import_name_or_path` name could not be detected as a plugin.
     """
     if is_absolute_path_name(import_name_or_path):
         if exists(import_name_or_path):
@@ -433,61 +438,3 @@ def _get_path_plugin_name(path):
         file_name = file_name[:dot_index]
     
     return ABSOLUTE_PATH_PLUGIN_NAME_PREFIX + file_name
-
-
-def _build_plugin_tree(plugins, deep):
-    """
-    Builds a tree of plugins.
-    
-    Parameters
-    ----------
-    plugins : `list` of ``Plugin``
-        A list of plugin to build the tree form.
-    deep : `bool`
-        Whether the plugin with all of it's parent and with their child should be returned.
-    
-    Returns
-    -------
-    plugins : `list` of ``Plugin``
-    """
-    plugins_to_unwrap = [*plugins]
-    unwrapped_plugins = set()
-    
-    while plugins_to_unwrap:
-        plugin = plugins_to_unwrap.pop()
-        
-        if deep:
-            for iterated_plugin in chain(
-                plugin.iter_child_plugins(),
-                plugin.iter_parent_plugins(),
-                plugin.iter_sub_module_plugins()
-            ):
-                if iterated_plugin not in unwrapped_plugins:
-                    plugins_to_unwrap.append(iterated_plugin)
-        
-        unwrapped_plugins.add(plugin)
-    
-    
-    plugins_to_check_ordered = sorted(unwrapped_plugins, reverse=True)
-    
-    plugins_satisfied = set()
-    plugins_satisfied_ordered = []
-    
-    while plugins_to_check_ordered:
-        for index in reversed(range(len(plugins_to_check_ordered))):
-            plugin = plugins_to_check_ordered[index]
-            
-            if not plugin.are_child_plugins_present_in(plugins_satisfied):
-                continue
-            
-            plugins_satisfied.add(plugin)
-            plugins_satisfied_ordered.append(plugin)
-            del plugins_to_check_ordered[index]
-            break
-
-        else:
-            raise RuntimeError(
-                f'Plugins with circular satisfaction: {plugins_to_check_ordered!r}'
-            )
-    
-    return plugins_satisfied_ordered

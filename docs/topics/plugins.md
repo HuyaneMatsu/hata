@@ -179,7 +179,7 @@ Strong sub-module trees can be handy when dealing with a command with sub-comman
 
 Imagine that each sub-command has its own file.
 
-```
+```py
 /__init__.py
 sub_command_1.py
 sub_command_2.py
@@ -189,7 +189,7 @@ sub_command_3.py
 To build a command, you might do something like:
 
 **\_\_init\_\_.py**
-```
+```py
 from . import sub_command_1
 from . import sub_command_2
 from . import sub_command_3
@@ -203,7 +203,7 @@ for module in (sub_command_1, sub_command_2, sub_command_3):
 ```
 
 **sub_command_1.py**
-```
+```py
 __all__ = ('add', )
 
 async def add(...):
@@ -245,7 +245,7 @@ you need to import only the module itself and no values from it.
 - Bad example
 
     **\_\_init\_\_.py**
-    ```
+    ```py
     from file_1 import command
     ```
     
@@ -253,7 +253,7 @@ you need to import only the module itself and no values from it.
     same as directly importing it!
     
     **\_\_init\_\_.py**
-    ```
+    ```py
     from . import file_1
     command = file_1.command
     ```
@@ -386,7 +386,7 @@ When using relative imports to another plugin, something might derp out, and you
 - **The issue**
     
     Let's say our directory looks like:
-    ```
+    ```py
     /plugins/file_1.py
     /plugins/file_2.py
     /plugins/file_3.py

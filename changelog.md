@@ -1,3 +1,22 @@
+## 1.3.28 *\[2023-04-??\]*
+
+#### Improvements
+
+##### ext.plugin_loader
+- Add `Plugin.sort_key`.
+- Plugin sorting improved. (Using sort key instead of name).
+- Add `PluginException.plugin`.
+- Add `PluginException.get_plugins`.
+- Add `PluginError.get_plugin_tree_iterator_for_action`.
+- Add `PluginError.get_plugin_tree_iterator_for_load`.
+- Add `PluginError.get_plugin_tree_iterator_for_unload`.
+- `PluginLoader` now picks up previously built but failed /cancelled plugin trees when retrying load / reload.
+- Add `PluginError.get_plugin_tree_iterator_for_syntax_check`.
+
+#### Bug fixes
+
+- `Message.clean_embeds` raised `AttributeError`. (from 1.3.26)
+
 ## 1.3.27 *\[2023-04-14\]*
 
 #### Improvements

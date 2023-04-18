@@ -8,14 +8,14 @@ from py_compile import compile as compile_module
 from scarletio import HybridValueDictionary, RichAttributeErrorBaseType, WeakSet, include
 
 from .constants import (
-    IN_DIRECTORY_PLUGIN_RP, PLUGINS, PLUGIN_STATE_LOADED, PLUGIN_STATE_UNDEFINED, PLUGIN_STATE_UNLOADED,
-    PLUGIN_STATE_UNSATISFIED, PLUGIN_STATE_VALUE_TO_NAME, LOADING_PLUGINS
+    IN_DIRECTORY_PLUGIN_RP, LOADING_PLUGINS, PLUGINS, PLUGIN_ACTION_FLAG_SYNTAX_CHECK, PLUGIN_STATE_LOADED,
+    PLUGIN_STATE_UNDEFINED, PLUGIN_STATE_UNLOADED, PLUGIN_STATE_UNSATISFIED, PLUGIN_STATE_VALUE_TO_NAME
 )
-from .exceptions import DoNotLoadPlugin
-from .plugin_root import register_plugin_root
+from .exceptions import DoNotLoadPlugin, PluginError
 from .helpers import PROTECTED_NAMES, _get_path_plugin_name, _validate_entry_or_exit
-from .import_overwrite.module_spec_type import PluginModuleSpecType
 from .import_overwrite.module_proxy_type import PluginModuleProxyType
+from .import_overwrite.module_spec_type import PluginModuleSpecType
+from .plugin_root import register_plugin_root
 from .snapshot import calculate_snapshot_difference, revert_snapshot, take_snapshot
 
 
@@ -199,7 +199,7 @@ class Plugin(RichAttributeErrorBaseType):
         if type(self) is not type(other):
             return NotImplemented
         
-        return self.name > other.name
+        return self.sort_key > other.sort_key
     
     
     def __lt__(self, other):
@@ -207,7 +207,7 @@ class Plugin(RichAttributeErrorBaseType):
         if type(self) is not type(other):
             return NotImplemented
         
-        return self.name < other.name
+        return self.sort_key < other.sort_key
     
     
     def add_default_variables(self, **variables):
@@ -544,9 +544,10 @@ class Plugin(RichAttributeErrorBaseType):
         
         This method is blocking. Run it inside of an executor.
         
-        Raises
-        ------
-        SyntaxError
+        Returns
+        -------
+        exception : PluginError
+            PluginError wrapping invalid syntax.
         """
         if (self._state == PLUGIN_STATE_LOADED) and self._spec.is_initialised():
             file_name = self.file_name
@@ -557,6 +558,9 @@ class Plugin(RichAttributeErrorBaseType):
                 except FileNotFoundError:
                     # If the file is deleted, is fine.
                     pass
+                
+                except SyntaxError as err:
+                    return PluginError(action = PLUGIN_ACTION_FLAG_SYNTAX_CHECK, cause = err, plugin = self)
     
     
     def _unload(self):
@@ -671,6 +675,18 @@ class Plugin(RichAttributeErrorBaseType):
         file_name : `str`
         """
         return self._spec.origin
+    
+    
+    @property
+    def sort_key(self):
+        """
+        Returns the plugin's sort key.
+        
+        Returns
+        -------
+        sort_key : `tuple` of `str`
+        """
+        return self._spec.name.split('.')
     
     
     def is_loaded(self):

@@ -1,6 +1,7 @@
 __all__ = ('PLUGIN_LOADER', 'PluginLoader', )
 
 from functools import partial as partial_func
+from itertools import chain
 
 from scarletio import (
     CauseGroup, HybridValueDictionary, RichAttributeErrorBaseType, Task, alchemy_incendiary, export,
@@ -9,13 +10,21 @@ from scarletio import (
 
 from ...discord.core import KOKORO
 
-from .constants import PLUGIN_STATE_LOADED, PLUGINS
+from .constants import (
+    PLUGIN_ACTION_FLAG_LOAD, PLUGIN_ACTION_FLAG_NAME_LOOKUP, PLUGIN_ACTION_FLAG_SYNTAX_CHECK, PLUGIN_ACTION_FLAG_UNLOAD,
+    PLUGIN_STATE_LOADED, PLUGINS
+)
 from .exceptions import PluginError
 from .plugin import Plugin
-from .helpers import (
-    PROTECTED_NAMES, _build_plugin_tree, _get_plugin_name_and_path, _get_path_plugin_name,
-    _iter_plugin_names_and_paths, _validate_entry_or_exit, validate_plugin_parameters
+from .plugin_tree.plugin_tree_iterator import PluginTreeIterator
+from .plugin_tree.plugin_tree_helpers import (
+    _build_and_sort_plugin_trees, _sort_plugin_trees, _unwrap_plugin_trees_into_plugins
 )
+from .helpers import (
+    PROTECTED_NAMES, _get_plugin_name_and_path, _get_path_plugin_name, _iter_plugin_names_and_paths,
+    _validate_entry_or_exit, validate_plugin_parameters
+)
+
 
 def _try_get_plugin(plugin_name, plugin_path):
     """
@@ -47,7 +56,7 @@ def _try_get_plugin(plugin_name, plugin_path):
         pass
 
 
-async def _get_plugins(name, deep):
+def _get_plugins(name):
     """
     Gets the plugins with the given name.
     
@@ -55,8 +64,6 @@ async def _get_plugins(name, deep):
     ----------
     name : `str`, `iterable` of `str`
         Plugin by name to find.
-    deep : `bool`
-        Whether the plugin with all of it's parent and with their child should be returned.
     
     Returns
     -------
@@ -76,7 +83,9 @@ async def _get_plugins(name, deep):
             plugin = _try_get_plugin(plugin_name, plugin_path)
             if plugin is None:
                 raise PluginError(
-                    f'No plugin was added with name: `{plugin_name}`.'
+                    f'No plugin was added with name: `{plugin_name}`.',
+                    action = PLUGIN_ACTION_FLAG_NAME_LOOKUP,
+                    value = (plugin_name, plugin_path),
                 )
             
             plugins.add(plugin)
@@ -84,20 +93,19 @@ async def _get_plugins(name, deep):
         
         if not plugins:
             raise PluginError(
-                f'No plugins found with the given name: {name!r}.'
+                f'No plugins found with the given name: {name!r}.',
+                action = PLUGIN_ACTION_FLAG_NAME_LOOKUP,
             )
         
-        return _build_plugin_tree(plugins, deep)
-    
-    except GeneratorExit:
-        raise
+        return plugins
     
     except PluginError:
         raise
     
     except BaseException as err:
         raise PluginError(
-            f'Exception occurred meanwhile looking up plugins for name: {name!r}.'
+            f'Exception occurred meanwhile looking up plugins for name: {name!r}.',
+            action = PLUGIN_ACTION_FLAG_NAME_LOOKUP,
         ) from err
 
 
@@ -443,10 +451,12 @@ class PluginLoader(RichAttributeErrorBaseType):
         > These callbacks are only called once, and then cleared out.
     _execute_counter : `int`
         Whether the plugin loader is executing an plugin.
-    _plugins_by_name : `dict` of (`str`, ``Plugin``) items
-        A dictionary of the added plugins to the plugin loader in `plugin-name` - ``Plugin`` relation.
     _loader_tasks : `dict` of (``Plugin``, ``Task``) items
         Active plugin loading tasks.
+    _plugins_by_name : `dict` of (`str`, ``Plugin``) items
+        A dictionary of the added plugins to the plugin loader in `plugin-name` - ``Plugin`` relation.
+    _previously_failed_load_trees : `None`, `set` of ``PluginTree``
+        Previously failed plugin trees on load (and syntax check).
     _unloader_tasks : `dict` of (``Plugin``, ``Task``) items
         Active plugin unloading tasks.
     
@@ -457,7 +467,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     """
     __slots__ = (
         '_default_entry_point', '_default_exit_point', '_default_variables', '_done_callbacks', '_execute_counter',
-        '_plugins_by_name', '_loader_tasks', '_unloader_tasks'
+        '_loader_tasks', '_plugins_by_name', '_previously_failed_load_trees', '_unloader_tasks'
     )
     
     _instance = None
@@ -472,20 +482,22 @@ class PluginLoader(RichAttributeErrorBaseType):
         self : ``PluginLoader``
         """
         self = cls._instance
-        if self is None:
-            self = object.__new__(cls)
-            
-            self._default_entry_point = 'setup'
-            self._default_exit_point = 'teardown'
-            self._done_callbacks = None
-            self._plugins_by_name = {}
-            self._default_variables = HybridValueDictionary()
-            self._execute_counter = 0
-            self._loader_tasks = {}
-            self._unloader_tasks = {}
-            
-            cls._instance = self
+        if self is not None:
+            return self
         
+        self = object.__new__(cls)
+        
+        self._default_entry_point = 'setup'
+        self._default_exit_point = 'teardown'
+        self._done_callbacks = None
+        self._plugins_by_name = {}
+        self._default_variables = HybridValueDictionary()
+        self._execute_counter = 0
+        self._loader_tasks = {}
+        self._unloader_tasks = {}
+        self._previously_failed_load_trees = None
+        
+        cls._instance = self
         return self
     
     
@@ -741,7 +753,7 @@ class PluginLoader(RichAttributeErrorBaseType):
             plugin._unlink()
     
     
-    def register_and_load(self, name, *parameters, blocking=True, **keyword_parameters):
+    def register_and_load(self, name, *parameters, blocking = True, **keyword_parameters):
         """
         Registers then loads the plugin.
         
@@ -867,7 +879,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         return plugin
     
     
-    def load(self, name, *, blocking=True, deep=True):
+    def load(self, name, *, blocking = True, deep = True):
         """
         Loads the plugin with the given name. If the plugin is already loaded, will do nothing.
         
@@ -924,28 +936,16 @@ class PluginLoader(RichAttributeErrorBaseType):
             - No plugin is added with the given name.
             - Loading the plugin failed.
         """
-        plugins = await _get_plugins(name, deep)
-        
-        exceptions = None
-        
-        for plugin in plugins:
-            exception = await self._plugin_loader(plugin)
-            if (exception is not None):
-                if exceptions is None:
-                    exceptions = []
-                
-                exceptions.append(exception)
-        
-        if (exceptions is not None):
-            try:
-                raise PluginError() from CauseGroup(*exceptions)
-            finally:
-                exceptions = None
-        
-        return plugins
+        plugins = _get_plugins(name)
+        plugins, plugin_trees = self._pull_previously_failed_plugin_trees(plugins)
+        plugin_trees = _build_and_sort_plugin_trees(plugins, plugin_trees, deep)
+        await self._execute_actions_on_plugin_trees(
+            plugin_trees, PLUGIN_ACTION_FLAG_LOAD | PLUGIN_ACTION_FLAG_SYNTAX_CHECK
+        )
+        return _unwrap_plugin_trees_into_plugins(plugin_trees)
     
     
-    def unload(self, name, *, blocking=True, deep=True):
+    def unload(self, name, *, blocking = True, deep = True):
         """
         Unloads the plugin with the given name.
         
@@ -1002,28 +1002,14 @@ class PluginLoader(RichAttributeErrorBaseType):
             - No plugin is added with the given name.
             - Unloading the plugin failed.
         """
-        plugins = await _get_plugins(name, deep)
-        
-        exceptions = None
-        
-        for plugin in plugins:
-            exception = await self._plugin_unloader(plugin)
-            if (exception is not None):
-                if exceptions is None:
-                    exceptions = []
-                
-                exceptions.append(exception)
-        
-        if (exceptions is not None):
-            try:
-                raise PluginError() from CauseGroup(*exceptions)
-            finally:
-                exceptions = None
-        
-        return plugins
+        plugins = _get_plugins(name)
+        plugins, plugin_trees = self._pull_previously_failed_plugin_trees(plugins)
+        plugin_trees = _build_and_sort_plugin_trees(plugins, plugin_trees, deep)
+        await self._execute_actions_on_plugin_trees(plugin_trees, PLUGIN_ACTION_FLAG_UNLOAD)
+        return _unwrap_plugin_trees_into_plugins(plugin_trees)
     
     
-    def reload(self, name, *, blocking=True, deep=True):
+    def reload(self, name, *, blocking = True, deep = True):
         """
         Reloads the plugin with the given name.
         
@@ -1080,42 +1066,16 @@ class PluginLoader(RichAttributeErrorBaseType):
             - No plugin is added with the given name.
             - Reloading the plugin failed.
         """
-        plugins = await _get_plugins(name, deep)
-        
-        await self._check_for_syntax(plugins)
-        
-        exceptions = None
-        
-        for plugin in plugins:
-            exception = await self._plugin_unloader(plugin)
-            if (exception is not None):
-                if exceptions is None:
-                    exceptions = {}
-                
-                exceptions[plugin.name] = exception
-        
-        
-        for plugin in plugins:
-            if (exceptions is not None) and (plugin.name in exceptions):
-                continue
-            
-            exception = await self._plugin_loader(plugin)
-            if (exception is not None):
-                if exceptions is None:
-                    exceptions = {}
-                
-                exceptions[plugin.name] = exception
-        
-        if (exceptions is not None):
-            try:
-                raise PluginError() from CauseGroup(*exceptions.values())
-            finally:
-                exceptions = None
-        
-        return plugins
+        plugins = _get_plugins(name)
+        plugins, plugin_trees = self._pull_previously_failed_plugin_trees(plugins)
+        plugin_trees = _build_and_sort_plugin_trees(plugins, plugin_trees, deep)
+        await self._execute_actions_on_plugin_trees(
+            plugin_trees, PLUGIN_ACTION_FLAG_LOAD | PLUGIN_ACTION_FLAG_UNLOAD | PLUGIN_ACTION_FLAG_SYNTAX_CHECK
+        )
+        return _unwrap_plugin_trees_into_plugins(plugin_trees)
     
     
-    def load_all(self, *, blocking=True):
+    def load_all(self, *, blocking = True):
         """
         Loads all the plugin of the plugin loader. If anything goes wrong, raises an ``PluginError`` only
         at the end, with the exception(s).
@@ -1151,26 +1111,16 @@ class PluginLoader(RichAttributeErrorBaseType):
         PluginError
             If any plugin failed to load correctly.
         """
-        exceptions = None
+        plugins = [plugin for plugin in PLUGINS.values() if not plugin._locked]
+        plugins, plugin_trees = self._pull_previously_failed_plugin_trees(plugins)
+        plugin_trees = _build_and_sort_plugin_trees(plugins, plugin_trees, False)
         
-        for plugin in tuple(PLUGINS.values()):
-            if plugin._locked:
-                continue
-            
-            exception = await self._plugin_loader(plugin)
-            if (exception is not None):
-                if exceptions is None:
-                    exceptions = []
-                
-                exceptions.append(exception)
-        
-        if (exceptions is not None):
-            try:
-                raise PluginError() from CauseGroup(*exceptions)
-            finally:
-                exceptions = None
+        await self._execute_actions_on_plugin_trees(
+            plugin_trees, PLUGIN_ACTION_FLAG_LOAD | PLUGIN_ACTION_FLAG_SYNTAX_CHECK
+        )
     
-    def unload_all(self, *, blocking=True):
+    
+    def unload_all(self, *, blocking = True):
         """
         Unloads all the plugin of the plugin loader. If anything goes wrong, raises an ``PluginError`` only
         at the end, with the exception(s).
@@ -1206,27 +1156,14 @@ class PluginLoader(RichAttributeErrorBaseType):
         PluginError
             If any plugin failed to unload correctly.
         """
-        exceptions = None
+        plugins = [plugin for plugin in PLUGINS.values() if not plugin._locked]
+        plugins, plugin_trees = self._pull_previously_failed_plugin_trees(plugins)
+        plugin_trees = _build_and_sort_plugin_trees(plugins, plugin_trees, False)
         
-        for plugin in tuple(PLUGINS.values()):
-            if plugin._locked:
-                continue
-            
-            exception = await self._plugin_unloader(plugin)
-            if (exception is not None):
-                if exceptions is None:
-                    exceptions = []
-                
-                exceptions.append(exception)
-        
-        if (exceptions is not None):
-            try:
-                raise PluginError() from CauseGroup(*exceptions)
-            finally:
-                exceptions = None
+        await self._execute_actions_on_plugin_trees(plugin_trees, PLUGIN_ACTION_FLAG_UNLOAD)
     
     
-    def reload_all(self, *, blocking=True):
+    def reload_all(self, *, blocking = True):
         """
         Reloads all the plugin of the plugin loader. If anything goes wrong, raises an ``PluginError`` only
         at the end, with the exception(s).
@@ -1262,35 +1199,146 @@ class PluginLoader(RichAttributeErrorBaseType):
         PluginError
             If any plugin failed to reload correctly.
         """
-        exceptions = None
+        plugins = [plugin for plugin in PLUGINS.values() if not plugin._locked]
+        plugins, plugin_trees = self._pull_previously_failed_plugin_trees(plugins)
+        plugin_trees = _build_and_sort_plugin_trees(plugins, plugin_trees, False)
         
-        plugins = _build_plugin_tree(
-            [plugin for plugin in PLUGINS.values() if not plugin._locked],
-            False,
+        await self._execute_actions_on_plugin_trees(
+            plugin_trees, PLUGIN_ACTION_FLAG_LOAD | PLUGIN_ACTION_FLAG_UNLOAD | PLUGIN_ACTION_FLAG_SYNTAX_CHECK
         )
-        await self._check_for_syntax(plugins)
+    
+    
+    async def _execute_actions_on_plugin_trees(self, plugin_trees, actions):
+        """
+        Executes the actions on the given plugins.
         
-        for plugin in plugins:
-            exception = await self._plugin_unloader(plugin)
-            if (exception is not None):
-                if exceptions is None:
-                    exceptions = []
-                
-                exceptions.append(exception)
+        This method is a coroutine.
         
-        for plugin in reversed(plugins):
-            exception = await self._plugin_loader(plugin)
-            if (exception is not None):
-                if exceptions is None:
-                    exceptions = []
-                
-                exceptions.append(exception)
+        Parameters
+        ----------
+        plugin_trees : `list` of ``PluginTree``
+            The plugin trees to execute the actions on.
+        actions : `int`
+            Bitwise flags of the actions to executed.
+        
+        Raises
+        ------
+        PluginError
+            If any plugin failed to load / reload correctly.
+        """
+        exceptions = None
+        plugin_tree_iterators = None
+        
+        if (actions & PLUGIN_ACTION_FLAG_SYNTAX_CHECK) and plugin_trees:
+            exceptions, plugin_tree_iterators = await self._execute_syntax_check_on_plugin_trees(
+                plugin_trees, exceptions, plugin_tree_iterators
+            )
+            
+            if (exceptions is not None) and (plugin_tree_iterators is not None):
+                plugin_tree_iterator = plugin_tree_iterators[-1]
+                plugin_trees = _sort_plugin_trees({*plugin_tree_iterator.iter_done_success()})
+        
+        if (actions & PLUGIN_ACTION_FLAG_UNLOAD) and plugin_trees:
+            exceptions, plugin_tree_iterators = await self._execute_unload_on_plugin_trees(
+                plugin_trees, exceptions, plugin_tree_iterators
+            )
+        
+        if (actions & PLUGIN_ACTION_FLAG_LOAD) and plugin_trees:
+            exceptions, plugin_tree_iterators = await self._execute_load_on_plugin_trees(
+                plugin_trees, exceptions, plugin_tree_iterators
+            )
         
         if (exceptions is not None):
+            self._push_previously_failed_plugin_trees_from_iterators(plugin_tree_iterators)
+            
             try:
-                raise PluginError() from CauseGroup(*exceptions)
+                raise PluginError(
+                    action = actions, cause = CauseGroup(*exceptions), plugin_tree_iterators = plugin_tree_iterators
+                )
             finally:
                 exceptions = None
+    
+    
+    async def _execute_load_on_plugin_trees(self, plugin_trees, exceptions, plugin_tree_iterators):
+        """
+        Executes load on the given plugins
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        plugin_trees : `list` of ``PluginTree``
+            The plugin trees to unload.
+        exceptions : `None`, `list` of ``BaseException``
+            Occurred exceptions.
+        plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
+            Plugin tree iterators.
+        
+        Returns
+        -------
+        exceptions : `None`, `list` of ``BaseException``
+            Occurred exceptions.
+        plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
+            Plugin tree iterators.
+        """
+        if plugin_tree_iterators is None:
+            plugin_tree_iterators = []
+        
+        plugin_tree_iterator = PluginTreeIterator(plugin_trees, PLUGIN_ACTION_FLAG_LOAD)
+        plugin_tree_iterators.append(plugin_tree_iterator)
+        
+        for plugin in plugin_tree_iterator:
+            exception = await self._plugin_loader(plugin)
+            if (exception is not None):
+                plugin_tree_iterator.fail_current_hard()
+                plugin_tree_iterator.cancel_dependents_in_to_do(exception.get_plugins())
+                if exceptions is None:
+                    exceptions = []
+                
+                exceptions.append(exception)
+        
+        return exceptions, plugin_tree_iterators
+    
+    
+    async def _execute_unload_on_plugin_trees(self, plugin_trees, exceptions, plugin_tree_iterators):
+        """
+        Executes unload on the given plugins
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        plugin_trees : `list` of ``PluginTree``
+            The plugin trees to unload.
+        exceptions : `None`, `list` of ``BaseException``
+            Occurred exceptions.
+        plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
+            Plugin tree iterators.
+        
+        Returns
+        -------
+        exceptions : `None`, `list` of ``BaseException``
+            Occurred exceptions.
+        plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
+            Plugin tree iterators.
+        """
+        if plugin_tree_iterators is None:
+            plugin_tree_iterators = []
+        
+        plugin_tree_iterator = PluginTreeIterator(plugin_trees, PLUGIN_ACTION_FLAG_UNLOAD)
+        plugin_tree_iterators.append(plugin_tree_iterator)
+        
+        for plugin in plugin_tree_iterator:
+            exception = await self._plugin_unloader(plugin)
+            if (exception is not None):
+                plugin_tree_iterator.fail_current_soft()
+                
+                if exceptions is None:
+                    exceptions = []
+                
+                exceptions.append(exception)
+        
+        return exceptions, plugin_tree_iterators
     
     
     async def _plugin_loader(self, plugin):
@@ -1374,7 +1422,9 @@ class PluginLoader(RichAttributeErrorBaseType):
             except BaseException as err:
                 return PluginError(
                     f'Exception occurred meanwhile loading a plugin: `{plugin.name}`',
+                    action = PLUGIN_ACTION_FLAG_LOAD,
                     cause = err,
+                    plugin = plugin,
                 )
             
             if module is None:
@@ -1520,8 +1570,10 @@ class PluginLoader(RichAttributeErrorBaseType):
                             f'Exception occurred meanwhile unloading a plugin: `{plugin.name}`; '
                             f'At exit point: {exit_point!r},'
                         ),
+                        action = PLUGIN_ACTION_FLAG_UNLOAD,
                         cause = err,
-                    ) 
+                        plugin = plugin,
+                    )
             
             finally:
                 plugin._unassign_variables()
@@ -1603,41 +1655,72 @@ class PluginLoader(RichAttributeErrorBaseType):
         return self._plugins_by_name.get(name, None)
     
     
-    async def _check_for_syntax(self, plugins):
+    async def _execute_syntax_check_on_plugin_trees(self, plugin_trees, exceptions, plugin_tree_iterators):
         """
-        Checks whether the plugins can be reloaded.
+        Check syntax of the given plugin trees.
         
         This function is a coroutine.
         
         Parameters
         ----------
-        plugins : `list` of ``Plugin``
-            A list of plugins to check their syntax.
+        plugin_trees : `list` of ``PluginTree``
+            A list of plugin trees to check their syntax.
+        exceptions : `None`, `list` of ``BaseException``
+            Occurred exceptions.
+        plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
+            Plugin tree iterators.
         
-        Raises
-        ------
-        SyntaxError
+        Returns
+        -------
+        exceptions : `None`, `list` of ``BaseException``
+            Occurred exceptions.
+        plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
+            Plugin tree iterators.
         """
-        return await KOKORO.run_in_executor(alchemy_incendiary(self._check_for_syntax_blocking, (plugins,)))
+        return await KOKORO.run_in_executor(alchemy_incendiary(
+            self._execute_syntax_check_on_plugin_trees_blocking, (plugin_trees, exceptions, plugin_tree_iterators)
+        ))
     
     
-    def _check_for_syntax_blocking(self, plugins):
+    def _execute_syntax_check_on_plugin_trees_blocking(self, plugin_trees, exceptions, plugin_tree_iterators):
         """
         Checks whether the plugins can be reloaded.
         
-        This method is blocking and ran inside of an executor by ``._check_for_syntax``.
+        This method is blocking and ran inside of an executor by ``._execute_syntax_check_on_plugin_trees``.
         
         Parameters
         ----------
-        plugins : `list` of ``Plugin``
-            A list of plugins to check their syntax.
+        plugin-trees : `list` of ``PluginTree``
+            A list of plugin trees to check their syntax.
+        exceptions : `None`, `list` of ``BaseException``
+            Occurred exceptions.
+        plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
+            Plugin tree iterators.
         
-        Raises
-        ------
-        SyntaxError
+        Returns
+        -------
+        exceptions : `None`, `list` of ``BaseException``
+            Occurred exceptions.
+        plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
+            Plugin tree iterators.
         """
-        for plugin in plugins:
-            plugin._check_for_syntax()
+        if plugin_tree_iterators is None:
+            plugin_tree_iterators = []
+        
+        plugin_tree_iterator = PluginTreeIterator(plugin_trees, PLUGIN_ACTION_FLAG_SYNTAX_CHECK)
+        plugin_tree_iterators.append(plugin_tree_iterator)
+            
+        for plugin in plugin_tree_iterator:
+            exception = plugin._check_for_syntax()
+            if (exception is not None):
+                plugin_tree_iterator.fail_current_hard()
+                plugin_tree_iterator.cancel_dependents_in_to_do(exception.get_plugins())
+                if exceptions is None:
+                    exceptions = []
+                
+                exceptions.append(exception)
+        
+        return exceptions, plugin_tree_iterators
     
     
     def add_done_callback(self, callback):
@@ -1704,6 +1787,76 @@ class PluginLoader(RichAttributeErrorBaseType):
             
             for done_callback in done_callbacks:
                 KOKORO.call_soon(done_callback)
+    
+    
+    def _pull_previously_failed_plugin_trees(self, plugins):
+        """
+        Pulls previously failed plugin trees.
+        
+        Parameters
+        ----------
+        plugins : `list` of ``Plugins``
+            Plugins to get failed trees for.
+        
+        Returns
+        -------
+        plugins : `list` of ``Plugin``
+            Plugins excluding the matched ones.
+        plugin_trees : `list` of ``PluginTree``
+            The matched plugin trees.
+        """
+        plugin_trees = []
+        
+        previously_failed_load_trees = self._previously_failed_load_trees
+        if previously_failed_load_trees is None:
+            return plugins, plugin_trees
+        
+        found_plugins = set()
+        
+        for plugin_tree in previously_failed_load_trees:
+            intersection = plugin_tree.get_intersection_with_plugins(plugins)
+            if not intersection:
+                continue
+            
+            found_plugins.update(intersection)
+            plugin_trees.append(plugin_tree)
+            continue
+        
+        if plugin_trees:
+            for plugin_tree in plugin_trees:
+                previously_failed_load_trees.discard(plugin_tree)
+            
+            if not previously_failed_load_trees:
+                self._previously_failed_load_trees = None
+            
+            plugins = [plugin for plugin in plugins if plugin not in found_plugins]
+        
+        return plugins, plugin_trees
+    
+    
+    def _push_previously_failed_plugin_trees_from_iterators(self, plugin_tree_iterators):
+        """
+        Pushes previous failed plugin trees from plugin tree iterators.
+        
+        Parameters
+        ----------
+        plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator``
+            Plugin tree iterators to pull the failed plugin trees from.
+        """
+        if plugin_tree_iterators is None:
+            return
+        
+        previously_failed_load_trees = self._previously_failed_load_trees
+        for plugin_tree_iterator in plugin_tree_iterators:
+            if not (plugin_tree_iterator.action & (PLUGIN_ACTION_FLAG_SYNTAX_CHECK | PLUGIN_ACTION_FLAG_LOAD)):
+                continue
+            
+            for plugin_tree in chain(plugin_tree_iterator.iter_done_fail(), plugin_tree_iterator.iter_done_cancelled()):
+                if previously_failed_load_trees is None:
+                    previously_failed_load_trees = set()
+                    self._previously_failed_load_trees = previously_failed_load_trees
+                
+                previously_failed_load_trees.add(plugin_tree)
 
 
 PLUGIN_LOADER = PluginLoader()

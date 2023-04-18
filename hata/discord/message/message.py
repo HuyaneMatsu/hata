@@ -2457,7 +2457,7 @@ class Message(DiscordEntity, immortal = True):
                 if embed.type in EXTRA_EMBED_TYPES:
                     continue
                 
-                clean_embeds.append(embed._clean_copy(self))
+                clean_embeds.append(embed.clean_copy(self))
         
         return clean_embeds
     

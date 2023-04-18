@@ -1,4 +1,5 @@
 from .import_overwrite import *
+from .plugin_tree import *
 from .snapshot import *
 from .utils import *
 
@@ -13,6 +14,7 @@ from .helpers import *
 
 __all__ = (
     *import_overwrite.__all__,
+    *plugin_tree.__all__,
     *snapshot.__all__,
     *utils.__all__,
     
@@ -24,6 +26,7 @@ __all__ = (
     *plugin_root.__all__,
     *helpers.__all__,
 )
+
 
 from .. import register_library_extension
 register_library_extension('HuyaneMatsu.plugin_loader')

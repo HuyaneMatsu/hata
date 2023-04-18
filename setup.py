@@ -163,6 +163,7 @@ setup(
         'hata.ext.patchouli',
         'hata.ext.plugin_loader',
         'hata.ext.plugin_loader.import_overwrite',
+        'hata.ext.plugin_loader.plugin_tree',
         'hata.ext.plugin_loader.snapshot',
         'hata.ext.plugin_loader.utils',
         'hata.ext.kokoro_sqlalchemy',
@@ -234,6 +235,9 @@ setup(
         ],
         'cpythonspeedups': [
             'cchardet>=2.0',
+        ],
+        'autoreload': [
+            'inotify_simple>=1.3.5',
         ],
     },
     entry_points = {

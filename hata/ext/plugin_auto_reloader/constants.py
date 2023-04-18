@@ -1,0 +1,14 @@
+__all__ = ()
+
+from .compability import AUTO_RELOAD_SUPPORTED, INotifyFlags
+
+
+AUTO_RELOAD_DELAY = 5.0
+
+
+if AUTO_RELOAD_SUPPORTED:
+    WATCH_MASK_GENERAL = INotifyFlags.CREATE | INotifyFlags.DELETE | INotifyFlags.MODIFY
+    WATCH_MASK_SELF_DELETE = INotifyFlags.DELETE_SELF
+else:
+    WATCH_MASK_GENERAL = 0
+    WATCH_MASK_SELF_DELETE = 0

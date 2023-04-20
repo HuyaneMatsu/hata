@@ -2,6 +2,7 @@ __all__ = ('PLUGIN_LOADER', 'PluginLoader', )
 
 from functools import partial as partial_func
 from itertools import chain
+from os.path import isfile as is_file
 
 from scarletio import (
     CauseGroup, HybridValueDictionary, RichAttributeErrorBaseType, Task, alchemy_incendiary, export,
@@ -11,102 +12,19 @@ from scarletio import (
 from ...discord.core import KOKORO
 
 from .constants import (
-    PLUGIN_ACTION_FLAG_LOAD, PLUGIN_ACTION_FLAG_NAME_LOOKUP, PLUGIN_ACTION_FLAG_SYNTAX_CHECK, PLUGIN_ACTION_FLAG_UNLOAD,
-    PLUGIN_STATE_LOADED, PLUGINS
+    PLUGINS, PLUGIN_ACTION_FLAG_LOAD, PLUGIN_ACTION_FLAG_SYNTAX_CHECK, PLUGIN_ACTION_FLAG_UNLINK,
+    PLUGIN_ACTION_FLAG_UNLOAD, PLUGIN_STATE_LOADED
 )
 from .exceptions import PluginError
+from .helpers import (
+    PROTECTED_NAMES, _get_plugin_name_and_path, _try_get_plugin, _validate_entry_or_exit, validate_plugin_parameters
+)
 from .plugin import Plugin
-from .plugin_tree.plugin_tree_iterator import PluginTreeIterator
+from .plugin_extractor import PluginExtractor
 from .plugin_tree.plugin_tree_helpers import (
     _build_and_sort_plugin_trees, _sort_plugin_trees, _unwrap_plugin_trees_into_plugins
 )
-from .helpers import (
-    PROTECTED_NAMES, _get_plugin_name_and_path, _get_path_plugin_name, _iter_plugin_names_and_paths,
-    _validate_entry_or_exit, validate_plugin_parameters
-)
-
-
-def _try_get_plugin(plugin_name, plugin_path):
-    """
-    Tries to get plugin for the given name or path.
-    
-    Parameters
-    ----------
-    plugin_name : `None`, `str`
-        Plugin's  name.
-    plugin_path : `str`
-        Path of the plugin file.
-    
-    Returns
-    -------
-    plugin : `None`, ``Plugin``
-        The found plugin if any.
-    """
-    try:
-        return PLUGIN_LOADER._plugins_by_name[plugin_path]
-    except KeyError:
-        pass
-    
-    if plugin_name is None:
-        plugin_name = _get_path_plugin_name(plugin_path)
-    
-    try:
-        return PLUGIN_LOADER._plugins_by_name[plugin_name]
-    except KeyError:
-        pass
-
-
-def _get_plugins(name):
-    """
-    Gets the plugins with the given name.
-    
-    Parameters
-    ----------
-    name : `str`, `iterable` of `str`
-        Plugin by name to find.
-    
-    Returns
-    -------
-    plugins : `list` of ``Plugin``
-        The found plugins.
-    
-    Raises
-    ------
-    PluginError
-        If an plugin could not be found.
-    """
-    try:
-        plugins = set()
-        
-        plugin_names_and_paths = set(_iter_plugin_names_and_paths(name))
-        for plugin_name, plugin_path in plugin_names_and_paths:
-            plugin = _try_get_plugin(plugin_name, plugin_path)
-            if plugin is None:
-                raise PluginError(
-                    f'No plugin was added with name: `{plugin_name}`.',
-                    action = PLUGIN_ACTION_FLAG_NAME_LOOKUP,
-                    value = (plugin_name, plugin_path),
-                )
-            
-            plugins.add(plugin)
-            continue
-        
-        if not plugins:
-            raise PluginError(
-                f'No plugins found with the given name: {name!r}.',
-                action = PLUGIN_ACTION_FLAG_NAME_LOOKUP,
-            )
-        
-        return plugins
-    
-    except PluginError:
-        raise
-    
-    except BaseException as err:
-        raise PluginError(
-            f'Exception occurred meanwhile looking up plugins for name: {name!r}.',
-            action = PLUGIN_ACTION_FLAG_NAME_LOOKUP,
-        ) from err
+from .plugin_tree.plugin_tree_iterator import PluginTreeIterator
 
 
 def _pop_unloader_task_callback(plugin, task):
@@ -442,7 +360,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         Internal slot for the ``.default_entry_point`` property.
     _default_exit_point : `None`, `str`, `callable`
         Internal slot for the ``.default_exit_point`` property.
-    _default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
+    _default_variables : `None`, `HybridValueDictionary` of (`str`, `object`) items
         An optionally weak value dictionary to store objects for assigning them to modules before loading them.
         If it would be set as empty, then it is set as `None` instead.
     _done_callbacks : `None`, `list` of `callable`
@@ -646,7 +564,12 @@ class PluginLoader(RichAttributeErrorBaseType):
         ValueError
             If a variable name is would be used, what is `module` attribute.
         """
-        plugin_names_and_paths = set(_iter_plugin_names_and_paths(name, register_directories_as_roots=True))
+        plugin_names_and_paths = PluginExtractor.from_strings(
+            'name', name
+        ).get_plugin_names_and_paths(
+            register_directories_as_roots = True
+        )
+        
         entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
             validate_plugin_parameters(*positional_parameters, **keyword_parameters)
         
@@ -657,8 +580,17 @@ class PluginLoader(RichAttributeErrorBaseType):
             )
     
     
-    def _register(self, plugin_name, plugin_path, entry_point, exit_point, extend_default_variables, locked,
-            take_snapshot_difference, default_variables):
+    def _register(
+        self,
+        plugin_name,
+        plugin_path,
+        entry_point,
+        exit_point,
+        extend_default_variables,
+        locked,
+        take_snapshot_difference,
+        default_variables,
+    ):
         """
         Adds an plugin to the plugin loader.
         
@@ -680,7 +612,7 @@ class PluginLoader(RichAttributeErrorBaseType):
             Whether the given plugin(s) should not be affected by `.{}_all` methods.
         take_snapshot_difference : `bool`
             Whether snapshot feature should be used.
-        default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
+        default_variables : `None`, `HybridValueDictionary` of (`str`, `object`) items
             An optionally weak value dictionary to store objects for assigning them to modules before loading them.
             If would be empty, is set as `None` instead.
         
@@ -712,7 +644,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        name : `str`, `iterable` of `str`
+        name : `None`, `str`, ``Plugin``, ``PluginTree`` `iterable` of (`None`, `str`, ``Plugin``, ``PluginTree``)
             The plugin(s)'s name(s) to remove.
         
         Raises
@@ -722,34 +654,15 @@ class PluginLoader(RichAttributeErrorBaseType):
         RuntimeError
             If a loaded plugin would be removed.
         """
-        try:
-            plugin_names_and_paths = set(_iter_plugin_names_and_paths(name))
-        except ModuleNotFoundError:
-            return
+        plugins = PluginExtractor('name', name).get_plugins(raise_if_cannot_resolve = False)
         
-        for plugin_name, plugin_path in plugin_names_and_paths:
-            if (plugin_name is None):
-                plugin_name = _get_path_plugin_name(plugin_path)
-            
-            try:
-                plugin = self._plugins_by_name[plugin_name]
-            except KeyError:
-                continue
-            
+        for plugin in plugins:
             if plugin._state == PLUGIN_STATE_LOADED:
                 raise RuntimeError(
-                    f'Plugin `{name!r}` can not be removed meanwhile it is loaded.'
+                    f'Plugin `{plugin.name!r}` can not be removed meanwhile it is loaded.'
                 )
         
-        for plugin_name, plugin_path in plugin_names_and_paths:
-            if (plugin_name is None):
-                plugin_name = _get_path_plugin_name(plugin_path)
-            
-            try:
-                plugin = self._plugins_by_name[plugin_name]
-            except KeyError:
-                continue
-            
+        for plugin in plugins:
             plugin._unlink()
     
     
@@ -824,9 +737,9 @@ class PluginLoader(RichAttributeErrorBaseType):
         ----------
         name : `str`
             The plugin's name.
-        parameters : `tuple` of `Any`
+        parameters : `tuple` of `object`
             Additional parameters to create the plugin with.
-        keyword_parameters : `dict` of (`str`, `Any`) items
+        keyword_parameters : `dict` of (`str`, `object`) items
             Additional parameters to create the plugin with.
         
         Returns
@@ -853,7 +766,14 @@ class PluginLoader(RichAttributeErrorBaseType):
         PluginError
             The plugin failed to load correctly.
         """
-        plugin_name, plugin_path = _get_plugin_name_and_path(name)
+        plugin_name_and_path_pair = _get_plugin_name_and_path(name, False)
+        if plugin_name_and_path_pair is None:
+            raise ModuleNotFoundError(
+                f'No plugin(s) found with the given name: {name!r}.'
+            ) from None
+        
+        plugin_name, plugin_path = plugin_name_and_path_pair
+        
         plugin = _try_get_plugin(plugin_name, plugin_path)
         
         entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
@@ -885,7 +805,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        name : `str`, `iterable` of `str`
+        name : `None`, `str`, ``Plugin``, ``PluginTree`` `iterable` of (`None`, `str`, ``Plugin``, ``PluginTree``)
             The plugin's name.
         
         blocking : `bool` = `True`, Optional (Keyword only)
@@ -936,11 +856,12 @@ class PluginLoader(RichAttributeErrorBaseType):
             - No plugin is added with the given name.
             - Loading the plugin failed.
         """
-        plugins = _get_plugins(name)
+        plugins = PluginExtractor('name', name).get_plugins()
         plugins, plugin_trees = self._pull_previously_failed_plugin_trees(plugins)
         plugin_trees = _build_and_sort_plugin_trees(plugins, plugin_trees, deep)
         await self._execute_actions_on_plugin_trees(
-            plugin_trees, PLUGIN_ACTION_FLAG_LOAD | PLUGIN_ACTION_FLAG_SYNTAX_CHECK
+            plugin_trees,
+            PLUGIN_ACTION_FLAG_LOAD | PLUGIN_ACTION_FLAG_SYNTAX_CHECK | PLUGIN_ACTION_FLAG_UNLINK,
         )
         return _unwrap_plugin_trees_into_plugins(plugin_trees)
     
@@ -951,7 +872,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        name : `str`, `iterable` of `str`
+        name : `None`, `str`, ``Plugin``, ``PluginTree`` `iterable` of (`None`, `str`, ``Plugin``, ``PluginTree``)
             The plugin's name.
         
         blocking : `bool` = `True`, Optional (Keyword only)
@@ -1002,10 +923,13 @@ class PluginLoader(RichAttributeErrorBaseType):
             - No plugin is added with the given name.
             - Unloading the plugin failed.
         """
-        plugins = _get_plugins(name)
+        plugins = PluginExtractor('name', name).get_plugins()
         plugins, plugin_trees = self._pull_previously_failed_plugin_trees(plugins)
         plugin_trees = _build_and_sort_plugin_trees(plugins, plugin_trees, deep)
-        await self._execute_actions_on_plugin_trees(plugin_trees, PLUGIN_ACTION_FLAG_UNLOAD)
+        await self._execute_actions_on_plugin_trees(
+            plugin_trees,
+            PLUGIN_ACTION_FLAG_UNLOAD | PLUGIN_ACTION_FLAG_UNLINK,
+        )
         return _unwrap_plugin_trees_into_plugins(plugin_trees)
     
     
@@ -1015,7 +939,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        name : `str`, `iterable` of `str`
+        name : `None`, `str`, ``Plugin``, ``PluginTree`` `iterable` of (`None`, `str`, ``Plugin``, ``PluginTree``)
             The plugin's name.
         
         blocking : `bool` = `True`, Optional (Keyword only)
@@ -1066,11 +990,15 @@ class PluginLoader(RichAttributeErrorBaseType):
             - No plugin is added with the given name.
             - Reloading the plugin failed.
         """
-        plugins = _get_plugins(name)
+        plugins = PluginExtractor('name', name).get_plugins()
         plugins, plugin_trees = self._pull_previously_failed_plugin_trees(plugins)
         plugin_trees = _build_and_sort_plugin_trees(plugins, plugin_trees, deep)
         await self._execute_actions_on_plugin_trees(
-            plugin_trees, PLUGIN_ACTION_FLAG_LOAD | PLUGIN_ACTION_FLAG_UNLOAD | PLUGIN_ACTION_FLAG_SYNTAX_CHECK
+            plugin_trees,
+            (
+                PLUGIN_ACTION_FLAG_LOAD | PLUGIN_ACTION_FLAG_UNLOAD | PLUGIN_ACTION_FLAG_SYNTAX_CHECK |
+                PLUGIN_ACTION_FLAG_UNLINK
+            ),
         )
         return _unwrap_plugin_trees_into_plugins(plugin_trees)
     
@@ -1116,7 +1044,8 @@ class PluginLoader(RichAttributeErrorBaseType):
         plugin_trees = _build_and_sort_plugin_trees(plugins, plugin_trees, False)
         
         await self._execute_actions_on_plugin_trees(
-            plugin_trees, PLUGIN_ACTION_FLAG_LOAD | PLUGIN_ACTION_FLAG_SYNTAX_CHECK
+            plugin_trees,
+            PLUGIN_ACTION_FLAG_LOAD | PLUGIN_ACTION_FLAG_SYNTAX_CHECK | PLUGIN_ACTION_FLAG_UNLINK,
         )
     
     
@@ -1160,7 +1089,10 @@ class PluginLoader(RichAttributeErrorBaseType):
         plugins, plugin_trees = self._pull_previously_failed_plugin_trees(plugins)
         plugin_trees = _build_and_sort_plugin_trees(plugins, plugin_trees, False)
         
-        await self._execute_actions_on_plugin_trees(plugin_trees, PLUGIN_ACTION_FLAG_UNLOAD)
+        await self._execute_actions_on_plugin_trees(
+            plugin_trees,
+            PLUGIN_ACTION_FLAG_UNLOAD | PLUGIN_ACTION_FLAG_UNLINK,
+        )
     
     
     def reload_all(self, *, blocking = True):
@@ -1204,7 +1136,11 @@ class PluginLoader(RichAttributeErrorBaseType):
         plugin_trees = _build_and_sort_plugin_trees(plugins, plugin_trees, False)
         
         await self._execute_actions_on_plugin_trees(
-            plugin_trees, PLUGIN_ACTION_FLAG_LOAD | PLUGIN_ACTION_FLAG_UNLOAD | PLUGIN_ACTION_FLAG_SYNTAX_CHECK
+            plugin_trees,
+            (
+                PLUGIN_ACTION_FLAG_LOAD | PLUGIN_ACTION_FLAG_UNLOAD | PLUGIN_ACTION_FLAG_SYNTAX_CHECK |
+                PLUGIN_ACTION_FLAG_UNLINK
+            ),
         )
     
     
@@ -1243,6 +1179,11 @@ class PluginLoader(RichAttributeErrorBaseType):
                 plugin_trees, exceptions, plugin_tree_iterators
             )
         
+        if (actions & PLUGIN_ACTION_FLAG_UNLINK) and plugin_trees:
+            plugin_trees, plugin_tree_iterators = self._execute_unlink_on_plugin_trees(
+                plugin_trees, plugin_tree_iterators
+            )
+            
         if (actions & PLUGIN_ACTION_FLAG_LOAD) and plugin_trees:
             exceptions, plugin_tree_iterators = await self._execute_load_on_plugin_trees(
                 plugin_trees, exceptions, plugin_tree_iterators
@@ -1257,6 +1198,52 @@ class PluginLoader(RichAttributeErrorBaseType):
                 )
             finally:
                 exceptions = None
+    
+    
+    def _execute_unlink_on_plugin_trees(self, plugin_trees, plugin_tree_iterators):
+        """
+        Unlinks the deleted plugins from the plugin trees.
+        
+        Parameters
+        ----------
+        plugin_trees : `list` of ``PluginTree``
+            The plugin trees to unload.
+        plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
+            Plugin tree iterators.
+        
+        Returns
+        -------
+        plugin_trees : `list` of ``PluginTree``
+            The new plugin trees.
+        plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator`
+            Plugin tree iterators.
+        """
+        if plugin_tree_iterators is None:
+            plugin_tree_iterators = []
+        
+        plugin_tree_iterator = PluginTreeIterator(plugin_trees, PLUGIN_ACTION_FLAG_UNLINK)
+        plugin_tree_iterators.append(plugin_tree_iterator)
+        
+        to_unlink = None
+        
+        for plugin in plugin_tree_iterator:
+            if plugin._state != PLUGIN_STATE_LOADED and not is_file(plugin.path):
+                if to_unlink is None:
+                    to_unlink = set()
+                
+                to_unlink.add(plugin)
+        
+        if (to_unlink is not None):
+            for plugin in to_unlink:
+                plugin._unlink()
+            
+            plugin_trees = [
+                plugin_tree for plugin_tree in
+                (plugin_tree.copy_without(to_unlink) for plugin_tree in plugin_trees)
+                if plugin_tree is not None
+            ]
+        
+        return plugin_trees, plugin_tree_iterators
     
     
     async def _execute_load_on_plugin_trees(self, plugin_trees, exceptions, plugin_tree_iterators):
@@ -1645,14 +1632,16 @@ class PluginLoader(RichAttributeErrorBaseType):
         Parameters
         ----------
         name : `str`
-            An plugin's name.
+            An plugin's name or path.
         
         Returns
         -------
         plugin : ``Plugin``, `None`.
             The matched plugin if any.
         """
-        return self._plugins_by_name.get(name, None)
+        plugin_name_and_path_pair = _get_plugin_name_and_path(name, True)
+        if (plugin_name_and_path_pair is not None):
+            return _try_get_plugin(*plugin_name_and_path_pair)
     
     
     async def _execute_syntax_check_on_plugin_trees(self, plugin_trees, exceptions, plugin_tree_iterators):

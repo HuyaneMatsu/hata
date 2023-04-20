@@ -2,15 +2,18 @@ __all__ = ()
 
 from os import listdir as list_directory
 from os.path import (
-    basename as base_name, exists, isabs as is_absolute_path_name, isdir as is_directory, isfile as is_file,
+    basename as base_name, exists, isabs as is_absolute_path, isdir as is_directory, isfile as is_file,
     join as join_paths
 )
 from sys import path as route_paths
 
-from scarletio import CallableAnalyzer, HybridValueDictionary
+from scarletio import CallableAnalyzer, HybridValueDictionary, include
 
 from .constants import ABSOLUTE_PATH_PLUGIN_NAME_PREFIX
 from .plugin_root import register_plugin_root
+
+
+PLUGIN_LOADER = include('PLUGIN_LOADER')
 
 
 def _validate_entry_or_exit(point):
@@ -177,7 +180,37 @@ PROTECTED_NAMES = frozenset((
 PYTHON_FILE_POSTFIX_NAMES = frozenset(('.py', '.pyd', '.pyc', '.so'))
 
 
-def _get_plugin_name_and_path(name):
+def _try_get_plugin(plugin_name, plugin_path):
+    """
+    Tries to get plugin for the given name or path.
+    
+    Parameters
+    ----------
+    plugin_name : `None`, `str`
+        Plugin's  name.
+    plugin_path : `str`
+        Path of the plugin file.
+    
+    Returns
+    -------
+    plugin : `None`, ``Plugin``
+        The found plugin if any.
+    """
+    try:
+        return PLUGIN_LOADER._plugins_by_name[plugin_path]
+    except KeyError:
+        pass
+    
+    if plugin_name is None:
+        plugin_name = _get_path_plugin_name(plugin_path)
+    
+    try:
+        return PLUGIN_LOADER._plugins_by_name[plugin_name]
+    except KeyError:
+        pass
+
+
+def _get_plugin_name_and_path(name, allow_non_existent):
     """
     fetches the name and the path of the first matched plugin. If non is matched raised `ImportError`.
     
@@ -185,19 +218,16 @@ def _get_plugin_name_and_path(name):
     ----------
     name : `str`
         The name to fetch.
+    allow_non_existent : `bool`
+        Whether non-existent files are allowed.
     
     Raises
     ------
-    plugin_name : `None`, `str`
-        Plugin's  name.
-    plugin_path : `str`
-        Path of the plugin file.
+    plugin_name_and_path_pair : `None`, `tuple` (`None`, `str` `str`)
+        Plugin's name and path pair.
     
     Raises
-    ------
-    ModuleNotFoundError
-        - Could not resolve the given `name`.
-        - If `name` could not be detected as an plugin.
+    -----
     TypeError
         - If `name` is not `str` nor an `iterable` of `str`.
     """
@@ -206,32 +236,25 @@ def _get_plugin_name_and_path(name):
             f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
         )
     
-    generator = _iter_plugin_names_and_paths(name)
-    try:
-        plugin_pair = generator.send(None)
-    except StopIteration:
-        raise ModuleNotFoundError(
-            f'No plugins found with the given name: {name!r}.'
-        ) from None
-    
-    else:
-        generator.close()
-    
-    return plugin_pair
+    # Return first match
+    for plugin_name_and_path_pair in _iter_lookup_plugin_names_and_paths(name, False, True):
+        return plugin_name_and_path_pair
 
 
-def _iter_plugin_names_and_paths(name, *, register_directories_as_roots = False):
+def _iter_lookup_plugin_names_and_paths(name, register_directories_as_roots, allow_non_existent):
     """
     Fetches the names and the paths of the given plugin.
     
-    This function is a generator.
+    This function is an iterable generator.
     
     Parameters
     ----------
-    name : `str`, `iterable` of `str`
-        The name(s) to fetch.
-    register_directories_as_roots : `bool` = `False`, Optional (Keyword only)
+    name : `str`
+        The name to fetch.
+    register_directories_as_roots : `bool`
         Whether directory roots should be registered.
+    allow_non_existent : `bool`
+        Whether non-existent files are allowed.
     
     Yields
     ------
@@ -242,74 +265,17 @@ def _iter_plugin_names_and_paths(name, *, register_directories_as_roots = False)
     
     Raises
     ------
-    ImportError
-        - Could not resolve the given `name`.
     ModuleNotFoundError
         - If `name` could not be detected as an plugin.
-    TypeError
-        - If `name` is not `str` nor an `iterable` of `str`.
     """
-    for name in _iter_name_maybe_iterable(name):
-        if name.startswith(ABSOLUTE_PATH_PLUGIN_NAME_PREFIX):
-            yield None, name
-            return
-        
-        yield from _lookup_path(name, register_directories_as_roots)
+    if name.startswith(ABSOLUTE_PATH_PLUGIN_NAME_PREFIX):
+        yield None, name
+        return
+    
+    yield from _iter_lookup_path(name, register_directories_as_roots, allow_non_existent)
 
 
-def _iter_name_maybe_iterable(name):
-    """
-    Fetches the given name.
-    
-    This function is a generator.
-    
-    Parameters
-    ----------
-    name : `str`, `iterable` of `str`
-        The name to fetch to single strings.
-    
-    Yields
-    ------
-    plugin_name : `None`, `str`
-        The plugin's name.
-    plugin_path : `str`
-        Path of the plugin file.
-    
-    Raises
-    ------
-    ImportError
-        - Could not resolve the given `name`.
-    TypeError
-        - If `name` is not `str` nor an `iterable` of `str`.
-    """
-    name_type = type(name)
-    if name_type is str:
-        yield name
-    
-    elif issubclass(name_type, str):
-        yield str(name)
-    
-    elif hasattr(name_type, '__iter__'):
-        for sub_name in name:
-            sub_name_type = type(sub_name)
-            if sub_name_type is str:
-                yield sub_name
-            
-            elif issubclass(sub_name_type, str):
-                yield str(sub_name)
-            
-            else:
-                raise TypeError(
-                    f'`name` contains a non `str` element, got {sub_name_type.__name__}; {sub_name!r}; name = {name!r}.'
-                )
-    
-    else:
-        raise TypeError(
-            f'`name` can be `str`, `iterable` of `str`, got {name_type.__name__}; {name!r}.'
-        )
-
-
-def _lookup_path(import_name_or_path, register_directories_as_roots):
+def _iter_lookup_path(import_name_or_path, register_directories_as_roots, allow_non_existent):
     """
     Detects the root of the given name.
     
@@ -321,6 +287,8 @@ def _lookup_path(import_name_or_path, register_directories_as_roots):
         An plugin's import name, or it's absolute path.
     register_directories_as_roots : `bool`
         Whether directory roots should be registered.
+    allow_non_existent : `bool`
+        Whether non-existent files are allowed.
     
     Yields
     ------
@@ -334,15 +302,20 @@ def _lookup_path(import_name_or_path, register_directories_as_roots):
     ModuleNotFoundError
         If `import_name_or_path` name could not be detected as a plugin.
     """
-    if is_absolute_path_name(import_name_or_path):
+    if is_absolute_path(import_name_or_path):
         if exists(import_name_or_path):
             if is_directory(import_name_or_path):
-                yield from _iter_directory(None, import_name_or_path)
+                yield from _iter_lookup_directory(None, import_name_or_path)
                 return
             
             if is_file(import_name_or_path):
                 yield None, import_name_or_path
                 return
+        
+        if allow_non_existent:
+            yield None, import_name_or_path
+            return
+    
     else:
         path_end = join_paths(*import_name_or_path.split('.'))
         for base_path in route_paths:
@@ -350,7 +323,7 @@ def _lookup_path(import_name_or_path, register_directories_as_roots):
             if exists(path) and is_directory(path):
                 if register_directories_as_roots:
                     register_plugin_root(import_name_or_path)
-                yield from _iter_directory(import_name_or_path, path)
+                yield from _iter_lookup_directory(import_name_or_path, path)
                 return
             
             for python_file_postfix_name in PYTHON_FILE_POSTFIX_NAMES:
@@ -365,9 +338,11 @@ def _lookup_path(import_name_or_path, register_directories_as_roots):
     )
 
 
-def _iter_directory(import_name, directory_path):
+def _iter_lookup_directory(import_name, directory_path):
     """
     Iterates over a directory's import names.
+    
+    this function is an iterable generator.
     
     Parameters
     ----------
@@ -412,7 +387,7 @@ def _iter_directory(import_name, directory_path):
                 import_name_value = None
             else:
                 import_name_value = f'{import_name}.{file_name}'
-            yield from _iter_directory(import_name_value, path)
+            yield from _iter_lookup_directory(import_name_value, path)
             continue
         
         # no more cases

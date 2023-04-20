@@ -1,4 +1,4 @@
-__all__ = ()
+__all__ = ('PluginTree',)
 
 from itertools import chain
 
@@ -296,5 +296,47 @@ class PluginTree(RichAttributeErrorBaseType):
         """
         new = object.__new__(type(self))
         new._plugins = frozenset(chain(self._plugins, plugin_tree._plugins))
+        new._plugins_sorted = None
+        return new
+    
+    
+    def iter_plugins(self):
+        """
+        Iterates over the plugins contained by the plugin tree.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        plugin : ``Plugin``
+        """
+        yield from self._plugins
+    
+    
+    def copy_without(self, plugins):
+        """
+        Copies the plugin tree without the given plugins.
+        
+        Parameters
+        ----------
+        plugins : `set` of ``Plugin``
+        
+        Returns
+        -------
+        new : `instance<type<self>>`, `None`
+            Returns `None` if the new copy would be empty.
+        """
+        old_plugins = self._plugins
+        new_plugins = old_plugins - plugins
+        
+        new_length = len(new_plugins)
+        if new_length == 0:
+            return None
+        
+        if new_length == len(old_plugins):
+            return self
+        
+        new = object.__new__(type(self))
+        new._plugins = new_plugins
         new._plugins_sorted = None
         return new

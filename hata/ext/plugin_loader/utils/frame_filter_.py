@@ -1,5 +1,7 @@
 __all__ = ('frame_filter',)
 
+from py_compile import __file__ as PY_COMPILE_FILE_PATH
+
 from ..import_overwrite.source_loader import __file__ as PLUGIN_LOADER_SOURCE_LOADER_FILE_PATH
 from ..plugin import __file__ as PLUGIN_LOADER_PLUGIN_FILE_PATH
 from ..plugin_loader import __file__ as PLUGIN_LOADER_PLUGIN_LOADER_FILE_PATH
@@ -64,6 +66,14 @@ def frame_filter(file_name, name, line_number, line):
             if line in (
                 'SourceFileLoader.exec_module(self, self._module)',
                 'import_plugin(self.name)',
+            ):
+                should_show_frame = False
+    
+    elif file_name == PY_COMPILE_FILE_PATH:
+        if name == 'compile':
+            if line in (
+                'code = loader.source_to_code(source_bytes, dfile or file,\n'
+                '                             _optimize=optimize)'
             ):
                 should_show_frame = False
     

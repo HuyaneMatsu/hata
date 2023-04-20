@@ -3,7 +3,7 @@ __all__ = ()
 import sys, warnings
 from importlib.util import module_from_spec, spec_from_file_location
 from os.path import basename as get_file_name, splitext as split_file_name_and_extension
-from py_compile import compile as compile_module
+from py_compile import PyCompileError, compile as compile_module
 
 from scarletio import HybridValueDictionary, RichAttributeErrorBaseType, WeakSet, include
 
@@ -554,13 +554,25 @@ class Plugin(RichAttributeErrorBaseType):
             # python files might not be `.py` files, which we should not compile.
             if file_name.endswith('.py'):
                 try:
-                    compile_module(file_name)
+                    compile_module(file_name, doraise = True)
                 except FileNotFoundError:
                     # If the file is deleted, is fine.
                     pass
                 
-                except SyntaxError as err:
-                    return PluginError(action = PLUGIN_ACTION_FLAG_SYNTAX_CHECK, cause = err, plugin = self)
+                except FileExistsError:
+                    pass
+                
+                except PyCompileError as err:
+                    exception_value = err.exc_value
+                    if isinstance(exception_value, SyntaxError):
+                        cause = exception_value
+                    else:
+                        cause = err
+                    
+                    try:
+                        raise PluginError(action = PLUGIN_ACTION_FLAG_SYNTAX_CHECK, cause = cause, plugin = self)
+                    finally:
+                        cause = None
     
     
     def _unload(self):

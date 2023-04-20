@@ -4,13 +4,7 @@ import sys
 from os import listdir as list_directory
 from os.path import join as join_paths, isdir as is_directory, exists
 
-from ..plugin_loader.constants import PLUGIN_ROOTS
-
-
-IGNORED_NAMES = frozenset((
-    '__pycache__',
-    'tests',
-))
+from ..plugin_loader.constants import IGNORED_DIRECTORY_NAMES, PLUGIN_ROOTS
 
 
 def _iter_sub_directories(directories):
@@ -33,7 +27,7 @@ def _iter_sub_directories(directories):
         yield directory
         
         for name in list_directory(directory):
-            if name in IGNORED_NAMES:
+            if name in IGNORED_DIRECTORY_NAMES:
                 continue
             
             path = join_paths(directory, name)

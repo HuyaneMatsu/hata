@@ -7,6 +7,7 @@ from .client_extension import *
 from .constants import *
 from .exceptions import *
 from .plugin import *
+from .plugin_extractor import *
 from .plugin_loader import *
 from .plugin_root import *
 from .helpers import *
@@ -22,6 +23,7 @@ __all__ = (
     *constants.__all__,
     *exceptions.__all__,
     *plugin.__all__,
+    *plugin_extractor.__all__,
     *plugin_loader.__all__,
     *plugin_root.__all__,
     *helpers.__all__,

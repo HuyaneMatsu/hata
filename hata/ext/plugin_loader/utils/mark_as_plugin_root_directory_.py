@@ -8,6 +8,8 @@ from os.path import (
 
 from scarletio import get_last_module_frame
 
+from ..constants import IGNORED_DIRECTORY_NAMES
+
 from .import_plugin_ import import_plugin
 
 
@@ -58,6 +60,9 @@ def mark_as_plugin_root_directory():
             file_name = file_name[:-len('.py')]
         
         elif is_directory(file_path):
+            if file_name in IGNORED_DIRECTORY_NAMES:
+                continue
+            
             if not is_file(join_paths(file_path, '__init__.py')):
                 continue
         

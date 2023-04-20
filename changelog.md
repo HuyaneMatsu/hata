@@ -12,10 +12,20 @@
 - Add `PluginError.get_plugin_tree_iterator_for_unload`.
 - `PluginLoader` now picks up previously built but failed /cancelled plugin trees when retrying load / reload.
 - Add `PluginError.get_plugin_tree_iterator_for_syntax_check`.
+- `mark_as_plugin_root_directory` now ignores directories such as `__pycache__` and `tests` even if they have an
+    `__init__.py` in them.
+- `PluginLoader.get_plugin` now accepts paths as `name`.
+- `PluginLoader.load_plugin` now accepts `Plugin`, `PluginTree`, `None` and `iterable` of them as well.
+- `PluginLoader.reload_plugin` now accepts `Plugin`, `PluginTree`, `None` and `iterable` of them as well.
+- `PluginLoader.unload_plugin` now accepts `Plugin`, `PluginTree`, `None` and `iterable` of them as well.
+- `PluginLoader.get_plugin` now handles non-existent paths.
 
 #### Bug fixes
 
 - `Message.clean_embeds` raised `AttributeError`. (from 1.3.26)
+
+##### ext.plugin_loader
+- Failing syntax checks did not abort further actions.
 
 ## 1.3.27 *\[2023-04-14\]*
 

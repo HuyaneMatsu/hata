@@ -1,6 +1,7 @@
 __all__ = ()
 
 from scarletio import RichAttributeErrorBaseType
+
 from .constants import PLUGIN_ACTION_FLAG_NAME_LOOKUP
 from .exceptions import PluginError
 from .helpers import _iter_lookup_plugin_names_and_paths, _try_get_plugin

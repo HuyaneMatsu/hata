@@ -1,18 +1,19 @@
 __all__ = ('PLUGIN_AUTO_RELOADER_MANAGER', 'PluginAutoReloaderManager', )
 
 from os import listdir as list_directory
-from os.path import dirname as get_directory_name, isdir as is_directory, isfile as is_file, join as join_paths
+from os.path import dirname as get_parent_directory_path, isdir as is_directory, isfile as is_file, join as join_paths
 
 from scarletio import LOOP_TIME, RichAttributeErrorBaseType, Task, write_exception_async
 
 from ...discord import KOKORO
 
 from ..plugin_loader import PluginError, frame_filter, get_plugin, register_plugin, reload_plugin
+from ..plugin_loader.constants import IGNORED_DIRECTORY_NAMES
 
-from .compability import AUTO_RELOAD_SUPPORTED, INotify
+from .compatibility import AUTO_RELOAD_SUPPORTED, INotify
 from .constants import (
-    AUTO_RELOAD_DELAY, WATCH_MASK_CREATE, WATCH_MASK_DELETE, WATCH_MASK_GENERAL, WATCH_MASK_SELF_DELETE,
-    WATCH_MASK_UPDATE
+    AUTO_RELOAD_DELAY, WATCH_MASK_CREATE, WATCH_MASK_DELETE, WATCH_MASK_DELETE_SELF, WATCH_MASK_GENERAL,
+    WATCH_MASK_MOVE_FROM, WATCH_MASK_MOVE_SELF, WATCH_MASK_MOVE_TO, WATCH_MASK_UPDATE
 )
 from .helpers import _iter_plugin_root_paths, _iter_sub_directories
 
@@ -274,25 +275,36 @@ class PluginAutoReloaderManager(RichAttributeErrorBaseType):
             # Unknown directory?
             return
         
-        # we only want py files
-        path = join_paths(directory, event.name)
+        # If the name is empty (directory case) we dont want to join it to teh directory.
+        name = event.name
+        if name:
+            path = join_paths(directory, name)
+        else:
+            path = directory
         
-        if is_directory(path):
+        if is_directory(path) and (event.name not in IGNORED_DIRECTORY_NAMES):
             self._handle_directory_event(event, path)
             return
         
         if is_file(path):
+            # we only want py files
             if not path.endswith('.py'):
                 return
             
             self._handle_file_event(event, path)
             return
         
-        # If the file / directory is deleted the above two wont trigger.
-        if event.mask | WATCH_MASK_DELETE:
+        mask = event.mask
+        
+        # If a file is deleted the above two wont trigger.
+        if mask & WATCH_MASK_DELETE or mask & WATCH_MASK_MOVE_FROM:
             if path.endswith('.py'):
-                self._handle_file_update_and_delete(path)
-            
+                self._handle_file_or_plugin_directory_update_or_delete(path)
+            return
+        
+        # If a directory is deleted the top 3 wont trigger (they might, but we ignore them)
+        if mask & WATCH_MASK_DELETE_SELF or mask & WATCH_MASK_MOVE_SELF:
+            self._handle_file_or_plugin_directory_update_or_delete(path)
             return
     
     
@@ -308,11 +320,17 @@ class PluginAutoReloaderManager(RichAttributeErrorBaseType):
             Path to the directory.
         """
         mask = event.mask
-        if mask & WATCH_MASK_SELF_DELETE:
+        if mask & (WATCH_MASK_DELETE_SELF | WATCH_MASK_MOVE_FROM):
             self._remove_directory(directory_path)
+            return
         
         if mask & WATCH_MASK_CREATE:
             self._handle_directory_create(directory_path)
+            return
+        
+        if mask & WATCH_MASK_MOVE_TO:
+            self._handle_directory_move_to(directory_path)
+            return
     
     
     def _handle_directory_create(self, directory_path):
@@ -325,7 +343,25 @@ class PluginAutoReloaderManager(RichAttributeErrorBaseType):
             Path to the directory.
         """
         self._add_directory(directory_path)
-        KOKORO.call_later(0.0, self._handle_directory_create_initial_entities, directory_path)
+        self._handle_directory_create_initial_entities(directory_path)
+    
+    
+    def _handle_directory_move_to(self, directory_path):
+        """
+        handles a directory move-to inotify event.
+        
+        Parameters
+        ----------
+        directory_path : `str`
+            Path to the directory.
+        """
+        self._handle_directory_create(directory_path)
+        
+        if get_parent_directory_path(directory_path) in self._plugin_root_paths:
+            init_file_path = join_paths(directory_path, '__init__.py')
+            if is_file(init_file_path):
+                register_plugin(directory_path)
+                self._handle_file_or_plugin_directory_update_or_delete(init_file_path)
     
     
     def _handle_directory_create_initial_entities(self, directory_path):
@@ -343,7 +379,7 @@ class PluginAutoReloaderManager(RichAttributeErrorBaseType):
                 self._handle_file_create(name, path)
                 continue
             
-            if is_directory(path):
+            if is_directory(path) and (name not in IGNORED_DIRECTORY_NAMES):
                 self._handle_directory_create(path)
                 continue
     
@@ -362,9 +398,15 @@ class PluginAutoReloaderManager(RichAttributeErrorBaseType):
         mask = event.mask
         if mask & WATCH_MASK_CREATE:
             self._handle_file_create(event.name, file_path)
+            return
+        
+        if mask & WATCH_MASK_MOVE_TO:
+            self._handle_file_move_to_event(event.name, file_path)
+            return
         
         if mask & WATCH_MASK_UPDATE:
-            self._handle_file_update_and_delete(file_path)
+            self._handle_file_or_plugin_directory_update_or_delete(file_path)
+            return
     
     
     def _handle_file_create(self, name, file_path):
@@ -377,20 +419,44 @@ class PluginAutoReloaderManager(RichAttributeErrorBaseType):
             The file's name.
         file_path : `str`
             Path to the file.
+        
+        Returns
+        -------
+        is_registered : `bool`
+            Whether the file was registered as a plugin.
         """
         # If we register an init.py file in directory of a plugin root, we register it as a plugin
         if name == '__init__.py':
-            parent_directory = get_directory_name(file_path)
-            if get_directory_name(parent_directory) in self._plugin_root_paths:
+            parent_directory = get_parent_directory_path(file_path)
+            if get_parent_directory_path(parent_directory) in self._plugin_root_paths:
                 register_plugin(parent_directory)
+                return True
         
         # If we register a file inside of a plugin directory, we again wanna register it as a plugin
         else:
-            if get_directory_name(file_path) in self._plugin_root_paths:
+            if get_parent_directory_path(file_path) in self._plugin_root_paths:
                 register_plugin(file_path)
+                return True
+        
+        return False
     
     
-    def _handle_file_update_and_delete(self, file_path):
+    def _handle_file_move_to_event(self, name, file_path):
+        """
+        handles a received file move-to inotify event.
+        
+        Parameters
+        ----------
+        name : `str`
+            The file's name.
+        file_path : `str`
+            Path to the file.
+        """
+        if self._handle_file_create(name, file_path):
+            self._handle_file_or_plugin_directory_update_or_delete(file_path)
+    
+    
+    def _handle_file_or_plugin_directory_update_or_delete(self, file_path):
         """
         Handles a received file delete / edit inotify event.
         

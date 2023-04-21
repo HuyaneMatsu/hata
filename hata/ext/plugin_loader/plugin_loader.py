@@ -17,7 +17,8 @@ from .constants import (
 )
 from .exceptions import PluginError
 from .helpers import (
-    PROTECTED_NAMES, _get_plugin_name_and_path, _try_get_plugin, _validate_entry_or_exit, validate_plugin_parameters
+    PROTECTED_NAMES, _add_plugin_name_to_plugin_root_names, _get_plugin_name_and_path,
+    _is_plugin_name_in_plugin_root_names, _try_get_plugin, _validate_entry_or_exit, validate_plugin_parameters
 )
 from .plugin import Plugin
 from .plugin_extractor import PluginExtractor
@@ -1225,15 +1226,35 @@ class PluginLoader(RichAttributeErrorBaseType):
         plugin_tree_iterators.append(plugin_tree_iterator)
         
         to_unlink = None
+        plugin_root_names = None
         
         for plugin in plugin_tree_iterator:
-            if plugin._state != PLUGIN_STATE_LOADED and not is_file(plugin.path):
-                if to_unlink is None:
-                    to_unlink = set()
-                
-                to_unlink.add(plugin)
+            if plugin._state == PLUGIN_STATE_LOADED or is_file(plugin.path):
+                continue
+            
+            plugin_root_names = _add_plugin_name_to_plugin_root_names(plugin_root_names, plugin.name)
+            
+            if to_unlink is None:
+                to_unlink = set()
+            
+            to_unlink.add(plugin)
+            continue
         
         if (to_unlink is not None):
+            # Collect additional plugins that are under in the tree than ours.
+            for plugin in PLUGINS.values():
+                if plugin in to_unlink:
+                    continue
+                    
+                if not _is_plugin_name_in_plugin_root_names(plugin_root_names, plugin.name):
+                    continue
+                
+                if plugin._state == PLUGIN_STATE_LOADED or is_file(plugin.path):
+                    continue
+                
+                to_unlink.add(plugin)
+                continue
+            
             for plugin in to_unlink:
                 plugin._unlink()
             

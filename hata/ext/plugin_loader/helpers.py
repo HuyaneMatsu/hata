@@ -1,16 +1,16 @@
 __all__ = ()
 
-from os import listdir as list_directory
+import sys
+from os import listdir as list_directory, sep as PATH_SEPARATOR
 from os.path import (
-    basename as base_name, exists, isabs as is_absolute_path, isdir as is_directory, isfile as is_file,
-    join as join_paths
+    basename as base_name, dirname as get_parent_directory_path, exists, isabs as is_absolute_path,
+    isdir as is_directory, isfile as is_file, join as join_paths
 )
-from sys import path as route_paths
 
 from scarletio import CallableAnalyzer, HybridValueDictionary, include
 
-from .constants import ABSOLUTE_PATH_PLUGIN_NAME_PREFIX
-from .plugin_root import register_plugin_root
+from .constants import ABSOLUTE_PATH_PLUGIN_NAME_PREFIX, PLUGIN_ROOTS
+from .plugin_root import is_tuple_starting_with, register_plugin_root
 
 
 PLUGIN_LOADER = include('PLUGIN_LOADER')
@@ -318,7 +318,7 @@ def _iter_lookup_path(import_name_or_path, register_directories_as_roots, allow_
     
     else:
         path_end = join_paths(*import_name_or_path.split('.'))
-        for base_path in route_paths:
+        for base_path in sys.path:
             path = join_paths(base_path, path_end)
             if exists(path) and is_directory(path):
                 if register_directories_as_roots:
@@ -408,8 +408,86 @@ def _get_path_plugin_name(path):
     plugin_name : `str`
     """
     file_name = base_name(path)
-    dot_index = file_name.rfind('.')
-    if dot_index != -1:
-        file_name = file_name[:dot_index]
+    if file_name == '__init__.py':
+        path = get_parent_directory_path(path)
+    else:
+        dot_index = file_name.rfind('.')
+        if dot_index != -1:
+            path = file_name[:dot_index - len(file_name)]
+    
+    for sys_path in sys.path:
+        if path.startswith(sys_path + PATH_SEPARATOR):
+            parts = (*path[len(sys_path) + 1:].split(PATH_SEPARATOR),)
+            for plugin_root in PLUGIN_ROOTS:
+                if is_tuple_starting_with(parts, plugin_root):
+                    return '.'.join(parts)
     
     return ABSOLUTE_PATH_PLUGIN_NAME_PREFIX + file_name
+
+
+def _add_plugin_name_to_plugin_root_names(plugin_root_names, plugin_name):
+    """
+    Adds the plugin name to the plugin base names.
+    
+    Parameters
+    ----------
+    plugin_root_names : `None`, `set` of `str`
+        Plugin root names.
+    plugin_name : `str`
+        The plugin's name.
+    
+    Returns
+    ----------
+    plugin_root_names : `set` of `str`
+    """
+    if plugin_root_names is None:
+        plugin_root_names = {plugin_name}
+    
+    else:
+        cut_name = plugin_name
+        while True:
+            dot_index = cut_name.rfind('.')
+            if dot_index == -1:
+                plugin_root_names.add(plugin_name)
+                break
+            
+            cut_name = cut_name[:dot_index]
+            if cut_name in plugin_root_names:
+                break
+            
+            continue
+    
+    return plugin_root_names
+
+
+def _is_plugin_name_in_plugin_root_names(plugin_root_names, plugin_name):
+    """
+    Returns whether the plugin name is in the given plugin root names.
+    
+    Parameters
+    ----------
+    plugin_root_names : `None`, `set` of `str`
+        Plugin root names.
+    plugin_name : `str`
+        The plugin's name.
+    
+    Returns
+    -------
+    is_in : `bool`
+    """
+    if plugin_root_names is None:
+        return False
+    
+    plugin_name_length = len(plugin_name)
+    
+    for plugin_root_name in plugin_root_names:
+        if not plugin_name.startswith(plugin_root_name):
+            continue
+        
+        if plugin_name_length == len(plugin_root_name):
+            return True
+        
+        if plugin_root_name[plugin_name_length] == '.':
+            return True
+    
+    return False

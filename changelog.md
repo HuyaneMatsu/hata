@@ -19,6 +19,8 @@
 - `PluginLoader.reload_plugin` now accepts `Plugin`, `PluginTree`, `None` and `iterable` of them as well.
 - `PluginLoader.unload_plugin` now accepts `Plugin`, `PluginTree`, `None` and `iterable` of them as well.
 - `PluginLoader.get_plugin` now handles non-existent paths.
+- `PluginLoader` now handles deleted files after unload / before load.
+- Registered plugins by absolute path now get name correctly if they under a plugin root directory.
 
 #### Bug fixes
 
@@ -26,6 +28,7 @@
 
 ##### ext.plugin_loader
 - Failing syntax checks did not abort further actions.
+- `PluginLoader.remove` now removes the plugins as intended.
 
 ## 1.3.27 *\[2023-04-14\]*
 

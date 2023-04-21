@@ -30,7 +30,7 @@ IGNORED_DIRECTORY_NAMES = frozenset((
 ))
 
 
-ABSOLUTE_PATH_PLUGIN_NAME_PREFIX = '<extension>.'
+ABSOLUTE_PATH_PLUGIN_NAME_PREFIX = '<unknown>.'
 
 IN_DIRECTORY_PLUGIN_RP = re.compile('\\.[^.]+')
 

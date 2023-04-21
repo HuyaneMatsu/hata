@@ -1,6 +1,6 @@
 from .utils import *
 
-from .compability import *
+from .compatibility import *
 from .constants import *
 from .helpers import *
 from .plugin_auto_reloader import *
@@ -8,7 +8,7 @@ from .plugin_auto_reloader import *
 
 __all__ = (
     *utils.__all__,
-    *compability.__all__,
+    *compatibility.__all__,
     *constants.__all__,
     *helpers.__all__,
     *plugin_auto_reloader.__all__,

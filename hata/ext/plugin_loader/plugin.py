@@ -731,9 +731,9 @@ class Plugin(RichAttributeErrorBaseType):
         """
         state = self._state
         if state == PLUGIN_STATE_UNDEFINED:
-            return
+            pass
         
-        if state == PLUGIN_STATE_LOADED:
+        elif state == PLUGIN_STATE_LOADED:
             self._state = PLUGIN_STATE_UNLOADED
             module = self._spec.get_module()
             
@@ -753,16 +753,22 @@ class Plugin(RichAttributeErrorBaseType):
                 del sys.modules[self._spec.name]
             except KeyError:
                 pass
-            return
         
-        if state in (PLUGIN_STATE_UNLOADED, PLUGIN_STATE_UNSATISFIED):
+        elif state in (PLUGIN_STATE_UNLOADED, PLUGIN_STATE_UNSATISFIED):
             try:
                 del sys.modules[self._spec.name]
             except KeyError:
                 pass
-            return
         
         # no more cases
+        
+        plugins_by_name = PLUGIN_LOADER._plugins_by_name
+        for name in (self.name, self.short_name, self.path):
+            if plugins_by_name.get(name, None) is self:
+                try:
+                    del plugins_by_name[name]
+                except KeyError:
+                    pass
     
     
     def add_child_plugin(self, plugin):
@@ -989,7 +995,7 @@ class Plugin(RichAttributeErrorBaseType):
         Deprecated attribute of ``Plugin``.
         """
         warnings.warn(
-            f'`{self.__class__.__name__}._module` is deprecated, please use `._spec.get_module()` instead.',
+            f'`{self.__class__.__name__}._module` is deprecated, please use `.get_module()` instead.',
             FutureWarning,
             stacklevel = 2,
         )

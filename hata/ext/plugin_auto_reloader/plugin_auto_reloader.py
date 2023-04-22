@@ -304,7 +304,10 @@ class PluginAutoReloaderManager(RichAttributeErrorBaseType):
         
         # If a directory is deleted the top 3 wont trigger (they might, but we ignore them)
         if mask & WATCH_MASK_DELETE_SELF or mask & WATCH_MASK_MOVE_SELF:
-            self._handle_file_or_plugin_directory_update_or_delete(path)
+            if (self._get_watch_identifier_by_directory(path) is not None):
+                self._remove_directory(path)
+                self._handle_file_or_plugin_directory_update_or_delete(path)
+            
             return
     
     

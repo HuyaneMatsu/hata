@@ -2,6 +2,15 @@
 
 #### Improvements
 
+- Repurpose `MessageInteraction.__init__`, rename to `.from_data`.
+- Add `MessageInteraction.__new__`.
+- Add `MessageInteraction.precreate`.
+- Add `MessageInteraction.__eq__`.
+- Add `MessageInteraction.partial`.
+- Add `MessageInteraction.__hash__`.
+- Add `MessageInteraction.copy`.
+- Add `MessageInteraction.copy_with`.
+
 ##### ext.plugin_loader
 - Add `Plugin.sort_key`.
 - Plugin sorting improved. (Using sort key instead of name).

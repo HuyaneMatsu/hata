@@ -725,7 +725,7 @@ class Message(DiscordEntity, immortal = True):
         
         interaction_data = data.get('interaction', None)
         if (interaction_data is not None):
-            interaction = MessageInteraction(interaction_data, guild_id)
+            interaction = MessageInteraction.from_data(interaction_data, guild_id)
             try_resolve_interaction_message(self, interaction)
             
             _set_message_field(
@@ -826,7 +826,7 @@ class Message(DiscordEntity, immortal = True):
         if update_interaction:
             interaction_data = data.get('interaction', None)
             if (interaction_data is not None):
-                interaction = MessageInteraction(interaction_data, self.guild_id)
+                interaction = MessageInteraction.from_data(interaction_data, self.guild_id)
                 try_resolve_interaction_message(self, interaction)
                 
                 _set_message_field(

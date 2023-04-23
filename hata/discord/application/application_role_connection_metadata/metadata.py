@@ -211,7 +211,7 @@ class ApplicationRoleConnectionMetadata(RichAttributeErrorBaseType):
         metadata_type = self.type
         repr_parts.append(', type = ')
         repr_parts.append(str(metadata_type.name))
-        repr_parts.append('~')
+        repr_parts.append(' ~ ')
         repr_parts.append(repr(metadata_type.value))
         
         repr_parts.append('>')

@@ -73,7 +73,7 @@ class AutoModerationRuleTriggerMetadataKeywordPreset(AutoModerationRuleTriggerMe
             while True:
                 keyword = keyword_presets[index]
                 repr_parts.append(repr(keyword.name))
-                repr_parts.append('~')
+                repr_parts.append(' ~ ')
                 repr_parts.append(repr(keyword.value))
                 
                 index += 1

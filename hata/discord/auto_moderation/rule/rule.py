@@ -602,7 +602,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         trigger_type = self.trigger_type
         repr_parts.append(', trigger_type = ')
         repr_parts.append(repr(trigger_type.name))
-        repr_parts.append('~')
+        repr_parts.append(' ~ ')
         repr_parts.append(repr(trigger_type.value))
         
         # Additional: `.actions`, `.enabled`, `event_type`, `.excluded_channel_ids`, `.excluded_role_ids`, 

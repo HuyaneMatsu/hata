@@ -19,6 +19,7 @@ def _assert_fields_set(message_application):
     vampytest.assert_instance(message_application.cover, Icon)
     vampytest.assert_instance(message_application.description, str, nullable = True)
     vampytest.assert_instance(message_application.icon, Icon)
+    vampytest.assert_instance(message_application.id, int)
     vampytest.assert_instance(message_application.name, str)
 
 

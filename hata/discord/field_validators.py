@@ -355,7 +355,7 @@ def entity_id_set_validator_factory(field_name, entity_type, *, include = None):
     return validator
 
 
-def preinstanced_validator_factory(field_name, preinstanced_type):
+def preinstanced_validator_factory(field_name, preinstanced_type, *, include = None):
     """
     Returns a preinstanced validator.
     
@@ -363,8 +363,13 @@ def preinstanced_validator_factory(field_name, preinstanced_type):
     ----------
     field_name : `str`
         The field's name.
+    
     preinstanced_type : ``PreinstancedBase``
         The accepted preinstanced type.
+    
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The type's name to include `preinstanced_type` with.
+        Should be used when `preinstanced_type` cannot be resolved initially.
     
     Returns
     -------
@@ -394,6 +399,13 @@ def preinstanced_validator_factory(field_name, preinstanced_type):
         nonlocal preinstanced_type
         
         return preconvert_preinstanced_type(preinstanced, field_name, preinstanced_type)
+    
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal preinstanced_type
+            preinstanced_type = value
     
     return validator
 
@@ -976,7 +988,6 @@ def force_string_validator_factory(field_name, length_min, length_max):
     return validator
 
 
-
 def nullable_string_validator_factory(field_name, length_min, length_max):
     """
     Returns a nullable string validator.
@@ -1030,7 +1041,7 @@ def nullable_string_validator_factory(field_name, length_min, length_max):
     return validator
 
 
-def nullable_string_array_validator_factory(field_name):
+def nullable_string_array_validator_factory(field_name, *, ordered = True):
     """
     Returns a nullable string array validator.
     
@@ -1038,62 +1049,117 @@ def nullable_string_array_validator_factory(field_name):
     ----------
     field_name : `str`
         The field's name.
+    ordered : `bool` = `True`, Optional (Keyword only)
+        Whether the output should be ordered.
     
     Returns
     -------
     validator : `FunctionType`
     """
-    def validator(string_array):
-        """
-        Validates the given string array.
-        
-        > This function is generated.
-        
-        Parameters
-        ----------
-        string_array : `None`, `iterable` of `str`
-            The string to validate.
-        
-        Returns
-        -------
-        string_array : `None`, `str`
-                
-        Raises
-        ------
-        TypeError
-            - If `string_array` is not `None`, `iterable` of `str`.
-        """
-        nonlocal field_name
-        
-        if (string_array is None):
-            return None
-        
-        if isinstance(string_array, str):
-            return (string_array, )
-        
-        if getattr(string_array, '__iter__', None) is None:
-            raise TypeError(
-                f'`{field_name}` can be `None`, `iterable` of `str`, got '
-                f'{string_array.__class__.__name__}; {string_array!r}.'
-            )
-        
-        processed_values = None
-        
-        for string in string_array:
-            if not isinstance(string, str):
+    if ordered:
+        def validator(string_array):
+            """
+            Validates the given string array. Returns the elements in order.
+            
+            > This function is generated.
+            
+            Parameters
+            ----------
+            string_array : `None`, `str`, `iterable` of `str`
+                The string to validate.
+            
+            Returns
+            -------
+            string_array : `None`, `str`
+                    
+            Raises
+            ------
+            TypeError
+                - If `string_array` is not `None`, `str`, `iterable` of `str`.
+            """
+            nonlocal field_name
+            
+            if (string_array is None):
+                return None
+            
+            if isinstance(string_array, str):
+                return (string_array, )
+            
+            if getattr(string_array, '__iter__', None) is None:
                 raise TypeError(
-                    f'`{field_name}` elements can be `str`, got '
-                    f'{string.__class__.__name__}; {string!r}; {field_name}={string_array!r}.'
+                    f'`{field_name}` can be `None`, `iterable` of `str`, got '
+                    f'{string_array.__class__.__name__}; {string_array!r}.'
                 )
             
-            if (processed_values is None):
-                processed_values = []
+            processed_values = None
             
-            processed_values.append(string)
-        
-        if processed_values is not None:
-            processed_values.sort()
-            return tuple(processed_values)
+            for string in string_array:
+                if not isinstance(string, str):
+                    raise TypeError(
+                        f'`{field_name}` elements can be `str`, got '
+                        f'{string.__class__.__name__}; {string!r}; {field_name} = {string_array!r}.'
+                    )
+                
+                if (processed_values is None):
+                    processed_values = set()
+                
+                processed_values.add(string)
+            
+            if processed_values is not None:
+                return tuple(sorted(processed_values))
+    
+    else:
+        def validator(string_array):
+            """
+            Validates the given string array. Returns the elements in order as they are present in the input.
+            
+            > This function is generated.
+            
+            Parameters
+            ----------
+            string_array : `None`, `str`, `iterable` of `str`
+                The string to validate.
+            
+            Returns
+            -------
+            string_array : `None`, `str`
+                    
+            Raises
+            ------
+            TypeError
+                - If `string_array` is not `None`, `str`, `iterable` of `str`.
+            """
+            nonlocal field_name
+            
+            if (string_array is None):
+                return None
+            
+            if isinstance(string_array, str):
+                return (string_array, )
+            
+            if getattr(string_array, '__iter__', None) is None:
+                raise TypeError(
+                    f'`{field_name}` can be `None`, `iterable` of `str`, got '
+                    f'{string_array.__class__.__name__}; {string_array!r}.'
+                )
+            
+            processed_values = None
+            
+            for string in string_array:
+                if not isinstance(string, str):
+                    raise TypeError(
+                        f'`{field_name}` elements can be `str`, got '
+                        f'{string.__class__.__name__}; {string!r}; {field_name} = {string_array!r}.'
+                    )
+                
+                if (processed_values is None):
+                    processed_values = []
+                
+                processed_values.append(string)
+            
+            if processed_values is not None:
+                return tuple(processed_values)
+    
     
     return validator
 
@@ -1274,22 +1340,21 @@ def url_array_optional_validator_factory(field_name):
             if not isinstance(url, str):
                 raise TypeError(
                     f'`{field_name}` elements can be `str`, got '
-                    f'{url.__class__.__name__}; {url!r}; {field_name}={url_array!r}.'
+                    f'{url.__class__.__name__}; {url!r}; {field_name} = {url_array!r}.'
                 )
             
             if not is_url(url):
                 raise ValueError(
-                    f'`{field_name}` element is not a valid url, got {url!r}; {field_name}={url_array!r}.'
+                    f'`{field_name}` element is not a valid url, got {url!r}; {field_name} = {url_array!r}.'
                 )
             
             if (processed_values is None):
-                processed_values = []
+                processed_values = set()
             
-            processed_values.append(url)
+            processed_values.add(url)
         
         if processed_values is not None:
-            processed_values.sort()
-            return tuple(processed_values)
+            return tuple(sorted(processed_values))
     
     return validator
 

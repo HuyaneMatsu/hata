@@ -87,7 +87,9 @@ def entity_id_array_parser_factory(field_key):
     return parser
 
 
-def preinstanced_parser_factory(field_key, preinstanced_type, default_value):
+def preinstanced_parser_factory(
+    field_key, preinstanced_type, default_value, *, include = None, include_default_attribute_name = None
+):
     """
     Returns a new preinstanced object parser.
     
@@ -95,10 +97,20 @@ def preinstanced_parser_factory(field_key, preinstanced_type, default_value):
     ----------
     field_key : `str`
         The field's key used in payload.
+    
     preinstanced_type : ``PreinstancedBase``
         The preinstanced type to use.
+    
     default_value : `instance<preinstanced_type>`, `object`
         The default value to use if the key is not present.
+    
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The type's name to include `preinstanced_type` with.
+        Should be used when `preinstanced_type` cannot be resolved initially.
+    
+    include_default_attribute_name : `None`, `str` = `None`, Optional (Keyword only)
+        If `preinstanced_type` is included meaning `default_value` cannot be initially defined for this reason, with
+        this parameter it is possible to define which attribute of `preinstanced_type` should be pulled.
     
     Returns
     -------
@@ -131,6 +143,18 @@ def preinstanced_parser_factory(field_key, preinstanced_type, default_value):
             preinstanced = preinstanced_type.get(value)
         
         return preinstanced
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal preinstanced_type
+            nonlocal default_value
+            nonlocal include_default_attribute_name
+            
+            preinstanced_type = value
+            
+            if (include_default_attribute_name is not None):
+                default_value = getattr(preinstanced_type, include_default_attribute_name)
     
     return parser
 

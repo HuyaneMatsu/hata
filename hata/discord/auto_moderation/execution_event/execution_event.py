@@ -319,7 +319,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         rule_trigger_type = self.rule_trigger_type
         repr_parts.append(', rule_trigger_type = ')
         repr_parts.append(repr(rule_trigger_type.name))
-        repr_parts.append('~')
+        repr_parts.append(' ~ ')
         repr_parts.append(repr(rule_trigger_type.value))
         
         # matched_content

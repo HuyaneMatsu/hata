@@ -109,6 +109,7 @@ class MessageApplication(DiscordEntity):
         else:
             name = validate_name(name)
         
+        # Construct
         self = object.__new__(cls)
         self.cover = cover
         self.description = description
@@ -129,6 +130,7 @@ class MessageApplication(DiscordEntity):
         ----------
         message_application_id : `int`
             The message application's id.
+        
         **keyword_parameters : Keyword parameters
             The attributes to set.
         
@@ -160,7 +162,6 @@ class MessageApplication(DiscordEntity):
         """
         message_application_id = validate_id(message_application_id)
         
-
         if keyword_parameters:
             processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
         else:
@@ -378,7 +379,7 @@ class MessageApplication(DiscordEntity):
         
         Returns
         -------
-        new : `instance<cls>`
+        new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
         new.cover_hash = self.cover_hash
@@ -411,7 +412,7 @@ class MessageApplication(DiscordEntity):
         
         Returns
         -------
-        new : `instance<cls>`
+        new : `instance<type<self>>`
         
         Raises
         ------
@@ -444,6 +445,7 @@ class MessageApplication(DiscordEntity):
         else:
             name = validate_name(name)
         
+        # Construct
         new = object.__new__(type(self))
         new.cover = cover
         new.description = description

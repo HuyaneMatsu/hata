@@ -137,12 +137,12 @@ class AutoModerationAction(RichAttributeErrorBaseType):
         repr_parts = ['<', self.__class__.__name__]
         
         # type
-        type_ = self.type
+        action_type = self.type
         
         repr_parts.append(' type = ')
-        repr_parts.append(repr(type_.name))
-        repr_parts.append('~')
-        repr_parts.append(repr(type_.value))
+        repr_parts.append(repr(action_type.name))
+        repr_parts.append(' ~ ')
+        repr_parts.append(repr(action_type.value))
         
         # metadata
         metadata = self.metadata

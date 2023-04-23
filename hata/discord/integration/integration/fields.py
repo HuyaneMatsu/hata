@@ -45,7 +45,7 @@ def parse_type(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Entity data.
     
     Returns
@@ -70,14 +70,14 @@ def put_type_into(preinstanced, data, defaults):
     ----------
     preinstanced : ``IntegrationType``
         An integration's type.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     data['type'] = preinstanced.value
     

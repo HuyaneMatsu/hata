@@ -171,7 +171,7 @@ class Plugin(RichAttributeErrorBaseType):
         repr_parts.append(', state = ')
         state_name = PLUGIN_STATE_VALUE_TO_NAME.get(state, '???')
         repr_parts.append(state_name)
-        repr_parts.append('~')
+        repr_parts.append(' ~ ')
         repr_parts.append(repr(state))
         
         if self._locked:

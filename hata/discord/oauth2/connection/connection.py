@@ -334,7 +334,7 @@ class Connection(DiscordEntity):
         if (connection_type is not ConnectionType.unknown):
             repr_parts.append(', type = ')
             repr_parts.append(connection_type.name)
-            repr_parts.append('~')
+            repr_parts.append(' ~ ')
             repr_parts.append(repr(connection_type.value))
         
         name = self.name

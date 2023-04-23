@@ -163,6 +163,7 @@ setup(
         'hata.ext.commands_v2.helps',
         'hata.ext.patchouli',
         'hata.ext.plugin_auto_reloader',
+        'hata.ext.plugin_auto_reloader.utils',
         'hata.ext.plugin_loader',
         'hata.ext.plugin_loader.import_overwrite',
         'hata.ext.plugin_loader.plugin_tree',

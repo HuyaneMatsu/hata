@@ -1,4 +1,4 @@
-## 1.3.28 *\[2023-04-??\]*
+## 1.3.28 *\[2023-04-25\]*
 
 #### Improvements
 
@@ -25,6 +25,7 @@
 - Add `EmbedType.text`.
 - Add `EmbedType.post_review`.
 - Add `send_voice_messages` `Permission`.
+- Update `upload_limit` to `25MB`.
 
 ##### ext.plugin_loader
 - Add `Plugin.sort_key`.

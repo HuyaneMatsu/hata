@@ -120,7 +120,7 @@ TIER_0 = GuildPremiumPerks(
     12,
     5,
     0,
-    8388608,
+    26214400,
 )
 
 

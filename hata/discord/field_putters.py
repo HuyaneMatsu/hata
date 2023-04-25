@@ -399,6 +399,87 @@ def nullable_field_optional_putter_factory(field_key):
     return putter
 
 
+def field_optional_putter_factory(field_key, default_value):
+    """
+    Returns an optional field putter which 1:1 puts the given value.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    default_value : `object`
+        The default value to ignore if defaults are not required.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(field_value, data, defaults):
+        """
+        Puts the given object into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        field_value : `object`
+            Object field value.
+        data : `dict` of (`str`, `object`) items
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `object`) items
+        """
+        nonlocal default_value
+        nonlocal field_key
+        
+        if defaults or (field_value != default_value):
+            data[field_key] = field_value
+        
+        return data
+    
+    return putter
+
+
+def bool_optional_putter_factory(field_key, default_value):
+    """
+    Returns an optional `bool` putter.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    default_value : `bool`
+        The default value to ignore if defaults are not required.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    return field_optional_putter_factory(field_key, default_value)
+
+
+def float_optional_putter_factory(field_key, default_value):
+    """
+    Returns an optional `float` putter.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    default_value : `float`
+        The default value to ignore if defaults are not required.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    return field_optional_putter_factory(field_key, default_value)
+
+
 def int_optional_putter_factory(field_key, default_value):
     """
     Returns an optional `int` putter.
@@ -414,34 +495,7 @@ def int_optional_putter_factory(field_key, default_value):
     -------
     putter : `FunctionType`
     """
-    def putter(field_value, data, defaults):
-        """
-        Puts the given `int` into the given `data` json serializable object.
-        
-        > This function is generated.
-        
-        Parameters
-        ----------
-        field_value : `int`
-            Integer field value.
-        data : `dict` of (`str`, `object`) items
-            Json serializable dictionary.
-        defaults : `bool`
-            Whether default values should be included as well.
-        
-        Returns
-        -------
-        data : `dict` of (`str`, `object`) items
-        """
-        nonlocal field_key
-        nonlocal default_value
-        
-        if defaults or (field_value != default_value):
-            data[field_key] = field_value
-        
-        return data
-    
-    return putter
+    return field_optional_putter_factory(field_key, default_value)
 
 
 def int_optional_postprocess_putter_factory(field_key, default_value, postprocessor):
@@ -576,51 +630,6 @@ def force_bool_putter_factory(field_key):
         nonlocal field_key
         
         data[field_key] = field_value
-        
-        return data
-    
-    return putter
-
-
-def bool_optional_putter_factory(field_key, default_value):
-    """
-    Returns an optional `bool` putter.
-    
-    Parameters
-    ----------
-    field_key : `str`
-        The field's key used in payload.
-    default_value : `bool`
-        The default value to ignore if defaults are not required.
-    
-    Returns
-    -------
-    putter : `FunctionType`
-    """
-    def putter(field_value, data, defaults):
-        """
-        Puts the given `bool` into the given `data` json serializable object.
-        
-        > This function is generated.
-        
-        Parameters
-        ----------
-        field_value : `bool`
-            Boolean field value.
-        data : `dict` of (`str`, `object`) items
-            Json serializable dictionary.
-        defaults : `bool`
-            Whether default values should be included as well.
-        
-        Returns
-        -------
-        data : `dict` of (`str`, `object`) items
-        """
-        nonlocal field_key
-        nonlocal default_value
-        
-        if defaults or (field_value != default_value):
-            data[field_key] = field_value
         
         return data
     

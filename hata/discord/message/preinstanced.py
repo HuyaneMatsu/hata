@@ -1,6 +1,8 @@
 __all__ = ('MessageType', )
 
-from scarletio import any_to_any
+import warnings
+
+from scarletio import any_to_any, class_property
 
 from ..activity import ACTIVITY_TYPES
 from ..bases import Preinstance as P, PreinstancedBase
@@ -28,10 +30,10 @@ def MESSAGE_DEFAULT_CONVERTER(self):
     return content
 
 
-def convert_add_user(self):
+def convert_user_add(self):
     return f'{self.author.name} added {self.user_mentions[0].name} to the group.'
 
-def convert_remove_user(self):
+def convert_user_remove(self):
     return f'{self.author.name} removed {self.user_mentions[0].name} from the group.'
 
 def convert_call(self):
@@ -239,9 +241,9 @@ class MessageType(PreinstancedBase):
     +===========================================+===========================================+=======+===================================================+===========+
     | default                                   | default                                   | 0     | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | add_user                                  | add user                                  | 1     | convert_add_user                                  | false     |
+    | user_add                                  | user add                                  | 1     | convert_user_add                                  | false     |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | remove_user                               | remove user                               | 2     | convert_remove_user                               | false     |
+    | user_remove                               | user remove                               | 2     | convert_user_remove                               | false     |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | call                                      | call                                      | 3     | convert_call                                      | false     |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
@@ -302,6 +304,12 @@ class MessageType(PreinstancedBase):
     | stage_topic_change                        | stage topic change                        | 31    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | application_subscription                  | application subscription                  | 32    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | private_channel_integration_add           | private channel integration add           | 33    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | private_channel_integration_remove        | private channel integration remove        | 34    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | premium_referral                          | premium referral                          | 35    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     """
     INSTANCES = {}
@@ -378,8 +386,8 @@ class MessageType(PreinstancedBase):
     
     # predefined
     default = P(0, 'default', MESSAGE_DEFAULT_CONVERTER, True)
-    add_user = P(1, 'add user', convert_add_user, False)
-    remove_user = P(2, 'remove user', convert_remove_user, False)
+    user_add = P(1, 'add user', convert_user_add, False)
+    user_remove = P(2, 'remove user', convert_user_remove, False)
     call = P(3, 'call', convert_call, False)
     channel_name_change = P(4, 'channel name change', convert_channel_name_change, False)
     channel_icon_change = P(5, 'channel icon change', convert_channel_icon_change, False)
@@ -414,10 +422,47 @@ class MessageType(PreinstancedBase):
     stage_request_to_speak = P(30, 'stage request to speak', MESSAGE_DEFAULT_CONVERTER, True)
     stage_topic_change = P(31, 'stage topic change', MESSAGE_DEFAULT_CONVERTER, True)
     application_subscription = P(32, 'application subscription', MESSAGE_DEFAULT_CONVERTER, True)
+    private_channel_integration_add = P(33, 'private channel integration add', MESSAGE_DEFAULT_CONVERTER, True)
+    private_channel_integration_remove = P(34, 'private channel integration remove', MESSAGE_DEFAULT_CONVERTER, True)
+    premium_referral = P(34, 'premium referral', MESSAGE_DEFAULT_CONVERTER, True)
 
 
-del convert_add_user
-del convert_remove_user
+    @class_property
+    def add_user(cls):
+        """
+        Deprecated and will be removed in 2023 November. Please use `.user_add` instead.
+        """
+        warnings.warn(
+            (
+                f'`{cls.__name__}.add_user` is deprecated and will be removed in 2023 November. '
+                f'Please use `.user_add` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return cls.user_add
+
+
+    @class_property
+    def remove_user(cls):
+        """
+        Deprecated and will be removed in 2023 November. Please use `.user_remove` instead.
+        """
+        warnings.warn(
+            (
+                f'`{cls.__name__}.remove_user` is deprecated and will be removed in 2023 November. '
+                f'Please use `.user_remove` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return cls.user_remove
+
+
+del convert_user_add
+del convert_user_remove
 del convert_call
 del convert_channel_name_change
 del convert_channel_icon_change

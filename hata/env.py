@@ -122,14 +122,14 @@ def get_str_env(name, default = None, *, warn_if_empty = True):
     ----------
     name : `str`
         The name of an environmental variable.
-    default : `Any` = `None`, Optional
+    default : `None` | `str` = `None`, Optional
         The default value of the respective variable. Defaults to `None`.
     warn_if_empty : `bool` = `True`, Optional (Keyword only)
         Whether warning should be dropped if empty environmental variable is received.
     
     Returns
     -------
-    variable : `str`, `default`
+    variable : `None` | `str`
     """
     env_variable = get_environmental_variable(name)
     if env_variable is None:
@@ -163,7 +163,7 @@ def get_int_env(name, default, *, warn_if_empty = True):
     
     Returns
     -------
-    variable : `int`, `default`
+    variable : `int`
     """
     env_variable = get_environmental_variable(name)
     if env_variable is None:

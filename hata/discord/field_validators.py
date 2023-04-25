@@ -552,6 +552,74 @@ def preinstanced_array_validator_factory(field_name, preinstanced_type, *, inclu
     return validator
 
 
+def _field_condition_validator_factory(field_name, field_type, default_value, condition_check, condition_message):
+    """
+    Returns a new field validator with an added condition validation.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    field_type : `type`
+        The field's type to only accept.
+    default_value : `object`
+        The default to return.
+    condition_check : `callable`
+        The condition which needs to pass.
+    condition_message : `str`
+        Condition message to use when building the error message.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    def validator(value):
+        """
+        Validates the given field value.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        value : `object`
+            The field to validate.
+        
+        Returns
+        -------
+        value : `object`
+        
+        Raises
+        ------
+        TypeError
+            - If `field` is not `field_type`.
+        ValueError
+            - If `condition_check` fails for the given value.
+        """
+        nonlocal condition_check
+        nonlocal default_value
+        nonlocal condition_message
+        nonlocal field_name
+        nonlocal field_type
+        
+        if value is None:
+            value = default_value
+        
+        else:
+            if not isinstance(value, field_type):
+                raise TypeError(
+                    f'`{field_name}` can be `{field_type.__name__}`, got {value.__class__.__name__}; {value!r}.'
+                )
+            
+            if not condition_check(value):
+                raise ValueError(
+                    f'`{field_name}` must be {condition_message}, got {value!r}.'
+                )
+        
+        return value
+    
+    return validator
+
+
 def int_conditional_validator_factory(field_name, default_value, condition_check, condition_message):
     """
     Returns a new `int` with condition validator.
@@ -571,50 +639,29 @@ def int_conditional_validator_factory(field_name, default_value, condition_check
     -------
     validator : `FunctionType`
     """
-    def validator(integer):
-        """
-        Validates the given integer value.
-        
-        > This function is generated.
-        
-        Parameters
-        ----------
-        integer : `int`
-            The integer to validate.
-        
-        Returns
-        -------
-        integer : `int`
-        
-        Raises
-        ------
-        TypeError
-            - If `integer` is not `int`.
-        ValueError
-            - If `integer` is not any of the expected options.
-        """
-        nonlocal condition_check
-        nonlocal default_value
-        nonlocal condition_message
-        nonlocal field_name
-        
-        if integer is None:
-            integer = default_value
-        
-        else:
-            if not isinstance(integer, int):
-                raise TypeError(
-                    f'`{field_name}` can be `int`, got {integer.__class__.__name__}; {integer!r}.'
-                )
-            
-            if not condition_check(integer):
-                raise ValueError(
-                    f'`{field_name}` must be {condition_message}, got {integer!r}.'
-                )
-        
-        return integer
+    return _field_condition_validator_factory(field_name, int, default_value, condition_check, condition_message)
+
+
+def float_conditional_validator_factory(field_name, default_value, condition_check, condition_message):
+    """
+    Returns a new `float` with condition validator.
     
-    return validator
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    default_value : `float`
+        The default to return.
+    condition_check : `callable`
+        The condition which needs to pass.
+    condition_message : `str`
+        Condition message to use when building the error message.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    return _field_condition_validator_factory(field_name, float, default_value, condition_check, condition_message)
 
 
 def flag_validator_factory(field_name, flag_type):

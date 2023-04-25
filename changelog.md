@@ -10,6 +10,21 @@
 - Add `MessageInteraction.__hash__`.
 - Add `MessageInteraction.copy`.
 - Add `MessageInteraction.copy_with`.
+- Add `Attachment.waveform`.
+- Add `Attachment.duration`.
+- Add `ERROR_CODES.voice_message_not_supports_additional_content`.
+- Add `ERROR_CODES.voice_message_must_have_one_audio_attachment`.
+- Add `ERROR_CODES.voice_message_must_have_supporting_metadata`.
+- Add `ERROR_CODES.cannot_edit_voice_message`.
+- Add `ERROR_CODES.cannot_send_voice_message_to_this_channel`.
+- Add `ERROR_CODES.clyde_consent_required`.
+- Add `MessageType.private_channel_integration_add`.
+- Add `MessageType.private_channel_integration_remove`.
+- Add `MessageType.premium_referral`.
+- Add `EmbedType.auto_moderation_notification`.
+- Add `EmbedType.text`.
+- Add `EmbedType.post_review`.
+- Add `send_voice_messages` `Permission`.
 
 ##### ext.plugin_loader
 - Add `Plugin.sort_key`.
@@ -38,6 +53,13 @@
 ##### ext.plugin_loader
 - Failing syntax checks did not abort further actions.
 - `PluginLoader.remove` now removes the plugins as intended.
+
+#### Renames, Deprecation & Removals
+
+- Rname `MessageType.add_user` to `.user_add`.
+- Rname `MessageType.remove_user` to `.user_remove`.
+- Deprecate `MessageType.add_user`.
+- Deprecate `MessageType.remove_user`.
 
 ## 1.3.27 *\[2023-04-14\]*
 

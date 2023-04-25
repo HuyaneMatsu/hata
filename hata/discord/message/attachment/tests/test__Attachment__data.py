@@ -14,24 +14,28 @@ def test__Attachment__from_data():
     attachment_id = 202211010004
     content_type = 'application/json'
     description = 'Nue'
+    duration = 12.6
     height = 1000
     name = 'i miss you'
     size = 999
     proxy_url = 'https://orindance.party/'
     temporary = True
     url = 'https://www.astil.dev/'
+    waveform = 'kisaki'
     width = 998
     
     data = {
         'id': str(attachment_id),
         'content_type': content_type,
         'description': description,
+        'duration_sec': duration,
         'height': height,
         'filename': name,
         'size': size,
         'proxy_url': proxy_url,
         'ephemeral': temporary,
         'url': url,
+        'waveform': waveform,
         'width': width,
     }
     
@@ -44,11 +48,13 @@ def test__Attachment__from_data():
 
     vampytest.assert_eq(attachment.content_type, content_type)
     vampytest.assert_eq(attachment.description, description)
+    vampytest.assert_eq(attachment.duration, duration)
     vampytest.assert_eq(attachment.height, height)
     vampytest.assert_eq(attachment.name, name)
     vampytest.assert_eq(attachment.size, size)
     vampytest.assert_eq(attachment.temporary, temporary)
     vampytest.assert_eq(attachment.url, url)
+    vampytest.assert_eq(attachment.waveform, waveform)
     vampytest.assert_eq(attachment.width, width)
 
 
@@ -61,24 +67,28 @@ def test__Attachment__to_data():
     attachment_id = 202211010005
     content_type = 'application/json'
     description = 'Nue'
+    duration = 12.6
     height = 1000
     name = 'i miss you'
     size = 999
     proxy_url = 'https://orindance.party/'
     temporary = True
     url = 'https://www.astil.dev/'
+    waveform = 'kisaki'
     width = 998
     
     attachment = Attachment.precreate(
         attachment_id,
         content_type = content_type,
         description = description,
+        duration = duration,
         height = height,
         name = name,
         proxy_url = proxy_url,
         size = size,
         temporary = temporary,
         url = url,
+        waveform = waveform,
         width = width,
     )
     
@@ -91,12 +101,14 @@ def test__Attachment__to_data():
             'id': str(attachment_id),
             'content_type': content_type,
             'description': description,
+            'duration_sec': duration,
             'height': height,
             'filename': name,
             'size': size,
             'proxy_url': proxy_url,
             'ephemeral': temporary,
             'url': url,
+            'waveform': waveform,
             'width': width,
         },
     )

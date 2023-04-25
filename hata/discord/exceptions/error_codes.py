@@ -425,11 +425,21 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | feature_not_yet_rolled_out                                        | 50155     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| voice_message_not_supports_additional_content                     | 50159     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| voice_message_must_have_one_audio_attachment                      | 50160     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| voice_message_must_have_supporting_metadata                       | 50161     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| cannot_edit_voice_message                                         | 50162     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | cannot_delete_guild_subscription_integration                      | 50163     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | new_owner_ineligible_for_subscription                             | 50164     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | activity_launch_age_gated                                         | 50165     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| cannot_send_voice_message_to_this_channel                         | 50173     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | MFA_enabled                                                       | 60001     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -564,6 +574,8 @@ Error Codes
 | webhook_can_create_thread_only_in_forum_channel                   | 220003    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | harmful_link_message_blocked                                      | 240000    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| clyde_consent_required                                            | 310000    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 """
 unknown_account = 10001
@@ -767,9 +779,14 @@ cannot_convert_emoji_between_premium_and_non_premium = 50145
 upload_file_not_found = 50146
 activity_launch_afk_channel = 50148
 feature_not_yet_rolled_out = 50155
+voice_message_not_supports_additional_content = 50159
+voice_message_must_have_one_audio_attachment = 50160
+voice_message_must_have_supporting_metadata = 50161
+cannot_edit_voice_message = 50162
 cannot_delete_guild_subscription_integration = 50163
 new_owner_ineligible_for_subscription = 50164
 activity_launch_age_gated = 50165
+cannot_send_voice_message_to_this_channel = 50173
 
 MFA_enabled = 60001
 MFA_disabled = 60002
@@ -853,6 +870,8 @@ auto_moderation_invalid_regex = 200002
 webhook_can_create_thread_only_in_forum_channel = 220003
 
 harmful_link_message_blocked = 240000
+
+clyde_consent_required = 310000
 
 
 def __getattr__(attribute_name):

@@ -49,6 +49,7 @@ PERMISSION_SHIFT_USE_SOUNDBOARD = 42
 PERMISSION_SHIFT_CREATE_GUILD_EXPRESSIONS = 43
 PERMISSION_SHIFT_CREATE_GUILD_EVENTS = 44
 PERMISSION_SHIFT_USE_EXTERNAL_SOUNDS = 45
+PERMISSION_SHIFT_SEND_VOICE_MESSAGES = 46
 
 
 PERMISSION_MASK_CREATE_INSTANT_INVITE = 1 << PERMISSION_SHIFT_CREATE_INSTANT_INVITE
@@ -97,6 +98,7 @@ PERMISSION_MASK_USE_SOUNDBOARD = 1 << PERMISSION_SHIFT_USE_SOUNDBOARD
 PERMISSION_MASK_CREATE_GUILD_EXPRESSIONS = 1 << PERMISSION_SHIFT_CREATE_GUILD_EXPRESSIONS
 PERMISSION_MASK_CREATE_GUILD_EVENTS = 1 << PERMISSION_SHIFT_CREATE_GUILD_EVENTS
 PERMISSION_MASK_USE_EXTERNAL_SOUNDS = 1 << PERMISSION_SHIFT_USE_EXTERNAL_SOUNDS
+PERMISSION_MASK_SEND_VOICE_MESSAGES = 1 << PERMISSION_SHIFT_SEND_VOICE_MESSAGES
 
 
 class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', disable_keyword = 'deny'):
@@ -198,7 +200,8 @@ class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', dis
     +---------------------------------------+-------------------+
     | use_external_sounds                   | 45                |
     +---------------------------------------+-------------------+
-    
+    | send_voice_messages                   | 46                |
+    +---------------------------------------+-------------------+
     
     Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
@@ -250,6 +253,7 @@ class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', dis
         'create_guild_expressions': PERMISSION_SHIFT_CREATE_GUILD_EXPRESSIONS,
         'create_events': PERMISSION_SHIFT_CREATE_GUILD_EVENTS,
         'use_external_sounds': PERMISSION_SHIFT_USE_EXTERNAL_SOUNDS,
+        'send_voice_messages': PERMISSION_SHIFT_SEND_VOICE_MESSAGES,
     }
     
     __deprecated_keys__ = {
@@ -307,6 +311,7 @@ PERMISSION_ALL = Permission().update_by_keys(
     create_guild_expressions = True,
     create_events = True,
     use_external_sounds = True,
+    send_voice_messages = True
 )
 
 PERMISSION_NONE = Permission()
@@ -356,6 +361,7 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     create_guild_expressions = False,
     create_events = False,
     use_external_sounds = True,
+    send_voice_messages = True,
 )
 
 PERMISSION_PRIVATE_BOT = PERMISSION_PRIVATE.update_by_keys(
@@ -417,6 +423,7 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     create_guild_expressions = False,
     create_events = False,
     use_external_sounds = False,
+    send_voice_messages = True,
 )
 
 PERMISSION_TEXT_DENY = Permission(~PERMISSION_TEXT_ALL)
@@ -480,6 +487,7 @@ PERMISSION_VOICE_ONLY = Permission().update_by_keys(
     create_guild_expressions = False,
     create_events = False,
     use_external_sounds = True,
+    send_voice_messages = True
 )
 
 PERMISSION_VOICE_DENY = Permission(~PERMISSION_VOICE_ONLY)

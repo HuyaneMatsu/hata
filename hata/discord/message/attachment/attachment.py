@@ -4,23 +4,26 @@ from ...bases import DiscordEntity
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
-    parse_content_type, parse_description, parse_height, parse_id, parse_name, parse_proxy_url, parse_size,
-    parse_temporary, parse_url, parse_width, put_content_type_into, put_description_into, put_height_into, put_id_into,
-    put_name_into, put_proxy_url_into, put_size_into, put_temporary_into, put_url_into, put_width_into,
-    validate_content_type, validate_description, validate_height, validate_id, validate_name, validate_proxy_url,
-    validate_size, validate_temporary, validate_url, validate_width
+    parse_content_type, parse_description, parse_duration, parse_height, parse_id, parse_name, parse_proxy_url,
+    parse_size, parse_temporary, parse_url, parse_waveform, parse_width, put_content_type_into, put_description_into,
+    put_duration_into, put_height_into, put_id_into, put_name_into, put_proxy_url_into, put_size_into,
+    put_temporary_into, put_url_into, put_waveform_into, put_width_into, validate_content_type, validate_description,
+    validate_duration, validate_height, validate_id, validate_name, validate_proxy_url, validate_size,
+    validate_temporary, validate_url, validate_waveform, validate_width
 )
-    
+
 
 PRECREATE_FIELDS = {
     'content_type': ('content_type', validate_content_type),
     'description': ('description', validate_description),
+    'duration': ('duration', validate_duration),
     'height': ('height', validate_height),
     'name': ('name', validate_name),
     'proxy_url': ('proxy_url', validate_proxy_url),
     'size': ('size', validate_size),
     'temporary': ('temporary', validate_temporary),
     'url': ('url', validate_url),
+    'waveform': ('waveform', validate_waveform),
     'width': ('width', validate_width),
 }
 
@@ -41,6 +44,11 @@ class Attachment(DiscordEntity):
         Description for the file.
         
         > Max 1024 characters.
+    
+    duration : `float`
+        The attachment's duration in seconds. Applicable for voice messages only.
+        
+        > Defaults to `0.0`.
     
     height : `int`
         The height of the attachment if applicable.
@@ -66,23 +74,33 @@ class Attachment(DiscordEntity):
     url : `str`
         The attachment's url.
     
+    waveform : `None`, `str`
+        Base64 encoded bytearray representing a sampled waveform. Applicable for voice messages only.
+        
+        > Defaults to `None`.
+    
     width : `int`
         The attachment's width if applicable.
         
         > Defaults to `0`.
     """
-    __slots__ = ('content_type', 'description', 'height', 'name', 'proxy_url', 'size', 'temporary', 'url', 'width')
+    __slots__ = (
+        'content_type', 'description', 'duration', 'height', 'name', 'proxy_url', 'size', 'temporary', 'url',
+        'waveform', 'width'
+    )
     
     def __new__(
         cls,
         *,
         content_type = ...,
         description = ...,
+        duration = ...,
         height = ...,
         name = ...,
         size = ...,
         temporary = ...,
         url = ...,
+        waveform = ...,
         width = ...,
     ):
         """
@@ -94,7 +112,10 @@ class Attachment(DiscordEntity):
             The attachment's media type.
         
         description : `None`, `str`, Optional (Keyword only)
-            Description for the file.
+            The attachment's duration in seconds.
+        
+        duration : `float`, Optional (Keyword only)
+            The length of the file in seconds.
         
         height : `int`, Optional (Keyword only)
             The height of the attachment if applicable.
@@ -110,6 +131,9 @@ class Attachment(DiscordEntity):
         
         url : `str`, Optional (Keyword only)
             The attachment's url.
+        
+        waveform : `None`, `str`, Optional (Keyword only)
+            Base64 encoded bytearray representing a sampled waveform.
         
         width : `int`, Optional (Keyword only)
             The attachment's width if applicable.
@@ -132,6 +156,12 @@ class Attachment(DiscordEntity):
             description = None
         else:
             description = validate_description(description)
+        
+        # duration
+        if duration is ...:
+            duration = 0.0
+        else:
+            duration = validate_duration(duration)
         
         # height
         if height is ...:
@@ -163,6 +193,12 @@ class Attachment(DiscordEntity):
         else:
             url = validate_url(url)
         
+        # waveform
+        if waveform is ...:
+            waveform = None
+        else:
+            waveform = validate_waveform(waveform)
+        
         # width
         if width is ...:
             width = 0
@@ -174,6 +210,7 @@ class Attachment(DiscordEntity):
         self = object.__new__(cls)
         self.content_type = content_type
         self.description = description
+        self.duration = duration
         self.height = height
         self.id = 0
         self.name = name
@@ -181,6 +218,7 @@ class Attachment(DiscordEntity):
         self.size = size
         self.temporary = temporary
         self.url = url
+        self.waveform = waveform
         self.width = width
         return self
     
@@ -198,6 +236,7 @@ class Attachment(DiscordEntity):
         self = object.__new__(cls)
         self.content_type = parse_content_type(data)
         self.description = parse_description(data)
+        self.duration = parse_duration(data)
         self.height = parse_height(data)
         self.id = parse_id(data)
         self.name = parse_name(data)
@@ -205,6 +244,7 @@ class Attachment(DiscordEntity):
         self.size = parse_size(data)
         self.temporary = parse_temporary(data)
         self.url = parse_url(data)
+        self.waveform = parse_waveform(data)
         self.width = parse_width(data)
         return self
     
@@ -228,6 +268,13 @@ class Attachment(DiscordEntity):
         repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
         
+        # Extra if audio
+        duration = self.duration
+        if duration:
+            repr_parts.append(', duration = ')
+            repr_parts.append(format(duration, '.02f'))
+        
+        # Extra if image
         width = self.width
         height = self.height
         if width and height:
@@ -271,6 +318,10 @@ class Attachment(DiscordEntity):
         if self.description != other.description:
             return False
         
+        # duration
+        if self.duration != other.duration:
+            return False
+        
         # height
         if self.height != other.height:
             return False
@@ -289,6 +340,10 @@ class Attachment(DiscordEntity):
         
         # url
         if self.url != other.url:
+            return False
+        
+        # waveform
+        if self.waveform != other.waveform:
             return False
         
         # width
@@ -311,6 +366,11 @@ class Attachment(DiscordEntity):
         description = self.description
         if (description is not None):
             hash_value ^= hash(description)
+        
+        # duration
+        duration = self.duration
+        if duration:
+            hash_value ^= hash(duration)
         
         # height
         hash_value ^= self.height
@@ -339,6 +399,11 @@ class Attachment(DiscordEntity):
         
         # url
         hash_value ^= hash(self.url)
+        
+        # waveform
+        waveform = self.waveform
+        if (waveform is not None):
+            hash_value ^= hash(waveform)
         
         # width
         hash_value ^= self.width << 8
@@ -370,6 +435,9 @@ class Attachment(DiscordEntity):
         # description
         put_description_into(self.description, data, defaults)
         
+        # duration
+        put_duration_into(self.duration, data, defaults)
+        
         # height
         put_height_into(self.height, data, defaults)
         
@@ -393,6 +461,9 @@ class Attachment(DiscordEntity):
         # url
         put_url_into(self.url, data, defaults)
         
+        # waveform
+        put_waveform_into(self.waveform, data, defaults)
+        
         # width
         put_width_into(self.width, data, defaults)
         
@@ -412,6 +483,7 @@ class Attachment(DiscordEntity):
         new = object.__new__(type(self))
         new.content_type = self.content_type
         new.description = self.description
+        new.duration = self.duration
         new.height = self.height
         new.id = 0
         new.name = self.name
@@ -419,6 +491,7 @@ class Attachment(DiscordEntity):
         new.size = self.size
         new.temporary = self.temporary
         new.url = self.url
+        new.waveform = self.waveform
         new.width = self.width
         return new
     
@@ -428,11 +501,13 @@ class Attachment(DiscordEntity):
         *,
         content_type = ...,
         description = ...,
+        duration = ...,
         height = ...,
         name = ...,
         size = ...,
         temporary = ...,
         url = ...,
+        waveform = ...,
         width = ...,
     ):
         """
@@ -448,6 +523,9 @@ class Attachment(DiscordEntity):
         description : `None`, `str`, Optional (Keyword only)
             Description for the file.
         
+        duration : `float`, Optional (Keyword only)
+            The attachment's duration in seconds.
+        
         height : `int`, Optional (Keyword only)
             The height of the attachment if applicable.
         
@@ -462,6 +540,9 @@ class Attachment(DiscordEntity):
         
         url : `str`, Optional (Keyword only)
             The attachment's url.
+        
+        waveform : `None`, `str`, Optional (Keyword only)
+            Base64 encoded bytearray representing a sampled waveform.
         
         width : `int`, Optional (Keyword only)
             The attachment's width if applicable.
@@ -481,6 +562,12 @@ class Attachment(DiscordEntity):
             description = self.description
         else:
             description = validate_description(description)
+        
+        # duration
+        if duration is ...:
+            duration = self.duration
+        else:
+            duration = validate_duration(duration)
         
         # height
         if height is ...:
@@ -512,6 +599,12 @@ class Attachment(DiscordEntity):
         else:
             url = validate_url(url)
         
+        # waveform
+        if waveform is ...:
+            waveform = self.waveform
+        else:
+            waveform = validate_waveform(waveform)
+        
         # width
         if width is ...:
             width = self.width
@@ -523,6 +616,7 @@ class Attachment(DiscordEntity):
         new = object.__new__(type(self))
         new.content_type = content_type
         new.description = description
+        new.duration = duration
         new.height = height
         new.id = 0
         new.name = name
@@ -530,6 +624,7 @@ class Attachment(DiscordEntity):
         new.size = size
         new.temporary = temporary
         new.url = url
+        new.waveform = waveform
         new.width = width
         return new
     
@@ -559,6 +654,9 @@ class Attachment(DiscordEntity):
         description : `None`, `str`, Optional (Keyword only)
             Description for the file.
         
+        duration : `float`, Optional (Keyword only)
+            The attachment's duration in seconds.
+        
         height : `int`, Optional (Keyword only)
             The height of the attachment if applicable.
         
@@ -576,6 +674,9 @@ class Attachment(DiscordEntity):
             
         url : `str`, Optional (Keyword only)
             The attachment's url.
+        
+        waveform : `None`, `str`, Optional (Keyword only)
+            Base64 encoded bytearray representing a sampled waveform.
         
         width : `int`, Optional (Keyword only)
             The attachment's width if applicable.
@@ -597,6 +698,7 @@ class Attachment(DiscordEntity):
         self = object.__new__(cls)
         self.content_type = None
         self.description = None
+        self.duration = 0.0
         self.height = 0
         self.id = attachment_id
         self.name = ''
@@ -604,6 +706,7 @@ class Attachment(DiscordEntity):
         self.size = 0
         self.temporary = False
         self.url = ''
+        self.waveform = None
         self.width = 0
         
         if (processed is not None):

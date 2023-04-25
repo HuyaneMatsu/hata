@@ -13,21 +13,25 @@ def test__Attachment__copy__0():
     """
     content_type = 'application/json'
     description = 'Nue'
+    duration = 12.6
     height = 1000
     name = 'i miss you'
     size = 999
     temporary = True
     url = 'https://www.astil.dev/'
+    waveform = 'kisaki'
     width = 998
     
     attachment = Attachment(
         content_type = content_type,
         description = description,
+        duration = duration,
         height = height,
         name = name,
         size = size,
         temporary = temporary,
         url = url,
+        waveform = waveform,
         width = width,
     )
     copy = attachment.copy()
@@ -69,21 +73,25 @@ def test__Attachment__copy_with__0():
     """
     content_type = 'application/json'
     description = 'Nue'
+    duration = 12.6
     height = 1000
     name = 'i miss you'
     size = 999
     temporary = True
     url = 'https://www.astil.dev/'
+    waveform = 'kisaki'
     width = 998
     
     attachment = Attachment(
         content_type = content_type,
         description = description,
+        duration = duration,
         height = height,
         name = name,
         size = size,
         temporary = temporary,
         url = url,
+        waveform = waveform,
         width = width,
     )
     copy = attachment.copy_with()
@@ -124,41 +132,50 @@ def test__Attachment__copy_with__2():
     Case: non-partial.
     """
     old_content_type = 'application/json'
-    new_content_type = 'image/png'
     old_description = 'Nue'
-    new_description = 'Remilia'
+    old_duration = 12.6
     old_height = 1000
-    new_height = 702
     old_name = 'i miss you'
-    new_name = 'Slave of Scarlet'
     old_size = 999
-    new_size = 701
     old_temporary = True
-    new_temporary = False
     old_url = 'https://www.astil.dev/'
-    new_url = 'https://orindance.party/'
+    old_waveform = 'kisaki'
     old_width = 998
+    
+    new_content_type = 'image/png'
+    new_description = 'Remilia'
+    new_duration = 69.4
+    new_height = 702
+    new_name = 'Slave of Scarlet'
+    new_size = 701
+    new_temporary = False
+    new_url = 'https://orindance.party/'
+    new_waveform = 'kisaki'
     new_width = 700
     
     attachment = Attachment(
         content_type = old_content_type,
         description = old_description,
+        duration = old_duration,
         height = old_height,
         name = old_name,
         size = old_size,
         temporary = old_temporary,
         url = old_url,
+        waveform = old_waveform,
         width = old_width,
     )
     
     copy = attachment.copy_with(
         content_type = new_content_type,
         description = new_description,
+        duration = new_duration,
         height = new_height,
         name = new_name,
         size = new_size,
         temporary = new_temporary,
         url = new_url,
+        waveform = new_waveform,
         width = new_width,
     )
     
@@ -167,9 +184,11 @@ def test__Attachment__copy_with__2():
 
     vampytest.assert_eq(copy.content_type, new_content_type)
     vampytest.assert_eq(copy.description, new_description)
+    vampytest.assert_eq(copy.duration, new_duration)
     vampytest.assert_eq(copy.height, new_height)
     vampytest.assert_eq(copy.name, new_name)
     vampytest.assert_eq(copy.size, new_size)
     vampytest.assert_eq(copy.temporary, new_temporary)
     vampytest.assert_eq(copy.url, new_url)
+    vampytest.assert_eq(copy.waveform, new_waveform)
     vampytest.assert_eq(copy.width, new_width)

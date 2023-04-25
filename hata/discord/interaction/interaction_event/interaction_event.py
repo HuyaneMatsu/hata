@@ -1,9 +1,11 @@
 __all__ = ('InteractionEvent',)
 
+import warnings
+
 from scarletio import Future, copy_docs, export, include, shield
 
 from ...bases import DiscordEntity, EventBase
-from ...channel import ChannelType, create_partial_channel_from_id
+from ...channel import Channel, ChannelType, create_partial_channel_from_id
 from ...core import (
     APPLICATION_ID_TO_CLIENT, INTERACTION_EVENT_MESSAGE_WAITERS, INTERACTION_EVENT_RESPONSE_WAITERS, KOKORO
 )
@@ -23,11 +25,11 @@ from .constants import (
     DEFAULT_INTERACTION_METADATA, INTERACTION_EVENT_EXPIRE_AFTER_ID_DIFFERENCE, LOCALE_DEFAULT, USER_GUILD_CACHE
 )
 from .fields import (
-    parse_application_id, parse_application_permissions, parse_channel_id, parse_guild_id, parse_guild_locale, parse_id,
+    parse_application_id, parse_application_permissions, parse_channel, parse_guild_id, parse_guild_locale, parse_id,
     parse_locale, parse_message, parse_token, parse_type, parse_user, parse_user_permissions, put_application_id_into,
-    put_application_permissions_into, put_channel_id_into, put_guild_id_into, put_guild_locale_into, put_id_into,
+    put_application_permissions_into, put_channel_into, put_guild_id_into, put_guild_locale_into, put_id_into,
     put_locale_into, put_message_into, put_token_into, put_type_into, put_user_into, put_user_permissions_into,
-    validate_application_id, validate_application_permissions, validate_channel_id, validate_guild_id,
+    validate_application_id, validate_application_permissions, validate_channel, validate_guild_id,
     validate_guild_locale, validate_id, validate_interaction, validate_locale, validate_message, validate_token,
     validate_type, validate_user, validate_user_permissions
 )
@@ -40,7 +42,7 @@ create_partial_guild_from_id = include('create_partial_guild_from_id')
 PRECREATE_FIELDS = {
     'application_id': ('application_id', validate_application_id),
     'application_permissions': ('application_permissions', validate_application_permissions),
-    'channel_id': ('channel_id', validate_channel_id),
+    'channel': ('channel', validate_channel),
     'guild_id': ('guild_id', validate_guild_id),
     'guild_locale': ('guild_locale', validate_guild_locale),
     'locale': ('locale', validate_locale),
@@ -94,8 +96,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     application_permissions : ``Permission``
         The permissions granted to the application in the guild.
     
-    channel_id : `int`
-        The channel's identifier from where the interaction was called.
+    channel : ``Channel``
+        The channel from where the interaction was called.
     
     guild_id : `int`
         The guild's identifier from where the interaction was called from. Might be `0` if the interaction was called
@@ -133,7 +135,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     ˙˙InteractionEvent˙˙ instances are weakreferable.
     """
     __slots__ = (
-        '_async_task', '_cached_users', '_response_flag', 'application_id', 'application_permissions', 'channel_id',
+        '_async_task', '_cached_users', '_response_flag', 'application_id', 'application_permissions', 'channel',
         'guild_id', 'guild_locale', 'interaction', 'locale', 'message', 'token', 'type', 'user', 'user_permissions'
     )
     
@@ -142,6 +144,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         *,
         application_id = ...,
         application_permissions = ...,
+        channel = ...,
         channel_id = ...,
         guild_id = ...,
         guild_locale = ...,
@@ -164,10 +167,15 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         application_permissions : ``Permission``, `int`, Optional (Keyword only)
             The permissions granted to the application in the guild.
         
-        channel_id : `int`, `str`, Optional (Keyword only)
+        channel_id : `int`, `str`, ``Channel``, Optional (Keyword only)
             The channel's identifier from where the interaction was called.
+            
+            > Deprecated and will be removed in 2023 November.
         
-        guild_id : `int`, `str`, Optional (Keyword only)
+        channel : ``Channel``, Optional (Keyword only)
+            The channel from where the interaction was called.
+        
+        guild_id : `int`, `str`, ``Channel``, Optional (Keyword only)
             The guild's identifier from where the interaction was called from.
         
         guild_locale : ``Locale``, `str`, Optional (Keyword only)
@@ -216,12 +224,38 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             application_permissions = Permission()
         else:
             application_permissions = validate_application_permissions(application_permissions)
-        
+
         # channel_id
-        if channel_id is ...:
-            channel_id = 0
+        if channel_id is not ...:
+            warnings.warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `channel_id` parameter is deprecated and will be removed in '
+                    f'2023 November. Please use `channel` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            if isinstance(channel_id, int):
+                channel = create_partial_channel_from_id(channel_id, ChannelType.unknown, 0)
+            
+            elif isinstance(channel_id, str) and channel_id.isdecimal():
+                channel = create_partial_channel_from_id(int(channel_id), ChannelType.unknown, 0)
+            
+            elif isinstance(channel_id, Channel):
+                channel = channel_id
+            
+            else:
+                raise TypeError(
+                    f'`channel_id` can `int`, `str` (snowflake), `{Channel.__name__}`, '
+                    f'got {channel_id.__class__.__name__}; {channel_id!r}.'
+                )
+        
+        # channel
+        if channel is ...:
+            channel = create_partial_channel_from_id(0, ChannelType.unknown, 0)
         else:
-            channel_id = validate_channel_id(channel_id)
+            channel = validate_channel(channel)
         
         # guild_id
         if guild_id is ...:
@@ -286,7 +320,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         self.application_id = application_id
         self.application_permissions = application_permissions
         self.type = interaction_type
-        self.channel_id = channel_id
+        self.channel = channel
         self.guild_id = guild_id
         self.guild_locale = guild_locale
         self.interaction = interaction
@@ -305,7 +339,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             `INTERACTION_CREATE` dispatch event data.
         """
         # Need guild_id early, so we can create a guild if required.
@@ -320,7 +354,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         interaction_id = parse_id(data)
         application_id = parse_application_id(data)
         application_permissions = parse_application_permissions(data)
-        channel_id = parse_channel_id(data)
+        channel = parse_channel(data)
         guild_locale = parse_guild_locale(data)
         # interaction -> we will parse it later
         locale = parse_locale(data)
@@ -339,7 +373,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         self.application_id = application_id
         self.application_permissions = application_permissions
         self.type = interaction_type
-        self.channel_id = channel_id
+        self.channel = channel
         self.guild_id = guild_id
         self.guild_locale = guild_locale
         self.interaction = DEFAULT_INTERACTION_METADATA
@@ -392,7 +426,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         data = {}
         put_application_id_into(self.application_id, data, defaults)
         put_application_permissions_into(self.application_permissions, data, defaults)
-        put_channel_id_into(self.channel_id, data, defaults)
+        put_channel_into(self.channel, data, defaults, include_internals = True)
         put_guild_id_into(self.guild_id, data, defaults)
         put_guild_locale_into(self.guild_locale, data, defaults)
         put_id_into(self.id, data, defaults)
@@ -428,7 +462,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         self.application_id = 0
         self.application_permissions = Permission()
         self.type = InteractionType.none
-        self.channel_id = 0
+        self.channel = create_partial_channel_from_id(0, ChannelType.unknown, 0)
         self.guild_id = 0
         self.guild_locale = LOCALE_DEFAULT
         self.interaction = DEFAULT_INTERACTION_METADATA
@@ -441,7 +475,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     
     
     @classmethod
-    def precreate(cls, interaction_id, **keyword_parameters):
+    def precreate(cls, interaction_id, *, channel_id = ..., **keyword_parameters):
         """
         Creates an interaction event. Not like ``.__new__``, ``.precreate`` allows setting ``.id`` as well.
         
@@ -451,6 +485,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         ----------
         interaction_id : `int`
             The interaction's identifier.
+        
+        channel_id : `int`, `str`, ``Channel``, Optional (Keyword only)
+            The channel's identifier from where the interaction was called.
+            
+            > Deprecated and will be removed in 2023 November.
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters defining which attribute and how should be set.
@@ -463,8 +502,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         application_permissions : ``Permission``, `int`, Optional (Keyword only)
             The permissions granted to the application in the guild.
         
-        channel_id : `int`, `str`, Optional (Keyword only)
-            The channel's identifier from where the interaction was called.
+        channel : ``Channel``, Optional (Keyword only)
+            The channel from where the interaction was called.
         
         guild_id : `int`, `str`, Optional (Keyword only)
             The guild's identifier from where the interaction was called from.
@@ -505,6 +544,35 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             - If a parameter's type is incorrect.
         """
         interaction_id = validate_id(interaction_id)
+        
+        # Deprecations
+        if channel_id is not ...:
+            warnings.warn(
+                (
+                    f'`{cls.__name__}.precreate`\'s `channel_id` parameter is deprecated and will be removed in '
+                    f'2023 November. Please use `channel` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            if isinstance(channel_id, int):
+                channel = create_partial_channel_from_id(channel_id, ChannelType.unknown, 0)
+            
+            elif isinstance(channel_id, str) and channel_id.isdecimal():
+                channel = create_partial_channel_from_id(int(channel_id), ChannelType.unknown, 0)
+            
+            elif isinstance(channel_id, Channel):
+                channel = channel_id
+            
+            else:
+                raise TypeError(
+                    f'`channel_id` can `int`, `str` (snowflake), `{Channel.__name__}`, '
+                    f'got {channel_id.__class__.__name__}; {channel_id!r}.'
+                )
+            
+            keyword_parameters['channel'] = channel
+        
         
         if keyword_parameters:
             processed = []
@@ -561,7 +629,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         new.application_id = self.application_id
         new.application_permissions = self.application_permissions
         new.type = self.type
-        new.channel_id = self.channel_id
+        new.channel = self.channel
         new.guild_id = self.guild_id
         new.guild_locale = self.guild_locale
         new.interaction = self.interaction.copy()
@@ -578,6 +646,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         *,
         application_id = ...,
         application_permissions = ...,
+        channel = ...,
         channel_id = ...,
         guild_id = ...,
         guild_locale = ...,
@@ -601,7 +670,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         application_permissions : ``Permission``, `int`, Optional (Keyword only)
             The permissions granted to the application in the guild.
         
-        channel_id : `int`, `str`, Optional (Keyword only)
+        channel : ``Channel``, Optional (Keyword only)
+            The channel from where the interaction was called.
+        
+        channel_id : `int`, `str`, ``Channel``, Optional (Keyword only)
             The channel's identifier from where the interaction was called.
         
         guild_id : `int`, `str`, Optional (Keyword only)
@@ -655,10 +727,36 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             application_permissions = validate_application_permissions(application_permissions)
         
         # channel_id
-        if channel_id is ...:
-            channel_id = self.channel_id
+        if channel_id is not ...:
+            warnings.warn(
+                (
+                    f'`{self.__class__.__name__}.copy_with`\'s `channel_id` parameter is deprecated and will be '
+                    f'removed in 2023 November. Please use `channel` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            if isinstance(channel_id, int):
+                channel = create_partial_channel_from_id(channel_id, ChannelType.unknown, guild_id)
+            
+            elif isinstance(channel_id, str) and channel_id.isdecimal():
+                channel = create_partial_channel_from_id(int(channel_id), ChannelType.unknown, guild_id)
+            
+            elif isinstance(channel_id, Channel):
+                channel = channel_id
+            
+            else:
+                raise TypeError(
+                    f'`channel_id` can `int`, `str` (snowflake), `{Channel.__name__}`, '
+                    f'got {channel_id.__class__.__name__}; {channel_id!r}.'
+                )
+        
+        # channel
+        if channel is ...:
+            channel = self.channel
         else:
-            channel_id = validate_channel_id(channel_id)
+            channel = validate_channel(channel)
         
         # guild_id
         if guild_id is ...:
@@ -724,7 +822,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         new.application_id = application_id
         new.application_permissions = application_permissions
         new.type = interaction_type
-        new.channel_id = channel_id
+        new.channel = channel
         new.guild_id = guild_id
         new.guild_locale = guild_locale
         new.interaction = interaction
@@ -886,8 +984,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             repr_parts.append(format(self.application_permissions, 'd'))
         
         
-        repr_parts.append(', channel_id = ')
-        repr_parts.append(repr(self.channel_id))
+        repr_parts.append(', channel = ')
+        repr_parts.append(repr(self.channel))
         
         
         message = self.message
@@ -937,8 +1035,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         if self.application_permissions != other.application_permissions:
             return False
         
-        # channel_id
-        if self.channel_id != other.channel_id:
+        # channel
+        if self.channel is not other.channel:
             return False
         
         # guild_id
@@ -992,8 +1090,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         # application_permissions
         hash_value ^= self.application_permissions
         
-        # channel_id
-        hash_value ^= self.channel_id
+        # channel
+        hash_value ^= hash(self.channel)
         
         # guild_id
         hash_value ^= self.guild_id
@@ -1128,15 +1226,27 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     
     
     @property
-    def channel(self):
+    def channel_id(self):
         """
-        Returns the interaction's event's channel.
+        Returns the interaction's channel's identifier.
         
         Returns
         -------
-        channel : ``Channel``, `None`
+        channel_id : `int`
         """
-        return create_partial_channel_from_id(self.channel_id, ChannelType.unknown, self.guild_id)
+        return self.channel.id
+    
+    
+    @property
+    def user_id(self):
+        """
+        Returns the interaction's user's identifier.
+        
+        Returns
+        -------
+        user_id : `int`
+        """
+        return self.user.id
     
     
     @property

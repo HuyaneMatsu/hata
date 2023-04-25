@@ -1,5 +1,6 @@
 import vampytest
 
+from ....channel import Channel
 from ....localization import Locale
 from ....permission import Permission
 from ....message import Message
@@ -17,7 +18,7 @@ def test__InteractionEvent__repr():
     """
     application_id = 202211070025
     application_permissions = Permission(123)
-    channel_id = 202211070026
+    channel = Channel.precreate(202211070026)
     guild_id = 202211070027
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -33,7 +34,7 @@ def test__InteractionEvent__repr():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
-        channel_id = channel_id,
+        channel = channel,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -54,7 +55,7 @@ def test__InteractionEvent__hash():
     """
     application_id = 202211070031
     application_permissions = Permission(123)
-    channel_id = 202211070032
+    channel = Channel.precreate(202211070032)
     guild_id = 202211070033
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -70,7 +71,7 @@ def test__InteractionEvent__hash():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
-        channel_id = channel_id,
+        channel = channel,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -91,7 +92,7 @@ def test__InteractionEvent__eq():
     """
     application_id = 202211070036
     application_permissions = Permission(123)
-    channel_id = 202211070037
+    channel = Channel.precreate(202211070037)
     guild_id = 202211070038
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -106,7 +107,7 @@ def test__InteractionEvent__eq():
     keyword_parameters = {
         'application_id': application_id,
         'application_permissions': application_permissions,
-        'channel_id': channel_id,
+        'channel': channel,
         'guild_id': guild_id,
         'guild_locale': guild_locale,
         'interaction': interaction,
@@ -138,7 +139,7 @@ def test__InteractionEvent__eq():
     for field_name, field_value in (
         ('application_id', 202211070042),
         ('application_permissions', Permission(456)),
-        ('channel_id', 202211070043),
+        ('channel', Channel.precreate(202211070043)),
         ('guild_id', 202211070044),
         ('guild_locale', Locale.english_us),
         ('interaction', InteractionMetadataApplicationCommand(name = 'important')),

@@ -1,6 +1,6 @@
 __all__ = ()
 
-from scarletio import include_with_callback
+from scarletio import include_with_callback, set_docs
 
 from .utils import timestamp_to_datetime
 
@@ -752,10 +752,10 @@ def nullable_entity_parser_factory(field_key, entity_type):
     -------
     parser : `FunctionType`
     """
-    return default_entity_parser_factory(field_key, entity_type, None)
+    return default_entity_parser_factory(field_key, entity_type, default = None)
 
 
-def default_entity_parser_factory(field_key, entity_type, default):
+def default_entity_parser_factory(field_key, entity_type, *, default = ..., default_factory = ...):
     """
     Returns an entity parser with default return value.
     
@@ -763,18 +763,69 @@ def default_entity_parser_factory(field_key, entity_type, default):
     ----------
     field_key : `str`
         The field's key used in payload.
+    
     entity_type : `type` with `{from_data}`
         Entity's type.
-    default : `object`
+    
+    default : `object`, Optional (Keyword only)
         Default value to return if the entity is missing from the payload.
+        
+        Mutually exclusive with `default_factory` and at least one of them is required.
+    
+    default_factory : `() -> object`, Optional (Keyword only)
+        Default value factory to call when the entity is missing from the payload.
+        
+        Mutually exclusive with `default` and at least one of them is required.
     
     Returns
     -------
-    parser : `FunctionType`
+    parser : `(dict<str, object>) -> instance<entity_type> | default | return<default_factory>`
     """
-    def parser(data):
+    if default is ... and default_factory is ...:
+        raise TypeError(
+            f'Either `default` or `default_factory` are required.'
+        )
+    
+    if default is not ... and default_factory is not ...:
+        raise TypeError(
+            f'`default` and `default_factory` are mutually exclusive. '
+            f'Got default = {default!r}, default_factory = {default_factory!r}.'
+        )
+    
+    
+    if default is not ...:
+        def parser(data):
+            nonlocal default
+            nonlocal field_key
+            nonlocal entity_type
+            
+            entity_data = data.get(field_key, None)
+            if entity_data is None:
+                entity = default
+            else:
+                entity = entity_type.from_data(entity_data)
+            
+            return entity
+    
+    else:
+        def parser(data):
+            nonlocal default_factory
+            nonlocal field_key
+            nonlocal entity_type
+            
+            entity_data = data.get(field_key, None)
+            if entity_data is None:
+                entity = default_factory()
+            else:
+                entity = entity_type.from_data(entity_data)
+            
+            return entity
+    
+    
+    set_docs(
+        parser,
         """
-        Parses out a nullable entity from the given payload.
+        Parses out an entity from the given payload.
         
         > This function is generated.
         
@@ -787,20 +838,9 @@ def default_entity_parser_factory(field_key, entity_type, default):
         -------
         entity_array : `None`, `instance<entity_type>`
         """
-        nonlocal default
-        nonlocal field_key
-        nonlocal entity_type
-        
-        entity_data = data.get(field_key, None)
-        if entity_data is None:
-            entity = default
-        else:
-            entity = entity_type.from_data(entity_data)
-        
-        return entity
+    )
     
     return parser
-
 
 
 def functional_parser_factory(field_key, function, *, include = None):

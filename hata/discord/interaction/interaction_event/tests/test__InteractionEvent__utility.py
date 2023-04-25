@@ -1,5 +1,6 @@
 import vampytest
 
+from ....channel import Channel
 from ....localization import Locale
 from ....message import Message
 from ....permission import Permission
@@ -112,7 +113,7 @@ def test__InteractionEvent__copy():
     """
     application_id = 202211070052
     application_permissions = Permission(123)
-    channel_id = 202211070053
+    channel = Channel.precreate(202211070053)
     guild_id = 202211070054
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -129,7 +130,7 @@ def test__InteractionEvent__copy():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
-        channel_id = channel_id,
+        channel = channel,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -154,7 +155,7 @@ def test__InteractionEvent__copy__with__0():
     """
     application_id = 202211070058
     application_permissions = Permission(123)
-    channel_id = 202211070059
+    channel = Channel.precreate(202211070059)
     guild_id = 202211070060
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -171,7 +172,7 @@ def test__InteractionEvent__copy__with__0():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
-        channel_id = channel_id,
+        channel = channel,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -198,8 +199,8 @@ def test__InteractionEvent__copy__with__1():
     new_application_id = 202211070065
     old_application_permissions = Permission(123)
     new_application_permissions = Permission(951)
-    old_channel_id = 202211070066
-    new_channel_id = 202211070067
+    old_channel = Channel.precreate(202211070066)
+    new_channel = Channel.precreate(202211070067)
     old_guild_id = 202211070068
     new_guild_id = 202211070069
     old_guild_locale = Locale.hindi
@@ -224,7 +225,7 @@ def test__InteractionEvent__copy__with__1():
     interaction_event = InteractionEvent(
         application_id = old_application_id,
         application_permissions = old_application_permissions,
-        channel_id = old_channel_id,
+        channel = old_channel,
         guild_id = old_guild_id,
         guild_locale = old_guild_locale,
         interaction = old_interaction,
@@ -239,7 +240,7 @@ def test__InteractionEvent__copy__with__1():
     copy = interaction_event.copy_with(
         application_id = new_application_id,
         application_permissions = new_application_permissions,
-        channel_id = new_channel_id,
+        channel = new_channel,
         guild_id = new_guild_id,
         guild_locale = new_guild_locale,
         interaction = new_interaction,
@@ -255,7 +256,7 @@ def test__InteractionEvent__copy__with__1():
 
     vampytest.assert_eq(copy.application_id, new_application_id)
     vampytest.assert_eq(copy.application_permissions, new_application_permissions)
-    vampytest.assert_eq(copy.channel_id, new_channel_id)
+    vampytest.assert_is(copy.channel, new_channel)
     vampytest.assert_eq(copy.guild_id, new_guild_id)
     vampytest.assert_is(copy.guild_locale, new_guild_locale)
     vampytest.assert_eq(copy.interaction, new_interaction)

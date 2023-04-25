@@ -11,7 +11,7 @@ from .constants import ACTIVITY_KEY
 
 # activity
 
-parse_activity = default_entity_parser_factory(ACTIVITY_KEY, Activity, Activity())
+parse_activity = default_entity_parser_factory(ACTIVITY_KEY, Activity, default_factory = lambda : Activity())
 
 
 def put_activity_into(activity, data, defaults):
@@ -35,7 +35,7 @@ def put_activity_into(activity, data, defaults):
     return data
 
 
-validate_activity = default_entity_validator('activity', Activity, Activity())
+validate_activity = default_entity_validator('activity', Activity, default_factory = lambda : Activity())
 
 # application_id
 

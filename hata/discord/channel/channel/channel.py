@@ -21,7 +21,8 @@ from ..message_history import MessageHistory, MessageHistoryCollector, message_r
 
 from .preinstanced import ChannelType
 from .fields import (
-    parse_id, parse_type, put_guild_id_into, put_id_into, put_type_into, validate_guild_id, validate_id, validate_type
+    parse_guild_id, parse_id, parse_type, put_guild_id_into, put_id_into, put_type_into, validate_guild_id, validate_id,
+    validate_type
 )
 from .flags import (
     CHANNEL_TYPE_MASK_CONNECTABLE, CHANNEL_TYPE_MASK_GUILD, CHANNEL_TYPE_MASK_GUILD_SORTABLE,
@@ -211,6 +212,9 @@ class Channel(DiscordEntity, immortal = True):
         """
         channel_id = parse_id(data)
         channel_type = parse_type(data)
+        
+        if not guild_id:
+            guild_id = parse_guild_id(data)
         
         try:
             self = CHANNELS[channel_id]

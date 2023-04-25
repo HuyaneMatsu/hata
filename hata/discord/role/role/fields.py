@@ -32,7 +32,9 @@ validate_color = flag_validator_factory('color', Color)
 
 # manager_metadata
 
-validate_manager_metadata = default_entity_validator('manager_metadata', RoleManagerMetadataBase, ROLE_MANAGER_DEFAULT)
+validate_manager_metadata = default_entity_validator(
+    'manager_metadata', RoleManagerMetadataBase, default = ROLE_MANAGER_DEFAULT
+)
 
 # manager_type
 

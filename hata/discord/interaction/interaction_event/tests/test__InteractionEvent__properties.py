@@ -3,6 +3,7 @@ import vampytest
 from ....channel import Channel
 from ....client import Client
 from ....guild import Guild
+from ....user import User
 
 from ..interaction_event import InteractionEvent
 
@@ -12,16 +13,32 @@ def test__InteractionEvent__channel_id():
     Tests whether ``InteractionEvent.channel_id`` works as intended.
     """
     channel_id = 202211070049
-    interaction_event = InteractionEvent(channel_id = channel_id)
+    channel = Channel.precreate(channel_id)
     
-    channel = interaction_event.channel
-    vampytest.assert_instance(channel, Channel)
-    vampytest.assert_eq(channel.id, channel_id)
+    interaction_event = InteractionEvent(channel = channel)
     
+    output = interaction_event.channel_id
+    vampytest.assert_instance(output, int)
+    vampytest.assert_eq(output, channel_id)
 
-def test__InteractionEvent__guild_id__0():
+
+def test__InteractionEvent__user_id():
     """
-    Tests whether ``InteractionEvent.guild_id`` works as intended.
+    Tests whether ``InteractionEvent.user_id`` works as intended.
+    """
+    user_id = 202304250000
+    user = User.precreate(user_id)
+    
+    interaction_event = InteractionEvent(user = user)
+    
+    output = interaction_event.user_id
+    vampytest.assert_instance(output, int)
+    vampytest.assert_eq(output, user_id)
+
+
+def test__InteractionEvent__guild_0():
+    """
+    Tests whether ``InteractionEvent.guild`` works as intended.
     
     Case: Has guild.
     """

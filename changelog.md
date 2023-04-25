@@ -1,3 +1,14 @@
+## 1.3.29 *\[2023-05-??\]*
+
+#### Improvements
+
+- Add `InteractionEvent.channel_id` replaced with `InteractionEvent.channel`.
+- Add `InteractionEvent.user_id`.
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `channel_id` parameters of `InteractionEvent`. Use `channel` instead.
+
 ## 1.3.28 *\[2023-04-25\]*
 
 #### Improvements

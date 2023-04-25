@@ -14,7 +14,7 @@ def parse_attachments(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Resolved data.
     
     Returns
@@ -43,7 +43,7 @@ def put_attachments_into(attachments, data, defaults):
     attachments : `None`, `dict` of (`int`, ``Attachment``) items
         Resolved attachments.
     
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Interaction resolved data.
     
     defaults : `bool`
@@ -51,7 +51,7 @@ def put_attachments_into(attachments, data, defaults):
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if defaults or (attachments is not None):
         resolved_attachment_datas = {}
@@ -77,7 +77,7 @@ def parse_channels(data, interaction_event):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Resolved data.
     
     interaction_event : ``InteractionEvent``
@@ -110,7 +110,7 @@ def put_channels_into(channels, data, defaults):
     channels : `None`, `dict` of (`int`, ``Channel``) items
         Resolved channels.
     
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Interaction resolved data.
     
     defaults : `bool`
@@ -118,7 +118,7 @@ def put_channels_into(channels, data, defaults):
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if defaults or (channels is not None):
         resolved_channel_datas = {}
@@ -144,7 +144,7 @@ def parse_roles(data, interaction_event):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Resolved data.
     
     interaction_event : ``InteractionEvent``
@@ -176,7 +176,7 @@ def put_roles_into(roles, data, defaults):
     roles : `None`, `dict` of (`int`, ``Role``) items
         Resolved roles.
     
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Interaction resolved data.
     
     defaults : `bool`
@@ -184,7 +184,7 @@ def put_roles_into(roles, data, defaults):
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if defaults or (roles is not None):
         resolved_role_datas = {}
@@ -210,7 +210,7 @@ def parse_messages(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Resolved data.
     
     Returns
@@ -239,7 +239,7 @@ def put_messages_into(messages, data, defaults):
     messages : `None`, `dict` of (`int`, ``Message``) items
         Resolved messages.
     
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Interaction resolved data.
     
     defaults : `bool`
@@ -247,7 +247,7 @@ def put_messages_into(messages, data, defaults):
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if defaults or (messages is not None):
         resolved_message_datas = {}
@@ -273,7 +273,7 @@ def parse_users(data, interaction_event):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Resolved data.
     
     interaction_event : ``InteractionEvent``
@@ -316,7 +316,7 @@ def put_users_into(users, data, defaults, *, interaction_event = None):
     users : `None`, `dict` of (`int`, ``ClientUserBase``) items
         Resolved users.
     
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Interaction resolved data.
     
     defaults : `bool`
@@ -327,7 +327,7 @@ def put_users_into(users, data, defaults, *, interaction_event = None):
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if defaults or (users is not None):
         resolved_user_datas = {}

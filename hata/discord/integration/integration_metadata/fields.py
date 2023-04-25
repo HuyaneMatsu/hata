@@ -33,9 +33,13 @@ IntegrationType = include('IntegrationType')
 
 # account
 
-parse_account = default_entity_parser_factory('account', IntegrationAccount, IntegrationAccount._create_empty())
+parse_account = default_entity_parser_factory(
+    'account', IntegrationAccount, default_factory = lambda : IntegrationAccount._create_empty()
+)
 put_account_into = entity_putter_factory('account', IntegrationAccount)
-validate_account = default_entity_validator('account', IntegrationAccount, IntegrationAccount._create_empty())
+validate_account = default_entity_validator(
+    'account', IntegrationAccount, default_factory = lambda : IntegrationAccount._create_empty()
+)
 
 # account [discord]
 

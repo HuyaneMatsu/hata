@@ -2,14 +2,11 @@ __all__ = ()
 
 from datetime import datetime as DateTime
 
-from scarletio import include_with_callback
+from scarletio import include_with_callback, set_docs
 
 from .bases import maybe_snowflake
-from .preconverters import (
-    preconvert_bool, preconvert_int_options, preconvert_preinstanced_type, preconvert_snowflake, preconvert_str
-)
+from .preconverters import preconvert_int_options, preconvert_preinstanced_type, preconvert_snowflake, preconvert_str
 from .utils import is_url
-
 
 
 def field_validator_factory(field_name):
@@ -1502,43 +1499,7 @@ def nullable_entity_validator_factory(field_name, entity_type, *, include = None
     -------
     validator : `FunctionType`
     """
-    def validator(entity):
-        """
-        Validates the given nullable entity field.
-        
-        Parameters
-        ----------
-        entity : `None`, `instance<entity_type>`
-            The entity to validate.
-        
-        Returns
-        -------
-        entity : `None`,  `instance<entity_type>`
-        
-        Raises
-        ------
-        TypeError
-            - If `entity` is not `None`, ``entity_type``.
-        """
-        nonlocal field_name
-        nonlocal entity_type
-        
-        if (entity is not None) and (not isinstance(entity, entity_type)):
-            raise TypeError(
-                f'`{field_name}` can be `None`, `{entity_type.__name__}`, got {entity.__class__.__name__}; {entity!r}.'
-            )
-        
-        return entity
-    
-    
-    if (include is not None):
-        @include_with_callback(include)
-        def include_object_type(value):
-            nonlocal entity_type
-            entity_type = value
-    
-    
-    return validator
+    return default_entity_validator(field_name, entity_type, default = None, include = include)
 
 
 def nullable_entity_conditional_validator_factory(
@@ -1616,7 +1577,7 @@ def nullable_entity_conditional_validator_factory(
     return validator
 
 
-def default_entity_validator(field_name, entity_type, default_value):
+def default_entity_validator(field_name, entity_type, *, default = ..., default_factory = ..., include = None):
     """
     Returns a defaulted entity validator.
     
@@ -1624,18 +1585,82 @@ def default_entity_validator(field_name, entity_type, default_value):
     ----------
     field_name : `str`
         The field's name.
+    
     entity_type : `type`
         The allowed entity type.
-    default_value : `object`
+    
+    default : `object`, Optional (Keyword only)
         The default value to return if `None` is received.
+    
+        Mutually exclusive with `default_factory` and at least one of them is required.
+    
+    default_factory : `() -> object`, Optional (Keyword only)
+        Default value factory to call if `None` is received.
+        
+        Mutually exclusive with `default` and at least one of them is required.
+    
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The entity type's name to include `entity_type` with.
+        Should be used when `entity_type` cannot be resolved initially.
     
     Returns
     -------
-    validator : `FunctionType`
+    validator : `(object) -> instance<entity_type> | default | return<default_factory>`
     """
-    def validator(entity):
+    if default is ... and default_factory is ...:
+        raise TypeError(
+            f'Either `default` or `default_factory` are required.'
+        )
+    
+    if default is not ... and default_factory is not ...:
+        raise TypeError(
+            f'`default` and `default_factory` are mutually exclusive. '
+            f'Got default = {default!r}, default_factory = {default_factory!r}.'
+        )
+    
+    
+    if default is not ...:
+        def validator(entity):
+            nonlocal default
+            nonlocal field_name
+            nonlocal entity_type
+            
+            if (entity is None):
+                entity = default
+            
+            elif isinstance(entity, entity_type):
+                pass
+            
+            else:
+                raise TypeError(
+                    f'`{field_name}` can be `None`, `{entity_type.__name__}`, got {entity.__class__.__name__}; {entity!r}.'
+                )
+            
+            return entity
+    
+    else:
+        def validator(entity):
+            nonlocal default_factory
+            nonlocal field_name
+            nonlocal entity_type
+            
+            if (entity is None):
+                entity = default_factory()
+            
+            elif isinstance(entity, entity_type):
+                pass
+            
+            else:
+                raise TypeError(
+                    f'`{field_name}` can be `None`, `{entity_type.__name__}`, got {entity.__class__.__name__}; {entity!r}.'
+                )
+            
+            return entity
+    
+    set_docs(
+        validator,
         """
-        Validates the given nullable entity field.
+        Validates the given entity field value.
         
         Parameters
         ----------
@@ -1649,24 +1674,16 @@ def default_entity_validator(field_name, entity_type, default_value):
         Raises
         ------
         TypeError
-            - If `entity` is not `None`, ``entity_type``.
+            - If `entity` is not `None`, `entity_type`.
         """
-        nonlocal default_value
-        nonlocal field_name
-        nonlocal entity_type
-        
-        if (entity is None):
-            entity = default_value
-        
-        elif isinstance(entity, entity_type):
-            pass
-        
-        else:
-            raise TypeError(
-                f'`{field_name}` can be `None`, `{entity_type.__name__}`, got {entity.__class__.__name__}; {entity!r}.'
-            )
-        
-        return entity
+    )
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal entity_type
+            entity_type = value
+    
     
     return validator
 

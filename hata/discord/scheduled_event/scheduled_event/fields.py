@@ -32,9 +32,9 @@ validate_channel_id = entity_id_validator_factory('channel_id', Channel)
 
 # creator
 
-parse_creator = default_entity_parser_factory('creator', User, ZEROUSER)
+parse_creator = default_entity_parser_factory('creator', User, default = ZEROUSER)
 put_creator_into = default_entity_putter_factory('creator', ClientUserBase, ZEROUSER)
-validate_creator = default_entity_validator('creator', ClientUserBase, ZEROUSER)
+validate_creator = default_entity_validator('creator', ClientUserBase, default = ZEROUSER)
 
 # description
 

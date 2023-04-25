@@ -1,7 +1,7 @@
 __all__ = ()
 
 from ...field_parsers import (
-    default_entity_parser_factory, entity_id_parser_factory, flag_parser_factory, force_string_parser_factory,
+    entity_id_parser_factory, flag_parser_factory, force_string_parser_factory, nullable_entity_parser_factory,
     nullable_functional_parser_factory, nullable_string_parser_factory
 )
 from ...field_putters import (
@@ -10,7 +10,7 @@ from ...field_putters import (
     nullable_string_optional_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
-    default_entity_validator, entity_id_validator_factory, flag_validator_factory, force_string_validator_factory,
+    entity_id_validator_factory, flag_validator_factory, force_string_validator_factory,
     nullable_date_time_validator_factory, nullable_entity_validator_factory, nullable_string_validator_factory,
     url_optional_validator_factory
 )
@@ -31,9 +31,9 @@ validate_application_id = entity_id_validator_factory('application_id', NotImple
 
 # assets
 
-parse_assets = default_entity_parser_factory('assets', ActivityAssets, None)
+parse_assets = nullable_entity_parser_factory('assets', ActivityAssets)
 put_assets_into = nullable_entity_optional_putter_factory('assets', ActivityAssets)
-validate_assets = default_entity_validator('assets', ActivityAssets, None)
+validate_assets = nullable_entity_validator_factory('assets', ActivityAssets)
 
 # created_at
 
@@ -163,15 +163,15 @@ validate_name = force_string_validator_factory('name', 0, 1024)
 
 # party
 
-parse_party = default_entity_parser_factory('party', ActivityParty, None)
+parse_party = nullable_entity_parser_factory('party', ActivityParty)
 put_party_into = nullable_entity_optional_putter_factory('party', ActivityParty)
-validate_party = default_entity_validator('party', ActivityParty, None)
+validate_party = nullable_entity_validator_factory('party', ActivityParty)
 
 # secrets
 
-parse_secrets = default_entity_parser_factory('secrets', ActivitySecrets, None)
+parse_secrets = nullable_entity_parser_factory('secrets', ActivitySecrets)
 put_secrets_into = nullable_entity_optional_putter_factory('secrets', ActivitySecrets)
-validate_secrets = default_entity_validator('secrets', ActivitySecrets, None)
+validate_secrets = nullable_entity_validator_factory('secrets', ActivitySecrets)
 
 # session_id
 
@@ -193,9 +193,9 @@ validate_sync_id = nullable_string_validator_factory('sync_id', 0, 1024)
 
 # timestamps
 
-parse_timestamps = default_entity_parser_factory('timestamps', ActivityTimestamps, None)
+parse_timestamps = nullable_entity_parser_factory('timestamps', ActivityTimestamps)
 put_timestamps_into = nullable_entity_optional_putter_factory('timestamps', ActivityTimestamps)
-validate_timestamps = default_entity_validator('timestamps', ActivityTimestamps, None)
+validate_timestamps = nullable_entity_validator_factory('timestamps', ActivityTimestamps)
 
 # url
 

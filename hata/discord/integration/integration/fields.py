@@ -109,6 +109,6 @@ def validate_type(preinstanced):
 
 # user
 
-parse_user = default_entity_parser_factory('user', User, ZEROUSER)
+parse_user = default_entity_parser_factory('user', User, default = ZEROUSER)
 put_user_into = default_entity_putter_factory('user', ClientUserBase, ZEROUSER)
-validate_user = default_entity_validator('user', ClientUserBase, ZEROUSER)
+validate_user = default_entity_validator('user', ClientUserBase, default = ZEROUSER)

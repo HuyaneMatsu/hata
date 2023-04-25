@@ -2,7 +2,7 @@ __all__ = ()
 
 from ...color import Color
 from ...field_parsers import (
-    default_entity_parser_factory, nullable_date_time_parser_factory, nullable_flag_parser_factory,
+    nullable_date_time_parser_factory, nullable_entity_parser_factory, nullable_flag_parser_factory,
     nullable_string_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
@@ -11,7 +11,7 @@ from ...field_putters import (
     url_optional_putter_factory
 )
 from ...field_validators import (
-    default_entity_validator, nullable_date_time_validator_factory, nullable_flag_validator_factory,
+    nullable_date_time_validator_factory, nullable_entity_validator_factory, nullable_flag_validator_factory,
     preinstanced_validator_factory, url_optional_validator_factory
 )
 
@@ -28,9 +28,9 @@ from .preinstanced import EmbedType
 
 # author
 
-parse_author = default_entity_parser_factory('author', EmbedAuthor, None)
+parse_author = nullable_entity_parser_factory('author', EmbedAuthor)
 put_author_into = nullable_entity_optional_putter_factory('author', EmbedAuthor)
-validate_author = default_entity_validator('author', EmbedAuthor, None)
+validate_author = nullable_entity_validator_factory('author', EmbedAuthor)
 
 # color
 
@@ -179,27 +179,27 @@ def validate_fields(fields):
 
 # footer
 
-parse_footer = default_entity_parser_factory('footer', EmbedFooter, None)
+parse_footer = nullable_entity_parser_factory('footer', EmbedFooter)
 put_footer_into = nullable_entity_optional_putter_factory('footer', EmbedFooter)
-validate_footer = default_entity_validator('footer', EmbedFooter, None)
+validate_footer = nullable_entity_validator_factory('footer', EmbedFooter)
 
 # image
 
-parse_image = default_entity_parser_factory('image', EmbedImage, None)
+parse_image = nullable_entity_parser_factory('image', EmbedImage)
 put_image_into = nullable_entity_optional_putter_factory('image', EmbedImage)
-validate_image = default_entity_validator('image', EmbedImage, None)
+validate_image = nullable_entity_validator_factory('image', EmbedImage)
 
 # provider
 
-parse_provider = default_entity_parser_factory('provider', EmbedProvider, None)
+parse_provider = nullable_entity_parser_factory('provider', EmbedProvider)
 put_provider_into = nullable_entity_optional_putter_factory('provider', EmbedProvider)
-validate_provider = default_entity_validator('provider', EmbedProvider, None)
+validate_provider = nullable_entity_validator_factory('provider', EmbedProvider)
 
 # thumbnail
 
-parse_thumbnail = default_entity_parser_factory('thumbnail', EmbedThumbnail, None)
+parse_thumbnail = nullable_entity_parser_factory('thumbnail', EmbedThumbnail)
 put_thumbnail_into = nullable_entity_optional_putter_factory('thumbnail', EmbedThumbnail)
-validate_thumbnail = default_entity_validator('thumbnail', EmbedThumbnail, None)
+validate_thumbnail = nullable_entity_validator_factory('thumbnail', EmbedThumbnail)
 
 # timestamp
 
@@ -265,6 +265,6 @@ validate_url = url_optional_validator_factory('url')
 
 # video
 
-parse_video = default_entity_parser_factory('video', EmbedVideo, None)
+parse_video = nullable_entity_parser_factory('video', EmbedVideo)
 put_video_into = nullable_entity_optional_putter_factory('video', EmbedVideo)
-validate_video = default_entity_validator('video', EmbedVideo, None)
+validate_video = nullable_entity_validator_factory('video', EmbedVideo)

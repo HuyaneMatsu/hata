@@ -1,5 +1,6 @@
 import vampytest
 
+from ....channel import Channel
 from ....localization import Locale
 from ....permission import Permission
 from ....message import Message
@@ -19,7 +20,7 @@ def test__InteractionEvent__from_data():
     """
     application_id = 202211070005
     application_permissions = Permission(123)
-    channel_id = 202211070006
+    channel = Channel.precreate(202211070006)
     guild_id = 202211070007
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -36,7 +37,7 @@ def test__InteractionEvent__from_data():
     data = {
         'application_id': str(application_id),
         'app_permissions': format(application_permissions, 'd'),
-        'channel_id': str(channel_id),
+        'channel': channel.to_data(include_internals = True),
         'guild_id': str(guild_id),
         'guild_locale': guild_locale.value,
         'data': interaction.to_data(defaults = True),
@@ -58,7 +59,7 @@ def test__InteractionEvent__from_data():
     
     vampytest.assert_eq(interaction_event.application_id, application_id)
     vampytest.assert_eq(interaction_event.application_permissions, application_permissions)
-    vampytest.assert_eq(interaction_event.channel_id, channel_id)
+    vampytest.assert_is(interaction_event.channel, channel)
     vampytest.assert_eq(interaction_event.guild_id, guild_id)
     vampytest.assert_is(interaction_event.guild_locale, guild_locale)
     vampytest.assert_eq(interaction_event.interaction, interaction)
@@ -81,7 +82,7 @@ def test__InteractionEvent__to_data():
     """
     application_id = 202211070019
     application_permissions = Permission(123)
-    channel_id = 202211070020
+    channel = Channel.precreate(202211070020)
     guild_id = 202211070021
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -100,7 +101,7 @@ def test__InteractionEvent__to_data():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
-        channel_id = channel_id,
+        channel = channel,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -115,7 +116,7 @@ def test__InteractionEvent__to_data():
     data = {
         'application_id': str(application_id),
         'app_permissions': format(application_permissions, 'd'),
-        'channel_id': str(channel_id),
+        'channel': channel.to_data(defaults = True, include_internals = True),
         'guild_id': str(guild_id),
         'guild_locale': guild_locale.value,
         'id': str(interaction_id),

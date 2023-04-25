@@ -1,8 +1,8 @@
 __all__ = ()
 
 from ...field_parsers import (
-    bool_parser_factory, default_entity_parser_factory, entity_id_parser_factory, flag_parser_factory,
-    force_string_parser_factory, int_postprocess_parser_factory, nullable_entity_array_parser_factory,
+    bool_parser_factory, entity_id_parser_factory, flag_parser_factory, force_string_parser_factory,
+    int_postprocess_parser_factory, nullable_entity_array_parser_factory, nullable_entity_parser_factory,
     nullable_sorted_array_parser_factory, nullable_string_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
@@ -12,8 +12,8 @@ from ...field_putters import (
     nullable_string_array_optional_putter_factory, nullable_string_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, default_entity_validator, entity_id_validator_factory, flag_validator_factory,
-    force_string_validator_factory, int_conditional_validator_factory, nullable_entity_array_validator_factory,
+    bool_validator_factory, entity_id_validator_factory, flag_validator_factory, force_string_validator_factory,
+    int_conditional_validator_factory, nullable_entity_array_validator_factory, nullable_entity_validator_factory,
     nullable_string_array_validator_factory, nullable_string_validator_factory, preinstanced_validator_factory,
     url_array_optional_validator_factory, url_optional_validator_factory
 )
@@ -114,9 +114,9 @@ validate_id = entity_id_validator_factory('application_id')
 
 # install_parameters
 
-parse_install_parameters = default_entity_parser_factory('install_params', ApplicationInstallParameters, None)
+parse_install_parameters = nullable_entity_parser_factory('install_params', ApplicationInstallParameters)
 put_install_parameters_into = nullable_entity_optional_putter_factory('install_params', ApplicationInstallParameters)
-validate_install_parameters = default_entity_validator('install_parameters', ApplicationInstallParameters, None)
+validate_install_parameters = nullable_entity_validator_factory('install_parameters', ApplicationInstallParameters)
 
 # max_participants
 

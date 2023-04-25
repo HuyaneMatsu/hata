@@ -21,9 +21,13 @@ from ..rule import AutoModerationRule, AutoModerationRuleTriggerType
 
 # action
 
-parse_action = default_entity_parser_factory('action', AutoModerationAction, AutoModerationAction())
+parse_action = default_entity_parser_factory(
+    'action', AutoModerationAction, default_factory = lambda : AutoModerationAction()
+)
 put_action_into = entity_putter_factory('action', AutoModerationAction)
-validate_action = default_entity_validator('action', AutoModerationAction, AutoModerationAction())
+validate_action = default_entity_validator(
+    'action', AutoModerationAction, default_factory = lambda : AutoModerationAction()
+)
 
 # alert_system_message_id
 

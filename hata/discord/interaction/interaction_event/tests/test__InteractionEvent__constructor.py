@@ -2,6 +2,7 @@ import vampytest
 
 from scarletio import Task
 
+from ....channel import Channel
 from ....localization import Locale
 from ....permission import Permission
 from ....message import Message
@@ -30,7 +31,7 @@ def _assert_attributes_set(interaction_event):
     
     vampytest.assert_instance(interaction_event.application_id, int)
     vampytest.assert_instance(interaction_event.application_permissions, Permission)
-    vampytest.assert_instance(interaction_event.channel_id, int)
+    vampytest.assert_instance(interaction_event.channel, Channel)
     vampytest.assert_instance(interaction_event.guild_id, int)
     vampytest.assert_instance(interaction_event.guild_locale, Locale)
     vampytest.assert_instance(interaction_event.id, int)
@@ -62,7 +63,7 @@ def test__InteractionEvent__new__1():
     """
     application_id = 202211070000
     application_permissions = Permission(123)
-    channel_id = 202211070001
+    channel = Channel.precreate(202211070001)
     guild_id = 202211070002
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -76,7 +77,7 @@ def test__InteractionEvent__new__1():
     interaction_event = InteractionEvent(
         application_id = application_id,
         application_permissions = application_permissions,
-        channel_id = channel_id,
+        channel = channel,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -92,7 +93,7 @@ def test__InteractionEvent__new__1():
     
     vampytest.assert_eq(interaction_event.application_id, application_id)
     vampytest.assert_eq(interaction_event.application_permissions, application_permissions)
-    vampytest.assert_eq(interaction_event.channel_id, channel_id)
+    vampytest.assert_is(interaction_event.channel, channel)
     vampytest.assert_eq(interaction_event.guild_id, guild_id)
     vampytest.assert_is(interaction_event.guild_locale, guild_locale)
     vampytest.assert_eq(interaction_event.interaction, interaction)
@@ -141,7 +142,7 @@ def test__InteractionEvent__precreate__1():
     """
     application_id = 202211070012
     application_permissions = Permission(123)
-    channel_id = 202211070013
+    channel = Channel.precreate(202211070013)
     guild_id = 202211070014
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -158,7 +159,7 @@ def test__InteractionEvent__precreate__1():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
-        channel_id = channel_id,
+        channel = channel,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -175,7 +176,7 @@ def test__InteractionEvent__precreate__1():
     
     vampytest.assert_eq(interaction_event.application_id, application_id)
     vampytest.assert_eq(interaction_event.application_permissions, application_permissions)
-    vampytest.assert_eq(interaction_event.channel_id, channel_id)
+    vampytest.assert_is(interaction_event.channel, channel)
     vampytest.assert_eq(interaction_event.guild_id, guild_id)
     vampytest.assert_is(interaction_event.guild_locale, guild_locale)
     vampytest.assert_eq(interaction_event.interaction, interaction)

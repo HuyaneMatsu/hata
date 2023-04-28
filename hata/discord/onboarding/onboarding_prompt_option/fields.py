@@ -7,7 +7,7 @@ from ...field_parsers import (
     nullable_functional_parser_factory, nullable_string_parser_factory
 )
 from ...field_putters import (
-    entity_id_array_optional_putter_factory, entity_id_putter_factory, force_string_putter_factory,
+    entity_id_putter_factory, force_string_putter_factory, optional_entity_id_array_optional_putter_factory,
     nullable_functional_optional_putter_factory, nullable_string_putter_factory
 )
 from ...field_validators import (
@@ -19,7 +19,7 @@ from ...role import Role
 # channel_ids
 
 parse_channel_ids = entity_id_array_parser_factory('channel_ids')
-put_channel_ids_into = entity_id_array_optional_putter_factory('channel_ids')
+put_channel_ids_into = optional_entity_id_array_optional_putter_factory('channel_ids')
 validate_channel_ids = entity_id_array_validator_factory('channel_ids', Channel)
 
 # description
@@ -49,5 +49,5 @@ validate_name = force_string_validator_factory('name', 0, 1024)
 # role_ids
 
 parse_role_ids = entity_id_array_parser_factory('role_ids')
-put_role_ids_into = entity_id_array_optional_putter_factory('role_ids')
+put_role_ids_into = optional_entity_id_array_optional_putter_factory('role_ids')
 validate_role_ids = entity_id_array_validator_factory('role_ids', Role)

@@ -7,35 +7,38 @@ from datetime import datetime
 
 from scarletio import BaseMethodDescriptor, export, include
 
-from ..bases import DiscordEntity, id_sort_key
-from ..core import CHANNELS, GUILDS, MESSAGES
-from ..component import Component
-from ..embed import Embed, EXTRA_EMBED_TYPES
-from ..emoji import ReactionMapping, merge_update_reaction_mapping
-from ..http import urls as module_urls
-from ..preconverters import (
+from ...bases import DiscordEntity, id_sort_key
+from ...core import CHANNELS, GUILDS, MESSAGES
+from ...component import Component
+from ...embed import Embed, EXTRA_EMBED_TYPES
+from ...emoji import ReactionMapping, merge_update_reaction_mapping
+from ...http import urls as module_urls
+from ...preconverters import (
     get_type_names, preconvert_bool, preconvert_flag, preconvert_preinstanced_type, preconvert_snowflake,
     preconvert_snowflake_array, preconvert_str
 )
-from ..role import Role, create_partial_role_from_id
-from ..sticker import Sticker
-from ..user import ClientUserBase, User, UserBase, ZEROUSER
-from ..utils import (
+from ...role import Role, create_partial_role_from_id
+from ...sticker import Sticker
+from ...user import ClientUserBase, User, UserBase, ZEROUSER
+from ...utils import (
     CHANNEL_MENTION_RP, DATETIME_FORMAT_CODE, datetime_to_id, datetime_to_timestamp, id_to_datetime,
     timestamp_to_datetime
 )
-from ..webhook import Webhook, WebhookRepr, WebhookType, create_partial_webhook_from_id
+from ...webhook import Webhook, WebhookRepr, WebhookType, create_partial_webhook_from_id
 
-from .attachment import Attachment
+from ..attachment import Attachment
 from .cross_mention import UnknownCrossMention
 from .fields import (
-    parse_role_subscription, put_role_subscription_into, validate_role_subscription
+    parse_role_subscription, put_role_subscription_into, validate_role_subscription, parse_channel_id,
+    put_channel_id_into, validate_channel_id, parse_guild_id, put_guild_id_into, validate_guild_id,
+    parse_id, put_id_into, validate_id, parse_message_id, parse_type, put_type_into, validate_type,
+    put_message_id_into
 )
 from .flags import MessageFlag
-from .message_activity import MessageActivity
-from .message_application import MessageApplication
-from .message_interaction import MessageInteraction
-from .message_role_subscription import MessageRoleSubscription
+from ..message_activity import MessageActivity
+from ..message_application import MessageApplication
+from ..message_interaction import MessageInteraction
+from ..message_role_subscription import MessageRoleSubscription
 from .preinstanced import GENERIC_MESSAGE_TYPES, MESSAGE_DEFAULT_CONVERTER, MessageType
 from .utils import try_resolve_interaction_message
 
@@ -79,7 +82,6 @@ MESSAGE_FIELD_KEY_ROLE_MENTIONS = 21
 MESSAGE_FIELD_KEY_STICKERS = 22
 MESSAGE_FIELD_KEY_THREAD = 23
 MESSAGE_FIELD_KEY_TTS = 24
-MESSAGE_FIELD_KEY_TYPE = 25
 MESSAGE_FIELD_KEY_USER_MENTIONS = 26
 MESSAGE_FIELD_KEY_ROLE_SUBSCRIPTION = 27
 
@@ -258,6 +260,8 @@ class Message(DiscordEntity, immortal = True):
         The channel's identifier where the message is sent.
     guild_id : `int`
         The channel's guild's identifier.
+    type : ``MessageType``
+        The type of the message.
     
     Notes
     -----
@@ -295,7 +299,6 @@ class Message(DiscordEntity, immortal = True):
     - ``.stickers``
     - ``.thread``
     - ``.tts``
-    - ``.type``
     - ``.user_mentions``
     
     In average only 1.5 field of a message is used, which makes keeping up over 20 allocated field questionable.
@@ -303,7 +306,7 @@ class Message(DiscordEntity, immortal = True):
     At the current moment a message usually has 1-6 extra fields used, but in the close future in 2022 with message
     content intent, it will decrease to 0-6, making the system save a lot of memory.
     """
-    __slots__ = ('_fields', 'author', 'channel_id', 'guild_id')
+    __slots__ = ('_fields', 'author', 'channel_id', 'guild_id', 'type')
     
     
     def __new__(cls, data):
@@ -330,9 +333,9 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        self : ``Message``
+        self : `instance<cls>`
         """
-        message_id = int(data['id'])
+        message_id = parse_id(data)
         
         try:
             self = MESSAGES[message_id]
@@ -371,12 +374,12 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        self : ``Message``
+        self : `instance<cls>`
             The created or found message instance.
         from_cache : `bool`
             Whether the message was found in the cache.
         """
-        message_id = int(data['id'])
+        message_id = parse_id(data)
         
         try:
             self = MESSAGES[message_id]
@@ -414,28 +417,10 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        self : ``Message``
+        self : `instance<cls>`
         """
-        while True:
-            try:
-                message_id = data['message_id']
-            except KeyError:
-                pass
-            else:
-                message_id = int(message_id)
-                break
-            
-            try:
-                message_id = data['id']
-            except KeyError:
-                pass
-            else:
-                message_id = int(message_id)
-                break
-            
-            message_id = 0
-            break
-        
+        # allow both `message_id` and `id` keys.
+        message_id = parse_message_id(data)
         
         try:
             self = MESSAGES[message_id]
@@ -449,27 +434,11 @@ class Message(DiscordEntity, immortal = True):
             if not self.partial:
                 return self
         
-        # `._fields`
         self._fields = None
-        
-        # `.author`
         self.author = ZEROUSER
-        
-        # `.channel_id`
-        channel_id = data.get('channel_id', None)
-        if channel_id is None:
-            channel_id = 0
-        else:
-            channel_id = int(channel_id)
-        self.channel_id = channel_id
-        
-        # `.guild_id`
-        guild_id = data.get('guild_id', None)
-        if guild_id is None:
-            guild_id = 0
-        else:
-            guild_id = int(guild_id)
-        self.guild_id = guild_id
+        self.channel_id = parse_channel_id(data)
+        self.guild_id = parse_guild_id(data)
+        self.type = MESSAGE_TYPE_DEFAULT
         return self
     
     
@@ -489,7 +458,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        self : ``Message``
+        self : `instance<cls>`
         """
         try:
             self = MESSAGES[message_id]
@@ -505,6 +474,7 @@ class Message(DiscordEntity, immortal = True):
         self.author = ZEROUSER
         self.channel_id = channel_id
         self.guild_id = guild_id
+        self.type = MESSAGE_TYPE_DEFAULT
         
         return self
     
@@ -518,26 +488,28 @@ class Message(DiscordEntity, immortal = True):
         data : `dict` of (`str`, `object`) items
             Message data.
         """
-        channel_id = int(data['channel_id'])
+        # channel_id
+        channel_id = parse_channel_id(data)
         self.channel_id = channel_id
         
-        try:
-            guild_id = data['guild_id']
-        except KeyError:
+        # guild_id
+        guild_id = parse_guild_id(data)
+        if not guild_id:
+            # At some cases the message has no guild id set, as an example at invoker user only messages.
+            # At these cases we get the channel's `.guild_id`
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
-                guild_id = 0
+                pass
             else:
                 guild_id = channel.guild_id
-        else:
-            if guild_id is None:
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
         
         self.guild_id = guild_id
         
+        # type
+        self.type = parse_type(data)
+        
+        # author
         author_data = data.get('author', None)
         webhook_id = data.get('webhook_id', None)
         if webhook_id is None:
@@ -675,15 +647,6 @@ class Message(DiscordEntity, immortal = True):
                 self,
                 MESSAGE_FIELD_KEY_FLAGS,
                 MessageFlag(flags),
-            )
-        
-        
-        message_type_value = data.get('type', MESSAGE_TYPE_DEFAULT_VALUE)
-        if message_type_value != MESSAGE_TYPE_DEFAULT_VALUE:
-            _set_message_field(
-                self,
-                MESSAGE_FIELD_KEY_TYPE,
-                MessageType.get(message_type_value),
             )
         
         
@@ -1769,7 +1732,7 @@ class Message(DiscordEntity, immortal = True):
         +===================+=======================================================================+
         | attachments       | `None`, (`tuple` of ``Attachment``)                                   |
         +-------------------+-----------------------------------------------------------------------+
-        | components        | `None`, (`tuple` of ``Component``)                                |
+        | components        | `None`, (`tuple` of ``Component``)                                    |
         +-------------------+-----------------------------------------------------------------------+
         | content           | `None`, `str`                                                         |
         +-------------------+-----------------------------------------------------------------------+
@@ -1777,7 +1740,7 @@ class Message(DiscordEntity, immortal = True):
         +-------------------+-----------------------------------------------------------------------+
         | edited_at         | `None`  or `datetime`                                                 |
         +-------------------+-----------------------------------------------------------------------+
-        | embeds            | `None`  or `(tuple` of ``Embed``)                                 |
+        | embeds            | `None`  or `(tuple` of ``Embed``)                                     |
         +-------------------+-----------------------------------------------------------------------+
         | flags             | `UserFlag`                                                            |
         +-------------------+-----------------------------------------------------------------------+
@@ -2490,15 +2453,7 @@ class Message(DiscordEntity, immortal = True):
                     is_deletable = False
                     break
             
-            try:
-                message_type = fields[MESSAGE_FIELD_KEY_TYPE]
-            except KeyError:
-                pass
-            else:
-                is_deletable = message_type.deletable
-                break
-            
-            is_deletable = True
+            is_deletable = self.type.deletable
             break
         
         return is_deletable
@@ -2912,13 +2867,12 @@ class Message(DiscordEntity, immortal = True):
                 pass
             else:
                 type_ = preconvert_preinstanced_type(type_, 'type_', MessageType)
-                if type_ is not MESSAGE_TYPE_DEFAULT:
-                    processable_by_field.append((MESSAGE_FIELD_KEY_TYPE, type_))
+                processable.append(('type', type_))
             
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
-            
+        
         else:
             processable = None
             processable_by_field = None
@@ -2964,17 +2918,12 @@ class Message(DiscordEntity, immortal = True):
         """
         data = {}
         
-        # id
-        data['id'] = str(self.id)
-        
-        # channel_id
-        data['channel_id'] = str(self.channel_id)
-        
-        # guild_id
-        guild_id = self.guild_id
-        if not guild_id:
-            guild_id = None
-        data['guild_id'] = guild_id
+        if include_internals:
+            put_id_into(self.id, data, defaults)
+            put_channel_id_into(self.channel_id, data, defaults)
+            put_guild_id_into(self.guild_id, data, defaults)
+            put_type_into(self.type, data, defaults)
+            put_role_subscription_into(self.role_subscription, data, defaults)
         
         # author
         author = self.author
@@ -3119,9 +3068,6 @@ class Message(DiscordEntity, immortal = True):
         # tts
         data['tts'] = self.tts
         
-        # type
-        data['type'] = self.type.value
-        
         # user_mentions
         user_mentions = self.user_mentions
         if (user_mentions is None):
@@ -3130,8 +3076,6 @@ class Message(DiscordEntity, immortal = True):
             user_mention_datas = [user_mention.to_data() for user_mention in user_mentions]
         data['mentions'] = user_mention_datas
         
-        if include_internals:
-            put_role_subscription_into(self.role_subscription, data, defaults)
         
         return data
     
@@ -3144,26 +3088,10 @@ class Message(DiscordEntity, immortal = True):
         -------
         data : `dict` of (`str`, `object`)
         """
-        data = {
-            'message_id': str(self.id)
-        }
-        
-        channel_id = self.channel_id
-        if channel_id:
-            channel_id = str(channel_id)
-        else:
-            channel_id = None
-        
-        data['channel_id'] = channel_id
-        
-        guild_id = self.guild_id
-        if guild_id:
-            guild_id = str(guild_id)
-        else:
-            guild_id = None
-        
-        data['guild_id'] = guild_id
-        
+        data = {}
+        put_message_id_into(self.message_id, data, True)
+        put_channel_id_into(self.channel_id, data, True)
+        put_guild_id_into(self.guild_id, data, True)
         return data
     
     
@@ -3182,11 +3110,12 @@ class Message(DiscordEntity, immortal = True):
         self : ``Message``
         """
         self = object.__new__(cls)
-        self.id = message_id
+        self._fields = {MESSAGE_FIELD_KEY_PARTIAL: None}
+        self.author = ZEROUSER
         self.channel_id = 0
         self.guild_id = 0
-        self.author = ZEROUSER
-        self._fields = {MESSAGE_FIELD_KEY_PARTIAL: None}
+        self.id = message_id
+        self.type = MESSAGE_TYPE_DEFAULT
         return self
     
     # Message.activity
@@ -4709,57 +4638,6 @@ class Message(DiscordEntity, immortal = True):
             MESSAGE_FIELD_KEY_TTS,
         )
     
-    # Message.type
-    
-    @property
-    def type(self):
-        """
-        The type of the message.
-        
-        Defaults to `None`.
-        
-        Returns
-        -------
-        type : ``MessageType``
-        """
-        fields = self._fields
-        if (fields is None):
-            type_ = MESSAGE_TYPE_DEFAULT
-        else:
-            type_ = fields.get(MESSAGE_FIELD_KEY_TYPE, MESSAGE_TYPE_DEFAULT)
-        
-        return type_
-    
-    @type.setter
-    def type(self, type_):
-        fields = self._fields
-        
-        if (fields is None):
-            if (type_ is MESSAGE_TYPE_DEFAULT):
-                return
-            
-            self._fields = fields = {}
-        else:
-            if (type_ is MESSAGE_TYPE_DEFAULT):
-                try:
-                    del fields[MESSAGE_FIELD_KEY_TYPE]
-                except KeyError:
-                    pass
-                else:
-                    if not fields:
-                        self._fields = None
-            return
-        
-        fields[MESSAGE_FIELD_KEY_TYPE] = type_
-    
-    @type.deleter
-    def type(self):
-        _remove_message_field(
-            self,
-            MESSAGE_FIELD_KEY_TYPE,
-        )
-    
-    
     def has_type(self):
         """
         Returns whether the message has ``.type`` set.
@@ -4768,10 +4646,13 @@ class Message(DiscordEntity, immortal = True):
         -------
         has_type : `bool`
         """
-        return _has_message_field(
-            self,
-            MESSAGE_FIELD_KEY_TYPE,
+        warnings.warn(
+            f'`{self.__class__.__name__}.has_type` is deprecated and will be removed in 2023 November.',
+            FutureWarning,
+            stacklevel = 2,
         )
+        
+        return self.type is not MessageType.default
     
     # Message.user_mentions
     
@@ -4837,17 +4718,12 @@ class Message(DiscordEntity, immortal = True):
         -------
         has_any_content_field : `bool`
         """
+        if self.type not in MESSAGE_TYPE_VALUES_WITH_CONTENT_FIELDS:
+            return True
+        
         fields = self._fields
         if fields is None:
             return False
-        
-        try:
-            message_type = fields[MESSAGE_FIELD_KEY_TYPE]
-        except KeyError:
-            pass
-        else:
-            if message_type not in MESSAGE_TYPE_VALUES_WITH_CONTENT_FIELDS:
-                return True
         
         for field_key in MESSAGE_CONTENT_FIELDS:
             if field_key in fields:

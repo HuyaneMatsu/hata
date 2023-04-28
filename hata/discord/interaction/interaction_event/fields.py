@@ -8,7 +8,7 @@ from ...field_parsers import (
 )
 from ...field_putters import (
     entity_id_optional_putter_factory, entity_id_putter_factory, entity_putter_factory, force_string_putter_factory,
-    nullable_entity_optional_putter_factory, preinstanced_putter_factory, string_flag_putter_factory
+    preinstanced_putter_factory, string_flag_putter_factory
 )
 from ...field_validators import (
     default_entity_validator, entity_id_validator_factory, flag_validator_factory, force_string_validator_factory,
@@ -117,7 +117,34 @@ validate_locale = preinstanced_validator_factory('locale', Locale)
 # message
 
 parse_message = nullable_entity_parser_factory('message', Message)
-put_message_into = nullable_entity_optional_putter_factory('message', Message)
+
+def put_message_into(message, data, defaults):
+    """
+    Puts the given `message` into the given data.
+    
+    Parameters
+    ----------
+    message : `None`, ``Message``
+        The message to put into the given `data`.
+    data : `dict` of (`str`, `object`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default fields should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `object`) items
+    """
+    if defaults or (message is not None):
+        if message is None:
+            entity_data = None
+        else:
+            entity_data = message.to_data(defaults = defaults, include_internals = True)
+        
+        data['message'] = entity_data
+    
+    return data
+
 validate_message = nullable_entity_validator_factory('message', Message)
 
 # token
@@ -140,7 +167,7 @@ def parse_user(data, guild_id):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Interaction event data.
     guild_id : `int`
         The respective guild's identifier.
@@ -176,7 +203,7 @@ def put_user_into(user, data, defaults, *, guild_id = 0):
     ----------
     user : ``ClientUserBase``
         The user to put into the given `data`.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default fields should be included as well.
@@ -185,7 +212,7 @@ def put_user_into(user, data, defaults, *, guild_id = 0):
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     try:
         guild_profile = user.guild_profiles[guild_id]
@@ -211,7 +238,7 @@ def parse_user_permissions(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Interaction data.
     
     Return
@@ -239,14 +266,14 @@ def put_user_permissions_into(user_permissions, data, defaults):
     ----------
     user_permissions : ``Permission``
         The permission to put into the given `data`.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default fields should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     try:
         guild_profile_data = data['member']

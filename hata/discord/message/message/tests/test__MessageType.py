@@ -2,7 +2,7 @@ from types import FunctionType
 
 import vampytest
 
-from .. import MessageType
+from ..preinstanced import MessageType
 
 
 def test__MessageType__name():

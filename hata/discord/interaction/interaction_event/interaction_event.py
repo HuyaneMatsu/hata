@@ -431,7 +431,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         put_guild_locale_into(self.guild_locale, data, defaults)
         put_id_into(self.id, data, defaults)
         put_locale_into(self.locale, data, defaults)
-        put_message_into(self.message, data, defaults, include_internals = True)
+        put_message_into(self.message, data, defaults)
         put_token_into(self.token, data, defaults)
         put_type_into(self.type, data, defaults)
         put_user_into(self.user, data, defaults, guild_id = self.guild_id)

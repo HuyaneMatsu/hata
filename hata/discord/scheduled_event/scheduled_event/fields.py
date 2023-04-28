@@ -7,10 +7,10 @@ from ...field_parsers import (
     preinstanced_parser_factory
 )
 from ...field_putters import (
-    default_entity_putter_factory, entity_id_array_optional_putter_factory, entity_id_optional_putter_factory,
-    entity_id_putter_factory, force_string_putter_factory, int_putter_factory, 
-    nullable_date_time_optional_putter_factory, nullable_string_optional_putter_factory,
-    preinstanced_optional_putter_factory,preinstanced_putter_factory
+    default_entity_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
+    force_string_putter_factory, int_putter_factory,  nullable_date_time_optional_putter_factory,
+    optional_entity_id_array_optional_putter_factory, nullable_string_optional_putter_factory,
+    preinstanced_optional_putter_factory, preinstanced_putter_factory
 )
 from ...field_validators import (
     default_entity_validator, entity_id_array_validator_factory, entity_id_validator_factory,
@@ -144,7 +144,7 @@ validate_start = nullable_date_time_validator_factory('start')
 # sku_ids
 
 parse_sku_ids = entity_id_array_parser_factory('sku_ids')
-put_sku_ids_into = entity_id_array_optional_putter_factory('sku_ids')
+put_sku_ids_into = optional_entity_id_array_optional_putter_factory('sku_ids')
 validate_sku_ids = entity_id_array_validator_factory('sku_ids')
 
 # status

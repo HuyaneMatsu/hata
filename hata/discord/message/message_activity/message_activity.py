@@ -19,7 +19,6 @@ class MessageActivity(RichAttributeErrorBaseType):
     """
     __slots__ = ('party_id', 'type',)
     
-    
     def __new__(cls, *, message_activity_type = ..., party_id = ...):
         """
         Creates a new message activity from the given parameters.
@@ -50,6 +49,7 @@ class MessageActivity(RichAttributeErrorBaseType):
         else:
             party_id = validate_party_id(party_id)
         
+        # Construct
         self = object.__new__(cls)
         self.party_id = party_id
         self.type = message_activity_type
@@ -59,12 +59,16 @@ class MessageActivity(RichAttributeErrorBaseType):
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``MessageActivity`` from message activity data included inside of a ``Message``'s data.
+        Creates a new message activity from the given data.
         
         Parameters
         ----------
         data : `dict` of (`str`, `object`) items
             Message activity data.
+        
+        Returns
+        -------
+        self : `instance<cls>`
         """
         self = object.__new__(cls)
         self.party_id = parse_party_id(data)
@@ -111,11 +115,11 @@ class MessageActivity(RichAttributeErrorBaseType):
         """Returns the message activity's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        party_type = self.type
+        message_activity_type = self.type
         repr_parts.append(' type = ')
-        repr_parts.append(repr(party_type.name))
+        repr_parts.append(repr(message_activity_type.name))
         repr_parts.append(' ~ ')
-        repr_parts.append(repr(party_type.value))
+        repr_parts.append(repr(message_activity_type.value))
         
         party_id = self.party_id
         if (party_id is not None):
@@ -189,6 +193,7 @@ class MessageActivity(RichAttributeErrorBaseType):
         else:
             party_id = validate_party_id(party_id)
         
+        # Construct
         new = object.__new__(type(self))
         new.party_id = party_id
         new.type = message_activity_type

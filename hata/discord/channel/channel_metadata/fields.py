@@ -10,10 +10,10 @@ from ...field_parsers import (
     nullable_entity_array_parser_factory, nullable_string_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, entity_id_array_optional_putter_factory, entity_id_optional_putter_factory,
-    flag_optional_putter_factory, force_string_putter_factory, int_optional_postprocess_putter_factory,
-    int_putter_factory, nullable_entity_array_optional_putter_factory, nullable_int_optional_putter_factory,
-    nullable_string_putter_factory, preinstanced_optional_putter_factory
+    bool_optional_putter_factory, entity_id_optional_putter_factory, flag_optional_putter_factory,
+    force_string_putter_factory, int_optional_postprocess_putter_factory, int_putter_factory,
+    optional_entity_id_array_optional_putter_factory, nullable_entity_array_optional_putter_factory,
+    nullable_int_optional_putter_factory, nullable_string_putter_factory, preinstanced_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory, flag_validator_factory,
@@ -47,7 +47,7 @@ validate_application_id = entity_id_validator_factory('application_id', NotImple
 # applied_tag_ids
 
 parse_applied_tag_ids = entity_id_array_parser_factory('applied_tags')
-put_applied_tag_ids_into = entity_id_array_optional_putter_factory('applied_tags')
+put_applied_tag_ids_into = optional_entity_id_array_optional_putter_factory('applied_tags')
 validate_applied_tag_ids = entity_id_array_validator_factory('applied_tag_ids', ForumTag)
 
 # archived

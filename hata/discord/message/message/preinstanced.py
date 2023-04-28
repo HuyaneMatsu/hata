@@ -4,9 +4,9 @@ import warnings
 
 from scarletio import any_to_any, class_property
 
-from ..activity import ACTIVITY_TYPES
-from ..bases import Preinstance as P, PreinstancedBase
-from ..utils import sanitize_mentions
+from ...activity import ACTIVITY_TYPES
+from ...bases import Preinstance as P, PreinstancedBase
+from ...utils import sanitize_mentions
 
 
 def MESSAGE_DEFAULT_CONVERTER(self):
@@ -36,11 +36,15 @@ def convert_user_add(self):
 def convert_user_remove(self):
     return f'{self.author.name} removed {self.user_mentions[0].name} from the group.'
 
+
 def convert_call(self):
     if any_to_any(self.channel.clients, self.call.users):
         return f'{self.author.name} started a call.'
+    
     if self.call.ended_timestamp is None:
-        return f'{self.author.name} started a call \N{EM DASH} Join the call.'
+        # We are using a unicode as dash and not the minus sign
+        return f'{self.author.name} started a call — Join the call.'
+    
     return f'You missed a call from {self.author.name}'
 
 def convert_channel_name_change(self):
@@ -52,52 +56,54 @@ def convert_channel_icon_change(self):
 def convert_new_pin(self):
     return f'{self.author.name} pinned a message to this channel.'
 
+JOIN_MESSAGE_FORMATTERS = (
+    lambda name : f'{name} just joined the server - glhf!',
+    lambda name : f'{name} just joined. Everyone, look busy!',
+    lambda name : f'{name} just joined. Can I get a heal?',
+    lambda name : f'{name} joined your party.',
+    lambda name : f'{name} joined. You must construct additional pylons.',
+    lambda name : f'Ermagherd. {name} is here.',
+    lambda name : f'Welcome, {name}. Stay awhile and listen.',
+    lambda name : f'Welcome, {name}. We were expecting you ( ͡° ͜ʖ ͡°)',
+    lambda name : f'Welcome, {name}. We hope you brought pizza.',
+    lambda name : f'Welcome {name}. Leave your weapons by the door.',
+    lambda name : f'A wild {name} appeared.',
+    lambda name : f'Swoooosh. {name} just landed.',
+    lambda name : f'Brace yourselves. {name} just joined the server.',
+    lambda name : f'{name} just joined... or did they?',
+    lambda name : f'{name} just arrived. Seems OP - please nerf.',
+    lambda name : f'{name} just slid into the server.',
+    lambda name : f'A {name} has spawned in the server.',
+    lambda name : f'Big {name} showed up!',
+    lambda name : f'Where’s {name}? In the server!',
+    lambda name : f'{name} hopped into the server. Kangaroo!!',
+    lambda name : f'{name} just showed up. Hold my beer.',
+    lambda name : f'Challenger approaching - {name} has appeared!',
+    lambda name : f'It\'s a bird! It\'s a plane! Nevermind, it\'s just {name}.',
+    lambda name : f'It\'s {name}! Praise the sun! [T]/',
+    lambda name : f'Never gonna give {name} up. Never gonna let {name} down.',
+    lambda name : f'{name} has joined the battle bus.',
+    lambda name : f'Cheers, love! {name}\'s here!',
+    lambda name : f'Hey! Listen! {name} has joined!',
+    lambda name : f'We\'ve been expecting you {name}',
+    lambda name : f'It\'s dangerous to go alone, take {name}!',
+    lambda name : f'{name} has joined the server! It\'s super effective!',
+    lambda name : f'Cheers, love! {name} is here!',
+    lambda name : f'{name} is here, as the prophecy foretold.',
+    lambda name : f'{name} has arrived. Party\'s over.',
+    lambda name : f'Ready player {name}',
+    lambda name : f'{name} is here to kick butt and chew bubblegum. And {name} is all out of gum.',
+    lambda name : f'Hello. Is it {name} you\'re looking for?',
+    lambda name : f'{name} has joined. Stay a while and listen!',
+    lambda name : f'Roses are red, violets are blue, {name} joined this server with you',
+)
+
 # TODO: this system changed, just pulled out the new texts from the js client source, but the calculation is bad
 def convert_welcome(self):
-    # tuples with immutable elements are stored directly
-    join_messages = (
-        '{0} just joined the server - glhf!',
-        '{0} just joined. Everyone, look busy!',
-        '{0} just joined. Can I get a heal?',
-        '{0} joined your party.',
-        '{0} joined. You must construct additional pylons.',
-        'Ermagherd. {0} is here.',
-        'Welcome, {0}. Stay awhile and listen.',
-        'Welcome, {0}. We were expecting you ( ͡° ͜ʖ ͡°)',
-        'Welcome, {0}. We hope you brought pizza.',
-        'Welcome {0}. Leave your weapons by the door.',
-        'A wild {0} appeared.',
-        'Swoooosh. {0} just landed.',
-        'Brace yourselves. {0} just joined the server.',
-        '{0} just joined... or did they?',
-        '{0} just arrived. Seems OP - please nerf.',
-        '{0} just slid into the server.',
-        'A {0} has spawned in the server.',
-        'Big {0} showed up!',
-        'Where’s {0}? In the server!',
-        '{0} hopped into the server. Kangaroo!!',
-        '{0} just showed up. Hold my beer.',
-        'Challenger approaching - {0} has appeared!',
-        'It\'s a bird! It\'s a plane! Nevermind, it\'s just {0}.',
-        'It\'s {0}! Praise the sun! [T]/',
-        'Never gonna give {0} up. Never gonna let {0} down.',
-        '{0} has joined the battle bus.',
-        'Cheers, love! {0}\'s here!',
-        'Hey! Listen! {0} has joined!',
-        'We\'ve been expecting you {0}',
-        'It\'s dangerous to go alone, take {0}!',
-        '{0} has joined the server! It\'s super effective!',
-        'Cheers, love! {0} is here!',
-        '{0} is here, as the prophecy foretold.',
-        '{0} has arrived. Party\'s over.',
-        'Ready player {0}',
-        '{0} is here to kick butt and chew bubblegum. And {0} is all out of gum.',
-        'Hello. Is it {0} you\'re looking for?',
-        '{0} has joined. Stay a while and listen!',
-        'Roses are red, violets are blue, {0} joined this server with you',
-    )
+    formatter = JOIN_MESSAGE_FORMATTERS[int(self.created_at.timestamp()) % len(JOIN_MESSAGE_FORMATTERS)]
+    user_name = self.author.name_at(self.guild_id)
+    return formatter(user_name)
 
-    return join_messages[int(self.created_at.timestamp()) % len(join_messages)].format(self.author.name)
 
 def convert_guild_boost(self):
     guild = self.channel.guild
@@ -158,7 +164,7 @@ def convert_stream(self):
     else:
         activity_name = 'Unknown'
     
-    user_name = user.name_at(self.guild)
+    user_name = user.name_at(self.guild_id)
     
     return f'{user_name} is live! Now streaming {activity_name}'
 
@@ -183,22 +189,9 @@ def convert_discovery_grace_period_final_warning(self):
         'If this server fails for 1 more week, it will be removed from Discovery.'
     )
 
+
 def convert_thread_created(self):
-    guild_id = self.guild_id
-    user = self.author
-    
-    if guild_id:
-        try:
-            guild_profile = user.guild_profiles[guild_id]
-        except KeyError:
-            user_name = user.name
-        else:
-            user_name = guild_profile.nick
-            if (user_name is None):
-                user_name = user.name
-    else:
-        user_name = user.name
-    
+    user_name = self.author.name_at(self.guild_id)
     return f'{user_name} started a thread'
 
 

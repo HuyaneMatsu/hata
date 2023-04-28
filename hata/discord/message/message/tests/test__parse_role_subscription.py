@@ -1,7 +1,8 @@
 import vampytest
 
+from ...message_role_subscription import MessageRoleSubscription
+
 from ..fields import parse_role_subscription
-from ..message_role_subscription import MessageRoleSubscription
 
 
 def test__parse_role_subscription():

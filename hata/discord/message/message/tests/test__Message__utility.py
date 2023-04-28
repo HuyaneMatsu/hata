@@ -1,6 +1,6 @@
 import vampytest
 
-from ...embed import EmbedAuthor, Embed, EmbedField, EmbedFooter, EmbedProvider
+from ....embed import EmbedAuthor, Embed, EmbedField, EmbedFooter, EmbedProvider
 
 from ..message import Message
 

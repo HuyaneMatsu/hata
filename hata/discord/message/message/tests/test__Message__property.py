@@ -1,7 +1,7 @@
 import vampytest
 
-from ...channel import ChannelType, create_partial_channel_from_id
-from ...guild import create_partial_guild_from_id
+from ....channel import ChannelType, create_partial_channel_from_id
+from ....guild import create_partial_guild_from_id
 
 from .. import Message, MessageFlag
 

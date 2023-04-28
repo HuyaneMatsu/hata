@@ -2,9 +2,9 @@ __all__ = ('UnknownCrossMention', )
 
 from scarletio import include
 
-from ..bases import DiscordEntity
-from ..core import CHANNELS, GUILDS
-from ..utils import DATETIME_FORMAT_CODE
+from ...bases import DiscordEntity
+from ...core import CHANNELS, GUILDS
+from ...utils import DATETIME_FORMAT_CODE
 
 
 Channel = include('Channel')
@@ -35,7 +35,7 @@ class UnknownCrossMention(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Cross reference channel mention data.
         
         Returns

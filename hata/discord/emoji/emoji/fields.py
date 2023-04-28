@@ -5,8 +5,8 @@ from ...field_parsers import (
     force_string_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, default_entity_putter_factory, entity_id_array_optional_putter_factory,
-    entity_id_putter_factory, force_string_putter_factory
+    bool_optional_putter_factory, default_entity_putter_factory, entity_id_putter_factory, force_string_putter_factory,
+    optional_entity_id_array_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, default_entity_validator, entity_id_array_validator_factory, entity_id_validator_factory
@@ -100,7 +100,7 @@ validate_require_colons = bool_validator_factory('require_colons', True)
 # role_ids
 
 parse_role_ids = entity_id_array_parser_factory('roles')
-put_role_ids_into = entity_id_array_optional_putter_factory('roles')
+put_role_ids_into = optional_entity_id_array_optional_putter_factory('roles')
 validate_role_ids = entity_id_array_validator_factory('role_ids', Role)
 
 # user

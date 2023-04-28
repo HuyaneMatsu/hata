@@ -13,7 +13,7 @@ from ...http import DiscordHTTPClient
 from ...interaction import InteractionEvent, InteractionResponseContext, InteractionResponseType, InteractionType
 
 from ...message import Message, MessageFlag
-from ...message.utils import try_resolve_interaction_message
+from ...message.message.utils import try_resolve_interaction_message
 
 from ..functionality_helpers import application_command_autocomplete_choice_parser
 from ..request_helpers import add_file_to_message_data, get_components_data, validate_content_and_embed

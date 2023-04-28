@@ -12,7 +12,7 @@ from ...core import CHANNELS, KOKORO, MESSAGES
 from ...exceptions import DiscordException, ERROR_CODES
 from ...http import DiscordHTTPClient
 from ...message import Message, MessageFlag
-from ...message.utils import process_message_chunk
+from ...message.message.utils import process_message_chunk
 from ...permission.permission import PERMISSION_MASK_MANAGE_MESSAGES, PERMISSION_MASK_READ_MESSAGE_HISTORY
 from ...sticker import Sticker
 from ...utils import DISCORD_EPOCH, log_time_converter, now_as_id

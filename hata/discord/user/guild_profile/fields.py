@@ -5,8 +5,8 @@ from ...field_parsers import (
     nullable_string_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, entity_id_array_optional_putter_factory, flag_optional_putter_factory,
-    nullable_date_time_optional_putter_factory, nullable_string_optional_putter_factory
+    bool_optional_putter_factory, flag_optional_putter_factory, nullable_date_time_optional_putter_factory,
+    optional_entity_id_array_optional_putter_factory, nullable_string_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, flag_validator_factory, entity_id_array_validator_factory,
@@ -49,7 +49,7 @@ validate_pending = bool_validator_factory('pending', False)
 # role_ids
 
 parse_role_ids = entity_id_array_parser_factory('roles')
-put_role_ids_into = entity_id_array_optional_putter_factory('roles')
+put_role_ids_into = optional_entity_id_array_optional_putter_factory('roles')
 validate_role_ids = entity_id_array_validator_factory('role_ids', NotImplemented, include = 'Role')
 
 # timed_out_until

@@ -1,6 +1,6 @@
 __all__ = ('MessageFlag',)
 
-from ..bases import FlagBase
+from ...bases import FlagBase
 
 
 class MessageFlag(FlagBase):

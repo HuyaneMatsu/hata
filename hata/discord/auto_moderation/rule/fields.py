@@ -6,9 +6,9 @@ from ...field_parsers import (
     nullable_object_array_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, entity_id_array_optional_putter_factory, entity_id_optional_putter_factory,
-    entity_id_putter_factory, force_string_putter_factory, nullable_object_array_optional_putter_factory,
-    preinstanced_putter_factory
+    bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
+    force_string_putter_factory, optional_entity_id_array_optional_putter_factory,
+    nullable_object_array_optional_putter_factory, preinstanced_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory,
@@ -57,13 +57,13 @@ validate_event_type = preinstanced_validator_factory('event_type', AutoModeratio
 # excluded_channel_ids
 
 parse_excluded_channel_ids = entity_id_array_parser_factory('exempt_channels')
-put_excluded_channel_ids_into = entity_id_array_optional_putter_factory('exempt_channels')
+put_excluded_channel_ids_into = optional_entity_id_array_optional_putter_factory('exempt_channels')
 validate_excluded_channel_ids = entity_id_array_validator_factory('excluded_channel_ids', Channel)
 
 # excluded_role_ids
 
 parse_excluded_role_ids = entity_id_array_parser_factory('exempt_roles')
-put_excluded_role_ids_into = entity_id_array_optional_putter_factory('exempt_roles')
+put_excluded_role_ids_into = optional_entity_id_array_optional_putter_factory('exempt_roles')
 validate_excluded_role_ids = entity_id_array_validator_factory('excluded_role_ids', Role)
 
 # guild_id

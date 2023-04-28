@@ -122,9 +122,9 @@ def entity_id_putter_factory(field_key):
     return putter
 
 
-def entity_id_array_optional_putter_factory(field_key):
+def optional_entity_id_array_optional_putter_factory(field_key):
     """
-    Returns an entity id array putter.
+    Returns a nullable  entity id array optional putter.
     
     Parameters
     ----------
@@ -163,6 +163,52 @@ def entity_id_array_optional_putter_factory(field_key):
                 entity_id_array = [str(entity_id) for entity_id in entity_id_array]
             
             data[field_key] = entity_id_array
+        
+        return data
+    
+    return putter
+
+
+def nullable_entity_id_array_putter_factory(field_key):
+    """
+    Returns a nullable entity id array putter.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(entity_id_array, data, defaults):
+        """
+        Puts the `entity_id_array` into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        entity_id_array : `None`, `tuple` of `int`
+            An entity's identifier.
+        data : `dict` of (`str`, `object`) items
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `object`) items
+        """
+        nonlocal field_key
+        
+        if entity_id_array is None:
+            entity_id_array = []
+        else:
+            entity_id_array = [str(entity_id) for entity_id in entity_id_array]
+        
+        data[field_key] = entity_id_array
         
         return data
     

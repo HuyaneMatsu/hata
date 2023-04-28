@@ -4,6 +4,7 @@
 
 - Add `InteractionEvent.channel_id` replaced with `InteractionEvent.channel`.
 - Add `InteractionEvent.user_id`.
+- Add `MessageCall`.
 
 #### Renames, Deprecation & Removals
 

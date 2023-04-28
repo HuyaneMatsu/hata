@@ -5,8 +5,8 @@ from ...field_parsers import (
     bool_parser_factory, entity_id_array_parser_factory, entity_id_parser_factory, nullable_object_array_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, entity_id_array_optional_putter_factory, entity_id_putter_factory,
-    nullable_entity_array_putter_factory
+    bool_optional_putter_factory, entity_id_putter_factory, nullable_entity_array_putter_factory,
+    optional_entity_id_array_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory,
@@ -19,7 +19,7 @@ from ..onboarding_prompt import OnboardingPrompt
 # default_channel_ids
 
 parse_default_channel_ids = entity_id_array_parser_factory('default_channel_ids')
-put_default_channel_ids_into = entity_id_array_optional_putter_factory('default_channel_ids')
+put_default_channel_ids_into = optional_entity_id_array_optional_putter_factory('default_channel_ids')
 validate_default_channel_ids = entity_id_array_validator_factory('default_channel_ids', Channel)
 
 # enabled

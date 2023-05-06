@@ -432,7 +432,6 @@ class Connection(DiscordEntity):
         -------
         is_equal : `bool`
         """
-        print('testing')
         # id
         self_id = self.id
         other_id = other.id
@@ -442,7 +441,6 @@ class Connection(DiscordEntity):
             
             return False
         
-        print('a')
         # friend_sync
         if self.friend_sync != other.friend_sync:
             return False
@@ -452,10 +450,9 @@ class Connection(DiscordEntity):
             return False
         
         # metadata_visibility
-        print(self.metadata_visibility, other.metadata_visibility)
         if self.metadata_visibility is not other.metadata_visibility:
             return False
-        print('b')
+        
         # name
         if self.name != other.name:
             return False
@@ -471,7 +468,7 @@ class Connection(DiscordEntity):
         # two_way_link
         if self.two_way_link != other.two_way_link:
             return False
-        print('c')
+        
         # type
         if self.type is not other.type:
             return False
@@ -483,7 +480,7 @@ class Connection(DiscordEntity):
         # visibility
         if self.visibility is not other.visibility:
             return False
-        print('j')
+        
         return True
     
     

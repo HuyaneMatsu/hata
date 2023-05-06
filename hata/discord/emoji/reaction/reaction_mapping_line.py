@@ -177,7 +177,7 @@ class ReactionMappingLine(set):
         __init__ = object.__init__
     
     
-    def __new__(cls, initialize_with=None, unknown=None):
+    def __new__(cls, initialize_with = None, unknown = None):
         """
         Creates a new reaction mapping line
         
@@ -280,7 +280,6 @@ class ReactionMappingLine(set):
         
         return NotImplemented
     
-    
     def _is_equal_same_type(self, other):
         """
         Returns whether self equals to other. `other` must be same type as self.
@@ -338,6 +337,22 @@ class ReactionMappingLine(set):
             return False
         
         return True
+    
+    
+    def __hash__(self):
+        """
+        Returns the hash value of reaction mapping line.
+        > Note that it is the current hash of the object and can change by changing the object.
+        """
+        hash_value = 0
+        
+        unknown = self.unknown
+        hash_value ^= unknown << (1 + (unknown % 13))
+        
+        for user in set.__iter__(self):
+            hash_value ^= hash(user)
+        
+        return hash_value
     
     
     @classmethod

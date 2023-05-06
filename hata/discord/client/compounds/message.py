@@ -236,7 +236,7 @@ class ClientCompoundMessageEndpoints(Compound):
                 message = Message.from_data(message_data)
             
             else:
-                message._set_attributes(message_data)
+                message._set_attributes(message_data, False)
         
         else:
             message = Message.from_data(message_data)

@@ -914,7 +914,7 @@ def nullable_functional_parser_factory(field_key, function, *, include = None):
     """
     def parser(data):
         """
-        Parses out a field from the given `data`. IF anything is received calls the specified function on it.
+        Parses out a field from the given `data`. If anything is received calls the specified function on it.
         
         > This function is generated.
         
@@ -936,6 +936,86 @@ def nullable_functional_parser_factory(field_key, function, *, include = None):
         
         return field_value
     
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal function
+            function = value
+    
+    
+    return parser
+
+
+def nullable_functional_array_parser_factory(field_key, function, *, do_sort = False, include = None, sort_key = None):
+    """
+    Returns a functional array parser with default return value.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    function : `FunctionType`
+        Function to call with the received field value.
+    
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The function's name to include `function` with. Should be used when `function` cannot be resolved initially.
+    
+    do_sort : `bool`
+        Whether the output should be sorted.
+    
+    sort_key : `FunctionType`
+        Sort key used to sort the entity.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    if do_sort:
+        def parser(data):
+            nonlocal field_key
+            nonlocal function
+            nonlocal sort_key
+            
+            field_values = data.get(field_key, None)
+            if (field_values is None) or (not field_values):
+                value = None
+            else:
+                value = tuple(sorted((function(field_value) for field_value in field_values), key = sort_key))
+            
+            return value
+    else:
+        def parser(data):
+            nonlocal field_key
+            nonlocal function
+            
+            field_values = data.get(field_key, None)
+            if (field_values is None) or (not field_values):
+                value = None
+            else:
+                value = (*(function(field_value) for field_value in field_values),)
+            
+            return value
+            
+    set_docs(
+        parser,
+        """
+        Parses out a field from the given `data`.
+        If anything is received calls the specified function on each of its elements.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Entity data.
+        
+        Returns
+        -------
+        field_value : `None`, `tuple` of `object`
+        """
+    )
     
     if (include is not None):
         @include_with_callback(include)

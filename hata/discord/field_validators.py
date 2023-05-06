@@ -1403,7 +1403,7 @@ def url_array_optional_validator_factory(field_name):
     return validator
 
 
-def nullable_entity_array_validator_factory(field_name, entity_type, *, include = None):
+def nullable_entity_array_validator_factory(field_name, entity_type, *, include = None, sort_key = None):
     """
     Returns a nullable entity array validator.
     
@@ -1415,6 +1415,8 @@ def nullable_entity_array_validator_factory(field_name, entity_type, *, include 
         The allowed entity type.
     include : `None`, `str` = `None`, Optional (Keyword only)
         The object's name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
+    sort_key : `None`, `FunctionType` = `None`, Optional (Keyword only)
+        Sort key used to sort the entities by.
     
     Returns
     -------
@@ -1440,6 +1442,7 @@ def nullable_entity_array_validator_factory(field_name, entity_type, *, include 
         """
         nonlocal field_name
         nonlocal entity_type
+        nonlocal sort_key
         
         if entity_array is None:
             return None
@@ -1465,7 +1468,7 @@ def nullable_entity_array_validator_factory(field_name, entity_type, *, include 
             entity_array_processed.add(entity)
         
         if (entity_array_processed is not None):
-            entity_array_processed = tuple(sorted(entity_array_processed))
+            entity_array_processed = tuple(sorted(entity_array_processed, key = sort_key))
         
         return entity_array_processed
     

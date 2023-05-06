@@ -1,4 +1,7 @@
-__all__ = ('cr_pg_channel_object', 'create_partial_channel_from_data', 'create_partial_channel_from_id')
+__all__ = (
+    'cr_pg_channel_object', 'create_partial_channel_data', 'create_partial_channel_from_data',
+    'create_partial_channel_from_id', 
+)
 
 import warnings
 from functools import partial as partial_func
@@ -21,6 +24,7 @@ from ..channel_metadata.fields import (
     validate_user_limit, validate_video_quality_mode
 )
 
+from .fields import parse_id, put_guild_id_into, put_id_into, put_type_into
 from .preinstanced import ChannelType
 
 
@@ -78,15 +82,16 @@ CHANNEL_GUILD_FIELD_CONVERTERS = {
 }
 
 
-def create_partial_channel_from_data(data, guild_id):
+@export
+def create_partial_channel_from_data(data, guild_id = 0):
     """
     Creates a partial channel from partial channel data.
     
     Parameters
     ----------
-    data : `None`, `dict` of (`str`, `Any`) items
+    data : `None`, `dict` of (`str`, `object`) items
         Partial channel data received from Discord.
-    guild_id : `int`
+    guild_id : `int` = `0`, Optional (Keyword only)
         The channel's guild's identifier.
     
     Returns
@@ -94,10 +99,8 @@ def create_partial_channel_from_data(data, guild_id):
     channel : `None`, ``Channel``
         The created partial channel, or `None`, if no data was received.
     """
-    if (data is None) or (not data):
-        return None
+    channel_id = parse_id(data)
     
-    channel_id = int(data['id'])
     try:
         return CHANNELS[channel_id]
     except KeyError:
@@ -122,6 +125,10 @@ def create_partial_channel_from_id(channel_id, channel_type, guild_id):
         The channel's type.
     guild_id : `int`
         A guild's identifier of the created channel.
+    
+    Returns
+    -------
+    channel : ``Channel``
     """
     try:
         return CHANNELS[channel_id]
@@ -132,6 +139,28 @@ def create_partial_channel_from_id(channel_id, channel_type, guild_id):
     CHANNELS[channel_id] = channel
     
     return channel
+
+
+@export
+def create_partial_channel_data(channel):
+    """
+    Creates partial channel data for the given channel.
+    
+    Parameters
+    ----------
+    channel : ``Channel``
+        The channel to create the partial data from.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `object`) items
+    """
+    data = {}
+    put_id_into(channel.id, data, True)
+    put_guild_id_into(channel.guild_id, data, True)
+    put_type_into(channel.type, data, True)
+    put_name_into(channel.name, data, True)
+    return data
 
 
 HAS_SLOWMODE = (

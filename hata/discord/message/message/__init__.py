@@ -1,4 +1,4 @@
-from .cross_mention import *
+from .constants import *
 from .fields import *
 from .flags import *
 from .message import *
@@ -7,7 +7,7 @@ from .utils import *
 
 
 __all__ = (
-    *cross_mention.__all__,
+    *constants.__all__,
     *fields.__all__,
     *flags.__all__,
     *message.__all__,

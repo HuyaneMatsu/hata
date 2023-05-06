@@ -256,7 +256,7 @@ def test__UserBase__mentioned_in():
     for message, expected_output in (
         (Message.precreate(202302040005, everyone_mention = True), True),
         (Message.precreate(202302040006), False),
-        # (Message.precreate(202302040007, user_mentions = [user]), True),
+        # (Message.precreate(202302040007, mentioned_users = [user]), True),
     ):
         vampytest.assert_eq(user.mentioned_in(message), expected_output)
 

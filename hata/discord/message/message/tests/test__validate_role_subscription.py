@@ -7,7 +7,7 @@ from ..fields import validate_role_subscription
 
 def test__validate_role_subscription__0():
     """
-    Tests whether `validate_role_subscription` works as intended.
+    Tests whether ``validate_role_subscription`` works as intended.
     
     Case: passing.
     """
@@ -23,7 +23,7 @@ def test__validate_role_subscription__0():
 
 def test__validate_role_subscription__1():
     """
-    Tests whether `validate_role_subscription` works as intended.
+    Tests whether ``validate_role_subscription`` works as intended.
     
     Case: `TypeError`.
     """

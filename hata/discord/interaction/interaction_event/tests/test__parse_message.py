@@ -12,7 +12,7 @@ def test__parse_message():
     message_id = 202210280005
     channel_id = 202210280016
     
-    message = Message.custom(message_id = message_id, channel_id = channel_id)
+    message = Message.precreate(message_id, channel_id = channel_id)
     
     for input_value, expected_output in (
         ({}, None),

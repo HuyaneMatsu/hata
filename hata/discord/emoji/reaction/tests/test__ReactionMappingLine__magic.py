@@ -75,3 +75,14 @@ def test__ReactionMappingLine__bool():
         (ReactionMappingLine([user_1]), True),
     ):
         vampytest.assert_eq(bool(reaction_mapping_line), expected_output)
+
+
+def test__ReactionMappingLine__hash():
+    """
+    Tests whether ``ReactionMappingLine.__hash__`` works as intended.
+    """
+    user_0 = User.precreate(202305040095)
+    
+    line = ReactionMappingLine([user_0], unknown = 2)
+    
+    vampytest.assert_instance(hash(line), int)

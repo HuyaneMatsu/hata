@@ -40,17 +40,30 @@ def test__create_partial_channel_from_data__1():
     """
     Tests whether ``create_partial_channel_from_data`` works as intended.
     
-    Case: empty data.
+    Case: `guild_id` in data
     """
-    guild_id = 202209180122
+    channel_id = 202209180122
+    guild_id = 202209180123
+    name = 'BURNING'
+    channel_type = ChannelType.guild_text
     
-    for data in (
-        None,
-        {},
-    ):
-        channel = create_partial_channel_from_data(data, guild_id)
-        
-        vampytest.assert_is(channel, None)
+    data = {
+        'id': str(channel_id),
+        'name': name,
+        'type': channel_type.value,
+        'guild_id': str(guild_id),
+    }
+    
+    channel = create_partial_channel_from_data(data)
+    
+    vampytest.assert_instance(channel, Channel)
+    
+    vampytest.assert_in(channel_id, CHANNELS)
+    vampytest.assert_is(CHANNELS[channel_id], channel)
+    
+    vampytest.assert_eq(channel.id, channel_id)
+    vampytest.assert_eq(channel.guild_id, guild_id)
+    vampytest.assert_eq(channel.name, name)
 
 
 def test__create_partial_channel_from_data__2():

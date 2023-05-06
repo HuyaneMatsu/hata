@@ -875,7 +875,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                     tries += 1
                     continue
                 except:
-                    await self._disconnect(force=True)
+                    await self._disconnect(force = True)
                     raise
                 
                 try:
@@ -918,7 +918,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                     continue
                 
                 except:
-                    await self._disconnect(force=True)
+                    await self._disconnect(force = True)
                     raise
                 
                 if (waiter is not None):
@@ -1044,7 +1044,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         except (RuntimeError, TimeoutError):
             return
         
-        await voice_client._disconnect(force=True)
+        await voice_client._disconnect(force = True)
     
     
     async def play_next(self):

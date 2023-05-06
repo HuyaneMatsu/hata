@@ -13,7 +13,7 @@ def test__validate_message__0():
     """
     message_id = 202210280007
     channel_id = 202210280014
-    message = Message.custom(message_id = message_id, channel_id = channel_id)
+    message = Message.precreate(message_id, channel_id = channel_id)
     
     
     for input_value in (

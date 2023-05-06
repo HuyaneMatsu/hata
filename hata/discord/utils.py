@@ -1013,7 +1013,7 @@ else:
         
         return result
     
-    def elapsed_time(delta, limit=ELAPSED_TIME_DEFAULT_LIMIT, names=ELAPSED_TIME_DEFAULT_NAMES):
+    def elapsed_time(delta, limit = ELAPSED_TIME_DEFAULT_LIMIT, names = ELAPSED_TIME_DEFAULT_NAMES):
         """
         Generates an elapsed time formula from the given time delta.
         

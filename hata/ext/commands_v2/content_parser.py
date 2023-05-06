@@ -456,8 +456,8 @@ def parse_user_mention(part, message):
     -------
     user : `None`, ``UserBase``
     """
-    user_mentions = message.user_mentions
-    if user_mentions is None:
+    mentioned_users = message.mentioned_users
+    if mentioned_users is None:
         return
     
     parsed = USER_MENTION_RP.fullmatch(part)
@@ -483,8 +483,8 @@ def parse_channel_mention(part, message):
     -------
     channel : `None`, ``Channel``
     """
-    channel_mentions = message.channel_mentions
-    if channel_mentions is None:
+    mentioned_channels = message.mentioned_channels
+    if mentioned_channels is None:
         return
     
     parsed = CHANNEL_MENTION_RP.fullmatch(part)
@@ -492,7 +492,7 @@ def parse_channel_mention(part, message):
         return
 
     channel_id = int(parsed.group(1))
-    for channel in channel_mentions:
+    for channel in mentioned_channels:
         if channel.id == channel_id:
             return channel
 

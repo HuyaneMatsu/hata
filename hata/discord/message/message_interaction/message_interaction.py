@@ -301,7 +301,9 @@ class MessageInteraction(DiscordEntity):
         is_equal : `bool`
         """
         # id
-        if self.id != other.id:
+        self_id = self.id
+        other_id = other.id
+        if self_id and other_id and self_id != other_id:
             return False
         
         # name

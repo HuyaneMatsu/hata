@@ -7,6 +7,7 @@ from ...core import INTERACTION_EVENT_MESSAGE_WAITERS, INTERACTION_EVENT_RESPONS
 
 Message = include('Message')
 
+
 def try_resolve_interaction_message(message, interaction):
     """
     Tries to resolve an interaction's message if not yet resolved.
@@ -26,7 +27,7 @@ def try_resolve_interaction_message(message, interaction):
         interaction_event.message = message
         
         try:
-            waiter = INTERACTION_EVENT_MESSAGE_WAITERS[interaction_event]
+            waiter = INTERACTION_EVENT_MESSAGE_WAITERS.pop(interaction_event)
         except KeyError:
             pass
         else:
@@ -41,7 +42,7 @@ def process_message_chunk(message_datas, channel):
     
     Parameters
     ----------
-    message_datas : `list` of (`dict` of (`str`, `Any`) items) elements
+    message_datas : `list` of (`dict` of (`str`, `object`) items) elements
         A list of message's data received from Discord.
     channel : ``Channel``, `None`
         The channels to which the messages are bound to if any.
@@ -101,4 +102,3 @@ def process_message_chunk(message_datas, channel):
                     continue
     
     return received
-

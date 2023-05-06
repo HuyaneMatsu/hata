@@ -349,8 +349,8 @@ class CommandProcessor(EventWaitforBase):
             if not self._mention_prefix_enabled:
                 return
             
-            user_mentions = message.user_mentions
-            if (user_mentions is None) or (client not in user_mentions):
+            mentioned_users = message.mentioned_users
+            if (mentioned_users is None) or (client not in mentioned_users):
                 return
             
             content = message.content

@@ -304,7 +304,7 @@ class Channel(DiscordEntity, immortal = True):
         channel_type = self.type
         repr_parts.append(' type = ')
         repr_parts.append(channel_type.name)
-        repr_parts.append('~')
+        repr_parts.append(' ~ ')
         repr_parts.append(repr(channel_type.value))
         
         if self.partial:
@@ -838,6 +838,9 @@ class Channel(DiscordEntity, immortal = True):
         -------
         self : `instance<cls>`
         """
+        if not guild_id:
+            guild_id = parse_guild_id(data)
+        
         channel_type = parse_type(data)
         metadata = channel_type.metadata_type._from_partial_data(data)
         
@@ -2047,8 +2050,8 @@ class Channel(DiscordEntity, immortal = True):
         -------
         message : ``Message``
         """
-        from_cache, message = Message._create_message_is_in_cache(message_data)
-        if from_cache:
+        message, was_up_to_date = Message._create_message_was_up_to_date(message_data)
+        if was_up_to_date:
             message._late_init(message_data)
             return message
         

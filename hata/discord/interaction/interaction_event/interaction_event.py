@@ -1080,9 +1080,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     
     def __hash__(self):
         """Returns the hash value of the interaction event."""
-        hash_value = self.id
-        if hash_value and (self._cached_users is not None):
-            return hash_value
+        self_id = self.id
+        if self_id:
+            return self_id
+        
+        hash_value = 0
         
         # application_id
         hash_value ^= self.application_id

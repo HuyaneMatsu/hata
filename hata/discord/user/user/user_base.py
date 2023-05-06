@@ -1159,15 +1159,15 @@ class UserBase(DiscordEntity, immortal = True):
         -------
         mentioned : `bool`
         """
-        if message.everyone_mention:
+        if message.mentioned_everyone:
             return True
         
-        user_mentions = message.user_mentions
-        if (user_mentions is not None) and (self in user_mentions):
+        mentioned_users = message.mentioned_users
+        if (mentioned_users is not None) and (self in mentioned_users):
             return True
         
-        role_mentions = message.role_mentions
-        if (role_mentions is not None):
+        mentioned_roles = message.mentioned_roles
+        if (mentioned_roles is not None):
             guild_id = message.guild_id
             if guild_id:
                 try:
@@ -1178,7 +1178,7 @@ class UserBase(DiscordEntity, immortal = True):
                     roles = guild_profile.roles
                     if (roles is not None):
                         for role in roles:
-                            if role in role_mentions:
+                            if role in mentioned_roles:
                                 return True
         
         return False

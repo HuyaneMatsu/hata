@@ -5,10 +5,53 @@
 - Add `InteractionEvent.channel_id` replaced with `InteractionEvent.channel`.
 - Add `InteractionEvent.user_id`.
 - Add `MessageCall`.
+- Add `create_partial_channel_data`.
+- Add `Message.call`.
+- Add `Message.__new__` back.
+- Add `Message.iter_mentioned_users`.
+- Add `Message.iter_mentioned_role_ids`.
+- Add `Message.iter_mentioned_channels`.
+- Add `Message.iter_mentioned_channels_cross_guild`.
+- Add `Message.iter_mentioned_roles`.
+- Add `Message.copy`.
+- Add `Message.copy_with`.
+- `Message.__eq__` now supports partial instances.
+- `Message.__hash__` now supports partial instances.
+- Add `ReactionMappingLine.__hash__`.
+- Add `stage_start` message content converter.
+- Add `stage_end` message content converter.
+- Add `stage_speaker` message content converter.
+- Add `stage_topic_change` message content converter.
+- Add `auto_moderation_action` message content converter.
+
+#### Bug fixes
+
+- `call` message content converter no longer raises `AttributeError`.
 
 #### Renames, Deprecation & Removals
 
 - Deprecate `channel_id` parameters of `InteractionEvent`. Use `channel` instead.
+- `create_partial_channel_from_data` no longer accepts `None`.
+- Rename `Message.cross_mentions` to `.mentioned_channels_cross_guild`.
+- Deprecate `Message.cross_mentions`.
+- Rename `Message.everyone_mention` to `.mentioned_everyone`.
+- Deprecate `Message.everyone_mention`.
+- Rename `Message.user_mentions` to `.mentioned_users`.
+- Deprecate `Message.user_mentions`.
+- Rename `Message.role_mention_ids` to `.mentioned_role_ids`.
+- Deprecate `Message.role_mention_ids`.
+- Rename `Message.has_user_mentions` to `.has_mentioned_users`.
+- Deprecate `Message.has_user_mentions`.
+- Rename `Message.has_role_mentions` to `.has_mentioned_roles`.
+- Deprecate `Message.has_role_mentions`.
+- Deprecate `Message.has_partial`.
+- Deprecate `Message.has_deleted`.
+- Rename `Message.has_cross_mentions` to `.has_mentioned_channels_cross_guild`.
+- Deprecate `Message.has_cross_mentions`.
+- Remove `UnknownCrossMention` (Not used).
+- Rename `Message.has_channel_mentions` to `.has_mentioned_channels`.
+- Deprecate `Message.has_channel_mentions`.
+- Deprecate `Message.custom`.
 
 ## 1.3.28 *\[2023-04-25\]*
 

@@ -83,3 +83,18 @@ def test__MessageInteraction__eq():
     ):
         test_message_interaction = MessageInteraction.precreate(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(message_interaction, test_message_interaction)
+
+
+def test__MessageInteraction__eq__partial():
+    """
+    Tests whether ``MessageInteraction.__eq__`` works as intended.
+    
+    Case: Partial with non-partial.
+    """
+    name = 'Afraid'
+    message_interaction_id = 202305040168
+    
+    message_interaction_0 = MessageInteraction.precreate(message_interaction_id = message_interaction_id, name = name)
+    message_interaction_1 = MessageInteraction(name = name)
+    
+    vampytest.assert_eq(message_interaction_0, message_interaction_1)

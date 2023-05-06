@@ -12,7 +12,7 @@ def test__ReactionMapping__from_data():
     Tests whether ``ReactionMapping.from_data`` works as intended.
     """
     emoji_1 = BUILTIN_EMOJIS['heart']
-    emoji_2 = BUILTIN_EMOJIS['heart']
+    emoji_2 = BUILTIN_EMOJIS['x']
     
     data = [
         {

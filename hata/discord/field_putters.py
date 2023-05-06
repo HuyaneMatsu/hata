@@ -1099,7 +1099,7 @@ def nullable_entity_array_putter_factory(field_key, field_type, *, can_include_i
 
 
 def nullable_entity_array_optional_putter_factory(
-    field_key, field_type, *, can_include_internals = ..., include = None
+    field_key, entity_type, *, can_include_internals = ..., include = None
 ):
     """
     Returns a nullable entity array putter.
@@ -1124,7 +1124,7 @@ def nullable_entity_array_optional_putter_factory(
     """
     if (
         ((can_include_internals is not ...) and can_include_internals) or
-        ((field_type is not NotImplemented) and _has_entity_include_internals_parameter(field_type))
+        ((entity_type is not NotImplemented) and _has_entity_include_internals_parameter(entity_type))
     ):
         def putter(entity_array, data, defaults, *, include_internals = False):
             """
@@ -1203,8 +1203,8 @@ def nullable_entity_array_optional_putter_factory(
     if (include is not None):
         @include_with_callback(include)
         def include_field_type(value):
-            nonlocal field_type
-            field_type = value
+            nonlocal entity_type
+            entity_type = value
     
     
     return putter
@@ -1361,7 +1361,9 @@ def default_entity_putter_factory(field_key, entity_type, default):
     return putter
 
 
-def nullable_entity_optional_putter_factory(field_key, entity_type):
+def nullable_entity_optional_putter_factory(
+    field_key, entity_type, *, can_include_internals = ..., force_include_internals = False, include = None
+):
     """
     Returns a nullable optional entity putter.
     
@@ -1374,11 +1376,54 @@ def nullable_entity_optional_putter_factory(field_key, entity_type):
     default : `object`
         The default value to handle as an unique case.
     
+    can_include_internals : `bool`, Optional (Keyword only)
+        Whether the `field_type.to_data` implements the `include_internals` parameter.
+        
+    force_include_internals : `bool`, Optional (Keyword only)
+        Whether `include_internals` should be passed as `True` always.
+    
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The object's name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
+    
     Returns
     -------
     putter : `FunctionType`
     """
-    if _has_entity_include_internals_parameter(entity_type):
+    if force_include_internals:
+        def putter(entity, data, defaults):
+            """
+            Puts the given entity into the given `data` json serializable object.
+            
+            > This function is generated.
+            
+            Parameters
+            ----------
+            entity : `object` with `{to_data}`
+                Entity.
+            data : `dict` of (`str`, `object`) items
+                Json serializable dictionary.
+            defaults : `bool`
+                Whether default values should be included as well.
+            
+            Returns
+            -------
+            data : `dict` of (`str`, `object`) items
+            """
+            nonlocal field_key
+            
+            if defaults or (entity is not None):
+                if entity is None:
+                    entity_data = None
+                else:
+                    entity_data = entity.to_data(defaults = defaults, include_internals = True)
+                
+                data[field_key] = entity_data
+            
+            return data
+    elif (
+        ((can_include_internals is not ...) and can_include_internals) or
+        ((entity_type is not NotImplemented) and _has_entity_include_internals_parameter(entity_type))
+    ):
         def putter(entity, data, defaults, *, include_internals = False):
             """
             Puts the given entity into the given `data` json serializable object.
@@ -1443,6 +1488,14 @@ def nullable_entity_optional_putter_factory(field_key, entity_type):
                 data[field_key] = entity_data
             
             return data
+    
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_field_type(value):
+            nonlocal entity_type
+            entity_type = value
+    
     
     return putter
 
@@ -1564,6 +1617,68 @@ def nullable_functional_optional_putter_factory(field_key, function, *, include 
         if defaults or (field_value is not None):
             if field_value is not None:
                 field_value = function(field_value)
+            
+            data[field_key] = field_value
+        
+        return data
+    
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal function
+            function = value
+    
+    
+    return putter
+
+
+def nullable_functional_array_optional_putter_factory(field_key, function, *, include = None):
+    """
+    Returns a nullable  array optional functional putter. If the given `field_value` is not `None`, it will call the
+    function on field's value and put it into the received `data`.
+    
+    Returns
+    -------
+    field_key : `str`
+        The field's key used in payload.
+    function : `FunctionType`
+        The function to call to serialise the field value.
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The function's name to include `function` with. Should be used when `function` cannot be resolved initially.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(values, data, defaults):
+        """
+        Puts the given `field_value` into the given `data` json serializable object. The `field_value` is processed by
+        a function which is defined at the putter's creation.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        values : `None`, `tuple` of `object`
+            Field values.
+        data : `dict` of (`str`, `object`) items
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `object`) items
+        """
+        nonlocal function
+        nonlocal field_key
+        
+        if defaults or (values is not None):
+            if values is None:
+                field_value = []
+            else:
+                field_value = [function(value) for value in values]
             
             data[field_key] = field_value
         

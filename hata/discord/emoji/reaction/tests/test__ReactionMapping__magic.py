@@ -61,3 +61,21 @@ def test__ReactionMapping__eq():
         output = ReactionMapping.__eq__(value_1, value_2)
         
         vampytest.assert_eq(output, expected_output)
+
+
+def test__ReactionMapping__hash():
+    """
+    Tests whether ``ReactionMapping.__hash__`` works as intended.
+    """
+    emoji_0 = BUILTIN_EMOJIS['heart']
+    emoji_1 = BUILTIN_EMOJIS['x']
+    
+    user_0 = User.precreate(202305040096)
+    user_1 = User.precreate(202305040097)
+    
+    mapping = ReactionMapping({
+        emoji_0: [user_0, None, None],
+        emoji_1: [user_1],
+    })
+    
+    vampytest.assert_instance(hash(mapping), int)

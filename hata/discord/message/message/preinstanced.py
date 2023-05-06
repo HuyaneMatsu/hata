@@ -2,11 +2,15 @@ __all__ = ('MessageType', )
 
 import warnings
 
-from scarletio import any_to_any, class_property
+from scarletio import class_property, include
 
 from ...activity import ACTIVITY_TYPES
 from ...bases import Preinstance as P, PreinstancedBase
-from ...utils import sanitize_mentions
+from ...embed import EmbedType
+from ...utils import elapsed_time, sanitize_mentions
+
+
+Client = include('Client')
 
 
 def MESSAGE_DEFAULT_CONVERTER(self):
@@ -31,30 +35,38 @@ def MESSAGE_DEFAULT_CONVERTER(self):
 
 
 def convert_user_add(self):
-    return f'{self.author.name} added {self.user_mentions[0].name} to the group.'
+    return f'{self.author.name} added {self.mentioned_users[0].name} to the group.'
 
 def convert_user_remove(self):
-    return f'{self.author.name} removed {self.user_mentions[0].name} from the group.'
+    return f'{self.author.name} removed {self.mentioned_users[0].name} from the group.'
 
 
 def convert_call(self):
-    if any_to_any(self.channel.clients, self.call.users):
+    call = self.call
+    if call is None or not any(isinstance(user, Client) for user in call.iter_users()):
         return f'{self.author.name} started a call.'
     
-    if self.call.ended_timestamp is None:
+    ended_at = call.ended_at
+    if ended_at is None:
         # We are using a unicode as dash and not the minus sign
         return f'{self.author.name} started a call — Join the call.'
     
-    return f'You missed a call from {self.author.name}'
+    # This formatting could be more accurate.
+    if elapsed_time is None:
+        return f'{self.author.name} started a call.'
+    
+    return f'{self.author.name} started a call that lasted {elapsed_time(self.created_at, ended_at)}.'
+
 
 def convert_channel_name_change(self):
-    return f'{self.author.name} changed the channel name: {self.content}'
+    return f'{self.author.name} changed the channel name: {self.content!s}'
 
 def convert_channel_icon_change(self):
     return f'{self.author.name} changed the channel icon.'
 
 def convert_new_pin(self):
-    return f'{self.author.name} pinned a message to this channel.'
+    return f'{self.author.name_at(self.guild_id)} pinned a message to this channel. See all pinned messages.'
+
 
 JOIN_MESSAGE_FORMATTERS = (
     lambda name : f'{name} just joined the server - glhf!',
@@ -113,6 +125,7 @@ def convert_guild_boost(self):
         guild_name = guild.name
     return f'{self.author.name} boosted {guild_name} with Nitro!'
 
+
 def convert_guild_boost_tier_1(self):
     guild = self.channel.guild
     if guild is None:
@@ -121,6 +134,7 @@ def convert_guild_boost_tier_1(self):
         guild_name = guild.name
         
     return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 1!'
+
 
 def convert_guild_boost_tier_2(self):
     guild = self.channel.guild
@@ -131,6 +145,7 @@ def convert_guild_boost_tier_2(self):
     
     return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 2!'
 
+
 def convert_guild_boost_tier_3(self):
     guild = self.channel.guild
     if guild is None:
@@ -139,6 +154,7 @@ def convert_guild_boost_tier_3(self):
         guild_name = guild.name
         
     return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 3!'
+
 
 def convert_new_follower_channel(self):
     channel = self.channel
@@ -155,6 +171,7 @@ def convert_new_follower_channel(self):
         f'Its most important updates will show up here.'
     )
 
+
 def convert_stream(self):
     user = self.author
     for activity in user.activities:
@@ -168,14 +185,17 @@ def convert_stream(self):
     
     return f'{user_name} is live! Now streaming {activity_name}'
 
+
 def convert_discovery_disqualified(self):
     return (
         'This server has been removed from Server Discovery because it no longer passes all the requirements. '
         'Check `Server Settings` for more details.'
     )
 
+
 def convert_discovery_requalified(self):
     return 'This server is eligible for Server Discovery again and has been automatically relisted!'
+
 
 def convert_discovery_grace_period_initial_warning(self):
     return (
@@ -191,8 +211,48 @@ def convert_discovery_grace_period_final_warning(self):
 
 
 def convert_thread_created(self):
-    user_name = self.author.name_at(self.guild_id)
-    return f'{user_name} started a thread'
+    return f'{self.author.name_at(self.guild_id)} started a thread: {self.content!r}. See all threads.'
+
+
+def convert_auto_moderation_action(self):
+    embed = self.embed
+    if embed is None or embed.type is not EmbedType.auto_moderation_message:
+        return None
+    
+    content_parts = []
+    should_add_next = ''
+    
+    description = embed.description
+    if description is not None:
+        content_parts.append(description)
+        should_add_next = '\n'
+    
+    
+    for field in embed.iter_fields():
+        if field.name == 'keyword':
+            content_parts.append(should_add_next)
+            content_parts.append('Keyword: ')
+            content_parts.append(field.value)
+            should_add_next = ' • '
+            break
+    
+    for field in embed.iter_fields():
+        if field.name == 'rule_name':
+            content_parts.append(should_add_next)
+            content_parts.append('Rule: ')
+            content_parts.append(field.value)
+            should_add_next = ' • '
+            break
+    
+    for field in embed.iter_fields():
+        if field.name == 'timeout_duration':
+            content_parts.append(should_add_next)
+            content_parts.append('Time-out: ')
+            content_parts.append(field.value)
+            content_parts.append(' secs')
+            break
+    
+    return ''.join(content_parts)
 
 
 def convert_invite_reminder(self):
@@ -200,6 +260,22 @@ def convert_invite_reminder(self):
         'Wondering who to invite?\n'
         'Start by inviting anyone who can help you build the server!'
     )
+
+
+def convert_stage_start(self):
+    return f'{self.author.name_at(self.guild_id)} started {self.content!s}.'
+
+
+def convert_stage_end(self):
+    return f'{self.author.name_at(self.guild_id)} ended {self.content!s}.'
+
+
+def convert_stage_topic_change(self):
+    return f'{self.author.name_at(self.guild_id)} changed the Stage topic: {self.content!r}'
+
+
+def convert_stage_speaker(self):
+    return f'{self.author.name_at(self.guild_id)} is now a speaker'
 
 
 class MessageType(PreinstancedBase):
@@ -280,21 +356,21 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | context_command                           | context command                           | 23    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | auto_moderation_action                    | auto moderation_action                    | 24    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    | auto_moderation_action                    | auto moderation action                    | 24    | convert_auto_moderation_action                    | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | role_subscription_purchase                | role subscription purchase                | 25    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | interaction_premium_upsell                | interaction premium upsell                | 26    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | stage_start                               | stage start                               | 27    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    | stage_start                               | stage start                               | 27    | convert_stage_start                               | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | stage_end                                 | stage end                                 | 28    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    | stage_end                                 | stage end                                 | 28    | convert_stage_end                                 | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | stage_speaker                             | stage speaker                             | 29    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    | stage_speaker                             | stage speaker                             | 29    | convert_stage_speaker                             | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | stage_request_to_speak                    | stage request to speak                    | 30    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | stage_topic_change                        | stage topic change                        | 31    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    | stage_topic_change                        | stage topic change                        | 31    | convert_stage_topic_change                        | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | application_subscription                  | application subscription                  | 32    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
@@ -406,14 +482,14 @@ class MessageType(PreinstancedBase):
     thread_started = P(21, 'thread started', MESSAGE_DEFAULT_CONVERTER, False)
     invite_reminder = P(22, 'invite reminder', convert_invite_reminder, True)
     context_command = P(23, 'context command', MESSAGE_DEFAULT_CONVERTER, True)
-    auto_moderation_action = P(24, 'auto moderation action', MESSAGE_DEFAULT_CONVERTER, True)
+    auto_moderation_action = P(24, 'auto moderation action', convert_auto_moderation_action, True)
     role_subscription_purchase = P (25, 'role subscription purchase', MESSAGE_DEFAULT_CONVERTER, True)
     interaction_premium_upsell = P(26, 'interaction premium upsell', MESSAGE_DEFAULT_CONVERTER, True)
-    stage_start = P(27, 'stage start', MESSAGE_DEFAULT_CONVERTER, True)
-    stage_end = P(28, 'stage end', MESSAGE_DEFAULT_CONVERTER, True)
-    stage_speaker = P(29, 'stage speaker', MESSAGE_DEFAULT_CONVERTER, True)
+    stage_start = P(27, 'stage start', convert_stage_start, True)
+    stage_end = P(28, 'stage end', convert_stage_end, True)
+    stage_speaker = P(29, 'stage speaker', convert_stage_speaker, True)
     stage_request_to_speak = P(30, 'stage request to speak', MESSAGE_DEFAULT_CONVERTER, True)
-    stage_topic_change = P(31, 'stage topic change', MESSAGE_DEFAULT_CONVERTER, True)
+    stage_topic_change = P(31, 'stage topic change', convert_stage_topic_change, True)
     application_subscription = P(32, 'application subscription', MESSAGE_DEFAULT_CONVERTER, True)
     private_channel_integration_add = P(33, 'private channel integration add', MESSAGE_DEFAULT_CONVERTER, True)
     private_channel_integration_remove = P(34, 'private channel integration remove', MESSAGE_DEFAULT_CONVERTER, True)
@@ -473,6 +549,11 @@ del convert_discovery_grace_period_initial_warning
 del convert_discovery_grace_period_final_warning
 del convert_thread_created
 del convert_invite_reminder
+del convert_stage_start
+del convert_stage_end
+del convert_stage_topic_change
+del convert_stage_speaker
+del convert_auto_moderation_action
 
 GENERIC_MESSAGE_TYPES = frozenset((
     MessageType.default,

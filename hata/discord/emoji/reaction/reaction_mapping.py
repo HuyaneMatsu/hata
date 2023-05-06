@@ -137,7 +137,7 @@ def _validate_reaction_mapping_initialize_with_iterable(initialize_with):
         if len(item) != 2:
             raise TypeError(
                 f'`initialize_with` items can be `tuple` with length of `2`, got '
-                f'item_length={item_length!r}; item={item!r}; initialize_with{initialize_with!r}'
+                f'item_length = {item_length!r}; item = {item!r}; initialize_with{initialize_with!r}'
             )
         
         built_initialize_with = _validate_reaction_mapping_initialize_with_item(built_initialize_with, item)
@@ -205,7 +205,7 @@ class ReactionMapping(dict):
         __init__ = object.__init__
     
     
-    def __new__(cls, initialize_with=None):
+    def __new__(cls, initialize_with = None):
         """
         Creates a new reaction mapping instance.
         
@@ -312,6 +312,19 @@ class ReactionMapping(dict):
         return is_equal
     
     
+    def __hash__(self):
+        """
+        Returns the hash value of reaction mapping line.
+        > Note that it is the current hash of the object and can change by changing the object.
+        """
+        hash_value = 0
+        
+        for key, value in dict.items(self):
+            hash_value ^= hash(key) & hash(value)
+        
+        return hash_value
+    
+    
     @classmethod
     def from_data(cls, data):
         """
@@ -319,7 +332,7 @@ class ReactionMapping(dict):
         
         Parameters
         ----------
-        data : `None`, `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `object`) items
             Reactions data.
         
         Returns
@@ -504,7 +517,7 @@ class ReactionMapping(dict):
         
         Returns
         -------
-        data : `list` of `dict` of (`str`, `Any`)
+        data : `list` of `dict` of (`str`, `object`)
         """
         data = []
         

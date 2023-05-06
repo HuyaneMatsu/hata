@@ -27,8 +27,6 @@ def test__validate_components__1():
     
     Case: `TypeError`.
     """
-    component = Component(ComponentType.button, label = 'hello')
-    
     for input_value in (
         12.6,
         [12.6],

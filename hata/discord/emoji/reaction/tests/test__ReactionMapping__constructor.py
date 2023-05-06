@@ -28,7 +28,6 @@ def test__ReactionMapping__new__1():
     """
     reaction_mapping = ReactionMapping(None)
     
-    
     vampytest.assert_instance(reaction_mapping, ReactionMapping)
     vampytest.assert_eq(len(reaction_mapping), 0)
     vampytest.assert_eq(reaction_mapping.fully_loaded, True)

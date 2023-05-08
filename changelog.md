@@ -2,6 +2,17 @@
 
 #### Improvements
 
+- Add `--profile` parameter to `run` command.
+
+#### Bug fixes
+
+- `run` command now stops the event loop if interrupted during connection.
+- `run --console` command was not writing "interrupted" (when interrupted obviously) as expected.
+
+## 1.3.29 *\[2023-05-08\]*
+
+#### Improvements
+
 - Add `InteractionEvent.channel_id` replaced with `InteractionEvent.channel`.
 - Add `InteractionEvent.user_id`.
 - Add `MessageCall`.

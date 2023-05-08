@@ -79,12 +79,7 @@ def wait_for_interruption():
         # should not happen
         exception = None
     
-    sys.stdout.write('\ninterrupted ...\n')
-    
-    TaskGroup(
-        KOKORO,
-        (Task(client.disconnect(), KOKORO) for client in CLIENTS.values())
-    ).wait_all().sync_wrap().wait()
+    _exit_callback()
     
     KOKORO.stop()
     
@@ -93,10 +88,13 @@ def wait_for_interruption():
         raise exception
 
 
-def _console_exit_callback():
+def _exit_callback():
     """
-    Callback used by ``run_console_till_interruption`` to stop the running clients.
+    Callback used by ``wait_for_interruption`` and ``run_console_till_interruption``
+    to stop the running clients.
     """
+    sys.stdout.write('\ninterrupted ...\n')
+    
     TaskGroup(
         KOKORO,
         (Task(client.disconnect(), KOKORO) for client in CLIENTS.values())
@@ -132,7 +130,7 @@ def run_console_till_interruption():
         interactive_console_locals,
         banner = create_banner(PACKAGE),
         exit_message = create_exit_message(PACKAGE),
-        callback = _console_exit_callback,
+        callback = _exit_callback,
         stop_on_interruption = True,
     )
 

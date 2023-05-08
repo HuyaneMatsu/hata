@@ -61,8 +61,16 @@ def execute_command_from_system_parameters():
     if len(system_parameters) < 2:
         system_parameters = [*system_parameters, SYSTEM_DEFAULT_PARAMETER]
     
-    call_command(system_parameters, 1, sys.stdout)
+    try:
+        call_command(system_parameters, 1, sys.stdout)
+    except BaseException as err:
+        exception = err
+    else:
+        exception = None
     
-    # Stop the event loop if we are doing nothing.
-    if KOKORO.running and not KOKORO.get_tasks():
+    # Stop the event loop on exception or if we are doing nothing.
+    if KOKORO.running and (exception is not None) or (not KOKORO.get_tasks()):
         KOKORO.stop()
+    
+    if (exception is not None):
+        raise exception

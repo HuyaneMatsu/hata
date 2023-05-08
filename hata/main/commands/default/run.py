@@ -1,7 +1,10 @@
 __all__ = ()
 
 import sys
-from datetime import datetime
+from datetime import datetime as DateTime
+from shutil import copy2 as copy_file
+from os import mkdir as create_directory
+from os.path import abspath as absolute_path, dirname as get_parent_directory_path, exists, join as join_paths
 
 from scarletio import Future, LOOP_TIME, Task, TaskGroup, WeakReferer
 
@@ -9,6 +12,9 @@ from .... import (
     CLIENTS, DATETIME_FORMAT_CODE, KOKORO, stop_clients, run_console_till_interruption, wait_for_interruption
 )
 from ... import register
+
+
+PROFILING_LIBRARY = None
 
 
 def _log(message):
@@ -20,7 +26,7 @@ def _log(message):
     message : `str`
         The message to log.
     """
-    sys.stdout.write(f'{datetime.utcnow():{DATETIME_FORMAT_CODE}} {message}\n')
+    sys.stdout.write(f'{DateTime.utcnow():{DATETIME_FORMAT_CODE}} {message}\n')
 
 
 class ConnectionEventHandler:
@@ -321,19 +327,102 @@ async def _connect_clients(do_log):
     return connected_count
 
 
+def _check_profiling_available():
+    """
+    Checks whether profiling library is available.
+    
+    Returns
+    -------
+    available : `bool`
+    """
+    global PROFILING_LIBRARY
+    try:
+        import yappi
+    except ModuleNotFoundError:
+        return False
+    
+    PROFILING_LIBRARY = yappi
+    yappi.set_clock_type('cpu')
+    return True
+
+
+def _begin_profiling():
+    """
+    Begins profiling if available.
+    
+    Should be called after ``_check_profiling_available``.
+    """
+    if PROFILING_LIBRARY is None:
+        return
+    
+    PROFILING_LIBRARY.start(builtins = True)
+
+
+def _stop_profiling():
+    """
+    Stops profiling if available.
+    
+    Should be called after ``_begin_profiling``.
+    """
+    if PROFILING_LIBRARY is None:
+        return
+    
+    directory_path = absolute_path('.prof')
+    
+    if not exists(directory_path):
+        # If the current directory was deleted dont write logs.
+        if not exists(get_parent_directory_path(directory_path)):
+            return
+        
+        create_directory(directory_path)
+    
+    PROFILING_LIBRARY.stop()
+    stats = PROFILING_LIBRARY.get_func_stats()
+    stats = PROFILING_LIBRARY.convert2pstats(stats)
+    
+    file_path_latest = join_paths(directory_path, 'latest.prof')
+    file_path_history = join_paths(directory_path, f'{DateTime.utcnow():%Y_%m_%d_%H_%M_%S}.prof')
+    
+    try:
+        stats.dump_stats(file_path_latest)
+        copy_file(file_path_latest, file_path_history)
+    except FileNotFoundError:
+        # No need to panic.
+        pass
+
+
 @register
-def run(*, log: bool = True, console: bool = False):
+def run(
+    *,
+    console: bool = False,
+    log: bool = True,
+    profile: bool = False,
+):
     """
     Starts the created Discord bots.
     
     On keyboard interrupt shuts the bots down. It might take a few seconds.
+    
+    When `--console` is defined it will start an interactive console after the clients started up.
+    When `--log` is defined (default) logging in status will be logged into `sys.stdout`.
+    When `--profile`` is defined a `.prof` file will be created on exit under the `.prof` directory.
+    To open the latest profile file use `snakeviz .prof/latest.prof`.
     """
-    connected_count = KOKORO.run(_connect_clients(log))
+    if profile and (not _check_profiling_available()):
+        sys.stdout.write(f'Profiling library not available. Please install `yappi`.\n')
+        return
     
     try:
+        _begin_profiling()
+        
+        connected_count = KOKORO.run(_connect_clients(log))
+        
         if console:
             run_console_till_interruption()
         elif connected_count:
             wait_for_interruption()
     except KeyboardInterrupt as err:
         raise SystemExit from err
+    
+    finally:
+        _stop_profiling()

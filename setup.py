@@ -232,17 +232,20 @@ setup(
         'chardet>=2.0',
     ],
     extras_require = {
-        'voice': [
-            'PyNaCl>=1.3.0',
-        ],
-        'relativedelta': [
-            'python-dateutil>=2.0',
+        'autoreload': [
+            'inotify_simple>=1.3.5',
         ],
         'cpythonspeedups': [
             'cchardet>=2.0',
         ],
-        'autoreload': [
-            'inotify_simple>=1.3.5',
+        'profiling': [
+            'yappi',
+        ],
+        'relativedelta': [
+            'python-dateutil>=2.0',
+        ],
+        'voice': [
+            'PyNaCl>=1.3.0',
         ],
     },
     entry_points = {

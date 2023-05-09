@@ -232,6 +232,13 @@ setup(
         'chardet>=2.0',
     ],
     extras_require = {
+        'all': [
+            'PyNaCl>=1.3.0',
+            'cchardet>=2.0',
+            'inotify_simple>=1.3.5',
+            'python-dateutil>=2.0',
+            'yappi',
+        ],
         'autoreload': [
             'inotify_simple>=1.3.5',
         ],

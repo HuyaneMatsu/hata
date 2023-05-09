@@ -367,7 +367,7 @@ def _stop_profiling():
     if PROFILING_LIBRARY is None:
         return
     
-    directory_path = absolute_path('.prof')
+    directory_path = absolute_path('.profiles')
     
     if not exists(directory_path):
         # If the current directory was deleted dont write logs.
@@ -406,7 +406,7 @@ def run(
     When `--console` is defined it will start an interactive console after the clients started up.
     When `--log` is defined (default) logging in status will be logged into `sys.stdout`.
     When `--profile`` is defined a `.prof` file will be created on exit under the `.prof` directory.
-    To open the latest profile file use `snakeviz .prof/latest.prof`.
+    To open the latest profile file use `snakeviz .profiles/latest.prof` (example).
     """
     if profile and (not _check_profiling_available()):
         sys.stdout.write(f'Profiling library not available. Please install `yappi`.\n')

@@ -235,9 +235,10 @@ def create_bot_file(directory_path, bot_name):
     bot_name : `str`
         The bot's name.
     """
+    bot_module_name = get_bot_module_name(bot_name)
     bot_variable_name = get_bot_variable_name(bot_name)
     bot_constant_name = get_bot_constant_name(bot_name)
-    with open(join_paths(directory_path, bot_name + '.py')) as file:
+    with open(join_paths(directory_path, bot_module_name + '.py'), 'w') as file:
         file.write(
             f'__all__ = (\'{bot_variable_name}\',)\n'
             f'\n'
@@ -260,7 +261,7 @@ def create_plugins_init_file(directory_path):
     directory_path : `str`
         The file's directory's path.
     """
-    with open(join_paths(directory_path, '__init__.py')) as file:
+    with open(join_paths(directory_path, '__init__.py'), 'w') as file:
         file.write(
             f'from hata.ext.plugin_loader import mark_as_plugin_root_directory\n'
             f'\n'
@@ -310,6 +311,7 @@ def create_project_structure(root_directory_path, bot_names):
     project_directory_path = join_paths(root_directory_path, project_module_name)
     create_directory(project_directory_path)
     
+    create_project_init_file(project_directory_path)
     create_cli_file(project_directory_path)
     create_main_file(project_directory_path)
     

@@ -63,7 +63,7 @@ def create_dot_env_file(directory_path, bot_names):
     bot_names : `list` of `str`
         The bots' names.
     """
-    with open(join_paths(directory_path, 'manage.py'), 'w') as file:
+    with open(join_paths(directory_path, '.env'), 'w') as file:
         file.write(build_dot_env_file_content(bot_names))
 
 
@@ -138,9 +138,9 @@ def create_cli_file(directory_path):
             f'\n'
             f'    from hata.ext.plugin_auto_reloader import start_auto_reloader, warn_auto_reloader_availability\n'
             f'    from hata.ext.plugin_loader import load_all_plugin, frame_filter, register_plugin\n'
-            f'    from scarletio import get_event_loop, write_exception_sync'
+            f'    from scarletio import get_event_loop, write_exception_sync\n'
             f'\n'
-            f'    from bots import *\n'
+            f'    from . import bots\n'
             f'\n'
             f'    register_plugin(\'plugins\')\n'
             f'\n'

@@ -7,7 +7,7 @@ from scarletio import __package__ as SCARLETIO_NAME, __version__ as SCARLETIO_VE
 
 from .... import __package__ as PACKAGE_NAME, __version__ as PACKAGE_VERSION
 
-from ... import register
+from ...core import register
 
 
 @register(

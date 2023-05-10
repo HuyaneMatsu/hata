@@ -8,10 +8,10 @@ from os.path import abspath as absolute_path, dirname as get_parent_directory_pa
 
 from scarletio import Future, LOOP_TIME, Task, TaskGroup, WeakReferer
 
-from .... import (
+from ....discord import (
     CLIENTS, DATETIME_FORMAT_CODE, KOKORO, stop_clients, run_console_till_interruption, wait_for_interruption
 )
-from ... import register
+from ...core import register
 
 
 PROFILING_LIBRARY = None

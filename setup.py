@@ -187,6 +187,7 @@ setup(
         'hata.main',
         'hata.main.commands',
         'hata.main.commands.default',
+        'hata.main.commands.default.scaffold',
         'hata.main.core',
         'hata.main.core.command',
         'hata.utils',
@@ -235,8 +236,10 @@ setup(
         'all': [
             'PyNaCl>=1.3.0',
             'cchardet>=2.0',
+            'dotenv',
             'inotify_simple>=1.3.5',
             'python-dateutil>=2.0',
+            'snakeviz',
             'yappi',
         ],
         'autoreload': [
@@ -245,7 +248,11 @@ setup(
         'cpythonspeedups': [
             'cchardet>=2.0',
         ],
+        'env': [
+            'dotenv',
+        ],
         'profiling': [
+            'snakeviz',
             'yappi',
         ],
         'relativedelta': [

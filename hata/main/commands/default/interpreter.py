@@ -9,7 +9,7 @@ from scarletio.tools.asynchronous_interactive_console.console_helpers import AWA
 
 from .... import __package__ as PACKAGE_NAME
 
-from ... import register
+from ...core import register
 
 
 PACKAGE = __import__(PACKAGE_NAME)

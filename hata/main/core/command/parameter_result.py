@@ -11,7 +11,7 @@ class ParameterResult(RichAttributeErrorBaseType):
     ----------
     command_parameter : ``CommandParameter``
         The represented command parameter.
-    fed_items : `None`, `list` of `tuple` (`str`, `Any`) items
+    fed_items : `None`, `list` of `tuple` (`str`, `object`) items
         Fed values to the parameter as results.
     """
     __slots__ = ('command_parameter', 'fed_items',)
@@ -76,7 +76,7 @@ class ParameterResult(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        value : `Any`
+        value : `object`
             The value to feed.
         
         Returns
@@ -92,7 +92,7 @@ class ParameterResult(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        value : `Any`
+        value : `object`
             The value to feed.
         name : `str`
             The value's name.
@@ -114,7 +114,7 @@ class ParameterResult(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        value : `Any`
+        value : `object`
             The value to feed.
         name : `str`
             The value's name.
@@ -210,7 +210,7 @@ class ParameterResult(RichAttributeErrorBaseType):
         
         Returns
         -------
-        value : `None`, `Any`
+        value : `None`, `object`
         """
         fed_items = self.fed_items
         if (fed_items is not None):
@@ -223,7 +223,7 @@ class ParameterResult(RichAttributeErrorBaseType):
         
         Returns
         -------
-        item : `None`, `tuple` (`str`, `Any`) item
+        item : `None`, `tuple` (`str`, `object`) item
         """
         fed_items = self.fed_items
         if (fed_items is not None):
@@ -238,7 +238,7 @@ class ParameterResult(RichAttributeErrorBaseType):
         
         Yields
         ------
-        value : `Any`
+        value : `object`
         """
         fed_items = self.fed_items
         if (fed_items is not None):
@@ -254,7 +254,7 @@ class ParameterResult(RichAttributeErrorBaseType):
         
         Yields
         ------
-        item : `tuple` (`str`, `Any`)
+        item : `tuple` (`str`, `object`)
         """
         fed_items = self.fed_items
         if (fed_items is not None):
@@ -267,9 +267,9 @@ class ParameterResult(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        positional_parameters : `list` of `Any`
+        positional_parameters : `list` of `object`
             Positional parameters to call the respective function with.
-        keyword_parameters : `dict` of (`str`, `Any`) items
+        keyword_parameters : `dict` of (`str`, `object`) items
             Keyword parameters to call the respective function with.
         
         Returns

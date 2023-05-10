@@ -3,7 +3,7 @@ __all__ = ()
 from math import floor, log10
 
 from .... import __package__ as PACKAGE_NAME
-from ... import REGISTERED_COMMANDS, REGISTERED_COMMANDS_BY_NAME, command_sort_key, normalize_command_name, register
+from ...core import REGISTERED_COMMANDS, REGISTERED_COMMANDS_BY_NAME, command_sort_key, normalize_command_name, register
 from ...core.helpers import render_main_call_into
 
 

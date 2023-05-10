@@ -75,7 +75,11 @@ __all__ = (
     'RICH_DISCORD_EXCEPTION'
 )
 
-def get_bool_env(name, default, *, warn_if_empty = True):
+
+ERROR_MESSAGE_APPENDIX = 'Please update your `.env` file. Or perhaps you don\'t have `dotenv` installed?'
+
+
+def get_bool_env(name, default = False, *, warn_if_empty = True):
     """
     Gets the given environmental variable.
     
@@ -85,7 +89,7 @@ def get_bool_env(name, default, *, warn_if_empty = True):
     ----------
     name : `str`
         The name of an environmental variable.
-    default : `bool`
+    default : `bool` = `False`, Optional
         The default value of the respective variable.
     warn_if_empty : `bool` = `True`, Optional (Keyword only)
         Whether warning should be dropped if empty environmental variable is received.
@@ -98,10 +102,11 @@ def get_bool_env(name, default, *, warn_if_empty = True):
     if env_variable is None:
         return default
     
-    if env_variable == 'True':
+    env_variable = env_variable.casefold()
+    if env_variable in ('true', '0'):
         return True
     
-    if env_variable == 'False':
+    if env_variable in ('false', '0'):
         return False
     
     if warn_if_empty:
@@ -112,7 +117,7 @@ def get_bool_env(name, default, *, warn_if_empty = True):
     return default
 
 
-def get_str_env(name, default = None, *, warn_if_empty = True):
+def get_str_env(name, default = None, *, raise_if_missing_or_empty = False, warn_if_empty = True):
     """
     Gets the given environmental variable.
     
@@ -124,29 +129,46 @@ def get_str_env(name, default = None, *, warn_if_empty = True):
         The name of an environmental variable.
     default : `None` | `str` = `None`, Optional
         The default value of the respective variable. Defaults to `None`.
+    raise_if_missing_or_empty : `bool` = `False`, Optional (Keyword only)
+        Whether exception should be thrown if the environmental variable is missing or empty.
+        Has priority over `default` and `warn_if_empty`.
     warn_if_empty : `bool` = `True`, Optional (Keyword only)
         Whether warning should be dropped if empty environmental variable is received.
     
     Returns
     -------
     variable : `None` | `str`
+    
+    Raises
+    ------
+    RuntimeError
     """
     env_variable = get_environmental_variable(name)
     if env_variable is None:
+        if raise_if_missing_or_empty:
+            raise RuntimeError(
+                f'Environmental variable {name!r} is missing. {ERROR_MESSAGE_APPENDIX}'
+            )
+        
         return default
     
     if env_variable:
         return env_variable
     
+    if raise_if_missing_or_empty:
+        raise RuntimeError(
+            f'Environmental variable {name!r} is specified as empty string. {ERROR_MESSAGE_APPENDIX}'
+        )
+    
     if warn_if_empty:
         warnings.warn(
-            f'{name!r} is specified as empty string: {env_variable!r}, defaulting to {default!r}!',
+            f'{name!r} is specified as empty string, defaulting to {default!r}!',
         )
     
     return default
 
 
-def get_int_env(name, default, *, warn_if_empty = True):
+def get_int_env(name, default = 0, *, warn_if_empty = True):
     """
     Gets the given environmental variable.
     
@@ -156,7 +178,7 @@ def get_int_env(name, default, *, warn_if_empty = True):
     ----------
     name : `str`
         The name of an environmental variable.
-    default : `int`
+    default : `int` = `0`, Optional
         The default value of the respective variable.
     warn_if_empty : `bool` = `True`, Optional (Keyword only)
         Whether warning should be dropped if empty environmental variable is received.

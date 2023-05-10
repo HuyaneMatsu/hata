@@ -3,6 +3,9 @@
 #### Improvements
 
 - Add `--profile` parameter to `run` command.
+- Add `raise_if_missing_or_empty` parameter to `get_str_env`.
+- `get_bool_env` now accepts `0` and `1` too.
+- Add `scaffold` command (experimental).
 
 #### Bug fixes
 

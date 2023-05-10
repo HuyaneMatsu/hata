@@ -29,7 +29,7 @@ def _validate_bot(bots_value):
         if (not value) or (not value.isidentifier()):
             return None, f'Bot name: {value!r} is not a valid identifier.\n'
     
-    return sorted({bots_value}), None
+    return sorted({*bots_value}), None
 
 
 def _validate_name(name_value):

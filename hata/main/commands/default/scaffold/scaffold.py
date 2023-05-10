@@ -47,7 +47,7 @@ def build_dot_env_file_content(bot_names):
     for bot_name in bot_names:
         bot_constant_name = get_bot_constant_name(bot_name)
         content_parts.append(bot_constant_name)
-        content_parts.append('=\n')
+        content_parts.append('_TOKEN=\n')
     
     return ''.join(content_parts)
 

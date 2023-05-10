@@ -72,60 +72,14 @@ Named after [Hata no Kokoro](https://en.touhouwiki.net/wiki/Hata_no_Kokoro) from
     Usage
 </h3>
 
-The following example answers on `ping` message.
-
-```py
-from hata import Client, wait_for_interruption
-
-Nue = Client('TOKEN')
-
-@Nue.events
-async def ready(client):
-    print(f'{client:f} logged in.')
-
-@Nue.events
-async def message_create(client, message):
-    if message.author.bot:
-        return
-    
-    if message.content == 'ping':
-        await client.message_create(message.channel, 'pong')
-
-Nue.start()
-
-wait_for_interruption()
-```
-<h1></h1>
-
-An improved example using the `commands` extension to handle common use cases.
-
-```py
-from hata import Client, wait_for_interruption
-
-Saki = Client('TOKEN', extensions = 'commands_v2', prefix = 's!')
-
-@Saki.events
-async def ready(client):
-    print(f'{client:f} logged in.')
-
-@Saki.commands
-async def ping(client, message):
-    return 'pong'
-
-Saki.start()
-
-wait_for_interruption()
-```
-<h1></h1>
-
-Or use slash commands!
+Simple example implementing a `ping` command.
 
 ```py
 from hata import Client, Guild, wait_for_interruption
 
 GUILD = Guild.precreate(guild_id)
 
-Seija = Client('TOKEN', extensions = 'slash')
+Seija = Client('TOKEN', extensions = ['slash'])
 
 @Seija.events
 async def ready(client):
@@ -140,10 +94,6 @@ Seija.start()
 
 wait_for_interruption()
 ```
-
-> Note: You need to restart your client, or the slash command wont show up. If there are more than 50 integrations
-> (bots) in a guild, some of the (integrations) bots wont be able to use slash commands. This is currently a Discord
-> limitation.
 
 <h1></h1>
 
@@ -189,7 +139,6 @@ And you are good to go! Hata has native pypy support as well if you need some mo
 
 - [dateutil](https://pypi.org/project/python-dateutil/)
 - [PyNaCl](https://pypi.org/project/PyNaCl/) (for voice support)
-- [brotli](https://pypi.org/project/Brotli/) / [brotlipy](https://pypi.org/project/brotlipy/)
 
 <h1></h1>
 
@@ -214,11 +163,7 @@ If you have issues, suggestions, want to contribute, or just want to hang out, j
     Acknowledgements
 </h3>
 
-Shout-Out to our brave testers, who are helping the most to improve Hata!
+Shout-Out to our brave testers who are helping the most to improve Hata!
 
-- `Nekosia` \[Grammar\]
-- [`Proxisha`](https://github.com/Technisha) \[Feature requests & Bug hunting\]
-- [`Hime Esuto`](https://github.com/HimeEsuto) \[Bug hunting\]
+- [`Koish`](https://github.com/UnconsciousPebble) \[Feature requests\]
 - [`BrainDead`](https://github.com/albertopoljak) \[Documentation improvements\]
-- [`Zeref`](https://github.com/Zeref-Draganeel) \[Features & Typos & Bug hunting\]
-- [`vinam`](https://github.com/v1nam) \[Bug hunting\[asyncio extension\]\]

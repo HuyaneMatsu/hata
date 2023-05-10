@@ -27,58 +27,12 @@ Why hata
 Usage
 -----
 
-The following example answers on `ping` message.
-
-```py
-from hata import Client, wait_for_interruption
-
-Nue = Client('TOKEN')
-
-@Nue.events
-async def ready(client):
-    print(f'{client:f} logged in.')
-
-@Nue.events
-async def message_create(client, message):
-    if message.author.bot:
-        return
-    
-    if message.content == 'ping':
-        await client.message_create(message.channel, 'pong')
-
-Nue.start()
-
-wait_for_interruption()
-```
-
-An improved example using the `commands` extension to handle common use cases.
-
-```py
-from hata import Client, wait_for_interruption
-
-Saki = Client('TOKEN', extensions = 'commands_v2', prefix = 's!')
-
-@Saki.events
-async def ready(client):
-    print(f'{client:f} logged in.')
-
-@Saki.commands
-async def ping(client, message):
-    return 'pong'
-
-Saki.start()
-
-wait_for_interruption()
-```
-
-Or use slash commands!
-
 ```py
 from hata import Client, Guild, wait_for_interruption
 
 GUILD = Guild.precreate(guild_id)
 
-Seija = Client('TOKEN', extensions = 'slash')
+Seija = Client('TOKEN', extensions = ['slash'])
 
 @Seija.events
 async def ready(client):
@@ -93,10 +47,6 @@ Seija.start()
 
 wait_for_interruption()
 ```
-
-> Note: You need to restart your client, or the slash command wont show up. If there are more than 50 integrations
-> (bots) in a guild, some of the (integrations) bots wont be able to use slash commands. This is currently a Discord
-> limitation.
 
 Hata leaves the main thread free, `client.start()` blocks it only till the client logs in (or fails it), although you
 can still use the `start_clients()` function, what as it says, starts up all the non-running clients parallelly.

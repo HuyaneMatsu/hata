@@ -236,7 +236,7 @@ setup(
         'all': [
             'PyNaCl>=1.3.0',
             'cchardet>=2.0',
-            'dotenv',
+            'python-dotenv',
             'inotify_simple>=1.3.5',
             'python-dateutil>=2.0',
             'snakeviz',
@@ -249,7 +249,7 @@ setup(
             'cchardet>=2.0',
         ],
         'env': [
-            'dotenv',
+            'python-dotenv',
         ],
         'profiling': [
             'snakeviz',

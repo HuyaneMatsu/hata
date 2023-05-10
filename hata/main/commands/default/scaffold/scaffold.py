@@ -50,7 +50,7 @@ def build_dot_env_file_content(bot_names):
         content_parts.append('=\n')
     
     return ''.join(content_parts)
-    
+
 
 def create_dot_env_file(directory_path, bot_names):
     """
@@ -132,7 +132,7 @@ def create_cli_file(directory_path):
             f'    except ImportError as err:\n'
             f'        raise ImportError(\n'
             f'            \'Couldn\\\'t import {PACKAGE_NAME}. \'\n'
-            f'            \'Are you sure it\'s installed and available on your PYTHONPATH environment variable? \'\n'
+            f'            \'Are you sure it\\\'s installed and available on your PYTHONPATH environment variable? \'\n'
             f'            \'Did you forget to activate a virtual environment?\'\n'
             f'        ) from err\n'
             f'\n'
@@ -220,7 +220,7 @@ def create_bots_init_file(directory_path, bot_names):
     bot_names : `list` of `str`
         The bots' names.
     """
-    with open(join_paths(directory_path, '.__init__.py'), 'w') as file:
+    with open(join_paths(directory_path, '__init__.py'), 'w') as file:
         file.write(build_bots_init_file_content(bot_names))
 
 

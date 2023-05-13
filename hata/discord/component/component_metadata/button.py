@@ -186,9 +186,8 @@ class ComponentMetadataButton(ComponentMetadataBase):
         button_style = self.button_style
         repr_parts.append(' button_style = ')
         repr_parts.append(button_style.name)
-        repr_parts.append(' (')
+        repr_parts.append(' ~ ')
         repr_parts.append(repr(button_style.value))
-        repr_parts.append(')')
         
         # System fields : custom_id
         

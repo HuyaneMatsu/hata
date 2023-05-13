@@ -148,14 +148,14 @@ class Component(RichAttributeErrorBaseType):
         """Returns the component's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' type=')
+        repr_parts.append(' type = ')
         
         component_type = self.type
         repr_parts.append(component_type.name)
         repr_parts.append(' ~ ')
         repr_parts.append(repr(component_type.value))
         
-        repr_parts.append(', metadata=')
+        repr_parts.append(', metadata = ')
         repr_parts.append(repr(self.metadata))
         
         repr_parts.append('>')

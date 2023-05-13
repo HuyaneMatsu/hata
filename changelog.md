@@ -6,6 +6,7 @@
 - Add `raise_if_missing_or_empty` parameter to `get_str_env`.
 - `get_bool_env` now accepts `0` and `1` too.
 - Add `scaffold` command (experimental).
+- Add `.env` file loading built in. This also means that the `.env` files will be finally found (poggers).
 
 #### Bug fixes
 

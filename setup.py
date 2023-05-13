@@ -158,6 +158,7 @@ setup(
         'hata.discord.webhook.webhook',
         'hata.discord.webhook.webhook_source_channel',
         'hata.discord.webhook.webhook_source_guild',
+        'hata.env',
         'hata.ext',
         'hata.ext.asyncio',
         'hata.ext.command_utils',
@@ -236,7 +237,6 @@ setup(
         'all': [
             'PyNaCl>=1.3.0',
             'cchardet>=2.0',
-            'python-dotenv',
             'inotify_simple>=1.3.5',
             'python-dateutil>=2.0',
             'snakeviz',
@@ -247,9 +247,6 @@ setup(
         ],
         'cpythonspeedups': [
             'cchardet>=2.0',
-        ],
-        'env': [
-            'python-dotenv',
         ],
         'profiling': [
             'snakeviz',

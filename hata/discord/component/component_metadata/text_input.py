@@ -198,9 +198,8 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         text_input_style = self.text_input_style
         repr_parts.append(' text_input_style = ')
         repr_parts.append(text_input_style.name)
-        repr_parts.append(' (')
+        repr_parts.append(' ~ ')
         repr_parts.append(repr(text_input_style.value))
-        repr_parts.append(')')
         
         # System fields : custom_id
         

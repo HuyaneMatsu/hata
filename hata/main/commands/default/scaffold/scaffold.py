@@ -142,7 +142,7 @@ def create_cli_file(directory_path):
             f'\n'
             f'    from . import bots\n'
             f'\n'
-            f'    register_plugin(\'plugins\')\n'
+            f'    register_plugin(f\'{{__spec__.parent}}.plugins\')\n'
             f'\n'
             f'    try:\n'
             f'        load_all_plugin()\n'

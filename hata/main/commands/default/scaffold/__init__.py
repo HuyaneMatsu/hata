@@ -11,10 +11,12 @@ __all__ = (
 
 
 import sys
+from os.path import join as join_paths
 
 from ....core import register
 
-from .helpers import _validate_bot, _validate_name
+from .helpers import _validate_bot, _validate_project_name, _validate_name
+from .naming import get_project_module_name
 from .scaffold import create_project_structure
 
 
@@ -22,6 +24,7 @@ from .scaffold import create_project_structure
 def scaffold(
     name: str,
     *bot: str,
+    project_name : str = None,
 ):
     """
     Scaffolds a new project.
@@ -36,5 +39,16 @@ def scaffold(
         sys.stdout.write(error_message)
         return
     
-    create_project_structure(directory_path, bot_names)
-    sys.stdout.write('Project created.\n')
+    
+    project_name, error_message = _validate_project_name(project_name, name)
+    if error_message is not None:
+        sys.stdout.write(error_message)
+        return
+    
+    project_module_name = get_project_module_name(project_name)
+    
+    create_project_structure(directory_path, project_module_name, bot_names)
+    sys.stdout.write(
+        f'Project {project_module_name} created.\n'
+        f'Please check {join_paths(directory_path, "README.md")} about whats next.\n'
+    )

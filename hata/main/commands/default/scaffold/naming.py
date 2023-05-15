@@ -169,17 +169,33 @@ def get_bot_constant_name(bot_name):
     return '_'.join([part.upper() for part in _split_bot_name_to_words(bot_name)])
 
 
-def get_project_module_name(project_path):
+def get_bot_display_name(bot_name):
+    """
+    Creates the bot's display name.
+    
+    Parameters
+    ----------
+    bot_name : `str`
+        A bot's name.
+    
+    Returns
+    -------
+    display_name : `str`
+    """
+    return ' '.join([part.capitalize() for part in _split_bot_name_to_words(bot_name)])
+
+
+def get_project_module_name(project_name):
     """
     Gets the project's name.
     
     Parameters
     ----------
-    project_path : `str`
-        Path to the project.
+    project_name : `str`
+        The project's name.
     
     Returns
     -------
-    project_name : `str`
+    project_module_name : `str`
     """
-    return get_bot_module_name(base_name(project_path))
+    return get_bot_module_name(project_name)

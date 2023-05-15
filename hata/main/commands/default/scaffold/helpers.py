@@ -48,10 +48,6 @@ def _validate_name(name_value):
     error_message : `None`, `str`
         Error message.
     """
-    last_part = base_name(name_value)
-    if (not last_part) or (not last_part.isidentifier()):
-        return None, f'A project name\'s last part must be a valid identifier, got {last_part!r}.\n'
-    
     directory_path = absolute_path(name_value)
     if is_directory(directory_path):
         if list_directory(directory_path):
@@ -73,6 +69,43 @@ def _validate_name(name_value):
             continue
     
     return directory_path, None
+
+
+def _validate_project_name(project_name_value, name_value):
+    """
+    Validates the given `project_name` value.
+    
+    Either `project_name` or `error_message` is always returned as non-`None`.
+    
+    Parameters
+    ----------
+    project_name_value : `None`, `str`
+        The project's name value explicitly defined by the user if any.
+    name_value : `str`
+        The project's name (used for location).
+    
+    Returns
+    -------
+    directory_path : `None`, `str`
+        Directory path of the project. Might need to be created recursively.
+    error_message : `None`, `str`
+        Error message.
+    """
+    if (project_name_value is not None) and project_name_value:
+        project_name = None
+    else:
+        project_name = base_name(name_value)
+    
+    if (not project_name) or (not project_name.isidentifier()):
+        return (
+            None,
+            (
+                f'A project name\'s must be a valid identifier, got {project_name!r}.\n'
+                f'Note that if project name is not explicitly defined it is detected from the name parameter.\n'
+            )
+        )
+    
+    return project_name, None
 
 
 def create_directory_recursive(directory_path):

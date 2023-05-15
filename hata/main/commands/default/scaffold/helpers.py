@@ -5,6 +5,8 @@ from os.path import (
     abspath as absolute_path, basename as base_name, dirname as get_parent_directory_path, exists, isdir as is_directory
 )
 
+from .layouts import DEFAULT_LAYOUT, LAYOUT_DESCRIPTIONS
+
 
 def _validate_bot(bots_value):
     """
@@ -86,8 +88,8 @@ def _validate_project_name(project_name_value, name_value):
     
     Returns
     -------
-    directory_path : `None`, `str`
-        Directory path of the project. Might need to be created recursively.
+    project_name : `None`, `str`
+        The project's name.
     error_message : `None`, `str`
         Error message.
     """
@@ -106,6 +108,60 @@ def _validate_project_name(project_name_value, name_value):
         )
     
     return project_name, None
+
+
+def _build_identifying_layout_failed_error_message(layout_value):
+    """
+    Builds error message for ``_validate_layout`` when identifying the layout failed.
+    
+    Parameters
+    ----------
+    layout_value : `str`
+        The passed layout value.
+    
+    Returns
+    -------
+    error_message : `str`
+        Error message.
+    """
+    error_message_parts = []
+    
+    error_message_parts.append('Could not identify layout: ')
+    error_message_parts.append(repr(layout_value))
+    error_message_parts.append('\nPlease use on of the following:\n')
+    
+    for layout in sorted(LAYOUT_DESCRIPTIONS.keys()):
+        error_message_parts.append('- ')
+        error_message_parts.append(layout)
+        error_message_parts.append('\n')
+    
+    return ''.join(error_message_parts)
+
+
+def _validate_layout(layout_value):
+    """
+    Validates the given `layout` value.
+    
+    Parameters
+    ----------
+    layout : `None`, `str`
+        The passed layout value.
+    
+    Returns
+    -------
+    layout : `str`
+        The layout's name.
+    error_message : `None`, `str`
+        Error message.
+    """
+    if (layout_value is None) or (not layout_value):
+        layout = DEFAULT_LAYOUT
+    else:
+        layout = layout_value.casefold()
+        if layout not in LAYOUT_DESCRIPTIONS.keys():
+            return None, _build_identifying_layout_failed_error_message(layout_value)
+    
+    return layout, None
 
 
 def create_directory_recursive(directory_path):

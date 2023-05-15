@@ -189,6 +189,8 @@ setup(
         'hata.main.commands',
         'hata.main.commands.default',
         'hata.main.commands.default.scaffold',
+        'hata.main.commands.default.scaffold.layouts',
+        'hata.main.commands.default.scaffold.layouts.package',
         'hata.main.core',
         'hata.main.core.command',
         'hata.utils',

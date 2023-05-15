@@ -145,7 +145,7 @@ class CommandCategory(RichAttributeErrorBaseType):
         
         Returns
         -------
-        command_function : CommandFunction
+        command_function : ``CommandFunction``
         """
         self_name = self.name
         if self_name is None:

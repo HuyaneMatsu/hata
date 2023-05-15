@@ -6,7 +6,7 @@ from .command import Command, CommandCategory, CommandFunction
 from .command.helpers import get_function_description, get_function_name
 
 
-def register(func = ..., *, alters=None, description = None, into = None, name = None):
+def register(func = ..., *, alters = None, description = None, into = None, name = None):
     """
     Registers the given command.
     

@@ -47,6 +47,8 @@ class ClientUserPBase(ClientUserBase):
         Whether the user is a bot or a user account.
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
+    display_name : `None`, `str`
+        The user's non-unique display name.
     flags : ``UserFlag``
         The user's user flags.
     guild_profiles : `dict` of (`int`, ``GuildProfile``) items
@@ -76,6 +78,7 @@ class ClientUserPBase(ClientUserBase):
         banner_color = ...,
         bot = ...,
         discriminator = ...,
+        display_name = ...,
         flags = ...,
         name = ...,
         status = ...,
@@ -100,6 +103,8 @@ class ClientUserPBase(ClientUserBase):
             Whether the user is a bot or a user account.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
+        display_name : `None`, `str`, Optional (Keyword only)
+            The user's non-unique display name.
         flags : `int`, ``UserFlag``, Optional (Keyword only)
             The user's flags.
         name : `str`, Optional (Keyword only)
@@ -146,6 +151,7 @@ class ClientUserPBase(ClientUserBase):
             banner_color = banner_color,
             bot = bot,
             discriminator = discriminator,
+            display_name = display_name,
             flags = flags,
             name = name,
         )
@@ -317,7 +323,6 @@ class ClientUserPBase(ClientUserBase):
         return new
     
     
-    @copy_docs(ClientUserBase.copy_with)
     def copy_with(
         self,
         *,
@@ -328,6 +333,7 @@ class ClientUserPBase(ClientUserBase):
         banner_color = ...,
         bot = ...,
         discriminator = ...,
+        display_name = ...,
         flags = ...,
         name = ...,
         status = ...,
@@ -352,6 +358,8 @@ class ClientUserPBase(ClientUserBase):
             Whether the user is a bot or a user account.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
+        display_name : `None`, `str`, Optional (Keyword only)
+            The user's non-unique display name.
         flags : `int`, ``UserFlag``, Optional (Keyword only)
             The user's flags.
         name : `str`, Optional (Keyword only)
@@ -402,6 +410,7 @@ class ClientUserPBase(ClientUserBase):
             banner_color = banner_color,
             bot = bot,
             discriminator = discriminator,
+            display_name = display_name,
             flags = flags,
             name = name,
         )

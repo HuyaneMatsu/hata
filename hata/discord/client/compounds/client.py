@@ -10,6 +10,7 @@ from ...color import Color
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES, VALID_ICON_MEDIA_TYPES_EXTENDED
 from ...oauth2 import Connection
 from ...user import PremiumType
+from ...user.user.fields import validate_display_name
 from ...utils import datetime_to_timestamp, get_image_media_type, image_to_base64
 
 from ..request_helpers import get_guild_and_id, get_guild_id, get_channel_guild_id_and_id, validate_timeout_duration
@@ -102,7 +103,7 @@ class ClientCompoundClientEndpoints(Compound):
     
     
     async def edit(
-        self, *, avatar = ..., banner = ..., banner_color = ..., bio = ..., name = ..., # Generic
+        self, *, avatar = ..., banner = ..., banner_color = ..., bio = ..., display_name = ..., name = ..., # Generic
         password = ..., new_password = ..., email = ..., # User account only
     ):
         """
@@ -126,6 +127,9 @@ class ClientCompoundClientEndpoints(Compound):
         
         bio : `None`, `str`, Optional (Keyword only)
             The new bio of the client. By passing it as `None`, you can remove the client's current one.
+        
+        display_name : `None`, `str`, Optional (Keyword only)
+            The client's non-unique display name.
         
         name : `str`, Optional (Keyword only)
             The client's new name.
@@ -233,6 +237,8 @@ class ClientCompoundClientEndpoints(Compound):
             
             data['bio'] = bio
         
+        if (display_name is not ...):
+            data['global_name'] = validate_display_name(display_name)
         
         if (name is not ...):
             if __debug__:

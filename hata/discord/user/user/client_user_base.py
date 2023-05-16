@@ -40,6 +40,8 @@ class ClientUserBase(OrinUserBase):
         Whether the user is a bot or a user account.
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
+    display_name : `None`, `str`
+        The user's non-unique display name.
     flags : ``UserFlag``
         The user's user flags.
     guild_profiles : `dict` of (`int`, ``GuildProfile``) items
@@ -65,6 +67,7 @@ class ClientUserBase(OrinUserBase):
         banner_color = ...,
         bot = ...,
         discriminator = ...,
+        display_name = ...,
         flags = ...,
         name = ...,
     ):
@@ -85,6 +88,8 @@ class ClientUserBase(OrinUserBase):
             Whether the user is a bot or a user account.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
+        display_name : `None`, `str`, Optional (Keyword only)
+            The user's non-unique display name.
         flags : `int`, ``UserFlag``, Optional (Keyword only)
             The user's flags.
         name : `str`, Optional (Keyword only)
@@ -110,6 +115,7 @@ class ClientUserBase(OrinUserBase):
             banner = banner,
             banner_color = banner_color,
             discriminator = discriminator,
+            display_name = display_name,
             flags = flags,
             name = name,
         )
@@ -248,6 +254,7 @@ class ClientUserBase(OrinUserBase):
         self.banner_type = client.banner_type
         self.bot = client.bot
         self.discriminator = client.discriminator
+        self.display_name = client.display_name
         self.flags = client.flags
         
         if include_internals:
@@ -297,7 +304,6 @@ class ClientUserBase(OrinUserBase):
         return new
     
     
-    @copy_docs(OrinUserBase.copy_with)
     def copy_with(
         self,
         *,
@@ -307,6 +313,7 @@ class ClientUserBase(OrinUserBase):
         banner_color = ...,
         bot = ...,
         discriminator = ...,
+        display_name = ...,
         flags = ...,
         name = ...,
     ):
@@ -327,6 +334,8 @@ class ClientUserBase(OrinUserBase):
             Whether the user is a bot or a user account.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
+        display_name : `None`, `str`, Optional (Keyword only)
+            The user's non-unique display name.
         flags : `int`, ``UserFlag``, Optional (Keyword only)
             The user's flags.
         name : `str`, Optional (Keyword only)
@@ -357,6 +366,7 @@ class ClientUserBase(OrinUserBase):
             banner = banner,
             banner_color = banner_color,
             discriminator = discriminator,
+            display_name = display_name,
             flags = flags,
             name = name,
         )
@@ -425,6 +435,10 @@ class ClientUserBase(OrinUserBase):
             if (nick is not None):
                 return nick
         
+        display_name = self.display_name
+        if (display_name is not None):
+            return display_name
+        
         return self.name
     
     
@@ -457,6 +471,10 @@ class ClientUserBase(OrinUserBase):
         pattern = re_compile(re_escape(name), re_ignore_case)
         
         if pattern.search(self.name) is not None:
+            return True
+        
+        display_name = self.display_name
+        if (display_name is not None) and (pattern.search(display_name) is not None):
             return True
         
         guild_id = _try_get_guild_id(guild)

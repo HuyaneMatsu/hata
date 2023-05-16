@@ -38,6 +38,8 @@ class Oauth2User(OrinUserBase):
         The user's banner's type.
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
+    display_name : `None`, `str`
+        The user's non-unique display name.
     email : `None`, `str`
         The user's email. Defaults to `None`.
     email_verified : `bool`
@@ -65,6 +67,7 @@ class Oauth2User(OrinUserBase):
         banner = ...,
         banner_color = ...,
         discriminator = ...,
+        display_name = ...,
         email = ...,
         email_verified = ...,
         flags = ...,
@@ -88,6 +91,8 @@ class Oauth2User(OrinUserBase):
             The user's banner color.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
+        display_name : `None`, `str`, Optional (Keyword only)
+            The user's non-unique display name.
         email : `None, `str`, Optional (Keyword only)
             The user's email.
         email_verified : `bool`, Optional (Keyword only)
@@ -148,6 +153,7 @@ class Oauth2User(OrinUserBase):
             banner = banner,
             banner_color = banner_color,
             discriminator = discriminator,
+            display_name = display_name,
             flags = flags,
             name = name,
         )
@@ -270,6 +276,7 @@ class Oauth2User(OrinUserBase):
         banner = ...,
         banner_color = ...,
         discriminator = ...,
+        display_name = ...,
         email = ...,
         email_verified = ...,
         flags = ...,
@@ -293,6 +300,8 @@ class Oauth2User(OrinUserBase):
             The user's banner color.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
+        display_name : `None`, `str`, Optional (Keyword only)
+            The user's non-unique display name.
         email : `None, `str`, Optional (Keyword only)
             The user's email.
         email_verified : `bool`, Optional (Keyword only)
@@ -353,6 +362,7 @@ class Oauth2User(OrinUserBase):
             banner = banner,
             banner_color = banner_color,
             discriminator = discriminator,
+            display_name = display_name,
             flags = flags,
             name = name,
         )

@@ -365,19 +365,18 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
             if pattern.search(user.name) is not None:
                 return user
             
+            display_name = user.display_name
+            if (display_name is not None) and (pattern.search(display_name) is not None):
+                return user
+            
             try:
                 guild_profile = user.guild_profiles[guild_id]
             except KeyError:
-                continue
-            
-            nick = guild_profile.nick
-            if nick is None:
-                continue
-            
-            if pattern.search(nick) is None:
-                continue
-            
-            return user
+                pass
+            else:
+                nick = guild_profile.nick
+                if (nick is not None) and (pattern.search(nick) is not None):
+                    return user
         
         return default
 
@@ -418,19 +417,20 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
                 result.append(user)
                 continue
             
+            display_name = user.display_name
+            if (display_name is not None) and (pattern.search(display_name) is not None):
+                result.append(user)
+                continue
+            
             try:
                 guild_profile = user.guild_profiles[guild_id]
             except KeyError:
-                continue
-            
-            nick = guild_profile.nick
-            if nick is None:
-                continue
-            
-            if pattern.search(nick) is None:
-                continue
-            
-            result.append(user)
+                pass
+            else:
+                nick = guild_profile.nick
+                if (nick is not None) and (pattern.search(nick) is not None):
+                    result.append(user)
+                    continue
         
         return result
     

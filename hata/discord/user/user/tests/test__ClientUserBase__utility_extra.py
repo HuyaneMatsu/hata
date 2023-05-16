@@ -55,33 +55,81 @@ def test__ClientUserBase__color_at():
     vampytest.assert_eq(output, color)
 
 
-def test__ClientUserBase__name_at():
+def test__ClientUserBase__name_at__name():
     """
     Tests whether ``ClientUserBase.name_at` works as intended.
-    """
-    user_id = 202302060038
-    guild_id_0 = 202302060039
-    guild_id_1 = 202302060040
     
+    Case: Just name.
+    """
+    user_id = 202305160002
     name = 'rin'
-    nick = 'orin'
     
     user = ClientUserBase._create_empty(user_id)
     user.name = name
-    user.guild_profiles[guild_id_0] = GuildProfile(nick = nick)
-    user.guild_profiles[guild_id_1] = GuildProfile()
     
     output = user.name_at(0)
     vampytest.assert_instance(output, str)
     vampytest.assert_eq(output, name)
+
+
+def test__ClientUserBase__name_at__no_nick():
+    """
+    Tests whether ``ClientUserBase.name_at` works as intended.
     
-    output = user.name_at(guild_id_0)
-    vampytest.assert_instance(output, str)
-    vampytest.assert_eq(output, nick)
+    Case: In guild, but no nick.
+    """
+    user_id = 202305160003
+    guild_id = 202302060004
+    name = 'rin'
     
-    output = user.name_at(guild_id_1)
+    user = ClientUserBase._create_empty(user_id)
+    user.guild_profiles[guild_id] = GuildProfile()
+    user.name = name
+    
+    output = user.name_at(guild_id)
     vampytest.assert_instance(output, str)
     vampytest.assert_eq(output, name)
+
+
+def test__ClientUserBase__name_at__with_nick():
+    """
+    Tests whether ``ClientUserBase.name_at` works as intended.
+    
+    Case: In guild, but no nick.
+    """
+    user_id = 202305160005
+    guild_id = 202302060006
+    name = 'rin'
+    nick = 'orin'
+    display_name = 'cat'
+    
+    user = ClientUserBase._create_empty(user_id)
+    user.guild_profiles[guild_id] = GuildProfile(nick = nick)
+    user.name = name
+    user.display_name = display_name
+    
+    output = user.name_at(guild_id)
+    vampytest.assert_instance(output, str)
+    vampytest.assert_eq(output, nick)
+
+
+def test__ClientUserBase__name_at__with_display_name():
+    """
+    Tests whether ``ClientUserBase.name_at` works as intended.
+    
+    Case: Has display name.
+    """
+    user_id = 202302060007
+    name = 'rin'
+    display_name = 'cat'
+    
+    user = ClientUserBase._create_empty(user_id)
+    user.name = name
+    user.display_name = display_name
+    
+    output = user.name_at(0)
+    vampytest.assert_instance(output, str)
+    vampytest.assert_eq(output, display_name)
 
 
 def test__ClientUserBase__has_name_like_at():
@@ -90,6 +138,7 @@ def test__ClientUserBase__has_name_like_at():
     """
     name = 'orin'
     nick = 'hell'
+    display_name = 'cat'
     
     user_id = 202302060041
     guild_id_0 = 202302060042
@@ -97,6 +146,7 @@ def test__ClientUserBase__has_name_like_at():
     
     user = ClientUserBase._create_empty(user_id)
     user.name = name
+    user.display_name = display_name
     
     user.guild_profiles[guild_id_0] = GuildProfile(nick = nick)
     user.guild_profiles[guild_id_1] = GuildProfile()
@@ -104,6 +154,8 @@ def test__ClientUserBase__has_name_like_at():
     for input_value, guild_id, expected_output in (
         ('Orin', 0, True),
         ('Okuu', 0, False),
+        ('Cat', 0, True),
+        ('Bird', 0, False),
         ('@orin', 0, True),
         ('@okuu', 0, False),
         ('orin#0000', 0, True),

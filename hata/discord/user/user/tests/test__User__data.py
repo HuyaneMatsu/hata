@@ -25,6 +25,7 @@ def test__User__from_data__0():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
     bot = True
@@ -34,6 +35,7 @@ def test__User__from_data__0():
         'avatar_decoration': avatar_decoration.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
+        'global_name': display_name,
         'username': name,
         'banner': banner.as_base_16_hash,
         'id': str(user_id),
@@ -50,6 +52,7 @@ def test__User__from_data__0():
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
     vampytest.assert_eq(user.discriminator, discriminator)
+    vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.name, name)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.flags, flags)
@@ -139,6 +142,7 @@ def test__User__difference_update_profile__0():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
     bot = True
@@ -150,6 +154,7 @@ def test__User__difference_update_profile__0():
         'avatar_decoration': avatar_decoration.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
+        'global_name': display_name,
         'username': name,
         'banner': banner.as_base_16_hash,
         'id': str(user_id),
@@ -176,6 +181,7 @@ def test__User__difference_update_profile__0():
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
     vampytest.assert_eq(user.discriminator, discriminator)
+    vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.name, name)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.flags, flags)
@@ -281,6 +287,7 @@ def test__User__update_profile__0():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
     bot = True
@@ -294,6 +301,7 @@ def test__User__update_profile__0():
         'avatar_decoration': avatar_decoration.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
+        'global_name': display_name,
         'username': name,
         'banner': banner.as_base_16_hash,
         'id': str(user_id),
@@ -319,6 +327,7 @@ def test__User__update_profile__0():
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
     vampytest.assert_eq(user.discriminator, discriminator)
+    vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.name, name)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.flags, flags)

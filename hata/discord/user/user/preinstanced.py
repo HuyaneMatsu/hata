@@ -70,7 +70,14 @@ class DefaultAvatar(PreinstancedBase):
         default_avatar : ``DefaultAvatar``
         """
         INSTANCES = cls.INSTANCES
-        return INSTANCES[user.discriminator % len(INSTANCES)]
+        
+        discriminator = user.discriminator
+        if discriminator:
+            key = discriminator
+        else:
+            key = user.id >> 22
+        
+        return INSTANCES[key % len(INSTANCES)]
     
     
     @classmethod

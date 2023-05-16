@@ -18,6 +18,7 @@ def test__OrinUserBase__copy():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
     
@@ -27,6 +28,7 @@ def test__OrinUserBase__copy():
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
+        display_name = display_name,
         flags = flags,
         name = name,
     )
@@ -49,6 +51,7 @@ def test__OrinUserBase__copy_with__0():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
     
@@ -58,6 +61,7 @@ def test__OrinUserBase__copy_with__0():
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
+        display_name = display_name,
         flags = flags,
         name = name,
     )
@@ -80,6 +84,7 @@ def test__OrinUserBase__copy_with__1():
     old_banner = Icon(IconType.static, 15)
     old_banner_color = Color(1236)
     old_discriminator = 2222
+    old_display_name = 'Far'
     old_flags = UserFlag(1)
     old_name = 'orin'
     
@@ -88,6 +93,7 @@ def test__OrinUserBase__copy_with__1():
     new_banner = Icon(IconType.static, 10)
     new_banner_color = Color(1236)
     new_discriminator = 1
+    new_display_name = 'East'
     new_flags = UserFlag(2)
     new_name = 'okuu'
     
@@ -97,6 +103,7 @@ def test__OrinUserBase__copy_with__1():
         banner = old_banner,
         banner_color = old_banner_color,
         discriminator = old_discriminator,
+        display_name = old_display_name,
         flags = old_flags,
         name = old_name,
     )
@@ -107,6 +114,7 @@ def test__OrinUserBase__copy_with__1():
         banner = new_banner,
         banner_color = new_banner_color,
         discriminator = new_discriminator,
+        display_name = new_display_name,
         flags = new_flags,
         name = new_name,
     )
@@ -118,5 +126,6 @@ def test__OrinUserBase__copy_with__1():
     vampytest.assert_eq(copy.banner, new_banner)
     vampytest.assert_eq(copy.banner_color, new_banner_color)
     vampytest.assert_eq(copy.discriminator, new_discriminator)
+    vampytest.assert_eq(copy.display_name, new_display_name)
     vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.name, new_name)

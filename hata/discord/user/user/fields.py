@@ -7,8 +7,8 @@ from ...field_parsers import (
     preinstanced_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, entity_id_putter_factory, field_putter_factory, flag_putter_factory,
-    force_bool_putter_factory, force_string_putter_factory, preinstanced_putter_factory, url_optional_putter_factory
+    bool_optional_putter_factory, entity_id_putter_factory, flag_putter_factory, force_bool_putter_factory,
+    force_string_putter_factory, preinstanced_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, flag_validator_factory, force_string_validator_factory,
@@ -17,8 +17,8 @@ from ...field_validators import (
 from ...localization import Locale
 
 from .constants import (
-    DISCRIMINATOR_VALUE_MAX, DISCRIMINATOR_VALUE_MIN, LOCALE_DEFAULT, NAME_LENGTH_MAX, NAME_LENGTH_MIN,
-    WEBHOOK_NAME_LENGTH_MAX, WEBHOOK_NAME_LENGTH_MIN
+    DISCRIMINATOR_VALUE_MAX, DISCRIMINATOR_VALUE_MIN, DISPLAY_NAME_LENGTH_MAX, LOCALE_DEFAULT, NAME_LENGTH_MAX,
+    NAME_LENGTH_MIN, WEBHOOK_NAME_LENGTH_MAX, WEBHOOK_NAME_LENGTH_MIN
 )
 from .flags import UserFlag
 from .preinstanced import PremiumType, Status
@@ -281,6 +281,13 @@ def validate_discriminator(discriminator):
         )
     
     return discriminator
+
+
+# display_name
+
+parse_display_name = nullable_string_parser_factory('global_name')
+put_display_name_into = url_optional_putter_factory('global_name')
+validate_display_name = nullable_string_validator_factory('global_name', 0, DISPLAY_NAME_LENGTH_MAX)
 
 # email
 

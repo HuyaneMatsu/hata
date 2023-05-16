@@ -517,10 +517,12 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         pattern = re_compile(re_escape(name), re_ignore_case)
         for user in users:
-            if pattern.search(user.name) is None:
-                continue
+            if pattern.search(user.name) is not None:
+                return user
             
-            return user
+            display_name = user.display_name
+            if (display_name is not None) and (pattern.search(display_name) is not None):
+                return user
         
         return default
     
@@ -569,10 +571,14 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         pattern = re_compile(re_escape(name), re_ignore_case)
         for user in users:
-            if pattern.search(user.name) is None:
+            if (pattern.search(user.name) is not None):
+                result.append(user)
                 continue
             
-            result.append(user)
+            display_name = user.display_name
+            if (display_name is not None) and (pattern.search(display_name) is not None):
+                result.append(user)
+                continue
         
         return result
     

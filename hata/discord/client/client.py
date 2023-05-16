@@ -31,8 +31,8 @@ from ..user import (
 from ..user.user.constants import LOCALE_DEFAULT
 from ..user.user.fields import (
     parse_email, parse_email_verified, parse_locale, parse_mfa, parse_premium_type, validate_banner_color, validate_bot,
-    validate_discriminator, validate_email, validate_email_verified, validate_flags, validate_locale, validate_mfa,
-    validate_name, validate_premium_type, validate_status
+    validate_discriminator, validate_display_name, validate_email, validate_email_verified, validate_flags,
+    validate_locale, validate_mfa, validate_name, validate_premium_type, validate_status
 )
 
 from .compounds import CLIENT_COMPOUNDS
@@ -127,6 +127,9 @@ class Client(
     
     discriminator : `int`
         The client's discriminator. Given to avoid overlapping names.
+    
+    display_name : `None`, `str`
+        The clients's non-unique display name.
     
     email : `None`, `str`
         The client's email.
@@ -265,6 +268,7 @@ class Client(
         bot = ...,
         client_id = ...,
         discriminator = ...,
+        display_name = ...,
         email = ...,
         email_verified = ...,
         extensions = ...,
@@ -323,7 +327,10 @@ class Client(
             client exists anywhere, and if does will replace it.
         
         discriminator : `str`, `int`, Optional (Keyword only)
-            The user's discriminator.
+            The client's discriminator.
+        
+        display_name : `None`, `str`, Optional (Keyword only)
+            The client's non-unique display name.
         
         email : `None, `str`, Optional (Keyword only)
             The client's email.
@@ -468,6 +475,12 @@ class Client(
         else:
             discriminator = validate_discriminator(discriminator)
         
+        # display_name
+        if display_name is ...:
+            display_name = None
+        else:
+            display_name = validate_display_name(display_name)
+        
         # email
         if email is ...:
             email = None
@@ -595,6 +608,7 @@ class Client(
         self.banner = banner
         self.banner_color = banner_color
         self.discriminator = discriminator
+        self.display_name = display_name
         self.email = email
         self.email_verified = email_verified
         self.events = EventHandlerManager(self)

@@ -13,7 +13,7 @@ from .client_user_base import ClientUserBase
 from .client_user_presence_base import ClientUserPBase
 from .fields import (
     parse_bot, parse_id, validate_activities, validate_banner_color, validate_bot, validate_discriminator,
-    validate_flags, validate_id, validate_name, validate_status, validate_statuses
+    validate_display_name, validate_flags, validate_id, validate_name, validate_status, validate_statuses
 )
 from .flags import UserFlag
 from .preinstanced import Status
@@ -26,6 +26,7 @@ PRECREATE_FIELDS = {
     'banner_color': ('banner_color', validate_banner_color),
     'bot': ('bot', validate_bot),
     'discriminator': ('discriminator', validate_discriminator),
+    'display_name': ('display_name', validate_display_name),
     'flags': ('flags', validate_flags),
     'name': ('name', validate_name),
 }
@@ -73,6 +74,8 @@ class User(USER_BASE_TYPE):
         Whether the user is a bot or a user account.
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
+    display_name : `None`, `str`
+        The user's non-unique display name.
     flags : ``UserFlag``
         The user's user flags.
     guild_profiles : `dict` of (`int`, ``GuildProfile``) items
@@ -251,7 +254,10 @@ class User(USER_BASE_TYPE):
         
         discriminator : `int`, `str`, Optional (Keyword only)
             The user's discriminator.
-            
+        
+        display_name : `None`, `str`, Optional (Keyword only)
+            The user's non-unique display name.
+        
         status : `Status`, `str`, Optional (Keyword only)
             The user's display status.
         

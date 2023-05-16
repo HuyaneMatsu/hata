@@ -1,7 +1,7 @@
 __all__ = ('UserBase', )
 
 import warnings
-from re import I as re_ignore_case, escape as re_escape, search as re_search
+from re import I as re_ignore_case, compile as re_compile, escape as re_escape, search as re_search
 
 from scarletio import copy_docs, include
 
@@ -12,8 +12,8 @@ from ...utils import DATETIME_FORMAT_CODE
 
 from .constants import LOCALE_DEFAULT
 from .fields import (
-    parse_name, put_banner_color_into, put_bot_into, put_discriminator_into, put_flags_into, put_id_into, put_name_into,
-    validate_name
+    parse_name, put_banner_color_into, put_bot_into, put_discriminator_into, put_display_name_into, put_flags_into,
+    put_id_into, put_name_into, validate_name
 )
 from .flags import UserFlag
 from .preinstanced import DefaultAvatar, PremiumType, Status
@@ -134,6 +134,8 @@ class UserBase(DiscordEntity, immortal = True):
         +-----------------------+-----------------------+-----------------------+
         | discriminator         | `int`                 | ``Client``, ``User``  |
         +-----------------------+-----------------------+-----------------------+
+        | display_name          | `None`, `str`         | ``Client``, ``User``  |
+        +-----------------------+-----------------------+-----------------------+
         | email                 | `None`, `str`         | ``Client``            |
         +-----------------------+-----------------------+-----------------------+
         | email_verified        | `bool`                | ``Client``            |
@@ -245,6 +247,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         put_banner_color_into(self.banner_color, data, defaults)
         put_discriminator_into(self.discriminator, data, defaults)
+        put_display_name_into(self.display_name, data, defaults)
         put_name_into(self.name, data, defaults)
         
         if include_internals:
@@ -497,7 +500,6 @@ class UserBase(DiscordEntity, immortal = True):
         if ((self_id or self is ZEROUSER) and (other_id or other is ZEROUSER)):
             return self_id == other_id
         
-        
         return self._compare_attributes(other)
     
     
@@ -552,6 +554,10 @@ class UserBase(DiscordEntity, immortal = True):
         
         # discriminator
         if (self.discriminator != other.discriminator):
+            return False
+        
+        # display_name
+        if (self.display_name != other.display_name):
             return False
         
         # email
@@ -694,23 +700,23 @@ class UserBase(DiscordEntity, immortal = True):
     
     
     @property
-    @copy_docs(module_urls.user_banner_url.__doc__)
+    @copy_docs(module_urls.user_banner_url)
     def banner_url(self):
         return None
     
     
-    @copy_docs(module_urls.user_banner_url_as.__doc__)
+    @copy_docs(module_urls.user_banner_url_as)
     def banner_url_as(self, ext = None, size = None):
         return None
     
     
     @property
-    @copy_docs(module_urls.user_avatar_decoration_url.__doc__)
+    @copy_docs(module_urls.user_avatar_decoration_url)
     def avatar_decoration_url(self):
         return None
     
     
-    @copy_docs(module_urls.user_avatar_decoration_url_as.__doc__)
+    @copy_docs(module_urls.user_avatar_decoration_url_as)
     def avatar_decoration_url_as(self, ext = None, size = None):
         return None
     
@@ -723,7 +729,7 @@ class UserBase(DiscordEntity, immortal = True):
         Returns
         -------
         bot : `bool`
-        """
+        """,
     )
     
     
@@ -735,7 +741,19 @@ class UserBase(DiscordEntity, immortal = True):
         Returns
         -------
         discriminator : `bool`
+        """,
+    )
+    
+    
+    display_name = PlaceHolder(
+        None,
         """
+        Returns the user's non-unique display name.
+        
+        Returns
+        -------
+        display_name : `None`, `str`
+        """,
     )
     
     
@@ -870,7 +888,11 @@ class UserBase(DiscordEntity, immortal = True):
         -------
         full_name : `str`
         """
-        return f'{self.name}#{self.discriminator:0>4}'
+        discriminator = self.discriminator
+        if discriminator:
+            return f'{self.name}#{discriminator:0>4}'
+        
+        return self.name
     
     
     @property
@@ -1079,6 +1101,10 @@ class UserBase(DiscordEntity, immortal = True):
         -------
         name : `str`
         """
+        display_name = self.display_name
+        if (display_name is not None):
+            return display_name
+        
         return self.name
     
     
@@ -1119,10 +1145,16 @@ class UserBase(DiscordEntity, immortal = True):
         if name_length > 32:
             return False
         
-        if re_search(re_escape(name), self.name, re_ignore_case) is None:
-            return False
+        pattern = re_compile(re_escape(name), re_ignore_case)
         
-        return True
+        if pattern.search(self.name) is not None:
+            return True
+        
+        display_name = self.display_name
+        if (display_name is not None) and (pattern.search(display_name) is not None):
+            return True
+        
+        return False
     
     
     def has_name_like_at(self, name, guild):

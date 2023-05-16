@@ -7,6 +7,7 @@
 - `get_bool_env` now accepts `0` and `1` too.
 - Add `scaffold` command (experimental).
 - Add `.env` file loading built in. This also means that the `.env` files will be finally found (poggers).
+- Add `UserBase.display_name`.
     
 #### Bug fixes
 

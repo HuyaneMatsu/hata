@@ -44,6 +44,7 @@ def _assert_fields_set(client):
     vampytest.assert_instance(client.banner, Icon)
     vampytest.assert_instance(client.bot, bool)
     vampytest.assert_instance(client.discriminator, int)
+    vampytest.assert_instance(client.display_name, str, nullable = True)
     vampytest.assert_instance(client.email, str, nullable = True)
     vampytest.assert_instance(client.email_verified, bool)
     vampytest.assert_instance(client.events, EventHandlerManager)
@@ -109,6 +110,7 @@ def test__ClientUserBase__new__1():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'voice in the dark'
     bot = True
@@ -126,6 +128,7 @@ def test__ClientUserBase__new__1():
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
+        display_name = display_name,
         flags = flags,
         name = name,
         bot = bot,
@@ -145,6 +148,7 @@ def test__ClientUserBase__new__1():
         vampytest.assert_eq(client.banner, banner)
         vampytest.assert_eq(client.banner_color, banner_color)
         vampytest.assert_eq(client.discriminator, discriminator)
+        vampytest.assert_eq(client.display_name, display_name)
         vampytest.assert_eq(client.flags, flags)
         vampytest.assert_eq(client.name, name)
         vampytest.assert_eq(client.bot, bot)

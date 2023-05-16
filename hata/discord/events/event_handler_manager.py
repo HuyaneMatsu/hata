@@ -444,6 +444,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------+-----------------------+
         | discriminator         | `int`                 |
         +-----------------------+-----------------------+
+        | display_name          | `None`, `str`         |
+        +-----------------------+-----------------------+
         | email                 | `None`, `str`         |
         +-----------------------+-----------------------+
         | email_verified        | `bool`                |
@@ -983,6 +985,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | banner_color          | `None`, ``Color``     |
         +-----------------------+-----------------------+
         | discriminator         | `int`                 |
+        +-----------------------+-----------------------+
+        | display_name          | `None`, `str`         |
         +-----------------------+-----------------------+
         | email                 | `None`, `str`         |
         +-----------------------+-----------------------+

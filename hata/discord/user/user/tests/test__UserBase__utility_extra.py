@@ -30,6 +30,7 @@ def test__UserBase__placeholders():
     vampytest.assert_instance(user.banner_type, IconType)
     vampytest.assert_instance(user.bot, bool)
     vampytest.assert_instance(user.discriminator, int)
+    vampytest.assert_instance(user.display_name, str, nullable = True)
     vampytest.assert_instance(user.email, str, nullable = True)
     vampytest.assert_instance(user.email_verified, bool)
     vampytest.assert_instance(user.flags, UserFlag)

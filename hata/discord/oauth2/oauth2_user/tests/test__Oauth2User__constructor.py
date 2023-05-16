@@ -26,6 +26,7 @@ def _assert_fields_set(user):
     vampytest.assert_instance(user.banner, Icon)
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
     vampytest.assert_instance(user.discriminator, int)
+    vampytest.assert_instance(user.display_name, str, nullable = True)
     vampytest.assert_instance(user.flags, UserFlag)
     vampytest.assert_instance(user.id, int)
     vampytest.assert_instance(user.name, str)
@@ -57,6 +58,7 @@ def test__Oauth2User__new__1():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'voice in the dark'
     email = 'rin@orindance.party'
@@ -71,6 +73,7 @@ def test__Oauth2User__new__1():
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
+        display_name = display_name,
         flags = flags,
         name = name,
         email = email,
@@ -86,6 +89,7 @@ def test__Oauth2User__new__1():
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
     vampytest.assert_eq(user.discriminator, discriminator)
+    vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.name, name)
     vampytest.assert_eq(user.email, email)

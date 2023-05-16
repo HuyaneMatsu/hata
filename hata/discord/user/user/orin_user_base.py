@@ -6,7 +6,8 @@ from ...bases import ICON_TYPE_ANIMATED_APNG, ICON_TYPE_NONE, IconSlot
 from ...http import urls as module_urls
 
 from .fields import (
-    parse_banner_color, parse_discriminator, parse_flags, validate_banner_color, validate_discriminator, validate_flags
+    parse_banner_color, parse_discriminator, parse_display_name, parse_flags, validate_banner_color,
+    validate_discriminator, validate_display_name, validate_flags
 )
 from .flags import UserFlag
 from .user_base import UserBase
@@ -34,6 +35,8 @@ class OrinUserBase(UserBase):
         The user's banner's type.
     discriminator : `int`
         The client's discriminator. Given to avoid overlapping names.
+    display_name : `None`, `str`
+        The user's non-unique display name.
     id : `int`
         The client's unique identifier number.
     flags : ``UserFlag``
@@ -41,7 +44,7 @@ class OrinUserBase(UserBase):
     name : str
         The client's username.
     """
-    __slots__ = ('banner_color', 'discriminator', 'flags')
+    __slots__ = ('banner_color', 'discriminator', 'display_name', 'flags')
     
     banner = IconSlot('banner', 'banner', module_urls.user_banner_url, module_urls.user_banner_url_as)
     avatar_decoration = IconSlot(
@@ -60,6 +63,7 @@ class OrinUserBase(UserBase):
         banner = ...,
         banner_color = ...,
         discriminator = ...,
+        display_name = ...,
         flags = ...,
         name = ...,
     ):
@@ -78,6 +82,8 @@ class OrinUserBase(UserBase):
             The user's banner color.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
+        display_name : `None`, `str`, Optional (Keyword only)
+            The user's non-unique display name.
         flags : `int`, ``UserFlag``, Optional (Keyword only)
             The user's flags.
         name : `str`, Optional (Keyword only)
@@ -114,6 +120,12 @@ class OrinUserBase(UserBase):
         else:
             discriminator = validate_discriminator(discriminator)
         
+        # display_name
+        if display_name is ...:
+            display_name = None
+        else:
+            display_name = validate_display_name(display_name)
+        
         # flags
         if flags is ...:
             flags = UserFlag()
@@ -130,6 +142,7 @@ class OrinUserBase(UserBase):
         self.banner = banner
         self.banner_color = banner_color
         self.discriminator = discriminator
+        self.display_name = display_name
         self.flags = flags
         return self
     
@@ -142,6 +155,7 @@ class OrinUserBase(UserBase):
         self._set_banner(data)
         self.banner_color = parse_banner_color(data)
         self.discriminator = parse_discriminator(data)
+        self.display_name = parse_display_name(data)
         self.flags = parse_flags(data)
         
     
@@ -167,6 +181,12 @@ class OrinUserBase(UserBase):
             old_attributes['discriminator'] = self.discriminator
             self.discriminator = discriminator
         
+        # display_name
+        display_name = parse_display_name(data)
+        if self.display_name != display_name:
+            old_attributes['display_name'] = self.display_name
+            self.display_name = display_name
+        
         # flags
         flags = parse_flags(data)
         if self.flags != flags:
@@ -185,6 +205,7 @@ class OrinUserBase(UserBase):
         self.banner_hash = 0
         self.banner_type = ICON_TYPE_NONE
         self.discriminator = 0
+        self.display_name = None
         self.flags = UserFlag()
     
     
@@ -195,6 +216,7 @@ class OrinUserBase(UserBase):
         new.banner = self.banner
         new.banner_color = self.banner_color
         new.discriminator = self.discriminator
+        new.display_name = self.display_name
         new.flags = self.flags
         return new
     
@@ -207,6 +229,7 @@ class OrinUserBase(UserBase):
         banner = ...,
         banner_color = ...,
         discriminator = ...,
+        display_name = ...,
         flags = ...,
         name = ...,
     ):
@@ -225,6 +248,8 @@ class OrinUserBase(UserBase):
             The user's banner color.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
+        display_name : `None`, `str`, Optional (Keyword only)
+            The user's non-unique display name.
         flags : `int`, ``UserFlag``, Optional (Keyword only)
             The user's flags.
         name : `str`, Optional (Keyword only)
@@ -265,6 +290,12 @@ class OrinUserBase(UserBase):
         else:
             discriminator = validate_discriminator(discriminator)
         
+        # display_name
+        if display_name is ...:
+            display_name = self.display_name
+        else:
+            display_name = validate_display_name(display_name)
+        
         # flags
         if flags is ...:
             flags = self.flags
@@ -281,6 +312,7 @@ class OrinUserBase(UserBase):
         new.banner = banner
         new.banner_color = banner_color
         new.discriminator = discriminator
+        new.display_name = display_name
         new.flags = flags
         return new
     
@@ -303,6 +335,11 @@ class OrinUserBase(UserBase):
         
         # discriminator
         hash_value ^= self.discriminator << 26
+        
+        # display_name
+        display_name = self.display_name
+        if (display_name is not None) and (display_name != self.name):
+            hash_value ^= hash(display_name)
         
         # flags
         hash_value ^= self.flags

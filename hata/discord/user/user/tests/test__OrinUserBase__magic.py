@@ -17,6 +17,7 @@ def test__OrinUserBase__repr():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
     
@@ -29,6 +30,7 @@ def test__OrinUserBase__repr():
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
+        display_name = display_name,
         flags = flags,
         name = name,
     )
@@ -45,6 +47,7 @@ def test__OrinUserBase__hash():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
     
@@ -57,6 +60,7 @@ def test__OrinUserBase__hash():
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
+        display_name = display_name,
         flags = flags,
         name = name,
     )
@@ -74,6 +78,7 @@ def test__OrinUserBase__eq():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
     
@@ -83,6 +88,7 @@ def test__OrinUserBase__eq():
         'banner': banner,
         'banner_color': banner_color,
         'discriminator': discriminator,
+        'display_name': display_name,
         'flags': flags,
         'name': name,
     }
@@ -101,6 +107,7 @@ def test__OrinUserBase__eq():
         ('banner', None),
         ('banner_color', None),
         ('discriminator', 0),
+        ('display_name', None),
         ('flags', UserFlag(0)),
         ('name', 'okuu'),
     ):
@@ -119,6 +126,7 @@ def test__OrinUserBase__format():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'orin'
     
@@ -128,6 +136,7 @@ def test__OrinUserBase__format():
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
+        display_name = display_name,
         flags = flags,
         name = name,
     )

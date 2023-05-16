@@ -20,6 +20,7 @@ def test__Client__to_data():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
     bot = True
@@ -29,6 +30,7 @@ def test__Client__to_data():
         'avatar_decoration': avatar_decoration.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
+        'global_name': display_name,
         'username': name,
         'banner': banner.as_base_16_hash,
         'id': str(client_id),
@@ -45,6 +47,7 @@ def test__Client__to_data():
         bot = bot,
         client_id = client_id,
         discriminator = discriminator,
+        display_name = display_name,
         flags = flags,
         name = name,
     )
@@ -70,6 +73,7 @@ def test__Client__update_attributes():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
     email = 'rin@orindance.party'
@@ -84,6 +88,7 @@ def test__Client__update_attributes():
         'banner': banner.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
+        'global_name': display_name,
         'public_flags': int(flags),
         'username': name,
         'email': email,
@@ -105,6 +110,7 @@ def test__Client__update_attributes():
         vampytest.assert_eq(client.banner, banner)
         vampytest.assert_eq(client.banner_color, banner_color)
         vampytest.assert_eq(client.discriminator, discriminator)
+        vampytest.assert_eq(client.display_name, display_name)
         vampytest.assert_eq(client.flags, flags)
         vampytest.assert_eq(client.name, name)
         vampytest.assert_eq(client.email, email)
@@ -128,6 +134,7 @@ def test__Client__difference_update_attributes():
     old_banner = Icon(IconType.animated, 12)
     old_banner_color = Color(1236)
     old_discriminator = 2222
+    old_display_name = 'Far'
     old_flags = UserFlag(1)
     old_name = 'suika'
     old_email = 'rin@orindance.party'
@@ -141,6 +148,7 @@ def test__Client__difference_update_attributes():
     new_banner = Icon(IconType.animated, 14)
     new_banner_color = Color(12)
     new_discriminator = 11
+    new_display_name = 'East'
     new_flags = UserFlag(2)
     new_name = 'ibuki'
     new_email = 'okuu@orindance.party'
@@ -155,6 +163,7 @@ def test__Client__difference_update_attributes():
         'banner': new_banner.as_base_16_hash,
         'accent_color': int(new_banner_color),
         'discriminator': str(new_discriminator).rjust(4, '0'),
+        'global_name': new_display_name,
         'public_flags': int(new_flags),
         'username': new_name,
         'email': new_email,
@@ -171,6 +180,7 @@ def test__Client__difference_update_attributes():
         'banner': old_banner,
         'banner_color': old_banner_color,
         'discriminator': old_discriminator,
+        'display_name': old_display_name,
         'email': old_email,
         'email_verified': old_email_verified,
         'flags': old_flags,
@@ -186,6 +196,7 @@ def test__Client__difference_update_attributes():
         banner = old_banner,
         banner_color = old_banner_color,
         discriminator = old_discriminator,
+        display_name = old_display_name,
         flags = old_flags,
         name = old_name,
         email = old_email,
@@ -203,6 +214,7 @@ def test__Client__difference_update_attributes():
         vampytest.assert_eq(client.banner, new_banner)
         vampytest.assert_eq(client.banner_color, new_banner_color)
         vampytest.assert_eq(client.discriminator, new_discriminator)
+        vampytest.assert_eq(client.display_name, new_display_name)
         vampytest.assert_eq(client.flags, new_flags)
         vampytest.assert_eq(client.name, new_name)
         vampytest.assert_eq(client.email, new_email)

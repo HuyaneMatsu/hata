@@ -110,6 +110,7 @@ def test__Webhook__to_data():
         'avatar_decoration': None,
         'accent_color': None,
         'discriminator': '0000',
+        'global_name': None,
         'username': name,
         'banner': None,
         'id': str(webhook_id),

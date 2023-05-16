@@ -141,8 +141,14 @@ def test__Channel__get_user_like__0():
     channel_id = 202209200025
     user_name = 'Cross World'
     user_discriminator = 69
+    user_display_name = 'Far East'
     
-    user = User.precreate(202209200026, name = user_name, discriminator = user_discriminator)
+    user = User.precreate(
+        202209200026,
+        name = user_name,
+        discriminator = user_discriminator,
+        display_name = user_display_name,
+    )
     channel = Channel.precreate(channel_id, channel_type = ChannelType.private, users = [user])
     
     for input_value, expected_output in (
@@ -150,6 +156,8 @@ def test__Channel__get_user_like__0():
         (user.name, user),
         (user.name[:-2], user),
         (user.full_name, user),
+        (user.display_name, user),
+        (user.display_name[:-2], user),
     ):
         output = channel.get_user_like(input_value)
         vampytest.assert_is(output, expected_output)
@@ -166,8 +174,14 @@ def test__Channel__get_user_like__1():
     guild_id = 202209200028
     user_name = 'Cross World'
     user_discriminator = 69
+    user_display_name = 'Far East'
     
-    user = User.precreate(202209200029, name = user_name, discriminator = user_discriminator)
+    user = User.precreate(
+        202209200029,
+        name = user_name,
+        discriminator = user_discriminator,
+        display_name = user_display_name,
+    )
     user.guild_profiles[guild_id] = GuildProfile()
     channel = Channel.precreate(channel_id, channel_type = ChannelType.guild_text, guild_id = guild_id)
     role = Role.precreate(guild_id, guild_id = guild_id, permissions = Permission().update_by_keys(view_channel = True))
@@ -180,6 +194,8 @@ def test__Channel__get_user_like__1():
         (user.name, user),
         (user.name[:-2], user),
         (user.full_name, user),
+        (user.display_name, user),
+        (user.display_name[:-2], user),
     ):
         output = channel.get_user_like(input_value)
         vampytest.assert_is(output, expected_output)
@@ -194,8 +210,14 @@ def test__Channel__get_users_like__0():
     channel_id = 202209200030
     user_name = 'Cross World'
     user_discriminator = 69
+    user_display_name = 'Far East'
     
-    user = User.precreate(202209200031, name = user_name, discriminator = user_discriminator)
+    user = User.precreate(
+        202209200031,
+        name = user_name,
+        discriminator = user_discriminator,
+        display_name = user_display_name,
+    )
     channel = Channel.precreate(channel_id, channel_type = ChannelType.private, users = [user])
     
     for input_value, expected_output in (
@@ -203,6 +225,8 @@ def test__Channel__get_users_like__0():
         (user.name, [user]),
         (user.name[:-2], [user]),
         (user.full_name, [user]),
+        (user.display_name, [user]),
+        (user.display_name[:-2], [user]),
     ):
         output = channel.get_users_like(input_value)
         vampytest.assert_instance(output, list)
@@ -220,8 +244,14 @@ def test__Channel__get_users_like__1():
     guild_id = 202209200033
     user_name = 'Cross World'
     user_discriminator = 69
+    user_display_name = 'Far East'
     
-    user = User.precreate(202209200034, name = user_name, discriminator = user_discriminator)
+    user = User.precreate(
+        202209200034,
+        name = user_name,
+        discriminator = user_discriminator,
+        display_name = user_display_name,
+    )
     user.guild_profiles[guild_id] = GuildProfile()
     channel = Channel.precreate(channel_id, channel_type = ChannelType.guild_text, guild_id = guild_id)
     role = Role.precreate(guild_id, guild_id = guild_id, permissions = Permission().update_by_keys(view_channel = True))
@@ -234,6 +264,8 @@ def test__Channel__get_users_like__1():
         (user.name, [user]),
         (user.name[:-2], [user]),
         (user.full_name, [user]),
+        (user.display_name, [user]),
+        (user.display_name[:-2], [user]),
     ):
         output = channel.get_users_like(input_value)
         vampytest.assert_instance(output, list)

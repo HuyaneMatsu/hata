@@ -54,3 +54,19 @@ def test__DefaultAvatar__url():
     Tests whether ``DefaultAvatar.url`` works as intended.
     """
     vampytest.assert_true(is_url(DefaultAvatar.blue.url))
+
+
+def test__DefaultAvatar__for__discriminator_deprecation():
+    """
+    Tests whether ``DefaultAvatar.for_`` handles discrimination deprecation as intended.
+    """
+    key = 1
+    user_id_0 = 202305160000
+    user_id_1 = 202305160001
+    user_0 = User.precreate((user_id_0 & ((1 << 22) - 1)) | (key << 22))
+    user_1 = User.precreate(user_id_1, discriminator = key)
+    
+    default_avatar_0 = DefaultAvatar.for_(user_0)
+    default_avatar_1 = DefaultAvatar.for_(user_1)
+    
+    vampytest.assert_is(default_avatar_0, default_avatar_1)

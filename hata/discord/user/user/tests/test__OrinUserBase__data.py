@@ -29,6 +29,7 @@ def test__OrinUserBase__to_data():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
     
@@ -38,6 +39,7 @@ def test__OrinUserBase__to_data():
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
+        display_name = display_name,
         flags = flags,
         name = name,
     )
@@ -48,6 +50,7 @@ def test__OrinUserBase__to_data():
         'avatar_decoration': avatar_decoration.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
+        'global_name': display_name,
         'username': name,
         'banner': banner.as_base_16_hash,
         'id': str(user_id),
@@ -70,6 +73,7 @@ def test__OrinUserBase__update_attributes():
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
+    display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
     
@@ -81,6 +85,7 @@ def test__OrinUserBase__update_attributes():
         'banner': banner.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
+        'global_name': display_name,
         'public_flags': int(flags),
         'username': name,
     }
@@ -92,6 +97,7 @@ def test__OrinUserBase__update_attributes():
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
     vampytest.assert_eq(user.discriminator, discriminator)
+    vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.name, name)
 
@@ -105,6 +111,7 @@ def test__OrinUserBase__difference_update_attributes():
     old_banner = Icon(IconType.animated, 12)
     old_banner_color = Color(1236)
     old_discriminator = 2222
+    old_display_name = 'Far'
     old_flags = UserFlag(1)
     old_name = 'suika'
     
@@ -113,6 +120,7 @@ def test__OrinUserBase__difference_update_attributes():
     new_banner = Icon(IconType.animated, 14)
     new_banner_color = Color(12)
     new_discriminator = 11
+    new_display_name = 'East'
     new_flags = UserFlag(2)
     new_name = 'ibuki'
     
@@ -122,6 +130,7 @@ def test__OrinUserBase__difference_update_attributes():
         banner = old_banner,
         banner_color = old_banner_color,
         discriminator = old_discriminator,
+        display_name = old_display_name,
         flags = old_flags,
         name = old_name,
     )
@@ -132,6 +141,7 @@ def test__OrinUserBase__difference_update_attributes():
         'banner': new_banner.as_base_16_hash,
         'accent_color': int(new_banner_color),
         'discriminator': str(new_discriminator).rjust(4, '0'),
+        'global_name': new_display_name,
         'public_flags': int(new_flags),
         'username': new_name,
     }
@@ -143,6 +153,7 @@ def test__OrinUserBase__difference_update_attributes():
     vampytest.assert_eq(user.banner, new_banner)
     vampytest.assert_eq(user.banner_color, new_banner_color)
     vampytest.assert_eq(user.discriminator, new_discriminator)
+    vampytest.assert_eq(user.display_name, new_display_name)
     vampytest.assert_eq(user.flags, new_flags)
     vampytest.assert_eq(user.name, new_name)
     
@@ -154,6 +165,7 @@ def test__OrinUserBase__difference_update_attributes():
             'banner': old_banner,
             'banner_color': old_banner_color,
             'discriminator': old_discriminator,
+            'display_name': old_display_name,
             'flags': old_flags,
             'name': old_name,
         },

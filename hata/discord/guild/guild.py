@@ -6,7 +6,7 @@ __all__ = (
 )
 
 import warnings
-from datetime import datetime
+from datetime import datetime as DateTime
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 
 from scarletio import WeakValueDictionary, export, include
@@ -1364,14 +1364,21 @@ class Guild(DiscordEntity, immortal = True):
             if user.name == name:
                 return user
         
+        for user in users.values():
+            display_name = user.display_name
+            if (display_name is not None) and (display_name == name):
+                return user
+        
         guild_id = self.id
         for user in users.values():
-            nick = user.guild_profiles[guild_id].nick
-            if nick is None:
-                continue
-            
-            if nick == name:
-                return user
+            try:
+                guild_profile = user.guild_profiles[guild_id]
+            except KeyError:
+                pass
+            else:
+                nick = guild_profile.nick
+                if (nick is not None) and (nick == name):
+                    return user
         
         return default
     
@@ -1422,16 +1429,19 @@ class Guild(DiscordEntity, immortal = True):
             if (pattern.search(user.name) is not None):
                 return user
             
-            nick = user.guild_profiles[guild_id].nick
+            display_name = user.display_name
+            if (display_name is not None) and (pattern.search(display_name) is not None):
+                return user
             
-            if nick is None:
-                continue
+            try:
+                guild_profile = user.guild_profiles[guild_id]
+            except KeyError:
+                pass
+            else:
+                nick = guild_profile.nick
+                if (nick is not None) and (pattern.search(nick) is not None):
+                    return user
             
-            if pattern.search(nick) is None:
-                continue
-            
-            return user
-        
         return default
     
     
@@ -1478,15 +1488,24 @@ class Guild(DiscordEntity, immortal = True):
         pattern = re_compile(re_escape(name), re_ignore_case)
         guild_id = self.id
         for user in self.users.values():
-            if pattern.search(user.name) is None:
-                nick = user.guild_profiles[guild_id].nick
-                if nick is None:
-                    continue
-                
-                if pattern.search(nick) is None:
-                    continue
+            if pattern.search(user.name) is not None:
+                result.append(user)
+                continue
             
-            result.append(user)
+            display_name = user.display_name
+            if (display_name is not None) and (pattern.search(display_name) is not None):
+                result.append(user)
+                continue
+            
+            try:
+                guild_profile = user.guild_profiles[guild_id]
+            except KeyError:
+                pass
+            else:
+                nick = guild_profile.nick
+                if (nick is not None) and (pattern.search(nick) is not None):
+                    result.append(user)
+                    continue
         
         return result
     
@@ -1514,21 +1533,39 @@ class Guild(DiscordEntity, immortal = True):
         pattern = re_compile(re_escape(name), re_ignore_case)
         guild_id = self.id
         for user in self.users.values():
-            profile = user.guild_profiles[guild_id]
-            if pattern.search(user.name) is None:
-                nick = profile.nick
-                if nick is None:
-                    continue
-                
-                if pattern.search(nick) is None:
-                    continue
+            try:
+                guild_profile = user.guild_profiles[guild_id]
+            except KeyError:
+                continue
             
-            joined_at = profile.joined_at
+            # Use goto
+            while True:
+                if pattern.search(user.name) is not None:
+                    matched = True
+                    break
+                
+                display_name = user.display_name
+                if (display_name is not None) and (pattern.search(display_name) is not None):
+                    matched = True
+                    break
+                
+                nick = guild_profile.nick
+                if (nick is not None) and (pattern.search(nick) is not None):
+                    matched = True
+                    break
+                
+                matched = False
+                break
+            
+            if not matched:
+                continue
+            
+            joined_at = guild_profile.joined_at
             
             if joined_at is None:
                 # Instead of defaulting to `user.created_at` use the current date
                 if now_date_time is None:
-                    now_date_time = datetime.utcnow()
+                    now_date_time = DateTime.utcnow()
                 
                 joined_at = now_date_time
             

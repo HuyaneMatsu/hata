@@ -2,7 +2,7 @@ import vampytest
 
 from ..assets import ActivityAssets
 
-from .test__ActivityAssets__constructor import _check_fields_set
+from .test__ActivityAssets__constructor import _assert_fields_set
 
 
 def test__ActivityAssets__copy():
@@ -21,7 +21,7 @@ def test__ActivityAssets__copy():
         text_small = text_small,
     )
     copy = field.copy()
-    _check_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(field, copy)
 
     vampytest.assert_eq(field, copy)
@@ -46,7 +46,7 @@ def test__ActivityAssets__copy_with__0():
         text_small = text_small,
     )
     copy = field.copy_with()
-    _check_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(field, copy)
 
     vampytest.assert_eq(field, copy)
@@ -80,7 +80,7 @@ def test__ActivityAssets__copy_with__1():
         text_large = new_text_large,
         text_small = new_text_small,
     )
-    _check_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(field, copy)
 
     vampytest.assert_eq(copy.image_large, new_image_large)

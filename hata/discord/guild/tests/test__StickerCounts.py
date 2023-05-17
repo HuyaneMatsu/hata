@@ -3,7 +3,6 @@ import warnings as module_warnings
 import vampytest
 
 from ...sticker import Sticker, StickerFormat
-from ...role import Role, RoleManagerType
 
 from ..sticker_counts import StickerCounts
 

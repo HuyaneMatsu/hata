@@ -36,7 +36,7 @@ class GuildWidgetUser(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Guild widget user data received with ``GuildWidget``'s.
         """
         self.name = data['username']
@@ -119,12 +119,12 @@ class GuildWidgetChannel(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Guild widget channel data received with ``GuildWidget``'s.
         """
         self.id = int(data['id'])
         self.name = data['name']
-        self.position = data['name']
+        self.position = data['position']
     
     
     @property
@@ -216,9 +216,9 @@ class GuildWidget(DiscordEntity):
     
     Attributes
     ----------
-    _cache : `dict` of (`str`, `Any`) items
+    _cache : `dict` of (`str`, `object`) items
         Internal cache used by cached properties.
-    _data : `dict` of (`str`, `Any`) items
+    _data : `dict` of (`str`, `object`) items
         The data sent by Discord and used by the cached properties of the guild widget instances.
     guild : ``Guild``
         The owner guild of the widget.
@@ -231,7 +231,7 @@ class GuildWidget(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             The requested guild widget data.
         """
         self.guild = Guild.precreate(int(data['id']), name = data['name'])

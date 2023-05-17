@@ -1,6 +1,6 @@
 import vampytest
 
-from .. import GuildFeature
+from ..preinstanced import GuildFeature
 
 
 def test__GuildFeature__name():

@@ -42,7 +42,7 @@ EMBEDDED_ACTIVITY_APPLICATION_ID_TO_NAME = {
 }
 
 @export
-class Invite(DiscordEntity, immortal=True):
+class Invite(DiscordEntity, immortal = True):
     """
     Represents a Discord Invite.
     

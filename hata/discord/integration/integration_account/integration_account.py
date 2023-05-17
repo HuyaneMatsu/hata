@@ -78,7 +78,7 @@ class IntegrationAccount(RichAttributeErrorBaseType):
         return self
     
     
-    def to_data(self, defaults = False):
+    def to_data(self, *, defaults = False):
         """
         Converts the integration account into a json serializable object.
         

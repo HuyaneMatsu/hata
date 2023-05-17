@@ -3,7 +3,7 @@ import vampytest
 from ..base import ActivityFieldBase
 
 
-def _check_fields_set(field):
+def _assert_fields_set(field):
     """
     Checks whether every fields of the given activity field are set.
     
@@ -20,4 +20,4 @@ def test__ActivityFieldBase__new():
     Tests whether ``ActivityFieldBase.__new__`` works as intended.
     """
     field = ActivityFieldBase()
-    _check_fields_set(field)
+    _assert_fields_set(field)

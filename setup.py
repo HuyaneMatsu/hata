@@ -20,7 +20,6 @@ setup(
     version = version,
     packages = [
         'hata',
-        'hata.backend',
         'hata.discord',
         'hata.discord.activity',
         'hata.discord.activity.activity',
@@ -97,6 +96,9 @@ setup(
         'hata.discord.guild.discovery',
         'hata.discord.guild.discovery_category',
         'hata.discord.guild.embedded_activity_state',
+        'hata.discord.guild.guild_join_request',
+        'hata.discord.guild.guild_join_request_delete_event',
+        'hata.discord.guild.guild_join_request_form_response',
         'hata.discord.guild.guild_preview',
         'hata.discord.guild.verification_screen',
         'hata.discord.guild.verification_screen_step',

@@ -124,7 +124,7 @@ class ScheduledEventSubscribeEvent(EventBase):
             ', scheduled_event_id = ',
             repr(self.scheduled_event_id),
             ', user_id = ',
-            repr(self.scheduled_event_id),
+            repr(self.user_id),
             '>'
         ]
         

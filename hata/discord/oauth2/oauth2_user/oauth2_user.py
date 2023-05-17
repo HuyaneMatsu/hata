@@ -190,7 +190,7 @@ class Oauth2User(OrinUserBase):
     
     
     @copy_docs(OrinUserBase.to_data)
-    def to_data(self, defaults = False, include_internals = False):
+    def to_data(self, *, defaults = False, include_internals = False):
         data = OrinUserBase.to_data(self, defaults = defaults, include_internals = include_internals)
         put_email_into(self.email, data, defaults)
         put_email_verified_into(self.email_verified, data, defaults)

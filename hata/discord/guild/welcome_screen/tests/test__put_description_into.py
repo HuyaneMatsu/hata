@@ -9,7 +9,7 @@ def test__put_description_into():
     """
     for input_value, defaults, expected_output in (
         (None, False, {'description': ''}),
-        ('', False, {'description': ''}),
+        (None, True, {'description': ''}),
         ('a', False, {'description': 'a'}),
     ):
         data = put_description_into(input_value, {}, defaults)

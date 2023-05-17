@@ -16,8 +16,8 @@ def test__try_resolve_interaction_message__miss():
     
     Case: miss.
     """
-    interaction_id = 202305060002
-    message_id = 202305060003
+    interaction_id = 202305160002
+    message_id = 202305160003
     
     message_interaction = MessageInteraction.precreate(interaction_id)
     message = Message.precreate(message_id)
@@ -31,8 +31,8 @@ def test__try_resolve_interaction_message__hit_no_waiter():
     
     Case: hit, but no waiter.
     """
-    interaction_id = 202305060003
-    message_id = 202305060004
+    interaction_id = 202305160003
+    message_id = 202305160004
     
     message_interaction = MessageInteraction.precreate(interaction_id)
     message = Message.precreate(message_id)
@@ -51,8 +51,8 @@ def test__try_resolve_interaction_message__hit_with_waiter():
     
     Case: hit with waiter.
     """
-    interaction_id = 202305060005
-    message_id = 202305060006
+    interaction_id = 202305160005
+    message_id = 202305160006
     
     message_interaction = MessageInteraction.precreate(interaction_id)
     message = Message.precreate(message_id)

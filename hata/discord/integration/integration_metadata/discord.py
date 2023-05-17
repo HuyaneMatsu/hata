@@ -115,7 +115,7 @@ class IntegrationMetadataDiscord(IntegrationMetadataBase):
     
     
     @copy_docs(IntegrationMetadataBase.to_data)
-    def to_data(self, defaults = False):
+    def to_data(self, *, defaults = False):
         data = {}
         put_account_into__discord(self.account, data, defaults)
         put_application_into(self.application, data, defaults)

@@ -205,7 +205,7 @@ class AutoModerationRuleTriggerMetadataKeyword(AutoModerationRuleTriggerMetadata
     
     
     @copy_docs(AutoModerationRuleTriggerMetadataBase.to_data)
-    def to_data(self, defaults = False):
+    def to_data(self, *, defaults = False):
         data = {}
         put_excluded_keywords_into(self.excluded_keywords, data, defaults)
         put_keywords_into(self.keywords, data, defaults)

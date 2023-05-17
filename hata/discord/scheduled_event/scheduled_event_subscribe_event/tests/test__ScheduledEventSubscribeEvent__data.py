@@ -2,7 +2,7 @@ import vampytest
 
 from ..scheduled_event_subscribe_event import ScheduledEventSubscribeEvent
 
-from .test__ScheduledEventSubscribeEvent__constructor import _check_fields_set
+from .test__ScheduledEventSubscribeEvent__constructor import _assert_fields_set
 
 
 def test__ScheduledEventSubscribeEvent__from_data__0():
@@ -22,7 +22,7 @@ def test__ScheduledEventSubscribeEvent__from_data__0():
     }
     
     event = ScheduledEventSubscribeEvent.from_data(data)
-    _check_fields_set(event)
+    _assert_fields_set(event)
     
     vampytest.assert_eq(event.guild_id, guild_id)
     vampytest.assert_eq(event.scheduled_event_id, scheduled_event_id)

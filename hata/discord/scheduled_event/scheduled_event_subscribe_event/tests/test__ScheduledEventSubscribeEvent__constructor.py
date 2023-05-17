@@ -3,7 +3,7 @@ import vampytest
 from ..scheduled_event_subscribe_event import ScheduledEventSubscribeEvent
 
 
-def _check_fields_set(event):
+def _assert_fields_set(event):
     """
     Checks whether every attribute is set of the given scheduled event subscribe event.
     
@@ -25,7 +25,7 @@ def test__ScheduledEventSubscribeEvent__new__0():
     Case: No fields given.
     """
     event = ScheduledEventSubscribeEvent()
-    _check_fields_set(event)
+    _assert_fields_set(event)
 
 
 def test__ScheduledEventSubscribeEvent__new__1():
@@ -43,7 +43,7 @@ def test__ScheduledEventSubscribeEvent__new__1():
         scheduled_event_id = scheduled_event_id,
         user_id = user_id,
     )
-    _check_fields_set(event)
+    _assert_fields_set(event)
     
     vampytest.assert_eq(event.guild_id, guild_id)
     vampytest.assert_eq(event.scheduled_event_id, scheduled_event_id)

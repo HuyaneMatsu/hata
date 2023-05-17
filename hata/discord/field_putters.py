@@ -1275,7 +1275,7 @@ def nullable_entity_putter_factory(field_key, entity_type):
     return default_entity_putter_factory(field_key, entity_type, None)
 
 
-def default_entity_putter_factory(field_key, entity_type, default):
+def default_entity_putter_factory(field_key, entity_type, default, *, force_include_internals = False):
     """
     Returns a new defaulted entity putter.
     
@@ -1283,16 +1283,53 @@ def default_entity_putter_factory(field_key, entity_type, default):
     -------
     field_key : `str`
         The field's key used in payload.
+    
     entity_type : `object` with `{to_data}`
         The expected entity type.
+    
     default : `object`
         The default value to handle as an unique case.
+        
+    force_include_internals : `bool`, Optional (Keyword only)
+        Whether `include_internals` should be passed as `True` always.
     
     Returns
     -------
     putter : `FunctionType`
     """
-    if _has_entity_include_internals_parameter(entity_type):
+    if force_include_internals:
+        def putter(entity, data, defaults):
+            """
+            Puts the given entity into the given `data` json serializable object.
+            
+            > This function is generated.
+            
+            Parameters
+            ----------
+            entity : `object` with `{to_data}`
+                Entity.
+            data : `dict` of (`str`, `object`) items
+                Json serializable dictionary.
+            defaults : `bool`
+                Whether default values should be included as well.
+            
+            Returns
+            -------
+            data : `dict` of (`str`, `object`) items
+            """
+            nonlocal default
+            nonlocal field_key
+            
+            if entity is default:
+                entity_data = None
+            else:
+                entity_data = entity.to_data(defaults = defaults, include_internals = True)
+            
+            data[field_key] = entity_data
+            
+            return data
+    
+    elif _has_entity_include_internals_parameter(entity_type):
         def putter(entity, data, defaults, *, include_internals = False):
             """
             Puts the given entity into the given `data` json serializable object.
@@ -1371,8 +1408,10 @@ def nullable_entity_optional_putter_factory(
     -------
     field_key : `str`
         The field's key used in payload.
+    
     entity_type : `object` with `{to_data}`
         The expected entity type.
+    
     default : `object`
         The default value to handle as an unique case.
     
@@ -1500,7 +1539,7 @@ def nullable_entity_optional_putter_factory(
     return putter
 
 
-def entity_putter_factory(field_key, entity_type):
+def entity_putter_factory(field_key, entity_type, *, force_include_internals = False):
     """
     Returns a new entity putter.
     
@@ -1508,14 +1547,45 @@ def entity_putter_factory(field_key, entity_type):
     -------
     field_key : `str`
         The field's key used in payload.
+    
     entity_type : `object` with `{to_data}`
         The expected entity type.
+        
+    force_include_internals : `bool`, Optional (Keyword only)
+        Whether `include_internals` should be passed as `True` always.
+    
     
     Returns
     -------
     putter : `FunctionType`
     """
-    if _has_entity_include_internals_parameter(entity_type):
+    if force_include_internals:
+        def putter(entity, data, defaults):
+            """
+            Puts the given entity into the given `data` json serializable object.
+            
+            > This function is generated.
+            
+            Parameters
+            ----------
+            entity : `object` with `{to_data}`
+                Entity.
+            data : `dict` of (`str`, `object`) items
+                Json serializable dictionary.
+            defaults : `bool`
+                Whether default values should be included as well.
+            
+            Returns
+            -------
+            data : `dict` of (`str`, `object`) items
+            """
+            nonlocal field_key
+            
+            data[field_key] = entity.to_data(defaults = defaults, include_internals = True)
+            
+            return data
+    
+    elif _has_entity_include_internals_parameter(entity_type):
         def putter(entity, data, defaults, *, include_internals = False):
             """
             Puts the given entity into the given `data` json serializable object.

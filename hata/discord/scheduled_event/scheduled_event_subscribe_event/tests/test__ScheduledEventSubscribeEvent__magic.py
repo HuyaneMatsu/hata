@@ -51,9 +51,10 @@ def test__ScheduledEventSubscribeEvent__eq():
         'user_id': user_id,
     }
     
-    event_original = ScheduledEventSubscribeEvent(**keyword_parameters)
+    event = ScheduledEventSubscribeEvent(**keyword_parameters)
     
-    vampytest.assert_eq(event_original, event_original)
+    vampytest.assert_eq(event, event)
+    vampytest.assert_ne(event, object())
     
     for event_name, event_value in (
         ('guild_id', 0),
@@ -61,7 +62,7 @@ def test__ScheduledEventSubscribeEvent__eq():
         ('user_id', 0),
     ):
         event_altered = ScheduledEventSubscribeEvent(**{**keyword_parameters, event_name: event_value})
-        vampytest.assert_ne(event_original, event_altered)
+        vampytest.assert_ne(event, event_altered)
 
 
 def test__ScheduledEventSubscribeEvent__unpack():

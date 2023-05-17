@@ -200,7 +200,7 @@ class IntegrationMetadataSubscription(IntegrationMetadataBase):
     
     
     @copy_docs(IntegrationMetadataBase.to_data)
-    def to_data(self, defaults = False):
+    def to_data(self, *, defaults = False):
         data = {}
         
         put_account_into(self.account, data, defaults)

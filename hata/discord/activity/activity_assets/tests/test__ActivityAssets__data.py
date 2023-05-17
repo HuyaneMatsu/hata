@@ -2,7 +2,7 @@ import vampytest
 
 from ..assets import ActivityAssets
 
-from .test__ActivityAssets__constructor import _check_fields_set
+from .test__ActivityAssets__constructor import _assert_fields_set
 
 
 def test__ActivityAssets__from_data__0():
@@ -24,7 +24,7 @@ def test__ActivityAssets__from_data__0():
     }
     
     field = ActivityAssets.from_data(data)
-    _check_fields_set(field)
+    _assert_fields_set(field)
     
     vampytest.assert_eq(field.image_large, image_large)
     vampytest.assert_eq(field.image_small, image_small)

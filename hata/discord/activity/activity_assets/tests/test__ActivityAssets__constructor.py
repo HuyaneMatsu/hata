@@ -3,7 +3,7 @@ import vampytest
 from ..assets import ActivityAssets
 
 
-def _check_fields_set(field):
+def _assert_fields_set(field):
     """
     Checks whether every attribute is set of the given activity assets field.
     
@@ -26,7 +26,7 @@ def test__ActivityAssets__new__0():
     Case: No fields given.
     """
     field = ActivityAssets()
-    _check_fields_set(field)
+    _assert_fields_set(field)
 
 
 def test__ActivityAssets__new__1():
@@ -46,7 +46,7 @@ def test__ActivityAssets__new__1():
         text_large = text_large,
         text_small = text_small,
     )
-    _check_fields_set(field)
+    _assert_fields_set(field)
     
     vampytest.assert_eq(field.image_large, image_large)
     vampytest.assert_eq(field.image_small, image_small)

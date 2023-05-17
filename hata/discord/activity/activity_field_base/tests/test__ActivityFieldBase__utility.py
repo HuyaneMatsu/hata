@@ -2,7 +2,7 @@ import vampytest
 
 from ..base import ActivityFieldBase
 
-from .test__ActivityFieldBase__constructor import _check_fields_set
+from .test__ActivityFieldBase__constructor import _assert_fields_set
 
 
 def test__ActivityFieldBase__copy():
@@ -11,7 +11,7 @@ def test__ActivityFieldBase__copy():
     """
     field = ActivityFieldBase()
     copy = field.copy()
-    _check_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(field, copy)
     
     vampytest.assert_eq(field, copy)
@@ -25,7 +25,7 @@ def test__ActivityFieldBase__copy_with__0():
     """
     field = ActivityFieldBase()
     copy = field.copy_with()
-    _check_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(field, copy)
     
     vampytest.assert_eq(field, copy)

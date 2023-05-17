@@ -1996,7 +1996,7 @@ del GUILD_MEMBER_REMOVE__CAL_SC, \
 
 
 def GUILD_JOIN_REQUEST_CREATE__CAL(client, data):
-    event = GuildJoinRequest(data)
+    event = GuildJoinRequest.from_data(data)
     
     Task(client.events.guild_join_request_create(client, event), KOKORO)
 
@@ -2016,7 +2016,7 @@ del GUILD_JOIN_REQUEST_CREATE__CAL, \
 # This is a low priority event. Is called after `GUILD_MEMBER_REMOVE`, so we should have everything cached.
 
 def GUILD_JOIN_REQUEST_DELETE__CAL(client, data):
-    event = GuildJoinRequestDeleteEvent(data)
+    event = GuildJoinRequestDeleteEvent.from_data(data)
     
     Task(client.events.guild_join_request_delete(client, event), KOKORO)
 
@@ -2035,7 +2035,7 @@ del GUILD_JOIN_REQUEST_DELETE__CAL, \
 
 
 def GUILD_JOIN_REQUEST_UPDATE__CAL(client, data):
-    event = GuildJoinRequest(data)
+    event = GuildJoinRequest.from_data(data)
     
     Task(client.events.guild_join_request_update(client, event), KOKORO)
 

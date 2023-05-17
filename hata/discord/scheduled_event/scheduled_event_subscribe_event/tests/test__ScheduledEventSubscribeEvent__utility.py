@@ -5,7 +5,7 @@ from ....user import ClientUserBase
 
 from ..scheduled_event_subscribe_event import ScheduledEventSubscribeEvent
 
-from .test__ScheduledEventSubscribeEvent__constructor import _check_fields_set
+from .test__ScheduledEventSubscribeEvent__constructor import _assert_fields_set
 
 
 def test__ScheduledEventSubscribeEvent__copy():
@@ -22,7 +22,7 @@ def test__ScheduledEventSubscribeEvent__copy():
         user_id = user_id,
     )
     copy = event.copy()
-    _check_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(event, copy)
 
     vampytest.assert_eq(event, copy)
@@ -45,7 +45,7 @@ def test__ScheduledEventSubscribeEvent__copy_with__0():
         user_id = user_id,
     )
     copy = event.copy_with()
-    _check_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(event, copy)
 
     vampytest.assert_eq(event, copy)
@@ -76,7 +76,7 @@ def test__ScheduledEventSubscribeEvent__copy_with__1():
         scheduled_event_id = new_scheduled_event_id,
         user_id = new_user_id,
     )
-    _check_fields_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(event, copy)
 
     vampytest.assert_eq(copy.guild_id, new_guild_id)

@@ -21,7 +21,7 @@ from ..http import urls as module_urls
 from ..localization.utils import DEFAULT_LOCALE, get_locale
 from ..permission import Permission
 from ..permission.permission import PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR, PERMISSION_NONE
-from ..preconverters import preconvert_bool, preconvert_preinstanced_type, preconvert_snowflake, preconvert_str
+from ..preconverters import preconvert_bool, preconvert_preinstanced_type
 from ..role import Role
 from ..scheduled_event import ScheduledEvent
 from ..sticker import Sticker
@@ -35,8 +35,9 @@ from .constants import (
 from .embedded_activity_state import EmbeddedActivityState
 from .emoji_counts import EmojiCounts
 from .fields import (
-    parse_features, parse_max_stage_channel_video_users, parse_max_voice_channel_video_users, parse_premium_tier,
-    parse_safety_alerts_channel_id, validate_features, validate_max_stage_channel_video_users, validate_max_voice_channel_video_users,
+    parse_features, parse_id, parse_max_stage_channel_video_users, parse_max_voice_channel_video_users, parse_name,
+    parse_premium_tier, parse_safety_alerts_channel_id, validate_features, validate_id,
+    validate_max_stage_channel_video_users, validate_max_voice_channel_video_users, validate_name,
     validate_premium_tier, validate_safety_alerts_channel_id
 )
 from .flags import SystemChannelFlag
@@ -374,7 +375,7 @@ class Guild(DiscordEntity, immortal = True):
         -------
         guild : ``Guild``
         """
-        guild_id = int(data['id'])
+        guild_id = parse_id(data)
         
         try:
             self = GUILDS[guild_id]
@@ -652,7 +653,7 @@ class Guild(DiscordEntity, immortal = True):
         ValueError
             - If an parameter's type is good, but it's value is unacceptable.
         """
-        guild_id = preconvert_snowflake(guild_id, 'guild_id')
+        guild_id = validate_id(guild_id)
         
         if kwargs:
             processable = []
@@ -662,7 +663,7 @@ class Guild(DiscordEntity, immortal = True):
             except KeyError:
                 pass
             else:
-                name = preconvert_str(name, 'name', 2, 100)
+                name = validate_name(name)
                 processable.append(('name', name))
             
             cls.icon.preconvert(kwargs, processable)
@@ -2205,7 +2206,7 @@ class Guild(DiscordEntity, immortal = True):
         # ignoring 'large'
         # ignoring 'stickers'
         
-        name = data['name']
+        name = parse_name(data)
         if self.name != name:
             old_attributes['name'] = self.name
             self.name = name
@@ -2419,7 +2420,7 @@ class Guild(DiscordEntity, immortal = True):
         # ignoring 'voice_states'
         # ignoring 'stickers'
         
-        self.name = data['name']
+        self.name = parse_name(data)
         
         self._set_icon(data)
         self._set_invite_splash(data)

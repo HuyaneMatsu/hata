@@ -5,7 +5,7 @@ from ..guild_join_request_form_response import GuildJoinRequestFormResponse
 
 def _assert_fields_set(form_response):
     """
-    Checks whether every attribute is set of the given guild join request form response
+    Checks whether every attribute is set of the given guild join request form response.
     
     Parameters
     ----------

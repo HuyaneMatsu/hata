@@ -36,7 +36,7 @@ class UserVoiceSettings:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             User voice settings data.
         
         Returns
@@ -144,7 +144,7 @@ class AudioBalance:
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         
@@ -166,7 +166,7 @@ class AudioBalance:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Audio balance data.
         
         Returns

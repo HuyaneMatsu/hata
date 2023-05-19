@@ -430,7 +430,7 @@ def guild_widget_json_url(guild):
     """
     Returns an url to request a ``Guild``'s widget data.
     
-    This function is a shared property of ``Guild``, ``GuildPreview``.
+    This function is a shared property of ``Guild``, ``GuildWidget``.
     
     Returns
     -------

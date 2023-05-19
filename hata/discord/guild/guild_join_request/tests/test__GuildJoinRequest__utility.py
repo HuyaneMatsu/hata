@@ -46,7 +46,6 @@ def test__GuildJoinRequest__copy():
     vampytest.assert_eq(event, copy)
 
 
-
 def test__GuildJoinRequest__copy_with__0():
     """
     Tests whether ``GuildJoinRequest.copy_with`` works as intended.
@@ -80,7 +79,6 @@ def test__GuildJoinRequest__copy_with__0():
     vampytest.assert_is_not(event, copy)
 
     vampytest.assert_eq(event, copy)
-
 
 
 def test__GuildJoinRequest__copy_with__1():

@@ -9,22 +9,34 @@
 - Add `.env` file loading built in. This also means that the `.env` files will be finally found (poggers).
 - Add `UserBase.display_name`.
 - `GuildJoinRequestFormResponse` now support rich attribute exceptions.
-- Rename `GuildJoinRequestFormResponse.__new__` to `.from_data`.
+- Repurpose and rename `GuildJoinRequestFormResponse.__new__` to `.from_data`.
 - Add `GuildJoinRequestFormResponse.to_data`.
 - Add `GuildJoinRequestFormResponse.__new__`.
 - Add `GuildJoinRequestFormResponse.copy`.
 - Add `GuildJoinRequestFormResponse.copy_with`.
-- Add `GuildJoinRequestDeleteEvent.__new__` to `.from_data`.
+- Repurpose and rename `GuildJoinRequestDeleteEvent.__new__` to `.from_data`.
 - Add `GuildJoinRequestDeleteEvent.to_data`.
 - Add `GuildJoinRequestDeleteEvent.__new__`.
 - Add `GuildJoinRequestDeleteEvent.copy`.
 - Add `GuildJoinRequestDeleteEvent.copy_with`.
-- Add `GuildJoinRequest.__new__` to `.from_data`.
+- Repurpose and rename `GuildJoinRequest.__new__` to `.from_data`.
 - Add `GuildJoinRequest.to_data`.
 - Add `GuildJoinRequest.__new__`.
 - Add `GuildJoinRequest.copy`.
 - Add `GuildJoinRequest.copy_with`.
 - Add `GuildJoinRequest.iter_form_responses`.
+- Repurpose and rename `GuildWidgetUser.__init__` to `.from_data`.
+- Add `GuildWidgetUser.to_data`.
+- Add `GuildWidgetUser.__new__`.
+- Add `GuildWidgetUser.copy`.
+- Add `GuildWidgetUser.copy_with`.
+- Repurpose and rename `GuildWidget.__init__` to `.from_data`.
+- Add `GuildWidget.__new__`.
+- Add `GuildWidget.to_data`.
+- Add `GuildWidget.copy`.
+- Add `GuildWidget.copy_with`.
+- Add `GuildWidget.iter_channels`.
+- Add `GuildWidget.iter_users`.
 
 #### Bug fixes
 
@@ -37,6 +49,8 @@
 - Deprecate `GuildRequestFormResponse`.
 - Rename `GuildJoinRequest.last_seen` to `.last_seen_at`.
 - Deprecate `GuildJoinRequest.last_seen`.
+- Deprecate `GuildWidgetUser.mention`.
+- Deprecate `GuildWidgetUser.mention_nick`.
 
 ## 1.3.29 *\[2023-05-08\]*
 

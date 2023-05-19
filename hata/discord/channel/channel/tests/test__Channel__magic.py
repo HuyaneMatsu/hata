@@ -113,7 +113,7 @@ def test__Channel__sort():
     )
 
 
-def test__channel__format():
+def test__Channel__format():
     """
     Tests whether ``Channel.__format__`` works as intended.
     """

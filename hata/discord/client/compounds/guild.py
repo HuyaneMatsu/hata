@@ -7,7 +7,6 @@ from scarletio import Compound
 from ...audit_logs import AuditLog, AuditLogEvent, AuditLogIterator
 from ...bases import maybe_snowflake
 from ...channel import Channel, VoiceRegion
-from ...exceptions import DiscordException
 from ...guild import (
     ContentFilterLevel, Guild, GuildFeature, GuildPreview, GuildWidget, MessageNotificationLevel, SystemChannelFlag,
     VerificationLevel, VerificationScreen, WelcomeScreen, create_partial_guild_from_data
@@ -1413,14 +1412,8 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        try:
-            data = await self.http.guild_widget_get(guild_id)
-        except DiscordException as err:
-            if err.response.status == 403: # Widget Disabled -> return None
-                return
-            raise
-        
-        return GuildWidget(data)
+        data = await self.http.guild_widget_get(guild_id)
+        return GuildWidget.from_data(data)
     
     
     async def guild_user_get_all(self, guild):

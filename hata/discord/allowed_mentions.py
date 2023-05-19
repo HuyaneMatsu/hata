@@ -36,7 +36,7 @@ def parse_allowed_mentions(allowed_mentions):
     
     Returns
     -------
-    allowed_mentions : `dict` of (`str`, `Any`) items
+    allowed_mentions : `dict` of (`str`, `object`) items
     
     Raises
     ------
@@ -396,7 +396,7 @@ class AllowedMentionProxy:
         
         Parameters
         ----------
-        data : `None`, `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `object`) items
             Allowed mention data
         
         Returns
@@ -481,7 +481,7 @@ class AllowedMentionProxy:
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         parse_all_of = None
@@ -621,7 +621,7 @@ class AllowedMentionProxy:
         
         Returns
         -------
-        new : ``AllowedMentionProxy``
+        new : `instance<type<self>>`
         """
         allowed_roles = self._allowed_roles
         if (allowed_roles is not None):

@@ -54,7 +54,7 @@ def test__ScheduledEventUnsubscribeEvent__eq():
     event = ScheduledEventUnsubscribeEvent(**keyword_parameters)
     
     vampytest.assert_eq(event, event)
-    vampytest.assert_eq(event, object)
+    vampytest.assert_ne(event, object())
     
     for event_name, event_value in (
         ('guild_id', 0),

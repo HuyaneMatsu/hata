@@ -275,7 +275,7 @@ class PluginAutoReloaderManager(RichAttributeErrorBaseType):
             # Unknown directory?
             return
         
-        # If the name is empty (directory case) we dont want to join it to teh directory.
+        # If the name is empty (directory case) we dont want to join it to the directory.
         name = event.name
         if name:
             path = join_paths(directory, name)

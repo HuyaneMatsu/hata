@@ -1,7 +1,7 @@
 __all__ = (
-    'API_ENDPOINT', 'CDN_ENDPOINT', 'DISCORD_ENDPOINT', 'INVITE_URL_RP', 'MESSAGE_JUMP_URL_RP', 'STATUS_ENDPOINT',
-    'VALID_ICON_FORMATS', 'VALID_ICON_FORMATS_EXTENDED', 'VALID_ICON_MEDIA_TYPES', 'VALID_ICON_MEDIA_TYPES_EXTENDED',
-    'VALID_IMAGE_MEDIA_TYPES_ALL', 'VALID_STICKER_IMAGE_MEDIA_TYPES', 'is_media_url'
+    'API_ENDPOINT', 'CDN_ENDPOINT', 'DISCORD_ENDPOINT', 'INVITE_URL_RP', 'STATUS_ENDPOINT', 'VALID_ICON_FORMATS',
+    'VALID_ICON_FORMATS_EXTENDED', 'VALID_ICON_MEDIA_TYPES', 'VALID_ICON_MEDIA_TYPES_EXTENDED',
+    'VALID_IMAGE_MEDIA_TYPES_ALL', 'VALID_STICKER_IMAGE_MEDIA_TYPES', 'is_media_url', 'parse_message_jump_url'
 )
 
 import re
@@ -46,7 +46,6 @@ MESSAGE_JUMP_URL_RP = re.compile(
     '(?:https://)?(?:(?:canary|ptb)\.)?discord(?:app)?.com/channels/(?:(\d{7,21})|@me)/(\d{7,21})/(\d{7,21})'
 )
 export(MESSAGE_JUMP_URL_RP, 'MESSAGE_JUMP_URL_RP')
-
 
 
 def _validate_extension(icon_type, ext):
@@ -125,7 +124,7 @@ def message_jump_url(message):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `str`
     """
     channel_id = message.channel_id
     guild_id = message.guild_id
@@ -135,6 +134,42 @@ def message_jump_url(message):
         guild_id = '@me'
     
     return f'{DISCORD_ENDPOINT}/channels/{guild_id}/{channel_id}/{message.id}'
+
+
+def parse_message_jump_url(message_url):
+    """
+    Parses the jump url of a message. On failure returns `0`-s.
+    
+    Parameters
+    ----------
+    message_url : `str`
+        The message url to parse.
+    
+    Returns
+    -------
+    guild_id : `int`
+        The message's guild's identifier. Defaults to `0` if the message is from a private channel.
+    channel_id : `int`
+        The message's channel's identifier.
+    message_id : `int`
+        The message's identifier.
+    """
+    parsed = MESSAGE_JUMP_URL_RP.fullmatch(message_url)
+    if parsed is None:
+        guild_id = 0
+        channel_id = 0
+        message_id = 0
+    else:
+        guild_id, channel_id, message_id = parsed.groups()
+        if guild_id is None:
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
+        channel_id = int(channel_id)
+        message_id = int(message_id)
+    
+    return guild_id, channel_id, message_id
+
 
 CDN_RP = re.compile(
     'https://(?:'

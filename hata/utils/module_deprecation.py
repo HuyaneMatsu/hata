@@ -1,7 +1,6 @@
 __all__ = ()
 
-import sys
-import warnings
+import sys, warnings
 from types import ModuleType
 
 

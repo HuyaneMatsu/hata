@@ -645,7 +645,7 @@ def parse_string_content(parser_state, expected_ending):
     parser_state : ``ParserState``
         The parser state to exhaust characters from.
     expected_ending : `str`
-        The expected ending character of teh string.
+        The expected ending character of the string.
     
     Returns
     -------

@@ -1476,7 +1476,7 @@ def parse_message_reference(text):
             parsed = MESSAGE_JUMP_URL_RP.fullmatch(text)
             if (parsed is not None):
                 guild_id, channel_id, message_id = parsed.groups()
-                if guild_id == '@me':
+                if guild_id is None:
                     guild_id = 0
                 else:
                     guild_id = int(guild_id)

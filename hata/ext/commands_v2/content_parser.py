@@ -14,7 +14,7 @@ from ...discord.core import CHANNELS, CLIENTS, EMOJIS, GUILDS, MESSAGES, ROLES, 
 from ...discord.emoji import Emoji, parse_emoji
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.guild import Guild
-from ...discord.http import INVITE_URL_RP, MESSAGE_JUMP_URL_RP
+from ...discord.http.urls import INVITE_URL_RP, MESSAGE_JUMP_URL_RP
 from ...discord.invite import Invite
 from ...discord.message import Message
 from ...discord.role import Role, parse_role_mention
@@ -1855,8 +1855,8 @@ async def message_converter(command_context, content_parser_parameter_detail, pa
             channel_id, message_id = parsed.groups()
             channel_id = int(channel_id)
             message_id = int(message_id)
-            return await _message_converter_cm_id(command_context, content_parser_parameter_detail, channel_id,
-                message_id)
+            return await _message_converter_cm_id(
+                command_context, content_parser_parameter_detail, channel_id, message_id)
     
     if content_parser_parameter_detail.flags & CONVERTER_FLAG_URL:
         parsed = MESSAGE_JUMP_URL_RP.fullmatch(part)
@@ -1864,8 +1864,8 @@ async def message_converter(command_context, content_parser_parameter_detail, pa
             _, channel_id, message_id = parsed.groups()
             channel_id = int(channel_id)
             message_id = int(message_id)
-            return await _message_converter_cm_id(command_context, content_parser_parameter_detail, channel_id,
-                message_id)
+            return await _message_converter_cm_id(
+                command_context, content_parser_parameter_detail, channel_id, message_id)
     
     return None
 

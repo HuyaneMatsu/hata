@@ -1,4 +1,4 @@
-## 1.3.29 *\[2023-05-08\]*
+## 1.3.29 *\[2023-05-??\]*
 
 #### Improvements
 
@@ -37,11 +37,13 @@
 - Add `GuildWidget.copy_with`.
 - Add `GuildWidget.iter_channels`.
 - Add `GuildWidget.iter_users`.
+- Add `parse_message_jump_url`.
 
 #### Bug fixes
 
 - `run` command now stops the event loop if interrupted during connection.
 - `run --console` command was not writing "interrupted" (when interrupted obviously) as expected.
+- `Client.channel_create` identified `channel_type` parameter as extra.
 
 #### Renames, Deprecation & Removals
 
@@ -51,6 +53,7 @@
 - Deprecate `GuildJoinRequest.last_seen`.
 - Deprecate `GuildWidgetUser.mention`.
 - Deprecate `GuildWidgetUser.mention_nick`.
+- Deprecate `MESSAGE_JUMP_URL_RP` import. Use `parse_message_jump_url` instead.
 
 ## 1.3.29 *\[2023-05-08\]*
 

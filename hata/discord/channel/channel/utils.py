@@ -24,7 +24,7 @@ from ..channel_metadata.fields import (
     validate_user_limit, validate_video_quality_mode
 )
 
-from .fields import parse_id, put_guild_id_into, put_id_into, put_type_into
+from .fields import parse_id, put_guild_id_into, put_id_into, put_type_into, validate_type
 from .preinstanced import ChannelType
 
 
@@ -33,6 +33,7 @@ Channel = include('Channel')
 
 CHANNEL_GUILD_MAIN_FIELD_CONVERTERS = {
     'bitrate': (validate_bitrate, put_bitrate_into),
+    'channel_type': (validate_type, put_type_into),
     'default_forum_layout': (validate_default_forum_layout, put_default_forum_layout_into),
     'default_sort_order': (validate_default_sort_order, put_default_sort_order_into),
     'default_thread_auto_archive_after': (

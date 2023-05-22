@@ -19,9 +19,71 @@ ESCAPE_MAP = {
 }
 
 
+ESCAPE_MAP_REVERSED = {value: key for key, value in ESCAPE_MAP.items()}
+
+
 PARSED_STATE_SUCCESS = 1 << 0
 PARSED_STATE_FAILURE = 1 << 1
 PARSED_STATE_END = 1 << 2
+
+ERROR_CODE_VALUE_ALREADY_PARSED = 1
+ERROR_CODE_EXPECTED_EQUAL_SIGN = 2
+ERROR_CODE_QUOTE_NOT_CLOSED = 3
+ERROR_CODE_KEY_STARTER_INVALID = 4
+
+
+ERROR_MESSAGES = {
+    ERROR_CODE_VALUE_ALREADY_PARSED: (
+        'Expected comment or end of line.\n'
+        'Perhaps there are extra character(s) after the value?'
+    ),
+    ERROR_CODE_EXPECTED_EQUAL_SIGN: (
+        'Expected equal sign, comment or end of line.\n'
+        'Perhaps there are extra character(s) after the key?'
+    ),
+    ERROR_CODE_QUOTE_NOT_CLOSED: (
+        'Expected the quote to be closed.\n'
+        'If there is no quote on this line at all check them above.'
+    ),
+    ERROR_CODE_KEY_STARTER_INVALID: (
+        'Expected alphabetical character or underscore.\n'
+        'Keys cannot start with numbers, perhaps it started with one?'
+    ),
+}
+
+
+def embed_error_code(parsed_state, error_code):
+    """
+    Embeds the error code into the given parsed state.
+    
+    Parameters
+    ----------
+    parsed_state : `int`
+        Bitwise flag containing the state how the operation went.
+    error_code : `int`
+        The error code to embed.
+    
+    Returns
+    -------
+    parsed_state : `int`
+    """
+    return (error_code << 16) | parsed_state
+
+
+def uproot_error_code(parsed_state):
+    """
+    Uproots the error code from the given parsed state.
+    
+    Parameters
+    ----------
+    parsed_state : `int`
+        Bitwise flag containing the state how the operation went.
+    
+    Returns
+    -------
+    error_code : `int`
+    """
+    return (parsed_state >> 16) & 0xffff
 
 
 class ParserState(RichAttributeErrorBaseType):
@@ -32,12 +94,16 @@ class ParserState(RichAttributeErrorBaseType):
     ----------
     end : `int`
         The end position of the parser.
+    line_index : `int`
+        The index of the current line.
+    line_start : `int`
+        Where the current line is started.
     position : `int`
         The current position.
     value : `list` of `str`
         The value to parse by character.
     """
-    __slots__ = ('end', 'position', 'value')
+    __slots__ = ('end', 'line_index', 'line_start', 'position', 'value')
     
     def __new__(cls, value):
         """
@@ -48,6 +114,8 @@ class ParserState(RichAttributeErrorBaseType):
         """
         self = object.__new__(cls)
         self.end = len(value)
+        self.line_index = 0
+        self.line_start = 0
         self.position = 0
         self.value = [*value] # When using C change it to uint32 array.
         return self
@@ -82,6 +150,214 @@ class ParserState(RichAttributeErrorBaseType):
         value_in_range : `str`
         """
         return ''.join(self.value[start : end])
+    
+        
+    def set_line_break(self):
+        """
+        Sets the line last break of the parser to the current index.
+        """
+        self.line_start = self.position
+        self.line_index += 1
+
+
+def render_escaped_string_into(into, string):
+    """
+    Renders the string as escaped into the given container.
+    
+    Parameters
+    ----------
+    into : `list` of `str`
+        String parts to extend.
+    string : `str`
+        The string to render.
+    
+    Returns
+    -------
+    into : `list` of `str`
+    """
+    for character in string:
+        try:
+            character = ESCAPE_MAP_REVERSED[character]
+        except KeyError:
+            pass
+        else:
+            into.append('\\')
+        
+        into.append(character)
+    
+    return into
+
+
+def render_string_hidden_representation_into(into, string, cut_at):
+    """
+    Renders the string as escaped into the given container.
+    
+    Parameters
+    ----------
+    into : `list` of `str`
+        String parts to extend.
+    string : `str`
+        The string to render.
+    cut_at : `int`
+        Where to cut the string.
+    
+    Returns
+    -------
+    into : `list` of `str`
+    """
+    string_length = len(string)
+    
+    into.append('\'')
+    
+    # Case: '' (so 0 characters)
+    if string_length == 0:
+        pass
+    
+    # Case: 'a'  to 'aaabbb' (1 to  1 - cut_at * 2 characters)
+    elif string_length <= cut_at << 1:
+        render_escaped_string_into(into, string)
+    
+    # Case: 'aaa ... (+n hidden) ... bbb' (so cut_at * 2 + 1 to n characters)
+    else:
+        render_escaped_string_into(into, string[:cut_at])
+        into.append(' ... (+')
+        into.append(repr(string_length - (cut_at << 1)))
+        into.append(' hidden) ... ')
+        render_escaped_string_into(into, string[-cut_at:])
+    
+    into.append('\'')
+
+    return into
+
+
+class ParserFailureInfo(RichAttributeErrorBaseType):
+    """
+    Holds additional information about parsing failure.
+    
+    Attributes
+    ----------
+    index : `int`
+        The error position's index on the `line`. (0 based.)
+    line : `str`
+        The line where the error was found.
+    line_index : `int`
+        The `line`'s index inside of the file. (0 based.)
+    error_code : `int`
+        Error representing the reason why parsing failed.
+    """
+    __slots__ = ('error_code', 'index', 'line', 'line_index')
+    
+    def __new__(cls, index, line, line_index, error_code):
+        """
+        Creates a new parser failure info with teh given parameters.
+        
+        Parameters
+        ----------
+        index : `int`
+            The error position's index on the `line`. (0 based.)
+        line : `str`
+            The line where the error was found.
+        line_index : `int`
+            The `line`'s index inside of the file. (0 based.)
+        error_code : `int`
+            Error representing the reason why parsing failed.
+        """
+        self = object.__new__(cls)
+        self.index = index
+        self.line = line
+        self.line_index = line_index
+        self.error_code = error_code
+        return self
+    
+    
+    @classmethod
+    def from_parser_state(cls, parser_state, error_code):
+        """
+        Creates a new parser failure info from the given parser state.
+        
+        Parameters
+        ----------
+        parser_state : ``ParserState``
+            The parser state to get the error information from.
+        error_code : `int`
+            Error representing the reason why parsing failed.
+        
+        Returns
+        -------
+        self : `instance<cls>`
+        """
+        line_start_position = parser_state.line_start
+        index = parser_state.position - line_start_position
+        line_index = parser_state.line_index
+        
+        exhaust_line(parser_state)
+        line = parser_state.get_value_in_range(line_start_position, parser_state.position).rstrip()
+        return cls(index, line, line_index, error_code)
+    
+    
+    def __repr__(self):
+        """Returns the parser failure's representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        repr_parts.append(' line_index = ')
+        repr_parts.append(repr(self.line_index))
+        repr_parts.append(', index = ')
+        repr_parts.append(repr(self.index))
+        repr_parts.append(', line = ')
+        render_string_hidden_representation_into(repr_parts, self.line, 3)
+        repr_parts.append(', error_code = ')
+        repr_parts.append(repr(self.error_code))
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two parser failure infos are the same."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.error_code != other.error_code:
+            return False
+        
+        if self.index != other.index:
+            return False
+        
+        if self.line != other.line:
+            return False
+        
+        if self.line_index != other.line_index:
+            return False
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the hash value of the parser failure handler."""
+        hash_value = 0
+        
+        # error_code
+        hash_value ^= self.error_code
+        
+        # index
+        hash_value ^= self.index << 8
+        
+        # line
+        hash_value ^= hash(self.line)
+        
+        # line_index
+        hash_value ^= self.line_index << 24
+        
+        return hash_value
+    
+    
+    def get_error_message(self):
+        """
+        Gets the error message attached to the failure info.
+        
+        Returns
+        -------
+        error_message : `None`, `str`
+        """
+        return ERROR_MESSAGES.get(self.error_code, None)
 
 
 def is_character_white_space(character):
@@ -317,9 +593,14 @@ def exhaust_line_break(parser_state):
         if exhaust_if(parser_state, is_character_per_n) & PARSED_STATE_END:
             parsed_state |= PARSED_STATE_END
         
+        parser_state.set_line_break()
         return parsed_state
     
-    return exhaust_if(parser_state, is_character_per_n)
+    parsed_state = exhaust_if(parser_state, is_character_per_n)
+    if parsed_state & PARSED_STATE_SUCCESS:
+        parser_state.set_line_break()
+    
+    return parsed_state
 
 
 def exhaust_non_comment_or_line_break(parser_state):
@@ -562,6 +843,8 @@ def parse_key_unquoted(parser_state):
     
     parsed_state = exhaust_if(parser_state, is_character_identifier_starter)
     if not (parsed_state & PARSED_STATE_SUCCESS):
+        if parsed_state & PARSED_STATE_FAILURE:
+            parsed_state = embed_error_code(parsed_state, ERROR_CODE_KEY_STARTER_INVALID)
         return parsed_state, None
     
     while True:
@@ -636,9 +919,9 @@ def parse_next(parser_state):
     return PARSED_STATE_SUCCESS, value
 
 
-def parse_string_content(parser_state, expected_ending):
+def parse_quoted_content(parser_state, expected_ending):
     """
-    Parses a string's content till it ends with the expected ending.
+    Parses a quoted value's (or key's) content till it ends with the expected ending.
     
     Parameters
     ----------
@@ -659,7 +942,7 @@ def parse_string_content(parser_state, expected_ending):
     while True:
         parsed_state, value = parse_next(parser_state)
         if parsed_state == PARSED_STATE_END:
-            parsed_state |= PARSED_STATE_FAILURE
+            parsed_state = embed_error_code(parsed_state | PARSED_STATE_FAILURE, ERROR_CODE_QUOTE_NOT_CLOSED)
             break
         
         if value == expected_ending:
@@ -672,7 +955,7 @@ def parse_string_content(parser_state, expected_ending):
         parsed_state, value = parse_next(parser_state)
         if parsed_state == PARSED_STATE_END:
             value_parts.append(value)
-            parsed_state |= PARSED_STATE_FAILURE
+            parsed_state = embed_error_code(parsed_state | PARSED_STATE_FAILURE, ERROR_CODE_QUOTE_NOT_CLOSED)
             break
         
         escaped = ESCAPE_MAP.get(value, None)
@@ -708,6 +991,7 @@ def parse_key_or_value(parser_state, parsing_key):
     value : `None`, `str`
         The parsed out value.
     """
+    # Should not happen -> do not embed error message
     if is_at_end(parser_state):
         return PARSED_STATE_END | PARSED_STATE_FAILURE, None
     
@@ -715,7 +999,7 @@ def parse_key_or_value(parser_state, parsing_key):
     character_at_position = parser_state.value[parser_state_position]
     if character_at_position in ('\'', '"'):
         parser_state.position = parser_state_position + 1
-        return parse_string_content(parser_state, character_at_position)
+        return parse_quoted_content(parser_state, character_at_position)
     
     if parsing_key:
         parser = parse_key_unquoted
@@ -782,7 +1066,19 @@ def parse_item_part_end(parser_state, key, value):
 
 def parse_item(parser_state):
     """
-    Parses out an item
+    Parses out an item from the parser.
+    
+    Parameters
+    ----------
+    parser_state : ``ParserState``
+        The parser state to parse the next item from.
+    
+    Returns
+    -------
+    parsed_state : `int`
+        Bitwise flag containing the state how the operation went.
+    item : `None`, `tuple` (`str`, `str` | `None`)
+        The parsed out item if any.
     """
     # We parse till there is something
     while True:
@@ -818,7 +1114,7 @@ def parse_item(parser_state):
     #     ^
     parsed_state = exhaust_if(parser_state, is_character_equal)
     if parsed_state & (PARSED_STATE_END | PARSED_STATE_FAILURE):
-        return parsed_state, maybe_build_item(key, None)
+        return embed_error_code(parsed_state, ERROR_CODE_EXPECTED_EQUAL_SIGN), maybe_build_item(key, None)
     
     # parse: white space | linebreak | comment
     end_of_line_output = parse_item_part_end(parser_state, key, None)
@@ -838,7 +1134,7 @@ def parse_item(parser_state):
         return end_of_line_output
     
     # The line is not ended?
-    return PARSED_STATE_FAILURE, maybe_build_item(key, value)
+    return embed_error_code(PARSED_STATE_FAILURE, ERROR_CODE_VALUE_ALREADY_PARSED), maybe_build_item(key, value)
 
 
 def add_item(variables, item):
@@ -880,11 +1176,11 @@ def parse_variables(content):
     -------
     variables : `dict` of (`str`, `str` | `None`) items
         The parsed out variables.
-    error_position : `int`
+    parser_failure_info : `None`, ``ParserFailureInfo``
         Error position if any. `-1` if not applicable.
     """
     variables = {}
-    error_position = -1
+    parser_failure_info = None
     
     parser_state = ParserState(content)
     
@@ -893,7 +1189,7 @@ def parse_variables(content):
         add_item(variables, item)
         
         if parsed_state & PARSED_STATE_FAILURE:
-            error_position = parser_state.position + 1
+            parser_failure_info = ParserFailureInfo.from_parser_state(parser_state, uproot_error_code(parsed_state))
             break
         
         if parsed_state & PARSED_STATE_END:
@@ -905,4 +1201,4 @@ def parse_variables(content):
         # No other case
         break
     
-    return variables, error_position
+    return variables, parser_failure_info

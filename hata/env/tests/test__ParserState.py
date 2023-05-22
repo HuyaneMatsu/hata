@@ -14,6 +14,8 @@ def _assert_fields_set(parser_state):
     """
     vampytest.assert_instance(parser_state, ParserState)
     vampytest.assert_instance(parser_state.end, int)
+    vampytest.assert_instance(parser_state.line_index, int)
+    vampytest.assert_instance(parser_state.line_start, int)
     vampytest.assert_instance(parser_state.position, int)
     vampytest.assert_instance(parser_state.value, list)
 
@@ -56,3 +58,22 @@ def test__ParserState__get_value_in_range():
     output = parser_state.get_value_in_range(start, end)
     vampytest.assert_instance(output, str)
     vampytest.assert_eq(output, value[start : end])
+
+
+def test__ParserState__set_line_break():
+    """
+    Tests whether ``ParserState.set_line_break`` works as intended.
+    """
+    value = 'Koishi'
+    position = 2
+    line_index = 10
+    
+    parser_state = ParserState(value)
+    parser_state.position = position
+    parser_state.line_index = line_index
+    
+    parser_state.set_line_break()
+    
+    vampytest.assert_eq(parser_state.position, position)
+    vampytest.assert_eq(parser_state.line_start, position)
+    vampytest.assert_eq(parser_state.line_index, line_index + 1)

@@ -62,13 +62,13 @@ class DiscordException(Exception):
     debug_options : `None`, `tuple` of `str`
         Debug options of the http client.
     
-    received_data : `Any`
+    received_data : `object`
         Deserialized `json` response data if applicable.
     
     response : ``ClientResponse``
         The http client response, what caused the error.
     
-    sent_data : `ANy`
+    sent_data : `object`
         Sent data.
     
     _code : `None`, `int`
@@ -96,9 +96,9 @@ class DiscordException(Exception):
         ----------
         response : ``ClientResponse``
             The http client response, what caused the error.
-        received_data : `Any`
+        received_data : `object`
             Deserialized `json` response data if applicable.
-        sent_data : `Any`
+        sent_data : `object`
             Sent data.
         debug_options : `None`, `tuple` of `str`
             Debug options of the http client.
@@ -152,7 +152,7 @@ class DiscordException(Exception):
         
         code = self.code
         if code:
-            message_parts.append(f', code=')
+            message_parts.append(', code = ')
             message_parts.append(repr(code))
         
         received_data = self.received_data

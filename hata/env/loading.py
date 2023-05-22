@@ -94,5 +94,5 @@ def load_dot_env_file():
     except (PermissionError, FileNotFoundError):
         return
     
-    variables, error_location = parse_variables(value)
+    variables, parser_failure_info = parse_variables(value)
     insert_variables(variables)

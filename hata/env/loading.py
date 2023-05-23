@@ -4,6 +4,8 @@ from os import environ as environmental_variables, environb as environmental_var
 from os.path import dirname as get_directory_name, isfile as is_file, join as join_paths
 from sys import _getframe as get_frame
 
+from scarletio import RichAttributeErrorBaseType
+
 from .parsing import parse_variables
 
 
@@ -63,36 +65,140 @@ def find_dot_env_file():
             return file_path
 
 
-def insert_variables(variables):
+class DotEnvResult(RichAttributeErrorBaseType):
     """
-    Inserts the given variables into the environmental ones. If the variable already exists, will not overwrite it.
+    Represents result of loading a `.env` file or just content.
+    
+    Attributes
+    ----------
+    file_path : `str`
+        Path to the loaded file.
+    parser_failure_info : `None`, ``ParserFailureInfo``
+        Failure info if parsing failed.
+    variables : `dict<str, None | str>`
+        The loaded environmental variables.
+    """
+    __slots__ = ('file_path', 'parser_failure_info', 'variables')
+    
+    def __new__(cls, variables, parser_failure_info, file_path):
+        """
+        Creates a new dot-env result.
+        
+        Parameters
+        ----------
+        variables : `dict<str, None | str>`
+            The loaded environmental variables.
+        parser_failure_info : `None`, ``ParserFailureInfo``
+            Failure info if parsing failed.
+        file_path : `str`
+            Path to the loaded file.
+        """
+        self = object.__new__(cls)
+        self.variables = variables
+        self.parser_failure_info = parser_failure_info
+        self.file_path = file_path
+        return self
+    
+    
+    def insert_to_environmental_variables(self):
+        """
+        Inserts the parsed variables into the environmental ones. If the variable already exists, will not overwrite it.
+        
+        Returns
+        -------
+        self : `instance<type<self>>`
+        """
+        for key, value in self.variables.items():
+            if value is None:
+                value = ''
+            
+            environmental_variables.setdefault(key, value)
+            environmental_variables_binary.setdefault(key.encode(), value.encode())
+        
+        return self
+    
+    
+    def raise_if_failed(self):
+        """
+        Raises an exception with a reason why loading failed.
+        
+        Returns
+        -------
+        self : `instance<type<self>>`
+        
+        Raises
+        ------
+        SyntaxError
+        """
+        parser_failure_info = self.parser_failure_info
+        if (parser_failure_info is not None):
+            raise SyntaxError(
+                parser_failure_info.get_error_message(),
+                (
+                    self.file_path,
+                    parser_failure_info.line_index + 1,
+                    parser_failure_info.index + 1,
+                    parser_failure_info.line,
+                ),
+            )
+        
+        return self
+    
+    
+    def __repr__(self):
+        """Returns the dot env result's representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' variables: ')
+        repr_parts.append(repr(len(self.variables)))
+        
+        parser_failure_info = self.parser_failure_info
+        if (parser_failure_info is not None):
+            repr_parts.append(', parser_failure_info = ')
+            repr_parts.append(repr(parser_failure_info))
+        
+        file_path = self.file_path
+        if (file_path is not None):
+            repr_parts.append(' file_path = ')
+            repr_parts.append(repr(file_path))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+
+
+def load_dot_env(value, file_path = None):
+    """
+    Loads the `.env` variables from the given content
     
     Parameters
     ----------
-    variables : `dict` of (`str`, `None` | `str`) items
-        Loaded environmental variables to insert.
-    """
-    for key, value in variables.items():
-        if value is None:
-            value = ''
-        
-        environmental_variables.setdefault(key, value)
-        environmental_variables_binary.setdefault(key.encode(), value.encode())
-
-
-def load_dot_env_file():
-    """
-    Loads the dot env file if found.
-    """
-    location = find_dot_env_file()
-    if location is None:
-        return
+    value : `str`
+        The value to parse.
+    file_path : `None`, `str`
+        File path to show u
     
-    try:
-        with open(location, 'r') as file:
-            value = file.read()
-    except (PermissionError, FileNotFoundError):
-        return
-    
+    Returns
+    -------
+    dot_env_result : ``DotEnvResult``
+    """
     variables, parser_failure_info = parse_variables(value)
-    insert_variables(variables)
+    return DotEnvResult(variables, parser_failure_info, file_path)
+
+
+def load_dot_env_from_file(file_path):
+    """
+    Loads the `.env` file from the given path.
+    
+    Parameters
+    ----------
+    file_path : `str`
+        The path of the file to load.
+    
+    Returns
+    -------
+    dot_env_result : ``DotEnvResult``
+    """
+    with open(file_path, 'r') as file:
+        value = file.read()
+    
+    return load_dot_env(value, file_path)

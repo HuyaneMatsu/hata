@@ -59,19 +59,19 @@ We got some `tutorials:https://www.astil.dev/project/hata/guides/` as well, plea
 """
 __version__ = '1.3.29'
 
+# First import env, so if exception occurs we do not load the whole library.
+from .env import *
+
 from .discord import *
 from .ext import *
 from .utils import *
 
-from .env import *
-
 
 __all__ = (
     *discord.__all__,
+    *env.__all__,
     *ext.__all__,
     *utils.__all__,
-    
-    *env.__all__,
 )
 
 # Additional imports

@@ -7,10 +7,16 @@ __all__ = (
 import warnings
 
 from .getters import get_bool_env, get_int_env, get_str_env
-from .loading import load_dot_env_file
+from .loading import find_dot_env_file, load_dot_env_from_file
 
+# Load dotenv
 
-load_dot_env_file()
+dot_env_file_path = find_dot_env_file()
+if (dot_env_file_path is not None):
+    load_dot_env_from_file(dot_env_file_path).insert_to_environmental_variables().raise_if_failed()
+del dot_env_file_path
+
+# Get variables
 
 CACHE_PRESENCE = get_bool_env('HATA_CACHE_PRESENCE', True)
 CACHE_USER = get_bool_env('HATA_CACHE_USERS', True)

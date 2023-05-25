@@ -147,6 +147,8 @@ setup(
         'hata.discord.scheduled_event.scheduled_event_entity_metadata',
         'hata.discord.scheduled_event.scheduled_event_subscribe_event',
         'hata.discord.scheduled_event.scheduled_event_unsubscribe_event',
+        'hata.discord.soundboard',
+        'hata.discord.soundboard.soundboard_sound',
         'hata.discord.stage',
         'hata.discord.sticker',
         'hata.discord.sticker.sticker',

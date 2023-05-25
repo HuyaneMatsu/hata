@@ -1,13 +1,4 @@
-﻿__all__ = (
-    'APPLICATIONS', 'APPLICATION_COMMANDS', 'BUILTIN_EMOJIS', 'CHANNELS', 'CLIENTS', 'EMBEDDED_ACTIVITY_STATES',
-    'EMOJIS', 'EULAS', 'FORUM_TAGS', 'GUILDS', 'INTEGRATIONS', 'INVITES', 'KOKORO', 'MESSAGES', 'ROLES',
-    'SCHEDULED_EVENTS', 'STAGES', 'STICKERS', 'STICKER_PACKS', 'TEAMS', 'UNICODE_TO_EMOJI', 'USERS'
-)
-
-from scarletio import WeakKeyDictionary, WeakValueDictionary, create_event_loop, get_event_loop
-
-
-__doc__ = """
+﻿"""
 Contains core cache and other objects relative to hata.
 
 Caches
@@ -88,6 +79,10 @@ Weak Caches
     
     Storage for ``ScheduledEvent``.
     
+- `SOUNDBOARD_SOUNDS` : ``WeakValueDictionary``
+    
+    Storage for ``SoundBoardSound``.
+
 - `STAGES` : ``WeakValueDictionary``
     
     Stores the created ``Stage``d.
@@ -152,6 +147,16 @@ Immortal Objects
     The asynchronous event loop & thread running hata clients.
 """
 
+__all__ = (
+    'APPLICATIONS', 'APPLICATION_COMMANDS', 'BUILTIN_EMOJIS', 'CHANNELS', 'CLIENTS', 'EMBEDDED_ACTIVITY_STATES',
+    'EMOJIS', 'EULAS', 'FORUM_TAGS', 'GUILDS', 'INTEGRATIONS', 'INVITES', 'KOKORO', 'MESSAGES', 'ROLES',
+    'SCHEDULED_EVENTS', 'SOUNDBOARD_SOUNDS', 'STAGES', 'STICKERS', 'STICKER_PACKS', 'TEAMS', 'UNICODE_TO_EMOJI',
+    'USERS'
+)
+
+from scarletio import WeakKeyDictionary, WeakValueDictionary, create_event_loop, get_event_loop
+
+
 CLIENTS = {}
 
 APPLICATIONS = WeakValueDictionary()
@@ -168,6 +173,7 @@ INVITES = WeakValueDictionary()
 MESSAGES = WeakValueDictionary()
 ROLES = WeakValueDictionary()
 SCHEDULED_EVENTS = WeakValueDictionary()
+SOUNDBOARD_SOUNDS = WeakValueDictionary()
 STAGES = WeakValueDictionary()
 STICKERS = WeakValueDictionary()
 STICKER_PACKS = WeakValueDictionary()

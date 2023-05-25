@@ -1572,7 +1572,20 @@ def user_avatar_decoration_url_as(user, ext = None, size = None):
     ext = _validate_extension(icon_type, ext)
     end = _build_end(size)
     
-    if prefix.startswith('v2'):
+    if prefix.startswith('v'):
         return f'{CDN_ENDPOINT}/avatar-decoration-presets/{prefix}{user.avatar_decoration_hash:0>32x}.{ext}{end}'
     
     return f'{CDN_ENDPOINT}/avatar-decorations/{user.id}/{prefix}{user.avatar_decoration_hash:0>32x}.{ext}{end}'
+
+
+def soundboard_sound_url(sound):
+    """
+    Returns the url to the sound board sound.
+    
+    This function is a property of ``SoundBoardSound``.
+    
+    Returns
+    -------
+    url : `str`
+    """
+    return f'{CDN_ENDPOINT}/soundboard-sounds/{sound.id}'

@@ -3,7 +3,7 @@ __all__ = ('Team', )
 from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ...core import TEAMS
 from ...http import urls as module_urls
-from ...precreate_helpers import process_precreate_parameters, raise_extra
+from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ClientUserBase, ZEROUSER, create_partial_user_from_id
 
 from ..team_member import TeamMember, TeamMembershipState
@@ -14,7 +14,16 @@ from .fields import (
 )
 
 
+TEAM_ICON = IconSlot(
+    'icon',
+    'icon',
+    module_urls.team_icon_url,
+    module_urls.team_icon_url_as,
+    add_updater = False,
+)
+
 PRECREATE_FIELDS = {
+    'icon': ('icon', TEAM_ICON.validate_icon),
     'members': ('members', validate_members),
     'name': ('name', validate_name),
     'owner_id': ('owner_id', validate_owner_id),
@@ -33,7 +42,7 @@ class Team(DiscordEntity, immortal = True):
         The team's icon's type.
     id : `int`
         The unique identifier number of the team.
-    members : `list` of `TeamMember`
+    members : `tuple` of `TeamMember`
         The members of the team. Includes invited members as well.
     name : `str`
         The teams name.
@@ -46,14 +55,7 @@ class Team(DiscordEntity, immortal = True):
     """
     __slots__ = ('members', 'name', 'owner_id',)
     
-    icon = IconSlot(
-        'icon',
-        'icon',
-        module_urls.team_icon_url,
-        module_urls.team_icon_url_as,
-        add_updater = False,
-    )
-    
+    icon = TEAM_ICON
     
     def __new__(cls, *, icon = ..., members = ..., name = ..., owner_id = ...):
         """
@@ -205,18 +207,9 @@ class Team(DiscordEntity, immortal = True):
             - If a parameter's value is incorrect.
         """
         team_id = validate_id(team_id)
-
+        
         if keyword_parameters:
-            processed = []
-            
-            # icon
-            icon = cls.icon.parse_from_keyword_parameters(keyword_parameters)
-            if (icon is not None):
-                processed.append(('icon', icon))
-            
-            extra = process_precreate_parameters(keyword_parameters, PRECREATE_FIELDS, processed)
-            raise_extra(extra)
-            
+            processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
         else:
             processed = None
         
@@ -325,9 +318,9 @@ class Team(DiscordEntity, immortal = True):
     
     def _get_hash_partial(self):
         """
-        Calculates the channel's hash based on their fields.
+        Calculates the team's hash based on their fields.
         
-        This method is called by ``.__hash__`` if the channel has no ``.channel_id`` set.
+        This method is called by ``.__hash__`` if the team has no ``.id`` set.
         
         Returns
         -------

@@ -327,7 +327,7 @@ class Channel(DiscordEntity, immortal = True):
         """
         Calculates the channel's hash based on their fields.
         
-        This method is called by ``.__hash__`` if the channel has no ``.channel_id`` set.
+        This method is called by ``.__hash__`` if the channel has no ``.id`` set.
         
         Returns
         -------

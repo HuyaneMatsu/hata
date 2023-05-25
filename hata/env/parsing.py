@@ -249,7 +249,7 @@ class ParserFailureInfo(RichAttributeErrorBaseType):
     
     def __new__(cls, index, line, line_index, error_code):
         """
-        Creates a new parser failure info with teh given parameters.
+        Creates a new parser failure info with the given parameters.
         
         Parameters
         ----------

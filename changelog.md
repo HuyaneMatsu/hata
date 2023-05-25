@@ -38,6 +38,12 @@
 - Add `GuildWidget.iter_channels`.
 - Add `GuildWidget.iter_users`.
 - Add `parse_message_jump_url`.
+- Exception is raised if loading `.env` file fails.
+- Update `GuildPremiumPerks.sound_limit`.
+- Add `SOUNDBOARD_SOUNDS`.
+- Add `SoundBoardSound`.
+- Add `create_partial_soundboard_sound_from_id`.
+- Add `create_partial_soundboard_sound_from_partial_data`.
 
 #### Bug fixes
 

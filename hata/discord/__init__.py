@@ -23,6 +23,7 @@ from .oauth2 import *
 from .onboarding import *
 from .permission import *
 from .scheduled_event import *
+from .soundboard import *
 from .role import *
 from .stage import *
 from .sticker import *
@@ -71,6 +72,7 @@ __all__ = (
     *permission.__all__,
     *role.__all__,
     *scheduled_event.__all__,
+    *soundboard.__all__,
     *stage.__all__,
     *sticker.__all__,
     *user.__all__,

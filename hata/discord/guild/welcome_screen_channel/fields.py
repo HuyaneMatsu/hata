@@ -3,7 +3,9 @@ __all__ = ()
 from ...channel import Channel
 from ...emoji import Emoji, create_partial_emoji_from_inline_data, put_partial_emoji_inline_data_into
 from ...field_parsers import entity_id_parser_factory, nullable_string_parser_factory
-from ...field_putters import entity_id_putter_factory, nullable_string_putter_factory
+from ...field_putters import (
+    entity_id_putter_factory, nullable_functional_optional_putter_factory, nullable_string_putter_factory
+)
 from ...field_validators import (
     entity_id_validator_factory, nullable_entity_validator_factory, nullable_string_validator_factory
 )
@@ -26,13 +28,14 @@ validate_description = nullable_string_validator_factory('description', 0, DESCR
 
 parse_emoji = create_partial_emoji_from_inline_data
 
+
 def put_emoji_into(emoji, data, defaults):
     """
     Puts the emoji into the given `data` json serializable object.
     
     Parameters
     ----------
-    emoji : `None`, ``ApplicationType``
+    emoji : `None`, ``Emoji``
         The emoji.
     data : `dict` of (`str`, `object`) items
         Json serializable dictionary.

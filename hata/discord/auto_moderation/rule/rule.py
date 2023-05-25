@@ -213,7 +213,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received auto moderation rule data.
         
         Returns
@@ -251,7 +251,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
                 
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         
@@ -282,7 +282,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received guild profile data.
         """        
         self.creator_id = parse_creator_id(data)
@@ -297,7 +297,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received guild profile data.
         """
         self.actions = parse_actions(data)
@@ -320,12 +320,12 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received guild profile data.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `object`) items
             All item in the returned dict is optional.
             
             Might contain the following items:

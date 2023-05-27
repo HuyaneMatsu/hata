@@ -31,7 +31,7 @@ async def default_error_event_handler(client, name, err):
     ]
     
     if isinstance(err, BaseException):
-        await write_exception_async(err, extracted, loop=KOKORO)
+        await write_exception_async(err, extracted, loop = KOKORO)
         return
     
     if not isinstance(err, str):

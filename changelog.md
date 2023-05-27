@@ -38,7 +38,7 @@
 - Add `GuildWidget.iter_channels`.
 - Add `GuildWidget.iter_users`.
 - Add `parse_message_jump_url`.
-- Exception is raised if loading `.env` file fails.
+- Exception is now raised if loading `.env` file fails.
 - Update `GuildPremiumPerks.sound_limit`.
 - Add `SOUNDBOARD_SOUNDS`.
 - Add `SoundBoardSound`.
@@ -52,6 +52,10 @@
 - Add `RATE_LIMIT_GROUPS.soundboard_sound_create`.
 - Add `Client.request_soundboard_sounds`.
 - Add `SoundBoardSoundsEvent`.
+- Add `Client.events.soundboard_sounds`.
+- Add `Client.events.soundboard_sound_create`.
+- Add `Client.events.soundboard_sound_update`.
+- Add `Client.events.soundboard_sound_delete`.
 
 #### Bug fixes
 
@@ -94,6 +98,8 @@
 - Rename `Client.request_members` to `.request_users`.
 - Deprecate `Client.request_all_members_of`.
 - Rename `Client.request_all_members_of` to `.request_all_users_of`.
+- Rename `IntentFlag.guild_emojis_and_stickers` to `.guild_expressions`.
+- Deprecate `IntentFlag.guild_emojis_and_stickers`.
 
 ## 1.3.29 *\[2023-05-08\]*
 

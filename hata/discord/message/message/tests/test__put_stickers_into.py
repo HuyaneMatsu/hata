@@ -1,6 +1,6 @@
 import vampytest
 
-from ....sticker import Sticker, StickerFormat
+from ....sticker import Sticker, StickerFormat, create_partial_sticker_data
 
 from ..fields import put_stickers_into
 
@@ -24,8 +24,12 @@ def test__put_stickers_into__1():
     for input_value, defaults, expected_output in (
         (None, False, {}),
         (None, True, {'sticker_items': []}),
-        ((sticker_0,), False, {'sticker_items': [sticker_0.to_partial_data()]}),
-        ((sticker_0, sticker_1), False, {'sticker_items': [sticker_0.to_partial_data(), sticker_1.to_partial_data()]}),
+        ((sticker_0,), False, {'sticker_items': [create_partial_sticker_data(sticker_0)]}),
+        (
+            (sticker_0, sticker_1),
+            False,
+            {'sticker_items': [create_partial_sticker_data(sticker_0), create_partial_sticker_data(sticker_1)]},
+        ),
     ):
         output = put_stickers_into(input_value, {}, defaults)
         vampytest.assert_eq(output, expected_output)

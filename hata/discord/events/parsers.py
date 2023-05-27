@@ -12,7 +12,7 @@ from ..auto_moderation import AutoModerationActionExecutionEvent, AutoModeration
 from ..channel import Channel, VoiceChannelEffect
 from ..core import (
     APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, AUTO_MODERATION_RULES, CHANNELS, CLIENTS, GUILDS, KOKORO,
-    MESSAGES, ROLES, SCHEDULED_EVENTS, STAGES, USERS
+    MESSAGES, ROLES, SCHEDULED_EVENTS, SOUNDBOARD_SOUNDS, STAGES, USERS
 )
 from ..emoji import ReactionAddEvent, ReactionDeleteEvent
 from ..emoji.reaction_events.fields import (
@@ -40,6 +40,10 @@ from ..scheduled_event import ScheduledEvent, ScheduledEventSubscribeEvent, Sche
 from ..scheduled_event.scheduled_event.fields import (
     parse_guild_id as parse_scheduled_event_guild_id, parse_id as parse_scheduled_event_id
 )
+from ..soundboard import SoundBoardSound, SoundBoardSoundsEvent, create_partial_soundboard_sound_from_partial_data
+from ..soundboard.soundboard_sound.fields import (
+    parse_guild_id as parse_soundboard_guild_id, parse_id as parse_soundboard_sound_id
+)
 from ..stage import Stage
 from ..user import (
     User, create_partial_user_from_id, thread_user_create, thread_user_delete, thread_user_difference_update,
@@ -56,7 +60,7 @@ from .filters import (
 from .guild_sync import check_channel, guild_sync
 from .intent import (
     INTENT_MASK_AUTO_MODERATION_CONFIGURATION, INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_REACTIONS,
-    INTENT_MASK_GUILDS, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS, INTENT_MASK_GUILD_MESSAGES, INTENT_MASK_GUILD_PRESENCES,
+    INTENT_MASK_GUILDS, INTENT_MASK_GUILD_EXPRESSIONS, INTENT_MASK_GUILD_MESSAGES, INTENT_MASK_GUILD_PRESENCES,
     INTENT_MASK_GUILD_REACTIONS, INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_VOICE_STATES, INTENT_SHIFT_GUILD_USERS
 )
 
@@ -1540,7 +1544,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS, client)
+    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -1594,7 +1598,7 @@ def GUILD_EMOJIS_UPDATE__OPT_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    if first_client(guild.clients, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS, client) is not client:
+    if first_client(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client) is not client:
         return
     
     guild._sync_emojis(data['emojis'])
@@ -1654,7 +1658,7 @@ def GUILD_STICKERS_UPDATE__CAL_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS, client)
+    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -1706,7 +1710,7 @@ def GUILD_STICKERS_UPDATE__OPT_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    if first_client(guild.clients, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS, client) is not client:
+    if first_client(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client) is not client:
         return
     
     guild._sync_stickers(data['stickers'])
@@ -4015,7 +4019,7 @@ def EMBEDDED_ACTIVITY_UPDATE__CAL_MC(client, data):
     except KeyError:
         clients = None
     else:
-        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS, client)
+        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client)
         if clients.send(None) is not client:
             clients.close()
             return
@@ -4341,3 +4345,135 @@ add_parser(
 del VOICE_CHANNEL_EFFECT_SEND__CAL_SC, \
     VOICE_CHANNEL_EFFECT_SEND__CAL_MC, \
     VOICE_CHANNEL_EFFECT_SEND__OPT
+
+
+def SOUNDBOARD_SOUNDS__CAL(client, data):
+    event = SoundBoardSoundsEvent.from_data(data)
+    Task(client.events.soundboard_sounds(client, event), KOKORO)
+
+
+def SOUNDBOARD_SOUNDS__OPT(client, data):
+    pass
+
+
+add_parser(
+    'SOUNDBOARD_SOUNDS',
+    SOUNDBOARD_SOUNDS__CAL,
+    SOUNDBOARD_SOUNDS__CAL,
+    SOUNDBOARD_SOUNDS__OPT,
+    SOUNDBOARD_SOUNDS__OPT)
+del SOUNDBOARD_SOUNDS__CAL, \
+    SOUNDBOARD_SOUNDS__OPT
+
+
+def GUILD_SOUNDBOARD_SOUND_CREATE__CAL(client, data):
+    soundboard_sound = SoundBoardSound.from_data(data)
+    Task(client.events.soundboard_sound_create(client, soundboard_sound), KOKORO)
+
+
+def GUILD_SOUNDBOARD_SOUND_CREATE__OPT(client, data):
+    SoundBoardSound.from_data(data)
+
+
+add_parser(
+    'GUILD_SOUNDBOARD_SOUND_CREATE',
+    GUILD_SOUNDBOARD_SOUND_CREATE__CAL,
+    GUILD_SOUNDBOARD_SOUND_CREATE__CAL,
+    GUILD_SOUNDBOARD_SOUND_CREATE__OPT,
+    GUILD_SOUNDBOARD_SOUND_CREATE__OPT)
+del GUILD_SOUNDBOARD_SOUND_CREATE__CAL, \
+    GUILD_SOUNDBOARD_SOUND_CREATE__OPT
+
+
+def GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__SC(client, data):
+    sound_id = parse_soundboard_sound_id(data)
+    
+    sound = SOUNDBOARD_SOUNDS.get(sound_id, None)
+    if sound is None:
+        sound = SoundBoardSound.from_data(data)
+        old_attributes = None
+    
+    else:
+        old_attributes = sound._difference_update_attributes(data)
+        if not old_attributes:
+            return
+    
+    Task(client.events.soundboard_sound_update(client, sound, old_attributes), KOKORO)
+
+
+def GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__MC(client, data):
+    guild = GUILDS.get(parse_soundboard_guild_id(data), None)
+    if guild is None:
+        clients = None
+    else:
+        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+    
+    sound_id = parse_soundboard_sound_id(data)
+    sound = SOUNDBOARD_SOUNDS.get(sound_id, None)
+    if sound is None:
+        sound = SoundBoardSound.from_data(data)
+        old_attributes = None
+    
+    else:
+        old_attributes = sound._difference_update_attributes(data)
+        if not old_attributes:
+            return
+    
+    if clients is None:
+        Task(client.soundboard_sound_update(client, sound, old_attributes), KOKORO)
+    else:
+        for client_ in clients:
+            event_handler = client_.events.soundboard_sound_update
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, sound, old_attributes), KOKORO)
+
+
+def GUILD_SOUNDBOARD_SOUND_UPDATE__OPT(client, data):
+    sound_id = parse_soundboard_sound_id(data)
+    
+    sound = SOUNDBOARD_SOUNDS.get(sound_id, None)
+    if sound is None:
+        SoundBoardSound.from_data(data)
+    else:
+        sound._update_attributes(data)
+
+
+add_parser(
+    'GUILD_SOUNDBOARD_SOUND_UPDATE',
+    GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__SC,
+    GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__MC,
+    GUILD_SOUNDBOARD_SOUND_UPDATE__OPT,
+    GUILD_SOUNDBOARD_SOUND_UPDATE__OPT)
+del GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__SC, \
+    GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__MC, \
+    GUILD_SOUNDBOARD_SOUND_UPDATE__OPT
+
+
+def GUILD_SOUNDBOARD_SOUND_DELETE__CAL__SC(client, data):
+    sound = create_partial_soundboard_sound_from_partial_data(data)
+    Task(client.events.soundboard_sound_delete(client, sound), KOKORO)
+
+
+def GUILD_SOUNDBOARD_SOUND_DELETE__CAL__MC(client, data):
+    # This will updated later, keep the function even if same as the one above
+    sound = create_partial_soundboard_sound_from_partial_data(data)
+    Task(client.events.soundboard_sound_delete(client, sound), KOKORO)
+
+
+def GUILD_SOUNDBOARD_SOUND_DELETE__OPT(client, data):
+    # This will updated later
+    pass
+
+
+add_parser(
+    'GUILD_SOUNDBOARD_SOUND_DELETE',
+    GUILD_SOUNDBOARD_SOUND_DELETE__CAL__SC,
+    GUILD_SOUNDBOARD_SOUND_DELETE__CAL__MC,
+    GUILD_SOUNDBOARD_SOUND_DELETE__OPT,
+    GUILD_SOUNDBOARD_SOUND_DELETE__OPT)
+del GUILD_SOUNDBOARD_SOUND_DELETE__CAL__SC, \
+    GUILD_SOUNDBOARD_SOUND_DELETE__CAL__MC, \
+    GUILD_SOUNDBOARD_SOUND_DELETE__OPT

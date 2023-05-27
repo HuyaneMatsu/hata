@@ -7,7 +7,7 @@ from ....component import Component, ComponentType
 from ....core import BUILTIN_EMOJIS
 from ....embed import Embed
 from ....emoji import ReactionMapping
-from ....sticker import Sticker
+from ....sticker import Sticker, create_partial_sticker_data
 from ....user import User
 from ....utils import datetime_to_timestamp
 
@@ -103,7 +103,7 @@ def test__Message__from_data__0():
         'referenced_message': referenced_message.to_data(include_internals = True, recursive = False),
         'message_reference': referenced_message.to_message_reference_data(),
         'role_subscription_data': role_subscription.to_data(),
-        'sticker_items': [sticker.to_partial_data() for sticker in stickers],
+        'sticker_items': [create_partial_sticker_data(sticker) for sticker in stickers],
         'thread': thread.to_data(include_internals = True),
         
         'attachments': [attachment.to_data(include_internals = True) for attachment in attachments],

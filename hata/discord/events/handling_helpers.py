@@ -24,7 +24,7 @@ def _check_name_should_break(name):
     
     Parameters
     ----------
-    name : `Any`
+    name : `object`
     
     Returns
     -------
@@ -115,8 +115,9 @@ def check_name(func, name):
     return name
 
 
-def check_parameter_count_and_convert(func, expected, *, name = 'event', can_be_async_generator=False,
-        error_message = None):
+def check_parameter_count_and_convert(
+    func, expected, *, name = 'event', can_be_async_generator = False, error_message = None
+):
     """
     If needed converts the given `func` to an async callable and then checks whether it expects the specified
     amount of non reserved positional parameters.
@@ -230,9 +231,9 @@ def compare_converted(converted, non_converted):
     
     Parameters
     ----------
-    converted : `Any`
+    converted : `object`
         The already converted object.
-    non_converted : `Any`
+    non_converted : `object`
         The not yet converted instance to match `converted` on.
     
     Returns
@@ -269,7 +270,7 @@ def compare_converted(converted, non_converted):
     )
 
 
-def _convert_unsafe_event_iterable(iterable, type_=None):
+def _convert_unsafe_event_iterable(iterable, type_ = None):
     """
     Converts an iterable to a list of ``EventListElement``-s. This function is called to generate a ``eventlist``
     compatible `list` to avoid handling the same cases everywhere.
@@ -373,13 +374,13 @@ def create_event_from_class(constructor, klass, parameter_names, name_name, even
     
     Returns
     -------
-    instance : `Any`
+    instance : `object`
         The created instance.
     
     Raises
     ------
     BasesException
-        Any occurred exception.
+        object occurred exception.
     """
     if not isinstance(klass, type):
         raise TypeError(
@@ -423,7 +424,7 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    parent : `Any`
+    parent : `object`
         The ``_EventHandlerManager``'s parent event handler.
     """
     __slots__ = ('parent',)
@@ -440,7 +441,7 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        parent : `Any`
+        parent : `object`
             The respective event handler.
         """
         self.parent = parent
@@ -451,7 +452,7 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
         return f'<{self.__class__.__name__} of {self.parent!r}>'
     
     
-    def __call__(self, func=..., *args, **kwargs):
+    def __call__(self, func = ..., *args, **kwargs):
         """
         Adds the given `func` to the event handler manager's parent. If `func` is not passed, then returns a
         ``._wrapper` to allow using the manager as a decorator with still passing keyword parameters.
@@ -677,7 +678,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         +-------------------------------+-----------------------------------+
         | Name                          | Value                             |
         +===============================+===================================+
-        | event_handlers                | `Any`                             |
+        | event_handlers                | `object`                          |
         +-------------------------------+-----------------------------------+
     
     _from_class_constructor : `callable`, `None`
@@ -697,7 +698,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         +-------------------------------+-----------------------------------+
         | Name                          | Value                             |
         +===============================+===================================+
-        | commands                      | `list` of `Any`                   |
+        | commands                      | `list` of `object`                |
         +-------------------------------+-----------------------------------+
     
     parent : ``ClientWrapper``
@@ -730,7 +731,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
             +-------------------------------+-----------------------------------+
             | Name                          | Value                             |
             +===============================+===================================+
-            | event_handlers                | `Any`                             |
+            | event_handlers                | `object`                          |
             +-------------------------------+-----------------------------------+
         
         from_class_constructor : `None`, `callable`
@@ -750,7 +751,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
             +-------------------------------+-----------------------------------+
             | Name                          | Value                             |
             +===============================+===================================+
-            | commands                      | `list` of `Any`                   |
+            | commands                      | `list` of `object`                |
             +-------------------------------+-----------------------------------+
         """
         self.parent = parent
@@ -817,7 +818,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         TypeError
             If the parent of the event handler manager has no support for `.from_class`.
         BaseException
-            Any exception raised by any of the event handler.
+            object exception raised by any of the event handler.
         """
         from_class_constructor = self._from_class_constructor
         if from_class_constructor is None:
@@ -1042,8 +1043,8 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
     def __repr__(self):
         return (
             f'<{self.__class__.__name__} '
-            f'parent={self.parent!r}, '
-            f'getter={self._getter!r}, '
+            f'parent = {self.parent!r}, '
+            f'getter = {self._getter!r}, '
             f'from_class_constructor={self._from_class_constructor!r}'
             f'>'
         )
@@ -1056,9 +1057,9 @@ class EventListElement:
     ----------
     func : `callable`
         The event of the event-list element.
-    args : `None`, `tuple` of `Any`
+    args : `None`, `tuple` of `object`
         Additional positional parameters for `func`.
-    kwargs : `None`, `dict` of (`str`, `Any`) items
+    kwargs : `None`, `dict` of (`str`, `object`) items
         Additional key word parameters for `func`.
     """
     __slots__ = ('func', 'args', 'kwargs', )
@@ -1073,7 +1074,7 @@ class EventListElement:
             The event of the eventlist element.
         args : `None`, `str`
             Additional positional parameters for `func`.
-        kwargs : `None`, `dict` of (`str`, `Any`) items
+        kwargs : `None`, `dict` of (`str`, `object`) items
             Additional key word parameters for `func`.
         """
         self.func = func
@@ -1132,16 +1133,16 @@ def route_value(to_route_value, count, default = None):
     
     Parameters
     ----------
-    to_route_value : `Any`
+    to_route_value : `object`
         The respective value to route
     count : `int`
         The expected amount of copies to generate.
-    default : `None`, `Any` = `None`, Optional
+    default : `None`, `object` = `None`, Optional
         Optional default variable to use. Defaults to `None`.
     
     Returns
     -------
-    result : `list` of `Any`
+    result : `list` of `object`
         A list of the routed values
     """
     result = []
@@ -1182,14 +1183,14 @@ def route_parameter(parameter, count):
     
     Parameters
     ----------
-    parameter : `Any`
+    parameter : `object`
         The parameter to route.
     count : `int`
         The expected amount of copies to generate.
     
     Yields
     ------
-    result : `Any`
+    result : `object`
     
     Raises
     ------
@@ -1228,14 +1229,14 @@ def route_kwargs(kwargs, count):
     
     Parameters
     ----------
-    kwargs : `dict` of (`str`, `Any`) items
+    kwargs : `dict` of (`str`, `object`) items
         Keyword parameter to route.
     count : `int`
         The expected amount of copies to generate.
     
     Returns
     -------
-    result : `tuple` of `dict` of (`str`, `Any) items
+    result : `tuple` of `dict` of (`str`, `object) items
     
     Raises
     ------
@@ -1258,14 +1259,14 @@ def route_args(args, count):
     
     Parameters
     ----------
-    args : `tuple` of `Any`
+    args : `tuple` of `object`
         Positional parameter to route.
     count : `int`
         The expected amount of copies to generate.
     
     Returns
     -------
-    result : `tuple` of `tuple` of `Any`
+    result : `tuple` of `tuple` of `object`
     
     Raises
     ------
@@ -1389,7 +1390,7 @@ class eventlist(list):
     
     Attributes
     ----------
-    kwargs : `None`, `dict` of (`str`, `Any`) items
+    kwargs : `None`, `dict` of (`str`, `object`) items
         Keyword parameters used for each element when extending the client's events with the event-list.
     type : `None`, `type`
         If `type_` was passed when creating the eventlist, then each added element is pre-validated with the given type
@@ -1561,7 +1562,7 @@ class eventlist(list):
             raise ValueError('\n'.join(collected))
     
     
-    def __call__(self, func=..., *args, **kwargs):
+    def __call__(self, func = ..., *args, **kwargs):
         """
         Adds the given `func` to the ``eventlist`` with the other given keyword parameters. If `func` is not passed,
         then returns a ``._wrapper` to allow using the ``eventlist`` as a decorator with still passing keyword
@@ -1818,7 +1819,7 @@ class EventWaitforMeta(type):
         
         Returns
         -------
-        object_ : `Any`
+        object_ : `object`
         """
         object_ = cls.__new__(cls, *args, **kwargs)
         if type(object_) is not cls:
@@ -2091,7 +2092,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         ----------
         target : ``DiscordEntity``
             The target entity.
-        waiter : `Any`
+        waiter : `object`
             The waiter. `by_type` and `is_method` overwrite the behaviour of checking it.
         by_type : `bool` = `False`, Optional
             Whether `waiter` was given as the type of the real waiter. Defaults to `False`.
@@ -2101,7 +2102,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         
         Returns
         -------
-        waiter : `Any`
+        waiter : `object`
         """
         try:
             element = self.waitfors[target]
@@ -2156,7 +2157,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         ----------
         target : ``DiscordEntity``
             The target entity.
-        waiter : `Any`
+        waiter : `object`
             The waiter. `by_type` and `is_method` overwrite the behaviour of checking it.
         by_type : `bool` = `False`, Optional
             Whether `waiter` was given as the type of the real waiter. Defaults to `False`.
@@ -2166,7 +2167,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         
         Returns
         -------
-        waiters : `list` of `Any`
+        waiters : `list` of `object`
         """
         result = []
         
@@ -2217,7 +2218,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         ----------
         target : ``DiscordEntity``
             The target entity.
-        args : `tuple` of `Any`
+        args : `tuple` of `object`
             Parameters to ensure the waitfors with.
         """
         try:
@@ -2242,7 +2243,7 @@ def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
         The created class's name.
     class_parents : `tuple` of `type`
         The superclasses of the creates type.
-    class_attributes : `dict` of (`str`, `Any`) items
+    class_attributes : `dict` of (`str`, `object`) items
         The class attributes of the created type.
     
     Returns
@@ -2383,7 +2384,7 @@ class WaitForHandler:
         ----------
         client : ``Client``
             The client who received the respective events.
-        args : `tuple` of `Any`
+        args : `tuple` of `object`
             Other received parameters by the event.
         """
         for future, check in self.waiters.items():
@@ -2642,7 +2643,7 @@ def _iterate_event_handler(event_handler):
     
     Parameters
     ----------
-    event_handler : `Any`
+    event_handler : `object`
         Event handler to iterate trough.
     
     Yields

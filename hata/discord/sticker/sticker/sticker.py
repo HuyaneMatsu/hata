@@ -326,6 +326,7 @@ class Sticker(DiscordEntity, immortal = True):
                 f'Please use `create_partial_sticker_data` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         
         data = {}

@@ -100,7 +100,7 @@ def _wrap_maybe_deprecated_event(name, func):
         if analyzer.is_async():
             real_analyzer = analyzer
         else:
-            real_analyzer = CallableAnalyzer(func.__call__, as_method=True)
+            real_analyzer = CallableAnalyzer(func.__call__, as_method = True)
         
         for parameter in real_analyzer.parameters:
             if 'channel' in parameter.name:
@@ -133,7 +133,7 @@ def _wrap_maybe_deprecated_event(name, func):
         if analyzer.is_async():
             real_analyzer = analyzer
         else:
-            real_analyzer = CallableAnalyzer(func.__call__, as_method=True)
+            real_analyzer = CallableAnalyzer(func.__call__, as_method = True)
         
         min_, max_ = real_analyzer.get_non_reserved_positional_parameter_range()
         if (min_ == 3) and not analyzer.accepts_args():
@@ -857,7 +857,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     scheduled_event_delete(client: ``Client``, scheduled_event: ``ScheduledEvent``):
         Called when a scheduled event is deleted.
     
-    scheduled_event_edit(client: ``Client``, scheduled_event: ``ScheduledEvent``, old_attributes: {`None`, `dict`}):
+    scheduled_event_edit(client: ``Client``, scheduled_event: ``ScheduledEvent``, old_attributes: `None | dict`):
         Called when a scheduled event is edited.
         
         If the scheduled event is cached, `old_attributes` will be a dictionary including the changed attributes in
@@ -903,15 +903,49 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Called when ``Client.stop``, ``Client.disconnect`` is called indicating, that the client is logging off and
         all data should be saved if needed.
     
-    stage_create(client: ``Client``, stage: ``Stage``):
+    soundboard_sound_create(client : ``Client``, sound : ``SoundBoardSound``)
+        Called when a soundboard sound is created.
+    
+    soundboard_sound_delete(client : ``Client``, sound : ``SoundBoardSound``)
+        Called when a soundboard sound is deleted.
+    
+    soundboard_sound_update(client : ``Client``, sound : ``SoundBoardSound``, old_attributes : `None | dict`)
+        Called when a soundboard sound is updated.
+    
+        If the soundboard sound is cached, `old_attributes` will be a dictionary including the changed attributes in
+        `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional any can be any of the following:
+        
+        +-----------+-------------------+
+        | Keys      | Values            |
+        +===========+===================+
+        | available | `bool`            |
+        +-----------+-------------------+
+        | emoji     | `None`, ``Emoji`` |
+        +-----------+-------------------+
+        | name      | `str`             |
+        +-----------+-------------------+
+        | volume    | `float`           |
+        +-----------+-------------------+
+    
+    soundboard_sounds(client : ``Client``, event : ``SoundBoardSoundsEvent``)
+        Called after a soundboard sounds request.
+        
+        > This event has a default handler defined,.
+    
+    stage_create(client : ``Client``, stage : ``Stage``):
         Called when a stage is created.
     
-    stage_delete(client: ``Client``, stage: ``Stage``):
+    stage_delete(client : ``Client``, stage : ``Stage``):
         Called when a stage is deleted.
     
-    stage_edit(client: ``Client``, stage: ``Stage``, old_attributes: `dict`):
+    stage_edit(client : ``Client``, stage : ``Stage``, old_attributes : `None | dict`):
         Called when a stage is edited.
-    
+        
+        If the stage is cached, `old_attributes` will be a dictionary including the changed attributes in
+        `attribute-name` - `old-value` relation.
+        
         Every item in `old_attributes` is optional and they can be any of the following:
         
         +---------------+-----------------------+
@@ -1567,7 +1601,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         Returns
         -------
-        plugin : ``EventHandlerPlugin``
+        plugin : ``EventHandlerPlugin``, `type<EventHandlerPlugin>`
             The added plugin.
         
         Raises

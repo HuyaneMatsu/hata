@@ -8,7 +8,7 @@ from ..bases import FlagBase
 INTENT_SHIFT_GUILDS = 0
 INTENT_SHIFT_GUILD_USERS = 1
 INTENT_SHIFT_GUILD_MODERATION = 2
-INTENT_SHIFT_GUILD_EMOJIS_AND_STICKERS = 3
+INTENT_SHIFT_GUILD_EXPRESSIONS = 3
 INTENT_SHIFT_GUILD_INTEGRATIONS = 4
 INTENT_SHIFT_GUILD_WEBHOOKS = 5
 INTENT_SHIFT_GUILD_INVITES = 6
@@ -28,7 +28,7 @@ INTENT_SHIFT_AUTO_MODERATION_EXECUTION = 21
 INTENT_MASK_GUILDS = 1 << INTENT_SHIFT_GUILDS
 INTENT_MASK_GUILD_USERS = 1 << INTENT_SHIFT_GUILD_USERS
 INTENT_MASK_GUILD_MODERATION = 1 << INTENT_SHIFT_GUILD_MODERATION
-INTENT_MASK_GUILD_EMOJIS_AND_STICKERS = 1 << INTENT_SHIFT_GUILD_EMOJIS_AND_STICKERS
+INTENT_MASK_GUILD_EXPRESSIONS = 1 << INTENT_SHIFT_GUILD_EXPRESSIONS
 INTENT_MASK_GUILD_INTEGRATIONS = 1 << INTENT_SHIFT_GUILD_INTEGRATIONS
 INTENT_MASK_GUILD_WEBHOOKS = 1 << INTENT_SHIFT_GUILD_WEBHOOKS
 INTENT_MASK_GUILD_INVITES = 1 << INTENT_SHIFT_GUILD_INVITES
@@ -83,9 +83,13 @@ INTENT_SHIFT_EVENTS = {
         'GUILD_BAN_ADD',
         'GUILD_BAN_REMOVE',
     ),
-    INTENT_SHIFT_GUILD_EMOJIS_AND_STICKERS: (
+    INTENT_SHIFT_GUILD_EXPRESSIONS: (
         'GUILD_EMOJIS_UPDATE',
+        'GUILD_SOUNDBOARD_SOUND_CREATE',
+        'GUILD_SOUNDBOARD_SOUND_DELETE',
+        'GUILD_SOUNDBOARD_SOUND_UPDATE',
         'GUILD_STICKERS_UPDATE',
+        'SOUNDBOARD_SOUNDS',
     ),
     INTENT_SHIFT_GUILD_INTEGRATIONS: (
         'INTEGRATION_CREATE',
@@ -256,8 +260,12 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
     |                                               |       |                               | GUILD_BAN_ADD,                              |
     |                                               |       |                               | GUILD_BAN_REMOVE                            |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
-    | INTENT_SHIFT_GUILD_EMOJIS_AND_STICKERS        | 3     | guild_emojis_and_stickers     | GUILD_EMOJIS_UPDATE                         |
-    |                                               |       |                               | GUILD_STICKERS_UPDATE                       |
+    | INTENT_SHIFT_GUILD_EXPRESSIONS                | 3     | guild_expressions             | GUILD_EMOJIS_UPDATE,                        |
+    |                                               |       |                               | GUILD_SOUNDBOARD_SOUND_CREATE,              |
+    |                                               |       |                               | GUILD_SOUNDBOARD_SOUND_DELETE,              |
+    |                                               |       |                               | GUILD_SOUNDBOARD_SOUND_UPDATE,              |
+    |                                               |       |                               | GUILD_STICKERS_UPDATE,                      |
+    |                                               |       |                               | SOUNDBOARD_SOUNDS                           |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
     | INTENT_SHIFT_GUILD_INTEGRATIONS               | 4     | guild_integrations            | INTEGRATION_CREATE,                         |
     |                                               |       |                               | INTEGRATION_DELETE,                         |
@@ -320,7 +328,7 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
         'guilds': INTENT_SHIFT_GUILDS,
         'guild_users': INTENT_SHIFT_GUILD_USERS,
         'guild_moderation': INTENT_SHIFT_GUILD_MODERATION,
-        'guild_emojis_and_stickers': INTENT_SHIFT_GUILD_EMOJIS_AND_STICKERS,
+        'guild_expressions': INTENT_SHIFT_GUILD_EXPRESSIONS,
         'guild_integrations': INTENT_SHIFT_GUILD_INTEGRATIONS,
         'guild_webhooks': INTENT_SHIFT_GUILD_WEBHOOKS,
         'guild_invites': INTENT_SHIFT_GUILD_INVITES,
@@ -340,6 +348,7 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
     
     __deprecated_keys__ = {
         'guild_bans': (INTENT_SHIFT_GUILD_MODERATION, '2023 Jul', 'guild_moderation'),
+        'guild_emojis_and_stickers': (INTENT_SHIFT_GUILD_MODERATION, '2023 Dec', 'guild_expressions'),
     }
     
     def __new__(cls, integer = -1):

@@ -275,6 +275,10 @@ add_event_handler('auto_moderation_rule_delete', 2, 'AUTO_MODERATION_RULE_DELETE
 add_event_handler('auto_moderation_action_execution', 2, 'AUTO_MODERATION_ACTION_EXECUTION',)
 add_event_handler('audit_log_entry_create', 2, 'GUILD_AUDIT_LOG_ENTRY_CREATE',)
 add_event_handler('voice_channel_effect', 2, 'VOICE_CHANNEL_EFFECT_SEND')
+add_event_handler('soundboard_sounds', 2, 'SOUNDBOARD_SOUNDS')
+add_event_handler('soundboard_sound_create', 2, 'GUILD_SOUNDBOARD_SOUND_CREATE')
+add_event_handler('soundboard_sound_delete', 2, 'GUILD_SOUNDBOARD_SOUND_DELETE')
+add_event_handler('soundboard_sound_update', 3, 'GUILD_SOUNDBOARD_SOUND_UPDATE')
 
 
 class ParserSettingOption:

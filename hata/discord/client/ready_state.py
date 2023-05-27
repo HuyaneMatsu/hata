@@ -8,7 +8,7 @@ from ...env import CACHE_PRESENCE, CACHE_USER
 
 from ..core import KOKORO
 from ..events.intent import INTENT_MASK_GUILD_PRESENCES, INTENT_MASK_GUILD_USERS
-from ..gateway.client_gateway import REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
+from ..gateway.client_gateway import REQUEST_GUILD_USERS as GATEWAY_OPERATION_CODE_REQUEST_GUILD_USERS
 
 
 READY_STATE_TO_DO_GUILD_IDS = set()
@@ -90,7 +90,7 @@ class ShardUserRequester:
                 }
                 
                 data = {
-                    'op': GATEWAY_OPERATION_CODE_REQUEST_MEMBERS,
+                    'op': GATEWAY_OPERATION_CODE_REQUEST_GUILD_USERS,
                     'd': sub_data
                 }
             

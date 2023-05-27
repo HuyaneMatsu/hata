@@ -76,50 +76,6 @@ def test__Sticker__from_data__1():
     vampytest.assert_is(sticker, test_sticker)
 
 
-def test__Sticker__from_partial_data__0():
-    """
-    Tests whether ``Sticker.from_partial_data`` works as intended.
-    
-    Case: default.
-    """
-    sticker_id = 202201070014
-    
-    name = 'koishi'
-    sticker_format = StickerFormat.png
-    
-    data = {
-        'id': str(sticker_id),
-        'name': name,
-        'format_type': sticker_format.value,
-    }
-    
-    sticker = Sticker.from_partial_data(data)
-    _assert_fields_set(sticker)
-    
-    vampytest.assert_is(sticker.format, sticker_format)
-    vampytest.assert_eq(sticker.name, name)
-    
-    vampytest.assert_eq(sticker.id, sticker_id)
-
-
-def test__Sticker__from_partial_data__1():
-    """
-    Tests whether ``Sticker.from_partial_data`` works as intended.
-    
-    Case: caching.
-    """
-    sticker_id = 202201070015
-
-    data = {
-        'id': str(sticker_id),
-    }
-    
-    sticker = Sticker.from_partial_data(data)
-    test_sticker = Sticker.from_partial_data(data)
-    
-    vampytest.assert_is(sticker, test_sticker)
-
-
 def test__Sticker__to_data():
     """
     Tests whether ``Sticker.to_data`` works as intended.
@@ -169,34 +125,6 @@ def test__Sticker__to_data():
     
     vampytest.assert_eq(
         sticker.to_data(defaults = True, include_internals = True),
-        expected_output,
-    )
-
-
-def test__Sticker__to_partial_data():
-    """
-    Tests whether ``Sticker.to_partial_data`` works as intended.
-    
-    Case: Include defaults & internals.
-    """
-    sticker_id = 202201070020
-    name = 'koishi'
-    sticker_format = StickerFormat.png
-    
-    sticker = Sticker.precreate(
-        sticker_id,
-        name = name,
-        sticker_format = sticker_format,
-    )
-    
-    expected_output = {
-        'id': str(sticker_id),
-        'name': name,
-        'format_type': sticker_format.value,
-    }
-    
-    vampytest.assert_eq(
-        sticker.to_partial_data(),
         expected_output,
     )
 

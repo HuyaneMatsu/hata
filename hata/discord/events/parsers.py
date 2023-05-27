@@ -2064,7 +2064,7 @@ if CACHE_PRESENCE:
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
             if (client.intents & INTENT_SHIFT_GUILD_USERS) and guild.is_large and client._should_request_users:
-                Task(client._request_members(guild.id), KOKORO)
+                Task(client._request_users(guild.id), KOKORO)
             
             Task(client.events.guild_create(client, guild), KOKORO)
 
@@ -2079,7 +2079,7 @@ if CACHE_PRESENCE:
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
             if (client.intents & INTENT_SHIFT_GUILD_USERS) and guild.is_large and client._should_request_users:
-                Task(client._request_members(guild.id), KOKORO)
+                Task(client._request_users(guild.id), KOKORO)
 
 elif CACHE_USER:
     def GUILD_CREATE__CAL(client, data):
@@ -2092,7 +2092,7 @@ elif CACHE_USER:
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
             if (client.intents & INTENT_SHIFT_GUILD_USERS) and client._should_request_users:
-                Task(client._request_members(guild.id), KOKORO)
+                Task(client._request_users(guild.id), KOKORO)
             
             Task(client.events.guild_create(client, guild), KOKORO)
 
@@ -2106,7 +2106,7 @@ elif CACHE_USER:
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
             if (client.intents & INTENT_SHIFT_GUILD_USERS) and client._should_request_users:
-                Task(client._request_members(guild.id), KOKORO)
+                Task(client._request_users(guild.id), KOKORO)
 
 else:
     def GUILD_CREATE__CAL(client, data):

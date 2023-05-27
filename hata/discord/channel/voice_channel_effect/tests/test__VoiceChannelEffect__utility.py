@@ -43,7 +43,7 @@ def test__VoiceChannelEffect__copy_with__0():
     """
     Tests whether ``VoiceChannelEffect.copy_with`` works as intended.
     
-    Case: no voice_channel_effects given.
+    Case: no fields given.
     """
     animation_id = 202304040032
     animation_type = VoiceChannelEffectAnimationType.basic
@@ -71,7 +71,7 @@ def test__VoiceChannelEffect__copy_with__1():
     """
     Tests whether ``VoiceChannelEffect.copy_with`` works as intended.
     
-    Case: all voice_channel_effects given.
+    Case: all fields given.
     """
     old_animation_id = 202304040036
     old_animation_type = VoiceChannelEffectAnimationType.basic
@@ -110,6 +110,8 @@ def test__VoiceChannelEffect__copy_with__1():
     vampytest.assert_eq(copy.animation_type, new_animation_type)
     vampytest.assert_eq(copy.channel_id, new_channel_id)
     vampytest.assert_eq(copy.emoji, new_emoji)
+    vampytest.assert_eq(copy.guild_id, new_guild_id)
+    vampytest.assert_eq(copy.user_id, new_user_id)
 
 
 def test__VoiceChannelEffect__channel__0():

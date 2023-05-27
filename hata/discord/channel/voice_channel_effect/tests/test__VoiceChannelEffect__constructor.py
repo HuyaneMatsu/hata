@@ -9,12 +9,12 @@ from ..voice_channel_effect import VoiceChannelEffect
 
 def _assert_fields_set(voice_channel_effect):
     """
-    Checks whether every attribute is set of the given activity voice_channel_effect voice_channel_effect.
+    Checks whether every attribute is set of the given voice channel effect.
     
     Parameters
     ----------
     voice_channel_effect : ``VoiceChannelEffect``
-        The voice_channel_effect to check.
+        The voice channel effect to check.
     """
     vampytest.assert_instance(voice_channel_effect, VoiceChannelEffect)
     vampytest.assert_instance(voice_channel_effect.animation_id, int)
@@ -29,7 +29,7 @@ def test__VoiceChannelEffect__new__0():
     """
     Tests whether ``VoiceChannelEffect.__new__`` works as intended.
     
-    Case: No voice_channel_effects given.
+    Case: No fields given.
     """
     voice_channel_effect = VoiceChannelEffect()
     _assert_fields_set(voice_channel_effect)

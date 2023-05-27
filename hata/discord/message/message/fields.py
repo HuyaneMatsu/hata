@@ -27,7 +27,7 @@ from ...field_validators import (
     preinstanced_validator_factory
 )
 from ...role import Role
-from ...sticker import Sticker
+from ...sticker import Sticker, create_partial_sticker_data, create_partial_sticker_from_partial_data
 from ...user import ClientUserBase, User, UserBase, ZEROUSER
 from ...webhook import WebhookBase, WebhookRepr, WebhookType, create_partial_webhook_from_id
 
@@ -597,8 +597,10 @@ validate_role_subscription = nullable_entity_validator_factory('role_subscriptio
 
 # stickers
 
-parse_stickers = nullable_functional_array_parser_factory('sticker_items', Sticker.from_partial_data, do_sort = False)
-put_stickers_into = nullable_functional_array_optional_putter_factory('sticker_items', Sticker.to_partial_data)
+parse_stickers = nullable_functional_array_parser_factory(
+    'sticker_items', create_partial_sticker_from_partial_data, do_sort = False
+)
+put_stickers_into = nullable_functional_array_optional_putter_factory('sticker_items', create_partial_sticker_data)
 validate_stickers = nullable_entity_array_validator_factory(
     'stickers', Sticker, sort_key = id_sort_key,
 )

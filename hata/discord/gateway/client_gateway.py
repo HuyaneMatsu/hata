@@ -29,12 +29,12 @@ VOICE_STATE = 4
 VOICE_PING = 5
 RESUME = 6
 RECONNECT = 7
-REQUEST_MEMBERS = 8
+REQUEST_GUILD_USERS = 8
 INVALIDATE_SESSION = 9
 HELLO = 10
 HEARTBEAT_ACK = 11
 GUILD_SYNC = 12
-
+REQUEST_SOUNDBOARD_SOUNDS = 31
 
 """
 DISPATCH : `int` = `0`
@@ -53,8 +53,8 @@ RESUME : `int` = `6`
     Send only, used at ``DiscordGateway._resume``.
 RECONNECT : `int` = `7`
     Receive only, used at ``._special_operation``.
-REQUEST_MEMBERS : `int` = `8`
-    Send only, used at ``Client._request_members_loop``, ``Client._request_members`` and at
+REQUEST_GUILD_USERS : `int` = `8`
+    Send only, used at ``Client._request_users_loop``, ``Client._request_users`` and at
     ``Client.request_member``.
 INVALIDATE_SESSION : `int` = `9`
     Receive only, used at ``DiscordGateway._special_operation``.
@@ -64,6 +64,8 @@ HEARTBEAT_ACK : `int` = `11`
     Receive only, used at ``DiscordGateway._special_operation``.
 GUILD_SYNC : `int` = `12`
     Send only, not used.
+REQUEST_SOUNDBOARD_SOUNDS : `int` = `13`
+    Send only, used to request the guilds' soundboard sounds.
 """
 
 class DiscordGateway:
@@ -218,7 +220,7 @@ class DiscordGateway:
     
     # connecting, message receive and processing
     
-    async def _connect(self, resume=False):
+    async def _connect(self, resume = False):
         """
         Connects the gateway to Discord. If the connecting was successful will start it's `.kokoro` as well.
         
@@ -348,6 +350,9 @@ class DiscordGateway:
         operation = message['op']
         data = message.get('d', None)
         sequence = message.get('s', None)
+        
+        if 'soundboard_sounds' in repr(message):
+            print(repr(message))
         
         if sequence is not None:
             self.sequence = sequence

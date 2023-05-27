@@ -2,6 +2,7 @@ from .constants import *
 from .fields import *
 from .preinstanced import *
 from .sticker import *
+from .utils import *
 
 
 __all__ = (
@@ -9,4 +10,5 @@ __all__ = (
     *fields.__all__,
     *preinstanced.__all__,
     *sticker.__all__,
+    *utils.__all__,
 )

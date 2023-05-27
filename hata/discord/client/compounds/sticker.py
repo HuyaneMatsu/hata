@@ -39,7 +39,7 @@ def _handle_emoji_representation_parameter_deprecation(instance, tags, emoji_rep
     if emoji_representation is not ...:
         warnings.warn(
             (
-                f'`{instance.__class__.__name__}.sticker_guild_create`\'s `emoji_representation` is deprecated '
+                f'`{instance.__class__.__name__}.sticker_create`\'s `emoji_representation` is deprecated '
                 f'and will be removed in 2023 Marc. '
                 f'Please use `tags` instead.'
             ),
@@ -213,7 +213,7 @@ class ClientCompoundStickerEndpoints(Compound):
         return sticker_packs
     
     
-    async def sticker_guild_get(self, sticker, *, force_update = False):
+    async def sticker_get_guild(self, sticker, *, force_update = False):
         """
         Gets the specified sticker from the respective guild.
         
@@ -252,7 +252,7 @@ class ClientCompoundStickerEndpoints(Compound):
         if (sticker is not None) and (not sticker.partial) and (not force_update):
             return sticker
         
-        data = await self.http.sticker_guild_get(guild_id, sticker_id)
+        data = await self.http.sticker_get_guild(guild_id, sticker_id)
         if (sticker is None):
             sticker = Sticker.from_data(data)
         else:
@@ -261,7 +261,7 @@ class ClientCompoundStickerEndpoints(Compound):
         return sticker
     
     
-    async def sticker_guild_create(
+    async def sticker_create(
         self, guild, name, image, tags = ..., description = None, *, emoji_representation = ..., reason = None
     ):
         """
@@ -371,12 +371,12 @@ class ClientCompoundStickerEndpoints(Compound):
         form_data.add_field('file', image, filename = f'file.{extension}', content_type = media_type)
         
         
-        sticker_data = await self.http.sticker_guild_create(guild_id, form_data, reason)
+        sticker_data = await self.http.sticker_create(guild_id, form_data, reason)
         
         return Sticker.from_data(sticker_data)
     
     
-    async def sticker_guild_edit(
+    async def sticker_edit(
         self, sticker, *, name = ..., tags = ..., emoji_representation = ..., description = ..., reason = None
     ):
         """
@@ -470,10 +470,10 @@ class ClientCompoundStickerEndpoints(Compound):
             'description': description,
         }
         
-        await self.http.sticker_guild_edit(sticker.guild_id, sticker.id, data, reason)
+        await self.http.sticker_edit(sticker.guild_id, sticker.id, data, reason)
     
     
-    async def sticker_guild_delete(self, sticker, *, reason = None):
+    async def sticker_delete(self, sticker, *, reason = None):
         """
         Deletes the sticker.
         
@@ -505,11 +505,10 @@ class ClientCompoundStickerEndpoints(Compound):
                     f'Non guild bound sticker cannot be edited, got {sticker!r}.'
                 )
         
-        await self.http.sticker_guild_delete(sticker.guild_id, sticker.id, reason)
+        await self.http.sticker_delete(sticker.guild_id, sticker.id, reason)
     
     
-    
-    async def sticker_guild_get_all(self, guild):
+    async def sticker_get_all_guild(self, guild):
         """
         Syncs the given guild's stickers with the wrapper.
         
@@ -536,7 +535,7 @@ class ClientCompoundStickerEndpoints(Compound):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        sticker_datas = await self.http.sticker_guild_get_all(guild_id)
+        sticker_datas = await self.http.sticker_get_all_guild(guild_id)
         
         if guild is None:
             # Do not create a partial guild, because it would have been garbage collected after leaving the function
@@ -550,3 +549,84 @@ class ClientCompoundStickerEndpoints(Compound):
             stickers = [*guild.stickers.values()]
         
         return stickers
+    
+    
+    async def sticker_guild_get_all(self, *position_parameters, **keyword_parameters):
+        """
+        Deprecated and will be removed in 2023 December. Please use ``.sticker_get_all_guild`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.sticker_guild_get_all` is deprecated and will be removed in 2023 '
+                f'December. '
+                f'Please use `.sticker_get_all_guild` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return await self.sticker_get_all_guild(*position_parameters, **keyword_parameters)
+    
+    
+    async def sticker_guild_create(self, *position_parameters, **keyword_parameters):
+        """
+        Deprecated and will be removed in 2023 December. Please use ``.sticker_create`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.sticker_guild_create` is deprecated and will be removed in 2023 December. '
+                f'Please use `.sticker_create` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return await self.sticker_create(*position_parameters, **keyword_parameters)
+    
+    
+    async def sticker_guild_edit(self, *position_parameters, **keyword_parameters):
+        """
+        Deprecated and will be removed in 2023 December. Please use ``.sticker_edit`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.sticker_guild_edit` is deprecated and will be removed in 2023 December. '
+                f'Please use `.sticker_edit` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return await self.sticker_edit(*position_parameters, **keyword_parameters)
+
+    
+    async def sticker_guild_delete(self, *position_parameters, **keyword_parameters):
+        """
+        Deprecated and will be removed in 2023 December. Please use ``.sticker_delete`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.sticker_guild_delete` is deprecated and will be removed in 2023 December. '
+                f'Please use `.sticker_delete` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return await self.sticker_delete(*position_parameters, **keyword_parameters)
+    
+    
+    async def sticker_guild_get(self, *position_parameters, **keyword_parameters):
+        """
+        Deprecated and will be removed in 2023 December. Please use ``.sticker_get_guild`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.sticker_guild_get` is deprecated and will be removed in 2023 December. '
+                f'Please use `.sticker_get_guild` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return await self.sticker_get_guild(*position_parameters, **keyword_parameters)

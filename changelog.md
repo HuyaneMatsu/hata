@@ -44,6 +44,14 @@
 - Add `SoundBoardSound`.
 - Add `create_partial_soundboard_sound_from_id`.
 - Add `create_partial_soundboard_sound_from_partial_data`.
+- Add `create_partial_sticker_data`.
+- Add `create_partial_sticker_from_partial_data`.
+- Add `RATE_LIMIT_GROUPS.soundboard_sound_get_all_default`.
+- Add `DiscordHTTPClient.soundboard_sound_get_all_default`.
+- Add `Client.soundboard_sound_get_all_default`.
+- Add `RATE_LIMIT_GROUPS.soundboard_sound_create`.
+- Add `Client.request_soundboard_sounds`.
+- Add `SoundBoardSoundsEvent`.
 
 #### Bug fixes
 
@@ -60,6 +68,32 @@
 - Deprecate `GuildWidgetUser.mention`.
 - Deprecate `GuildWidgetUser.mention_nick`.
 - Deprecate `MESSAGE_JUMP_URL_RP` import. Use `parse_message_jump_url` instead.
+- Deprecate `Sticker.to_partial_data`. Use `create_partial_sticker_data instead.
+- Deprecate `Sticker.from_partial_data`. Use `create_partial_sticker_from_partial_data` instead.
+- Rename `Client.sticker_guild_get_all` to `.sticker_get_all_guild`.
+- Rename `DiscordHTTPClient.sticker_guild_get_all` to `.sticker_get_all_guild`.
+- Rename `RATE_LIMIT_GROUPS.sticker_guild_get_all` to `.sticker_get_all_guild`.
+- Deprecate `Client.sticker_guild_get_all`.
+- Rename `Client.sticker_guild_create` to `.sticker_create`.
+- Rename `DiscordHTTPClient.sticker_guild_create` to `.sticker_create`.
+- Rename `RATE_LIMIT_GROUPS.sticker_guild_create` to `.sticker_create`.
+- Deprecate `Client.sticker_guild_create`.
+- Rename `Client.sticker_guild_edit` to `.sticker_edit`.
+- Rename `DiscordHTTPClient.sticker_guild_edit` to `.sticker_edit`.
+- Rename `RATE_LIMIT_GROUPS.sticker_guild_edit` to `.sticker_edit`.
+- Deprecate `Client.sticker_guild_edit`.
+- Rename `Client.sticker_guild_delete` to `.sticker_delete`.
+- Rename `DiscordHTTPClient.sticker_guild_delete` to `.sticker_delete`.
+- Rename `RATE_LIMIT_GROUPS.sticker_guild_delete` to `.sticker_delete`.
+- Deprecate `Client.sticker_guild_delete`.
+- Rename `Client.sticker_guild_get` to `.sticker_get_guild`.
+- Rename `DiscordHTTPClient.sticker_guild_get` to `.sticker_get_guild`.
+- Rename `RATE_LIMIT_GROUPS.sticker_guild_get` to `.sticker_get_guild`.
+- Deprecate `Client.sticker_guild_get`.
+- Deprecate `Client.request_members`.
+- Rename `Client.request_members` to `.request_users`.
+- Deprecate `Client.request_all_members_of`.
+- Rename `Client.request_all_members_of` to `.request_all_users_of`.
 
 ## 1.3.29 *\[2023-05-08\]*
 

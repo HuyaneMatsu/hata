@@ -24,13 +24,13 @@ class VoiceChannelEffect(EventBase):
     Attributes
     ----------
     animation_id : `int`
-        The identifier of the emoji animation, for emoji reaction effects.
+        The identifier of the animation of the voice channel effect.
     animation_type : ``VoiceChannelEffectAnimationType``
         The animation's type.
     channel_id : `int`
         The channel's identifier where the effect was sent.
     emoji : `None`, ``Emoji``
-        The emoji sent, for emoji reaction effects.
+        The emoji sent.
     guild_id : `int`
         The guild's identifier where the event was sent.
     user_id : `int`
@@ -54,13 +54,13 @@ class VoiceChannelEffect(EventBase):
         Parameters
         ----------
         animation_id : `int`, Optional (Keyword only)
-            The identifier of the emoji animation, for emoji reaction effects.
+            The identifier of the animation of the voice channel effect.
         animation_type : ``VoiceChannelEffectAnimationType``, `int`, Optional (Keyword only)
             The animation's type.
         channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel or its identifier where the effect was sent.
-        emoji : `None`, ``Emoji``
-            The emoji sent, for emoji reaction effects.
+        emoji : `None`, ``Emoji``, Optional (Keyword only)
+            The emoji sent.
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild or its identifier where the event was sent.
         user_id : `int`, ``ClientUserBase``, Optional (Keyword only)
@@ -110,41 +110,41 @@ class VoiceChannelEffect(EventBase):
             user_id = validate_user_id(user_id)
         
         # Construct
-        new = object.__new__(cls)
-        new.animation_id = animation_id
-        new.animation_type = animation_type
-        new.channel_id = channel_id
-        new.emoji = emoji
-        new.guild_id = guild_id
-        new.user_id = user_id
-        return new
+        self = object.__new__(cls)
+        self.animation_id = animation_id
+        self.animation_type = animation_type
+        self.channel_id = channel_id
+        self.emoji = emoji
+        self.guild_id = guild_id
+        self.user_id = user_id
+        return self
     
     
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new reaction add (or delete) event instance.
+        Creates a voice channel effect event from the given data.
         
         Parameters
         ----------
         data : `dict` of (`str`, `object`) items
-            Reaction event data.
+            Voice channel effect event data.
         
         Returns
         -------
-        new : `instance<cls>`
+        self : `instance<cls>`
         """
-        new = object.__new__(cls)
-        new.animation_id = parse_animation_id(data)
-        new.animation_type = parse_animation_type(data)
-        new.channel_id = parse_channel_id(data)
-        new.emoji = parse_emoji(data)
-        new.guild_id = parse_guild_id(data)
-        new.user_id = parse_user_id(data)
-        return new
+        self = object.__new__(cls)
+        self.animation_id = parse_animation_id(data)
+        self.animation_type = parse_animation_type(data)
+        self.channel_id = parse_channel_id(data)
+        self.emoji = parse_emoji(data)
+        self.guild_id = parse_guild_id(data)
+        self.user_id = parse_user_id(data)
+        return self
     
     
-    def to_data(new, *, defaults = False, include_internals = False):
+    def to_data(self, *, defaults = False, include_internals = False):
         """
         Converts the voice channel effect event into a json serializable object.
         
@@ -161,41 +161,41 @@ class VoiceChannelEffect(EventBase):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_animation_id_into(new.animation_id, data, defaults)
-        put_animation_type_into(new.animation_type, data, defaults)
-        put_emoji_into(new.emoji, data, defaults)
+        put_animation_id_into(self.animation_id, data, defaults)
+        put_animation_type_into(self.animation_type, data, defaults)
+        put_emoji_into(self.emoji, data, defaults)
         
         if include_internals:
-            put_channel_id_into(new.channel_id, data, defaults)
-            put_guild_id_into(new.guild_id, data, defaults)
-            put_user_id_into(new.user_id, data, defaults)
+            put_channel_id_into(self.channel_id, data, defaults)
+            put_guild_id_into(self.guild_id, data, defaults)
+            put_user_id_into(self.user_id, data, defaults)
         
         return data
     
     
     @copy_docs(EventBase.__repr__)
-    def __repr__(new):
-        repr_parts = ['<', new.__class__.__name__]
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
         
         repr_parts.append(' guild_id = ')
-        repr_parts.append(repr(new.guild_id))
+        repr_parts.append(repr(self.guild_id))
         
         repr_parts.append(', channel_id = ')
-        repr_parts.append(repr(new.channel_id))
+        repr_parts.append(repr(self.channel_id))
         
         repr_parts.append(', user_id = ')
-        repr_parts.append(repr(new.user_id))
+        repr_parts.append(repr(self.user_id))
         
-        animation_type = new.animation_type
+        animation_type = self.animation_type
         repr_parts.append(', animation_type = ')
         repr_parts.append(animation_type.name)
         repr_parts.append(' ~ ')
         repr_parts.append(repr(animation_type.value))
         
         repr_parts.append(', animation_id = ')
-        repr_parts.append(repr(new.animation_id))
+        repr_parts.append(repr(self.animation_id))
         
-        emoji = new.emoji
+        emoji = self.emoji
         if (emoji is not None):
             repr_parts.append(', emoji = ')
             repr_parts.append(repr(emoji))
@@ -206,82 +206,81 @@ class VoiceChannelEffect(EventBase):
     
     
     @copy_docs(EventBase.__len__)
-    def __len__(new):
-        return 6
+    def __len__(self):
+        return 5
     
     
     @copy_docs(EventBase.__iter__)
-    def __iter__(new):
-        yield new.guild
-        yield new.channel
-        yield new.user
-        yield new.animation_type
-        yield new.animation_type
-        yield new.emoji
+    def __iter__(self):
+        yield self.channel
+        yield self.user
+        yield self.animation_type
+        yield self.animation_type
+        yield self.emoji
         
     
     @copy_docs(EventBase.__eq__)
-    def __eq__(new, other):
-        if type(new) is not type(other):
+    def __eq__(self, other):
+        if type(self) is not type(other):
             return NotImplemented
         
         # animation_id
-        if new.animation_id != other.animation_id:
+        if self.animation_id != other.animation_id:
             return False
         
         # animation_type
-        if new.animation_type is not other.animation_type:
+        if self.animation_type is not other.animation_type:
             return False
         
         # channel_id
-        if new.channel_id is not other.channel_id:
+        if self.channel_id is not other.channel_id:
             return False
         
         # emoji
-        if new.emoji is not other.emoji:
+        if self.emoji is not other.emoji:
             return False
         
         # guild_id
-        if new.guild_id != other.guild_id:
+        if self.guild_id != other.guild_id:
             return False
         
         # user_id
-        if new.user_id != other.user_id:
+        if self.user_id != other.user_id:
             return False
         
         return True
     
     
     @copy_docs(EventBase.__hash__)
-    def __hash__(new):
+    def __hash__(self):
         hash_value = 0
         
         # animation_id
-        hash_value = hash(new.animation_id)
+        hash_value ^= hash(self.animation_id)
         
         # animation_type
-        hash_value ^= hash(new.animation_type)
+        hash_value ^= hash(self.animation_type)
         
         # channel_id
-        hash_value ^= new.channel_id
+        hash_value ^= self.channel_id
         
         # emoji
-        emoji = new.emoji
+        emoji = self.emoji
         if (emoji is not None):
             hash_value ^= hash(emoji)
         
         # guild_id
-        hash_value ^= new.guild_id
+        hash_value ^= self.guild_id
         
         # user_id
-        hash_value ^= new.user_id
+        hash_value ^= self.user_id
         
         return hash_value
     
     
     def copy(self):
         """
-        Copies the reaction add (or remove) event.
+        Copies the voice channel effect event.
         
         Returns
         -------
@@ -308,18 +307,18 @@ class VoiceChannelEffect(EventBase):
         user_id = ...,
     ):
         """
-        Copies new voice channel effect event with the given fields
+        Copies new voice channel effect event with the given fields.
         
         Parameters
         ----------
         animation_id : `int`, Optional (Keyword only)
-            The identifier of the emoji animation, for emoji reaction effects.
+            The identifier of the animation of the voice channel effect.
         animation_type : ``VoiceChannelEffectAnimationType``, `int`, Optional (Keyword only)
             The animation's type.
         channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel or its identifier where the effect was sent.
-        emoji : `None`, ``Emoji``
-            The emoji sent, for emoji reaction effects.
+        emoji : `None`, ``Emoji``, Optional (Keyword only)
+            The emoji sent.
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild or its identifier where the event was sent.
         user_id : `int`, ``ClientUserBase``, Optional (Keyword only)

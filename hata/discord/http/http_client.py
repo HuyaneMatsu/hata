@@ -2049,11 +2049,20 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/interaction-data',
         )
     
+    # Soundboard
+    
+    async def soundboard_sound_get_all_default(self):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.soundboard_sound_get_all_default, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/soundboard-default-sounds'
+        )
+    
     # Sticker
     
-    async def sticker_guild_get_all(self, guild_id):
+    async def sticker_get_all_guild(self, guild_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.sticker_guild_get_all, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.sticker_get_all_guild, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/stickers',
         )
@@ -2072,25 +2081,25 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/sticker-packs',
         )
     
-    async def sticker_guild_get(self, guild_id, sticker_id):
+    async def sticker_get_guild(self, guild_id, sticker_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.sticker_guild_get, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.sticker_get_guild, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/stickers/{sticker_id}',
         )
     
-    async def sticker_guild_create(self, guild_id, data, reason):
+    async def sticker_create(self, guild_id, data, reason):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.sticker_guild_create, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.sticker_create, guild_id),
             METHOD_POST,
             f'{API_ENDPOINT}/guilds/{guild_id}/stickers',
             data,
             reason = reason,
         )
     
-    async def sticker_guild_delete(self, guild_id, sticker_id, reason):
+    async def sticker_delete(self, guild_id, sticker_id, reason):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.sticker_guild_delete, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.sticker_delete, guild_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/stickers/{sticker_id}',
             reason = reason,
@@ -2103,9 +2112,9 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/stickers/{sticker_id}',
         )
     
-    async def sticker_guild_edit(self, guild_id, sticker_id, data, reason):
+    async def sticker_edit(self, guild_id, sticker_id, data, reason):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.sticker_guild_edit, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.sticker_edit, guild_id),
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/stickers/{sticker_id}',
             data,

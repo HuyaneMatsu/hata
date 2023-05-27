@@ -460,7 +460,6 @@ class WebhookUpdateEvent(EventBase):
             return GUILDS.get(guild_id, None)
 
 
-
 class ApplicationCommandCountUpdate(EventBase):
     """
     Represents a `GUILD_APPLICATION_COMMAND_INDEX_UPDATE` event.

@@ -19,6 +19,7 @@ from .miscellaneous import *
 from .reaction import *
 from .role import *
 from .scheduled_event import *
+from .soundboard import *
 from .stage import *
 from .sticker import *
 from .thread import *
@@ -48,6 +49,7 @@ __all__ = (
     *reaction.__all__,
     *role.__all__,
     *scheduled_event.__all__,
+    *soundboard.__all__,
     *stage.__all__,
     *sticker.__all__,
     *thread.__all__,
@@ -77,6 +79,7 @@ from .oauth2 import ClientCompoundOauth2Endpoints
 from .reaction import ClientCompoundReactionEndpoints
 from .role import ClientCompoundRoleEndpoints
 from .scheduled_event import ClientCompoundScheduledEventEndpoints
+from .soundboard import ClientCompoundSoundBoardEndpoints
 from .stage import ClientCompoundStageEndpoints
 from .sticker import ClientCompoundStickerEndpoints
 from .thread import ClientCompoundThreadEndpoints
@@ -106,6 +109,7 @@ CLIENT_COMPOUNDS = (
     ClientCompoundReactionEndpoints,
     ClientCompoundRoleEndpoints,
     ClientCompoundScheduledEventEndpoints,
+    ClientCompoundSoundBoardEndpoints,
     ClientCompoundStageEndpoints,
     ClientCompoundStickerEndpoints,
     ClientCompoundThreadEndpoints,

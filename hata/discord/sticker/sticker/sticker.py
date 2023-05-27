@@ -1,5 +1,7 @@
 __all__ = ('Sticker', )
 
+import warnings
+
 from ...bases import DiscordEntity
 from ...core import GUILDS, STICKERS, STICKER_PACKS
 from ...http import urls as module_urls
@@ -250,6 +252,14 @@ class Sticker(DiscordEntity, immortal = True):
         -------
         sticker : `instance<cls>`
         """
+        warnings.warn(
+            (
+                f'`{cls.__name__}.from_partial_data` is deprecate and will be removed in 2023 December. '
+                f'Please use `create_partial_sticker_data` instead.'
+            ),
+            FutureWarning,
+        )
+        
         sticker_id = parse_id(data)
         
         try:
@@ -310,6 +320,14 @@ class Sticker(DiscordEntity, immortal = True):
         -------
         data : `dict` of (`str`, `object`)
         """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.to_partial_data` is deprecate and will be removed in 2023 December. '
+                f'Please use `create_partial_sticker_data` instead.'
+            ),
+            FutureWarning,
+        )
+        
         data = {}
         put_format_into(self.format, data, True)
         put_id_into(self.id, data, True)

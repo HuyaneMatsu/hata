@@ -1,11 +1,4 @@
-__all__ = ()
-
-from .rate_limit import (
-    LIMITER_CHANNEL, LIMITER_GUILD, LIMITER_INTERACTION, LIMITER_WEBHOOK, RateLimitGroup, StaticRateLimitGroup
-)
-
-
-__doc__ = """
+"""
 Defines the rate limit groups by hata. Hata uses burst half automatic rate limit handler.
 
 Burst rate limit handler means, if (for example) 30 requests can be done to an endpoint before it resets, it will
@@ -1384,7 +1377,15 @@ Group Details
     - Limit : `5`
     - Resets after : `30.0`
 
-- sticker_guild_get_all
+- soundboard_sound_get_all_guild
+    - Endpoint : `/guilds/{guild_id}/soundboard-sounds`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `UN`
+    - Limit : `UN`
+    - Resets after : `UN`
+
+- sticker_get_all_guild
     - Endpoint : `/guilds/{guild_id}/stickers`
     - Method : `GET`
     - Required auth : `bot`
@@ -1392,7 +1393,7 @@ Group Details
     - Limit : `N/A`
     - Resets after : `N/A`
 
-- sticker_guild_create
+- sticker_create
     - Endpoint : `/guilds/{guild_id}/stickers`
     - Method : `POST`
     - Required auth : `bot`
@@ -1400,7 +1401,7 @@ Group Details
     - Limit : `50`
     - Resets after : `3600.0`
 
-- sticker_guild_edit
+- sticker_edit
     - Endpoint : `/guilds/{guild_id}/stickers/{sticker_id}`
     - Method : `PATCH`
     - Required auth : `bot`
@@ -1408,7 +1409,7 @@ Group Details
     - Limit : `10`
     - Resets after : `20.0`
 
-- sticker_guild_delete
+- sticker_delete
     - Endpoint : `/guilds/{guild_id}/stickers/{sticker_id}`
     - Method : `POST`
     - Required auth : `bot`
@@ -1416,7 +1417,7 @@ Group Details
     - Limit : `10`
     - Resets after : `20.0`
 
-- sticker_guild_get
+- sticker_get_guild
     - Endpoint : `/guilds/{guild_id}/stickers/{sticker_id}`
     - Method : `GET`
     - Required auth : `bot`
@@ -1562,6 +1563,14 @@ Group Details
     - Limit : `UN`
     - Resets after : `UN`
     - Notes : Untested.
+
+- soundboard_sound_get_all_default
+    - Endpoint : `/soundboard-default-sounds`
+    - Method: `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `50`
+    - Resets after : `0.019`
 
 - stage_get_all
     - Endpoint : `/stage-instances`
@@ -1966,6 +1975,14 @@ Group Details
     - Limit : `5`
     - Resets after : `2.0`
 """
+
+__all__ = ()
+
+from .rate_limit import (
+    LIMITER_CHANNEL, LIMITER_GUILD, LIMITER_INTERACTION, LIMITER_WEBHOOK, RateLimitGroup, StaticRateLimitGroup
+)
+
+
 GROUP_REACTION_MODIFY = RateLimitGroup(LIMITER_CHANNEL)
 GROUP_PIN_MODIFY = RateLimitGroup(LIMITER_CHANNEL)
 GROUP_USER_MODIFY = RateLimitGroup(LIMITER_GUILD) # both has the same endpoint
@@ -2131,11 +2148,12 @@ scheduled_event_delete = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_get = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_edit = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_user_get_chunk = RateLimitGroup(LIMITER_GUILD)
-sticker_guild_get_all = RateLimitGroup.unlimited()
-sticker_guild_create = RateLimitGroup(LIMITER_GUILD)
-sticker_guild_edit = RateLimitGroup()
-sticker_guild_delete = RateLimitGroup()
-sticker_guild_get = RateLimitGroup.unlimited()
+soundboard_sound_get_all_guild = RateLimitGroup()
+sticker_get_all_guild = RateLimitGroup.unlimited()
+sticker_create = RateLimitGroup(LIMITER_GUILD)
+sticker_edit = RateLimitGroup()
+sticker_delete = RateLimitGroup()
+sticker_get_guild = RateLimitGroup.unlimited()
 guild_thread_get_all_active = RateLimitGroup.unlimited()
 vanity_invite_get = RateLimitGroup.unlimited()
 vanity_invite_edit = RateLimitGroup()
@@ -2152,6 +2170,7 @@ invite_delete = RateLimitGroup.unlimited()
 invite_get = RateLimitGroup()
 application_get_own = RateLimitGroup(optimistic = True)
 bulk_ack = RateLimitGroup(optimistic = True) # untested
+soundboard_sound_get_all_default = RateLimitGroup()
 stage_get_all = RateLimitGroup.unlimited()
 stage_create = RateLimitGroup()
 stage_get = RateLimitGroup()

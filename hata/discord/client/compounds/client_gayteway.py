@@ -1,8 +1,9 @@
 __all__ = ()
 
+import warnings
 from time import time as time_now
 
-from scarletio import CancelledError, Compound, Future, Theory
+from scarletio import Compound, Future, Theory
 
 from ....env import CACHE_PRESENCE
 
@@ -14,7 +15,8 @@ from ...events.event_handler_manager import EventHandlerManager
 from ...events.handling_helpers import WaitForHandler
 from ...gateway.client_gateway import (
     DiscordGateway, PRESENCE as GATEWAY_OPERATION_CODE_PRESENCE,
-    REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
+    REQUEST_GUILD_USERS as GATEWAY_OPERATION_CODE_REQUEST_GUILD_USERS,
+    REQUEST_SOUNDBOARD_SOUNDS as GATEWAY_OPERATION_REQUEST_SOUNDBOARD_SOUNDS
 )
 from ...preconverters import preconvert_preinstanced_type
 from ...user import Status
@@ -46,9 +48,9 @@ def _assert__edit_presence__afk(afk):
     return True
 
 
-def _assert__request_members__limit(limit):
+def _assert__request_users__limit(limit):
     """
-    Asserts the `limit` parameter of ``Client.request_members`` method.
+    Asserts the `limit` parameter of ``Client.request_users`` method.
     
     Parameters
     ----------
@@ -74,9 +76,9 @@ def _assert__request_members__limit(limit):
     return True
 
 
-def _assert__request_members__name(name):
+def _assert__request_users__name(name):
     """
-    Asserts the `name` parameter of ``Client.request_members`` method.
+    Asserts the `name` parameter of ``Client.request_users`` method.
     
     Parameters
     ----------
@@ -244,9 +246,52 @@ class ClientCompoundClientGateway(Compound):
         return voice_client
     
     
-    async def request_all_members_of(self, guild):
+    async def request_soundboard_sounds(self, guilds):
         """
-        Requests all members of the given guild.
+        Requests the soundboard sounds of the given guilds.
+        
+        This function is a coroutine.
+        
+        Parameters
+        ----------
+        guilds : `iterable` of (``Guild``, `int`)
+            The guilds or their identifiers to request the sounds of.
+        
+        Returns
+        -------
+        sounds : `list` of ``SoundBoardSound``
+        """
+        by_gateway = {}
+        
+        for guild in guilds:
+            guild_id = get_guild_id(guild)
+            gateway = self.gateway_for(guild_id)
+            
+            try:
+                guild_ids = by_gateway[gateway]
+            except KeyError:
+                guild_ids = set()
+                by_gateway[gateway] = guild_ids
+            
+            guild_ids.add(guild_id)
+        
+        
+        for gateway, guild_ids in by_gateway.items():
+            data = {
+                'op': GATEWAY_OPERATION_REQUEST_SOUNDBOARD_SOUNDS,
+                'd': {
+                    'guild_ids': [str(guild_id) for guild_id in guild_ids],
+                }
+            }
+            
+            await gateway.send_as_json(data)
+        
+        # TODO
+    
+    
+    async def request_all_users_of(self, guild):
+        """
+        Requests all users of the given guild.
         
         > This method uses the client's gateway to request the users. If any of the parameters do not match their
         > expected value or if timeout occurs, returns instead of raising.
@@ -267,10 +312,10 @@ class ClientCompoundClientGateway(Compound):
             - If `guild` was not given neither as ``Guild`` or `int`.
         """
         guild_id = get_guild_id(guild)
-        await self._request_members(guild_id)
+        await self._request_users(guild_id)
     
     
-    async def _request_members(self, guild_id):
+    async def _request_users(self, guild_id):
         """
         Requests the members of the given guild. Called when the client joins a guild and user caching is enabled
         (so by default).
@@ -290,29 +335,27 @@ class ClientCompoundClientGateway(Compound):
         event_handler.waiters[nonce] = waiter = MassUserChunker()
         
         data = {
-            'op': GATEWAY_OPERATION_CODE_REQUEST_MEMBERS,
+            'op': GATEWAY_OPERATION_CODE_REQUEST_GUILD_USERS,
             'd': {
                 'guild_id': guild_id,
                 'query': '',
                 'limit': 0,
                 'presences': CACHE_PRESENCE,
-                'nonce': nonce
+                'nonce': nonce,
             },
         }
         
         gateway = self.gateway_for(guild_id)
         await gateway.send_as_json(data)
         
-        try:
-            await waiter
-        except CancelledError:
+        if not (await waiter):
             try:
                 del event_handler.waiters[nonce]
             except KeyError:
                 pass
     
     
-    async def request_members(self, guild, name, limit = 1):
+    async def request_users(self, guild, name, limit = 1):
         """
         Requests the members of the given guild by their name.
         
@@ -341,8 +384,8 @@ class ClientCompoundClientGateway(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        assert _assert__request_members__limit(limit)
-        assert _assert__request_members__name(name)
+        assert _assert__request_users__limit(limit)
+        assert _assert__request_users__name(name)
         
         event_handler = self.events.guild_user_chunk
         
@@ -352,7 +395,7 @@ class ClientCompoundClientGateway(Compound):
         event_handler.waiters[nonce] = waiter = SingleUserChunker()
         
         data = {
-            'op': GATEWAY_OPERATION_CODE_REQUEST_MEMBERS,
+            'op': GATEWAY_OPERATION_CODE_REQUEST_GUILD_USERS,
             'd': {
                 'guild_id': guild_id,
                 'query': name,
@@ -365,15 +408,16 @@ class ClientCompoundClientGateway(Compound):
         gateway = self.gateway_for(guild_id)
         await gateway.send_as_json(data)
         
-        try:
-            return await waiter
-        except CancelledError:
+        users = await waiter
+        if users is None:
             try:
                 del event_handler.waiters[nonce]
             except KeyError:
                 pass
             
-            return []
+            users = []
+        
+        return users
     
     
     async def wait_for(self, event_name, check, timeout = None):
@@ -427,3 +471,36 @@ class ClientCompoundClientGateway(Compound):
             
             if not waiters:
                 self.events.remove(wait_for_handler, name = event_name)
+    
+    
+    async def request_members(self, *position_parameters, **keyword_parameters):
+        """
+        Deprecated and will be removed in 2023 December. Please use ``.request_users`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.request_members` is deprecated and will be removed in 2023 December. '
+                f'Please use `.request_users` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return await self.request_users(*position_parameters, **keyword_parameters)
+    
+    
+    async def request_all_members_of(self, *position_parameters, **keyword_parameters):
+        """
+        Deprecated and will be removed in 2023 December. Please use ``.request_all_users_of`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.request_all_members_of` is deprecated and will be removed in 2023 '
+                f'December. '
+                f'Please use `.request_all_users_of` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return await self.request_all_users_of(*position_parameters, **keyword_parameters)

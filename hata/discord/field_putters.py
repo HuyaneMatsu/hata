@@ -995,7 +995,9 @@ def nullable_string_array_optional_putter_factory(field_key):
     return putter
 
 
-def nullable_entity_array_putter_factory(field_key, field_type, *, can_include_internals = ..., include = None):
+def nullable_entity_array_putter_factory(
+    field_key, field_type, *, can_include_internals = ..., force_include_internals = False, include = None
+):
     """
     Returns a new nullable entity array putter.
     
@@ -1009,7 +1011,10 @@ def nullable_entity_array_putter_factory(field_key, field_type, *, can_include_i
     
     can_include_internals : `bool`, Optional (Keyword only)
         Whether the `field_type.to_data` implements the `include_internals` parameter.
-        
+    
+    force_include_internals : `bool`, Optional (Keyword only)
+        Whether `include_internals` should be passed as `True` always.
+    
     include : `None`, `str` = `None`, Optional (Keyword only)
         The object's name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
     
@@ -1017,7 +1022,40 @@ def nullable_entity_array_putter_factory(field_key, field_type, *, can_include_i
     -------
     putter : `FunctionType`
     """
-    if (
+    if force_include_internals:
+        def putter(entity_array, data, defaults):
+            """
+            Puts the given entity array into the given `data` json serializable object.
+            
+            > This function is generated.
+            
+            Parameters
+            ----------
+            entity_array : `None`, `tuple` of `object`
+                Entity array.
+            data : `dict` of (`str`, `object`) items
+                Json serializable dictionary.
+            defaults : `bool`
+                Whether default values should be included as well.
+            
+            Returns
+            -------
+            data : `dict` of (`str`, `object`) items
+            """
+            nonlocal field_key
+                
+            if entity_array is None:
+                entity_data_array = []
+            else:
+                entity_data_array = [
+                    entity.to_data(defaults = defaults, include_internals = True) for entity in entity_array
+                ]
+            
+            data[field_key] = entity_data_array
+            
+            return data
+        
+    elif (
         ((can_include_internals is not ...) and can_include_internals) or
         ((field_type is not NotImplemented) and _has_entity_include_internals_parameter(field_type))
     ):
@@ -1289,7 +1327,7 @@ def default_entity_putter_factory(field_key, entity_type, default, *, force_incl
     
     default : `object`
         The default value to handle as an unique case.
-        
+    
     force_include_internals : `bool`, Optional (Keyword only)
         Whether `include_internals` should be passed as `True` always.
     

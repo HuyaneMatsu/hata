@@ -87,7 +87,7 @@ class RateLimitGroup:
         return group_id
     
     
-    def __new__(cls, limiter=LIMITER_GLOBAL, optimistic=False):
+    def __new__(cls, limiter = LIMITER_GLOBAL, optimistic = False):
         """
         Creates a new rate limit group.
         
@@ -281,15 +281,15 @@ class RateLimitUnit:
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' drop=',
+            ' drop = ',
             repr(self.drop),
-            ', allocates=',
+            ', allocates = ',
             repr(self.allocates),
         ]
         
         next_ = self.next
         if (next_ is not None):
-            repr_parts.append(', next=[')
+            repr_parts.append(', next = [')
             while True:
                 repr_parts.append('(')
                 repr_parts.append(repr(next_.drop))

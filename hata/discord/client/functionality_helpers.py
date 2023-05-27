@@ -21,7 +21,7 @@ USER_CHUNK_TIMEOUT = 2.5
 
 class SingleUserChunker:
     """
-    A user chunk waiter, which yields after the first received chunk. Used at ``Client.request_members``.
+    A user chunk waiter, which yields after the first received chunk. Used at ``Client.request_users``.
     
     Attributes
     ----------
@@ -29,6 +29,8 @@ class SingleUserChunker:
         The time-outer of the chunker, what will cancel if the timeout occurs.
     waiter : ``Future``
         The waiter future what will yield, when we receive the response, or when the timeout occurs.
+        
+        Its result is set to `None` on cancellation.
     """
     __slots__ = ('timer', 'waiter',)
     
@@ -58,6 +60,7 @@ class SingleUserChunker:
         
         return True
     
+    
     def _cancel(self):
         """
         The chunker's timer calls this method.
@@ -65,12 +68,13 @@ class SingleUserChunker:
         Cancels ``.waiter`` and ``.timer``. After this method was called, the waiting coroutine will remove it's
         reference from the event handler.
         """
-        self.waiter.cancel()
+        self.waiter.set_result_if_pending(None)
         
         timer = self.timer
         if (timer is not None):
             self.timer = None
             timer.cancel()
+    
     
     def cancel(self):
         """
@@ -85,6 +89,7 @@ class SingleUserChunker:
         if (timer is not None):
             self.timer = None
             timer.cancel()
+    
     
     def __await__(self):
         """
@@ -106,7 +111,7 @@ class SingleUserChunker:
 class MassUserChunker:
     """
     A user chunk waiter, which yields after the chunks of certain amount of guilds are received. Used at
-    ``Client._request_members`` and at ``Client._request_members``.
+    ``Client.._request_users`` and at ``Client.._request_users``.
     
     Attributes
     ----------
@@ -116,6 +121,8 @@ class MassUserChunker:
         The time-outer of the chunker, what will cancel if the timeout occurs.
     waiter : ``Future``
         The waiter future what will yield, when we receive the response, or when the timeout occurs.
+        
+        Its result is set as `True` on success.
     """
     __slots__ = ('last', 'timer', 'waiter',)
     
@@ -148,7 +155,7 @@ class MassUserChunker:
         if event.index + 1 != event.count:
             return False
         
-        self.waiter.set_result_if_pending(None)
+        self.waiter.set_result_if_pending(True)
         timer = self.timer
         if (timer is not None):
             self.timer = None
@@ -171,7 +178,7 @@ class MassUserChunker:
             self.timer = KOKORO.call_at(next_, type(self)._cancel, self)
         else:
             self.timer = None
-            self.waiter.cancel()
+            self.waiter.set_result_if_pending(False)
     
     
     def cancel(self):
@@ -181,7 +188,7 @@ class MassUserChunker:
         This method should be called when when the chunker is canceller from outside. Before this method is called,
         it's references should be removed as well from the event handler.
         """
-        self.waiter.set_result_if_pending(None)
+        self.waiter.set_result_if_pending(True)
         
         timer = self.timer
         if (timer is not None):
@@ -325,15 +332,15 @@ class DiscoveryCategoryRequestCacher:
         """Returns the cacher's representation."""
         result = [
             self.__class__.__name__,
-            '(func=',
+            '(func = ',
             repr(self.func),
-            ', timeout=',
+            ', timeout = ',
             repr(self.timeout),
         ]
         
         cached = self.cached
         if (cached is not ...):
-            result.append(' cached=')
+            result.append(' cached = ')
             result.append(repr(cached))
         
         result.append(')')
@@ -361,8 +368,8 @@ class TimedCacheUnit:
     def __repr__(self):
         """Returns the timed cache unit's representation."""
         return (
-            f'<{self.__class__.__name__} creation_time={self.creation_time!r}, last_usage_time='
-            f'{self.last_usage_time!r}, result={self.result!r}>'
+            f'<{self.__class__.__name__} creation_time = {self.creation_time!r}, last_usage_time = '
+            f'{self.last_usage_time!r}, result = {self.result!r}>'
         )
 
 
@@ -388,8 +395,10 @@ class DiscoveryTermRequestCacher:
     timeout : `float`
         The timeout after the new request should be done instead of using the already cached response.
     """
-    __slots__ =('_last_cleanup', '_minimal_cleanup_interval', '_rate_limit_proxy_parameters', '_waiters', 'cached',
-        'func', 'timeout')
+    __slots__ = (
+        '_last_cleanup', '_minimal_cleanup_interval', '_rate_limit_proxy_parameters', '_waiters', 'cached', 'func',
+        'timeout'
+    )
     
     def __init__(self, func, timeout, rate_limit_group, rate_limit_limiter=None,):
         """
@@ -572,19 +581,19 @@ class DiscoveryTermRequestCacher:
         """Returns the cacher's representation."""
         repr_parts = [
             self.__class__.__name__,
-            '(func=',
+            '(func = ',
             repr(self.func),
-            ', timeout=',
+            ', timeout = ',
             repr(self.timeout),
         ]
         
         rate_limit_group, rate_limit_limiter = self._rate_limit_proxy_parameters
         
-        repr_parts.append(', rate_limit_group=')
+        repr_parts.append(', rate_limit_group = ')
         repr_parts.append(repr(rate_limit_group))
         
         if (rate_limit_limiter is not None):
-            repr_parts.append(', rate_limit_limiter=')
+            repr_parts.append(', rate_limit_limiter = ')
             repr_parts.append(repr(rate_limit_limiter))
         
         repr_parts.append(')')
@@ -860,8 +869,6 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
              
             # Should not happen
             continue
-
-
 
 
 async def request_channel_thread_channels(client, guild_id, channel_id, request_function):

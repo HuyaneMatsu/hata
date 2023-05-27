@@ -53,7 +53,7 @@ def test__VoiceChannelEffect__eq():
     
     vampytest.assert_eq(voice_channel_effect_original, voice_channel_effect_original)
     
-    for voice_channel_effect_name, voice_channel_effect_value in (
+    for field_name, field_value in (
         ('animation_id', 202304040016),
         ('animation_type', VoiceChannelEffectAnimationType.premium),
         ('channel_id', 202304040017),
@@ -61,7 +61,7 @@ def test__VoiceChannelEffect__eq():
         ('guild_id', 202304040018),
         ('user_id', 202304040019),
     ):
-        voice_channel_effect_altered = VoiceChannelEffect(**{**keyword_parameters, voice_channel_effect_name: voice_channel_effect_value})
+        voice_channel_effect_altered = VoiceChannelEffect(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(voice_channel_effect_original, voice_channel_effect_altered)
 
 

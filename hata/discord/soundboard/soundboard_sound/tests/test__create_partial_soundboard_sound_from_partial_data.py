@@ -1,6 +1,6 @@
 import vampytest
 
-from ..soundboard_sound import SoundBoardSound
+from ..soundboard_sound import SoundboardSound
 from ..utils import create_partial_soundboard_sound_from_partial_data
 
 
@@ -17,7 +17,7 @@ def test__create_partial_soundboard_sound_from_partial_data():
     }
     
     soundboard_sound = create_partial_soundboard_sound_from_partial_data(data)
-    vampytest.assert_instance(soundboard_sound, SoundBoardSound)
+    vampytest.assert_instance(soundboard_sound, SoundboardSound)
     
     vampytest.assert_eq(soundboard_sound.id, sound_id)
     vampytest.assert_eq(soundboard_sound.guild_id, guild_id)

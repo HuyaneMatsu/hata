@@ -1,18 +1,19 @@
 import vampytest
 
+from ....client import Client
 from ....core import BUILTIN_EMOJIS
 from ....guild import Guild
 from ....user import ClientUserBase
 from ....utils import is_url
 
-from ..soundboard_sound import SoundBoardSound
+from ..soundboard_sound import SoundboardSound
 
-from .test__SoundBoardSound__constructor import _assert_fields_set
+from .test__SoundboardSound__constructor import _assert_fields_set
 
 
-def test__SoundBoardSound__guild():
+def test__SoundboardSound__guild():
     """
-    Tests whether ``SoundBoardSound.guild`` works as intended.
+    Tests whether ``SoundboardSound.guild`` works as intended.
     """
     guild_id_0 = 202305240042
     guild_id_1 = 202305240043
@@ -24,17 +25,17 @@ def test__SoundBoardSound__guild():
         (202305240045, guild_id_1, None),
         (202305240046, 0, None),
     ):
-        sound = SoundBoardSound.precreate(sound_id, guild_id = input_guild_id)
+        sound = SoundboardSound.precreate(sound_id, guild_id = input_guild_id)
         vampytest.assert_is(sound.guild, expected_output)
 
 
-def test__SoundBoardSound__user():
+def test__SoundboardSound__user():
     """
-    Tests whether ``SoundBoardSound.user`` works as intended.
+    Tests whether ``SoundboardSound.user`` works as intended.
     """
     user_id = 202305240047
     
-    sound = SoundBoardSound(user_id = user_id)
+    sound = SoundboardSound(user_id = user_id)
     user = sound.user
     vampytest.assert_instance(user, ClientUserBase)
     vampytest.assert_eq(user.id, user_id)
@@ -43,25 +44,80 @@ def test__SoundBoardSound__user():
     vampytest.assert_is(test_user, user)
 
 
-def test__SoundBoard__partial():
+
+def test__SoundboardSound__partial__0():
     """
-    Tests whether ``SoundBoard.partial`` works as intended.
-    """
-    sound = SoundBoardSound()
-    output = sound.partial
-    vampytest.assert_instance(output, bool)
-    vampytest.assert_true(output)
+    Tests whether ``SoundboardSound.partial`` works as intended.
     
-    sound_id = 202305240048
-    sound = SoundBoardSound.precreate(sound_id)
-    output = sound.partial
-    vampytest.assert_instance(output, bool)
-    vampytest.assert_false(output)
-
-
-def test__SoundBoardSound__copy():
+    Case: Fully partial.
     """
-    Tests whether ``SoundBoardSound.copy`` works as intended.
+    sound = SoundboardSound()
+    output = sound.partial
+    
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
+
+
+def test__SoundboardSound__partial__1():
+    """
+    Tests whether ``SoundboardSound.partial`` works as intended.
+    
+    Case: Not linked to its guild.
+    """
+    sound_id = 202305270038
+    guild_id = 202305270039
+    
+    guild = Guild.precreate(guild_id)
+    
+    sound = SoundboardSound.precreate(
+        sound_id,
+        guild_id = guild_id,
+    )
+    
+    output = sound.partial
+    
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
+
+
+def test__SoundboardSound__partial__2():
+    """
+    Tests whether ``SoundboardSound.partial`` works as intended.
+    
+    Case: Linked to its guild & guild not partial.
+    """
+
+    client = Client(
+        token = 'token_202305270000',
+    )
+    try:
+        sound_id = 202305270040
+        guild_id = 202305270041
+        
+        guild = Guild.precreate(guild_id)
+        guild.clients = [client]
+        
+        sound = SoundboardSound.precreate(
+            sound_id,
+            guild_id = guild_id,
+        )
+        
+        guild.soundboard_sounds = {sound_id: sound}
+        
+        output = sound.partial
+        
+        vampytest.assert_instance(output, bool)
+        vampytest.assert_eq(output, False)
+        
+    # Cleanup
+    finally:
+        client._delete()
+        client = None
+
+
+def test__SoundboardSound__copy():
+    """
+    Tests whether ``SoundboardSound.copy`` works as intended.
     """
     available = False
     emoji = BUILTIN_EMOJIS['heart']
@@ -69,7 +125,7 @@ def test__SoundBoardSound__copy():
     user_id = 202305240049
     volume = 0.69
     
-    sound = SoundBoardSound(
+    sound = SoundboardSound(
         available = available,
         emoji = emoji,
         name = name,
@@ -84,9 +140,9 @@ def test__SoundBoardSound__copy():
     vampytest.assert_eq(sound, copy)
 
 
-def test__SoundBoardSound__copy_with__0():
+def test__SoundboardSound__copy_with__0():
     """
-    Tests whether ``SoundBoardSound.copy_with`` works as intended.
+    Tests whether ``SoundboardSound.copy_with`` works as intended.
     
     Case: No fields overwritten.
     """
@@ -96,7 +152,7 @@ def test__SoundBoardSound__copy_with__0():
     user_id = 202305240050
     volume = 0.69
     
-    sound = SoundBoardSound(
+    sound = SoundboardSound(
         available = available,
         emoji = emoji,
         name = name,
@@ -111,9 +167,9 @@ def test__SoundBoardSound__copy_with__0():
     vampytest.assert_eq(sound, copy)
 
 
-def test__SoundBoardSound__copy_with__1():
+def test__SoundboardSound__copy_with__1():
     """
-    Tests whether ``SoundBoardSound.copy_with`` works as intended.
+    Tests whether ``SoundboardSound.copy_with`` works as intended.
     
     Case: All fields overwritten.
     """
@@ -129,7 +185,7 @@ def test__SoundBoardSound__copy_with__1():
     new_user_id = 202305240052
     new_volume = 0.70
     
-    sound = SoundBoardSound(
+    sound = SoundboardSound(
         available = old_available,
         emoji = old_emoji,
         name = old_name,
@@ -155,15 +211,36 @@ def test__SoundBoardSound__copy_with__1():
     vampytest.assert_eq(copy.volume, new_volume)
 
 
-def test__SoundBoardSound__url():
+def test__SoundboardSound__url():
     """
-    tests whether ``SoundBoardSound.url`` works as intended.
+    tests whether ``SoundboardSound.url`` works as intended.
     """
     sound_id = 202305240054
     
-    sound = SoundBoardSound.precreate(sound_id)
+    sound = SoundboardSound.precreate(sound_id)
     output = sound.url
     
     vampytest.assert_instance(output, str)
     vampytest.assert_true(is_url(output))
     vampytest.assert_in(str(sound_id), output)
+
+
+def test__SoundboardSound__delete():
+    """
+    Tests whether ``SoundboardSound._delete`` works as intended.
+    """
+    sound_id = 202305270042
+    guild_id = 202305270043
+    
+    guild = Guild.precreate(guild_id)
+    
+    sound = SoundboardSound.precreate(
+        sound_id,
+        guild_id = guild_id,
+    )
+    
+    guild.soundboard_sounds = {sound_id: sound}
+    
+    sound._delete()
+    
+    vampytest.assert_eq(guild.soundboard_sounds, None)

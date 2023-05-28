@@ -1,6 +1,6 @@
 import vampytest
 
-from ...soundboard import SoundBoardSound
+from ...soundboard import SoundboardSound
 from ...utils import is_url
 
 from ..urls import soundboard_sound_url
@@ -12,7 +12,7 @@ def test__soundboard_sound_url():
     """
     sound_id = 202305240053
     
-    sound = SoundBoardSound.precreate(sound_id)
+    sound = SoundboardSound.precreate(sound_id)
     output = soundboard_sound_url(sound)
     
     vampytest.assert_instance(output, str)

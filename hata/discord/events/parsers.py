@@ -40,7 +40,7 @@ from ..scheduled_event import ScheduledEvent, ScheduledEventSubscribeEvent, Sche
 from ..scheduled_event.scheduled_event.fields import (
     parse_guild_id as parse_scheduled_event_guild_id, parse_id as parse_scheduled_event_id
 )
-from ..soundboard import SoundBoardSound, SoundBoardSoundsEvent, create_partial_soundboard_sound_from_partial_data
+from ..soundboard import SoundboardSound, SoundboardSoundsEvent, create_partial_soundboard_sound_from_partial_data
 from ..soundboard.soundboard_sound.fields import (
     parse_guild_id as parse_soundboard_guild_id, parse_id as parse_soundboard_sound_id
 )
@@ -4320,10 +4320,6 @@ del AUTO_MODERATION_ACTION_EXECUTION__CAL_SC, \
     AUTO_MODERATION_ACTION_EXECUTION__OPT
 
 
-def VOICE_CHANNEL_EFFECT_SEND__OPT(client, data):
-    pass
-
-
 def VOICE_CHANNEL_EFFECT_SEND__CAL_SC(client, data):
     event = VoiceChannelEffect.from_data(data)
     Task(client.events.voice_channel_effect(client, event), KOKORO)
@@ -4334,6 +4330,10 @@ def VOICE_CHANNEL_EFFECT_SEND__CAL_MC(client, data):
     if (event_handler is not DEFAULT_EVENT_HANDLER):
         event = VoiceChannelEffect.from_data(data)
         Task(event_handler(client, event), KOKORO)
+
+
+def VOICE_CHANNEL_EFFECT_SEND__OPT(client, data):
+    pass
 
 
 add_parser(
@@ -4348,12 +4348,12 @@ del VOICE_CHANNEL_EFFECT_SEND__CAL_SC, \
 
 
 def SOUNDBOARD_SOUNDS__CAL(client, data):
-    event = SoundBoardSoundsEvent.from_data(data)
+    event = SoundboardSoundsEvent.from_data(data)
     Task(client.events.soundboard_sounds(client, event), KOKORO)
 
 
 def SOUNDBOARD_SOUNDS__OPT(client, data):
-    pass
+    SoundboardSoundsEvent.from_data(data)
 
 
 add_parser(
@@ -4367,12 +4367,12 @@ del SOUNDBOARD_SOUNDS__CAL, \
 
 
 def GUILD_SOUNDBOARD_SOUND_CREATE__CAL(client, data):
-    soundboard_sound = SoundBoardSound.from_data(data)
+    soundboard_sound = SoundboardSound.from_data(data)
     Task(client.events.soundboard_sound_create(client, soundboard_sound), KOKORO)
 
 
 def GUILD_SOUNDBOARD_SOUND_CREATE__OPT(client, data):
-    SoundBoardSound.from_data(data)
+    SoundboardSound.from_data(data)
 
 
 add_parser(
@@ -4386,13 +4386,9 @@ del GUILD_SOUNDBOARD_SOUND_CREATE__CAL, \
 
 
 def GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__SC(client, data):
-    sound_id = parse_soundboard_sound_id(data)
-    
-    sound = SOUNDBOARD_SOUNDS.get(sound_id, None)
-    if sound is None:
-        sound = SoundBoardSound.from_data(data)
+    sound, is_created = SoundboardSound.from_data_is_created(data)
+    if is_created is None:
         old_attributes = None
-    
     else:
         old_attributes = sound._difference_update_attributes(data)
         if not old_attributes:
@@ -4411,12 +4407,9 @@ def GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__MC(client, data):
             clients.close()
             return
     
-    sound_id = parse_soundboard_sound_id(data)
-    sound = SOUNDBOARD_SOUNDS.get(sound_id, None)
-    if sound is None:
-        sound = SoundBoardSound.from_data(data)
+    sound, is_created = SoundboardSound.from_data_is_created(data)
+    if is_created is None:
         old_attributes = None
-    
     else:
         old_attributes = sound._difference_update_attributes(data)
         if not old_attributes:
@@ -4432,13 +4425,7 @@ def GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__MC(client, data):
 
 
 def GUILD_SOUNDBOARD_SOUND_UPDATE__OPT(client, data):
-    sound_id = parse_soundboard_sound_id(data)
-    
-    sound = SOUNDBOARD_SOUNDS.get(sound_id, None)
-    if sound is None:
-        SoundBoardSound.from_data(data)
-    else:
-        sound._update_attributes(data)
+    SoundboardSound.from_data(data)
 
 
 add_parser(
@@ -4454,18 +4441,35 @@ del GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__SC, \
 
 def GUILD_SOUNDBOARD_SOUND_DELETE__CAL__SC(client, data):
     sound = create_partial_soundboard_sound_from_partial_data(data)
+    sound._delete()
     Task(client.events.soundboard_sound_delete(client, sound), KOKORO)
 
 
 def GUILD_SOUNDBOARD_SOUND_DELETE__CAL__MC(client, data):
-    # This will updated later, keep the function even if same as the one above
+    guild = GUILDS.get(parse_soundboard_guild_id(data), None)
+    if guild is None:
+        clients = None
+    else:
+        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+    
     sound = create_partial_soundboard_sound_from_partial_data(data)
-    Task(client.events.soundboard_sound_delete(client, sound), KOKORO)
+    sound._delete()
+    
+    if clients is None:
+        Task(client.soundboard_sound_delete(client, sound), KOKORO)
+    else:
+        for client_ in clients:
+            event_handler = client_.events.soundboard_sound_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, sound), KOKORO)
 
 
 def GUILD_SOUNDBOARD_SOUND_DELETE__OPT(client, data):
-    # This will updated later
-    pass
+    sound = create_partial_soundboard_sound_from_partial_data(data)
+    sound._delete()
 
 
 add_parser(

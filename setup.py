@@ -90,6 +90,7 @@ setup(
         'hata.discord.emoji.reaction_events',
         'hata.discord.emoji.unicode',
         'hata.discord.events',
+        'hata.discord.events.soundboard_sounds_event_handler',
         'hata.discord.exceptions',
         'hata.discord.gateway',
         'hata.discord.guild',

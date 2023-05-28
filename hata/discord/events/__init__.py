@@ -1,3 +1,5 @@
+from .soundboard_sounds_event_handler import *
+
 from .core import *
 from .default_event_handlers import *
 from .event_handler_manager import *
@@ -9,7 +11,10 @@ from .handling_helpers import *
 from .intent import *
 from .parsers import *
 
+
 __all__ = (
+    *soundboard_sounds_event_handler.__all__,
+    
     *core.__all__,
     *default_event_handlers.__all__,
     *event_handler_manager.__all__,

@@ -167,3 +167,24 @@ def test__Guild__iter_features():
         ),
     ):
         vampytest.assert_eq([*guild.iter_features()], expected_output)
+
+
+def test__Guild__soundboard_sounds_cached():
+    """
+    Tests whether ``Guild.soundboard_sounds_cached`` works as intended.
+    """
+    message = Guild.precreate(202305280013)
+    
+    output = message.soundboard_sounds_cached
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_false(output)
+    
+    message.soundboard_sounds_cached = True
+    output = message.soundboard_sounds_cached
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_true(output)
+
+    message.soundboard_sounds_cached = False
+    output = message.soundboard_sounds_cached
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_false(output)

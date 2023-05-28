@@ -2,21 +2,21 @@ import vampytest
 
 from ....guild import Guild
 
-from ...soundboard_sound import SoundBoardSound
+from ...soundboard_sound import SoundboardSound
 
-from ..soundboard_sounds_event import SoundBoardSoundsEvent
+from ..soundboard_sounds_event import SoundboardSoundsEvent
 
-from .test__SoundBoardSoundsEvent__constructor import _assert_fields_set
+from .test__SoundboardSoundsEvent__constructor import _assert_fields_set
 
 
-def test__SoundBoardSoundsEvent__copy():
+def test__SoundboardSoundsEvent__copy():
     """
-    Tests whether ``SoundBoardSoundsEvent.copy`` works as intended.
+    Tests whether ``SoundboardSoundsEvent.copy`` works as intended.
     """
     guild_id = 202305270021
-    sounds = [SoundBoardSound.precreate(202305270022), SoundBoardSound.precreate(202305270023)]
+    sounds = [SoundboardSound.precreate(202305270022), SoundboardSound.precreate(202305270023)]
     
-    soundboard_sounds_event = SoundBoardSoundsEvent(
+    soundboard_sounds_event = SoundboardSoundsEvent(
         guild_id = guild_id,
         sounds = sounds,
     )
@@ -28,16 +28,16 @@ def test__SoundBoardSoundsEvent__copy():
     vampytest.assert_eq(soundboard_sounds_event, copy)
 
 
-def test__SoundBoardSoundsEvent__copy_with__0():
+def test__SoundboardSoundsEvent__copy_with__0():
     """
-    Tests whether ``SoundBoardSoundsEvent.copy_with`` works as intended.
+    Tests whether ``SoundboardSoundsEvent.copy_with`` works as intended.
     
     Case: no fields given.
     """
     guild_id = 202305270024
-    sounds = [SoundBoardSound.precreate(202305270025), SoundBoardSound.precreate(202305270026)]
+    sounds = [SoundboardSound.precreate(202305270025), SoundboardSound.precreate(202305270026)]
     
-    soundboard_sounds_event = SoundBoardSoundsEvent(
+    soundboard_sounds_event = SoundboardSoundsEvent(
         guild_id = guild_id,
         sounds = sounds,
     )
@@ -48,19 +48,19 @@ def test__SoundBoardSoundsEvent__copy_with__0():
     vampytest.assert_eq(soundboard_sounds_event, copy)
 
 
-def test__SoundBoardSoundsEvent__copy_with__1():
+def test__SoundboardSoundsEvent__copy_with__1():
     """
-    Tests whether ``SoundBoardSoundsEvent.copy_with`` works as intended.
+    Tests whether ``SoundboardSoundsEvent.copy_with`` works as intended.
     
     Case: all fields given.
     """
     old_guild_id = 202305270027
-    old_sounds = [SoundBoardSound.precreate(202305270028), SoundBoardSound.precreate(202305270029)]
+    old_sounds = [SoundboardSound.precreate(202305270028), SoundboardSound.precreate(202305270029)]
     
     new_guild_id = 202305270030
-    new_sounds = [SoundBoardSound.precreate(202305270031), SoundBoardSound.precreate(202305270032)]
+    new_sounds = [SoundboardSound.precreate(202305270031), SoundboardSound.precreate(202305270032)]
     
-    soundboard_sounds_event = SoundBoardSoundsEvent(
+    soundboard_sounds_event = SoundboardSoundsEvent(
         guild_id = old_guild_id,
         sounds = old_sounds,
     )
@@ -75,23 +75,23 @@ def test__SoundBoardSoundsEvent__copy_with__1():
     vampytest.assert_eq(copy.sounds, tuple(new_sounds))
 
 
-def test__SoundBoardSoundsEvent__guild__0():
+def test__SoundboardSoundsEvent__guild__0():
     """
-    Tests whether ``SoundBoardSoundsEvent.guild`` works as intended.
+    Tests whether ``SoundboardSoundsEvent.guild`` works as intended.
     
     Case: Not cached.
     """
     guild_id = 202305270033
     
-    soundboard_sounds_event = SoundBoardSoundsEvent(guild_id = guild_id)
+    soundboard_sounds_event = SoundboardSoundsEvent(guild_id = guild_id)
     
     output = soundboard_sounds_event.guild
     vampytest.assert_is(output, None)
 
 
-def test__SoundBoardSoundsEvent__guild__1():
+def test__SoundboardSoundsEvent__guild__1():
     """
-    Tests whether ``SoundBoardSoundsEvent.guild`` works as intended.
+    Tests whether ``SoundboardSoundsEvent.guild`` works as intended.
     
     Case: Cached.
     """
@@ -99,22 +99,22 @@ def test__SoundBoardSoundsEvent__guild__1():
     
     guild = Guild.precreate(guild_id)
     
-    soundboard_sounds_event = SoundBoardSoundsEvent(guild_id = guild_id)
+    soundboard_sounds_event = SoundboardSoundsEvent(guild_id = guild_id)
     
     vampytest.assert_is(soundboard_sounds_event.guild, guild)
 
 
-def test__SoundBoardSoundsEvent__iter_sounds():
+def test__SoundboardSoundsEvent__iter_sounds():
     """
-    Tests whether ``SoundBoardSoundsEvent.iter_sounds`` works as intended.
+    Tests whether ``SoundboardSoundsEvent.iter_sounds`` works as intended.
     """
-    sound_0 = SoundBoardSound.precreate(202305270035)
-    sound_1 = SoundBoardSound.precreate(202305270036)
+    sound_0 = SoundboardSound.precreate(202305270035)
+    sound_1 = SoundboardSound.precreate(202305270036)
     
     for input_value, expected_output in (
         (None, []),
         ([sound_0], [sound_0]),
         ([sound_0, sound_1], [sound_0, sound_1]),
     ):
-        soundboard_sounds_event = SoundBoardSoundsEvent(sounds = input_value)
+        soundboard_sounds_event = SoundboardSoundsEvent(sounds = input_value)
         vampytest.assert_eq([*soundboard_sounds_event.iter_sounds()], expected_output)

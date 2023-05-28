@@ -3,7 +3,7 @@ __all__ = ()
 from scarletio import Compound
 
 from ...http import DiscordHTTPClient
-from ...soundboard import SoundBoardSound
+from ...soundboard import SoundboardSound
 
 
 class ClientCompoundSoundBoardEndpoints(Compound):
@@ -18,7 +18,7 @@ class ClientCompoundSoundBoardEndpoints(Compound):
         
         Returns
         -------
-        sounds : `list` of ``SoundBoardSound``
+        sounds : `list` of ``SoundboardSound``
         
         Raises
         ------
@@ -28,4 +28,4 @@ class ClientCompoundSoundBoardEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         sound_datas = await self.http.soundboard_sound_get_all_default()
-        return [SoundBoardSound.from_data(sound_data) for sound_data in sound_datas]
+        return [SoundboardSound.from_data(sound_data) for sound_data in sound_datas]

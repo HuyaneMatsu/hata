@@ -29,8 +29,8 @@ from ..user import ClientUserBase, User, VoiceState, ZEROUSER, create_partial_us
 from ..utils import DATETIME_FORMAT_CODE, EMOJI_NAME_RP
 
 from .constants import (
-    MAX_PRESENCES_DEFAULT, MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT, MAX_USERS_DEFAULT,
-    MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
+    GUILD_STATE_MASK_SOUNDBOARD_SOUNDS_REQUESTED, MAX_PRESENCES_DEFAULT, MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT,
+    MAX_USERS_DEFAULT, MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
 )
 from .embedded_activity_state import EmbeddedActivityState
 from .emoji_counts import EmojiCounts
@@ -176,12 +176,16 @@ class Guild(DiscordEntity, immortal = True):
     ----------
     id : `int`
         The unique identifier number of the guild.
-    _boosters : `None`, `list` of ``ClientUserBase`` objects
+    _cache_boosters : `None`, `list` of ``ClientUserBase`` objects
         Cached slot for the boosters of the guild.
     _embedded_activity_states : `None`, `set` of ``EmbeddedActivityState``
         Embedded activity states to keep them alive in cache.
     _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
+    
+    _state : `int`
+        Bitwise mask used to track the guild's state.
+    
     afk_channel_id : `int`
         The afk channel's identifier of the guild if it has.
         
@@ -267,8 +271,13 @@ class Guild(DiscordEntity, immortal = True):
         The channel's identifier where safety alerts are sent by Discord.
         
         Defaults to `0`.
+    
     scheduled_events : `dict` of (`int`, ``ScheduledEvent``) items
         The scheduled events of the guild.
+    
+    soundboard_sounds : `None`, `dict` of (`int`, ``SoundboardSound``) items
+        The soundboard sounds of the guild.
+    
     stages : `None`, `dict` of (`int`, ``Stage``) items
         Active stages of the guild. Defaults to `None` if would be empty.
     stickers : `dict` of (`int`, ``Sticker``) items
@@ -309,14 +318,14 @@ class Guild(DiscordEntity, immortal = True):
     - ``.widget_enabled``
     """
     __slots__ = (
-        '_boosters', '_embedded_activity_states', '_permission_cache', 'afk_channel_id', 'afk_timeout',
+        '_cache_boosters', '_embedded_activity_states', '_permission_cache', '_state', 'afk_channel_id', 'afk_timeout',
         'approximate_online_count', 'approximate_user_count', 'available', 'boost_progress_bar_enabled',
         'boost_count', 'channels', 'clients', 'content_filter', 'description', 'emojis', 'features', 'hub_type',
         'is_large', 'max_presences', 'max_stage_channel_video_users', 'max_users', 'max_voice_channel_video_users',
         'message_notification', 'mfa', 'name', 'nsfw_level', 'owner_id', 'preferred_locale', 'premium_tier',
         'public_updates_channel_id', 'roles', 'rules_channel_id', 'safety_alerts_channel_id', 'scheduled_events',
-        'stages', 'stickers', 'system_channel_flags', 'system_channel_id', 'threads', 'user_count', 'users',
-        'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled'
+        'soundboard_sounds', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id', 'threads', 'user_count',
+        'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled'
     )
     
     banner = IconSlot(
@@ -385,23 +394,24 @@ class Guild(DiscordEntity, immortal = True):
             GUILDS[guild_id] = self
             self.id = guild_id
             
-            self.clients = []
-            self.users = GUILD_USERS_TYPE()
-            self.emojis = {}
-            self.voice_states = {}
-            self.roles = {}
-            self.channels = {}
-            self.features = []
-            self.threads = {}
-            self.stickers = {}
-            self.scheduled_events = {}
+            self._cache_boosters = None
+            self._embedded_activity_states = None
             self._permission_cache = None
-            self._boosters = None
-            self.user_count = 1
+            self._state = 0
             self.approximate_online_count = 0
             self.approximate_user_count = 0
+            self.channels = {}
+            self.clients = []
+            self.emojis = {}
+            self.roles = {}
+            self.scheduled_events = {}
+            self.soundboard_sounds = None
             self.stages = None
-            self._embedded_activity_states = None
+            self.stickers = {}
+            self.threads = {}
+            self.user_count = 1
+            self.users = GUILD_USERS_TYPE()
+            self.voice_states = {}
             
             update = True
         
@@ -749,28 +759,33 @@ class Guild(DiscordEntity, immortal = True):
         self : ``Guild``
         """
         self = object.__new__(cls)
-        self._boosters = None
+        self._cache_boosters = None
+        self._embedded_activity_states = None
         self._permission_cache = None
+        self._state = 0
         self.afk_channel_id = 0
         self.afk_timeout = 0
-        self.channels = {}
-        self.roles = {}
+        self.approximate_online_count = 0
+        self.approximate_user_count = 1
         self.available = False
         self.banner_hash = 0
         self.banner_type = ICON_TYPE_NONE
-        self.boost_progress_bar_enabled = False
         self.boost_count = 0
+        self.boost_progress_bar_enabled = False
+        self.channels = {}
         self.clients = []
         self.content_filter = ContentFilterLevel.disabled
-        self.description = None
         self.discovery_splash_hash = 0
         self.discovery_splash_type = ICON_TYPE_NONE
+        self.description = None
         self.emojis = {}
         self.features = []
         self.hub_type = HubType.none
         self.icon_hash = 0
         self.icon_type = ICON_TYPE_NONE
         self.id = guild_id
+        self.invite_splash_hash = 0
+        self.invite_splash_type = ICON_TYPE_NONE
         self.is_large = False
         self.max_presences = MAX_PRESENCES_DEFAULT
         self.max_stage_channel_video_users = MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
@@ -779,32 +794,28 @@ class Guild(DiscordEntity, immortal = True):
         self.message_notification = MessageNotificationLevel.only_mentions
         self.mfa = MFA.none
         self.name = ''
+        self.nsfw_level = NsfwLevel.none
         self.owner_id = 0
         self.preferred_locale = DEFAULT_LOCALE
         self.premium_tier = 0
         self.public_updates_channel_id = 0
-        self.rules_channel_id = 0
         self.safety_alerts_channel_id = 0
-        self.invite_splash_hash = 0
-        self.invite_splash_type = ICON_TYPE_NONE
+        self.roles = {}
+        self.rules_channel_id = 0
+        self.scheduled_events = {}
+        self.soundboard_sounds = None
+        self.stages = None
+        self.stickers = {}
         self.system_channel_id = 0
         self.system_channel_flags = SystemChannelFlag.NONE
-        self.approximate_user_count = 1
+        self.threads = {}
+        self.user_count = 0
         self.users = GUILD_USERS_TYPE()
         self.vanity_code = None
         self.verification_level = VerificationLevel.none
         self.voice_states = {}
         self.widget_channel_id = 0
         self.widget_enabled = False
-        self.user_count = 0
-        self.approximate_online_count = 0
-        self.approximate_user_count = 0
-        self.threads = {}
-        self.stages = None
-        self.nsfw_level = NsfwLevel.none
-        self.stickers = {}
-        self.scheduled_events = {}
-        self._embedded_activity_states = None
         return self
     
     
@@ -865,7 +876,7 @@ class Guild(DiscordEntity, immortal = True):
         >>> from hata import Guild, now_as_id
         >>> guild = Guild.precreate(now_as_id(), name = 'GrassGrass')
         >>> guild
-        <Guild id = 713718885970345984 (partial), name = 'GrassGrass',>
+        <Guild id = 713718885970345984 (partial), name = 'GrassGrass'>
         >>> # no code stands for `guild.name`
         >>> f'{guild}'
         'GrassGrass'
@@ -929,7 +940,7 @@ class Guild(DiscordEntity, immortal = True):
         self.scheduled_events.clear()
         
         self.roles.clear()
-        self._boosters = None
+        self._cache_boosters = None
     
     
     def _update_voice_state(self, data, user):
@@ -2381,7 +2392,7 @@ class Guild(DiscordEntity, immortal = True):
             old_attributes['boost_count'] = self.boost_count
             self.boost_count = boost_count
         
-        self._boosters = None
+        self._cache_boosters = None
         
         preferred_locale = get_locale(data.get('preferred_locale', None))
         if self.preferred_locale is not preferred_locale:
@@ -2520,7 +2531,7 @@ class Guild(DiscordEntity, immortal = True):
             boost_count = 0
         
         self.boost_count = boost_count
-        self._boosters = None
+        self._cache_boosters = None
         
         self.preferred_locale = get_locale(data.get('preferred_locale', None))
         
@@ -2914,7 +2925,7 @@ class Guild(DiscordEntity, immortal = True):
         -------
         boosters : `list` of ``ClientUserBase``
         """
-        boosters = self._boosters
+        boosters = self._cache_boosters
         if boosters is None:
             if self.boost_count:
                 boosters_ordered = []
@@ -2936,7 +2947,7 @@ class Guild(DiscordEntity, immortal = True):
             else:
                 boosters = []
             
-            self._boosters = boosters
+            self._cache_boosters = boosters
 
         return boosters
     
@@ -3139,3 +3150,21 @@ class Guild(DiscordEntity, immortal = True):
         )
         
         return self.max_voice_channel_video_users
+    
+    
+    @property
+    def soundboard_sounds_cached(self):
+        """
+        Returns whether the guild has its soundboard sounds cached.
+        """
+        return True if self._state & GUILD_STATE_MASK_SOUNDBOARD_SOUNDS_REQUESTED else False
+    
+    
+    @soundboard_sounds_cached.setter
+    def soundboard_sounds_cached(self, value):
+        state = self._state
+        if value:
+            state |= GUILD_STATE_MASK_SOUNDBOARD_SOUNDS_REQUESTED
+        else:
+            state &= ~GUILD_STATE_MASK_SOUNDBOARD_SOUNDS_REQUESTED
+        self._state = state

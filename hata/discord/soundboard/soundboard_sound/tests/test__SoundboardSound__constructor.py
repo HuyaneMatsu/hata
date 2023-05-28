@@ -4,7 +4,7 @@ from ....core import BUILTIN_EMOJIS
 from ....emoji import Emoji
 from ....user import ClientUserBase
 
-from ..soundboard_sound import SoundBoardSound
+from ..soundboard_sound import SoundboardSound
 
 
 def _assert_fields_set(sound):
@@ -13,10 +13,10 @@ def _assert_fields_set(sound):
     
     Parameters
     ----------
-    sound : ``SoundBoardSound``
+    sound : ``SoundboardSound``
         The sound to check.
     """
-    vampytest.assert_instance(sound, SoundBoardSound)
+    vampytest.assert_instance(sound, SoundboardSound)
     vampytest.assert_instance(sound._cache_user, ClientUserBase, nullable = True)
     vampytest.assert_instance(sound.available, bool)
     vampytest.assert_instance(sound.emoji, Emoji, nullable = True)
@@ -26,19 +26,19 @@ def _assert_fields_set(sound):
     vampytest.assert_instance(sound.volume, float)
 
 
-def test__SoundBoardSound__new__0():
+def test__SoundboardSound__new__0():
     """
-    Tests whether ``SoundBoardSound.__new__`` works as intended.
+    Tests whether ``SoundboardSound.__new__`` works as intended.
     
     Case : No fields given.
     """
-    sound = SoundBoardSound()
+    sound = SoundboardSound()
     _assert_fields_set(sound)
 
 
-def test__SoundBoardSound__new__1():
+def test__SoundboardSound__new__1():
     """
-    Tests whether ``SoundBoardSound.__new__`` works as intended.
+    Tests whether ``SoundboardSound.__new__`` works as intended.
     
     Case : All fields given.
     """
@@ -48,7 +48,7 @@ def test__SoundBoardSound__new__1():
     user_id = 202305240015
     volume = 0.69
     
-    sound = SoundBoardSound(
+    sound = SoundboardSound(
         available = available,
         emoji = emoji,
         name = name,
@@ -64,23 +64,23 @@ def test__SoundBoardSound__new__1():
     vampytest.assert_eq(sound.volume, volume)
 
 
-def test__SoundBoardSound__precreate__0():
+def test__SoundboardSound__precreate__0():
     """
-    Tests whether ``SoundBoardSound.precreate`` works as intended.
+    Tests whether ``SoundboardSound.precreate`` works as intended.
     
     Case : No fields given.
     """
     sound_id = 202305240016
     
-    sound = SoundBoardSound.precreate(sound_id)
+    sound = SoundboardSound.precreate(sound_id)
     _assert_fields_set(sound)
     
     vampytest.assert_eq(sound.id, sound_id)
 
 
-def test__SoundBoardSound__precreate__1():
+def test__SoundboardSound__precreate__1():
     """
-    Tests whether ``SoundBoardSound.precreate`` works as intended.
+    Tests whether ``SoundboardSound.precreate`` works as intended.
     
     Case : All fields given.
     """
@@ -93,7 +93,7 @@ def test__SoundBoardSound__precreate__1():
     sound_id = 202305240018
     guild_id = 202305240019
     
-    sound = SoundBoardSound.precreate(
+    sound = SoundboardSound.precreate(
         sound_id,
         guild_id = guild_id,
         available = available,
@@ -114,27 +114,27 @@ def test__SoundBoardSound__precreate__1():
     vampytest.assert_eq(sound.guild_id, guild_id)
 
 
-def test__SoundBoardSound__precreate__2():
+def test__SoundboardSound__precreate__2():
     """
-    Tests whether ``SoundBoardSound.precreate`` works as intended.
+    Tests whether ``SoundboardSound.precreate`` works as intended.
     
     Case : Caching.
     """
     sound_id = 202305240020
     
-    sound = SoundBoardSound.precreate(sound_id)
-    test_sound = SoundBoardSound.precreate(sound_id)
+    sound = SoundboardSound.precreate(sound_id)
+    test_sound = SoundboardSound.precreate(sound_id)
     vampytest.assert_is(sound, test_sound)
 
 
-def test__SoundBoardSound__create_empty():
+def test__SoundboardSound__create_empty():
     """
-    Tests whether ``SoundBoardSound._create_empty`` works as intended.
+    Tests whether ``SoundboardSound._create_empty`` works as intended.
     """
     sound_id = 202305240021
     guild_id = 202305240022
     
-    sound = SoundBoardSound._create_empty(sound_id, guild_id)
+    sound = SoundboardSound._create_empty(sound_id, guild_id)
     _assert_fields_set(sound)
     
     vampytest.assert_eq(sound.id, sound_id)

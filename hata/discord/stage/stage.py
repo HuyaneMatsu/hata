@@ -32,7 +32,7 @@ PRECREATE_FIELDS = {
 
 
 @export
-class Stage(DiscordEntity):
+class Stage(DiscordEntity, immortal = True):
     """
     Represents an active stage instance of a stage channel.
     
@@ -56,8 +56,7 @@ class Stage(DiscordEntity):
         The topic of the stage. Can be empty string.
     """
     __slots__ = (
-        '__weakref__', 'channel_id', 'discoverable', 'guild_id', 'invite_code', 'privacy_level', 'scheduled_event_id',
-        'topic'
+        'channel_id', 'discoverable', 'guild_id', 'invite_code', 'privacy_level', 'scheduled_event_id', 'topic'
     )
     
     

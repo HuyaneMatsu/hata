@@ -1,6 +1,6 @@
 import vampytest
 
-from ...soundboard_sound import SoundBoardSound
+from ...soundboard_sound import SoundboardSound
 
 from ..fields import put_sounds_into
 
@@ -15,12 +15,12 @@ def test__put_sounds_into():
     sound_id_1 = 202305260006
     sound_name_1 = 'East'
     
-    sound_0 = SoundBoardSound.precreate(
+    sound_0 = SoundboardSound.precreate(
         sound_id_0,
         name = sound_name_0,
     )
     
-    sound_1 = SoundBoardSound.precreate(
+    sound_1 = SoundboardSound.precreate(
         sound_id_1,
         name = sound_name_1,
     )

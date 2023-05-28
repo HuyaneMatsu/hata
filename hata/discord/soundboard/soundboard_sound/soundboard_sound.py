@@ -1,4 +1,4 @@
-__all__ = ('SoundBoardSound',)
+__all__ = ('SoundboardSound',)
 
 from ...bases import DiscordEntity
 from ...core import GUILDS, SOUNDBOARD_SOUNDS
@@ -26,7 +26,7 @@ PRECREATE_FIELDS = {
 }
 
 
-class SoundBoardSound(DiscordEntity, immortal = True):
+class SoundboardSound(DiscordEntity, immortal = True):
     """
     Represents a sound board sound.
     
@@ -135,16 +135,73 @@ class SoundBoardSound(DiscordEntity, immortal = True):
         try:
             self = SOUNDBOARD_SOUNDS[sound_id]
         except KeyError:
+            self = object.__new__(cls)
+            self.id = sound_id
+            SOUNDBOARD_SOUNDS[sound_id] = self
+        else:
+            if not self.partial:
+                return self
+            
+        self._set_attributes(data)
+        
+        try:
+            guild = GUILDS[self.guild_id]
+        except KeyError:
             pass
         else:
-            self._set_attributes(data)
-            return self
+            soundboard_sounds = guild.soundboard_sounds
+            if soundboard_sounds is None:
+                soundboard_sounds = {}
+                guild.soundboard_sounds = soundboard_sounds
+            
+            soundboard_sounds[sound_id] = self
         
-        self = object.__new__(cls)
-        self.id = sound_id
-        self._set_attributes(data)
-        SOUNDBOARD_SOUNDS[sound_id] = self
         return self
+    
+    
+    @classmethod
+    def from_data_is_created(cls, data):
+        """
+        Creates a new soundboard sound from the given data.
+        
+        Also returns whether the instance was new (or partial) or already existed.
+        
+        Parameters
+        ----------
+        data : `dict<str, object>`
+            Sound data.
+        
+        Returns
+        -------
+        self : `instance<cls>`
+        """
+        sound_id = parse_id(data)
+        
+        try:
+            self = SOUNDBOARD_SOUNDS[sound_id]
+        except KeyError:
+            self = object.__new__(cls)
+            self.id = sound_id
+            SOUNDBOARD_SOUNDS[sound_id] = self
+        else:
+            if not self.partial:
+                return self, False
+            
+        self._set_attributes(data)
+        
+        try:
+            guild = GUILDS[self.guild_id]
+        except KeyError:
+            pass
+        else:
+            soundboard_sounds = guild.soundboard_sounds
+            if soundboard_sounds is None:
+                soundboard_sounds = {}
+                guild.soundboard_sounds = soundboard_sounds
+            
+            soundboard_sounds[sound_id] = self
+        
+        return self, True
     
     
     def to_data(self, *, defaults = False, include_internals = False):
@@ -187,12 +244,8 @@ class SoundBoardSound(DiscordEntity, immortal = True):
         data : `dict<str, object>`
             Sound data.
         """
+        self._cache_user = parse_user(data)
         self.guild_id = parse_guild_id(data)
-        
-        user = parse_user(data)
-        if (user is not None):
-            self._cache_user = user
-        
         self.user_id = parse_user_id(data)
         
         self._update_attributes(data)
@@ -571,6 +624,57 @@ class SoundBoardSound(DiscordEntity, immortal = True):
     
     
     @property
+    def partial(self):
+        """
+        Returns whether the sound is partial.
+        
+        Returns
+        -------
+        partial : `bool
+        """
+        guild_id = self.guild_id
+        if not guild_id:
+            return True
+        
+        try:
+            guild = GUILDS[guild_id]
+        except KeyError:
+            return True
+        
+        soundboard_sounds = guild.soundboard_sounds
+        if soundboard_sounds is None:
+            return True
+        
+        if self.id not in soundboard_sounds:
+            return True
+        
+        return guild.partial
+    
+    
+    def _delete(self):
+        """
+        Removes the soundboard sound's references.
+        """
+        try:
+            guild = GUILDS[self.guild_id]
+        except KeyError:
+            pass
+        else:
+            soundboard_sounds = guild.soundboard_sounds
+            if (soundboard_sounds is not None):
+                try:
+                    del soundboard_sounds[self.id]
+                except KeyError:
+                    pass
+                else:
+                    if not soundboard_sounds:
+                        guild.soundboard_sounds = None
+    
+    
+    url = property(module_urls.soundboard_sound_url)
+    
+    
+    @property
     def guild(self):
         """
         Returns the guild to which the sound is added to.
@@ -604,19 +708,3 @@ class SoundBoardSound(DiscordEntity, immortal = True):
         user = create_partial_user_from_id(user_id)
         self._cache_user = user
         return user
-
-    
-    @property
-    def partial(self):
-        """
-        Returns whether the sound is partial.
-        
-        Returns
-        -------
-        partial : `bool
-        """
-        # They are not bound to a guild for example, so we cannot check for that. -> Check only for id.
-        return (self.id == 0)
-    
-    
-    url = property(module_urls.soundboard_sound_url)

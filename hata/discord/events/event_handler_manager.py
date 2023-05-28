@@ -22,11 +22,13 @@ from .event_types import WebhookUpdateEvent
 from .handling_helpers import (
     ChunkWaiter, _iterate_event_handler, asynclist, check_name, check_parameter_count_and_convert
 )
+from .soundboard_sounds_event_handler import SoundboardSoundsEventHandler
 
 
 DEFAULT_EVENT_HANDLERS = (
     ('error', default_error_event_handler, False),
     ('guild_user_chunk', ChunkWaiter, True),
+    ('soundboard_sounds', SoundboardSoundsEventHandler, True),
     ('voice_server_update', default_voice_server_update_event_handler, False),
     ('voice_client_ghost', default_voice_client_ghost_event_handler, False),
     ('voice_client_join', default_voice_client_join_event_handler, False),
@@ -903,13 +905,13 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Called when ``Client.stop``, ``Client.disconnect`` is called indicating, that the client is logging off and
         all data should be saved if needed.
     
-    soundboard_sound_create(client : ``Client``, sound : ``SoundBoardSound``)
+    soundboard_sound_create(client : ``Client``, sound : ``SoundboardSound``)
         Called when a soundboard sound is created.
     
-    soundboard_sound_delete(client : ``Client``, sound : ``SoundBoardSound``)
+    soundboard_sound_delete(client : ``Client``, sound : ``SoundboardSound``)
         Called when a soundboard sound is deleted.
     
-    soundboard_sound_update(client : ``Client``, sound : ``SoundBoardSound``, old_attributes : `None | dict`)
+    soundboard_sound_update(client : ``Client``, sound : ``SoundboardSound``, old_attributes : `None | dict`)
         Called when a soundboard sound is updated.
     
         If the soundboard sound is cached, `old_attributes` will be a dictionary including the changed attributes in
@@ -929,7 +931,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | volume    | `float`           |
         +-----------+-------------------+
     
-    soundboard_sounds(client : ``Client``, event : ``SoundBoardSoundsEvent``)
+    soundboard_sounds(client : ``Client``, event : ``SoundboardSoundsEvent``)
         Called after a soundboard sounds request.
         
         > This event has a default handler defined,.

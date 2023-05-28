@@ -1768,6 +1768,7 @@ class EventHandlerBase(RichAttributeErrorBaseType):
         """
         pass
     
+    
     @property
     def shortcut(self):
         """
@@ -2005,7 +2006,8 @@ class EventWaitforMeta(type):
     _call_waitfors['reaction_delete'] = _call_reaction_delete
     del _call_reaction_delete
 
-class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
+
+class EventWaitforBase(EventHandlerBase, metaclass = EventWaitforMeta):
     """
     Base class for event handlers, which implement waiting for a specified action to occur.
     
@@ -2299,33 +2301,21 @@ def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
 EventWaitforMeta.__new__ = EventWaitforMeta__new__
 del EventWaitforMeta__new__
 
-class ChunkWaiter(EventHandlerBase):
+class ChunkWaiter(RichAttributeErrorBaseType):
+    """
+    Guild user chunk waiter.
+    
+    Attributes
+    ----------
+    waiters : `dict` of (`int`, ``SingleUserChunker`` | ``MassUserChunker``) items.
+        User chunk waiters.
+    """
     __slots__ = ('waiters',)
     
     __event_name__ = 'guild_user_chunk'
     
     def __init__(self):
         self.waiters = {}
-    
-    # Interact directly with `self.waiters` instead.
-    def create_event(self, waiter, nonce):
-        """
-        Raises
-        ------
-        RuntimeError
-            Interact with self.waiters instead.
-        """
-        raise RuntimeError('Interact with `self.waiters` instead.')
-    
-    
-    def delete_event(self, waiter, nonce):
-        """
-        Raises
-        ------
-        RuntimeError
-            Interact with self.waiters instead.
-        """
-        raise RuntimeError('Interact with `self.waiters` instead.')
     
     
     async def __call__(self, client, event):

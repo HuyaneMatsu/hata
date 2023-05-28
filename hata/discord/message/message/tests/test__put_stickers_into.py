@@ -5,11 +5,9 @@ from ....sticker import Sticker, StickerFormat, create_partial_sticker_data
 from ..fields import put_stickers_into
 
 
-def test__put_stickers_into__1():
+def test__put_stickers_into():
     """
     Tests whether ``put_stickers_into`` works as intended.
-    
-    Case: Nothing.
     """
     sticker_id_0 = 202305010010
     sticker_id_1 = 202305010011

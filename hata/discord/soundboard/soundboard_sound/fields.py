@@ -8,7 +8,6 @@ from ...field_parsers import (
 from ...field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
     float_optional_putter_factory, force_string_putter_factory, nullable_entity_optional_putter_factory,
-    nullable_functional_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, float_conditional_validator_factory,

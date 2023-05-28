@@ -3,7 +3,7 @@ __all__ = ('create_partial_soundboard_sound_from_id', 'create_partial_soundboard
 from ...core import SOUNDBOARD_SOUNDS
 
 from .fields import parse_guild_id, parse_id
-from .soundboard_sound import SoundBoardSound
+from .soundboard_sound import SoundboardSound
 
 
 def create_partial_soundboard_sound_from_id(sound_id, guild_id = 0):
@@ -19,12 +19,12 @@ def create_partial_soundboard_sound_from_id(sound_id, guild_id = 0):
     
     Returns
     -------
-    sound : ``SoundBoardSound``
+    sound : ``SoundboardSound``
     """
     try:
         sound = SOUNDBOARD_SOUNDS[sound_id]
     except KeyError:
-        sound = SoundBoardSound._create_empty(sound_id, guild_id)
+        sound = SoundboardSound._create_empty(sound_id, guild_id)
         SOUNDBOARD_SOUNDS[sound_id] = sound
     
     return sound
@@ -41,14 +41,14 @@ def create_partial_soundboard_sound_from_partial_data(data):
     
     Returns
     -------
-    sound : ``SoundBoardSound``
+    sound : ``SoundboardSound``
     """
     sound_id = parse_id(data)
     
     try:
         sound = SOUNDBOARD_SOUNDS[sound_id]
     except KeyError:
-        sound = SoundBoardSound._create_empty(sound_id, parse_guild_id(data))
+        sound = SoundboardSound._create_empty(sound_id, parse_guild_id(data))
         SOUNDBOARD_SOUNDS[sound_id] = sound
     
     return sound

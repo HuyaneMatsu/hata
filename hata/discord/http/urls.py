@@ -1582,7 +1582,7 @@ def soundboard_sound_url(sound):
     """
     Returns the url to the sound board sound.
     
-    This function is a property of ``SoundBoardSound``.
+    This function is a property of ``SoundboardSound``.
     
     Returns
     -------

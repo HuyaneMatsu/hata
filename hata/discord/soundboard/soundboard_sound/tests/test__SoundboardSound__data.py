@@ -1,16 +1,18 @@
 import vampytest
 
+from ....client import Client
 from ....core import BUILTIN_EMOJIS
+from ....guild import Guild
 from ....user import User
 
-from ..soundboard_sound import SoundBoardSound
+from ..soundboard_sound import SoundboardSound
 
-from .test__SoundBoardSound__constructor import _assert_fields_set
+from .test__SoundboardSound__constructor import _assert_fields_set
 
 
-def test__SoundBoardSound__from_data__0():
+def test__SoundboardSound__from_data__0():
     """
-    Tests whether ``SoundBoardSound.from_data`` works as intended.
+    Tests whether ``SoundboardSound.from_data`` works as intended.
     
     Case : All fields given.
     """
@@ -36,7 +38,7 @@ def test__SoundBoardSound__from_data__0():
         'user': user.to_data(defaults = True, include_internals = True),
     }
     
-    sound = SoundBoardSound.from_data(data)
+    sound = SoundboardSound.from_data(data)
     _assert_fields_set(sound)
     
     vampytest.assert_eq(sound.available, available)
@@ -50,26 +52,33 @@ def test__SoundBoardSound__from_data__0():
     vampytest.assert_is(sound._cache_user, user)
 
 
-def test__SoundBoardSound__from_data__1():
+def test__SoundboardSound__from_data__1():
     """
-    Tests whether ``SoundBoardSound.from_data`` works as intended.
+    Tests whether ``SoundboardSound.from_data`` works as intended.
     
     Case : Caching.
     """
     sound_id = 202305240026
+    guild_id = 202305270037
     
     data = {
-        'sound_id': sound_id,
+        'sound_id': str(sound_id),
+        'guild_id': str(guild_id),
     }
     
-    sound = SoundBoardSound.from_data(data)
-    test_sound = SoundBoardSound.from_data(data)
+    guild = Guild.precreate(guild_id)
+    
+    sound = SoundboardSound.from_data(data)
+    
+    vampytest.assert_eq(guild.soundboard_sounds, {sound_id: sound})
+    
+    test_sound = SoundboardSound.from_data(data)
     vampytest.assert_is(sound, test_sound)
 
 
-def test__SoundBoardSound__to_data():
+def test__SoundboardSound__to_data():
     """
-    Tests whether ``SoundBoardSound.to_data`` works as intended.
+    Tests whether ``SoundboardSound.to_data`` works as intended.
     """
     available = False
     emoji = BUILTIN_EMOJIS['heart']
@@ -92,7 +101,7 @@ def test__SoundBoardSound__to_data():
         'user': user.to_data(defaults = True, include_internals = True),
     }
     
-    sound = SoundBoardSound.precreate(
+    sound = SoundboardSound.precreate(
         sound_id,
         guild_id = guild_id,
         available = available,
@@ -108,9 +117,9 @@ def test__SoundBoardSound__to_data():
     )
 
 
-def test__SoundBoardSound__set_attributes():
+def test__SoundboardSound__set_attributes():
     """
-    Tests whether ``SoundBoardSound._set_attributes`` works as intended.
+    Tests whether ``SoundboardSound._set_attributes`` works as intended.
     """
     available = False
     emoji = BUILTIN_EMOJIS['heart']
@@ -132,7 +141,7 @@ def test__SoundBoardSound__set_attributes():
         'user': user.to_data(defaults = True, include_internals = True),
     }
     
-    sound = SoundBoardSound()
+    sound = SoundboardSound()
     
     sound._set_attributes(data)
     
@@ -146,9 +155,9 @@ def test__SoundBoardSound__set_attributes():
     vampytest.assert_is(sound._cache_user, user)
 
 
-def test__SoundBoardSound__update_attributes():
+def test__SoundboardSound__update_attributes():
     """
-    Tests whether ``SoundBoardSound._update_attributes`` works as intended.
+    Tests whether ``SoundboardSound._update_attributes`` works as intended.
     """
     available = False
     emoji = BUILTIN_EMOJIS['heart']
@@ -163,7 +172,7 @@ def test__SoundBoardSound__update_attributes():
         'volume': volume,
     }
     
-    sound = SoundBoardSound()
+    sound = SoundboardSound()
     
     sound._update_attributes(data)
     
@@ -173,9 +182,9 @@ def test__SoundBoardSound__update_attributes():
     vampytest.assert_eq(sound.volume, volume)
 
 
-def test__SoundBoardSound__difference_update_attributes():
+def test__SoundboardSound__difference_update_attributes():
     """
-    Tests whether ``SoundBoardSound._difference_update_attributes`` works as intended.
+    Tests whether ``SoundboardSound._difference_update_attributes`` works as intended.
     """
     old_available = False
     old_emoji = BUILTIN_EMOJIS['heart']
@@ -195,7 +204,7 @@ def test__SoundBoardSound__difference_update_attributes():
         'volume': new_volume,
     }
     
-    sound = SoundBoardSound(
+    sound = SoundboardSound(
         available = old_available,
         emoji = old_emoji,
         name = old_name,
@@ -218,3 +227,74 @@ def test__SoundBoardSound__difference_update_attributes():
             'volume': old_volume,
         },
     )
+
+
+def test__SoundboardSound__from_data_is_created__0():
+    """
+    Tests whether ``SoundboardSound.from_data_is_created`` works as intended.
+    
+    Case: not cached.
+    """
+    sound_id = 202305270044
+    guild_id = 202305270045
+    name = 'rember'
+    
+    guild = Guild.precreate(guild_id)
+    
+    data = {
+        'sound_id': str(sound_id),
+        'guild_id': str(guild_id),
+        'name': name,
+    }
+    
+    sound, is_created = SoundboardSound.from_data_is_created(data)
+    _assert_fields_set(sound)
+    vampytest.assert_instance(is_created, bool)
+    vampytest.assert_eq(is_created, True)
+    vampytest.assert_eq(sound.name, name)
+    vampytest.assert_eq(guild.soundboard_sounds, {sound_id: sound})
+    
+    test_sound = SoundboardSound.from_data(data)
+    vampytest.assert_is(sound, test_sound)
+
+
+def test__SoundboardSound__from_data_is_created__1():
+    """
+    Tests whether ``SoundboardSound.from_data_is_created`` works as intended.
+    
+    Case: cached.
+    """
+    client = Client(
+        token = 'token_202305270001',
+    )
+    try:
+        sound_id = 202305270045
+        guild_id = 202305270046
+        name = 'rember'
+        
+        cached_sound = SoundboardSound.precreate(sound_id, guild_id = guild_id)
+        guild = Guild.precreate(guild_id)
+        guild.clients = [client]
+        guild.soundboard_sounds = {sound_id: cached_sound}
+        
+        data = {
+            'sound_id': str(sound_id),
+            'guild_id': str(guild_id),
+            'name': name,
+        }
+        
+        sound, is_created = SoundboardSound.from_data_is_created(data)
+        _assert_fields_set(sound)
+        vampytest.assert_is(sound, cached_sound)
+        
+        vampytest.assert_instance(is_created, bool)
+        vampytest.assert_eq(is_created, False)
+        
+        # The sound was already up to date, name should not be updated.
+        vampytest.assert_ne(sound.name, name)
+        
+        
+    finally:
+        # Cleanup
+        client._delete()
+        client = None

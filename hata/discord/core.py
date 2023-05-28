@@ -81,7 +81,7 @@ Weak Caches
     
 - `SOUNDBOARD_SOUNDS` : ``WeakValueDictionary``
     
-    Storage for ``SoundBoardSound``.
+    Storage for ``SoundboardSound``.
 
 - `STAGES` : ``WeakValueDictionary``
     

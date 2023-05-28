@@ -41,7 +41,7 @@
 - Exception is now raised if loading `.env` file fails.
 - Update `GuildPremiumPerks.sound_limit`.
 - Add `SOUNDBOARD_SOUNDS`.
-- Add `SoundBoardSound`.
+- Add `SoundboardSound`.
 - Add `create_partial_soundboard_sound_from_id`.
 - Add `create_partial_soundboard_sound_from_partial_data`.
 - Add `create_partial_sticker_data`.
@@ -51,11 +51,14 @@
 - Add `Client.soundboard_sound_get_all_default`.
 - Add `RATE_LIMIT_GROUPS.soundboard_sound_create`.
 - Add `Client.request_soundboard_sounds`.
-- Add `SoundBoardSoundsEvent`.
-- Add `Client.events.soundboard_sounds`.
+- Add `SoundboardSoundsEvent`.
 - Add `Client.events.soundboard_sound_create`.
 - Add `Client.events.soundboard_sound_update`.
 - Add `Client.events.soundboard_sound_delete`.
+- Add `Client.events.soundboard_sounds`.
+- Add `Guild.soundboard_sounds`.
+- Add default event handler `SoundboardSoundsEventHandler` for `Client.events.soundboard_sounds`.
+- Add `Guild.soundboard_sounds_cached`.
 
 #### Bug fixes
 

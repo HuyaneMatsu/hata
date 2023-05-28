@@ -23,7 +23,7 @@ from ...user import Status
 from ...voice import VoiceClient
 
 from ..functionality_helpers import MassUserChunker, SingleUserChunker
-from ..request_helpers import get_guild_id
+from ..request_helpers import get_guild_and_id, get_guild_id
 
 
 def _assert__edit_presence__afk(afk):
@@ -246,7 +246,7 @@ class ClientCompoundClientGateway(Compound):
         return voice_client
     
     
-    async def request_soundboard_sounds(self, guilds):
+    async def request_soundboard_sounds(self, guilds, *, force_request = False):
         """
         Requests the soundboard sounds of the given guilds.
         
@@ -256,11 +256,29 @@ class ClientCompoundClientGateway(Compound):
         ----------
         guilds : `iterable` of (``Guild``, `int`)
             The guilds or their identifiers to request the sounds of.
+        force_request : `bool` = `False`
+            Whether the sounds should be requested even if they are already cached.
         
         Returns
         -------
-        sounds : `list` of ``SoundBoardSound``
+        sounds : `list` of ``SoundboardSoundsEvent``
         """
+        guild_ids = set()
+        
+        if force_request:
+            for guild in guilds:
+                guild_id = get_guild_id(guild)
+                guild_ids.add(guild_id)
+        
+        else:
+            for guild in guilds:
+                guild, guild_id = get_guild_and_id(guild)
+                if (guild is not None) and guild.soundboard_sounds_cached:
+                    continue
+                
+                guild_ids.add(guild_id)
+        
+        
         by_gateway = {}
         
         for guild in guilds:
@@ -268,25 +286,23 @@ class ClientCompoundClientGateway(Compound):
             gateway = self.gateway_for(guild_id)
             
             try:
-                guild_ids = by_gateway[gateway]
+                guild_ids_for_gateway = by_gateway[gateway]
             except KeyError:
-                guild_ids = set()
-                by_gateway[gateway] = guild_ids
+                guild_ids_for_gateway = []
+                by_gateway[gateway] = guild_ids_for_gateway
             
-            guild_ids.add(guild_id)
+            guild_ids_for_gateway.append(guild_id)
         
         
-        for gateway, guild_ids in by_gateway.items():
-            data = {
+        for gateway, guild_ids_for_gateway in by_gateway.items():
+            await gateway.send_as_json({
                 'op': GATEWAY_OPERATION_REQUEST_SOUNDBOARD_SOUNDS,
                 'd': {
-                    'guild_ids': [str(guild_id) for guild_id in guild_ids],
+                    'guild_ids': guild_ids_for_gateway,
                 }
-            }
-            
-            await gateway.send_as_json(data)
+            })
         
-        # TODO
+        return await self.events.soundboard_sounds.wait_for_events_in_guilds(guild_ids)
     
     
     async def request_all_users_of(self, guild):

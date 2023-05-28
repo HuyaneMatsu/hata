@@ -1,4 +1,4 @@
-__all__ = ('SoundBoardSoundsEvent',)
+__all__ = ('SoundboardSoundsEvent',)
 
 from scarletio import copy_docs
 
@@ -8,7 +8,7 @@ from ...core import GUILDS
 from .fields import parse_guild_id, parse_sounds, put_guild_id_into, put_sounds_into, validate_guild_id, validate_sounds
 
 
-class SoundBoardSoundsEvent(EventBase):
+class SoundboardSoundsEvent(EventBase):
     """
     Represents a soundboard sound event sent to a voice channel.
     
@@ -16,7 +16,7 @@ class SoundBoardSoundsEvent(EventBase):
     ----------
     guild_id : `int`
         The guild's identifier that the event represents.
-    sounds : `None`, `tuple` of ``SoundBoardSound``
+    sounds : `None`, `tuple` of ``SoundboardSound``
         The responded sounds.
     """
     __slots__ = ('guild_id', 'sounds')
@@ -34,7 +34,7 @@ class SoundBoardSoundsEvent(EventBase):
         ----------
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild's identifier that the event represents.
-        sounds : `None`, `iterable` of ``SoundBoardSound``, Optional (Keyword only)
+        sounds : `None`, `iterable` of ``SoundboardSound``, Optional (Keyword only)
             The responded sounds.
         
         Raises
@@ -77,9 +77,19 @@ class SoundBoardSoundsEvent(EventBase):
         -------
         self : `instance<cls>`
         """
+        guild_id = parse_guild_id(data)
+        
         self = object.__new__(cls)
-        self.guild_id = parse_guild_id(data)
+        self.guild_id = guild_id
         self.sounds = parse_sounds(data)
+        
+        try:
+            guild = GUILDS[guild_id]
+        except KeyError:
+            pass
+        else:
+            guild.soundboard_sounds_cached = True
+        
         return self
     
     
@@ -206,7 +216,7 @@ class SoundBoardSoundsEvent(EventBase):
         ----------
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild's identifier that the event represents.
-        sounds : `None`, `iterable` of ``SoundBoardSound``, Optional (Keyword only)
+        sounds : `None`, `iterable` of ``SoundboardSound``, Optional (Keyword only)
             The responded sounds.
         
         Returns
@@ -263,7 +273,7 @@ class SoundBoardSoundsEvent(EventBase):
         
         Yields
         ------
-        sound : ``SoundBoardSound``
+        sound : ``SoundboardSound``
         """
         sounds = self.sounds
         if (sounds is not None):

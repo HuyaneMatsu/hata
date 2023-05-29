@@ -186,7 +186,7 @@ class ClientCompoundMessageEndpoints(Compound):
     
     async def message_get(self, message, *, force_update = False):
         """
-        Requests a specific message by it's id at the given `channel`.
+        Requests the specified message.
         
         This method is a coroutine.
         
@@ -228,7 +228,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         message_data = await self.http.message_get(channel_id, message_id)
         
-        if (message is None) or message.partial or force_update:
+        if (message is None) or force_update or message.partial:
             if message is None:
                 message = MESSAGES.get(message_id, None)
             

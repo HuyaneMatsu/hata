@@ -18,7 +18,7 @@ from ..channel import Channel, ForumTag, PermissionOverwrite
 from ..component import Component, ComponentType, create_row
 from ..core import (
     APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, FORUM_TAGS, GUILDS, MESSAGES, ROLES, SCHEDULED_EVENTS,
-    STICKERS, STICKER_PACKS, USERS
+    SOUNDBOARD_SOUNDS, STICKERS, STICKER_PACKS, USERS
 )
 from ..embed import Embed
 from ..emoji import Emoji, parse_reaction
@@ -27,6 +27,7 @@ from ..message import Attachment, Message
 from ..oauth2 import Achievement, Oauth2Access, Oauth2User
 from ..role import Role
 from ..scheduled_event import ScheduledEvent
+from ..soundboard import SoundboardSound
 from ..stage import Stage
 from ..sticker import Sticker, StickerPack
 from ..user import ClientUserBase
@@ -1450,7 +1451,7 @@ def get_role_guild_id_and_id(role):
     raise TypeError(
         f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got {role.__class__.__name__}; {role!r}.'
     )
-    
+
 
 def get_webhook_id(webhook):
     """
@@ -2255,3 +2256,82 @@ def get_oauth2_access_token_and_user_id(access, user, required_scope = None):
         )
     
     return access_token, user_id
+
+
+def get_soundboard_sound_and_guild_id_and_id(soundboard_sound):
+    """
+    Gets the soundboard sound identifier from the given soundboard sound or of it's identifier.
+    
+    Parameters
+    ----------
+    soundboard_sound : ``SoundboardSound``, `tuple` (`int`, `int`)
+        The soundboard sound, or a `guild-id`, `soundboard-sound-id` pair.
+    
+    Returns
+    -------
+    soundboard_sound : `None`, ``SoundboardSound``
+        The respective soundboard sound.
+    
+    guild_id : `int`
+        The soundboard sound's guild's identifier.
+    
+    soundboard_sound_id : `int`
+        The soundboard sound's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `soundboard_sound`'s type is incorrect.
+    """
+    if isinstance(soundboard_sound, SoundboardSound):
+        soundboard_sound_id = soundboard_sound.id
+        guild_id = soundboard_sound.guild_id
+    
+    else:
+        snowflake_pair = maybe_snowflake_pair(soundboard_sound)
+        if snowflake_pair is None:
+            raise TypeError(
+                f'`soundboard_sound` can be `{SoundboardSound.__name__}`, `tuple` (`int`, `int`), '
+                f'got {soundboard_sound.__class__.__name__}; {soundboard_sound!r}.'
+            )
+        
+        guild_id, soundboard_sound_id = snowflake_pair
+        soundboard_sound = SOUNDBOARD_SOUNDS.get(soundboard_sound_id, None)
+    
+    return soundboard_sound, guild_id, soundboard_sound_id
+
+
+def get_soundboard_sound_guild_id_and_id(soundboard_sound):
+    """
+    Gets the soundboard_sound's and it's guild's identifier from the given soundboard_sound or of a `guild-id`,
+    `soundboard_sound-id` pair.
+    
+    Parameters
+    ----------
+    soundboard_sound : ``SoundboardSound``, `tuple` (`int`, `int`)
+        The soundboard sound, or a `guild-id`, `soundboard-sound-id` pair.
+    
+    Returns
+    -------
+    guild_id : `int`
+        The soundboard sound's guild's identifier.
+    
+    soundboard_sound_id : `int`
+        The soundboard sound's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `soundboard_sound`'s type is incorrect.
+    """
+    if isinstance(soundboard_sound, SoundboardSound):
+        return soundboard_sound.guild_id, soundboard_sound.id
+    
+    snowflake_pair = maybe_snowflake_pair(soundboard_sound)
+    if snowflake_pair is not None:
+        return snowflake_pair
+    
+    raise TypeError(
+        f'`soundboard_sound` can be `{SoundboardSound.__name__}`, `tuple` (`int`, `int`), '
+        f'got {soundboard_sound.__class__.__name__}; {soundboard_sound!r}.'
+    )

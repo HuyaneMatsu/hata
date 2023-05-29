@@ -2058,6 +2058,32 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/soundboard-default-sounds'
         )
     
+    async def soundboard_sound_create(self, guild_id, data, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.soundboard_sound_create, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_POST,
+            f'{API_ENDPOINT}/guilds/{guild_id}/soundboard-sounds',
+            data,
+            reason = reason,
+        )
+    
+    async def soundboard_sound_delete(self, guild_id, soundboard_sound_id, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.soundboard_sound_delete, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_DELETE,
+            f'{API_ENDPOINT}/guilds/{guild_id}/soundboard-sounds/{soundboard_sound_id}',
+            reason = reason,
+        )
+    
+    async def soundboard_sound_edit(self, guild_id, soundboard_sound_id, data, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.soundboard_sound_edit, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_PATCH,
+            f'{API_ENDPOINT}/guilds/{guild_id}/soundboard-sounds/{soundboard_sound_id}',
+            data,
+            reason = reason,
+        )
+    
     # Sticker
     
     async def sticker_get_all_guild(self, guild_id):

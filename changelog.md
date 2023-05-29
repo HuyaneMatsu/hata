@@ -59,6 +59,14 @@
 - Add `Guild.soundboard_sounds`.
 - Add default event handler `SoundboardSoundsEventHandler` for `Client.events.soundboard_sounds`.
 - Add `Guild.soundboard_sounds_cached`.
+- Add `Client.soundboard_sound_create`.
+- Add `Client.soundboard_sound_delete`.
+- Add `Client.soundboard_sound_edit`.
+- Add `RATE_LIMIT_GROUPS.soundboard_sound_delete`.
+- Add `RATE_LIMIT_GROUPS.soundboard_sound_edit`.
+- Add `DiscordHTTPClient.soundboard_sound_create`.
+- Add `DiscordHTTPClient.soundboard_sound_delete`.
+- Add `DiscordHTTPClient.soundboard_sound_edit`.
 
 #### Bug fixes
 

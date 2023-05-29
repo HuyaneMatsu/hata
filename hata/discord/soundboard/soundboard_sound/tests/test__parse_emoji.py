@@ -17,7 +17,7 @@ def test__parse_emoji():
         ({}, None),
         ({'emoji_name': None}, None),
         ({'emoji_name': unicode_emoji.unicode}, unicode_emoji),
-        ({'emoji_name': custom_emoji.name, 'emoji_id': str(custom_emoji.id)}, custom_emoji),
+        ({'emoji_name': None, 'emoji_id': str(custom_emoji.id)}, custom_emoji),
     ):
         output = parse_emoji(input_data)
         vampytest.assert_is(output, expected_output)

@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...emoji import Emoji, create_partial_emoji_from_inline_data, put_partial_emoji_inline_data_into
+from ...emoji import Emoji, create_emoji_from_exclusive_data, put_exclusive_emoji_data_into
 from ...field_parsers import (
     bool_parser_factory, entity_id_parser_factory, float_parser_factory, force_string_parser_factory,
     nullable_entity_parser_factory
@@ -30,17 +30,31 @@ validate_available = bool_validator_factory('available', True)
 
 # emoji
 
-parse_emoji = create_partial_emoji_from_inline_data
+def parse_emoji(data):
+    """
+    Parses out the `emoji` field from the given data.
+    
+    Parameters
+    ----------
+    data : `dict` of (`str`, `object`) items
+        Channel data.
+    
+    Returns
+    -------
+    emoji : `None`, ``Emoji``
+    """
+    return create_emoji_from_exclusive_data(data)
+
 
 
 def put_emoji_into(emoji, data, defaults):
     """
-    Puts the emoji into the given `data` json serializable object.
+    Puts the `emoji`'s data into the given `data` json serializable object.
     
     Parameters
     ----------
     emoji : `None`, ``Emoji``
-        The emoji.
+        The forum tag's emoji.
     data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
@@ -51,7 +65,7 @@ def put_emoji_into(emoji, data, defaults):
     data : `dict` of (`str`, `object`) items
     """
     if defaults or (emoji is not None):
-        put_partial_emoji_inline_data_into(emoji, data)
+        put_exclusive_emoji_data_into(emoji, data)
     
     return data
 

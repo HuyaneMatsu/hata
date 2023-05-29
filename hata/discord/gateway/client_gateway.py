@@ -351,9 +351,6 @@ class DiscordGateway:
         data = message.get('d', None)
         sequence = message.get('s', None)
         
-        if 'soundboard_sounds' in repr(message):
-            print(repr(message))
-        
         if sequence is not None:
             self.sequence = sequence
         

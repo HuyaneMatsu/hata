@@ -1,36 +1,16 @@
 __all__ = ()
 
 from ...emoji import Emoji, create_emoji_from_exclusive_data, put_exclusive_emoji_data_into
-from ...field_parsers import entity_id_parser_factory, force_string_parser_factory, bool_parser_factory
-from ...field_putters import entity_id_putter_factory, force_string_putter_factory, bool_optional_putter_factory
-from ...field_validators import entity_id_validator_factory, force_string_validator_factory, bool_validator_factory
+from ...field_parsers import bool_parser_factory, entity_id_parser_factory, force_string_parser_factory
+from ...field_putters import bool_optional_putter_factory, entity_id_putter_factory, force_string_putter_factory
+from ...field_validators import (
+    bool_validator_factory, entity_id_validator_factory, force_string_validator_factory,
+    nullable_entity_validator_factory
+)
 
-from .constants import NAME_LENGTH_MIN, NAME_LENGTH_MAX
+from .constants import NAME_LENGTH_MAX, NAME_LENGTH_MIN
 
 # emoji
-
-def put_emoji_into(emoji, data, defaults):
-    """
-    Puts the `emoji`'s data into the given `data` json serializable object.
-    
-    Parameters
-    ----------
-    emoji : `None`, ``Emoji``
-        The forum tag's emoji.
-    data : `dict` of (`str`, `Any`) items
-        Json serializable dictionary.
-    defaults : `bool`
-        Whether default values should be included as well.
-    
-    Returns
-    -------
-    data : `dict` of (`str`, `Any`) items
-    """
-    if defaults or (emoji is not None):
-        put_exclusive_emoji_data_into(emoji, data)
-    
-    return data
-
 
 def parse_emoji(data):
     """
@@ -38,7 +18,7 @@ def parse_emoji(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Channel data.
     
     Returns
@@ -48,30 +28,30 @@ def parse_emoji(data):
     return create_emoji_from_exclusive_data(data)
 
 
-def validate_emoji(emoji):
+def put_emoji_into(emoji, data, defaults):
     """
-    Validates the given `emoji` field.
+    Puts the `emoji`'s data into the given `data` json serializable object.
     
     Parameters
     ----------
     emoji : `None`, ``Emoji``
-        The emoji of the forum tag.
+        The forum tag's emoji.
+    data : `dict` of (`str`, `object`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
     
     Returns
     -------
-    emoji : `None`, ``Emoji``
-    
-    Raises
-    ------
-    TypeError
-        - If `emoji` is not `None`, ``Emoji``
+    data : `dict` of (`str`, `object`) items
     """
-    if (emoji is not None) and (not isinstance(emoji, Emoji)):
-        raise TypeError(
-            f'`emoji` can be `None`, `{Emoji.__name__}`, got {emoji.__class__.__name__}; {emoji!r}.'
-        )
+    if defaults or (emoji is not None):
+        put_exclusive_emoji_data_into(emoji, data)
     
-    return emoji
+    return data
+
+
+validate_emoji = nullable_entity_validator_factory('emoji', Emoji)
 
 # id
 

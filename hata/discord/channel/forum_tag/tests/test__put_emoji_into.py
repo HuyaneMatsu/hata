@@ -8,7 +8,7 @@ from ..fields import put_emoji_into
 
 def test__put_emoji_into():
     """
-    Tests whether ``put_emoji_into`` is working as intended.
+    Tests whether ``put_emoji_into`` works as intended.
     """
     unicode_emoji = BUILTIN_EMOJIS['heart']
     custom_emoji = Emoji.precreate(202210040001)

@@ -93,7 +93,7 @@ Shared Groups
     - Resets after : `2.0`
 
 - GROUP_INTERACTION_EXECUTE
-    - Used by: `interaction_followup_message_create`, `interaction_response_message_delete`,
+    - Used by : `interaction_followup_message_create`, `interaction_response_message_delete`,
         `interaction_response_message_edit`, `interaction_followup_message_delete`,
         `interaction_response_message_get`, `interaction_followup_message_edit`, `interaction_followup_message_get`
     - Limiter : `interaction_id`
@@ -107,16 +107,24 @@ Shared Groups
     - Resets after : `15.0`
 
 - GROUP_THREAD_CREATE
-    - Used by: `thread_create_from_message`, `thread_create`
+    - Used by : `thread_create_from_message`, `thread_create`
     - Limiter : `GLOBAL`
     - Limit : `50`
     - Resets after : `300.0`
 
 - GROUP_THREAD_ACTION
-    - Used by: `thread_join`, `thread_leave`, `thread_user_add`, `thread_user_delete`
+    - Used by : `thread_join`, `thread_leave`, `thread_user_add`, `thread_user_delete`
     - Limiter : `GLOBAL`
     - Limit : `5`
     - Resets after : `5.0`
+
+- GROUP_SOUNDBOARD_SOUND
+    - Used by : `soundboard_sound_create`, `soundboard_sound_delete`, `soundboard_sound_edit`,
+        `soundboard_sound_get_all_default`
+    - Limiter : `GLOBAL`
+    - Limit : `50`
+    - Resets after : `0.019`
+    - Notes : Seems like it is `0.019 / 1` and not `0.019 / 50`.
 
 Group Details
 -----------
@@ -1377,13 +1385,32 @@ Group Details
     - Limit : `5`
     - Resets after : `30.0`
 
-- soundboard_sound_get_all_guild
+- soundboard_sound_create
     - Endpoint : `/guilds/{guild_id}/soundboard-sounds`
-    - Method : `GET`
-    - Required auth : `bot`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
+    - Method : `POST`
+    - Required auth : `user`
+    - Limiter : `GLOBAL`
+    - Limit : `50`
+    - Resets after : `0.019`
+    - Notes : `DiscordException Method Not Allowed (405): Method Not Allowed`
+
+- soundboard_sound_delete
+    - Endpoint : `/guilds/{guild_id}/soundboard-sounds/{soundboard_sound_id}`
+    - Method : `DELETE`
+    - Required auth : `user`
+    - Limiter : `GLOBAL`
+    - Limit : `50`
+    - Resets after : `0.019`
+    - Notes : `DiscordException Method Not Allowed (405): Method Not Allowed`
+
+- soundboard_sound_edit
+    - Endpoint : `/guilds/{guild_id}/soundboard-sounds/{soundboard_sound_id}`
+    - Method : `PATCH`
+    - Required auth : `user`
+    - Limiter : `GLOBAL`
+    - Limit : `50`
+    - Resets after : `0.019`
+    - Notes : `DiscordException Method Not Allowed (405): Method Not Allowed`
 
 - sticker_get_all_guild
     - Endpoint : `/guilds/{guild_id}/stickers`
@@ -1579,7 +1606,7 @@ Group Details
     - Limiter : `UNLIMITED`
     - Limit : `N/A`
     - Resets after : `N/A`
-    - Notes : `DiscordException Forbidden (403), code=20001: Bots cannot use this endpoint`
+    - Notes : `DiscordException Forbidden (403), code = 20001: Bots cannot use this endpoint`
 
 - stage_create
     - Endpoint : `/stage-instances`
@@ -1995,6 +2022,7 @@ GROUP_APPLICATION_COMMAND_EDIT = RateLimitGroup()
 GROUP_PERMISSION_OVERWRITE_MODIFY = RateLimitGroup(LIMITER_CHANNEL)
 GROUP_THREAD_CREATE = RateLimitGroup()
 GROUP_THREAD_ACTION = RateLimitGroup()
+GROUP_SOUNDBOARD_SOUND = RateLimitGroup()
 
 oauth2_token = RateLimitGroup(optimistic = True)
 application_get = RateLimitGroup(optimistic = True) # untested
@@ -2148,7 +2176,9 @@ scheduled_event_delete = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_get = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_edit = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_user_get_chunk = RateLimitGroup(LIMITER_GUILD)
-soundboard_sound_get_all_guild = RateLimitGroup()
+soundboard_sound_create = GROUP_SOUNDBOARD_SOUND
+soundboard_sound_delete = GROUP_SOUNDBOARD_SOUND
+soundboard_sound_edit = GROUP_SOUNDBOARD_SOUND
 sticker_get_all_guild = RateLimitGroup.unlimited()
 sticker_create = RateLimitGroup(LIMITER_GUILD)
 sticker_edit = RateLimitGroup()
@@ -2170,7 +2200,7 @@ invite_delete = RateLimitGroup.unlimited()
 invite_get = RateLimitGroup()
 application_get_own = RateLimitGroup(optimistic = True)
 bulk_ack = RateLimitGroup(optimistic = True) # untested
-soundboard_sound_get_all_default = RateLimitGroup()
+soundboard_sound_get_all_default = GROUP_SOUNDBOARD_SOUND
 stage_get_all = RateLimitGroup.unlimited()
 stage_create = RateLimitGroup()
 stage_get = RateLimitGroup()

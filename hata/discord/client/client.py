@@ -715,7 +715,7 @@ class Client(
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Data requested from Discord by the ``.client_login_static`` method.
         
         Raises
@@ -865,7 +865,7 @@ class Client(
         
         Returns
         -------
-        response_data : `dict` of (`str` : `Any`)
+        response_data : `dict` of (`str` : `object`)
             Decoded json data got from Discord.
         
         Raises
@@ -938,7 +938,7 @@ class Client(
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         
         Raises
         ------
@@ -1048,7 +1048,7 @@ class Client(
         return gateway_url
     
     
-    async def client_gateway_reshard(self, force=False):
+    async def client_gateway_reshard(self, force = False):
         """
         Reshards the client. And also updates it's gateway's url as a side note.
         
@@ -1392,7 +1392,7 @@ class Client(
         
         Parameters
         ----------
-        guild_datas : `list` of `dict` (`str`, `Any`) items
+        guild_datas : `list` of `dict` (`str`, `object`) items
             Partial data for all the guilds to request the users of.
         shard_id : `int`
             The received shard's identifier.
@@ -1491,7 +1491,7 @@ class Client(
         ----------
         name : `str`
             The guild's name to search.
-        default : `None`, `Any` = `None`, Optional
+        default : `None`, `object` = `None`, Optional
             The default value, what will be returned if the guild was not found.
         
         Returns
@@ -1759,14 +1759,14 @@ class Client(
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Data received from Discord.
         guild : ``Guild``
             The respective guild of the guild profile.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `object`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -1805,7 +1805,7 @@ class Client(
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Data received from Discord.
         guild : ``Guild``
             The respective guild of the guild profile.
@@ -1911,6 +1911,6 @@ class Client(
         return User._from_client(self, False)
     
     
-    @copy_docs(ClientUserBase.copy)
+    @copy_docs(ClientUserBase.copy_with)
     def copy_with(self, **keyword_parameters):
         return User._from_client(self, False).copy_with(**keyword_parameters)

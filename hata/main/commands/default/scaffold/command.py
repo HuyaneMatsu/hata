@@ -83,5 +83,6 @@ def scaffold(
     create_project_structure(directory_path, project_module_name, bot_names)
     sys.stdout.write(
         f'Project {project_module_name} created.\n'
+        f'Note that scaffold command is experimental and will change in future updates.\n'
         f'Please check {join_paths(directory_path, "README.md")} about whats next.\n'
     )

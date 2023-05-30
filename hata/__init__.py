@@ -1,5 +1,4 @@
 ﻿"""
-
 Hata is an asynchronous Discord API wrapper built on top of scarletio. It is designed to be easy to use, with also
 providing rich API offering everything what an advanced developer might need.
 
@@ -57,7 +56,7 @@ interrupt.
 
 We got some `tutorials:https://www.astil.dev/project/hata/guides/` as well, please check them too!
 """
-__version__ = '1.3.30'
+__version__ = '1.3.31'
 
 # First import env, so if exception occurs we do not load the whole library.
 from .env import *

@@ -656,13 +656,26 @@ class InteractionResponse:
                 yield client.interaction_followup_message_create(interaction_event, **response_parameters)
                 
             elif interaction_event.is_unanswered():
+                if ('file' in self._parameters):
+                    need_acknowledging = True
+                else:
+                    need_acknowledging = False
+                
+                if need_acknowledging:
+                    yield client.interaction_component_acknowledge(
+                        interaction_event,
+                    )
+                
                 response_parameters = self._get_response_parameters((
-                    'allowed_mentions', 'content', 'components', 'embed'
+                    'allowed_mentions', 'content', 'components', 'embed', 'file'
                 ))
                 if (response_modifier is not None):
                     response_modifier.apply_to_edition(response_parameters)
-                    
-                if response_parameters:
+                
+                if need_acknowledging:
+                    yield client.interaction_response_message_edit(interaction_event, **response_parameters)
+                
+                elif response_parameters:
                     yield client.interaction_component_message_edit(interaction_event, **response_parameters)
                 
                 else:
@@ -673,7 +686,7 @@ class InteractionResponse:
             
             elif interaction_event.is_deferred():
                 response_parameters = self._get_response_parameters((
-                    'allowed_mentions', 'content', 'components', 'embed'
+                    'allowed_mentions', 'content', 'components', 'embed', 'file'
                 ))
                 if response_parameters:
                     yield client.interaction_response_message_edit(interaction_event, **response_parameters)

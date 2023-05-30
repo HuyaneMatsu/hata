@@ -565,10 +565,10 @@ class ClientCompoundInteractionEndpoints(Compound):
         interaction_event,
         content = ...,
         *,
-        embed = ...,
-        file = ...,
         allowed_mentions = ...,
         components = ...,
+        embed = ...,
+        file = ...,
     ):
         """
         Edits the given `interaction`'s source response. If the source interaction event was only deferred, this call
@@ -586,15 +586,6 @@ class ClientCompoundInteractionEndpoints(Compound):
             
             If given as ``Embed``, then the message's embeds will be edited with it.
         
-        embed : `None`, ``Embed``, `list` of ``Embed``, Optional (Keyword only)
-            The new embedded content of the message. By passing it as `None`, you can remove the old.
-            
-            If `embed` and `content` parameters are both given as  ``Embed``, then `AssertionError` is
-            raised.
-        
-        file : `None`, `object`, Optional (Keyword only)
-            A file or files to send. Check ``create_file_form`` for details.
-        
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
@@ -604,6 +595,15 @@ class ClientCompoundInteractionEndpoints(Compound):
             Components attached to the message.
             
             Pass it as `None` remove the actual ones.
+        
+        embed : `None`, ``Embed``, `list` of ``Embed``, Optional (Keyword only)
+            The new embedded content of the message. By passing it as `None`, you can remove the old.
+            
+            If `embed` and `content` parameters are both given as  ``Embed``, then `AssertionError` is
+            raised.
+        
+        file : `None`, `object`, Optional (Keyword only)
+            A file or files to send. Check ``create_file_form`` for details.
         
         Raises
         ------

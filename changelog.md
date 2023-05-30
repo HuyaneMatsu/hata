@@ -1,4 +1,4 @@
-## 1.3.31 *\[2023-06-??\]*
+## 1.3.31 *\[2023-06-30\]*
 
 #### Improvements
 
@@ -13,6 +13,9 @@
 - Add `Guild.get_soundboard_sounds_like`.
 
 #### Bug fixes
+
+##### ext.slash
+- `file` parameter was not propagated when responding on not acknowledged component interactions.
 
 ##### ext.plugin_loader
 - `Plugins` were sorted incorrectly causing them to be loaded in bad order. This caused deadlock.

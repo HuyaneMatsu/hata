@@ -3236,7 +3236,7 @@ class Guild(DiscordEntity, immortal = True):
         name : `str`
             The name to search for.
         default : `object` = `None`, Optional
-            The value what is returned when no soundboard_sound was found. Defaults to `None`.
+            The value what is returned when no soundboard sound was found. Defaults to `None`.
         
         Returns
         -------

@@ -146,7 +146,7 @@ class PluginTreeIterator(RichAttributeErrorBaseType):
                 continue
             
             current_plugins = current_plugins.copy()
-                
+            
             if self.action == PLUGIN_ACTION_FLAG_LOAD:
                 current_plugins.reverse()
             

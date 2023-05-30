@@ -74,5 +74,4 @@ def _sort_plugins(plugins):
                 f'Plugins with circular satisfaction: {plugins_to_check_ordered!r}'
             )
     
-    plugins_satisfied_ordered.reverse()
     return plugins_satisfied_ordered

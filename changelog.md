@@ -12,6 +12,11 @@
 - Add `Guild.get_soundboard_sound_like`.
 - Add `Guild.get_soundboard_sounds_like`.
 
+#### Bug fixes
+
+##### ext.plugin_loader
+- `Plugins` were sorted incorrectly causing them to be loaded in bad order. This caused deadlock.
+
 ## 1.3.30 *\[2023-05-29\]*
 
 #### Improvements

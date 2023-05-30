@@ -593,7 +593,7 @@ class Emoji(DiscordEntity, immortal = True):
         
         Returns
         -------
-        is_custom_emoji : `bool`
+        is_unicode_emoji : `bool`
         """
         return (self.unicode is not None)
     

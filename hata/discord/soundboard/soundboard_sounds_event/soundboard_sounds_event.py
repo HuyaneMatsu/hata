@@ -79,16 +79,18 @@ class SoundboardSoundsEvent(EventBase):
         """
         guild_id = parse_guild_id(data)
         
-        self = object.__new__(cls)
-        self.guild_id = guild_id
-        self.sounds = parse_sounds(data)
-        
         try:
             guild = GUILDS[guild_id]
         except KeyError:
             pass
         else:
+            old_sounds = [*guild.iter_soundboard_sounds()]
+            guild.soundboard_sounds = None
             guild.soundboard_sounds_cached = True
+        
+        self = object.__new__(cls)
+        self.guild_id = guild_id
+        self.sounds = parse_sounds(data)
         
         return self
     

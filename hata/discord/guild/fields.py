@@ -10,8 +10,9 @@ from ..field_putters import (
 )
 from ..field_validators import (
     entity_id_validator_factory, force_string_validator_factory, int_conditional_validator_factory,
-    int_options_validator_factory, preinstanced_array_validator_factory
+    int_options_validator_factory, nullable_entity_dictionary_validator_factory, preinstanced_array_validator_factory
 )
+from ..soundboard import SoundboardSound
 
 from .constants import (
     MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT, MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT, NAME_LENGTH_MAX, NAME_LENGTH_MIN
@@ -73,3 +74,7 @@ validate_premium_tier = int_options_validator_factory('premium_tier', frozenset(
 parse_safety_alerts_channel_id = entity_id_parser_factory('safety_alerts_channel_id')
 put_safety_alerts_channel_id_into = entity_id_optional_putter_factory('safety_alerts_channel_id')
 validate_safety_alerts_channel_id = entity_id_validator_factory('safety_alerts_channel_id', Channel)
+
+# soundboard_sounds
+
+validate_soundboard_sounds = nullable_entity_dictionary_validator_factory('soundboard_sounds', SoundboardSound)

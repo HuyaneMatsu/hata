@@ -1,6 +1,7 @@
 import vampytest
 
 from ...emoji import Emoji
+from ...soundboard import SoundboardSound
 from ...sticker import Sticker, StickerFormat
 
 from ..emoji_counts import EmojiCounts
@@ -32,6 +33,21 @@ def test__Guild__nsfw__1():
     guild = Guild.precreate(202208270001, nsfw_level = nsfw_level)
     
     vampytest.assert_eq(guild.nsfw, nsfw_level.nsfw)
+
+
+def test__Guild__iter_features():
+    """
+    Tests whether ``Guild.iter_features`` works as intended.
+    """
+    feature_0 = GuildFeature.animated_icon
+    feature_1 = GuildFeature.animated_banner
+    
+    for guild, expected_output in (
+        (Guild.precreate(202305290002, features = None), set()),
+        (Guild.precreate(202305290003, features = [feature_0]), {feature_0}),
+        (Guild.precreate(202305290004, features = [feature_0, feature_1]), {feature_0, feature_1}),
+    ):
+        vampytest.assert_eq({*guild.iter_features()}, expected_output)
 
 
 def test__Guild__has_feature():
@@ -153,22 +169,6 @@ def test__Guild__sticker_counts():
     vampytest.assert_eq(sticker_counts.animated, 1)
 
 
-def test__Guild__iter_features():
-    """
-    Tests whether ``Guild.iter_features`` works as intended.
-    """
-    for guild, expected_output in (
-        (
-            Guild.precreate(202212200033, features = []),
-            [],
-        ), (
-            Guild.precreate(202212200022, features = [GuildFeature.animated_banner, GuildFeature.animated_icon]),
-            [GuildFeature.animated_banner, GuildFeature.animated_icon],
-        ),
-    ):
-        vampytest.assert_eq([*guild.iter_features()], expected_output)
-
-
 def test__Guild__soundboard_sounds_cached():
     """
     Tests whether ``Guild.soundboard_sounds_cached`` works as intended.
@@ -188,3 +188,72 @@ def test__Guild__soundboard_sounds_cached():
     output = message.soundboard_sounds_cached
     vampytest.assert_instance(output, bool)
     vampytest.assert_false(output)
+
+
+def test__Guild__iter_soundboard_sounds():
+    """
+    Tests whether ``Guild.iter_soundboard_sounds`` works as intended.
+    """
+    sound_0 = SoundboardSound.precreate(202305300000, name = 'orin')
+    sound_1 = SoundboardSound.precreate(202305300001, name = 'rin')
+    
+    for guild, expected_output in (
+        (Guild.precreate(202305300002, soundboard_sounds = None), set()),
+        (Guild.precreate(202305300003, soundboard_sounds = [sound_0]), {sound_0}),
+        (Guild.precreate(202305300004, soundboard_sounds = [sound_0, sound_1]), {sound_0, sound_1}),
+    ):
+        vampytest.assert_eq({*guild.iter_soundboard_sounds()}, expected_output)
+
+
+def test__Guild__get_soundboard_sound():
+    """
+    Tests whether ``Guild.get_soundboard_sound`` works as intended.
+    """
+    sound_0 = SoundboardSound.precreate(202305300005, name = 'orin')
+    sound_1 = SoundboardSound.precreate(202305300006, name = 'rin')
+    
+    for guild, name, expected_output in (
+        (Guild.precreate(202305300007, soundboard_sounds = None), 'rin', None),
+        (Guild.precreate(202305300008, soundboard_sounds = [sound_0]), 'rin', None),
+        (Guild.precreate(202305300009, soundboard_sounds = [sound_1]), 'rin', sound_1),
+        (Guild.precreate(202305300010, soundboard_sounds = [sound_0, sound_1]), 'rin', sound_1),
+    ):
+        vampytest.assert_is(guild.get_soundboard_sound(name), expected_output)
+
+
+def test__Guild__get_soundboard_sound_like():
+    """
+    Tests whether ``Guild.get_soundboard_sound_like`` works as intended.
+    """
+    sound_0 = SoundboardSound.precreate(202305300011, name = 'orin')
+    sound_1 = SoundboardSound.precreate(202305300012, name = 'rin')
+    
+    for guild, name, expected_output in (
+        (Guild.precreate(202305300013, soundboard_sounds = None), 'rin', None),
+        (Guild.precreate(202305300014, soundboard_sounds = [sound_0]), 'rin', sound_0),
+        (Guild.precreate(202305300015, soundboard_sounds = [sound_1]), 'rin', sound_1),
+        (Guild.precreate(202305300016, soundboard_sounds = [sound_1]), 'orin', None),
+        (Guild.precreate(202305300017, soundboard_sounds = [sound_0, sound_1]), 'rin', sound_1),
+        (Guild.precreate(202305300018, soundboard_sounds = [sound_0, sound_1]), 'orin', sound_0),
+        (Guild.precreate(202305300019, soundboard_sounds = [sound_0, sound_1]), 'okuu', None),
+    ):
+        vampytest.assert_is(guild.get_soundboard_sound_like(name), expected_output)
+
+
+def test__Guild__get_soundboard_sounds_like():
+    """
+    Tests whether ``Guild.get_soundboard_sounds_like`` works as intended.
+    """
+    sound_0 = SoundboardSound.precreate(202305300020, name = 'orin')
+    sound_1 = SoundboardSound.precreate(202305300021, name = 'rin')
+    
+    for guild, name, expected_output in (
+        (Guild.precreate(202305300022, soundboard_sounds = None), 'rin', []),
+        (Guild.precreate(202305300023, soundboard_sounds = [sound_0]), 'rin', [sound_0]),
+        (Guild.precreate(202305300024, soundboard_sounds = [sound_1]), 'rin', [sound_1]),
+        (Guild.precreate(202305300025, soundboard_sounds = [sound_1]), 'orin', []),
+        (Guild.precreate(202305300026, soundboard_sounds = [sound_0, sound_1]), 'rin', [sound_1, sound_0]),
+        (Guild.precreate(202305300027, soundboard_sounds = [sound_0, sound_1]), 'orin', [sound_0]),
+        (Guild.precreate(202305300028, soundboard_sounds = [sound_0, sound_1]), 'okuu', []),
+    ):
+        vampytest.assert_eq(guild.get_soundboard_sounds_like(name), expected_output)

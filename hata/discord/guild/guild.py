@@ -38,7 +38,7 @@ from .fields import (
     parse_features, parse_id, parse_max_stage_channel_video_users, parse_max_voice_channel_video_users, parse_name,
     parse_premium_tier, parse_safety_alerts_channel_id, validate_features, validate_id,
     validate_max_stage_channel_video_users, validate_max_voice_channel_video_users, validate_name,
-    validate_premium_tier, validate_safety_alerts_channel_id
+    validate_premium_tier, validate_safety_alerts_channel_id, validate_soundboard_sounds
 )
 from .flags import SystemChannelFlag
 from .guild_premium_perks import TIERS as PREMIUM_TIERS, TIER_MAX as PREMIUM_TIER_MAX
@@ -86,8 +86,6 @@ else:
     GUILD_USERS_TYPE = WeakValueDictionary
 
 
-
-
 def _user_date_sort_key(item):
     """
     Sort key used inside ``Guild.get_users_like_ordered`` and in ``Guild.boosters`` to sort users by a specified date.
@@ -112,6 +110,22 @@ def _emoji_match_sort_key(item):
     ----------
     item : `tuple` (``Emoji``, `tuple` (`int`, `int`))
         The emoji and it's match rate.
+    
+    Returns
+    -------
+    match_rate : `tuple` (`int`, `int`)
+    """
+    return item[1]
+
+
+def _soundboard_sound_match_sort_key(item):
+    """
+    Sort key used inside of ``Guild.get_soundboard_sounds_like`` to sort soundboard sounds based on their match rate.
+    
+    Parameters
+    ----------
+    item : `tuple` (``Sticker``, `tuple` (`bool`, `int`, `int`))
+        The soundboard sound and it's match rate.
     
     Returns
     -------
@@ -618,7 +632,7 @@ class Guild(DiscordEntity, immortal = True):
             
         features : `None`, `tuple` of `(`int`, `GuildFeature``), Optional (Keyword only)
             The guild's features.
-            
+        
         icon : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's icon.
             
@@ -641,7 +655,7 @@ class Guild(DiscordEntity, immortal = True):
             The maximal amount of users watching a video in a stage channel.
         
         name : `str`, Optional (Keyword only)
-            The guild's ``.name``.
+            The guild's name.
         
         nsfw_level : ``NsfwLevel``, Optional (Keyword only)
             The nsfw level of the guild.
@@ -651,6 +665,10 @@ class Guild(DiscordEntity, immortal = True):
         
         safety_alerts_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel where safety alerts are sent by Discord.
+        
+        soundboard_sounds : `None`, `iterable` of ``SoundboardSound``, `dict` of (`int`, ``SoundboardSound``) items \
+                , Optional (Keyword only)
+            The soundboard sounds of the guild.
         
         Returns
         -------
@@ -705,6 +723,7 @@ class Guild(DiscordEntity, immortal = True):
                 ('premium_tier', validate_premium_tier),
                 ('max_stage_channel_video_users', validate_max_stage_channel_video_users),
                 ('max_voice_channel_video_users', validate_max_voice_channel_video_users),
+                ('soundboard_sounds', validate_soundboard_sounds),
             ):
                 try:
                     attribute_value = kwargs.pop(attribute_name)
@@ -1618,7 +1637,7 @@ class Guild(DiscordEntity, immortal = True):
     
     def get_emoji_like(self, name, default = None):
         """
-        Searches an emoji of the guild, whats name starts with the given string and returns the first find.
+        Searches an emoji of the guild that matches the given `name` the most.
         
         Parameters
         ----------
@@ -1720,7 +1739,7 @@ class Guild(DiscordEntity, immortal = True):
     
     def get_sticker_like(self, name, default = None):
         """
-        Searches a sticker of the guild, what's name or a tag starts with the given name.
+        Searches a sticker of the guild that's name or tag matches the given `name` the most.
         
         Parameters
         ----------
@@ -3151,6 +3170,7 @@ class Guild(DiscordEntity, immortal = True):
         
         return self.max_voice_channel_video_users
     
+    # Soundboard
     
     @property
     def soundboard_sounds_cached(self):
@@ -3168,3 +3188,116 @@ class Guild(DiscordEntity, immortal = True):
         else:
             state &= ~GUILD_STATE_MASK_SOUNDBOARD_SOUNDS_REQUESTED
         self._state = state
+    
+    
+    def iter_soundboard_sounds(self):
+        """
+        Iterates over the guild's soundboard sounds.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        soundboard_sound : ``SoundboardSound``
+        """
+        soundboard_sounds = self.soundboard_sounds
+        if (soundboard_sounds is not None):
+            yield from soundboard_sounds.values()
+    
+    
+    def get_soundboard_sound(self, name, default = None):
+        """
+        Searches an soundboard sound of the guild that has it name set to same value as the given `name`.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `object` = `None`, Optional
+            The value what is returned when no soundboard sound was found. Defaults to `None`.
+        
+        Returns
+        -------
+        soundboard_sound : ``SoundboardSound``, `default`
+        """
+        for soundboard_sound in self.iter_soundboard_sounds():
+            if soundboard_sound.name == name:
+                return soundboard_sound
+        
+        return default
+    
+    
+    def get_soundboard_sound_like(self, name, default = None):
+        """
+        Searches the soundboard sound of the guild that have its name matching the given `name` value the most.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `object` = `None`, Optional
+            The value what is returned when no soundboard_sound was found. Defaults to `None`.
+        
+        Returns
+        -------
+        soundboard_sound : ``SoundboardSound``, `default`
+        """
+        soundboard_sound_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        
+        accurate_soundboard_sound = default
+        accurate_match_key = (100, 100)
+        
+        for soundboard_sound in self.iter_soundboard_sounds():
+            soundboard_sound_name = soundboard_sound.name
+            parsed = soundboard_sound_name_pattern.search(soundboard_sound_name)
+            if parsed is None:
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            match_rate = (match_length, match_length)
+            if accurate_match_key < match_rate:
+                continue
+            
+            accurate_soundboard_sound = soundboard_sound
+            accurate_match_key = match_rate
+        
+        return accurate_soundboard_sound
+    
+    
+    def get_soundboard_sounds_like(self, name):
+        """
+        Searches the soundboard sounds that have their name matching the given value.
+        
+        The returned value is ordered by match rate.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        
+        Returns
+        -------
+        soundboard_sounds : `list` of ``SoundboardSound``
+        """
+        soundboard_sound_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        
+        to_sort = []
+        
+        for soundboard_sound in self.iter_soundboard_sounds():
+            soundboard_sound_name = soundboard_sound.name
+            parsed = soundboard_sound_name_pattern.search(soundboard_sound_name)
+            if parsed is None:
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            to_sort.append((soundboard_sound, (match_length, match_start)))
+        
+        if not to_sort:
+            return to_sort
+        
+        to_sort.sort(key = _soundboard_sound_match_sort_key)
+        return [item[0] for item in to_sort]

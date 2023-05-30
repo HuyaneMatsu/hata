@@ -6,6 +6,7 @@ from ...http import urls as module_urls
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ZEROUSER, create_partial_user_from_id
 
+from .constants import DEFAULT_SOUNDBOARD_SOUND_LIMIT
 from .fields import (
     parse_available, parse_emoji, parse_guild_id, parse_id, parse_name, parse_user, parse_user_id, parse_volume,
     put_available_into, put_emoji_into, put_guild_id_into, put_id_into, put_name_into, put_user_id_into, put_user_into,
@@ -708,3 +709,27 @@ class SoundboardSound(DiscordEntity, immortal = True):
         user = create_partial_user_from_id(user_id)
         self._cache_user = user
         return user
+
+    
+    def is_custom_sound(self):
+        """
+        Returns whether the soundboard sound is a custom sound.
+        
+        Returns
+        -------
+        is_custom_sound : `bool`
+        """
+        sound_id = self.id
+        return sound_id == 0 or sound_id >= DEFAULT_SOUNDBOARD_SOUND_LIMIT
+    
+    
+    def is_default_sound(self):
+        """
+        Returns whether the soundboard sound is a default sound.
+        
+        Returns
+        -------
+        is_default_sound : `bool`
+        """
+        sound_id = self.id
+        return sound_id != 0 and sound_id < DEFAULT_SOUNDBOARD_SOUND_LIMIT

@@ -261,7 +261,8 @@ class ClientCompoundClientGateway(Compound):
         
         Returns
         -------
-        sounds : `list` of ``SoundboardSoundsEvent``
+        sounds : `None`, `list` of ``SoundboardSoundsEvent``
+            Might return `None` if there are no guilds to request sounds from.
         """
         guild_ids = set()
         
@@ -278,6 +279,8 @@ class ClientCompoundClientGateway(Compound):
                 
                 guild_ids.add(guild_id)
         
+        if not guild_ids:
+            return None
         
         by_gateway = {}
         

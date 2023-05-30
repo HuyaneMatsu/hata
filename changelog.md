@@ -1,3 +1,17 @@
+## 1.3.31 *\[2023-06-??\]*
+
+#### Improvements
+
+- Add shortcut to `Client.request_soundboard_sounds` if there is nothing to do.
+- Add `SoundboardSound.is_custom_sound`.
+- Add `SoundboardSound.is_default_sound`.
+- Add `Guild.iter_soundboard_sounds`.
+- When receiving `SoundboardSoundsEvent`, the guild's soundboard cache will be completely re-populated.
+- Add `soundboard_sounds` parameter to `Guild.precreate`.
+- Add `Guild.get_soundboard_sound`.
+- Add `Guild.get_soundboard_sound_like`.
+- Add `Guild.get_soundboard_sounds_like`.
+
 ## 1.3.30 *\[2023-05-29\]*
 
 #### Improvements

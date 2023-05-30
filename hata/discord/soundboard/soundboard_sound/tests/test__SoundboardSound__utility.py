@@ -244,3 +244,83 @@ def test__SoundboardSound__delete():
     sound._delete()
     
     vampytest.assert_eq(guild.soundboard_sounds, None)
+
+
+def test__SoundboardSound__is_custom_sound__0():
+    """
+    Tests whether ``SoundboardSound.is_custom_sound`` works as intended.
+    
+    Case: Template.
+    """
+    sound = SoundboardSound()
+    
+    output = sound.is_custom_sound()
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_true(output)
+
+
+def test__SoundboardSound__is_custom_sound__1():
+    """
+    Tests whether ``SoundboardSound.is_custom_sound`` works as intended.
+    
+    Case: Default.
+    """
+    sound = SoundboardSound()
+    sound.id = 6
+    
+    output = sound.is_custom_sound()
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_false(output)
+
+
+def test__SoundboardSound__is_custom_sound__2():
+    """
+    Tests whether ``SoundboardSound.is_custom_sound`` works as intended.
+    
+    Case: Custom.
+    """
+    sound = SoundboardSound.precreate(202305290000)
+    
+    output = sound.is_custom_sound()
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_true(output)
+
+
+def test__SoundboardSound__is_default_sound__0():
+    """
+    Tests whether ``SoundboardSound.is_default_sound`` works as intended.
+    
+    Case: Template.
+    """
+    sound = SoundboardSound()
+    
+    output = sound.is_default_sound()
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_false(output)
+
+
+def test__SoundboardSound__is_default_sound__1():
+    """
+    Tests whether ``SoundboardSound.is_default_sound`` works as intended.
+    
+    Case: Default.
+    """
+    sound = SoundboardSound()
+    sound.id = 6
+    
+    output = sound.is_default_sound()
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_true(output)
+
+
+def test__SoundboardSound__is_default_sound__2():
+    """
+    Tests whether ``SoundboardSound.is_default_sound`` works as intended.
+    
+    Case: Custom.
+    """
+    sound = SoundboardSound.precreate(202305290001)
+    
+    output = sound.is_default_sound()
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_false(output)

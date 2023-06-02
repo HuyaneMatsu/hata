@@ -8,7 +8,24 @@ from ....... import __package__ as PACKAGE_NAME
 from ...helpers import create_directory_recursive
 from ...naming import get_bot_constant_name, get_bot_module_name, get_bot_variable_name
 
-from .readme_rendering import create_readme_content
+from .readme_rendering import build_readme_content
+
+
+def create_file(directory_path, file_name, content):
+    """
+    Creates a file at the given position described by `directory_path` and `file_name`.
+    
+    Parameters
+    ----------
+    directory_path : `str`
+        Path to the file's directory.
+    file_name : `str`
+        The file's name.
+    content : `str`
+        The content to write.
+    """
+    with open(join_paths(directory_path, file_name), 'w') as file:
+        file.write(content)
 
 
 def create_gitignore_file(directory_path):
@@ -20,8 +37,10 @@ def create_gitignore_file(directory_path):
     directory_path : `str`
         Path to the file's directory.
     """
-    with open(join_paths(directory_path, '.gitignore'), 'w') as file:
-        file.write(
+    create_file(
+        directory_path,
+        '.gitignore',
+        (
             f'# Generic\n'
             f'*.env\n'
             f'*.venv\n'
@@ -39,7 +58,8 @@ def create_gitignore_file(directory_path):
             f'\n'
             f'# Hata\n'
             f'.profiles/\n'
-        )
+        ),
+    )
 
 
 def create_readme_file(directory_path, project_name, bot_names):
@@ -55,8 +75,7 @@ def create_readme_file(directory_path, project_name, bot_names):
     bot_names : `list` of `str`
         The bots' names.
     """
-    with open(join_paths(directory_path, 'README.md'), 'w') as file:
-        file.write(create_readme_content(project_name, bot_names))
+    create_file(directory_path, 'README.md', build_readme_content(project_name, bot_names))
 
 
 def create_pyproject_toml_file(directory_path, project_name):
@@ -70,8 +89,10 @@ def create_pyproject_toml_file(directory_path, project_name):
     project_name : `str`
         The project's name.
     """
-    with open(join_paths(directory_path, 'pyproject.toml'), 'w') as file:
-        file.write(
+    create_file(
+        directory_path,
+        'pyproject.toml',
+        (
             f'[project]\n'
             f'name = \'{project_name}\'\n'
             f'\n'
@@ -90,7 +111,8 @@ def create_pyproject_toml_file(directory_path, project_name):
             f'\n'
             f'[project.scripts]\n'
             f'{project_name} = \'{project_name}.cli:main\'\n'
-        )
+        ),
+    )
 
 
 def build_dot_env_file_content(bot_names):
@@ -127,9 +149,7 @@ def create_dot_env_file(directory_path, bot_names):
     bot_names : `list` of `str`
         The bots' names.
     """
-    with open(join_paths(directory_path, '.env'), 'w') as file:
-        file.write(build_dot_env_file_content(bot_names))
-
+    create_file(directory_path, '.env', build_dot_env_file_content(bot_names))
 
 
 def create_project_init_file(directory_path):
@@ -141,10 +161,7 @@ def create_project_init_file(directory_path):
     directory_path : `str`
         Path to the file's directory.
     """
-    with open(join_paths(directory_path, '__init__.py'), 'w') as file:
-        file.write(
-            f'__all__ = ()\n'
-        )
+    create_file(directory_path, '__init__.py', '__all__ = ()\n')
 
 
 def create_cli_file(directory_path):
@@ -156,8 +173,10 @@ def create_cli_file(directory_path):
     directory_path : `str`
         Path to the file's directory.
     """
-    with open(join_paths(directory_path, 'cli.py'), 'w') as file:
-        file.write(
+    create_file(
+        directory_path,
+        'cli.py',
+        (
             f'__all__ = (\'main\',)\n'
             f'\n'
             f'def main():\n'
@@ -189,7 +208,8 @@ def create_cli_file(directory_path):
             f'    start_auto_reloader()\n'
             f'\n'
             f'    execute_command_from_system_parameters()\n'
-        )
+        ),
+    )
 
 
 def create_main_file(directory_path):
@@ -201,15 +221,18 @@ def create_main_file(directory_path):
     directory_path : `str`
         Path to the file's directory.
     """
-    with open(join_paths(directory_path, '__main__.py'), 'w') as file:
-        file.write(
+    create_file(
+        directory_path,
+        '__main__.py',
+        (
             f'__all__ = ()\n'
             f'\n'
             f'from .cli import main\n'
             f'\n'
             f'if __name__ == \'__main__\':\n'
             f'    main()\n'
-        )
+        ),
+    )
 
 
 def build_bots_init_file_content(bot_names):
@@ -257,8 +280,7 @@ def create_bots_init_file(directory_path, bot_names):
     bot_names : `list` of `str`
         The bots' names.
     """
-    with open(join_paths(directory_path, '__init__.py'), 'w') as file:
-        file.write(build_bots_init_file_content(bot_names))
+    create_file(directory_path, '__init__.py', build_bots_init_file_content(bot_names))
 
 
 def create_bot_file(directory_path, bot_name):
@@ -275,8 +297,11 @@ def create_bot_file(directory_path, bot_name):
     bot_module_name = get_bot_module_name(bot_name)
     bot_variable_name = get_bot_variable_name(bot_name)
     bot_constant_name = get_bot_constant_name(bot_name)
-    with open(join_paths(directory_path, bot_module_name + '.py'), 'w') as file:
-        file.write(
+    
+    create_file(
+        directory_path,
+        bot_module_name + '.py',
+        (
             f'__all__ = (\'{bot_variable_name}\',)\n'
             f'\n'
             f'from hata import Client\n'
@@ -286,7 +311,8 @@ def create_bot_file(directory_path, bot_name):
             f'{bot_variable_name} = Client(\n'
             f'    get_str_env(\'{bot_constant_name}_TOKEN\', raise_if_missing_or_empty = True)\n'
             f')\n'
-        )
+        ),
+    )
 
 
 def create_plugins_init_file(directory_path):
@@ -298,12 +324,15 @@ def create_plugins_init_file(directory_path):
     directory_path : `str`
         Path to the file's directory.
     """
-    with open(join_paths(directory_path, '__init__.py'), 'w') as file:
-        file.write(
+    create_file(
+        directory_path,
+        '__init__.py',
+        (
             f'from hata.ext.plugin_loader import mark_as_plugin_root_directory\n'
             f'\n'
             f'mark_as_plugin_root_directory()\n'
-        )
+        ),
+    )
 
 
 def create_project_structure(root_directory_path, project_name, bot_names):

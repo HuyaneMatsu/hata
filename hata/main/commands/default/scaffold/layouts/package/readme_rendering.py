@@ -646,7 +646,7 @@ def render_readme_section_cli(into, project_name):
     return into
 
 
-def create_readme_content(project_name, bot_names):
+def build_readme_content(project_name, bot_names):
     """
     Creates the content of the `/README.md`  file.
     

@@ -1,4 +1,10 @@
-## 1.3.31 *\[2023-06-30\]*
+## 1.3.32 *\[2023-06-??\]*
+
+#### Bug Fixes
+
+- `scaffold` command always failed if `project-name` was directly defined.
+
+## 1.3.31 *\[2023-05-30\]*
 
 #### Improvements
 

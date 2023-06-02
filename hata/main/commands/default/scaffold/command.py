@@ -53,7 +53,7 @@ def scaffold(
     name : str,
     *bot : str,
     project_name : str = None,
-    layout : str = DEFAULT_LAYOUT,
+    layout : str = None,
 ):
     """
     Scaffolds a project.

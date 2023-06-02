@@ -94,7 +94,7 @@ def _validate_project_name(project_name_value, name_value):
         Error message.
     """
     if (project_name_value is not None) and project_name_value:
-        project_name = None
+        project_name = project_name_value
     else:
         project_name = base_name(name_value)
     

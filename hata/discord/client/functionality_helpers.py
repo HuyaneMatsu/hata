@@ -797,19 +797,20 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
                     if message_count == 1:
                         if (delete_new_task is None):
                             message_id = message_ids[0]
-                            delete_new_task = Task(client.http.message_delete(channel_id, message_id, reason), KOKORO)
+                            delete_new_task = Task(KOKORO, client.http.message_delete(channel_id, message_id, reason))
                             tasks.append(delete_new_task)
                     else:
                         delete_mass_task = Task(
+                            KOKORO,
                             client.http.message_delete_multiple(channel_id, {'messages': message_ids}, reason),
-                                KOKORO)
+                        )
                         
                         tasks.append(delete_mass_task)
         
         if delete_old_task is None:
             if message_group_old:
                 message_id = message_group_old.popleft()
-                delete_old_task = Task(client.http.message_delete_b2wo(channel_id, message_id, reason), KOKORO)
+                delete_old_task = Task(KOKORO, client.http.message_delete_b2wo(channel_id, message_id, reason))
                 tasks.append(delete_old_task)
         
         if delete_new_task is None:
@@ -822,7 +823,7 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
             
             if (group is not None):
                 message_id = message_group_old_own.popleft()
-                delete_new_task = Task(client.http.message_delete(channel_id, message_id, reason), KOKORO)
+                delete_new_task = Task(KOKORO, client.http.message_delete(channel_id, message_id, reason))
                 tasks.append(delete_new_task)
         
         if not tasks:
@@ -837,9 +838,9 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
             # We will delete that message with old endpoint if not own, to make
             # Sure it will not block the other endpoint for 2 minutes with any chance.
             if own:
-                delete_new_task = Task(client.http.message_delete(channel_id, message_id, reason), KOKORO)
+                delete_new_task = Task(KOKORO, client.http.message_delete(channel_id, message_id, reason))
             else:
-                delete_old_task = Task(client.http.message_delete_b2wo(channel_id, message_id, reason), KOKORO)
+                delete_old_task = Task(KOKORO, client.http.message_delete_b2wo(channel_id, message_id, reason))
             
             tasks.append(delete_old_task)
         

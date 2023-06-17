@@ -26,68 +26,68 @@ def handle_dispatch_ready(rpc_client, data):
     rpc_client.user = User.from_data(data['user'])
     rpc_client._set_connection_waiter_result(True)
     
-    Task(rpc_client.events.ready(rpc_client), KOKORO)
+    Task(KOKORO, rpc_client.events.ready(rpc_client))
 
 
 def handle_dispatch_guild_status_update(rpc_client, data):
     guild = create_partial_guild_from_data(data['guild'])
     
-    Task(rpc_client.events.guild_status_update(rpc_client, guild), KOKORO)
+    Task(KOKORO, rpc_client.events.guild_status_update(rpc_client, guild))
 
 
 
 def handle_dispatch_guild_create(rpc_client, data):
     event = GuildCreateEvent(data)
     
-    Task(rpc_client.events.guild_create(rpc_client, event), KOKORO)
+    Task(KOKORO, rpc_client.events.guild_create(rpc_client, event))
 
 
 def handle_dispatch_channel_create(rpc_client, data):
     event = ChannelCreateEvent(data)
     
-    Task(rpc_client.events.channel_create(rpc_client, event), KOKORO)
+    Task(KOKORO, rpc_client.events.channel_create(rpc_client, event))
 
 
 def handle_dispatch_channel_voice_select(rpc_client, data):
     event = ChannelVoiceSelectEvent(data)
     
-    Task(rpc_client.events.voice_channel_select(rpc_client, event), KOKORO)
+    Task(KOKORO, rpc_client.events.voice_channel_select(rpc_client, event))
 
 
 def handle_dispatch_event_voice_settings_update(rpc_client, data):
     voice_settings = VoiceSettings.from_data(data)
     
-    Task(rpc_client.events.voice_settings_update(rpc_client, voice_settings), KOKORO)
+    Task(KOKORO, rpc_client.events.voice_settings_update(rpc_client, voice_settings))
 
 
 def handle_dispatch_user_voice_create(rpc_client, data):
     voice_state = RichVoiceState.from_data(data)
     
-    Task(rpc_client.events.voice_state_create(rpc_client, voice_state), KOKORO)
+    Task(KOKORO, rpc_client.events.voice_state_create(rpc_client, voice_state))
 
 
 def handle_dispatch_user_voice_update(rpc_client, data):
     voice_state = RichVoiceState.from_data(data)
     
-    Task(rpc_client.events.voice_state_update(rpc_client, voice_state), KOKORO)
+    Task(KOKORO, rpc_client.events.voice_state_update(rpc_client, voice_state))
 
 
 def handle_dispatch_user_voice_delete(rpc_client, data):
     voice_state = RichVoiceState.from_data(data)
     
-    Task(rpc_client.events.voice_state_delete(rpc_client, voice_state), KOKORO)
+    Task(KOKORO, rpc_client.events.voice_state_delete(rpc_client, voice_state))
 
 
 def handle_dispatch_voice_connection_status(rpc_client, data):
     voice_connection_status = VoiceConnectionStatus.from_data(data)
 
-    Task(rpc_client.events.voice_connection_status(rpc_client, voice_connection_status), KOKORO)
+    Task(KOKORO, rpc_client.events.voice_connection_status(rpc_client, voice_connection_status))
 
 
 def handle_dispatch_message_create(rpc_client, data):
     message = Message.from_data(data)
     
-    Task(rpc_client.events.message_create(rpc_client, message), KOKORO)
+    Task(KOKORO, rpc_client.events.message_create(rpc_client, message))
 
 
 def handle_dispatch_message_edit(rpc_client, data):
@@ -111,7 +111,7 @@ def handle_dispatch_message_edit(rpc_client, data):
             message._update_embed_no_return(data)
             return
     
-    Task(rpc_client.events.message_edit(rpc_client, message, old_attributes), KOKORO)
+    Task(KOKORO, rpc_client.events.message_edit(rpc_client, message, old_attributes))
 
 
 def handle_dispatch_message_delete(rpc_client, data):
@@ -122,43 +122,43 @@ def handle_dispatch_message_delete(rpc_client, data):
     if (channel is not None):
         channel._pop_message(message_id)
     
-    Task(rpc_client.events.message_delete(rpc_client, message), KOKORO)
+    Task(KOKORO, rpc_client.events.message_delete(rpc_client, message))
 
 
 def handle_dispatch_speaking_start(rpc_client, data):
     user_id = int(data['user_id'])
     
-    Task(rpc_client.events.speaking_start(rpc_client, user_id), KOKORO)
+    Task(KOKORO, rpc_client.events.speaking_start(rpc_client, user_id))
 
 
 def handle_dispatch_speaking_stop(rpc_client, data):
     user_id = int(data['user_id'])
     
-    Task(rpc_client.events.speaking_stop(rpc_client, user_id), KOKORO)
+    Task(KOKORO, rpc_client.events.speaking_stop(rpc_client, user_id))
 
 
 def handle_dispatch_notification_create(rpc_client, data):
     event = NotificationCreateEvent(data)
     
-    Task(rpc_client.events.notification_create(rpc_client, event), KOKORO)
+    Task(KOKORO, rpc_client.events.notification_create(rpc_client, event))
 
 
 def handle_dispatch_activity_join(rpc_client, data):
     secret = data['secret']
     
-    Task(rpc_client.events.activity_join(rpc_client, secret), KOKORO)
+    Task(KOKORO, rpc_client.events.activity_join(rpc_client, secret))
 
 
 def handle_dispatch_activity_spectate(rpc_client, data):
     secret = data['secret']
     
-    Task(rpc_client.events.activity_spectate(rpc_client, secret), KOKORO)
+    Task(KOKORO, rpc_client.events.activity_spectate(rpc_client, secret))
 
 
 def handle_dispatch_activity_join_request(rpc_client, data):
     user = User.from_data(data['user'])
     
-    Task(rpc_client.events.activity_join_request(rpc_client, user), KOKORO)
+    Task(KOKORO, rpc_client.events.activity_join_request(rpc_client, user))
 
 
 DISPATCH_EVENT_HANDLERS = {

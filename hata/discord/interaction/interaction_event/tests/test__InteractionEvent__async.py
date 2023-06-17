@@ -18,7 +18,7 @@ async def test__InteractionEvent__wait_for_response_message__0():
     
     interaction_event = InteractionEvent(message = message)
     
-    task = Task(interaction_event.wait_for_response_message(), KOKORO)
+    task = Task(KOKORO, interaction_event.wait_for_response_message())
     task.apply_timeout(0.015)
     output = await task
     
@@ -35,7 +35,7 @@ async def test__InteractionEvent__wait_for_response_message__1():
     
     interaction_event = InteractionEvent()
     
-    task = Task(interaction_event.wait_for_response_message(), KOKORO)
+    task = Task(KOKORO, interaction_event.wait_for_response_message())
     await skip_ready_cycle()
     
     INTERACTION_EVENT_MESSAGE_WAITERS[interaction_event].set_result(None)
@@ -55,7 +55,7 @@ async def test__InteractionEvent__wait_for_response_message__2():
     """
     interaction_event = InteractionEvent()
     
-    task = Task(interaction_event.wait_for_response_message(timeout = 0), KOKORO)
+    task = Task(KOKORO, interaction_event.wait_for_response_message(timeout = 0))
     
     await skip_poll_cycle()
     await skip_ready_cycle()

@@ -1,8 +1,8 @@
 import vampytest
 
 from ....localization import Locale
+from ....localization.utils import LOCALE_DEFAULT
 
-from ..constants import LOCALE_DEFAULT
 from ..fields import parse_locale
 
 

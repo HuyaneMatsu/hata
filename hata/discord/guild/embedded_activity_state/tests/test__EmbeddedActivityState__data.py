@@ -87,7 +87,32 @@ def test__EmbeddedActivityState__from_data__2():
     test_embedded_activity_state = EmbeddedActivityState.from_data(data)
     
     vampytest.assert_is(embedded_activity_state, test_embedded_activity_state)
-    vampytest.assert_eq(guild._embedded_activity_states, {embedded_activity_state})
+    vampytest.assert_eq(guild.embedded_activity_states, {embedded_activity_state})
+
+
+def test__EmbeddedActivityState__from_data__3():
+    """
+    Tests whether ``EmbeddedActivityState.from_data`` works as intended.
+    
+    Case: Caching, `strong_cache` given as `False`.
+    """
+    activity = Activity('tsuki', activity_type = ActivityType.competing, application_id = 202306160010)
+    channel_id = 202306160011
+    guild_id = 202306160012
+    user_ids = [202306160013, 202306160014]
+    
+    data = {
+        'embedded_activity': activity.to_data(include_internals = True, user = True),
+        'channel_id': str(channel_id),
+        'guild_id': str(guild_id),
+        'users': [str(user_id) for user_id in user_ids],
+    }
+    
+    guild = Guild.precreate(guild_id)
+    
+    embedded_activity_state = EmbeddedActivityState.from_data(data, strong_cache = False)
+    
+    vampytest.assert_eq(guild.embedded_activity_states, None)
 
 
 def test__EmbeddedActivityState__from_data_is_created__0():
@@ -169,7 +194,7 @@ def test__EmbeddedActivityState__from_data_is_created__2():
     test_embedded_activity_state, test_is_created = EmbeddedActivityState.from_data_is_created(data)
     
     vampytest.assert_is(embedded_activity_state, test_embedded_activity_state)
-    vampytest.assert_eq(guild._embedded_activity_states, {embedded_activity_state})
+    vampytest.assert_eq(guild.embedded_activity_states, {embedded_activity_state})
     vampytest.assert_eq(is_created, True)
     vampytest.assert_eq(test_is_created, False)
 

@@ -55,7 +55,7 @@ class AudioPlayer:
         self.should_update = True
         self.done = False
         
-        self.task = Task(self.run(), KOKORO)
+        self.task = Task(KOKORO, self.run())
     
     async def run(self):
         """

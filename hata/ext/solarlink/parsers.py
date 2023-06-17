@@ -23,7 +23,7 @@ def parse_track_end(client, data):
     
     event = TrackEndEvent(player, data)
     
-    Task(client.solarlink._events.track_end(client, event), KOKORO)
+    Task(KOKORO, client.solarlink._events.track_end(client, event))
     
 
 def parse_track_exception(client, data):
@@ -36,7 +36,7 @@ def parse_track_exception(client, data):
     
     event = TrackExceptionEvent(player, data)
     
-    Task(client.solarlink._events.track_exception(client, event), KOKORO)
+    Task(KOKORO, client.solarlink._events.track_exception(client, event))
 
 
 def parse_track_start(client, data):
@@ -48,7 +48,7 @@ def parse_track_start(client, data):
         return
     
     event = TrackStartEvent(player, data)
-    Task(client.solarlink._events.track_start(client, event), KOKORO)
+    Task(KOKORO, client.solarlink._events.track_start(client, event))
 
 
 
@@ -61,7 +61,7 @@ def parse_track_stuck(client, data):
         return
     
     event = TrackStuckEvent(player, data)
-    Task(client.solarlink._events.track_stuck(client, event), KOKORO)
+    Task(KOKORO, client.solarlink._events.track_stuck(client, event))
 
 
 def parse_player_websocket_closed(client, data):
@@ -73,7 +73,7 @@ def parse_player_websocket_closed(client, data):
         return
     
     event = PlayerWebsocketClosedEvent(player, data)
-    Task(client.solarlink._events.player_websocket_closed(client, event), KOKORO)
+    Task(KOKORO, client.solarlink._events.player_websocket_closed(client, event))
 
 
 PARSERS = {

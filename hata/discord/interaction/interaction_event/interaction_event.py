@@ -9,6 +9,7 @@ from ...channel import Channel, ChannelType, create_partial_channel_from_id
 from ...core import (
     APPLICATION_ID_TO_CLIENT, INTERACTION_EVENT_MESSAGE_WAITERS, INTERACTION_EVENT_RESPONSE_WAITERS, KOKORO
 )
+from ...localization.utils import LOCALE_DEFAULT
 from ...message import Message
 from ...permission import Permission
 from ...precreate_helpers import process_precreate_parameters, raise_extra
@@ -21,9 +22,7 @@ from ..responding.constants import (
     RESPONSE_FLAG_EPHEMERAL, RESPONSE_FLAG_NONE, RESPONSE_FLAG_RESPONDED, RESPONSE_FLAG_RESPONDING
 )
 
-from .constants import (
-    DEFAULT_INTERACTION_METADATA, INTERACTION_EVENT_EXPIRE_AFTER_ID_DIFFERENCE, LOCALE_DEFAULT, USER_GUILD_CACHE
-)
+from .constants import DEFAULT_INTERACTION_METADATA, INTERACTION_EVENT_EXPIRE_AFTER_ID_DIFFERENCE, USER_GUILD_CACHE
 from .fields import (
     parse_application_id, parse_application_permissions, parse_channel, parse_guild_id, parse_guild_locale, parse_id,
     parse_locale, parse_message, parse_token, parse_type, parse_user, parse_user_permissions, put_application_id_into,

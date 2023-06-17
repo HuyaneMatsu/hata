@@ -104,7 +104,7 @@ class Stage(DiscordEntity, immortal = True):
     
     
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data, *, strong_cache = True):
         """
         Creates a new stage instance from the received data.
         
@@ -112,6 +112,8 @@ class Stage(DiscordEntity, immortal = True):
         ----------
         data : `dict` of (`str`, `object`) items
             Stage data.
+        strong_cache : `bool` = `True`, Optional (Keyword only)
+            Whether the instance should be put into its strong cache.
         
         Returns
         -------
@@ -123,23 +125,26 @@ class Stage(DiscordEntity, immortal = True):
         except KeyError:
             self = object.__new__(cls)
             self.id = stage_id
+            self._set_attributes(data)
             STAGES[stage_id] = self
+        
         else:
-            if not self.partial:
+            if strong_cache and (not self.partial):
                 return self
-        
-        self._set_attributes(data)
-        
-        try:
-            guild = GUILDS[self.guild_id]
-        except KeyError:
-            pass
-        else:
-            stages = guild.stages
-            if stages is None:
-                stages = guild.stages = {}
             
-            stages[stage_id] = self
+            self._set_attributes(data)
+        
+        if strong_cache:
+            try:
+                guild = GUILDS[self.guild_id]
+            except KeyError:
+                pass
+            else:
+                stages = guild.stages
+                if stages is None:
+                    stages = guild.stages = {}
+                
+                stages[stage_id] = self
         
         return self
     

@@ -348,21 +348,17 @@ def test__ClientUserBase__bypass_no_cache__0():
     """
     user_id = 202302060022
     guild_id = 202302060023
-    guild = Guild.precreate(guild_id)
     
     guild_profile = GuildProfile(nick = 'ibuki')
     
     user = ClientUserBase._create_empty(user_id)
     
-    data = {
-        'user': {'id': str(user_id)},
-        **guild_profile.to_data(defaults = True),
-    }
+    user_data = {'id': str(user_id)}
+    guild_profile_data = guild_profile.to_data(defaults = True, include_internals = True)
+    output = ClientUserBase._bypass_no_cache(user_data, guild_profile_data, guild_id)
     
-    ClientUserBase._bypass_no_cache(data, guild)
-    
+    vampytest.assert_is(output, None)
     vampytest.assert_eq(user.guild_profiles, {})
-    vampytest.assert_eq(guild.users, {})
 
 
 def test__ClientUserBase__bypass_no_cache__1():
@@ -373,22 +369,18 @@ def test__ClientUserBase__bypass_no_cache__1():
     """
     user_id = 202302060024
     guild_id = 202302060025
-    guild = Guild.precreate(guild_id)
     
     guild_profile = GuildProfile(nick = 'ibuki')
     
     user = ClientUserBase._create_empty(user_id)
     USERS[user_id] = user
     
-    data = {
-        'user': {'id': str(user_id)},
-        **guild_profile.to_data(defaults = True),
-    }
+    user_data = {'id': str(user_id)}
+    guild_profile_data = guild_profile.to_data(defaults = True, include_internals = True)
+    output = ClientUserBase._bypass_no_cache(user_data, guild_profile_data, guild_id)
     
-    ClientUserBase._bypass_no_cache(data, guild)
-    
+    vampytest.assert_is(output, user)
     vampytest.assert_eq(user.guild_profiles, {guild_id: guild_profile})
-    vampytest.assert_eq(guild.users, {user_id: user})
 
 
 def test__ClientUserBase__bypass_no_cache__2():
@@ -407,14 +399,10 @@ def test__ClientUserBase__bypass_no_cache__2():
     user = ClientUserBase._create_empty(user_id)
     user.guild_profiles[guild_id] = old_guild_profile
     USERS[user_id] = user
-    guild.users[user_id] = user
     
-    data = {
-        'user': {'id': str(user_id)},
-        **new_guild_profile.to_data(defaults = True),
-    }
+    user_data = {'id': str(user_id)}
+    guild_profile_data = new_guild_profile.to_data(defaults = True, include_internals = True)
+    output = ClientUserBase._bypass_no_cache(user_data, guild_profile_data, guild_id)
     
-    ClientUserBase._bypass_no_cache(data, guild)
-    
+    vampytest.assert_is(output, user)
     vampytest.assert_eq(user.guild_profiles, {guild_id: new_guild_profile})
-    vampytest.assert_eq(guild.users, {user_id: user})

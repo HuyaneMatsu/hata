@@ -194,7 +194,7 @@ class WaitAndContinue:
         if (timeouter is not None):
             timeouter.cancel()
         
-        return Task(canceller(self, exception), KOKORO)
+        return Task(KOKORO, canceller(self, exception))
 
 
 def wait_for_reaction(client, message, check, timeout):

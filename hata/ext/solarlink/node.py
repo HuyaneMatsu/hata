@@ -283,7 +283,7 @@ class SolarNode(RichAttributeErrorBaseType):
         try:
             while True:
                 try:
-                    task = Task(self._connect(), KOKORO)
+                    task = Task(KOKORO, self._connect())
                     task.apply_timeout(30.0)
                     await task
                     
@@ -313,7 +313,7 @@ class SolarNode(RichAttributeErrorBaseType):
                             return
                         
                         reconnect_attempts = self.reconnect_attempts
-                        task = Task(self._connect(), KOKORO)
+                        task = Task(KOKORO, self._connect())
                         task.apply_timeout(30.0)
                         await task
                 
@@ -455,30 +455,30 @@ class SolarNode(RichAttributeErrorBaseType):
                 parser = PARSERS[event]
             except KeyError:
                 Task(
+                    KOKORO,
                     client.events.error(
                         client,
                         f'{self.__class__.__name__}._received_message',
                         f'Unknown dispatch event {event}\nData: {message!r}',
                     ),
-                    KOKORO,
                 )
                 return False
             
             try:
                 parser(self.client, message)
             except BaseException as err:
-                Task(client.events.error(client, event, err), KOKORO)
+                Task(KOKORO, client.events.error(client, event, err))
             
             return False
         
         client = self.client
         Task(
+            KOKORO,
             client.events.error(
                 client,
                 f'{self.__class__.__name__}._received_message',
                 f'Unknown operation {operation}\nData: {message!r}',
             ),
-            KOKORO,
         )
         return False
     
@@ -495,7 +495,7 @@ class SolarNode(RichAttributeErrorBaseType):
             Any exception raised when trying to connect.
         """
         waiter = Future(KOKORO)
-        Task(self.run(waiter = waiter), KOKORO)
+        Task(KOKORO, self.run(waiter = waiter))
         return await waiter
     
     

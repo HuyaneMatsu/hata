@@ -292,7 +292,7 @@ async def _connect_clients(do_log):
     event_handlers = []
     
     for client, connection_waiter in zip(clients, connection_waiters):
-        Task(_client_start(client, connection_waiter, do_log), KOKORO)
+        Task(KOKORO, _client_start(client, connection_waiter, do_log))
         
         for is_launch_handler in range(2):
             event_handler = ConnectionEventHandler(client, connection_waiter, is_launch_handler, do_log)

@@ -496,7 +496,7 @@ class PluginAutoReloaderManager(RichAttributeErrorBaseType):
             return
         
         self._reload_callback_handle = None
-        Task(self._do_reload(), KOKORO)
+        Task(KOKORO, self._do_reload())
     
     
     async def _do_reload(self):

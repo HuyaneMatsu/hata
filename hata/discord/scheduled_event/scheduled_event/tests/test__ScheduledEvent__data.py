@@ -120,6 +120,27 @@ def test__ScheduledEvent__from_data__2():
     vampytest.assert_eq(guild.scheduled_events, {scheduled_event_id: scheduled_event})
 
 
+def test__ScheduledEvent__from_data__3():
+    """
+    Tests whether ``ScheduledEvent.from_data`` works as intended.
+    
+    Case: `strong_cache` given as `False`
+    """
+    scheduled_event_id = 202306130000
+    guild_id = 202306130001
+    
+    guild = Guild.precreate(guild_id)
+    
+    data = {
+        'id': str(scheduled_event_id),
+        'guild_id': str(guild_id),
+    }
+    
+    scheduled_event = ScheduledEvent.from_data(data, strong_cache = False)
+    
+    vampytest.assert_eq(guild.scheduled_events, {})
+
+
 def test__ScheduledEvent__to_data():
     """
     Tests whether ``ScheduledEvent.to_data`` works as intended.

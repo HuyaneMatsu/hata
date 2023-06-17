@@ -114,7 +114,7 @@ class InteractionResponseContext:
         ----------
         coroutine : ``CoroutineType``
         """
-        self.interaction_event._async_task = Task(self._async(coroutine), KOKORO)
+        self.interaction_event._async_task = Task(KOKORO, self._async(coroutine))
         yield # skip a ready cycle
     
     

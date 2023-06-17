@@ -3,6 +3,7 @@ import vampytest
 from ....bases import Icon, IconType
 from ....color import Color
 from ....core import BUILTIN_EMOJIS
+from ....guild import Guild
 from ....permission import Permission
 
 from ...role_manager_metadata import RoleManagerMetadataBot
@@ -81,6 +82,46 @@ def test__Role__from_data__1():
     role_2 = Role.from_data(data, guild_id)
     
     vampytest.assert_is(role_1, role_2)
+
+
+def test__Role__from_data__2():
+    """
+    Tests whether ``Role.from_data`` works as intended.
+    
+    Case: Check guild caching.
+    """
+    role_id = 202306130002
+    guild_id = 202306130003
+    
+    data = {
+        'id': str(role_id),
+    }
+    
+    guild = Guild.precreate(guild_id)
+    
+    role = Role.from_data(data, guild_id)
+    
+    vampytest.assert_eq(guild.roles, {role_id: role})
+
+
+def test__Role__from_data__3():
+    """
+    Tests whether ``Role.from_data`` works as intended.
+    
+    Case: `strong_cache` given as `False`.
+    """
+    role_id = 202306130004
+    guild_id = 202306130005
+    
+    data = {
+        'id': str(role_id),
+    }
+    
+    guild = Guild.precreate(guild_id)
+    
+    role = Role.from_data(data, guild_id, strong_cache = False)
+    
+    vampytest.assert_eq(guild.roles, {})
 
 
 def test__Role__to_data__1():

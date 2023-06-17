@@ -316,7 +316,7 @@ def int_postprocess_parser_factory(field_key, default_value, postprocessor):
     return parser
 
 
-def flag_parser_factory(field_key, flag_type):
+def flag_parser_factory(field_key, flag_type, *, default_value = ...):
     """
     Returns a `flag` parser.
     
@@ -326,11 +326,16 @@ def flag_parser_factory(field_key, flag_type):
         The field's key used in payload.
     flag_type : `type`
         The type of the flag to return.
+    default_value : `instance<flag_type>`, Optional (Keyword only)
+        Default value to return if `None` is received.
     
     Returns
     -------
     parser : `FunctionType`
     """
+    if default_value is ...:
+        default_value = flag_type()
+    
     def parser(data):
         """
         Parses out an flag from the given payload.
@@ -346,12 +351,13 @@ def flag_parser_factory(field_key, flag_type):
         -------
         field_value : `instance<flag_type>`
         """
+        nonlocal default_value
         nonlocal field_key
         nonlocal flag_type
         
         value = data.get(field_key, None)
         if (value is None):
-            value = flag_type()
+            value = default_value
         else:
             value = flag_type(value)
         

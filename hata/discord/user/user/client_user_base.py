@@ -126,7 +126,7 @@ class ClientUserBase(OrinUserBase):
     
     
     @classmethod
-    def from_data(cls, user_data, guild_profile_data = None, guild_id = 0):
+    def from_data(cls, user_data, guild_profile_data = None, guild_id = 0, *, strong_cache = True):
         """
         Creates a new user from the given data.
         
@@ -138,6 +138,8 @@ class ClientUserBase(OrinUserBase):
             Guild profile data.
         guild_id : `int` = `0`, Optional
             The guild's identifier to which the guild profile is bound to.
+        strong_cache : `bool` = `True`, Optional (Keyword only)
+            Whether the instance should be put into its strong cache.
         
         Returns
         -------
@@ -194,7 +196,7 @@ class ClientUserBase(OrinUserBase):
     
     
     @staticmethod
-    def _bypass_no_cache(data, guild):
+    def _bypass_no_cache(data, guild_profile_data, guild_id):
         """
         Sets a ``Client``'s guild profile.
         
@@ -202,16 +204,19 @@ class ClientUserBase(OrinUserBase):
         
         Parameters
         ----------
-        data : `dict`
+        data : `dict<str, object>`
             Received user data.
-        guild : ``Guild``
-            A respective guild from where the user data was received. Picked up if the given data includes
-            guild member data as well.
-        """
-        user_data = data['user']
-        guild_profile_data = data
+        guild_profile_data : `dict<str, object>`
+            The user's guild profile's data.
+        guild_id : `int`
+            A respective guild's identifier from where the user data was received.
+            Picked up if the given data includes guild member data as well.
         
-        user_id = parse_id(user_data)
+        Returns
+        -------
+        user : ``ClientUserBase``
+        """
+        user_id = parse_id(data)
         
         try:
             user = USERS[user_id]
@@ -219,13 +224,14 @@ class ClientUserBase(OrinUserBase):
             return
         
         try:
-            guild_profile = user.guild_profiles[guild.id]
+            guild_profile = user.guild_profiles[guild_id]
         except KeyError:
-            guild.users[user_id] = user
-            user.guild_profiles[guild.id] = GuildProfile.from_data(guild_profile_data)
+            user.guild_profiles[guild_id] = GuildProfile.from_data(guild_profile_data)
         else:
             guild_profile._set_joined(guild_profile_data)
             guild_profile._update_attributes(guild_profile_data)
+        
+        return user
     
     
     @classmethod

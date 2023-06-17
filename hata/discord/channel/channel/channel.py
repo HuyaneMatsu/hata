@@ -187,7 +187,7 @@ class Channel(DiscordEntity, immortal = True):
     
     
     @classmethod
-    def from_data(cls, data, client = None, guild_id = 0):
+    def from_data(cls, data, client = None, guild_id = 0, *, strong_cache = True):
         """
         Creates a new channel from the channel data received from Discord. If the channel already exists and if it
         is partial, then updates it.
@@ -200,6 +200,8 @@ class Channel(DiscordEntity, immortal = True):
             The client, who received the channel's data, if any.
         guild_id : `int` = `0`, Optional
             The guild's identifier of the channel.
+        strong_cache : `bool` = `True`, Optional (Keyword only)
+            Whether the instance should be put into its strong cache.
         
         Returns
         -------
@@ -228,25 +230,24 @@ class Channel(DiscordEntity, immortal = True):
             self.metadata = metadata
             self.type = channel_type
             
-            metadata._created(self, client)
+            metadata._created(self, client, strong_cache)
             CHANNELS[channel_id] = self
             
         else:
-            if self.partial:
+            if strong_cache and (not self.partial):
+                if self.type is not channel_type:
+                    metadata = channel_type.metadata_type.from_data(data)
+                    self.metadata = metadata
+                    self.type = channel_type
+                    metadata._created(self, client, strong_cache)
+            else:
                 self.guild_id = guild_id
                 self._message_history = None
                 
                 metadata = channel_type.metadata_type.from_data(data)
                 self.metadata = metadata
                 self.type = channel_type
-                metadata._created(self, client)
-                
-            else:
-                if self.type is not channel_type:
-                    metadata = channel_type.metadata_type.from_data(data)
-                    self.metadata = metadata
-                    self.type = channel_type
-                    metadata._created(self, client)
+                metadata._created(self, client, strong_cache)
         
         return self
     

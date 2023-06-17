@@ -33,7 +33,7 @@ def test__difference_handle_embedded_activity_update_event__0():
     
     state, changes = difference_handle_embedded_activity_update_event(data)
     
-    embedded_activity_state = next(iter(guild._embedded_activity_states))
+    embedded_activity_state = next(iter(guild.embedded_activity_states))
     
     vampytest.assert_is(state, embedded_activity_state)
     vampytest.assert_eq(embedded_activity_state.activity, activity)
@@ -85,7 +85,7 @@ def test__difference_handle_embedded_activity_update_event__1():
     
     difference_handle_embedded_activity_update_event(old_data)
     
-    embedded_activity_state = next(iter(guild._embedded_activity_states))
+    embedded_activity_state = next(iter(guild.embedded_activity_states))
     
     state, changes = difference_handle_embedded_activity_update_event(new_data)
     
@@ -138,7 +138,7 @@ def test__difference_handle_embedded_activity_update_event__2():
     
     difference_handle_embedded_activity_update_event(old_data)
     
-    embedded_activity_state = next(iter(guild._embedded_activity_states))
+    embedded_activity_state = next(iter(guild.embedded_activity_states))
     
     state, changes = difference_handle_embedded_activity_update_event(new_data)
     

@@ -740,7 +740,7 @@ class ClientCompoundGuildEndpoints(Compound):
                     f'`count` can be `bool`, got {count.__class__.__name__}; {count!r}.'
                 )
         
-        if count and (guild is not None) and guild.is_large:
+        if count and (guild is not None) and guild.large:
             count = False
         
         if __debug__:

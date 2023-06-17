@@ -199,7 +199,7 @@ class AudioReader:
         self.voice_client = voice_client
         self.done = False
         self.audio_streams = {}
-        self.task = Task(self.run(), KOKORO)
+        self.task = Task(KOKORO, self.run())
     
     
     async def run(self):

@@ -108,7 +108,7 @@ class User(USER_BASE_TYPE):
     if CACHE_PRESENCE:
         @classmethod
         @copy_docs(USER_BASE_TYPE.from_data)
-        def from_data(cls, user_data, guild_profile_data = None, guild_id = 0):
+        def from_data(cls, user_data, guild_profile_data = None, guild_id = 0, *, strong_cache = True):
             user_id = parse_id(user_data)
             
             try:
@@ -136,19 +136,20 @@ class User(USER_BASE_TYPE):
                     guild_profile._set_joined(guild_profile_data)
                     guild_profile._update_attributes(guild_profile_data)
                 
-                try:
-                    guild = GUILDS[guild_id]
-                except KeyError:
-                    pass
-                else:
-                    guild.users[user_id] = self
+                if strong_cache:
+                    try:
+                        guild = GUILDS[guild_id]
+                    except KeyError:
+                        pass
+                    else:
+                        guild.users[user_id] = self
             
             return self
     
     elif CACHE_USER:
         @classmethod
         @copy_docs(USER_BASE_TYPE.from_data)
-        def from_data(cls, user_data, guild_profile_data = None, guild_id = 0):
+        def from_data(cls, user_data, guild_profile_data = None, guild_id = 0, *, strong_cache = True):
             user_id = parse_id(user_data)
 
             try:
@@ -173,19 +174,20 @@ class User(USER_BASE_TYPE):
                     guild_profile._set_joined(guild_profile_data)
                     guild_profile._update_attributes(guild_profile_data)
                 
-                try:
-                    guild = GUILDS[guild_id]
-                except KeyError:
-                    pass
-                else:
-                    guild.users[user_id] = self
+                if strong_cache:
+                    try:
+                        guild = GUILDS[guild_id]
+                    except KeyError:
+                        pass
+                    else:
+                        guild.users[user_id] = self
             
             return self
     
     else:
         @classmethod
         @copy_docs(USER_BASE_TYPE.from_data)
-        def from_data(cls, user_data, guild_profile_data = None, guild_id = 0):
+        def from_data(cls, user_data, guild_profile_data = None, guild_id = 0, strong_cache = True):
             user_id = parse_id(user_data)
             
             try:
@@ -203,6 +205,15 @@ class User(USER_BASE_TYPE):
             
             if (guild_profile_data is not None) and guild_id:
                 self.guild_profiles[guild_id] = GuildProfile.from_data(guild_profile_data)
+            
+            # Do we want to strong cache at this case?
+            # if strong_cache:
+            #     try:
+            #         guild = GUILDS[guild_id]
+            #     except KeyError:
+            #         pass
+            #     else:
+            #         guild.users[user_id] = self
             
             return self
     

@@ -88,6 +88,27 @@ def test__Stage__from_data__2():
     vampytest.assert_eq(guild.stages, {stage_id: stage})
 
 
+def test__Stage__from_data__3():
+    """
+    Tests whether ``Stage.from_data`` works as intended.
+    
+    Case: do not cache into guild.
+    """
+    stage_id = 202306110012
+    guild_id = 202306110013
+    
+    guild = Guild.precreate(guild_id)
+    
+    data = {
+        'id': str(stage_id),
+        'guild_id': str(guild_id),
+    }
+    
+    stage = Stage.from_data(data, strong_cache = False)
+    
+    vampytest.assert_eq(guild.stages, None)
+
+
 def test__Stage__to_data():
     """
     Tests whether ``Stage.to_data`` works as intended.

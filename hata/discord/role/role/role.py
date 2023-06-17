@@ -6,9 +6,8 @@ from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ...color import Color
 from ...core import GUILDS, ROLES
 from ...http import urls as module_urls
-from ...permission.permission import PERMISSION_NONE, Permission
 from ...permission.constants import PERMISSION_KEY
-from ...preconverters import preconvert_snowflake
+from ...permission.permission import PERMISSION_NONE, Permission
 from ...precreate_helpers import process_precreate_parameters, raise_extra
 from ...utils import DATETIME_FORMAT_CODE
 
@@ -16,11 +15,12 @@ from ..role_manager_metadata import RoleManagerMetadataBase
 
 from .constants import ROLE_MANAGER_DEFAULT
 from .fields import (
-    parse_color, parse_manager, parse_mentionable, parse_name, parse_permissions, parse_position, parse_separated,
-    parse_unicode_emoji, put_color_into, put_manager_into, put_mentionable_into, put_name_into, put_permissions_into,
-    put_position_into, put_separated_into, put_unicode_emoji_into, validate_color, validate_manager,
-    validate_manager_metadata, validate_manager_type, validate_mentionable, validate_name, validate_permissions,
-    validate_position, validate_separated, validate_unicode_emoji
+    parse_color, parse_id, parse_manager, parse_mentionable, parse_name, parse_permissions, parse_position,
+    parse_separated, parse_unicode_emoji, put_color_into, put_id_into, put_manager_into, put_mentionable_into,
+    put_name_into, put_permissions_into, put_position_into, put_separated_into, put_unicode_emoji_into, validate_color,
+    validate_id, validate_manager, validate_manager_metadata, validate_manager_type, validate_mentionable,
+    validate_name, validate_permissions, validate_position, validate_separated, validate_unicode_emoji,
+    validate_guild_id
 )
 from .preinstanced import RoleManagerType
 
@@ -243,43 +243,49 @@ class Role(DiscordEntity, immortal = True):
     
     
     @classmethod
-    def from_data(cls, data, guild_id = 0):
+    def from_data(cls, data, guild_id = 0, *, strong_cache = True):
         """
         Creates a role from the given `data` at the given `guild`. If the role already exists and is not partial, then
         returns it. However it is partial, then updates it as well.
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Role data received from Discord.
         guild_id : `int` = `0`, Optional
             The owner guild's identifier.
+        strong_cache : `bool` = `True`, Optional (Keyword only)
+            Whether the instance should be put into its strong cache.
         
         Returns
         -------
         role : ``Role``
         """
-        role_id = int(data['id'])
+        role_id = parse_id(data)
+        
         try:
             self = ROLES[role_id]
         except KeyError:
             self = object.__new__(cls)
             self.id = role_id
+            self.guild_id = guild_id
+            self._set_attributes(data)
             ROLES[role_id] = self
         
         else:
-            if not self.partial:
+            if strong_cache and (not self.partial):
                 return self
         
-        self.guild_id = guild_id
-        self._set_attributes(data)
+            self.guild_id = guild_id
+            self._set_attributes(data)
         
-        try:
-            guild = GUILDS[guild_id]
-        except KeyError:
-            pass
-        else:
-            guild.roles[role_id] = self
+        if strong_cache:
+            try:
+                guild = GUILDS[guild_id]
+            except KeyError:
+                pass
+            else:
+                guild.roles[role_id] = self
         
         return self
     
@@ -298,7 +304,7 @@ class Role(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         
@@ -310,7 +316,7 @@ class Role(DiscordEntity, immortal = True):
         
         # id
         if include_internals:
-            data['id'] = str(self.id)
+            put_id_into(self.id, data, defaults)
         
         # manager
         if include_internals:
@@ -345,7 +351,7 @@ class Role(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received role data.
         """
         self.color = parse_color(data)
@@ -360,7 +366,7 @@ class Role(DiscordEntity, immortal = True):
 
     
     @classmethod
-    def precreate(cls, role_id, guild_id = 0, **keyword_parameters):
+    def precreate(cls, role_id, *, guild_id = ..., **keyword_parameters):
         """
         Precreates a role by creating a partial one with the given parameters. When the role is loaded, then the
         precreated one will be picked up. However if the role is precreated when it already exists, then the existing
@@ -371,8 +377,8 @@ class Role(DiscordEntity, immortal = True):
         role_id : `int`, `str`
             The role's id.
         
-        guild_id : `int` = `0`, Optional
-            The role's guild's identifier.
+        guild_id : `int`, ``Guild``, Optional (Keyword only)
+            The role's guild or its identifier.
         
         **keyword_parameters : keyword parameters
             Additional predefined attributes for the role.
@@ -437,8 +443,12 @@ class Role(DiscordEntity, immortal = True):
         ValueError
             If an parameter's type is good, but it's value is unacceptable.
         """
-        role_id = preconvert_snowflake(role_id, 'role_id')
-        guild_id = preconvert_snowflake(guild_id, 'guild_id')
+        role_id = validate_id(role_id)
+        
+        if guild_id is ...:
+            guild_id = 0
+        else:
+            guild_id = validate_guild_id(guild_id)
         
         if keyword_parameters:
             processed = []
@@ -506,7 +516,7 @@ class Role(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Role data received from Discord.
         """
         clear_permission_cache = False
@@ -587,12 +597,12 @@ class Role(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Role data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `object`) items
             All item in the returned dict is optional.
         
         Returned Data Structure

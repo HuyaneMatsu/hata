@@ -187,7 +187,7 @@ class RPCClient(RichAttributeErrorBaseType):
         if self.running:
             raise RuntimeError(f'{self!r} is already running!')
         
-        Task(self._connect(ipc_path), KOKORO)
+        Task(KOKORO, self._connect(ipc_path))
         
         connection_waiter = self._connection_waiter
         if (connection_waiter is not None):

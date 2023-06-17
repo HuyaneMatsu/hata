@@ -102,7 +102,7 @@ class ChannelOutputStream:
         
         transfer_task = self._transfer_task
         if (transfer_task is None):
-            self._transfer_task = Task(self._do_transfer(), KOKORO)
+            self._transfer_task = Task(KOKORO, self._do_transfer())
     
     
     async def flush(self):

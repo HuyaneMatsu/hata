@@ -86,7 +86,7 @@ class Kokoro:
         self.beater = None
         self.beat_task = None
         self.beat_waiter = None
-        self.task = Task(self._start(), KOKORO)
+        self.task = Task(KOKORO, self._start())
         
         #skip 1 loop
         await skip_ready_cycle()
@@ -103,7 +103,7 @@ class Kokoro:
         self.cancel()
         # skip 1 loop
         await skip_ready_cycle()
-        self.task = Task(self._start(), KOKORO)
+        self.task = Task(KOKORO, self._start())
         # skip 1 loop
         await skip_ready_cycle()
     
@@ -137,7 +137,7 @@ class Kokoro:
                 
                 #keep beating
                 try:
-                    beater = Task(self._keep_beating(), KOKORO)
+                    beater = Task(KOKORO, self._keep_beating())
                     self.beater = beater
                     await beater
                 except CancelledError:
@@ -191,17 +191,17 @@ class Kokoro:
             
             if (self.last_answer + self.interval + HEARTBEAT_TIMEOUT) - perf_counter() <= 0.0:
                 self.should_beat = False
-                Task(gateway.terminate(), KOKORO)
+                Task(KOKORO, gateway.terminate())
                 break
             
             try:
-                task = Task(gateway._beat(), KOKORO)
+                task = Task(KOKORO, gateway._beat())
                 task.apply_timeout(HEARTBEAT_TIMEOUT)
                 self.beat_task = task
                 await task
             except TimeoutError:
                 self.should_beat = False
-                Task(gateway.terminate(), KOKORO)
+                Task(KOKORO, gateway.terminate())
                 break
             except CancelledError:
                 continue
@@ -217,7 +217,7 @@ class Kokoro:
         """
         # case 1 : we are not running
         if not self.running:
-            Task(self._start_beating(), KOKORO)
+            Task(KOKORO, self._start_beating())
             return
         
         #case 2 : we wait for ws
@@ -249,7 +249,7 @@ class Kokoro:
         This method is a coroutine.
         """
         # starts kokoro, then beating
-        self.task = Task(self._start(), KOKORO)
+        self.task = Task(KOKORO, self._start())
         # skip 1 loop
         await skip_ready_cycle()
         
@@ -351,7 +351,7 @@ class Kokoro:
         while True: #GOTO
             #case 1 : we are not running:
             if not self.running:
-                Task(self._start_beating(), KOKORO)
+                Task(KOKORO, self._start_beating())
                 should_beat_now = True # True = send beat data
                 break
             

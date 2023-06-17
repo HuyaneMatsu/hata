@@ -291,7 +291,7 @@ class ReactionAddEvent(EventBase):
             +-----------------------+-------+
         """
         if self.message.channel.cached_permissions_for(client) & PERMISSION_MASK_MANAGE_MESSAGES:
-            Task(_delete_reaction_with_task(self, client), KOKORO)
+            Task(KOKORO, _delete_reaction_with_task(self, client))
             result = self.DELETE_REACTION_OK
         else:
             result = self.DELETE_REACTION_PERM

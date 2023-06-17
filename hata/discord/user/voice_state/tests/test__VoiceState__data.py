@@ -92,6 +92,26 @@ def test__VoiceState__from_data__2():
     vampytest.assert_eq(guild.voice_states, {user_id: voice_state})
 
 
+def test__VoiceState__from_data__3():
+    """
+    Tests whether ``VoiceState.from_data`` works as intended.
+    
+    Case: caching, `strong_cache` as `False`.
+    """
+    channel_id = 202306150008
+    guild_id = 202306150009
+    user_id = 202306150010
+    
+    guild = Guild.precreate(guild_id)
+    
+    data = {
+        'channel_id': str(channel_id),
+        'user_id': str(user_id),
+    }
+    voice_state = VoiceState.from_data(data, guild_id, strong_cache = False)
+    
+    vampytest.assert_eq(guild.voice_states, {})
+
 
 def test__VoiceState__to_data():
     """

@@ -2,8 +2,8 @@ __all__ = ('Oauth2User',)
 
 from scarletio import copy_docs
 
+from ...localization.utils import LOCALE_DEFAULT
 from ...user import OrinUserBase, PremiumType, UserFlag
-from ...user.user.constants import LOCALE_DEFAULT
 from ...user.user.fields import (
     parse_email, parse_email_verified, parse_id, parse_locale, parse_mfa, parse_premium_type, put_email_into,
     put_email_verified_into, put_locale_into, put_mfa_into, put_oauth2_flags_into, put_premium_type_into,

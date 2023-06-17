@@ -24,30 +24,30 @@ class ChannelMetadataPrivate(ChannelMetadataPrivateBase):
     __slots__ = ()
     
     @copy_docs(ChannelMetadataPrivateBase._created)
-    def _created(self, channel_entity, client):
+    def _created(self, channel_entity, client, strong_cache):
         if (client is not None):
             users = self.users
-            if users:
-                if client not in users:
-                    users.append(client)
-                
-                client.private_channels[users[0].id] = channel_entity
-                
+            if client not in users:
+                users.append(client)
                 users.sort()
             
-            else:
-                users.append(client)
+            if strong_cache and len(users) >= 2:
+                user = users[0]
+                if client is user:
+                    user = users[1]
+                
+                client.private_channels[user.id] = channel_entity
     
     
     @copy_docs(ChannelMetadataPrivateBase._delete)
     def _delete(self, channel_entity, client):
         if (client is not None):
             users = self.users
-            if len(users) == 2:
-                if client is users[0]:
+            if len(users) >= 2:
+                
+                user = users[0]
+                if client is user:
                     user = users[1]
-                else:
-                    user = users[0]
                 
                 del client.private_channels[user.id]
     
@@ -56,7 +56,7 @@ class ChannelMetadataPrivate(ChannelMetadataPrivateBase):
     @copy_docs(ChannelMetadataPrivateBase.name)
     def name(self):
         users = self.users
-        if len(users) == 2:
+        if len(users) >= 2:
             name = f'Direct Message {users[0].full_name} with {users[1].full_name}'
         else:
             name = f'Direct Message (partial)'

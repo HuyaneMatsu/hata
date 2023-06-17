@@ -148,7 +148,7 @@ def USER_UPDATE__CAL(client, data):
     if not old_attributes:
         return
     
-    Task(client.events.client_edit(client, old_attributes), KOKORO)
+    Task(KOKORO, client.events.client_edit(client, old_attributes))
 
 def USER_UPDATE__OPT(client, data):
     client._update_attributes(data)
@@ -176,7 +176,7 @@ def MESSAGE_CREATE__CAL(client, data):
     else:
         message = channel._create_new_message(data)
     
-    Task(client.events.message_create(client, message), KOKORO)
+    Task(KOKORO, client.events.message_create(client, message))
 
 def MESSAGE_CREATE__OPT(client, data):
     channel_id = int(data['channel_id'])
@@ -208,7 +208,7 @@ def MESSAGE_DELETE__CAL_SC(client, data):
     if (channel is not None):
         channel._pop_message(message.id)
     
-    Task(client.events.message_delete(client, message), KOKORO)
+    Task(KOKORO, client.events.message_delete(client, message))
 
 
 def MESSAGE_DELETE__CAL_MC(client, data):
@@ -245,12 +245,12 @@ def MESSAGE_DELETE__CAL_MC(client, data):
     if clients is None:
         event_handler = client.events.message_delete
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, message), KOKORO)
+            Task(KOKORO, event_handler(client, message))
     else:
         for client_ in clients:
             event_handler = client_.events.message_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, message), KOKORO)
+                Task(KOKORO, event_handler(client_, message))
 
 def MESSAGE_DELETE__OPT_SC(client, data):
     channel_id = int(data['channel_id'])
@@ -320,7 +320,7 @@ def MESSAGE_DELETE_BULK__CAL_SC(client, data):
     
     event_handler = client.events.message_delete
     for message in messages:
-        Task(event_handler(client, message), KOKORO)
+        Task(KOKORO, event_handler(client, message))
 
 
 def MESSAGE_DELETE_BULK__CAL_MC(client, data):
@@ -359,14 +359,14 @@ def MESSAGE_DELETE_BULK__CAL_MC(client, data):
         event_handler = client.events.message_delete
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             for message in messages:
-                Task(event_handler(client, message), KOKORO)
+                Task(KOKORO, event_handler(client, message))
     
     else:
         for client_ in clients:
             event_handler = client_.events.message_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 for message in messages:
-                    Task(event_handler(client_, message), KOKORO)
+                    Task(KOKORO, event_handler(client_, message))
 
 
 def MESSAGE_DELETE_BULK__OPT_SC(client, data):
@@ -417,7 +417,7 @@ def MESSAGE_UPDATE__CAL_SC(client, data):
         
         # Dead event handling
         message = Message.from_data(data)
-        Task(client.events.message_edit(client, message, None), KOKORO)
+        Task(KOKORO, client.events.message_edit(client, message, None))
         return
     
     
@@ -426,14 +426,14 @@ def MESSAGE_UPDATE__CAL_SC(client, data):
         if not old_attributes:
             return
         
-        Task(client.events.message_edit(client, message, old_attributes), KOKORO)
+        Task(KOKORO, client.events.message_edit(client, message, old_attributes))
     
     else:
         change_state = message._update_embed(data)
         if change_state == EMBED_UPDATE_NONE:
             return
         
-        Task(client.events.embed_update(client, message, change_state), KOKORO)
+        Task(KOKORO, client.events.embed_update(client, message, change_state))
 
 def MESSAGE_UPDATE__CAL_MC(client, data):
     message_id = int(data['id'])
@@ -452,7 +452,7 @@ def MESSAGE_UPDATE__CAL_MC(client, data):
         # If channel is not there, we do not need to dispatch it for all the clients, because we just can't.
         event_handler = client.events.message_edit
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, message, None), KOKORO)
+            Task(KOKORO, event_handler(client, message, None))
     
     clients = filter_content_intent_client(channel.clients, data, client)
     
@@ -473,7 +473,7 @@ def MESSAGE_UPDATE__CAL_MC(client, data):
         for client_ in clients:
             event_handler = client_.events.message_edit
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, message, old_attributes), KOKORO)
+                Task(KOKORO, event_handler(client_, message, old_attributes))
     else:
         if message_cached_before:
             result = message._update_embed(data)
@@ -484,7 +484,7 @@ def MESSAGE_UPDATE__CAL_MC(client, data):
             for client_ in clients:
                 event_handler = client_.events.embed_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, message, result), KOKORO)
+                    Task(KOKORO, event_handler(client_, message, result))
 
 
 def MESSAGE_UPDATE__OPT_SC(client, data):
@@ -534,7 +534,7 @@ def MESSAGE_REACTION_ADD__CAL_SC(client, data):
     message._add_reaction(emoji, user)
     
     event = ReactionAddEvent.from_fields(message, emoji, user)
-    Task(client.events.reaction_add(client, event), KOKORO)
+    Task(KOKORO, client.events.reaction_add(client, event))
 
 
 def MESSAGE_REACTION_ADD__CAL_MC(client, data):
@@ -561,12 +561,12 @@ def MESSAGE_REACTION_ADD__CAL_MC(client, data):
     if clients is None:
         event_handler = client.events.reaction_add
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, event), KOKORO)
+            Task(KOKORO, event_handler(client, event))
     else:
         for client_ in clients:
             event_handler = client_.events.reaction_add
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, event), KOKORO)
+                Task(KOKORO, event_handler(client_, event))
 
 
 def MESSAGE_REACTION_ADD__OPT_SC(client, data):
@@ -624,7 +624,7 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client, data):
         reactions = old_reactions.copy()
         old_reactions.clear()
     
-    Task(client.events.reaction_clear(client, message, reactions), KOKORO)
+    Task(KOKORO, client.events.reaction_clear(client, message, reactions))
 
 
 def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client, data):
@@ -659,12 +659,12 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client, data):
     if clients is None:
         event_handler = client.events.reaction_clear
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, message, reactions), KOKORO)
+            Task(KOKORO, event_handler(client, message, reactions))
     else:
         for client_ in clients:
             event_handler = client_.events.reaction_clear
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, message, reactions), KOKORO)
+                Task(KOKORO, event_handler(client_, message, reactions))
 
 
 def MESSAGE_REACTION_REMOVE_ALL__OPT_SC(client, data):
@@ -714,7 +714,7 @@ def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
     message._remove_reaction(emoji, user)
     
     event = ReactionDeleteEvent.from_fields(message, emoji, user)
-    Task(client.events.reaction_delete(client, event), KOKORO)
+    Task(KOKORO, client.events.reaction_delete(client, event))
 
 
 def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
@@ -743,12 +743,12 @@ def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
     if clients is None:
         event_handler = client.events.reaction_delete
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, event), KOKORO)
+            Task(KOKORO, event_handler(client, event))
     else:
         for client_ in clients:
             event_handler = client_.events.reaction_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, event), KOKORO)
+                Task(KOKORO, event_handler(client_, event))
 
 
 def MESSAGE_REACTION_REMOVE__OPT_SC(client, data):
@@ -803,7 +803,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client, data):
         if users is None:
             return
     
-    Task(client.events.reaction_delete_emoji(client, message, emoji, users), KOKORO)
+    Task(KOKORO, client.events.reaction_delete_emoji(client, message, emoji, users))
 
 
 def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client, data):
@@ -837,12 +837,12 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client, data):
     if clients is None:
         event_handler = client.events.reaction_delete_emoji
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, message, emoji, users), KOKORO)
+            Task(KOKORO, event_handler(client, message, emoji, users))
     else:
         for client_ in clients:
             event_handler = client_.events.reaction_delete_emoji
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, message, emoji, users), KOKORO)
+                Task(KOKORO, event_handler(client_, message, emoji, users))
 
 
 def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client, data):
@@ -911,7 +911,7 @@ if CACHE_PRESENCE:
         else:
             event_handler = client.events.user_edit
         
-        Task(event_handler(client, user, old_attributes), KOKORO)
+        Task(KOKORO, event_handler(client, user, old_attributes))
     
     def PRESENCE_UPDATE__CAL_MC(client, data):
         user_data = data['user']
@@ -943,7 +943,7 @@ if CACHE_PRESENCE:
                     event_handler = client_.events.user_edit
                 
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, user, old_attributes), KOKORO)
+                    Task(KOKORO, event_handler(client_, user, old_attributes))
     
     
     def PRESENCE_UPDATE__OPT(client, data):
@@ -993,7 +993,7 @@ if CACHE_USER:
         if isinstance(user, Client):
             guild._invalidate_permission_cache()
         
-        Task(client.events.guild_user_edit(client, user, guild, old_attributes), KOKORO)
+        Task(KOKORO, client.events.guild_user_edit(client, user, guild, old_attributes))
     
     def GUILD_MEMBER_UPDATE__CAL_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -1021,7 +1021,7 @@ if CACHE_USER:
         for client_ in clients:
             event_handler = client_.events.guild_user_edit
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, user, guild, old_attributes), KOKORO)
+                Task(KOKORO, event_handler(client_, user, guild, old_attributes))
     
     def GUILD_MEMBER_UPDATE__OPT_SC(client, data):
         guild_id = int(data['guild_id'])
@@ -1072,7 +1072,7 @@ else:
         
         guild._invalidate_permission_cache()
         
-        Task(client.events.guild_user_edit(client, client, guild, old_attributes), KOKORO)
+        Task(KOKORO, client.events.guild_user_edit(client, client, guild, old_attributes))
     
     GUILD_MEMBER_UPDATE__CAL_MC = GUILD_MEMBER_UPDATE__CAL_SC
     
@@ -1116,7 +1116,7 @@ def CHANNEL_DELETE__CAL_SC(client, data):
     event_handler = client.events.channel_delete
     
     for channel in channel._iter_delete(client):
-        Task(event_handler(client, channel), KOKORO)
+        Task(KOKORO, event_handler(client, channel))
 
 
 def CHANNEL_DELETE__CAL_MC(client, data):
@@ -1139,7 +1139,7 @@ def CHANNEL_DELETE__CAL_MC(client, data):
         event_handler = client_.events.channel_delete
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             for channel in channels:
-                Task(event_handler(client_, channel), KOKORO)
+                Task(KOKORO, event_handler(client_, channel))
 
 
 def CHANNEL_DELETE__OPT(client, data):
@@ -1176,7 +1176,7 @@ def CHANNEL_UPDATE__CAL_SC(client, data):
     if not old_attributes:
         return
     
-    Task(client.events.channel_edit(client, channel, old_attributes), KOKORO)
+    Task(KOKORO, client.events.channel_edit(client, channel, old_attributes))
 
 def CHANNEL_UPDATE__CAL_MC(client, data):
     channel_id = int(data['id'])
@@ -1199,7 +1199,7 @@ def CHANNEL_UPDATE__CAL_MC(client, data):
     for client_ in clients:
         event_handler = client_.events.channel_edit
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client_, channel, old_attributes), KOKORO)
+            Task(KOKORO, event_handler(client_, channel, old_attributes))
 
 
 def CHANNEL_UPDATE__OPT_SC(client, data):
@@ -1256,7 +1256,7 @@ def THREAD_UPDATE__CAL_SC(client, data):
         if not old_attributes:
             return
     
-    Task(client.events.channel_edit(client, channel, old_attributes), KOKORO)
+    Task(KOKORO, client.events.channel_edit(client, channel, old_attributes))
 
 def THREAD_UPDATE__CAL_MC(client, data):
     guild_id = data.get('guild_id', None)
@@ -1294,12 +1294,12 @@ def THREAD_UPDATE__CAL_MC(client, data):
     if (clients is None):
         event_handler = client.events.channel_edit
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, channel, old_attributes), KOKORO)
+            Task(KOKORO, event_handler(client, channel, old_attributes))
     else:
         for client_ in clients:
             event_handler = client_.events.channel_edit
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, channel, old_attributes), KOKORO)
+                Task(KOKORO, event_handler(client_, channel, old_attributes))
 
 def THREAD_UPDATE__OPT_SC(client, data):
     channel_id = int(data['id'])
@@ -1363,7 +1363,7 @@ def CHANNEL_CREATE__CAL(client, data):
     guild_id = int(guild_id)
     channel = Channel.from_data(data, client, guild_id)
     
-    Task(client.events.channel_create(client, channel), KOKORO)
+    Task(KOKORO, client.events.channel_create(client, channel))
 
 def CHANNEL_CREATE__OPT(client, data):
     guild_id = data.get('guild_id', None)
@@ -1393,7 +1393,7 @@ def CHANNEL_PINS_UPDATE__CAL(client, data):
         return
     
     # ignoring message search
-    Task(client.events.channel_pin_update(client, channel), KOKORO)
+    Task(KOKORO, client.events.channel_pin_update(client, channel))
 
 def CHANNEL_PINS_UPDATE__OPT(client, data):
     pass
@@ -1419,7 +1419,7 @@ def CHANNEL_RECIPIENT_ADD_CAL(client, data):
     if user not in users:
         users.append(user)
     
-    Task(client.events.channel_group_user_add(client, channel, user), KOKORO)
+    Task(KOKORO, client.events.channel_group_user_add(client, channel, user))
 
 def CHANNEL_RECIPIENT_ADD__OPT(client, data):
     channel_id = int(data['channel_id'])
@@ -1456,7 +1456,7 @@ def CHANNEL_RECIPIENT_REMOVE__CAL_SC(client, data):
         return
     
     if client != user:
-        Task(client.events.channel_group_user_delete(client, channel, user), KOKORO)
+        Task(KOKORO, client.events.channel_group_user_delete(client, channel, user))
 
 def CHANNEL_RECIPIENT_REMOVE__CAL_MC(client, data):
     channel_id = int(data['channel_id'])
@@ -1475,7 +1475,7 @@ def CHANNEL_RECIPIENT_REMOVE__CAL_MC(client, data):
         if (client_ is client) or (client_ != user):
             event_handler = client_.events.channel_group_user_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, channel, user), KOKORO)
+                Task(KOKORO, event_handler(client_, channel, user))
 
 def CHANNEL_RECIPIENT_REMOVE__OPT(client, data):
     channel_id = int(data['channel_id'])
@@ -1518,19 +1518,19 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client, data):
         if action == EMOJI_UPDATE_EDIT:
             event_handler = client.events.emoji_edit
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, emoji, old_attributes), KOKORO)
+                Task(KOKORO, event_handler(client, emoji, old_attributes))
             continue
             
         if action == EMOJI_UPDATE_CREATE:
             event_handler = client.events.emoji_create
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, emoji), KOKORO)
+                Task(KOKORO, event_handler(client, emoji))
             continue
         
         if action == EMOJI_UPDATE_DELETE:
             event_handler = client.events.emoji_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, emoji), KOKORO)
+                Task(KOKORO, event_handler(client, emoji))
             continue
         
         # no more case
@@ -1560,19 +1560,19 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
             if action == EMOJI_UPDATE_EDIT:
                 event_handler = client_.events.emoji_edit
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, emoji, old_attributes), KOKORO)
+                    Task(KOKORO, event_handler(client_, emoji, old_attributes))
                 continue
             
             if action == EMOJI_UPDATE_CREATE:
                 event_handler = client_.events.emoji_create
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, emoji), KOKORO)
+                    Task(KOKORO, event_handler(client_, emoji))
                 continue
             
             if action == EMOJI_UPDATE_DELETE:
                 event_handler = client_.events.emoji_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, emoji), KOKORO)
+                    Task(KOKORO, event_handler(client_, emoji))
                 continue
             
             # no more case
@@ -1633,19 +1633,19 @@ def GUILD_STICKERS_UPDATE__CAL_SC(client, data):
         if action == STICKER_UPDATE_EDIT:
             event_handler = client.events.sticker_edit
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, sticker, old_attributes), KOKORO)
+                Task(KOKORO, event_handler(client, sticker, old_attributes))
             continue
             
         if action == STICKER_UPDATE_CREATE:
             event_handler = client.events.sticker_create
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, sticker), KOKORO)
+                Task(KOKORO, event_handler(client, sticker))
             continue
         
         if action == STICKER_UPDATE_DELETE:
             event_handler = client.events.sticker_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, sticker), KOKORO)
+                Task(KOKORO, event_handler(client, sticker))
             continue
         
         # no more case
@@ -1674,19 +1674,19 @@ def GUILD_STICKERS_UPDATE__CAL_MC(client, data):
             if action == STICKER_UPDATE_EDIT:
                 event_handler = client_.events.sticker_edit
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, sticker, old_attributes), KOKORO)
+                    Task(KOKORO, event_handler(client_, sticker, old_attributes))
                 continue
                 
             if action == STICKER_UPDATE_CREATE:
                 event_handler = client_.events.sticker_create
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, sticker), KOKORO)
+                    Task(KOKORO, event_handler(client_, sticker))
                 continue
             
             if action == STICKER_UPDATE_DELETE:
                 event_handler = client_.events.sticker_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, sticker), KOKORO)
+                    Task(KOKORO, event_handler(client_, sticker))
                 continue
             
             continue
@@ -1737,7 +1737,7 @@ def GUILD_MEMBER_ADD__CAL_SC(client, data):
     user = User.from_data(data['user'], data, guild_id)
     guild.user_count += 1
     
-    Task(client.events.guild_user_add(client, guild, user), KOKORO)
+    Task(KOKORO, client.events.guild_user_add(client, guild, user))
 
 
 def GUILD_MEMBER_ADD__CAL_MC(client, data):
@@ -1760,12 +1760,12 @@ def GUILD_MEMBER_ADD__CAL_MC(client, data):
     if clients is None:
         event_handler = client.events.guild_user_add
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, guild, user), KOKORO)
+            Task(KOKORO, event_handler(client, guild, user))
     else:
         for client_ in clients:
             event_handler = client_.events.guild_user_add
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, guild, user), KOKORO)
+                Task(KOKORO, event_handler(client_, guild, user))
 
 if CACHE_USER:
     def GUILD_MEMBER_ADD__OPT_SC(client, data):
@@ -1846,7 +1846,7 @@ if CACHE_USER:
         
         guild.user_count -= 1
         
-        Task(client.events.guild_user_delete(client, guild, user, guild_profile), KOKORO)
+        Task(KOKORO, client.events.guild_user_delete(client, guild, user, guild_profile))
     
     def GUILD_MEMBER_REMOVE__CAL_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -1878,7 +1878,7 @@ if CACHE_USER:
         for client_ in clients:
             event_handler = client_.events.guild_user_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, guild, user, guild_profile), KOKORO)
+                Task(KOKORO, event_handler(client_, guild, user, guild_profile))
     
     def GUILD_MEMBER_REMOVE__OPT_SC(client, data):
         guild_id = int(data['guild_id'])
@@ -1941,7 +1941,7 @@ else:
         user = User.from_data(data['user'])
         guild.user_count -= 1
         
-        Task(client.events.guild_user_delete(client, guild, user, None), KOKORO)
+        Task(KOKORO, client.events.guild_user_delete(client, guild, user, None))
 
     def GUILD_MEMBER_REMOVE__CAL_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -1962,7 +1962,7 @@ else:
         for client_ in clients:
             event_handler = client_.events.guild_user_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, guild, user, None), KOKORO)
+                Task(KOKORO, event_handler(client_, guild, user, None))
     
     def GUILD_MEMBER_REMOVE__OPT_SC(client, data):
         guild_id = int(data['guild_id'])
@@ -2002,7 +2002,7 @@ del GUILD_MEMBER_REMOVE__CAL_SC, \
 def GUILD_JOIN_REQUEST_CREATE__CAL(client, data):
     event = GuildJoinRequest.from_data(data)
     
-    Task(client.events.guild_join_request_create(client, event), KOKORO)
+    Task(KOKORO, client.events.guild_join_request_create(client, event))
 
 def GUILD_JOIN_REQUEST_CREATE__OPT(client, data):
     pass
@@ -2022,7 +2022,7 @@ del GUILD_JOIN_REQUEST_CREATE__CAL, \
 def GUILD_JOIN_REQUEST_DELETE__CAL(client, data):
     event = GuildJoinRequestDeleteEvent.from_data(data)
     
-    Task(client.events.guild_join_request_delete(client, event), KOKORO)
+    Task(KOKORO, client.events.guild_join_request_delete(client, event))
 
 def GUILD_JOIN_REQUEST_DELETE__OPT(client, data):
     pass
@@ -2041,7 +2041,7 @@ del GUILD_JOIN_REQUEST_DELETE__CAL, \
 def GUILD_JOIN_REQUEST_UPDATE__CAL(client, data):
     event = GuildJoinRequest.from_data(data)
     
-    Task(client.events.guild_join_request_update(client, event), KOKORO)
+    Task(KOKORO, client.events.guild_join_request_update(client, event))
 
 def GUILD_JOIN_REQUEST_UPDATE__OPT(client, data):
     pass
@@ -2067,10 +2067,10 @@ if CACHE_PRESENCE:
         
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
-            if (client.intents & INTENT_SHIFT_GUILD_USERS) and guild.is_large and client._should_request_users:
-                Task(client._request_users(guild.id), KOKORO)
+            if (client.intents & INTENT_SHIFT_GUILD_USERS) and guild.large and client._should_request_users:
+                Task(KOKORO, client._request_users(guild.id))
             
-            Task(client.events.guild_create(client, guild), KOKORO)
+            Task(KOKORO, client.events.guild_create(client, guild))
 
 
     def GUILD_CREATE__OPT(client, data):
@@ -2082,8 +2082,8 @@ if CACHE_PRESENCE:
         
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
-            if (client.intents & INTENT_SHIFT_GUILD_USERS) and guild.is_large and client._should_request_users:
-                Task(client._request_users(guild.id), KOKORO)
+            if (client.intents & INTENT_SHIFT_GUILD_USERS) and guild.large and client._should_request_users:
+                Task(KOKORO, client._request_users(guild.id))
 
 elif CACHE_USER:
     def GUILD_CREATE__CAL(client, data):
@@ -2096,9 +2096,9 @@ elif CACHE_USER:
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
             if (client.intents & INTENT_SHIFT_GUILD_USERS) and client._should_request_users:
-                Task(client._request_users(guild.id), KOKORO)
+                Task(KOKORO, client._request_users(guild.id))
             
-            Task(client.events.guild_create(client, guild), KOKORO)
+            Task(KOKORO, client.events.guild_create(client, guild))
 
     def GUILD_CREATE__OPT(client, data):
         guild_state = data.get('unavailable', False)
@@ -2110,7 +2110,7 @@ elif CACHE_USER:
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
             if (client.intents & INTENT_SHIFT_GUILD_USERS) and client._should_request_users:
-                Task(client._request_users(guild.id), KOKORO)
+                Task(KOKORO, client._request_users(guild.id))
 
 else:
     def GUILD_CREATE__CAL(client, data):
@@ -2122,7 +2122,7 @@ else:
         
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
-            Task(client.events.guild_create(client, guild), KOKORO)
+            Task(KOKORO, client.events.guild_create(client, guild))
     
     def GUILD_CREATE__OPT(client, data):
         guild_state = data.get('unavailable', False)
@@ -2157,7 +2157,7 @@ def GUILD_UPDATE__CAL_SC(client, data):
     if not old_attributes:
         return
     
-    Task(client.events.guild_edit(client, guild, old_attributes), KOKORO)
+    Task(KOKORO, client.events.guild_edit(client, guild, old_attributes))
 
 def GUILD_UPDATE__CAL_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -2180,7 +2180,7 @@ def GUILD_UPDATE__CAL_MC(client, data):
     for client_ in clients:
         event_handler = client_.events.guild_edit
         if (event_handler is DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client_, guild, old_attributes), KOKORO)
+            Task(KOKORO, event_handler(client_, guild, old_attributes))
 
 def GUILD_UPDATE__OPT_SC(client, data):
     guild_id = int(data['guild_id'])
@@ -2234,7 +2234,7 @@ def GUILD_DELETE__CAL(client, data):
     if (ready_state is not None):
         ready_state.discard_guild(guild)
     
-    Task(client.events.guild_delete(client, guild, guild_profile), KOKORO)
+    Task(KOKORO, client.events.guild_delete(client, guild, guild_profile))
 
 def GUILD_DELETE__OPT(client, data):
     guild_id = int(data['id'])
@@ -2270,7 +2270,7 @@ del GUILD_DELETE__CAL, \
 def GUILD_AUDIT_LOG_ENTRY_CREATE__CAL(client, data):
     audit_log_entry = AuditLogEntry(data)
     if (audit_log_entry is not None):
-        Task(client.events.audit_log_entry_create(client, audit_log_entry), KOKORO)
+        Task(KOKORO, client.events.audit_log_entry_create(client, audit_log_entry))
 
 def GUILD_AUDIT_LOG_ENTRY_CREATE__OPT(client, data):
     pass
@@ -2295,7 +2295,7 @@ def GUILD_BAN_ADD__CAL(client, data):
     
     user = User.from_data(data['user'])
     
-    Task(client.events.guild_ban_add(client, guild, user), KOKORO)
+    Task(KOKORO, client.events.guild_ban_add(client, guild, user))
 
 def GUILD_BAN_ADD__OPT(client, data):
     pass
@@ -2318,7 +2318,7 @@ def GUILD_BAN_REMOVE__CAL(client, data):
         return
     
     user = User.from_data(data['user'])
-    Task(client.events.guild_ban_delete(client, guild, user), KOKORO)
+    Task(KOKORO, client.events.guild_ban_delete(client, guild, user))
 
 def GUILD_BAN_REMOVE__OPT(client, data):
     pass
@@ -2336,7 +2336,7 @@ del GUILD_BAN_REMOVE__CAL, \
 def GUILD_MEMBERS_CHUNK(client, data):
     event = GuildUserChunkEvent(data)
     
-    Task(client.events.guild_user_chunk(client, event), KOKORO)
+    Task(KOKORO, client.events.guild_user_chunk(client, event))
 
 add_parser(
     'GUILD_MEMBERS_CHUNK',
@@ -2356,7 +2356,7 @@ def INTEGRATION_CREATE__CAL(client, data):
     
     integration = Integration.from_data(data)
     
-    Task(client.events.integration_create(client, guild, integration), KOKORO)
+    Task(KOKORO, client.events.integration_create(client, guild, integration))
 
 def INTEGRATION_CREATE__OPT(client, data):
     pass
@@ -2386,7 +2386,7 @@ def INTEGRATION_DELETE__CAL(client, data):
     else:
         application_id = int(application_id)
     
-    Task(client.events.integration_delete(client, guild, integration_id, application_id), KOKORO)
+    Task(KOKORO, client.events.integration_delete(client, guild, integration_id, application_id))
 
 def INTEGRATION_DELETE__OPT(client, data):
     pass
@@ -2410,7 +2410,7 @@ def INTEGRATION_UPDATE__CAL(client, data):
     
     integration = Integration.from_data(data)
     
-    Task(client.events.integration_edit(client, guild, integration), KOKORO)
+    Task(KOKORO, client.events.integration_edit(client, guild, integration))
 
 def INTEGRATION_UPDATE__OPT(client, data):
     pass
@@ -2433,7 +2433,7 @@ def GUILD_INTEGRATIONS_UPDATE__CAL(client, data):
         guild_sync(client, data, 'GUILD_INTEGRATIONS_UPDATE')
         return
     
-    Task(client.events.integration_update(client, guild), KOKORO)
+    Task(KOKORO, client.events.integration_update(client, guild))
 
 def GUILD_INTEGRATIONS_UPDATE__OPT(client, data):
     pass
@@ -2453,7 +2453,7 @@ def GUILD_ROLE_CREATE__CAL_SC(client, data):
     
     role = Role.from_data(data['role'], guild_id)
     
-    Task(client.events.role_create(client, role), KOKORO)
+    Task(KOKORO, client.events.role_create(client, role))
 
 
 def GUILD_ROLE_CREATE__CAL_MC(client, data):
@@ -2473,13 +2473,13 @@ def GUILD_ROLE_CREATE__CAL_MC(client, data):
     if clients is None:
         event_handler = client.events.role_create
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, role), KOKORO)
+            Task(KOKORO, event_handler(client, role))
     
     else:
         for client_ in clients:
             event_handler = client_.events.role_create
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, role), KOKORO)
+                Task(KOKORO, event_handler(client_, role))
 
 
 def GUILD_ROLE_CREATE__OPT_SC(client, data):
@@ -2519,7 +2519,7 @@ def GUILD_ROLE_DELETE__CAL_SC(client, data):
     role = create_partial_role_from_id(role_id, guild_id)
     role._delete()
     
-    Task(client.events.role_delete(client, role), KOKORO)
+    Task(KOKORO, client.events.role_delete(client, role))
 
 
 def GUILD_ROLE_DELETE__CAL_MC(client, data):
@@ -2541,12 +2541,12 @@ def GUILD_ROLE_DELETE__CAL_MC(client, data):
     if clients is None:
         event_handler = client.events.role_delete
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, role), KOKORO)
+            Task(KOKORO, event_handler(client, role))
     else:
         for client_ in clients:
             event_handler = client_.events.role_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, role), KOKORO)
+                Task(KOKORO, event_handler(client_, role))
 
 
 def GUILD_ROLE_DELETE__OPT_SC(client, data):
@@ -2606,7 +2606,7 @@ def GUILD_ROLE_UPDATE__CAL_SC(client, data):
     if not old_attributes:
         return
     
-    Task(client.events.role_edit(client, role, old_attributes), KOKORO)
+    Task(KOKORO, client.events.role_edit(client, role, old_attributes))
 
 def GUILD_ROLE_UPDATE__CAL_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -2638,7 +2638,7 @@ def GUILD_ROLE_UPDATE__CAL_MC(client, data):
     for client_ in clients:
         event_handler = client_.events.role_edit
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client_, role, old_attributes), KOKORO)
+            Task(KOKORO, event_handler(client_, role, old_attributes))
 
 def GUILD_ROLE_UPDATE__OPT_SC(client, data):
     guild_id = int(data['guild_id'])
@@ -2692,7 +2692,7 @@ del GUILD_ROLE_UPDATE__CAL_SC, \
 
 def WEBHOOKS_UPDATE__CAL(client, data):
     event = WebhookUpdateEvent(data)
-    Task(client.events.webhook_update(client, event), KOKORO)
+    Task(KOKORO, client.events.webhook_update(client, event))
 
 def WEBHOOKS_UPDATE__OPT(client, data):
     pass
@@ -2734,44 +2734,44 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
             if action == VOICE_STATE_JOIN:
                 event_handler = client.events.voice_client_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, voice_state), KOKORO)
+                    Task(KOKORO, event_handler(client, voice_state))
                 
                 event_handler = client.events.user_voice_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, voice_state), KOKORO)
+                    Task(KOKORO, event_handler(client, voice_state))
                 
                 continue
             
             if action == VOICE_STATE_MOVE:
                 event_handler = client.events.voice_client_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                     Task(event_handler(client, voice_state, change), KOKORO)
+                     Task(KOKORO, event_handler(client, voice_state, change))
                 
                 event_handler = client.events.user_voice_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, voice_state, change), KOKORO)
+                    Task(KOKORO, event_handler(client, voice_state, change))
                 
                 continue
             
             if action == VOICE_STATE_LEAVE:
                 event_handler = client.events.voice_client_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                     Task(event_handler(client, voice_state, change), KOKORO)
+                     Task(KOKORO, event_handler(client, voice_state, change))
                 
                 event_handler = client.events.user_voice_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, voice_state, change), KOKORO)
+                    Task(KOKORO, event_handler(client, voice_state, change))
                 
                 continue
             
             if action == VOICE_STATE_UPDATE:
                 event_handler = client.events.voice_client_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                     Task(event_handler(client, voice_state, change), KOKORO)
+                     Task(KOKORO, event_handler(client, voice_state, change))
                 
                 event_handler = client.events.user_voice_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, voice_state, change), KOKORO)
+                    Task(KOKORO, event_handler(client, voice_state, change))
                 
                 continue
     
@@ -2780,25 +2780,25 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
             if action == VOICE_STATE_JOIN:
                 event_handler = client.events.user_voice_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, voice_state), KOKORO)
+                    Task(KOKORO, event_handler(client, voice_state))
                 continue
             
             if action == VOICE_STATE_MOVE:
                 event_handler = client.events.user_voice_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, voice_state, change), KOKORO)
+                    Task(KOKORO, event_handler(client, voice_state, change))
                 continue
             
             if action == VOICE_STATE_LEAVE:
                 event_handler = client.events.user_voice_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, voice_state, change), KOKORO)
+                    Task(KOKORO, event_handler(client, voice_state, change))
                 continue
             
             if action == VOICE_STATE_UPDATE:
                 event_handler = client.events.user_voice_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, voice_state, change), KOKORO)
+                    Task(KOKORO, event_handler(client, voice_state, change))
                 continue
 
 
@@ -2841,25 +2841,25 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
             if action == VOICE_STATE_JOIN:
                 event_handler = user.events.voice_client_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(user, voice_state), KOKORO)
+                    Task(KOKORO, event_handler(user, voice_state))
                 continue
             
             if action == VOICE_STATE_MOVE:
                 event_handler = user.events.voice_client_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                     Task(event_handler(user, voice_state, change), KOKORO)
+                     Task(KOKORO, event_handler(user, voice_state, change))
                 continue
             
             if action == VOICE_STATE_LEAVE:
                 event_handler = user.events.voice_client_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                     Task(event_handler(user, voice_state, change), KOKORO)
+                     Task(KOKORO, event_handler(user, voice_state, change))
                 continue
             
             if action == VOICE_STATE_UPDATE:
                 event_handler = user.events.voice_client_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                     Task(event_handler(user, voice_state, change), KOKORO)
+                     Task(KOKORO, event_handler(user, voice_state, change))
                 continue
     
     for client_ in clients:
@@ -2867,25 +2867,25 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
             if action == VOICE_STATE_JOIN:
                 event_handler = client_.events.user_voice_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, voice_state), KOKORO)
+                    Task(KOKORO, event_handler(client_, voice_state))
                 continue
             
             if action == VOICE_STATE_MOVE:
                 event_handler = client_.events.user_voice_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, voice_state, change), KOKORO)
+                    Task(KOKORO, event_handler(client_, voice_state, change))
                 continue
             
             if action == VOICE_STATE_LEAVE:
                 event_handler = client_.events.user_voice_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, voice_state, change), KOKORO)
+                    Task(KOKORO, event_handler(client_, voice_state, change))
                 continue
             
             if action == VOICE_STATE_UPDATE:
                 event_handler = client_.events.user_voice_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, voice_state, change), KOKORO)
+                    Task(KOKORO, event_handler(client_, voice_state, change))
                 continue
 
 
@@ -2917,25 +2917,25 @@ def VOICE_STATE_UPDATE__OPT_SC(client, data):
             if action == VOICE_STATE_JOIN:
                 event_handler = client.events.voice_client_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, voice_state), KOKORO)
+                    Task(KOKORO, event_handler(client, voice_state))
                 continue
             
             if action == VOICE_STATE_MOVE:
                 event_handler = client.events.voice_client_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                     Task(event_handler(client, voice_state, change), KOKORO)
+                     Task(KOKORO, event_handler(client, voice_state, change))
                 continue
             
             if action == VOICE_STATE_LEAVE:
                 event_handler = client.events.voice_client_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                     Task(event_handler(client, voice_state, change), KOKORO)
+                     Task(KOKORO, event_handler(client, voice_state, change))
                 continue
             
             if action == VOICE_STATE_UPDATE:
                 event_handler = client.events.voice_client_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                     Task(event_handler(client, voice_state, change), KOKORO)
+                     Task(KOKORO, event_handler(client, voice_state, change))
                 continue
     else:
         guild._update_voice_state_restricted(data, user)
@@ -2973,25 +2973,25 @@ def VOICE_STATE_UPDATE__OPT_MC(client, data):
             if action == VOICE_STATE_JOIN:
                 event_handler = user.events.voice_client_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(user, voice_state), KOKORO)
+                    Task(KOKORO, event_handler(user, voice_state))
                 continue
             
             if action == VOICE_STATE_MOVE:
                 event_handler = user.events.voice_client_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                     Task(event_handler(user, voice_state, change), KOKORO)
+                     Task(KOKORO, event_handler(user, voice_state, change))
                 continue
             
             if action == VOICE_STATE_LEAVE:
                 event_handler = user.events.voice_client_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                     Task(event_handler(user, voice_state, change), KOKORO)
+                     Task(KOKORO, event_handler(user, voice_state, change))
                 continue
             
             if action == VOICE_STATE_UPDATE:
                 event_handler = user.events.voice_client_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                     Task(event_handler(user, voice_state, change), KOKORO)
+                     Task(KOKORO, event_handler(user, voice_state, change))
                 continue
     
     else:
@@ -3013,7 +3013,7 @@ del VOICE_STATE_UPDATE__CAL_SC, \
 def VOICE_SERVER_UPDATE_CAL(client, data):
     event = VoiceServerUpdateEvent(data)
     
-    Task(client.events.voice_server_update(client, event), KOKORO)
+    Task(KOKORO, client.events.voice_server_update(client, event))
 
 def VOICE_SERVER_UPDATE__OPT(client, data):
     pass
@@ -3042,7 +3042,7 @@ if CACHE_PRESENCE:
         
         timestamp = datetime.utcfromtimestamp(data.get('timestamp', None))
         
-        Task(client.events.typing(client, channel, user, timestamp), KOKORO)
+        Task(KOKORO, client.events.typing(client, channel, user, timestamp))
     
     def TYPING_START__OPT(client, data):
         return
@@ -3062,7 +3062,7 @@ del TYPING_START__CAL, \
 
 def INVITE_CREATE__CAL(client, data):
     invite = Invite(data, False)
-    Task(client.events.invite_create(client, invite), KOKORO)
+    Task(KOKORO, client.events.invite_create(client, invite))
 
 def INVITE_CREATE__OPT(client, data):
     pass
@@ -3078,7 +3078,7 @@ del INVITE_CREATE__CAL, \
 
 def INVITE_DELETE__CAL(client, data):
     invite = Invite(data, True)
-    Task(client.events.invite_delete(client, invite), KOKORO)
+    Task(KOKORO, client.events.invite_delete(client, invite))
 
 def INVITE_DELETE__OPT(client, data):
     pass
@@ -3104,7 +3104,7 @@ def RELATIONSHIP_ADD__CAL(client, data):
         coroutine = client.events.relationship_add(client, new_relationship)
     else:
         coroutine = client.events.relationship_change(client, old_relationship, new_relationship)
-    Task(coroutine, KOKORO)
+    Task(KOKORO, coroutine)
 
 def RELATIONSHIP_ADD__OPT(client, data):
     user_id = int(data['id'])
@@ -3131,7 +3131,7 @@ def RELATIONSHIP_REMOVE__CAL(client, data):
     except KeyError:
         return
     
-    Task(client.events.relationship_delete(client, old_relationship), KOKORO)
+    Task(KOKORO, client.events.relationship_delete(client, old_relationship))
 
 def RELATIONSHIP_REMOVE__OPT(client, data):
     user_id = int(data['id'])
@@ -3181,7 +3181,7 @@ def GIFT_CODE_UPDATE__CAL(client, data):
         return
     
     gift = Gift(data)
-    Task(client.events.gift_update(client, channel, gift), KOKORO)
+    Task(KOKORO, client.events.gift_update(client, channel, gift))
 
 def GIFT_CODE_UPDATE__OPT(client, data):
     pass
@@ -3266,7 +3266,7 @@ def INTERACTION_CREATE__CAL(client, data):
     # channel & guild are not cached.
     event = InteractionEvent.from_data(data)
     
-    Task(client.events.interaction_create(client, event), KOKORO)
+    Task(KOKORO, client.events.interaction_create(client, event))
 
 def INTERACTION_CREATE__OPT(client, data):
     pass
@@ -3286,7 +3286,7 @@ def APPLICATION_COMMAND_CREATE__CAL(client, data):
     
     application_command = ApplicationCommand.from_data(data)
     
-    Task(client.events.application_command_create(client, guild_id, application_command), KOKORO)
+    Task(KOKORO, client.events.application_command_create(client, guild_id, application_command))
 
 def APPLICATION_COMMAND_CREATE__OPT(client, data):
     pass
@@ -3315,7 +3315,7 @@ def APPLICATION_COMMAND_UPDATE__CAL(client, data):
         if not old_attributes:
             return
     
-    Task(client.events.application_command_update(client, guild_id, application_command, old_attributes), KOKORO)
+    Task(KOKORO, client.events.application_command_update(client, guild_id, application_command, old_attributes))
 
 def APPLICATION_COMMAND_UPDATE__OPT(client, data):
     application_command_id = data['id']
@@ -3340,7 +3340,7 @@ def APPLICATION_COMMAND_DELETE__CAL(client, data):
     guild_id = int(data['guild_id'])
     application_command = ApplicationCommand.from_data(data)
     
-    Task(client.events.application_command_delete(client, guild_id, application_command), KOKORO)
+    Task(KOKORO, client.events.application_command_delete(client, guild_id, application_command))
 
 def APPLICATION_COMMAND_DELETE__OPT(client, data):
     pass
@@ -3358,7 +3358,7 @@ del APPLICATION_COMMAND_DELETE__CAL, \
 def APPLICATION_COMMAND_PERMISSIONS_UPDATE__CAL(client, data):
     application_command_permission = ApplicationCommandPermission.from_data(data)
     
-    Task(client.events.application_command_permission_update(client, application_command_permission), KOKORO)
+    Task(KOKORO, client.events.application_command_permission_update(client, application_command_permission))
 
 def APPLICATION_COMMAND_PERMISSIONS_UPDATE__OPT(client, data):
     pass
@@ -3376,7 +3376,7 @@ del APPLICATION_COMMAND_PERMISSIONS_UPDATE__CAL, \
 def STAGE_INSTANCE_CREATE__CAL(client, data):
     stage = Stage.from_data(data)
     
-    Task(client.events.stage_create(client, stage), KOKORO)
+    Task(KOKORO, client.events.stage_create(client, stage))
 
 def STAGE_INSTANCE_CREATE__OPT(client, data):
     Stage.from_data(data)
@@ -3402,7 +3402,7 @@ def STAGE_INSTANCE_UPDATE__CAL_SC(client, data):
     if not old_attributes:
         return
     
-    Task(client.events.stage_edit(client, stage, old_attributes), KOKORO)
+    Task(KOKORO, client.events.stage_edit(client, stage, old_attributes))
 
 def STAGE_INSTANCE_UPDATE__CAL_MC(client, data):
     stage_id = int(data['id'])
@@ -3423,7 +3423,7 @@ def STAGE_INSTANCE_UPDATE__CAL_MC(client, data):
     for client_ in clients:
         event_handler = client_.events.stage_edit
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client_, stage, old_attributes), KOKORO)
+            Task(KOKORO, event_handler(client_, stage, old_attributes))
 
 
 def STAGE_INSTANCE_UPDATE__OPT(client, data):
@@ -3456,7 +3456,7 @@ def STAGE_INSTANCE_DELETE__CAL_SC(client, data):
     
     stage._delete()
     
-    Task(client.events.stage_delete(client, stage), KOKORO)
+    Task(KOKORO, client.events.stage_delete(client, stage))
 
 def STAGE_INSTANCE_DELETE__CAL_MC(client, data):
     stage_id = int(data['id'])
@@ -3475,7 +3475,7 @@ def STAGE_INSTANCE_DELETE__CAL_MC(client, data):
     for client_ in clients:
         event_handler = client_.events.stage_delete
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client_, stage), KOKORO)
+            Task(KOKORO, event_handler(client_, stage))
 
 
 def STAGE_INSTANCE_DELETE__OPT(client, data):
@@ -3540,7 +3540,7 @@ def THREAD_MEMBER_UPDATE__CAL_SC(client, data):
     if (old_attributes is None):
         return
     
-    Task(client.user_thread_profile_edit(client, thread_channel, client, old_attributes), KOKORO)
+    Task(KOKORO, client.user_thread_profile_edit(client, thread_channel, client, old_attributes))
 
 
 def THREAD_MEMBER_UPDATE__CAL_MC(client, data):
@@ -3563,7 +3563,7 @@ def THREAD_MEMBER_UPDATE__CAL_MC(client, data):
     for client_ in clients:
         event_handler = client_.user_thread_profile_edit
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client_, thread_channel, client, old_attributes), KOKORO)
+            Task(KOKORO, event_handler(client_, thread_channel, client, old_attributes))
 
 
 def THREAD_MEMBER_UPDATE__OPT(client, data):
@@ -3603,7 +3603,7 @@ def THREAD_MEMBERS_UPDATE__CAL_SC(client, data):
             if (thread_user_deletion is not None):
                 event_handler = client.events.thread_user_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, thread_channel, *thread_user_deletion), KOKORO)
+                    Task(KOKORO, event_handler(client, thread_channel, *thread_user_deletion))
     
     thread_user_datas = data.get('added_members', None)
     if (thread_user_datas is not None) and thread_user_datas:
@@ -3615,7 +3615,7 @@ def THREAD_MEMBERS_UPDATE__CAL_SC(client, data):
             if created:
                 event_handler = client.events.thread_user_add
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, thread_channel, user), KOKORO)
+                    Task(KOKORO, event_handler(client, thread_channel, user))
 
 
 def THREAD_MEMBERS_UPDATE__CAL_MC(client, data):
@@ -3672,13 +3672,13 @@ def THREAD_MEMBERS_UPDATE__CAL_MC(client, data):
             event_handler = client_.events.thread_user_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 for thread_user_deletion in thread_user_deletions:
-                    Task(event_handler(client_, thread_channel, *thread_user_deletion), KOKORO)
+                    Task(KOKORO, event_handler(client_, thread_channel, *thread_user_deletion))
         
         if (thread_user_additions is not None):
             event_handler = client_.events.thread_user_add
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 for user in thread_user_additions:
-                    Task(event_handler(client_, thread_channel, user), KOKORO)
+                    Task(KOKORO, event_handler(client_, thread_channel, user))
 
 
 def THREAD_MEMBERS_UPDATE__OPT_SC(client, data):
@@ -3757,14 +3757,14 @@ del GUILD_APPLICATION_COMMAND_COUNTS_UPDATE
 def GUILD_SCHEDULED_EVENT_CREATE__CAL_SC(client, data):
     scheduled_event = ScheduledEvent.from_data(data)
     
-    Task(client.events.scheduled_event_create(client, scheduled_event), KOKORO)
+    Task(KOKORO, client.events.scheduled_event_create(client, scheduled_event))
 
 def GUILD_SCHEDULED_EVENT_CREATE__CAL_MC(client, data):
     scheduled_event = ScheduledEvent.from_data(data)
     
     event_handler = client.events.scheduled_event_create
     if (event_handler is not DEFAULT_EVENT_HANDLER):
-        Task(event_handler(client, scheduled_event), KOKORO)
+        Task(KOKORO, event_handler(client, scheduled_event))
 
 def GUILD_SCHEDULED_EVENT_CREATE__OPT(client, data):
     ScheduledEvent.from_data(data)
@@ -3782,7 +3782,7 @@ del GUILD_SCHEDULED_EVENT_CREATE__CAL_SC, \
 
 def GUILD_SCHEDULED_EVENT_DELETE__CAL_SC(client, data):
     scheduled_event = ScheduledEvent._create_from_data_and_delete(data)
-    Task(client.events.scheduled_event_delete(client, scheduled_event), KOKORO)
+    Task(KOKORO, client.events.scheduled_event_delete(client, scheduled_event))
 
 
 def GUILD_SCHEDULED_EVENT_DELETE__CAL_MC(client, data):
@@ -3802,13 +3802,13 @@ def GUILD_SCHEDULED_EVENT_DELETE__CAL_MC(client, data):
     if (guild is None):
         event_handler = client.events.scheduled_event_delete
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, scheduled_event), KOKORO)
+            Task(KOKORO, event_handler(client, scheduled_event))
     
     else:
         for client_ in clients:
             event_handler = client_.events.scheduled_event_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, scheduled_event), KOKORO)
+                Task(KOKORO, event_handler(client_, scheduled_event))
 
 
 def GUILD_SCHEDULED_EVENT_DELETE__OPT(client, data):
@@ -3843,7 +3843,7 @@ def GUILD_SCHEDULED_EVENT_UPDATE__CAL_SC(client, data):
         if not old_attributes:
             return
     
-    Task(client.events.scheduled_event_edit(client, scheduled_event, old_attributes), KOKORO)
+    Task(KOKORO, client.events.scheduled_event_edit(client, scheduled_event, old_attributes))
 
 
 def GUILD_SCHEDULED_EVENT_UPDATE__CAL_MC(client, data):
@@ -3872,12 +3872,12 @@ def GUILD_SCHEDULED_EVENT_UPDATE__CAL_MC(client, data):
     if clients is None:
         event_handler = client.events.scheduled_event_edit
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, scheduled_event, old_attributes), KOKORO)
+            Task(KOKORO, event_handler(client, scheduled_event, old_attributes))
     else:
         for client_ in clients:
             event_handler = client_.events.scheduled_event_edit
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, scheduled_event, old_attributes), KOKORO)
+                Task(KOKORO, event_handler(client_, scheduled_event, old_attributes))
 
 
 def GUILD_SCHEDULED_EVENT_UPDATE__OPT_SC(client, data):
@@ -3920,7 +3920,7 @@ del GUILD_SCHEDULED_EVENT_UPDATE__CAL_SC, \
 def GUILD_SCHEDULED_EVENT_USER_ADD__CAL_SC(client, data):
     event = ScheduledEventSubscribeEvent.from_data(data)
     
-    Task(client.events.scheduled_event_user_subscribe(client, event), KOKORO)
+    Task(KOKORO, client.events.scheduled_event_user_subscribe(client, event))
 
 
 def GUILD_SCHEDULED_EVENT_USER_ADD__CAL_MC(client, data):
@@ -3928,7 +3928,7 @@ def GUILD_SCHEDULED_EVENT_USER_ADD__CAL_MC(client, data):
     if (event_handler is not DEFAULT_EVENT_HANDLER):
         event = ScheduledEventSubscribeEvent.from_data(data)
         
-        Task(event_handler(client, event), KOKORO)
+        Task(KOKORO, event_handler(client, event))
 
 
 def GUILD_SCHEDULED_EVENT_USER_ADD__OPT(client, data):
@@ -3948,7 +3948,7 @@ del GUILD_SCHEDULED_EVENT_USER_ADD__CAL_SC, \
 def GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_SC(client, data):
     event = ScheduledEventUnsubscribeEvent.from_data(data)
     
-    Task(client.events.scheduled_event_user_unsubscribe(client, event), KOKORO)
+    Task(KOKORO, client.events.scheduled_event_user_unsubscribe(client, event))
 
 
 def GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_MC(client, data):
@@ -3956,7 +3956,7 @@ def GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_MC(client, data):
     if (event_handler is not DEFAULT_EVENT_HANDLER):
         event = ScheduledEventUnsubscribeEvent.from_data(data)
         
-        Task(event_handler(client, event), KOKORO)
+        Task(KOKORO, event_handler(client, event))
 
 
 def GUILD_SCHEDULED_EVENT_USER_REMOVE__OPT(client, data):
@@ -3982,31 +3982,31 @@ def EMBEDDED_ACTIVITY_UPDATE__CAL_SC(client, data):
         if action == EMBEDDED_ACTIVITY_UPDATE_CREATE:
             event_handler = client.events.embedded_activity_create
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, embedded_activity_state), KOKORO)
+                Task(KOKORO, event_handler(client, embedded_activity_state))
             continue
         
         if action == EMBEDDED_ACTIVITY_UPDATE_DELETE:
             event_handler = client.events.embedded_activity_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, embedded_activity_state), KOKORO)
+                Task(KOKORO, event_handler(client, embedded_activity_state))
             continue
         
         if action == EMBEDDED_ACTIVITY_UPDATE_UPDATE:
             event_handler = client.events.embedded_activity_update
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, embedded_activity_state, value), KOKORO)
+                Task(KOKORO, event_handler(client, embedded_activity_state, value))
             continue
         
         if action == EMBEDDED_ACTIVITY_UPDATE_USER_ADD:
             event_handler = client.events.embedded_activity_user_add
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, embedded_activity_state, value), KOKORO)
+                Task(KOKORO, event_handler(client, embedded_activity_state, value))
             continue
         
         if action == EMBEDDED_ACTIVITY_UPDATE_USER_DELETE:
             event_handler = client.events.embedded_activity_user_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, embedded_activity_state, value), KOKORO)
+                Task(KOKORO, event_handler(client, embedded_activity_state, value))
             continue
         
         # no more cases
@@ -4036,31 +4036,31 @@ def EMBEDDED_ACTIVITY_UPDATE__CAL_MC(client, data):
             if action == EMBEDDED_ACTIVITY_UPDATE_CREATE:
                 event_handler = client.events.embedded_activity_create
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, embedded_activity_state), KOKORO)
+                    Task(KOKORO, event_handler(client, embedded_activity_state))
                 continue
             
             if action == EMBEDDED_ACTIVITY_UPDATE_DELETE:
                 event_handler = client.events.embedded_activity_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, embedded_activity_state), KOKORO)
+                    Task(KOKORO, event_handler(client, embedded_activity_state))
                 continue
             
             if action == EMBEDDED_ACTIVITY_UPDATE_UPDATE:
                 event_handler = client.events.embedded_activity_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, embedded_activity_state, value), KOKORO)
+                    Task(KOKORO, event_handler(client, embedded_activity_state, value))
                 continue
             
             if action == EMBEDDED_ACTIVITY_UPDATE_USER_ADD:
                 event_handler = client.events.embedded_activity_user_add
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, embedded_activity_state, value), KOKORO)
+                    Task(KOKORO, event_handler(client, embedded_activity_state, value))
                 continue
             
             if action == EMBEDDED_ACTIVITY_UPDATE_USER_DELETE:
                 event_handler = client.events.embedded_activity_user_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, embedded_activity_state, value), KOKORO)
+                    Task(KOKORO, event_handler(client, embedded_activity_state, value))
                 continue
             
             # no more cases
@@ -4072,31 +4072,31 @@ def EMBEDDED_ACTIVITY_UPDATE__CAL_MC(client, data):
                 if action == EMBEDDED_ACTIVITY_UPDATE_CREATE:
                     event_handler = client_.events.embedded_activity_create
                     if (event_handler is not DEFAULT_EVENT_HANDLER):
-                        Task(event_handler(client_, embedded_activity_state), KOKORO)
+                        Task(KOKORO, event_handler(client_, embedded_activity_state))
                     continue
                 
                 if action == EMBEDDED_ACTIVITY_UPDATE_DELETE:
                     event_handler = client_.events.embedded_activity_delete
                     if (event_handler is not DEFAULT_EVENT_HANDLER):
-                        Task(event_handler(client_, embedded_activity_state), KOKORO)
+                        Task(KOKORO, event_handler(client_, embedded_activity_state))
                     continue
                 
                 if action == EMBEDDED_ACTIVITY_UPDATE_UPDATE:
                     event_handler = client_.events.embedded_activity_update
                     if (event_handler is not DEFAULT_EVENT_HANDLER):
-                        Task(event_handler(client_, embedded_activity_state, value), KOKORO)
+                        Task(KOKORO, event_handler(client_, embedded_activity_state, value))
                     continue
                 
                 if action == EMBEDDED_ACTIVITY_UPDATE_USER_ADD:
                     event_handler = client_.events.embedded_activity_user_add
                     if (event_handler is not DEFAULT_EVENT_HANDLER):
-                        Task(event_handler(client_, embedded_activity_state, value), KOKORO)
+                        Task(KOKORO, event_handler(client_, embedded_activity_state, value))
                     continue
                 
                 if action == EMBEDDED_ACTIVITY_UPDATE_USER_DELETE:
                     event_handler = client_.events.embedded_activity_user_delete
                     if (event_handler is not DEFAULT_EVENT_HANDLER):
-                        Task(event_handler(client_, embedded_activity_state, value), KOKORO)
+                        Task(KOKORO, event_handler(client_, embedded_activity_state, value))
                     continue
                 
                 # no more cases
@@ -4134,7 +4134,7 @@ del EMBEDDED_ACTIVITY_UPDATE__CAL_SC, \
 def GUILD_APPLICATION_COMMAND_INDEX_UPDATE__CAL(client, data):
     event = ApplicationCommandCountUpdate(data)
     
-    Task(client.events.application_command_count_update(client, event), KOKORO)
+    Task(KOKORO, client.events.application_command_count_update(client, event))
 
 
 def GUILD_APPLICATION_COMMAND_INDEX_UPDATE__OPT(client, data):
@@ -4152,7 +4152,7 @@ del GUILD_APPLICATION_COMMAND_INDEX_UPDATE__CAL, \
 
 def AUTO_MODERATION_RULE_CREATE__CAL_SC(client, data):
     auto_moderation_rule = AutoModerationRule.from_data(data)
-    Task(client.events.auto_moderation_rule_create(client, auto_moderation_rule), KOKORO)
+    Task(KOKORO, client.events.auto_moderation_rule_create(client, auto_moderation_rule))
 
 
 def AUTO_MODERATION_RULE_CREATE__CAL_MC(client, data):
@@ -4160,7 +4160,7 @@ def AUTO_MODERATION_RULE_CREATE__CAL_MC(client, data):
     
     event_handler = client.events.auto_moderation_rule_create
     if (event_handler is not DEFAULT_EVENT_HANDLER):
-        Task(event_handler(client, auto_moderation_rule), KOKORO)
+        Task(KOKORO, event_handler(client, auto_moderation_rule))
 
 
 def AUTO_MODERATION_RULE_CREATE__OPT(client, data):
@@ -4189,7 +4189,7 @@ def AUTO_MODERATION_RULE_UPDATE__CAL_SC(client, data):
     else:
         old_attributes = auto_moderation_rule._difference_update_attributes(data)
     
-    Task(client.events.auto_moderation_rule_edit(client, auto_moderation_rule, old_attributes), KOKORO)
+    Task(KOKORO, client.events.auto_moderation_rule_edit(client, auto_moderation_rule, old_attributes))
 
 
 def AUTO_MODERATION_RULE_UPDATE__CAL_MC(client, data):
@@ -4215,7 +4215,7 @@ def AUTO_MODERATION_RULE_UPDATE__CAL_MC(client, data):
         
         event_handler = client.events.auto_moderation_rule_edit
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, auto_moderation_rule, old_attributes), KOKORO)
+            Task(KOKORO, event_handler(client, auto_moderation_rule, old_attributes))
         
     else:
         clients = filter_clients(guild.clients, INTENT_MASK_AUTO_MODERATION_CONFIGURATION, client)
@@ -4239,7 +4239,7 @@ def AUTO_MODERATION_RULE_UPDATE__CAL_MC(client, data):
         for client_ in clients:
             event_handler = client_.events.auto_moderation_rule_edit
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, auto_moderation_rule, old_attributes), KOKORO)
+                Task(KOKORO, event_handler(client_, auto_moderation_rule, old_attributes))
 
 
 def AUTO_MODERATION_RULE_UPDATE__OPT(client, data):
@@ -4266,7 +4266,7 @@ del AUTO_MODERATION_RULE_UPDATE__CAL_SC, \
 
 def AUTO_MODERATION_RULE_DELETE__CAL_SC(client, data):
     auto_moderation_rule = AutoModerationRule.from_data(data)
-    Task(client.events.auto_moderation_rule_delete(client, auto_moderation_rule), KOKORO)
+    Task(KOKORO, client.events.auto_moderation_rule_delete(client, auto_moderation_rule))
 
 
 def AUTO_MODERATION_RULE_DELETE__CAL_MC(client, data):
@@ -4274,7 +4274,7 @@ def AUTO_MODERATION_RULE_DELETE__CAL_MC(client, data):
     
     event_handler = client.events.auto_moderation_rule_delete
     if (event_handler is not DEFAULT_EVENT_HANDLER):
-        Task(event_handler(client, auto_moderation_rule), KOKORO)
+        Task(KOKORO, event_handler(client, auto_moderation_rule))
 
 
 def AUTO_MODERATION_RULE_DELETE__OPT(client, data):
@@ -4294,7 +4294,7 @@ del AUTO_MODERATION_RULE_DELETE__CAL_SC, \
 
 def AUTO_MODERATION_ACTION_EXECUTION__CAL_SC(client, data):
     event = AutoModerationActionExecutionEvent.from_data(data)
-    Task(client.events.auto_moderation_action_execution(client, event), KOKORO)
+    Task(KOKORO, client.events.auto_moderation_action_execution(client, event))
 
 
 def AUTO_MODERATION_ACTION_EXECUTION__CAL_MC(client, data):
@@ -4302,7 +4302,7 @@ def AUTO_MODERATION_ACTION_EXECUTION__CAL_MC(client, data):
     event_handler = client.events.auto_moderation_action_execution
     if (event_handler is not DEFAULT_EVENT_HANDLER):
         event = AutoModerationActionExecutionEvent.from_data(data)
-        Task(event_handler(client, event), KOKORO)
+        Task(KOKORO, event_handler(client, event))
 
 
 def AUTO_MODERATION_ACTION_EXECUTION__OPT(client, data):
@@ -4322,14 +4322,14 @@ del AUTO_MODERATION_ACTION_EXECUTION__CAL_SC, \
 
 def VOICE_CHANNEL_EFFECT_SEND__CAL_SC(client, data):
     event = VoiceChannelEffect.from_data(data)
-    Task(client.events.voice_channel_effect(client, event), KOKORO)
+    Task(KOKORO, client.events.voice_channel_effect(client, event))
 
 
 def VOICE_CHANNEL_EFFECT_SEND__CAL_MC(client, data):
     event_handler = client.events.voice_channel_effect
     if (event_handler is not DEFAULT_EVENT_HANDLER):
         event = VoiceChannelEffect.from_data(data)
-        Task(event_handler(client, event), KOKORO)
+        Task(KOKORO, event_handler(client, event))
 
 
 def VOICE_CHANNEL_EFFECT_SEND__OPT(client, data):
@@ -4349,7 +4349,7 @@ del VOICE_CHANNEL_EFFECT_SEND__CAL_SC, \
 
 def SOUNDBOARD_SOUNDS__CAL(client, data):
     event = SoundboardSoundsEvent.from_data(data)
-    Task(client.events.soundboard_sounds(client, event), KOKORO)
+    Task(KOKORO, client.events.soundboard_sounds(client, event))
 
 
 def SOUNDBOARD_SOUNDS__OPT(client, data):
@@ -4368,7 +4368,7 @@ del SOUNDBOARD_SOUNDS__CAL, \
 
 def GUILD_SOUNDBOARD_SOUND_CREATE__CAL(client, data):
     soundboard_sound = SoundboardSound.from_data(data)
-    Task(client.events.soundboard_sound_create(client, soundboard_sound), KOKORO)
+    Task(KOKORO, client.events.soundboard_sound_create(client, soundboard_sound))
 
 
 def GUILD_SOUNDBOARD_SOUND_CREATE__OPT(client, data):
@@ -4394,7 +4394,7 @@ def GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__SC(client, data):
         if not old_attributes:
             return
     
-    Task(client.events.soundboard_sound_update(client, sound, old_attributes), KOKORO)
+    Task(KOKORO, client.events.soundboard_sound_update(client, sound, old_attributes))
 
 
 def GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__MC(client, data):
@@ -4416,12 +4416,12 @@ def GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__MC(client, data):
             return
     
     if clients is None:
-        Task(client.soundboard_sound_update(client, sound, old_attributes), KOKORO)
+        Task(KOKORO, client.soundboard_sound_update(client, sound, old_attributes))
     else:
         for client_ in clients:
             event_handler = client_.events.soundboard_sound_update
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, sound, old_attributes), KOKORO)
+                Task(KOKORO, event_handler(client_, sound, old_attributes))
 
 
 def GUILD_SOUNDBOARD_SOUND_UPDATE__OPT(client, data):
@@ -4442,7 +4442,7 @@ del GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__SC, \
 def GUILD_SOUNDBOARD_SOUND_DELETE__CAL__SC(client, data):
     sound = create_partial_soundboard_sound_from_partial_data(data)
     sound._delete()
-    Task(client.events.soundboard_sound_delete(client, sound), KOKORO)
+    Task(KOKORO, client.events.soundboard_sound_delete(client, sound))
 
 
 def GUILD_SOUNDBOARD_SOUND_DELETE__CAL__MC(client, data):
@@ -4459,12 +4459,12 @@ def GUILD_SOUNDBOARD_SOUND_DELETE__CAL__MC(client, data):
     sound._delete()
     
     if clients is None:
-        Task(client.soundboard_sound_delete(client, sound), KOKORO)
+        Task(KOKORO, client.soundboard_sound_delete(client, sound))
     else:
         for client_ in clients:
             event_handler = client_.events.soundboard_sound_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, sound), KOKORO)
+                Task(KOKORO, event_handler(client_, sound))
 
 
 def GUILD_SOUNDBOARD_SOUND_DELETE__OPT(client, data):

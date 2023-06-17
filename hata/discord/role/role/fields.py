@@ -2,16 +2,17 @@ __all__ = ()
 
 from ...color import Color
 from ...field_parsers import (
-    bool_parser_factory, flag_parser_factory, force_string_parser_factory, int_parser_factory,
+    bool_parser_factory, entity_id_parser_factory, flag_parser_factory, force_string_parser_factory, int_parser_factory,
     nullable_functional_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, flag_optional_putter_factory, force_string_putter_factory, int_putter_factory,
-    nullable_functional_optional_putter_factory, string_flag_putter_factory
+    bool_optional_putter_factory, entity_id_putter_factory, flag_optional_putter_factory, force_string_putter_factory,
+    int_putter_factory, nullable_functional_optional_putter_factory, string_flag_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, default_entity_validator, flag_validator_factory, force_string_validator_factory,
-    int_conditional_validator_factory, nullable_entity_conditional_validator_factory, preinstanced_validator_factory
+    bool_validator_factory, default_entity_validator, entity_id_validator_factory, flag_validator_factory,
+    force_string_validator_factory, int_conditional_validator_factory, nullable_entity_conditional_validator_factory,
+    preinstanced_validator_factory
 )
 from ...permission import Permission
 from ...permission.constants import PERMISSION_KEY
@@ -29,6 +30,16 @@ from .preinstanced import RoleManagerType
 parse_color = flag_parser_factory('color', Color)
 put_color_into = flag_optional_putter_factory('color', Color())
 validate_color = flag_validator_factory('color', Color)
+
+# guild_id
+
+validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
+
+# id
+
+parse_id = entity_id_parser_factory('id')
+put_id_into = entity_id_putter_factory('id')
+validate_id = entity_id_validator_factory('role_id')
 
 # manager_metadata
 

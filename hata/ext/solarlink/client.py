@@ -512,7 +512,7 @@ class SolarClient(RichAttributeErrorBaseType):
         """
         player_queue = self._player_queue
         if (player_queue is not None):
-            task_group = TaskGroup(KOKORO, (Task(player.change_node(node), KOKORO) for player in player_queue))
+            task_group = TaskGroup(KOKORO, (Task(KOKORO, player.change_node(node)) for player in player_queue))
             self._player_queue = None
             
             failed_task = await task_group.wait_exception()
@@ -542,7 +542,7 @@ class SolarClient(RichAttributeErrorBaseType):
                 else:
                     player_queue.extend(players)
             else:
-                task_group = TaskGroup(KOKORO, (Task(player.change_node(best_node), KOKORO) for player in players))
+                task_group = TaskGroup(KOKORO, (Task(KOKORO, player.change_node(best_node)) for player in players))
                 failed_task = await task_group.wait_exception()
                 if (failed_task is not None):
                     task_group.cancel_all()

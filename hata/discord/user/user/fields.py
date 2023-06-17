@@ -15,10 +15,11 @@ from ...field_validators import (
     nullable_string_validator_factory, preinstanced_validator_factory
 )
 from ...localization import Locale
+from ...localization.utils import LOCALE_DEFAULT
 
 from .constants import (
-    DISCRIMINATOR_VALUE_MAX, DISCRIMINATOR_VALUE_MIN, DISPLAY_NAME_LENGTH_MAX, LOCALE_DEFAULT, NAME_LENGTH_MAX,
-    NAME_LENGTH_MIN, WEBHOOK_NAME_LENGTH_MAX, WEBHOOK_NAME_LENGTH_MIN
+    DISCRIMINATOR_VALUE_MAX, DISCRIMINATOR_VALUE_MIN, DISPLAY_NAME_LENGTH_MAX, NAME_LENGTH_MAX, NAME_LENGTH_MIN,
+    WEBHOOK_NAME_LENGTH_MAX, WEBHOOK_NAME_LENGTH_MIN
 )
 from .flags import UserFlag
 from .preinstanced import PremiumType, Status

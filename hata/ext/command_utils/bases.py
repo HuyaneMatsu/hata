@@ -234,7 +234,7 @@ class PaginationBase:
         if (timeouter is not None):
             timeouter.cancel()
         
-        return Task(canceller(self, exception), KOKORO)
+        return Task(KOKORO, canceller(self, exception))
     
     
     def __repr__(self):

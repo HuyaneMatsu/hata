@@ -73,7 +73,7 @@ class AudioSource:
     
     def __del__(self):
         """Cleans up the audio source if ``.cleanup`` was not called for any reason."""
-        Task(self.cleanup(), KOKORO)
+        Task(KOKORO, self.cleanup())
     
     @property
     def title(self):

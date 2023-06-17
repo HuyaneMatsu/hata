@@ -29,7 +29,7 @@ def test__handle_embedded_activity_update_event__0():
     
     handle_embedded_activity_update_event(data)
     
-    embedded_activity_state = next(iter(guild._embedded_activity_states))
+    embedded_activity_state = next(iter(guild.embedded_activity_states))
     
     vampytest.assert_eq(embedded_activity_state.activity, activity)
     vampytest.assert_eq(embedded_activity_state.channel_id, channel_id)
@@ -69,7 +69,7 @@ def test__handle_embedded_activity_update_event__1():
     
     handle_embedded_activity_update_event(old_data)
     
-    embedded_activity_state = next(iter(guild._embedded_activity_states))
+    embedded_activity_state = next(iter(guild.embedded_activity_states))
     
     handle_embedded_activity_update_event(new_data)
     

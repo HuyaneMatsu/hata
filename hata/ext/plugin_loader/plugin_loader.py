@@ -1383,7 +1383,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         try:
             loader_task = self._loader_tasks[plugin]
         except KeyError:
-            loader_task = Task(self._plugin_loader_task(plugin), KOKORO)
+            loader_task = Task(KOKORO, self._plugin_loader_task(plugin))
             loader_task.add_done_callback(partial_func(_pop_loader_task_callback, plugin))
             
             self._loader_tasks[plugin] = loader_task
@@ -1508,7 +1508,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         try:
             unloader_task = self._unloader_tasks[plugin]
         except KeyError:
-            unloader_task = Task(self._plugin_unloader_task(plugin), KOKORO)
+            unloader_task = Task(KOKORO, self._plugin_unloader_task(plugin))
             unloader_task.add_done_callback(partial_func(_pop_unloader_task_callback, plugin, ))
             
             self._unloader_tasks[plugin] = unloader_task

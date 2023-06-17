@@ -1,4 +1,4 @@
-from ...... import Client
+from ......discord import Client
 
 
 def test__SlashCommand__autocomplete():

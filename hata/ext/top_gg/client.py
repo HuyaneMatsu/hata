@@ -82,7 +82,7 @@ def _trigger_auto_post(top_gg_client_reference):
     """
     top_gg_client = top_gg_client_reference()
     if (top_gg_client is not None):
-        Task(_do_auto_post(top_gg_client, top_gg_client_reference), KOKORO)
+        Task(KOKORO, _do_auto_post(top_gg_client, top_gg_client_reference))
 
 
 async def _do_auto_post(top_gg_client, top_gg_client_reference):
@@ -392,7 +392,7 @@ class TopGGClient:
         if force_update or (self._weekend_status_cache_time < LOOP_TIME()):
             task = self._weekend_status_request_task
             if task is None:
-                task = Task(get_weekend_status_task(self), KOKORO)
+                task = Task(KOKORO, get_weekend_status_task(self))
                 self._weekend_status_request_task = task
             
             weekend_status = await shield(task, KOKORO)

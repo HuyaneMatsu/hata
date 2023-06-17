@@ -1229,9 +1229,9 @@ class Slasher(EventHandlerBase):
         else:
             if isinstance(waiter, asynclist):
                 for waiter in waiter:
-                    Task(waiter(interaction_event), KOKORO)
+                    Task(KOKORO, waiter(interaction_event))
             else:
-                Task(waiter(interaction_event), KOKORO)
+                Task(KOKORO, waiter(interaction_event))
             
             return
         
@@ -1836,7 +1836,7 @@ class Slasher(EventHandlerBase):
         try:
             task = self._sync_tasks[guild_id]
         except KeyError:
-            task = self._sync_tasks[guild_id] = Task(self._sync_guild_task(client, guild_id), KOKORO)
+            task = self._sync_tasks[guild_id] = Task(KOKORO, self._sync_guild_task(client, guild_id))
         
         return await task
     
@@ -1862,7 +1862,7 @@ class Slasher(EventHandlerBase):
         try:
             task = self._sync_tasks[SYNC_ID_GLOBAL]
         except KeyError:
-            task = self._sync_tasks[SYNC_ID_GLOBAL] = Task(self._sync_global_task(client), KOKORO)
+            task = self._sync_tasks[SYNC_ID_GLOBAL] = Task(KOKORO, self._sync_global_task(client))
         
         return await task
     
@@ -2126,7 +2126,7 @@ class Slasher(EventHandlerBase):
                 command_edit_callbacks, command_create_callbacks,
             ):
                 if (callbacks is not None):
-                    task_group = TaskGroup(KOKORO, (Task(callback[0](*callback[1:]), KOKORO) for callback in callbacks))
+                    task_group = TaskGroup(KOKORO, (Task(KOKORO, callback[0](*callback[1:])) for callback in callbacks))
                     failed_task = await task_group.wait_exception()
                     if (failed_task is not None):
                         task_group.cancel_all()
@@ -2257,7 +2257,7 @@ class Slasher(EventHandlerBase):
                 command_register_callbacks, command_delete_callbacks, command_edit_callbacks, command_create_callbacks
             ):
                 if (callbacks is not None):
-                    task_group = TaskGroup(KOKORO, (Task(callback[0](*callback[1:]), KOKORO) for callback in callbacks))
+                    task_group = TaskGroup(KOKORO, (Task(KOKORO, callback[0](*callback[1:])) for callback in callbacks))
                     failed_task = await task_group.wait_exception()
                     if (failed_task is not None):
                         task_group.cancel()
@@ -2345,8 +2345,8 @@ class Slasher(EventHandlerBase):
                     continue
                 
                 task = Task(
-                    self._sync_permissions_task(client, permission_guild_id, command, application_command),
                     KOKORO,
+                    self._sync_permissions_task(client, permission_guild_id, command, application_command),
                 )
                 tasks.append(task)
             
@@ -2750,7 +2750,7 @@ class Slasher(EventHandlerBase):
         try:
             task = self._sync_tasks[SYNC_ID_MAIN]
         except KeyError:
-            task = self._sync_tasks[SYNC_ID_MAIN] = Task(self._do_main_sync_task(client), KOKORO)
+            task = self._sync_tasks[SYNC_ID_MAIN] = Task(KOKORO, self._do_main_sync_task(client))
         
         return await task
     
@@ -2782,7 +2782,7 @@ class Slasher(EventHandlerBase):
                         else:
                             coroutine = self._sync_guild(client, guild_id)
                         
-                        task = Task(coroutine, KOKORO)
+                        task = Task(KOKORO, coroutine)
                         tasks.append(task)
                     
                     if tasks:
@@ -3016,7 +3016,7 @@ class Slasher(EventHandlerBase):
         try:
             sync_permission_task = self._get_permission_tasks[guild_id]
         except KeyError:
-            sync_permission_task = Task(self._get_permission_task(client, guild_id), KOKORO)
+            sync_permission_task = Task(KOKORO, self._get_permission_task(client, guild_id))
             self._get_permission_tasks[guild_id] = sync_permission_task
         
         success, per_guild = await sync_permission_task
@@ -3094,7 +3094,7 @@ class Slasher(EventHandlerBase):
             if not sync_hook(client):
                 return
         
-        Task(self._do_main_sync(client), KOKORO)
+        Task(KOKORO, self._do_main_sync(client))
     
     
     def error(self, exception_handler = None, *, first = False):

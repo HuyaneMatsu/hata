@@ -394,7 +394,7 @@ class EventHandlerPlugin(metaclass=EventHandlerPluginType):
     To ensure an event, do:
     
     ```py
-    Task(my_plugin.my_event(...), KOKORO)
+    Task(KOKORO, my_plugin.my_event(...))
     ```
     """
     __slots__ = ()

@@ -239,7 +239,7 @@ class ScheduledEvent(DiscordEntity):
     
     
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data, *, strong_cache = True):
         """
         Creates a new scheduled event instance from the received data.
         
@@ -249,6 +249,8 @@ class ScheduledEvent(DiscordEntity):
         ----------
         data : `dict` of (`str`, `object`) items
             Guild scheduled event data.
+        strong_cache : `bool` = `True`, Optional (Keyword only)
+            Whether the instance should be put into its strong cache.
         
         Returns
         -------
@@ -261,20 +263,22 @@ class ScheduledEvent(DiscordEntity):
         except KeyError:
             self = object.__new__(cls)
             self.id = scheduled_event_id
+            self._set_attributes(data)
             SCHEDULED_EVENTS[scheduled_event_id] = self
         else:
-            if not self.partial:
+            if strong_cache and (not self.partial):
                 self._update_counts_only(data)
                 return self
         
-        self._set_attributes(data)
+            self._set_attributes(data)
         
-        try:
-            guild = GUILDS[self.guild_id]
-        except KeyError:
-            pass
-        else:
-            guild.scheduled_events[scheduled_event_id] = self
+        if strong_cache:
+            try:
+                guild = GUILDS[self.guild_id]
+            except KeyError:
+                pass
+            else:
+                guild.scheduled_events[scheduled_event_id] = self
         
         return self
     

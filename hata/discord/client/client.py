@@ -24,11 +24,11 @@ from ..exceptions import (
 )
 from ..gateway.client_gateway import DiscordGateway, DiscordGatewaySharder
 from ..http import DiscordHTTPClient, RateLimitProxy
+from ..localization.utils import LOCALE_DEFAULT
 from ..user import (
     ClientUserBase, ClientUserPBase, GuildProfile, PremiumType, RelationshipType, Status, User, UserBase, UserFlag,
     create_partial_user_from_id
 )
-from ..user.user.constants import LOCALE_DEFAULT
 from ..user.user.fields import (
     parse_email, parse_email_verified, parse_locale, parse_mfa, parse_premium_type, validate_banner_color, validate_bot,
     validate_discriminator, validate_display_name, validate_email, validate_email_verified, validate_flags,
@@ -129,7 +129,7 @@ class Client(
         The client's discriminator. Given to avoid overlapping names.
     
     display_name : `None`, `str`
-        The clients's non-unique display name.
+        The clients' non-unique display name.
     
     email : `None`, `str`
         The client's email.
@@ -1215,7 +1215,7 @@ class Client(
         await self.gateway.start()
         
         if self.bot:
-            task = Task(self.update_application_info(), KOKORO)
+            task = Task(KOKORO, self.update_application_info())
             if __debug__:
                 task.__silence__()
         
@@ -1225,7 +1225,7 @@ class Client(
         
         self.running = True
         register_client(self)
-        Task(self._connect(), KOKORO)
+        Task(KOKORO, self._connect())
         return True
     
     
@@ -1439,7 +1439,7 @@ class Client(
             for gateway in self.gateway.gateways:
                 websocket = gateway.websocket
                 if (websocket is not None) and websocket.open:
-                    tasks.append(Task(gateway.close(), KOKORO))
+                    tasks.append(Task(KOKORO, gateway.close()))
             
             if tasks:
                 future = TaskGroup(KOKORO, tasks).wait_all()

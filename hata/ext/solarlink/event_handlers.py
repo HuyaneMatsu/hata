@@ -190,7 +190,7 @@ async def handle_voice_client_shutdown(client):
     """
     tasks = []
     for player in client.solarlink.players.values():
-        task = Task(player.disconnect(), KOKORO)
+        task = Task(KOKORO, player.disconnect())
         tasks.append(task)
     
     task = None
@@ -198,7 +198,7 @@ async def handle_voice_client_shutdown(client):
     
     tasks = []
     for node in client.solarlink.nodes:
-        task = Task(node.close(), KOKORO)
+        task = Task(KOKORO, node.close())
         tasks.append(task)
     
     task = None

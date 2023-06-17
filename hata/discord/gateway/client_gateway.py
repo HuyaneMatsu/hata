@@ -167,7 +167,7 @@ class DiscordGateway:
         client = self.client
         while True:
             try:
-                task = Task(self._connect(), KOKORO)
+                task = Task(KOKORO, self._connect())
                 task.apply_timeout(TIMEOUT_GATEWAY_CONNECT)
                 await task
                 
@@ -191,7 +191,7 @@ class DiscordGateway:
                         # timeout, no internet probably
                         return
                     
-                    task = Task(self._connect(resume = True), KOKORO)
+                    task = Task(KOKORO, self._connect(resume = True))
                     task.apply_timeout(TIMEOUT_GATEWAY_CONNECT)
                     await task
             
@@ -373,7 +373,7 @@ class DiscordGateway:
             if parser(client, data) is None:
                 return False
         except BaseException as err:
-            Task(client.events.error(client, event, err), KOKORO)
+            Task(KOKORO, client.events.error(client, event, err))
             return False
         
         if event == 'READY':
@@ -449,12 +449,12 @@ class DiscordGateway:
         
         client = self.client
         Task(
+            KOKORO,
             client.events.error(
                 client,
                 f'{self.__class__.__name__}._special_operation',
                 f'Unknown operation {operation}\nData: {data!r}'
             ),
-            KOKORO,
         )
         
         return False
@@ -717,7 +717,7 @@ class DiscordGatewaySharder:
         
         This method is a coroutine.
         """
-        task_group = TaskGroup(KOKORO, (Task(gateway.start(), KOKORO) for gateway in self.gateways))
+        task_group = TaskGroup(KOKORO, (Task(KOKORO, gateway.start()) for gateway in self.gateways))
         failed_task = await task_group.wait_exception()
         if (failed_task is not None):
             task_group.cancel_all()
@@ -842,7 +842,7 @@ class DiscordGatewaySharder:
         
         This method is a coroutine.
         """
-        await TaskGroup(KOKORO, (Task(gateway.terminate(), KOKORO) for gateway in self.gateways)).wait_all()
+        await TaskGroup(KOKORO, (Task(KOKORO, gateway.terminate()) for gateway in self.gateways)).wait_all()
     
     
     async def close(self):
@@ -851,7 +851,7 @@ class DiscordGatewaySharder:
         
         This method is a coroutine.
         """
-        await TaskGroup(KOKORO, (Task(gateway.close(), KOKORO) for gateway in self.gateways)).wait_all()
+        await TaskGroup(KOKORO, (Task(KOKORO, gateway.close()) for gateway in self.gateways)).wait_all()
     
     
     async def send_as_json(self, data):
@@ -866,7 +866,7 @@ class DiscordGatewaySharder:
         """
         data = to_json(data)
         
-        task_group = TaskGroup(KOKORO, (Task(self._send_json(gateway, data), KOKORO) for gateway in self.gateways))
+        task_group = TaskGroup(KOKORO, (Task(KOKORO, self._send_json(gateway, data)) for gateway in self.gateways))
         failed_task = await task_group.wait_exception()
         if (failed_task is not None):
             task_group.cancel_all()

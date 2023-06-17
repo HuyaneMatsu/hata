@@ -1219,7 +1219,7 @@ class Menu(metaclass = MenuType):
         if (timeouter is not None):
             timeouter.cancel()
         
-        return Task(canceller(self, exception), KOKORO)
+        return Task(KOKORO, canceller(self, exception))
     
     
     async def _canceller_function(self, exception):

@@ -16,6 +16,7 @@ from ...field_validators import (
 )
 from ...guild import Guild
 from ...localization import Locale
+from ...localization.utils import LOCALE_DEFAULT
 from ...message import Message
 from ...permission import Permission
 from ...permission.permission import PERMISSION_PRIVATE
@@ -23,7 +24,6 @@ from ...user import ClientUserBase, User, ZEROUSER
 
 from ..interaction_metadata import InteractionMetadataBase
 
-from .constants import LOCALE_DEFAULT
 from .preinstanced import InteractionType
 
 # application_id

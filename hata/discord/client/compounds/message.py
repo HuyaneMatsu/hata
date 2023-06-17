@@ -782,7 +782,7 @@ class ClientCompoundMessageEndpoints(Compound):
             else:
                 function = _message_delete_multiple_task
             
-            task = Task(function(self, channel_id, groups, reason), KOKORO)
+            task = Task(KOKORO, function(self, channel_id, groups, reason))
             tasks.append(task)
         
         await TaskGroup(KOKORO, tasks).wait_all()
@@ -944,7 +944,7 @@ class ClientCompoundMessageEndpoints(Compound):
                     'before': last_message_id,
                 }
                 
-                get_mass_task = Task(self.http.message_get_chunk(channel_id, request_data), KOKORO)
+                get_mass_task = Task(KOKORO, self.http.message_get_chunk(channel_id, request_data))
                 tasks.append(get_mass_task)
             
             if (delete_mass_task is None):
@@ -976,8 +976,10 @@ class ClientCompoundMessageEndpoints(Compound):
                         if (delete_new_task is None):
                             # We collected 1 message -> We cannot use mass delete on this.
                             own, message_id = message_group_new.popleft()
-                            delete_new_task = Task(self.http.message_delete(channel_id, message_id, reason),
-                                KOKORO)
+                            delete_new_task = Task(
+                                KOKORO,
+                                self.http.message_delete(channel_id, message_id, reason),
+                            )
                             tasks.append(delete_new_task)
                     else:
                         message_ids = []
@@ -986,8 +988,10 @@ class ClientCompoundMessageEndpoints(Compound):
                             own, message_id = message_group_new.popleft()
                             message_ids.append(message_id)
                         
-                        delete_mass_task = Task(self.http.message_delete_multiple(channel_id, {'messages': message_ids},
-                            reason), KOKORO)
+                        delete_mass_task = Task(
+                            KOKORO,
+                            self.http.message_delete_multiple(channel_id, {'messages': message_ids}, reason),
+                        )
                         tasks.append(delete_mass_task)
                     
                     # After we checked what is at this group, lets move the others from it's end, if needed ofc
@@ -1022,13 +1026,13 @@ class ClientCompoundMessageEndpoints(Compound):
                 # Check old own messages only, mass delete speed is pretty good by itself.
                 if message_group_old_own:
                     message_id = message_group_old_own.popleft()
-                    delete_new_task = Task(self.http.message_delete(channel_id, message_id, reason), KOKORO)
+                    delete_new_task = Task(KOKORO, self.http.message_delete(channel_id, message_id, reason))
                     tasks.append(delete_new_task)
             
             if (delete_old_task is None):
                 if message_group_old:
                     message_id = message_group_old.popleft()
-                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id, message_id, reason), KOKORO)
+                    delete_old_task = Task(KOKORO, self.http.message_delete_b2wo(channel_id, message_id, reason))
                     tasks.append(delete_old_task)
             
             if not tasks:
@@ -1043,10 +1047,10 @@ class ClientCompoundMessageEndpoints(Compound):
                 # We will delete that message with old endpoint if not own, to make sure it will not block the other
                 # endpoint for 2 minutes with any chance.
                 if own:
-                    delete_new_task = Task(self.http.message_delete(channel_id, message_id, reason), KOKORO)
+                    delete_new_task = Task(KOKORO, self.http.message_delete(channel_id, message_id, reason))
                     task = delete_new_task
                 else:
-                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id, message_id, reason), KOKORO)
+                    delete_old_task = Task(KOKORO, self.http.message_delete_b2wo(channel_id, message_id, reason))
                     task = delete_old_task
                 
                 tasks.append(task)
@@ -1326,7 +1330,7 @@ class ClientCompoundMessageEndpoints(Compound):
                     'before': last_message_id,
                 }
                 
-                get_mass_task = Task(sharder.client.http.message_get_chunk(channel_id, request_data), KOKORO)
+                get_mass_task = Task(KOKORO, sharder.client.http.message_get_chunk(channel_id, request_data))
                 tasks.append(get_mass_task)
             
             for sharder in sharders:
@@ -1360,8 +1364,8 @@ class ClientCompoundMessageEndpoints(Compound):
                                 if (sub_sharder.can_manage_messages) and (sharder.delete_new_task is None):
                                     # We collected 1 message -> We cannot use mass delete on this.
                                     who_s, message_id = message_group_new.popleft()
-                                    delete_new_task = Task(sub_sharder.client.http.message_delete(channel_id,
-                                        message_id, reason = reason), KOKORO)
+                                    delete_new_task = Task(KOKORO, sub_sharder.client.http.message_delete(channel_id,
+                                        message_id, reason = reason))
                                     sub_sharder.delete_new_task = delete_new_task
                                     tasks.append(delete_new_task)
                                     break
@@ -1372,8 +1376,8 @@ class ClientCompoundMessageEndpoints(Compound):
                                 who_s, message_id = message_group_new.popleft()
                                 message_ids.append(message_id)
                             
-                            delete_mass_task = Task(sharder.client.http.message_delete_multiple(channel_id,
-                                {'messages': message_ids}, reason), KOKORO)
+                            delete_mass_task = Task(KOKORO, sharder.client.http.message_delete_multiple(channel_id,
+                                {'messages': message_ids}, reason))
                             sharder.delete_mass_task = delete_mass_task
                             tasks.append(delete_mass_task)
                         
@@ -1412,7 +1416,7 @@ class ClientCompoundMessageEndpoints(Compound):
                 sharder = sharders[who_s]
                 if sharder.delete_new_task is None:
                     del message_group_old_own[0]
-                    delete_new_task = Task(sharder.client.http.message_delete(channel_id, message_id, reason), KOKORO)
+                    delete_new_task = Task(KOKORO, sharder.client.http.message_delete(channel_id, message_id, reason))
                     sharder.delete_new_task = delete_new_task
                     tasks.append(delete_new_task)
             
@@ -1421,7 +1425,8 @@ class ClientCompoundMessageEndpoints(Compound):
                     if (sharder.delete_old_task is None):
                         message_id = message_group_old.popleft()
                         delete_old_task = Task(
-                            sharder.client.http.message_delete_b2wo(channel_id, message_id, reason), KOKORO
+                            KOKORO,
+                            sharder.client.http.message_delete_b2wo(channel_id, message_id, reason),
                         )
                         sharder.delete_old_task = delete_old_task
                         tasks.append(delete_old_task)
@@ -1443,13 +1448,13 @@ class ClientCompoundMessageEndpoints(Compound):
                 if who_s == -1:
                     for sharder in sharders:
                         if sharder.can_manage_messages:
-                            task = Task(sharder.client.http.message_delete_b2wo(channel_id, message_id, reason), KOKORO)
+                            task = Task(KOKORO, sharder.client.http.message_delete_b2wo(channel_id, message_id, reason))
                             tasks.append(task)
                             sharder.delete_old_task = task
                             break
                 else:
                     sharder = sharders[who_s]
-                    task = Task(sharder.client.http.message_delete(channel_id, message_id, reason), KOKORO)
+                    task = Task(KOKORO, sharder.client.http.message_delete(channel_id, message_id, reason))
                     tasks.append(task)
                     sharder.delete_new_task = task
             

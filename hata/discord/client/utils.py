@@ -32,7 +32,7 @@ def start_clients():
         if client.running:
             continue
         
-        Task(client.connect(), KOKORO)
+        Task(KOKORO, client.connect())
     
     if (current_thread() is not KOKORO):
         KOKORO.wake_up()
@@ -46,7 +46,7 @@ def stop_clients():
     """
     for client in CLIENTS.values():
         if client.running:
-            Task(client.disconnect(), KOKORO)
+            Task(KOKORO, client.disconnect())
     
     if (current_thread() is not KOKORO):
         KOKORO.wake_up()
@@ -97,7 +97,7 @@ def _exit_callback():
     
     TaskGroup(
         KOKORO,
-        (Task(client.disconnect(), KOKORO) for client in CLIENTS.values())
+        (Task(KOKORO, client.disconnect()) for client in CLIENTS.values())
     ).wait_all().sync_wrap().wait()
 
 
@@ -261,7 +261,7 @@ class Typer:
     
     def __enter__(self):
         """Enters the typer's context block by ensuring it's ``.run`` method."""
-        Task(self.run(), KOKORO)
+        Task(KOKORO, self.run())
         return self
     
     

@@ -213,7 +213,7 @@ class VoiceState(RichAttributeErrorBaseType):
     
     
     @classmethod
-    def from_data(cls, data, guild_id):
+    def from_data(cls, data, guild_id, *, strong_cache = True):
         """
         Creates a voice state object from the given data.
         
@@ -223,10 +223,12 @@ class VoiceState(RichAttributeErrorBaseType):
             Voice state data.
         guild_id : `int`
             The voice state's guild's identifier.
+        strong_cache : `bool` = `True`, Optional (Keyword only)
+            Whether the instance should be put into its strong cache.
         
         Returns
         -------
-        new : `instance<cls>`
+        new : `None`, `instance<cls>`
         """
         channel_id = parse_channel_id(data)
         if not channel_id:
@@ -234,15 +236,13 @@ class VoiceState(RichAttributeErrorBaseType):
         
         user_id = parse_user_id(data)
         
-        try:
-            guild = GUILDS[guild_id]
-        except KeyError:
-            guild = None
-        else:
-            try:
-                return guild.voice_states[user_id]
-            except KeyError:
-                pass
+        if strong_cache:
+            guild = GUILDS.get(guild_id, None)
+            if (guild is not None):
+                try:
+                    return guild.voice_states[user_id]
+                except KeyError:
+                    pass
         
         self = object.__new__(cls)
         self._cache_user = None
@@ -259,8 +259,9 @@ class VoiceState(RichAttributeErrorBaseType):
         self.session_id = parse_session_id(data)
         self.user_id = user_id
         
-        if (guild is not None):
-            guild.voice_states[user_id] = self
+        if strong_cache:
+            if (guild is not None):
+                guild.voice_states[user_id] = self
         
         return self
     

@@ -93,7 +93,7 @@ class EmbeddedActivityState(RichAttributeErrorBaseType):
         
         
     @classmethod
-    def from_data(cls, data, guild_id = 0):
+    def from_data(cls, data, guild_id = 0, *, strong_cache = True):
         """
         Creates a new embedded activity state from the given data.
         
@@ -113,7 +113,7 @@ class EmbeddedActivityState(RichAttributeErrorBaseType):
         try:
             self = EMBEDDED_ACTIVITY_STATES[key]
         except KeyError:
-            self = cls._from_data_construct(data, key)
+            self = cls._from_data_construct(data, key, strong_cache)
         
         return self
     
@@ -140,7 +140,7 @@ class EmbeddedActivityState(RichAttributeErrorBaseType):
         try:
             self = EMBEDDED_ACTIVITY_STATES[key]
         except KeyError:
-            self = cls._from_data_construct(data, key)
+            self = cls._from_data_construct(data, key, True)
             is_created = True
         else:
             is_created = False
@@ -149,7 +149,7 @@ class EmbeddedActivityState(RichAttributeErrorBaseType):
     
     
     @classmethod
-    def _from_data_construct(cls, data, key):
+    def _from_data_construct(cls, data, key, strong_cache):
         """
         Constructs the embedded activity state from the given fields.
         
@@ -172,7 +172,7 @@ class EmbeddedActivityState(RichAttributeErrorBaseType):
         
         EMBEDDED_ACTIVITY_STATES[key] = self
         
-        if user_ids:
+        if strong_cache and user_ids:
             _add_embedded_activity_state_to_guild_cache(self)
         
         return self

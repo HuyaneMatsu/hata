@@ -2230,9 +2230,9 @@ class EventWaitforBase(EventHandlerBase, metaclass = EventWaitforMeta):
         else:
             if type(event) is asynclist:
                 for event in event:
-                    Task(event(*args), KOKORO)
+                    Task(KOKORO, event(*args))
             else:
-                Task(event(*args), KOKORO)
+                Task(KOKORO, event(*args))
 
 
 def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
@@ -2429,7 +2429,7 @@ class asynclist(list):
             Parameters to call with the contained async callables.
         """
         for coroutine_function in list.__iter__(self):
-            Task(coroutine_function(*args), KOKORO)
+            Task(KOKORO, coroutine_function(*args))
     
     
     def __repr__(self):
@@ -2568,10 +2568,10 @@ async def ensure_event_handlers(client, event_handlers):
         
         if type(event_handlers) is asynclist:
             for event_handler in list.__iter__(event_handlers):
-                tasks.append(Task(_with_error(client, event_handler(client)), KOKORO))
+                tasks.append(Task(KOKORO, _with_error(client, event_handler(client))))
         
         else:
-            tasks.append(Task(_with_error(client, event_handlers(client)), KOKORO))
+            tasks.append(Task(KOKORO, _with_error(client, event_handlers(client))))
         
         event_handlers = None # clear references
         
@@ -2595,7 +2595,7 @@ def call_unknown_dispatch_event_event_handler(client, name, data):
     """
     event_handler = client.events.unknown_dispatch_event
     if (event_handler is not DEFAULT_EVENT_HANDLER):
-        Task(event_handler(client, name, data), KOKORO)
+        Task(KOKORO, event_handler(client, name, data))
 
 
 IGNORED_EVENT_HANDLER_TYPES = frozenset((

@@ -203,5 +203,5 @@ async def default_voice_client_shutdown_event_handler(client):
     if voice_clients:
         await TaskGroup(
             KOKORO,
-            (Task(voice_client._disconnect(), KOKORO) for voice_client in voice_clients.values())
+            (Task(KOKORO, voice_client._disconnect()) for voice_client in voice_clients.values())
         ).wait_all()

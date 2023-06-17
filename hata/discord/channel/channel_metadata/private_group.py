@@ -155,8 +155,8 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass = Slotte
     
     
     @copy_docs(ChannelMetadataPrivateBase._created)
-    def _created(self, channel_entity, client):
-        if (client is not None):
+    def _created(self, channel_entity, client, strong_cache):
+        if strong_cache and (client is not None):
             client.group_channels[channel_entity.id] = channel_entity
     
         

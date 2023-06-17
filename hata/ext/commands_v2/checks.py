@@ -1472,7 +1472,7 @@ class CheckCustom(CheckBase):
         
         except BaseException as err:
             client = context.client
-            Task(client.events.error(client, repr(self), err), KOKORO)
+            Task(KOKORO, client.events.error(client, repr(self), err))
             return False
         
         if result is None:

@@ -130,7 +130,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         return True
     
     
-    def _created(self, channel_entity, client):
+    def _created(self, channel_entity, client, strong_cache):
         """
         Called when the channel entity is initialized.
         
@@ -140,6 +140,8 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
             The parent channel entity.
         client : `None`, ``Client``
             The client who received the channel payload.
+        strong_cache : `bool`
+            Whether the instance should be put into its strong cache.
         """
         pass
     

@@ -3,28 +3,8 @@ __all__ = ()
 from .preinstanced import Locale
 
 
-DEFAULT_LOCALE = Locale.english_us
-
-
-def get_locale(value):
-    """
-    Gets the locale of the given value.
-    
-    Parameters
-    ----------
-    value : `None`, `str`
-        If given as `None`, returns the default locale.
-    
-    Returns
-    -------
-    locale : ``Locale``
-    """
-    if value is None:
-        locale = DEFAULT_LOCALE
-    else:
-        locale = Locale.get(value)
-    
-    return locale
+LOCALE_DEFAULT = Locale.english_us
+Locale.INSTANCES[''] = LOCALE_DEFAULT
 
 
 def build_locale_dictionary(dictionary):
@@ -33,12 +13,12 @@ def build_locale_dictionary(dictionary):
     
     Parameters
     ----------
-    dictionary : `dict` of (`str`, `Any`) items
+    dictionary : `dict` of (`str`, `object`) items
         The dictionary to process.
     
     Returns
     -------
-    transformed : `dict` of (``Locale``, `Any`) items
+    transformed : `dict` of (``Locale``, `object`) items
     """
     if (dictionary is not None) and dictionary:
         return {Locale.get(key): value for key, value in dictionary.items()}
@@ -50,12 +30,12 @@ def destroy_locale_dictionary(dictionary):
     
     Parameters
     ----------
-    dictionary : `dict` of (`Locale`, `Any`) items
+    dictionary : `dict` of (`Locale`, `object`) items
         The dictionary to process.
     
     Returns
     -------
-    transformed : `dict` of (`str`, `Any`) items
+    transformed : `dict` of (`str`, `object`) items
     """
     if dictionary is not None:
         return {key.value: value for key, value in dictionary.items()}
@@ -67,7 +47,7 @@ def hash_locale_dictionary(dictionary):
     
     Parameters
     ----------
-    dictionary : `dict` of (`str`, `Any`) items
+    dictionary : `dict` of (`str`, `object`) items
         The dictionary to process.
     
     Returns

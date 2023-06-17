@@ -97,7 +97,7 @@ def guild_sync(client, data, parser_and_checker):
         queue = SYNC_REQUESTS[guild_id]
     except KeyError:
         queue = []
-        Task(sync_task(guild_id, client.guild_sync(guild_id), queue), KOKORO)
+        Task(KOKORO, sync_task(guild_id, client.guild_sync(guild_id), queue))
         SYNC_REQUESTS[guild_id] = queue
     
     if parser_and_checker is None:

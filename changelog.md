@@ -1,8 +1,22 @@
 ## 1.3.32 *\[2023-06-??\]*
 
+#### Improvements
+
+- Add support for all the parameters in `Guild.precreate`.
+- When all clients leave a guild its entities such as: channels, roles, users, etc are not cleaned up anymore.
+    This caused bugs on user side. On wrapper side this was the intended behavior since 2019.
+    Now cleanup happens when the guild is repopulated. Note that guild profiles are still cleaned up initially.
+
 #### Bug Fixes
 
 - `scaffold` command always failed if `project-name` was directly defined.
+
+#### Renames, Deprecation & Removals
+
+- Remove unused `COMMUNITY_FEATURES` importable variable.
+- Rename `Guild.is_large` to `.large`.
+- Deprecate `Guild.is_large`.
+- Rename `Guild._embedded_activity_states` to `embedded_activity_states`.
 
 ## 1.3.31 *\[2023-05-30\]*
 

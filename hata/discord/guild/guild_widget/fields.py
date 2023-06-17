@@ -6,7 +6,7 @@ from ...field_validators import (
     int_conditional_validator_factory, nullable_entity_array_validator_factory, url_optional_validator_factory
 )
 
-from ..fields import parse_id, parse_name, put_id_into, put_name_into, validate_id, validate_name
+from ..guild.fields import parse_id, parse_name, put_id_into, put_name_into, validate_id, validate_name
 from ..guild_widget_channel import GuildWidgetChannel
 from ..guild_widget_user import GuildWidgetUser
 

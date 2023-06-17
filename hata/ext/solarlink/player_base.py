@@ -81,7 +81,7 @@ class SolarPlayerBase(RichAttributeErrorBaseType):
         self.node = node
         
         waiter = Future(KOKORO)
-        Task(self._connect(waiter = waiter), KOKORO)
+        Task(KOKORO, self._connect(waiter = waiter))
         
         return self, waiter
     

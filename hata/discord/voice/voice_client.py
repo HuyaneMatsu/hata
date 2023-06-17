@@ -206,7 +206,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         
         client.voice_clients[guild_id] = self
         waiter = Future(KOKORO)
-        Task(self._connect(waiter = waiter), KOKORO)
+        Task(KOKORO, self._connect(waiter = waiter))
         return waiter
     
     # properties
@@ -271,7 +271,7 @@ class VoiceClient(RichAttributeErrorBaseType):
 
         self.speaking = value
         
-        task = Task(self.gateway._set_speaking(value), KOKORO)
+        task = Task(KOKORO, self.gateway._set_speaking(value))
         self._set_speaking_task = task
         
         try:
@@ -711,7 +711,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         player = self.player
         if player is None:
             self.player = AudioPlayer(self, source,)
-            Task(self.set_speaking(1), KOKORO)
+            Task(KOKORO, self.set_speaking(1))
             return True
         
         queue = self.queue
@@ -720,7 +720,7 @@ class VoiceClient(RichAttributeErrorBaseType):
             return False
         
         player.set_source(source)
-        Task(self.set_speaking(1), KOKORO)
+        Task(KOKORO, self.set_speaking(1))
         return True
     
     
@@ -747,7 +747,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                 source = player.source
             
             # Try playing next even if player is not `None`.
-            Task(self.play_next(), KOKORO)
+            Task(KOKORO, self.play_next())
         
         elif index < 0:
             source = None
@@ -768,7 +768,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         player = self.player
         if (player is not None):
             player.pause()
-            Task(self.set_speaking(0), KOKORO)
+            Task(KOKORO, self.set_speaking(0))
     
     
     def resume(self):
@@ -778,7 +778,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         player = self.player
         if (player is not None):
             player.resume()
-            Task(self.set_speaking(1), KOKORO)
+            Task(KOKORO, self.set_speaking(1))
     
     
     def stop(self):
@@ -879,13 +879,13 @@ class VoiceClient(RichAttributeErrorBaseType):
                     raise
                 
                 try:
-                    task = Task(self.gateway.connect(), KOKORO)
+                    task = Task(KOKORO, self.gateway.connect())
                     task.apply_timeout(30.0)
                     await task
                     
                     self.connected.clear()
                     while True:
-                        task = Task(self.gateway._poll_event(), KOKORO)
+                        task = Task(KOKORO, self.gateway._poll_event())
                         task.apply_timeout(60.0)
                         await task
                         
@@ -928,7 +928,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                 tries = 0
                 while True:
                     try:
-                        task = Task(self.gateway._poll_event(), KOKORO)
+                        task = Task(KOKORO, self.gateway._poll_event())
                         task.apply_timeout(60.0)
                         await task
                     except (OSError, TimeoutError, ConnectionClosed, WebSocketProtocolError,) as err:
@@ -1083,20 +1083,20 @@ class VoiceClient(RichAttributeErrorBaseType):
             source = queue.pop(0)
             self.player = AudioPlayer(self, source)
             if self.connected.is_set():
-                Task(self.set_speaking(1), KOKORO)
+                Task(KOKORO, self.set_speaking(1))
             
             return
         
         if not queue:
             player.set_source(None)
             if self.connected.is_set():
-                Task(self.set_speaking(0), KOKORO)
+                Task(KOKORO, self.set_speaking(0))
             return
         
         source = queue.pop(0)
         player.set_source(source)
         if self.connected.is_set():
-            Task(self.set_speaking(1), KOKORO)
+            Task(KOKORO, self.set_speaking(1))
     
     
     @staticmethod
@@ -1128,7 +1128,7 @@ class VoiceClient(RichAttributeErrorBaseType):
             player.set_source(last_source)
         
         if self.connected.is_set():
-            Task(self.set_speaking(1), KOKORO)
+            Task(KOKORO, self.set_speaking(1))
     
     
     @staticmethod

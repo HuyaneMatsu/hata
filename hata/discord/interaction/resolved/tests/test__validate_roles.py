@@ -12,7 +12,7 @@ def test__validate_roles__0():
     Case: passing.
     """
     role_id = 202211050018
-    role_name = 'Faker'
+    role_name = 'Koishi'
     
     role = Role.precreate(
         role_id,

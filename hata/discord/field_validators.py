@@ -661,7 +661,7 @@ def float_conditional_validator_factory(field_name, default_value, condition_che
     return _field_condition_validator_factory(field_name, float, default_value, condition_check, condition_message)
 
 
-def flag_validator_factory(field_name, flag_type):
+def flag_validator_factory(field_name, flag_type, *, default_value = ...):
     """
     Returns a new flag validator.
     
@@ -671,11 +671,16 @@ def flag_validator_factory(field_name, flag_type):
         The field's name.
     flag_type : `type`
         The flag type to use.
+    default_value : `instance<flag_type>`, Optional (Keyword only)
+        Default value to return if value is given as `None`.
     
     Returns
     -------
     validator : `FunctionType`
     """
+    if default_value is ...:
+        default_value = flag_type()
+    
     def validator(flag):
         """
         Validates the given flag.
@@ -698,11 +703,12 @@ def flag_validator_factory(field_name, flag_type):
         ValueError
             - If `flag` is not any of the expected options.
         """
+        nonlocal default_value
         nonlocal field_name
         nonlocal flag_type
         
         if flag is None:
-            flag = flag_type()
+            flag = default_value
         
         elif isinstance(flag, flag_type):
             pass
@@ -715,7 +721,7 @@ def flag_validator_factory(field_name, flag_type):
                 f'`{field_name}` can be `None`, `int`, `{flag_type.__name__}`, '
                 f'got {flag.__class__.__name__}; {flag!r}.'
             )
-    
+        
         return flag
     
     return validator
@@ -1403,7 +1409,7 @@ def url_array_optional_validator_factory(field_name):
     return validator
 
 
-def nullable_entity_array_validator_factory(field_name, entity_type, *, include = None, sort_key = None):
+def nullable_entity_set_validator_factory(field_name, entity_type, *, include = None):
     """
     Returns a nullable entity array validator.
     
@@ -1415,8 +1421,6 @@ def nullable_entity_array_validator_factory(field_name, entity_type, *, include 
         The allowed entity type.
     include : `None`, `str` = `None`, Optional (Keyword only)
         The object's name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
-    sort_key : `None`, `FunctionType` = `None`, Optional (Keyword only)
-        Sort key used to sort the entities by.
     
     Returns
     -------
@@ -1442,7 +1446,6 @@ def nullable_entity_array_validator_factory(field_name, entity_type, *, include 
         """
         nonlocal field_name
         nonlocal entity_type
-        nonlocal sort_key
         
         if entity_array is None:
             return None
@@ -1453,7 +1456,7 @@ def nullable_entity_array_validator_factory(field_name, entity_type, *, include 
                 f'{entity_array.__class__.__name__}; {entity_array!r}.'
             )
             
-        entity_array_processed = None
+        entity_set_processed = None
         
         for entity in entity_array:
             if not isinstance(entity, entity_type):
@@ -1462,22 +1465,69 @@ def nullable_entity_array_validator_factory(field_name, entity_type, *, include 
                     f'{entity.__class__.__name__}; {entity!r}; entity_array = {entity_array!r}.'
                 )
             
-            if (entity_array_processed is None):
-                entity_array_processed = set()
+            if (entity_set_processed is None):
+                entity_set_processed = set()
             
-            entity_array_processed.add(entity)
+            entity_set_processed.add(entity)
         
-        if (entity_array_processed is not None):
-            entity_array_processed = tuple(sorted(entity_array_processed, key = sort_key))
-        
-        return entity_array_processed
-    
+        return entity_set_processed
     
     if (include is not None):
         @include_with_callback(include)
         def include_object_type(value):
             nonlocal entity_type
             entity_type = value
+    
+    return validator
+
+
+def nullable_entity_array_validator_factory(field_name, entity_type, *, include = None, sort_key = None):
+    """
+    Returns a nullable entity array validator.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    entity_type : `type`
+        The allowed entity type.
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The object's name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
+    sort_key : `None`, `FunctionType` = `None`, Optional (Keyword only)
+        Sort key used to sort the entities by.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    base_validator = nullable_entity_set_validator_factory(field_name, entity_type, include = include)
+    
+    def validator(entity_array):
+        """
+        Validates the given nullable entity array field.
+        
+        Parameters
+        ----------
+        entity_array : `None`, `iterable` of `instance<entity_type>`
+            The entity array to validate.
+        
+        Returns
+        -------
+        entity_array : `None`, `tuple` of `instance<entity_type>`
+        
+        Raises
+        ------
+        TypeError
+            - If `entity_array` is not `None`, `iterable` of `entity_type`.
+        """
+        nonlocal base_validator
+        nonlocal sort_key
+        
+        entity_array_processed = base_validator(entity_array)
+        if (entity_array_processed is not None):
+            entity_array_processed = tuple(sorted(entity_array_processed, key = sort_key))
+        
+        return entity_array_processed
     
     return validator
 
@@ -1825,9 +1875,75 @@ def nullable_object_array_validator_factory(field_name, object_type, *, include 
     return validator
 
 
+def entity_dictionary_validator_factory(field_name, entity_type):
+    """
+    Returns an entity dictionary validator.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    
+    entity_type : `type<DiscordEntity>`
+        The allowed entity type.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    def validator(field_value):
+        """
+        Validates the given entity dictionary field.
+        
+        Parameters
+        ----------
+        field_value : `None`, `iterable` of `instance<entity_type>`, `dict` of (`int`, `entity_type`) items
+            The field value to validate.
+        
+        Returns
+        -------
+        entity_dictionary : `dict` of (`int`, `instance<entity_type>`) items
+        
+        Raises
+        ------
+        TypeError
+            - If `field_value`'s or it's elements type is incorrect.
+        """
+        nonlocal field_name
+        nonlocal entity_type
+        
+        validated = {}
+        
+        if field_value is not None:
+            if isinstance(field_value, dict):
+                iterator = iter(field_value.values())
+            
+            elif (getattr(field_value, '__iter__', None) is not None):
+                iterator = iter(field_value)
+            
+            else:
+                raise TypeError(
+                    f'`{field_name}` can be `None`, `dict` of (`int`, `{entity_type.__name__}`) items, `iterable` of '
+                    f'`{entity_type.__name__}` items, got {field_value.__class__.__name__}; {field_value!r}.'
+                )
+            
+            for element in iterator:
+                if not isinstance(element, entity_type):
+                    raise TypeError(
+                        f'`{field_name}` elements can be `{entity_type.__name__}`, got {element.__class__.__name__}; '
+                        f'{element!r}; {field_name} = {field_value!r}.'
+                    )
+                
+                validated[element.id] = element
+        
+        return validated
+    
+    return validator
+
+
 def nullable_entity_dictionary_validator_factory(field_name, entity_type):
     """
-    Returns a nullable object array validator.
+    Returns a nullable entity dictionary validator.
     
     Parameters
     ----------

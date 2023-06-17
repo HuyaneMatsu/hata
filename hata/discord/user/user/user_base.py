@@ -1,16 +1,16 @@
 __all__ = ('UserBase', )
 
 import warnings
-from re import I as re_ignore_case, compile as re_compile, escape as re_escape, search as re_search
+from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 
 from scarletio import copy_docs, include
 
 from ...bases import DiscordEntity, ICON_TYPE_NONE, Icon, IconSlot, IconType, PlaceHolder, PlaceHolderFunctional
 from ...color import Color
 from ...http import urls as module_urls
+from ...localization.utils import LOCALE_DEFAULT
 from ...utils import DATETIME_FORMAT_CODE
 
-from .constants import LOCALE_DEFAULT
 from .fields import (
     parse_name, put_banner_color_into, put_bot_into, put_discriminator_into, put_display_name_into, put_flags_into,
     put_id_into, put_name_into, validate_name

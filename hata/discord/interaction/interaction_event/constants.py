@@ -1,12 +1,9 @@
 __all__ = ()
 
-from ...localization import Locale
 from ...utils import seconds_to_id_difference
 
 from ..interaction_metadata import InteractionMetadataBase
 
-
-LOCALE_DEFAULT = Locale.english_us
 
 INTERACTION_EVENT_EXPIRE_AFTER = 900 # 15 min
 INTERACTION_EVENT_EXPIRE_AFTER_ID_DIFFERENCE = seconds_to_id_difference(INTERACTION_EVENT_EXPIRE_AFTER)

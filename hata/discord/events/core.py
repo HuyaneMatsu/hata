@@ -635,7 +635,7 @@ def maybe_ensure_launch(client):
         
         event_handler = client.events.launch
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client), KOKORO)
+            Task(KOKORO, event_handler(client))
 
 
 @export
@@ -652,4 +652,4 @@ def trigger_voice_client_ghost_event(client, voice_state):
     """
     event_handler = client.events.voice_client_ghost
     if (event_handler is not DEFAULT_EVENT_HANDLER):
-        Task(event_handler(client, voice_state), KOKORO)
+        Task(KOKORO, event_handler(client, voice_state))

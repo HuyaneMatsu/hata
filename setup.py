@@ -97,6 +97,7 @@ setup(
         'hata.discord.guild.discovery',
         'hata.discord.guild.discovery_category',
         'hata.discord.guild.embedded_activity_state',
+        'hata.discord.guild.guild',
         'hata.discord.guild.guild_join_request',
         'hata.discord.guild.guild_join_request_delete_event',
         'hata.discord.guild.guild_join_request_form_response',

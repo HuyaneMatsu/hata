@@ -124,13 +124,14 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
     
     
     @copy_docs(ChannelMetadataGuildBase._created)
-    def _created(self, channel_entity, client):
-        try:
-            guild = GUILDS[channel_entity.guild_id]
-        except KeyError:
-            pass
-        else:
-            guild.channels[channel_entity.id] = channel_entity
+    def _created(self, channel_entity, client, strong_cache):
+        if strong_cache:
+            try:
+                guild = GUILDS[channel_entity.guild_id]
+            except KeyError:
+                pass
+            else:
+                guild.channels[channel_entity.id] = channel_entity
     
     
     @copy_docs(ChannelMetadataGuildBase._delete)

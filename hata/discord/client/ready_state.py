@@ -67,7 +67,7 @@ class ShardUserRequester:
         self.received_guild_ids = deque()
         self.guild_create_waiter = None
         self.state = USER_REQUEST_STATE_NONE
-        self.task = Task(self._runner(), KOKORO)
+        self.task = Task(KOKORO, self._runner())
         return self
     
     async def _runner(self):
@@ -197,7 +197,7 @@ if CACHE_PRESENCE:
     def should_request_users_of(client, guild):
         if client._should_request_users:
             if client.intents & INTENT_MASK_GUILD_PRESENCES:
-                should_request_users = guild.is_large
+                should_request_users = guild.large
             else:
                 should_request_users = True
         else:
@@ -263,7 +263,7 @@ class ReadyState:
         self = object.__new__(cls)
         self.shard_count = client.shard_count
         self.shard_user_requesters = {}
-        self.task = Task(self._runner(), KOKORO)
+        self.task = Task(KOKORO, self._runner())
         self.shard_ready_waiter = None
         self.client_reference = WeakReferer(client)
         
@@ -314,7 +314,7 @@ class ReadyState:
         client = self.client_reference()
         if (client is not None):
             client.ready_state = None
-            Task(client.events.ready(client), KOKORO)
+            Task(KOKORO, client.events.ready(client))
     
     
     def feed_guild(self, client, guild):

@@ -11,6 +11,8 @@
 
 - `scaffold` command always failed if `project-name` was directly defined.
 - `Message` did not update the referenced message's content fields even if it would been required.
+- A message was updated with non-intent data even if there was a client with intent data.
+    This was caused by checking whether "any" mask is matching instead "all".
 
 #### Renames, Deprecation & Removals
 

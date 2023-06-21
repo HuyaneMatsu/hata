@@ -37,7 +37,7 @@ def filter_clients(clients, flag_mask, me):
     """
     iterator = iter(clients)
     for client in iterator:
-        if client.intents & flag_mask:
+        if client.intents & flag_mask == flag_mask:
             break
     
     else:
@@ -49,7 +49,7 @@ def filter_clients(clients, flag_mask, me):
     yield client
     
     for client in iterator:
-        if client.intents & flag_mask:
+        if client.intents & flag_mask == flag_mask:
             yield client
 
 
@@ -60,7 +60,7 @@ def get_message_enabled_user_ids(message_data):
     
     Parameters
     ----------
-    message_data : `dict` of (`str`, `Any`) items
+    message_data : `dict` of (`str`, `object`) items
         Received message data.
     
     Returns
@@ -115,7 +115,7 @@ def filter_content_intent_client(clients, message_data, me):
     ----------
     clients : `list` of ``Client``
         A list of client to search from.
-    message_data : `dict` of (`str`, `Any`) items
+    message_data : `dict` of (`str`, `object`) items
         Received message data.
     me : ``Client``
         The client who received the respective event.
@@ -142,7 +142,7 @@ def filter_content_intent_client(clients, message_data, me):
     
     iterator = iter(clients)
     for client in iterator:
-        if (client.intents & flag_mask) or (client.id in enabled_user_ids):
+        if (client.intents & flag_mask == flag_mask) or (client.id in enabled_user_ids):
             break
     
     else:
@@ -154,7 +154,7 @@ def filter_content_intent_client(clients, message_data, me):
     yield client
     
     for client in iterator:
-        if (client.intents & flag_mask) or (client.id in enabled_user_ids):
+        if (client.intents & flag_mask == flag_mask) or (client.id in enabled_user_ids):
             yield client
 
 
@@ -193,7 +193,7 @@ def filter_clients_or_me(clients, flag_mask, me):
     """
     iterator = iter(clients)
     for client in iterator:
-        if client.intents & flag_mask:
+        if client.intents & flag_mask == flag_mask:
             break
     
     else:
@@ -208,14 +208,14 @@ def filter_clients_or_me(clients, flag_mask, me):
     yield client
     
     for client in iterator:
-        if client.intents & flag_mask:
+        if client.intents & flag_mask == flag_mask:
             yield client
     
     # Whether the user is type Client and we did not yield it, yield it.
     if not isinstance(user, Client):
         return
     
-    if user.intents & flag_mask:
+    if user.intents & flag_mask == flag_mask:
         return
     
     yield user
@@ -257,7 +257,7 @@ def first_client(clients, flag_mask, me):
     client : ``Client``
     """
     for client in clients:
-        if client.intents & flag_mask:
+        if client.intents & flag_mask == flag_mask:
             return client
     
     return me
@@ -273,7 +273,7 @@ def first_content_intent_client(clients, message_data, me):
     ----------
     clients : `list` of ``Client``
         A list of client to search from.
-    message_data : `dict` of (`str`, `Any`) items
+    message_data : `dict` of (`str`, `object`) items
         Received message data.
     me : ``Client``
         The client who received the respective event.
@@ -294,7 +294,7 @@ def first_content_intent_client(clients, message_data, me):
         flag_mask |= INTENT_MASK_GUILD_MESSAGES
     
     for client in clients:
-        if client.intents & flag_mask:
+        if client.intents & flag_mask == flag_mask:
             return client
     
     enabled_user_ids = get_message_enabled_user_ids(message_data)
@@ -323,7 +323,7 @@ def first_client_or_me(clients, flag_mask, me):
     client : ``Client``
     """
     for client in clients:
-        if client.intents & flag_mask:
+        if client.intents & flag_mask == flag_mask:
             return client
     
     return me

@@ -498,6 +498,7 @@ def MESSAGE_UPDATE__OPT_SC(client, data):
     else:
         message._update_embed_no_return(data)
 
+
 def MESSAGE_UPDATE__OPT_MC(client, data):
     message_id = int(data['id'])
     message = MESSAGES.get(message_id, None)

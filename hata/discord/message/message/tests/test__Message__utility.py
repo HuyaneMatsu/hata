@@ -1036,7 +1036,7 @@ def test__Message__iter_mentioned_role_ids():
         vampytest.assert_eq(output, expected_output)
 
 
-def test__Message_iter_mentioned_roles():
+def test__Message__iter_mentioned_roles():
     """
     Tests whether ``Message.iter_mentioned_roles`` works as intended.
     """
@@ -1055,7 +1055,7 @@ def test__Message_iter_mentioned_roles():
         vampytest.assert_eq(output, expected_output)
 
 
-def test__Message_iter_mentioned_users():
+def test__Message__iter_mentioned_users():
     """
     Tests whether ``Message.iter_mentioned_users`` works as intended.
     """
@@ -1074,7 +1074,7 @@ def test__Message_iter_mentioned_users():
         vampytest.assert_eq(output, expected_output)
 
 
-def test__Message_iter_stickers():
+def test__Message__iter_stickers():
     """
     Tests whether ``Message.iter_stickers`` works as intended.
     """

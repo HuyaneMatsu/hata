@@ -15,7 +15,7 @@ class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
     ----------
     _created_at : `None`, `datetime`
         When the channel was created.
-    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     archived : `bool`
         Whether the thread s archived.

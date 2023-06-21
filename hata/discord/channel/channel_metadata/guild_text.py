@@ -17,7 +17,7 @@ class ChannelMetadataGuildText(ChannelMetadataGuildTextBase):
     
     Attributes
     ----------
-    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     default_thread_auto_archive_after : `int`
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Defaults

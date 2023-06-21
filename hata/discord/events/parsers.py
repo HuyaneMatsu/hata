@@ -991,7 +991,7 @@ if CACHE_USER:
             return
         
         if isinstance(user, Client):
-            guild._invalidate_permission_cache()
+            guild._invalidate_cache_permission()
         
         Task(KOKORO, client.events.guild_user_edit(client, user, guild, old_attributes))
     
@@ -1015,7 +1015,7 @@ if CACHE_USER:
             return
         
         if isinstance(user, Client):
-            guild._invalidate_permission_cache()
+            guild._invalidate_cache_permission()
         
         clients.send(user)
         for client_ in clients:
@@ -1034,7 +1034,7 @@ if CACHE_USER:
         user = User._update_profile(data, guild)
 
         if isinstance(user, Client):
-            guild._invalidate_permission_cache()
+            guild._invalidate_cache_permission()
     
     def GUILD_MEMBER_UPDATE__OPT_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -1050,7 +1050,7 @@ if CACHE_USER:
         user = User._update_profile(data, guild)
         
         if isinstance(user, Client):
-            guild._invalidate_permission_cache()
+            guild._invalidate_cache_permission()
 
 else:
     def GUILD_MEMBER_UPDATE__CAL_SC(client, data):
@@ -1070,7 +1070,7 @@ else:
         if not old_attributes:
             return
         
-        guild._invalidate_permission_cache()
+        guild._invalidate_cache_permission()
         
         Task(KOKORO, client.events.guild_user_edit(client, client, guild, old_attributes))
     
@@ -1090,7 +1090,7 @@ else:
         
         client._update_profile_only(data, guild)
         
-        guild._invalidate_permission_cache()
+        guild._invalidate_cache_permission()
     
     GUILD_MEMBER_UPDATE__OPT_MC = GUILD_MEMBER_UPDATE__OPT_SC
 

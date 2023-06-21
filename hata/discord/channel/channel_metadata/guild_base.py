@@ -22,7 +22,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     
     Attributes
     ----------
-    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     name : `str`
         The channel's name.
@@ -34,7 +34,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
-    __slots__ = ('_permission_cache', 'name', 'parent_id')
+    __slots__ = ('_cache_permission', 'name', 'parent_id')
     
     
     def __new__(
@@ -74,7 +74,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         
         # Construct
         self = object.__new__(cls)
-        self._permission_cache = None
+        self._cache_permission = None
         self.name = name
         self.parent_id = parent_id
         return self
@@ -109,7 +109,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     def from_data(cls, data):
         self = super(ChannelMetadataGuildBase, cls).from_data(data)
         
-        self._permission_cache = None
+        self._cache_permission = None
         
         return self
     
@@ -158,7 +158,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     def _update_attributes(self, data):
         ChannelMetadataBase._update_attributes(self, data)
         
-        self._permission_cache = None
+        self._cache_permission = None
         
         # name
         self.name = parse_name(data)
@@ -171,7 +171,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataBase._difference_update_attributes(self, data)
         
-        self._permission_cache = None
+        self._cache_permission = None
         
         # name
         name = parse_name(data)
@@ -193,7 +193,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     def _create_empty(cls):
         self = super(ChannelMetadataGuildBase, cls)._create_empty()
         
-        self._permission_cache = None
+        self._cache_permission = None
         self.parent_id = 0
         self.name = ''
         
@@ -203,7 +203,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     @copy_docs(ChannelMetadataBase.copy)
     def copy(self):
         new = object.__new__(type(self))
-        new._permission_cache = None
+        new._cache_permission = None
         new.parent_id = self.parent_id
         new.name = self.name
         return new
@@ -250,7 +250,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         
         # Construct
         self = object.__new__(type(self))
-        self._permission_cache = None
+        self._cache_permission = None
         self.name = name
         self.parent_id = parent_id
         return self
@@ -440,9 +440,9 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         if not isinstance(user, Client):
             return self._get_permissions_for(channel_entity, user)
         
-        permission_cache = self._permission_cache
+        permission_cache = self._cache_permission
         if permission_cache is None:
-            self._permission_cache = permission_cache = {}
+            self._cache_permission = permission_cache = {}
         else:
             try:
                 return permission_cache[user.id]
@@ -454,6 +454,6 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         return permissions
     
     
-    @copy_docs(ChannelMetadataBase._invalidate_permission_cache)
-    def _invalidate_permission_cache(self):
-        self._permission_cache = None
+    @copy_docs(ChannelMetadataBase._invalidate_cache_permission)
+    def _invalidate_cache_permission(self):
+        self._cache_permission = None

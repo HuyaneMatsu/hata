@@ -16,7 +16,7 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
     
     Attributes
     ----------
-    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     name : `str`
         The channel's name.

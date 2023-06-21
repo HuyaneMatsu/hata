@@ -19,7 +19,7 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
     ----------
     _created_at : `None`, `datetime`
         When the channel was created.
-    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     applied_tag_ids : `None`, `tuple` of `int`
          The tags' identifier which have been applied to the thread. Applicable for threads of a forum.

@@ -1,9 +1,4 @@
-__all__ = (
-    'EMOJI_UPDATE_DELETE', 'EMOJI_UPDATE_EDIT', 'EMOJI_UPDATE_CREATE', 'EMOJI_UPDATE_NONE',
-    'Guild', 'LARGE_GUILD_LIMIT', 'STICKER_UPDATE_DELETE', 'STICKER_UPDATE_EDIT', 'STICKER_UPDATE_CREATE',
-    'STICKER_UPDATE_NONE', 'VOICE_STATE_JOIN', 'VOICE_STATE_LEAVE', 'VOICE_STATE_NONE', 'VOICE_STATE_MOVE',
-    'VOICE_STATE_UPDATE'
-)
+__all__ = ('Guild',)
 
 import warnings
 from datetime import datetime as DateTime
@@ -28,7 +23,9 @@ from ...utils import DATETIME_FORMAT_CODE, EMOJI_NAME_RP
 
 from .constants import (
     GUILD_STATE_MASK_SOUNDBOARD_SOUNDS_CACHED, MAX_PRESENCES_DEFAULT, MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT,
-    MAX_USERS_DEFAULT, MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
+    MAX_USERS_DEFAULT, MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT,
+    EMOJI_UPDATE_CREATE, STICKER_UPDATE_CREATE, STICKER_UPDATE_DELETE, STICKER_UPDATE_EDIT,
+    VOICE_STATE_JOIN, VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, VOICE_STATE_MOVE, LARGE_GUILD_LIMIT
 )
 from .emoji_counts import EmojiCounts
 from .fields import (
@@ -59,31 +56,13 @@ from .preinstanced import (
     ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel
 )
 from .sticker_counts import StickerCounts
+from .helpers import _user_date_sort_key, _emoji_match_sort_key, _soundboard_sound_match_sort_key, \
+    _sticker_match_sort_key, _strip_emoji_name
+from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 
-VoiceClient = include('VoiceClient')
 Client = include('Client')
 trigger_voice_client_ghost_event = include('trigger_voice_client_ghost_event')
-
-LARGE_GUILD_LIMIT = 250 # can be between 50 and 250
-
-EMOJI_UPDATE_NONE = 0
-EMOJI_UPDATE_CREATE = 1
-EMOJI_UPDATE_DELETE = 2
-EMOJI_UPDATE_EDIT = 3
-
-
-STICKER_UPDATE_NONE = 0
-STICKER_UPDATE_CREATE = 1
-STICKER_UPDATE_DELETE = 2
-STICKER_UPDATE_EDIT = 3
-
-
-VOICE_STATE_NONE = 0
-VOICE_STATE_JOIN = 1
-VOICE_STATE_LEAVE = 2
-VOICE_STATE_UPDATE = 3
-VOICE_STATE_MOVE = 4
 
 
 if CACHE_USER:
@@ -91,98 +70,91 @@ if CACHE_USER:
 else:
     GUILD_USERS_TYPE = WeakValueDictionary
 
+GUILD_BANNER = IconSlot(
+    'banner',
+    'banner',
+    module_urls.guild_banner_url,
+    module_urls.guild_banner_url_as,
+)
 
-def _user_date_sort_key(item):
-    """
-    Sort key used inside ``Guild.get_users_like_ordered`` and in ``Guild.boosters`` to sort users by a specified date.
-    
-    Parameters
-    ----------
-    item : `tuple` ( ``ClientUserBase``, `datetime`)
-        The user and it's specific date.
-    
-    Returns
-    -------
-    date : `datetime`
-    """
-    return item[1]
+GUILD_DISCOVERY_SPLASH = IconSlot(
+    'discovery_splash',
+    'discovery_splash',
+    module_urls.guild_discovery_splash_url,
+    module_urls.guild_discovery_splash_url_as,
+)
 
+GUILD_ICON = IconSlot(
+    'icon',
+    'icon',
+    module_urls.guild_icon_url,
+    module_urls.guild_icon_url_as,
+)
 
-def _emoji_match_sort_key(item):
-    """
-    Sort key used inside of ``Guild.get_emojis_like`` to sort emojis based on their match rate.
-    
-    Parameters
-    ----------
-    item : `tuple` (``Emoji``, `tuple` (`int`, `int`))
-        The emoji and it's match rate.
-    
-    Returns
-    -------
-    match_rate : `tuple` (`int`, `int`)
-    """
-    return item[1]
+GUILD_INVITE_SPLASH = IconSlot(
+    'invite_splash',
+    'splash',
+    module_urls.guild_invite_splash_url,
+    module_urls.guild_invite_splash_url_as,
+)
 
-
-def _soundboard_sound_match_sort_key(item):
-    """
-    Sort key used inside of ``Guild.get_soundboard_sounds_like`` to sort soundboard sounds based on their match rate.
-    
-    Parameters
-    ----------
-    item : `tuple` (``Sticker``, `tuple` (`bool`, `int`, `int`))
-        The soundboard sound and it's match rate.
-    
-    Returns
-    -------
-    match_rate : `tuple` (`int`, `int`)
-    """
-    return item[1]
-
-
-def _sticker_match_sort_key(item):
-    """
-    Sort key used inside of ``Guild.get_stickers_like`` to sort stickers based on their match rate.
-    
-    Parameters
-    ----------
-    item : `tuple` (``Sticker``, `tuple` (`bool`, `int`, `int`))
-        The sticker and it's match rate.
-    
-    Returns
-    -------
-    match_rate : `tuple` (`bool`, `int`, `int`)
-    """
-    return item[1]
-
-
-def _strip_emoji_name(name):
-    """
-    Strips the given emoji name from colon signs.
-    
-    Parameters
-    ----------
-    name : `str`
-        The name to strip.
-    
-    Returns
-    -------
-    name : `str`
-    """
-    if name.startswith(':'):
-        starts_at = 1
-    else:
-        starts_at = None
-    
-    if name.endswith(':'):
-        ends_at = -1
-    else:
-        ends_at = None
-    
-    if (starts_at is not None) or (ends_at is not None):
-        name = name[starts_at : ends_at]
-    
-    return name
+PRECREATE_FIELDS = {
+    'afk_channel': ('afk_channel_id', validate_afk_channel_id),
+    'afk_channel_id': ('afk_channel_id', validate_afk_channel_id),
+    'afk_timeout': ('afk_timeout', validate_afk_timeout),
+    'approximate_online_count': ('approximate_online_count', validate_approximate_online_count),
+    'approximate_user_count': ('approximate_user_count', validate_approximate_user_count),
+    'available': ('available', validate_available),
+    'banner': ('banner', GUILD_BANNER.validate_icon),
+    'boost_count': ('boost_count', validate_boost_count),
+    'boost_progress_bar_enabled': ('boost_progress_bar_enabled', validate_boost_progress_bar_enabled),
+    'channels': ('channels', validate_channels),
+    'content_filter': ('content_filter', validate_content_filter),
+    'description': ('description', validate_description),
+    'discovery_splash': ('discovery_splash', GUILD_INVITE_SPLASH.validate_icon),
+    'embedded_activity_states': ('embedded_activity_states', validate_embedded_activity_states),
+    'emojis': ('emojis', validate_emojis),
+    'features': ('features', validate_features),
+    'hub_type': ('hub_type', validate_hub_type),
+    'icon': ('icon', GUILD_ICON.validate_icon),
+    'invite_splash': ('invite_splash', GUILD_INVITE_SPLASH.validate_icon),
+    'large': ('large', validate_large),
+    'max_presences': ('max_presences', validate_max_presences),
+    'max_stage_channel_video_users': ('max_stage_channel_video_users', validate_max_stage_channel_video_users),
+    'max_users': ('max_users', validate_max_users),
+    'max_voice_channel_video_users': ('max_voice_channel_video_users', validate_max_voice_channel_video_users),
+    'message_notification': ('message_notification', validate_message_notification),
+    'mfa': ('mfa', validate_mfa),
+    'name': ('name', validate_name),
+    'nsfw_level': ('nsfw_level', validate_nsfw_level),
+    'owner': ('owner_id', validate_owner_id),
+    'owner_id': ('owner_id', validate_owner_id),
+    'preferred_locale': ('preferred_locale', validate_preferred_locale),
+    'premium_tier': ('premium_tier', validate_premium_tier),
+    'public_updates_channel': ('public_updates_channel_id', validate_public_updates_channel_id),
+    'public_updates_channel_id': ('public_updates_channel_id', validate_public_updates_channel_id),
+    'roles': ('roles', validate_roles),
+    'rules_channel': ('rules_channel_id', validate_rules_channel_id),
+    'rules_channel_id': ('rules_channel_id', validate_rules_channel_id),
+    'safety_alerts_channel': ('safety_alerts_channel_id', validate_safety_alerts_channel_id),
+    'safety_alerts_channel_id': ('safety_alerts_channel_id', validate_safety_alerts_channel_id),
+    'scheduled_events': ('scheduled_events', validate_scheduled_events),
+    'soundboard_sounds': ('soundboard_sounds', validate_soundboard_sounds),
+    'stages': ('stages', validate_stages),
+    'stickers': ('stickers', validate_stickers),
+    'system_channel_flags': ('system_channel_flags', validate_system_channel_flags),
+    'system_channel': ('system_channel_id', validate_system_channel_id),
+    'system_channel_id': ('system_channel_id', validate_system_channel_id),
+    'threads': ('threads', validate_threads),
+    'user_count': ('user_count', validate_user_count),
+    'users': ('users', validate_users),
+    'vanity_code': ('vanity_code', validate_vanity_code),
+    'verification_level': ('verification_level', validate_verification_level),
+    'voice_states': ('voice_states', validate_voice_states),
+    'widget_channel': ('widget_channel_id', validate_widget_channel_id),
+    'widget_channel_id': ('widget_channel_id', validate_widget_channel_id),
+    'widget_enabled': ('widget_enabled', validate_widget_enabled),
+}
 
 
 @export
@@ -195,7 +167,7 @@ class Guild(DiscordEntity, immortal = True):
     _cache_boosters : `None`, `list` of ``ClientUserBase`` objects
         Cached slot for the boosters of the guild.
     
-    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
+    _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     
     _state : `int`
@@ -412,7 +384,7 @@ class Guild(DiscordEntity, immortal = True):
     - ``.widget_enabled``
     """
     __slots__ = (
-        '_cache_boosters', '_permission_cache', '_state', 'afk_channel_id', 'afk_timeout', 'approximate_online_count',
+        '_cache_boosters', '_cache_permission', '_state', 'afk_channel_id', 'afk_timeout', 'approximate_online_count',
         'approximate_user_count', 'available', 'boost_count', 'boost_progress_bar_enabled', 'channels', 'clients',
         'content_filter', 'description', 'embedded_activity_states', 'emojis', 'features', 'hub_type', 'large',
         'max_presences', 'max_stage_channel_video_users', 'max_users', 'max_voice_channel_video_users',
@@ -422,128 +394,349 @@ class Guild(DiscordEntity, immortal = True):
         'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled'
     )
     
-    banner = IconSlot(
-        'banner',
-        'banner',
-        module_urls.guild_banner_url,
-        module_urls.guild_banner_url_as,
-    )
-    icon = IconSlot(
-        'icon',
-        'icon',
-        module_urls.guild_icon_url,
-        module_urls.guild_icon_url_as,
-    )
-    invite_splash = IconSlot(
-        'invite_splash',
-        'splash',
-        module_urls.guild_invite_splash_url,
-        module_urls.guild_invite_splash_url_as,
-    )
-    discovery_splash = IconSlot(
-        'discovery_splash',
-        'discovery_splash',
-        module_urls.guild_discovery_splash_url,
-        module_urls.guild_discovery_splash_url_as,
-    )
+    banner = GUILD_BANNER
+    discovery_splash = GUILD_DISCOVERY_SPLASH
+    icon = GUILD_ICON
+    invite_splash = GUILD_INVITE_SPLASH
     
     
-    def __new__(cls, data, client):
+    def __new__(
+        cls,
+        afk_channel_id = ...,
+        afk_timeout = ...,
+        banner = ...,
+        boost_progress_bar_enabled = ...,
+        content_filter = ...,
+        discovery_splash = ...,
+        description = ...,
+        features = ...,
+        hub_type = ...,
+        icon = ...,
+        invite_splash = ...,
+        message_notification = ...,
+        mfa = ...,
+        name = ...,
+        nsfw_level = ...,
+        owner_id = ...,
+        preferred_locale = ...,
+        public_updates_channel_id = ...,
+        safety_alerts_channel_id = ...,
+        rules_channel_id = ...,
+        system_channel_id = ...,
+        system_channel_flags = ...,
+        vanity_code = ...,
+        verification_level = ...,
+        widget_channel_id = ...,
+        widget_enabled = ...,
+    ):
         """
-        `.__new__` will be repurposed. Please use `.from_data` instead.
-        """
-        warnings.warn(
-            f'`{cls.__name__}.__new__` will be repurposed. Please use `.from_data` instead.',
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return cls.from_data(data, client)
-    
-    
-    @classmethod
-    def from_data(cls, data, client = None):
-        """
-        Tries to find the guild from the already existing ones. If it can not find, creates a new one. If the found
-        guild is partial (or freshly created), sets it's attributes from the given `data`. If the the guild is not
-        added to the client's guild profiles yet, adds it, and the client to the guilds' `.clients` as well.
+        Creates a new partial guild with the given fields.
         
-        Parameters
-        ----------
-        data : `dict` of (`str`, `object`) items
-            Received guild data.
-        client : `None`, ``Client`` = `None`, Optional
-            The client who received the guild's data.
+        Other Parameters
+        ----------------
+        afk_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The afk channel or its identifier.
+        
+        afk_timeout : `int`, Optional (Keyword only)
+            The afk timeout at the `afk_channel`.
+        
+        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The guild's banner.
+        
+        boost_progress_bar_enabled : `bool`, Optional (Keyword only)
+            Whether the guild has the boost progress bar enabled.
+        
+        content_filter : ``ContentFilterLevel``, `int`, Optional (Keyword only)
+            The explicit content filter level of the guild.
+        
+        description : `None`, `str`
+            Description of the guild. The guild must be a Community guild.
+        
+        discovery_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The guild's discovery splash.
+        
+        features : `None`, `tuple` of `(`int`, `GuildFeature``), Optional (Keyword only)
+            The guild's features.
+        
+        hub_type : ``HubType``, `int`, Optional (Keyword only)
+            The guild's hub type.
+        
+        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The guild's icon.
+        
+        invite_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The guild's invite splash.
+        
+        message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
+            The message notification level of the guild.
+        
+        mfa : ``MFA``, `int`, Optional (Keyword only)
+            The required multi-factor authentication level for the guild.
+        
+        name : `str`, Optional (Keyword only)
+            The guild's name.
+        
+        nsfw_level : ``NsfwLevel``, `int`, Optional (Keyword only)
+            The nsfw level of the guild.
+        
+        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+            The guild's owner or their id.
+        
+        preferred_locale : ``Locale``, `int`, Optional (Keyword only)
+            The preferred language of the guild.
+        
+        public_updates_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's identifier where the guild's public updates should go.
+        
+        roles : `None`, `iterable` of ``Role``, `dict` of (`int`, ``Role``) items, Optional (Keyword only)
+            The roles of the guild.
+        
+        rules_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel or its identifier where the rules of a public guild's should be.
+        
+        safety_alerts_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel or its identifier where safety alerts are sent by Discord.
+        
+        system_channel_flags : ``SystemChannelFlag``, `int`, Optional (Keyword only)
+            Describe which type of messages are sent automatically to the system channel.
+        
+        system_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel or its identifier where the system messages are sent.
+        
+        vanity_code : `None`, `str`, Optional (Keyword only)
+            The guild's vanity invite's code if it has.
+        
+        verification_level : ``VerificationLevel``, `int`, Optional (Keyword only)
+            The minimal verification needed to join or to interact with guild.
+        
+        widget_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel or its identifier for which the guild's widget is for.
+        
+        widget_enabled : `bool`, Optional (Keyword only)
+            Whether the guild's widget is enabled.
         
         Returns
         -------
-        guild : ``Guild``
+        self : `instance<cls>`
+        
+        Raises
+        ------
+        TypeError
+            - If any parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         """
-        guild_id = parse_id(data)
+        # afk_channel_id
+        if afk_channel_id is ...:
+            afk_channel_id = 0
+        else:
+            afk_channel_id = validate_afk_channel_id(afk_channel_id)
         
-        try:
-            self = GUILDS[guild_id]
-            update = (not self.clients)
-        except KeyError:
-            self = object.__new__(cls)
-            GUILDS[guild_id] = self
-            self.id = guild_id
-            
-            self._cache_boosters = None
-            self._permission_cache = None
-            self._state = 0
-            self.approximate_online_count = 0
-            self.approximate_user_count = 0
-            self.channels = {}
-            self.clients = []
-            self.embedded_activity_states = None
-            self.emojis = {}
-            self.roles = {}
-            self.scheduled_events = {}
-            self.soundboard_sounds = None
-            self.stages = None
-            self.stickers = {}
-            self.threads = {}
-            self.user_count = 1
-            self.users = GUILD_USERS_TYPE()
-            self.voice_states = {}
-            
-            update = True
+        # afk_timeout
+        if afk_timeout is ...:
+            afk_timeout = 0
+        else:
+            afk_timeout = validate_afk_timeout(afk_timeout)
         
-        self.available = parse_available(data)
+        # banner
+        if banner is ...:
+            banner = None
+        else:
+            banner = cls.banner.validate_icon(banner, allow_data = True)
         
-        if update:
-            # Required by `large`
-            user_count = parse_user_count(data)
-            if user_count:
-                self.user_count = user_count
-            
-            self.channels = parse_channels(data, self.channels, guild_id)
-            self.embedded_activity_states = parse_embedded_activity_states(data, self.embedded_activity_states, guild_id)
-            self.emojis = parse_emojis(data, self.emojis, guild_id)
-            self.large = parse_large(data) or (user_count >= LARGE_GUILD_LIMIT)
-            self.roles = parse_roles(data, self.roles, guild_id)
-            self.scheduled_events = parse_scheduled_events(data, self.scheduled_events)
-            self.stages = parse_stages(data, self.stages)
-            self.stickers = parse_stickers(data, self.stickers)
-            self.threads = parse_threads(data, self.threads, guild_id)
-            self.users = parse_users(data, self.users, guild_id)
-            self.voice_states = parse_voice_states(data, self.voice_states, guild_id)
-            
-            self._update_attributes(data)
-            
+        # boost_progress_bar_enabled
+        if boost_progress_bar_enabled is ...:
+            boost_progress_bar_enabled = False
+        else:
+            boost_progress_bar_enabled = validate_boost_progress_bar_enabled(boost_progress_bar_enabled)
         
-        self.users = parse_client_guild_profile(data, self.users, guild_id)
+        # content_filter
+        if content_filter is ...:
+            content_filter = ContentFilterLevel.disabled
+        else:
+            content_filter = validate_content_filter(content_filter)
         
-        if client not in self.clients:
-            try:
-                ghost_state = self.voice_states[client.id]
-            except KeyError:
-                pass
-            else:
-                trigger_voice_client_ghost_event(client, ghost_state)
-            
-            self.clients.append(client)
-            client.guilds.add(self)
+        # discovery_splash
+        if discovery_splash is ...:
+            discovery_splash = None
+        else:
+            discovery_splash = cls.discovery_splash.validate_icon(discovery_splash, allow_data = True)
+        
+        # description
+        if description is ...:
+            description = None
+        else:
+            description = validate_description(description)
+        
+        # features
+        if features is ...:
+            features = None
+        else:
+            features = validate_features(features)
+        
+        # hub_type
+        if hub_type is ...:
+            hub_type = HubType.none
+        else:
+            hub_type = validate_hub_type(hub_type)
+        
+        # icon
+        if icon is ...:
+            icon = None
+        else:
+            icon = cls.sicon.validate_icon(icon, allow_data = True)
+        
+        # invite_splash
+        if invite_splash is ...:
+            invite_splash = None
+        else:
+            invite_splash = cls.invite_splash.validate_icon(invite_splash, allow_data = True)
+        
+        # message_notification
+        if message_notification is ...:
+            message_notification = MessageNotificationLevel.all_messages
+        else:
+            message_notification = validate_message_notification(message_notification)
+        
+        # mfa
+        if mfa is ...:
+            mfa = MFA.none
+        else:
+            mfa = validate_mfa(mfa)
+        
+        # name
+        if name is ...:
+            name = ''
+        else:
+            name = validate_name(name)
+        
+        # nsfw_level
+        if nsfw_level is ...:
+            nsfw_level = NsfwLevel.none
+        else:
+            nsfw_level = validate_nsfw_level(nsfw_level)
+        
+        # owner_id
+        if owner_id is ...:
+            owner_id = 0
+        else:
+            owner_id = validate_owner_id(owner_id)
+        
+        # preferred_locale
+        if preferred_locale is ...:
+            preferred_locale = LOCALE_DEFAULT
+        else:
+            preferred_locale = validate_preferred_locale(preferred_locale)
+        
+        # public_updates_channel_id
+        if public_updates_channel_id is ...:
+            public_updates_channel_id = 0
+        else:
+            public_updates_channel_id = validate_public_updates_channel_id(public_updates_channel_id)
+        
+        # safety_alerts_channel_id
+        if safety_alerts_channel_id is ...:
+            safety_alerts_channel_id = 0
+        else:
+            safety_alerts_channel_id = validate_safety_alerts_channel_id(safety_alerts_channel_id)
+        
+        # rules_channel_id
+        if rules_channel_id is ...:
+            rules_channel_id = 0
+        else:
+            rules_channel_id = validate_rules_channel_id(rules_channel_id)
+        
+        # system_channel_id
+        if system_channel_id is ...:
+            system_channel_id = 0
+        else:
+            system_channel_id = validate_system_channel_id(system_channel_id)
+        
+        # system_channel_flags
+        if system_channel_flags is ...:
+            system_channel_flags = SystemChannelFlag.NONE
+        else:
+            system_channel_flags = validate_system_channel_flags(system_channel_flags)
+        
+        # vanity_code
+        if vanity_code is ...:
+            vanity_code = None
+        else:
+            vanity_code = validate_vanity_code(vanity_code)
+        
+        # verification_level
+        if verification_level is ...:
+            verification_level = VerificationLevel.none
+        else:
+            verification_level = validate_verification_level(verification_level)
+        
+        # widget_channel_id
+        if widget_channel_id is ...:
+            widget_channel_id = 0
+        else:
+            widget_channel_id = validate_widget_channel_id(widget_channel_id)
+        
+        # widget_enabled
+        if widget_enabled is ...:
+            widget_enabled = False
+        else:
+            widget_enabled = validate_widget_enabled(widget_enabled)
+        
+        # Construct
+        self = object.__new__(cls)
+        self._cache_boosters = None
+        self._cache_permission = None
+        self._state = 0
+        self.afk_channel_id = afk_channel_id
+        self.afk_timeout = afk_timeout
+        self.approximate_online_count = 0
+        self.approximate_user_count = 0
+        self.available = True
+        self.banner = banner
+        self.boost_count = 0
+        self.boost_progress_bar_enabled = boost_progress_bar_enabled
+        self.channels = {}
+        self.clients = []
+        self.content_filter = content_filter
+        self.discovery_splash = discovery_splash
+        self.description = description
+        self.embedded_activity_states = None
+        self.emojis = {}
+        self.features = features
+        self.hub_type = hub_type
+        self.icon = icon
+        self.id = 0
+        self.invite_splash = invite_splash
+        self.large = False
+        self.max_presences = MAX_PRESENCES_DEFAULT
+        self.max_stage_channel_video_users = MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
+        self.max_users = MAX_USERS_DEFAULT
+        self.max_voice_channel_video_users = MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
+        self.message_notification = message_notification
+        self.mfa = mfa
+        self.name = name
+        self.nsfw_level = nsfw_level
+        self.owner_id = owner_id
+        self.preferred_locale = preferred_locale
+        self.premium_tier = 0
+        self.public_updates_channel_id = public_updates_channel_id
+        self.safety_alerts_channel_id = safety_alerts_channel_id
+        self.roles = {}
+        self.rules_channel_id = rules_channel_id
+        self.scheduled_events = {}
+        self.soundboard_sounds = None
+        self.stages = None
+        self.stickers = {}
+        self.system_channel_id = system_channel_id
+        self.system_channel_flags = system_channel_flags
+        self.threads = {}
+        self.user_count = 0
+        self.users = GUILD_USERS_TYPE()
+        self.vanity_code = vanity_code
+        self.verification_level = verification_level
+        self.voice_states = {}
+        self.widget_channel_id = widget_channel_id
+        self.widget_enabled = widget_enabled
         
         return self
     
@@ -566,6 +759,9 @@ class Guild(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
+        afk_channel : `int`, ``Channel``, Optional (Keyword only)
+            Alternative for `afk_channel_id`.
+        
         afk_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The afk channel or its identifier.
         
@@ -583,18 +779,6 @@ class Guild(DiscordEntity, immortal = True):
         
         banner : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's banner.
-            
-            > Mutually exclusive with `banner_type` and `banner_hash` parameters.
-        
-        banner_type : ``IconType``, Optional (Keyword only)
-            The guild's banner's type.
-            
-            > Mutually exclusive with the `banner` parameter.
-        
-        banner_hash : `int`, Optional (Keyword only)
-            The guild's banner's hash.
-            
-            > Mutually exclusive with the `banner` parameter.
         
         boost_count : `int`, Optional (Keyword only)
             The total number of boosts of the guild.
@@ -613,18 +797,6 @@ class Guild(DiscordEntity, immortal = True):
         
         discovery_splash : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's discovery splash.
-            
-            Mutually exclusive with the `discovery_splash_type` and  `discovery_splash_hash` parameters.
-        
-        discovery_splash_type : `IconType``, Optional (Keyword only)
-            The guild's discovery splash's type.
-            
-            > Mutually exclusive with the `discovery_splash` parameter.
-        
-        discovery_splash_hash : `int`, Optional (Keyword only)
-            The guild's discovery splash's hash.
-            
-            > Mutually exclusive with the `discovery_splash` parameter.
         
         embedded_activity_states : `None`, `iterable` of ``EmbeddedActivityState``, Optional (Keyword only)
             Embedded activity states to keep them alive in cache.
@@ -640,33 +812,9 @@ class Guild(DiscordEntity, immortal = True):
         
         icon : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's icon.
-            
-            > Mutually exclusive with `icon_type` and `icon_hash`.
-        
-        icon_type : ``IconType``, Optional (Keyword only)
-            The guild's icon's type.
-            
-            > Mutually exclusive with `icon`.
-        
-        icon_hash : `int`, Optional (Keyword only)
-            The guild's icon's hash.
-            
-            > Mutually exclusive with `icon`.
         
         invite_splash : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's invite splash.
-            
-            > Mutually exclusive with the `invite_splash_type` and `invite_splash_hash` parameters.
-        
-        invite_splash_type : `IconType``, Optional (Keyword only)
-            The guild's invite splash's type.
-            
-            > Mutually exclusive with the `invite_splash` parameter.
-        
-        invite_splash_hash : `int`, Optional (Keyword only)
-            The guild's invite splash's hash.
-            
-            > Mutually exclusive with the `invite_splash` parameter.
         
         large : `bool`, Optional (Keyword only)
             Whether the guild is considered as a large one.
@@ -695,6 +843,9 @@ class Guild(DiscordEntity, immortal = True):
         nsfw_level : ``NsfwLevel``, `int`, Optional (Keyword only)
             The nsfw level of the guild.
         
+        owner : `int`, ``ClientUserBase``, Optional (Keyword only)
+            Alternative for `owner`.
+        
         owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
             The guild's owner or their id.
         
@@ -704,14 +855,20 @@ class Guild(DiscordEntity, immortal = True):
         premium_tier : `int`, Optional (Keyword only)
             The premium tier of the guild.
         
+        public_updates_channel : `int`, ``Channel``, Optional (Keyword only)
+            Alternative for `public_updates_channel_id`.
+        
         public_updates_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel's identifier where the guild's public updates should go.
         
-        roles : `None`, `iterable` of ``Role``, `dict` of (`int`, ``Role``) items, Optional (Keyword only)
-            The roles of the guild.
+        rules_channel : `int`, ``Channel``, Optional (Keyword only)
+            Alternative for `rules_channel_id`.
         
         rules_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel or its identifier where the rules of a public guild's should be.
+        
+        safety_alerts_channel : `int`, ``Channel``, Optional (Keyword only)
+            Alternative for `safety_alerts_channel_id`.
         
         safety_alerts_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel or its identifier where safety alerts are sent by Discord.
@@ -735,6 +892,9 @@ class Guild(DiscordEntity, immortal = True):
         system_channel_flags : ``SystemChannelFlag``, `int`, Optional (Keyword only)
             Describe which type of messages are sent automatically to the system channel.
         
+        system_channel : `int`, ``Channel``, Optional (Keyword only)
+            Alternative for `system_channel_id`.
+        
         system_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel or its identifier where the system messages are sent.
         
@@ -745,7 +905,7 @@ class Guild(DiscordEntity, immortal = True):
             The amount of users at the guild.
         
         users : `None`, `iterable` of ``ClientUserBase``, `dict` of (`int`, ``ClientUserBase``) items \
-                    , Optional (Keyword only)
+                , Optional (Keyword only)
             The users of the guild.
         
         vanity_code : `None`, `str`, Optional (Keyword only)
@@ -758,6 +918,9 @@ class Guild(DiscordEntity, immortal = True):
                 , Optional (Keyword only)
             The users represented in the guild's voice channels.
         
+        widget_channel : `int`, ``Channel``, Optional (Keyword only)
+            Alternative for `widget_channel_id`.
+        
         widget_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel or its identifier for which the guild's widget is for.
         
@@ -766,84 +929,22 @@ class Guild(DiscordEntity, immortal = True):
         
         Returns
         -------
-        guild : `instance<cls>`
+        self : `instance<cls>`
         
         Raises
         ------
         TypeError
-            - If any parameter's type is bad or if unexpected parameter is passed.
+            - If any parameter's type is incorrect.
+            - Extra parameters given.
         ValueError
-            - If an parameter's type is good, but it's value is unacceptable.
+            - If a parameter's value is incorrect.
         """
         guild_id = validate_id(guild_id)
         
         if keyword_parameters:
-            processable = []
-            
-            cls.icon.preconvert(keyword_parameters, processable)
-            cls.banner.preconvert(keyword_parameters, processable)
-            cls.invite_splash.preconvert(keyword_parameters, processable)
-            cls.discovery_splash.preconvert(keyword_parameters, processable)
-            
-            for attribute_name, field_validator in (
-                ('available', validate_available),
-                ('approximate_online_count', validate_approximate_online_count),
-                ('approximate_user_count', validate_approximate_user_count),
-                ('afk_channel_id', validate_afk_channel_id),
-                ('afk_timeout', validate_afk_timeout),
-                ('boost_count', validate_boost_count),
-                ('boost_progress_bar_enabled', validate_boost_progress_bar_enabled),
-                ('channels', validate_channels),
-                ('content_filter', validate_content_filter),
-                ('description', validate_description),
-                ('embedded_activity_states', validate_embedded_activity_states),
-                ('emojis', validate_emojis),
-                ('features', validate_features),
-                ('hub_type', validate_hub_type),
-                ('large', validate_large),
-                ('max_presences', validate_max_presences),
-                ('max_stage_channel_video_users', validate_max_stage_channel_video_users),
-                ('max_users', validate_max_users),
-                ('max_voice_channel_video_users', validate_max_voice_channel_video_users),
-                ('message_notification', validate_message_notification),
-                ('mfa', validate_mfa),
-                ('name', validate_name),
-                ('nsfw_level', validate_nsfw_level),
-                ('owner_id', validate_owner_id),
-                ('preferred_locale', validate_preferred_locale),
-                ('premium_tier', validate_premium_tier),
-                ('public_updates_channel_id', validate_public_updates_channel_id),
-                ('roles', validate_roles),
-                ('rules_channel_id', validate_rules_channel_id),
-                ('safety_alerts_channel_id', validate_safety_alerts_channel_id),
-                ('scheduled_events', validate_scheduled_events),
-                ('soundboard_sounds', validate_soundboard_sounds),
-                ('stages', validate_stages),
-                ('stickers', validate_stickers),
-                ('system_channel_flags', validate_system_channel_flags),
-                ('system_channel_id', validate_system_channel_id),
-                ('threads', validate_threads),
-                ('user_count', validate_user_count),
-                ('users', validate_users),
-                ('vanity_code', validate_vanity_code),
-                ('verification_level', validate_verification_level),
-                ('voice_states', validate_voice_states),
-                ('widget_channel_id', validate_widget_channel_id),
-                ('widget_enabled', validate_widget_enabled),
-            ):
-                try:
-                    attribute_value = keyword_parameters.pop(attribute_name)
-                except KeyError:
-                    continue
-                
-                attribute_value = field_validator(attribute_value)
-                processable.append((attribute_name, attribute_value))
-            
-            if keyword_parameters:
-                raise TypeError(f'Unused or unsettable attributes: {keyword_parameters!r}.')
-            
+            processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
         else:
-            processable = None
+            processed = None
         
         try:
             self = GUILDS[guild_id]
@@ -854,8 +955,8 @@ class Guild(DiscordEntity, immortal = True):
             if self.clients:
                 return self
         
-        if (processable is not None):
-            for item in processable:
+        if (processed is not None):
+            for item in processed:
                 setattr(self, *item)
         
         return self
@@ -877,8 +978,7 @@ class Guild(DiscordEntity, immortal = True):
         """
         self = object.__new__(cls)
         self._cache_boosters = None
-        self.embedded_activity_states = None
-        self._permission_cache = None
+        self._cache_permission = None
         self._state = 0
         self.afk_channel_id = 0
         self.afk_timeout = 0
@@ -895,6 +995,7 @@ class Guild(DiscordEntity, immortal = True):
         self.discovery_splash_hash = 0
         self.discovery_splash_type = ICON_TYPE_NONE
         self.description = None
+        self.embedded_activity_states = None
         self.emojis = {}
         self.features = None
         self.hub_type = HubType.none
@@ -934,6 +1035,123 @@ class Guild(DiscordEntity, immortal = True):
         self.widget_channel_id = 0
         self.widget_enabled = False
         return self
+    
+    
+    @classmethod
+    def from_data(cls, data, client = None):
+        """
+        Tries to find the guild from the already existing ones. If it can not find, creates a new one. If the found
+        guild is partial (or freshly created), sets it's attributes from the given `data`. If the the guild is not
+        added to the client's guild profiles yet, adds it, and the client to the guilds' `.clients` as well.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Received guild data.
+        client : `None`, ``Client`` = `None`, Optional
+            The client who received the guild's data.
+        
+        Returns
+        -------
+        self : `instance<cls>`
+        """
+        guild_id = parse_id(data)
+        
+        try:
+            self = GUILDS[guild_id]
+        except KeyError:
+            self = object.__new__(cls)
+            self.id = guild_id
+            self._set_attributes(data, True)
+            GUILDS[guild_id] = self
+        else:
+            if self.clients:
+                # Update just available
+                self.available = parse_available(data)
+            else:
+                self._set_attributes(data, False)
+        
+        self.users = parse_client_guild_profile(data, self.users, guild_id)
+        
+        if client not in self.clients:
+            try:
+                ghost_state = self.voice_states[client.id]
+            except KeyError:
+                pass
+            else:
+                trigger_voice_client_ghost_event(client, ghost_state)
+            
+            self.clients.append(client)
+            client.guilds.add(self)
+        
+        return self
+    
+    
+    def _set_attributes(self, data, creation = True):
+        """
+        Finishes the guild's initialization process by setting it's attributes.
+         
+        > This method required `.id` to be set already.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Guild data.
+        creation : `bool` = `True`, Optional
+            Whether the entity was just created.
+        """
+        guild_id = self.id
+        
+        self.available = parse_available(data)
+        
+        user_count = parse_user_count(data)
+        self.user_count = user_count or 1
+        
+        if creation:
+            # Set cache
+            self._cache_boosters = None
+            self._cache_permission = None
+            self._state = 0
+            
+            # Set fields
+            self.approximate_online_count = 0
+            self.approximate_user_count = 0
+            self.clients = []
+            
+            # Set entity fields
+            self.channels = parse_channels(data, {}, guild_id)
+            self.embedded_activity_states = parse_embedded_activity_states(data, None, guild_id)
+            self.emojis = parse_emojis(data, {}, guild_id)
+            self.large = parse_large(data) or (user_count >= LARGE_GUILD_LIMIT)
+            self.roles = parse_roles(data, {}, guild_id)
+            self.scheduled_events = parse_scheduled_events(data, {})
+            self.stages = parse_stages(data, None)
+            self.stickers = parse_stickers(data, {})
+            self.threads = parse_threads(data, {}, guild_id)
+            self.users = parse_users(data, GUILD_USERS_TYPE(), guild_id)
+            self.voice_states = parse_voice_states(data, {}, guild_id)
+            
+        else:
+            # Clear cache
+            self._cache_boosters = None
+            self._cache_permission = None
+            self._state = 0
+            
+            # Update fields.
+            
+            self.channels = parse_channels(data, self.channels, guild_id)
+            self.embedded_activity_states = parse_embedded_activity_states(data, self.embedded_activity_states, guild_id)
+            self.emojis = parse_emojis(data, self.emojis, guild_id)
+            self.large = parse_large(data) or (user_count >= LARGE_GUILD_LIMIT)
+            self.roles = parse_roles(data, self.roles, guild_id)
+            self.scheduled_events = parse_scheduled_events(data, self.scheduled_events)
+            self.stages = parse_stages(data, self.stages)
+            self.stickers = parse_stickers(data, self.stickers)
+            self.threads = parse_threads(data, self.threads, guild_id)
+            self.users = parse_users(data, self.users, guild_id)
+            self.voice_states = parse_voice_states(data, self.voice_states, guild_id)
+        
+        self._update_attributes(data)
     
     
     def __repr__(self):
@@ -2155,9 +2373,9 @@ class Guild(DiscordEntity, immortal = True):
         if not isinstance(user, Client):
             return self.permissions_for(user)
         
-        permission_cache = self._permission_cache
+        permission_cache = self._cache_permission
         if permission_cache is None:
-            self._permission_cache = permission_cache = {}
+            self._cache_permission = permission_cache = {}
         else:
             try:
                 return permission_cache[user.id]
@@ -2760,13 +2978,13 @@ class Guild(DiscordEntity, immortal = True):
 
     
     
-    def _invalidate_permission_cache(self):
+    def _invalidate_cache_permission(self):
         """
         Invalidates the cached permissions of the guild.
         """
-        self._permission_cache = None
+        self._cache_permission = None
         for channel in self.channels.values():
-            channel.metadata._invalidate_permission_cache()
+            channel.metadata._invalidate_cache_permission()
     
     
     @property

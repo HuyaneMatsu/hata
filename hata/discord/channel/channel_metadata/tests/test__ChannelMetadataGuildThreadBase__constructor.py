@@ -10,7 +10,7 @@ def _assert_fields_set(channel_metadata):
     
     vampytest.assert_instance(channel_metadata.parent_id, int)
     vampytest.assert_instance(channel_metadata.name, str)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
+    vampytest.assert_instance(channel_metadata._cache_permission, dict, nullable = True)
     vampytest.assert_instance(channel_metadata._created_at, DateTime, nullable = True)
     vampytest.assert_instance(channel_metadata.archived, bool)
     vampytest.assert_instance(channel_metadata.archived_at, DateTime, nullable = True)

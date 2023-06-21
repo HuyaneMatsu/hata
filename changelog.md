@@ -10,6 +10,7 @@
 #### Bug Fixes
 
 - `scaffold` command always failed if `project-name` was directly defined.
+- `Message` did not update the referenced message's content fields even if it would been required.
 
 #### Renames, Deprecation & Removals
 

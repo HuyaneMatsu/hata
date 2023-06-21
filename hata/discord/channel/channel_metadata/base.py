@@ -681,7 +681,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         return id_to_datetime(channel_entity.id)
     
     
-    def _invalidate_permission_cache(self):
+    def _invalidate_cache_permission(self):
         """
         Invalidates the cached permissions of the channel.
         

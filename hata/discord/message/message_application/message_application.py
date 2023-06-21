@@ -9,7 +9,7 @@ from .fields import (
     validate_description, validate_id, validate_name
 )
 
-application_cover = IconSlot(
+APPLICATION_COVER = IconSlot(
     'cover',
     'cover_image',
     module_urls.application_cover_url,
@@ -17,7 +17,7 @@ application_cover = IconSlot(
     add_updater = False,
 )
 
-application_icon = IconSlot(
+APPLICATION_ICON = IconSlot(
     'icon',
     'icon',
     module_urls.application_icon_url,
@@ -26,9 +26,9 @@ application_icon = IconSlot(
 )
 
 PRECREATE_FIELDS = {
-    'cover': ('cover', application_cover.validate_icon),
+    'cover': ('cover', APPLICATION_COVER.validate_icon),
     'description': ('description', validate_description),
-    'icon': ('icon', application_icon.validate_icon),
+    'icon': ('icon', APPLICATION_ICON.validate_icon),
     'name': ('name', validate_name),
 }
 
@@ -57,8 +57,8 @@ class MessageApplication(DiscordEntity):
     """
     __slots__ = ('description', 'name', )
     
-    cover = application_cover
-    icon = application_icon
+    cover = APPLICATION_COVER
+    icon = APPLICATION_ICON
     
     def __new__(cls, *, cover = ..., description = ..., icon = ..., name = ...):
         """

@@ -615,7 +615,7 @@ class Message(DiscordEntity, immortal = True):
             
             elif (not self.has_any_content_field()):
                 self._update_content_fields(data)
-        
+            
             return self
         
         self = object.__new__(cls)
@@ -652,6 +652,7 @@ class Message(DiscordEntity, immortal = True):
         else:
             if (self._state & MESSAGE_STATE_MASK_PARTIAL_ALL):
                 self._set_attributes(data, False)
+                
                 return self, False
             
             if self.flags.loading:
@@ -666,6 +667,7 @@ class Message(DiscordEntity, immortal = True):
         self.id = message_id
         MESSAGES[message_id] = self
         self._set_attributes(data, True)
+        
         return self, False
     
     
@@ -753,7 +755,7 @@ class Message(DiscordEntity, immortal = True):
         ----------
         data : `dict` of (`str`, `object`) items
             Message data.
-        creation : `bool`
+        creation : `bool` = `True`, Optional
             Whether the entity was just created.
         """
         # Clear cache with other states
@@ -1277,6 +1279,10 @@ class Message(DiscordEntity, immortal = True):
         +-----------------------------------+-----------------------------------------------------------------------+
         """
         self._clear_cache()
+        
+        # We want to update the referenced message in case a clients have different intents.
+        self.referenced_message = parse_referenced_message(data)
+        
         old_attributes = {}
         
         attachments = parse_attachments(data)
@@ -1379,6 +1385,9 @@ class Message(DiscordEntity, immortal = True):
         self.content = parse_content(data)
         self.embeds = parse_embeds(data)
         
+        # We want to update the referenced message in case a clients have different intents.
+        self.referenced_message = parse_referenced_message(data)
+    
     
     def _clear_cache(self):
         """
@@ -1420,6 +1429,7 @@ class Message(DiscordEntity, immortal = True):
         # 1 -> Only sizes are updated -> images showed up?
         # 2 -> New embeds appeared -> link.
         # 3 -> There are less embed -> bug?
+        print('update embeds', data)
         embeds = self.embeds
         if embeds is None:
             embeds_length_actual = 0

@@ -519,7 +519,7 @@ class Role(DiscordEntity, immortal = True):
         data : `dict` of (`str`, `object`) items
             Role data received from Discord.
         """
-        clear_permission_cache = False
+        clear_cache_permission = False
         
         # color
         self.color = parse_color(data)
@@ -541,13 +541,13 @@ class Role(DiscordEntity, immortal = True):
         permissions = Permission(data[PERMISSION_KEY])
         if self.permissions != permissions:
             self.permissions = permissions
-            clear_permission_cache = True
+            clear_cache_permission = True
         
         # position
         position = parse_position(data)
         if self.position != position:
             self.position = position
-            clear_permission_cache = True
+            clear_cache_permission = True
         
         # separated
         self.separated = parse_separated(data)
@@ -555,11 +555,11 @@ class Role(DiscordEntity, immortal = True):
         # unicode_emoji
         self.unicode_emoji = parse_unicode_emoji(data)
         
-        if clear_permission_cache:
-            self._clear_permission_cache()
+        if clear_cache_permission:
+            self._clear_cache_permission()
     
     
-    def _clear_permission_cache(self):
+    def _clear_cache_permission(self):
         """
         Clears the role's guild's permission cache.
         """
@@ -570,7 +570,7 @@ class Role(DiscordEntity, immortal = True):
             except KeyError:
                 pass
             else:
-                guild._invalidate_permission_cache()
+                guild._invalidate_cache_permission()
     
     
     def __repr__(self):
@@ -631,7 +631,7 @@ class Role(DiscordEntity, immortal = True):
         """
         old_attributes = {}
         
-        clear_permission_cache = False
+        clear_cache_permission = False
         
         # color
         color = parse_color(data)
@@ -663,14 +663,14 @@ class Role(DiscordEntity, immortal = True):
         if self.permissions != permissions:
             old_attributes['permissions'] = self.permissions
             self.permissions = permissions
-            clear_permission_cache = True
+            clear_cache_permission = True
         
         # position
         position = parse_position(data)
         if self.position != position:
             old_attributes['position'] = self.position
             self.position = position
-            clear_permission_cache = True
+            clear_cache_permission = True
         
         # separated
         separated = parse_separated(data)
@@ -684,8 +684,8 @@ class Role(DiscordEntity, immortal = True):
             old_attributes['unicode_emoji'] = self.unicode_emoji
             self.unicode_emoji = unicode_emoji
         
-        if clear_permission_cache:
-            self._clear_permission_cache()
+        if clear_cache_permission:
+            self._clear_cache_permission()
         
         return old_attributes
     
@@ -702,7 +702,7 @@ class Role(DiscordEntity, immortal = True):
         except KeyError:
             pass
         else:
-            guild._invalidate_permission_cache()
+            guild._invalidate_cache_permission()
             
             role_id = self.id
             try:

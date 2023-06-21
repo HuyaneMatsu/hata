@@ -6,7 +6,7 @@ TOKEN = ''
 # By default all gateway intents are used.
 Sakuya = Client(
     TOKEN,
-    intents = IntentFlag(0).update_by_keys(guilds=True, guild_messages=True)
+    intents = IntentFlag(0).update_by_keys(guilds = True, guild_messages = True)
 )
 
 

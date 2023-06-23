@@ -1,14 +1,316 @@
 import vampytest
+import vampytest
 
+from ....activity import Activity
+from ....bases import Icon, IconType
+from ....channel import Channel, ChannelType
+from ....client import Client
 from ....emoji import Emoji
+from ....localization import Locale
+from ....role import Role
+from ....scheduled_event import ScheduledEvent
 from ....soundboard import SoundboardSound
+from ....stage import Stage
 from ....sticker import Sticker, StickerFormat
+from ....user import GuildProfile, User, VoiceState
+
+from ...embedded_activity_state import EmbeddedActivityState
 
 from ..emoji_counts import EmojiCounts
+from ..flags import SystemChannelFlag
 from ..guild import Guild
 from ..guild_premium_perks import GuildPremiumPerks, TIER_0, TIER_MAX
-from ..preinstanced import GuildFeature, NsfwLevel
+from ..preinstanced import (
+    ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel
+)
 from ..sticker_counts import StickerCounts
+
+from .test__Guild__constructor import _assert_fields_set
+
+
+def test__Guild__copy():
+    """
+    Tests whether ``Guild.copy`` works as intended.
+    """
+    afk_channel_id = 202306230000
+    afk_timeout = 1800
+    banner = Icon(IconType.animated, 12)
+    boost_progress_bar_enabled = True
+    content_filter = ContentFilterLevel.no_role
+    description = 'Koishi'
+    discovery_splash = Icon(IconType.animated, 14)
+    features = [GuildFeature.animated_icon]
+    hub_type = HubType.college
+    icon = Icon(IconType.animated, 16)
+    invite_splash = Icon(IconType.animated, 18)
+    message_notification = MessageNotificationLevel.no_messages
+    mfa = MFA.elevated
+    name = 'Komeiji'
+    nsfw_level = NsfwLevel.explicit
+    owner_id = 202306230001
+    preferred_locale = Locale.finnish
+    public_updates_channel_id = 202306230002
+    rules_channel_id = 202306230004
+    safety_alerts_channel_id = 202306230003
+    system_channel_id = 202306230005
+    system_channel_flags = SystemChannelFlag(12)
+    vanity_code = 'koi'
+    verification_level = VerificationLevel.medium
+    widget_channel_id = 202306230006
+    widget_enabled = True
+    
+    guild = Guild(
+        afk_channel_id = afk_channel_id,
+        afk_timeout = afk_timeout,
+        banner = banner,
+        boost_progress_bar_enabled = boost_progress_bar_enabled,
+        content_filter = content_filter,
+        description = description,
+        discovery_splash = discovery_splash,
+        features = features,
+        hub_type = hub_type,
+        icon = icon,
+        invite_splash = invite_splash,
+        message_notification = message_notification,
+        mfa = mfa,
+        name = name,
+        nsfw_level = nsfw_level,
+        owner_id = owner_id,
+        preferred_locale = preferred_locale,
+        public_updates_channel_id = public_updates_channel_id,
+        rules_channel_id = rules_channel_id,
+        safety_alerts_channel_id = safety_alerts_channel_id,
+        system_channel_id = system_channel_id,
+        system_channel_flags = system_channel_flags,
+        vanity_code = vanity_code,
+        verification_level = verification_level,
+        widget_channel_id = widget_channel_id,
+        widget_enabled = widget_enabled,
+    )
+    
+    copy = guild.copy()
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(guild, copy)
+    vampytest.assert_eq(guild, copy)
+
+
+def test__Guild__copy_with__0():
+    """
+    Tests whether ``Guild.copy_with`` works as intended.
+    
+    Case: No fields given.
+    """
+    afk_channel_id = 202306230007
+    afk_timeout = 1800
+    banner = Icon(IconType.animated, 12)
+    boost_progress_bar_enabled = True
+    content_filter = ContentFilterLevel.no_role
+    description = 'Koishi'
+    discovery_splash = Icon(IconType.animated, 14)
+    features = [GuildFeature.animated_icon]
+    hub_type = HubType.college
+    icon = Icon(IconType.animated, 16)
+    invite_splash = Icon(IconType.animated, 18)
+    message_notification = MessageNotificationLevel.no_messages
+    mfa = MFA.elevated
+    name = 'Komeiji'
+    nsfw_level = NsfwLevel.explicit
+    owner_id = 202306230008
+    preferred_locale = Locale.finnish
+    public_updates_channel_id = 202306230009
+    rules_channel_id = 202306230010
+    safety_alerts_channel_id = 202306230011
+    system_channel_id = 202306230012
+    system_channel_flags = SystemChannelFlag(12)
+    vanity_code = 'koi'
+    verification_level = VerificationLevel.medium
+    widget_channel_id = 202306230013
+    widget_enabled = True
+    
+    guild = Guild(
+        afk_channel_id = afk_channel_id,
+        afk_timeout = afk_timeout,
+        banner = banner,
+        boost_progress_bar_enabled = boost_progress_bar_enabled,
+        content_filter = content_filter,
+        description = description,
+        discovery_splash = discovery_splash,
+        features = features,
+        hub_type = hub_type,
+        icon = icon,
+        invite_splash = invite_splash,
+        message_notification = message_notification,
+        mfa = mfa,
+        name = name,
+        nsfw_level = nsfw_level,
+        owner_id = owner_id,
+        preferred_locale = preferred_locale,
+        public_updates_channel_id = public_updates_channel_id,
+        rules_channel_id = rules_channel_id,
+        safety_alerts_channel_id = safety_alerts_channel_id,
+        system_channel_id = system_channel_id,
+        system_channel_flags = system_channel_flags,
+        vanity_code = vanity_code,
+        verification_level = verification_level,
+        widget_channel_id = widget_channel_id,
+        widget_enabled = widget_enabled,
+    )
+    
+    copy = guild.copy_with()
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(guild, copy)
+    vampytest.assert_eq(guild, copy)
+
+
+def test__Guild__copy_with__1():
+    """
+    Tests whether ``Guild.copy_with`` works as intended.
+    
+    Case: All fields given.
+    """
+    old_afk_channel_id = 202306230014
+    old_afk_timeout = 1800
+    old_banner = Icon(IconType.animated, 12)
+    old_boost_progress_bar_enabled = True
+    old_content_filter = ContentFilterLevel.no_role
+    old_description = 'Koishi'
+    old_discovery_splash = Icon(IconType.animated, 14)
+    old_features = [GuildFeature.animated_icon]
+    old_hub_type = HubType.college
+    old_icon = Icon(IconType.animated, 16)
+    old_invite_splash = Icon(IconType.animated, 18)
+    old_message_notification = MessageNotificationLevel.no_messages
+    old_mfa = MFA.elevated
+    old_name = 'Komeiji'
+    old_nsfw_level = NsfwLevel.explicit
+    old_owner_id = 202306230015
+    old_preferred_locale = Locale.finnish
+    old_public_updates_channel_id = 202306230016
+    old_rules_channel_id = 202306230017
+    old_safety_alerts_channel_id = 202306230018
+    old_system_channel_id = 202306230019
+    old_system_channel_flags = SystemChannelFlag(12)
+    old_vanity_code = 'koi'
+    old_verification_level = VerificationLevel.medium
+    old_widget_channel_id = 202306230020
+    old_widget_enabled = True
+    
+    new_afk_channel_id = 202306230021
+    new_afk_timeout = 60
+    new_banner = Icon(IconType.animated, 112)
+    new_boost_progress_bar_enabled = False
+    new_content_filter = ContentFilterLevel.everyone
+    new_description = 'Okuu'
+    new_discovery_splash = Icon(IconType.animated, 114)
+    new_features = [GuildFeature.animated_banner]
+    new_hub_type = HubType.high_school
+    new_icon = Icon(IconType.animated, 116)
+    new_invite_splash = Icon(IconType.animated, 118)
+    new_message_notification = MessageNotificationLevel.all_messages
+    new_mfa = MFA.none
+    new_name = 'Orin'
+    new_nsfw_level = NsfwLevel.safe
+    new_owner_id = 202306230021
+    new_preferred_locale = Locale.dutch
+    new_public_updates_channel_id = 202306230022
+    new_rules_channel_id = 202306230023
+    new_safety_alerts_channel_id = 202306230024
+    new_system_channel_id = 202306230025
+    new_system_channel_flags = SystemChannelFlag(11)
+    new_vanity_code = 'satori'
+    new_verification_level = VerificationLevel.high
+    new_widget_channel_id = 202306230026
+    new_widget_enabled = False
+    
+    guild = Guild(
+        afk_channel_id = old_afk_channel_id,
+        afk_timeout = old_afk_timeout,
+        banner = old_banner,
+        boost_progress_bar_enabled = old_boost_progress_bar_enabled,
+        content_filter = old_content_filter,
+        description = old_description,
+        discovery_splash = old_discovery_splash,
+        features = old_features,
+        hub_type = old_hub_type,
+        icon = old_icon,
+        invite_splash = old_invite_splash,
+        message_notification = old_message_notification,
+        mfa = old_mfa,
+        name = old_name,
+        nsfw_level = old_nsfw_level,
+        owner_id = old_owner_id,
+        preferred_locale = old_preferred_locale,
+        public_updates_channel_id = old_public_updates_channel_id,
+        rules_channel_id = old_rules_channel_id,
+        safety_alerts_channel_id = old_safety_alerts_channel_id,
+        system_channel_id = old_system_channel_id,
+        system_channel_flags = old_system_channel_flags,
+        vanity_code = old_vanity_code,
+        verification_level = old_verification_level,
+        widget_channel_id = old_widget_channel_id,
+        widget_enabled = old_widget_enabled,
+    )
+    
+    copy = guild.copy_with(
+        afk_channel_id = new_afk_channel_id,
+        afk_timeout = new_afk_timeout,
+        banner = new_banner,
+        boost_progress_bar_enabled = new_boost_progress_bar_enabled,
+        content_filter = new_content_filter,
+        description = new_description,
+        discovery_splash = new_discovery_splash,
+        features = new_features,
+        hub_type = new_hub_type,
+        icon = new_icon,
+        invite_splash = new_invite_splash,
+        message_notification = new_message_notification,
+        mfa = new_mfa,
+        name = new_name,
+        nsfw_level = new_nsfw_level,
+        owner_id = new_owner_id,
+        preferred_locale = new_preferred_locale,
+        public_updates_channel_id = new_public_updates_channel_id,
+        rules_channel_id = new_rules_channel_id,
+        safety_alerts_channel_id = new_safety_alerts_channel_id,
+        system_channel_id = new_system_channel_id,
+        system_channel_flags = new_system_channel_flags,
+        vanity_code = new_vanity_code,
+        verification_level = new_verification_level,
+        widget_channel_id = new_widget_channel_id,
+        widget_enabled = new_widget_enabled,
+    )
+    
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(guild, copy)
+    vampytest.assert_ne(guild, copy)
+
+
+    vampytest.assert_eq(copy.afk_channel_id, new_afk_channel_id)
+    vampytest.assert_eq(copy.afk_timeout, new_afk_timeout)
+    vampytest.assert_eq(copy.banner, new_banner)
+    vampytest.assert_eq(copy.boost_progress_bar_enabled, new_boost_progress_bar_enabled)
+    vampytest.assert_is(copy.content_filter, new_content_filter)
+    vampytest.assert_eq(copy.description, new_description)
+    vampytest.assert_eq(copy.discovery_splash, new_discovery_splash)
+    vampytest.assert_eq(copy.features, tuple(new_features))
+    vampytest.assert_is(copy.hub_type, new_hub_type)
+    vampytest.assert_eq(copy.icon, new_icon)
+    vampytest.assert_eq(copy.invite_splash, new_invite_splash)
+    vampytest.assert_is(copy.message_notification, new_message_notification)
+    vampytest.assert_is(copy.mfa, new_mfa)
+    vampytest.assert_eq(copy.name, new_name)
+    vampytest.assert_is(copy.nsfw_level, new_nsfw_level)
+    vampytest.assert_eq(copy.owner_id, new_owner_id)
+    vampytest.assert_is(copy.preferred_locale, new_preferred_locale)
+    vampytest.assert_eq(copy.public_updates_channel_id, new_public_updates_channel_id)
+    vampytest.assert_eq(copy.rules_channel_id, new_rules_channel_id)
+    vampytest.assert_eq(copy.safety_alerts_channel_id, new_safety_alerts_channel_id)
+    vampytest.assert_eq(copy.system_channel_id, new_system_channel_id)
+    vampytest.assert_eq(copy.system_channel_flags, new_system_channel_flags)
+    vampytest.assert_eq(copy.vanity_code, new_vanity_code)
+    vampytest.assert_eq(copy.verification_level, new_verification_level)
+    vampytest.assert_eq(copy.widget_channel_id, new_widget_channel_id)
+    vampytest.assert_eq(copy.widget_enabled, new_widget_enabled)
 
 
 def test__Guild__nsfw__0():

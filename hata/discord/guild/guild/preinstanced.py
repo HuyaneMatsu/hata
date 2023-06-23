@@ -445,7 +445,7 @@ class NsfwLevel(PreinstancedBase):
     none = P(0, 'none', False)
     explicit = P(1, 'explicit', True)
     safe = P(2, 'safe', False)
-    age_restricted = P(2, 'age_restricted', True)
+    age_restricted = P(3, 'age_restricted', True)
 
 
 class MessageNotificationLevel(PreinstancedBase):

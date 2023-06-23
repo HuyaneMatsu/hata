@@ -6,6 +6,10 @@
 - When all clients leave a guild its entities such as: channels, roles, users, etc are not cleaned up anymore.
     This caused bugs on user side. On wrapper side this was the intended behavior since 2019.
     Now cleanup happens when the guild is repopulated. Note that guild profiles are still cleaned up initially.
+- Add `Guild.__new__` as a template constructor.
+- `Guild.__eq__` now supports template instances.
+- `Guild.__hash__` now supports template instances.
+- Add `Guild.copy`.
 
 #### Bug Fixes
 
@@ -13,6 +17,7 @@
 - `Message` did not update the referenced message's content fields even if it would been required.
 - A message was updated with non-intent data even if there was a client with intent data.
     This was caused by checking whether "any" mask is matching instead "all".
+- `NsfwLevel.age_restricted` had incorrect `.value`.
 
 #### Renames, Deprecation & Removals
 
@@ -20,6 +25,7 @@
 - Rename `Guild.is_large` to `.large`.
 - Deprecate `Guild.is_large`.
 - Rename `Guild._embedded_activity_states` to `embedded_activity_states`.
+- Deprecate `Guild.thread_channels`.
 
 ## 1.3.31 *\[2023-05-30\]*
 

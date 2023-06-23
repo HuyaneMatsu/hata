@@ -38,17 +38,28 @@ from .fields import (
     parse_rules_channel_id, parse_safety_alerts_channel_id, parse_scheduled_events, parse_stages, parse_stickers,
     parse_system_channel_flags, parse_system_channel_id, parse_threads, parse_user_count, parse_users,
     parse_vanity_code, parse_verification_level, parse_voice_states, parse_widget_channel_id, parse_widget_enabled,
-    validate_afk_channel_id, validate_afk_timeout, validate_approximate_online_count, validate_approximate_user_count,
-    validate_available, validate_boost_count, validate_boost_progress_bar_enabled, validate_channels,
-    validate_content_filter, validate_description, validate_embedded_activity_states, validate_emojis,
-    validate_features, validate_hub_type, validate_id, validate_large, validate_max_presences,
-    validate_max_stage_channel_video_users, validate_max_users, validate_max_voice_channel_video_users,
-    validate_message_notification, validate_mfa, validate_name, validate_nsfw_level, validate_owner_id,
-    validate_preferred_locale, validate_premium_tier, validate_public_updates_channel_id, validate_roles,
-    validate_rules_channel_id, validate_safety_alerts_channel_id, validate_scheduled_events, validate_soundboard_sounds,
-    validate_stages, validate_stickers, validate_system_channel_flags, validate_system_channel_id, validate_threads,
-    validate_user_count, validate_users, validate_vanity_code, validate_verification_level, validate_voice_states,
-    validate_widget_channel_id, validate_widget_enabled
+    put_afk_channel_id_into, put_afk_timeout_into, put_approximate_online_count_into, put_approximate_user_count_into,
+    put_available_into, put_boost_count_into, put_boost_progress_bar_enabled_into, put_channels_into,
+    put_content_filter_into, put_description_into, put_embedded_activity_states_into, put_emojis_into,
+    put_features_into, put_hub_type_into, put_id_into, put_large_into, put_max_presences_into,
+    put_max_stage_channel_video_users_into, put_max_users_into, put_max_voice_channel_video_users_into,
+    put_message_notification_into, put_mfa_into, put_name_into, put_nsfw_level_into, put_owner_id_into,
+    put_preferred_locale_into, put_premium_tier_into, put_public_updates_channel_id_into, put_roles_into,
+    put_rules_channel_id_into, put_safety_alerts_channel_id_into, put_scheduled_events_into, put_stages_into,
+    put_stickers_into, put_system_channel_flags_into, put_system_channel_id_into, put_threads_into, put_user_count_into,
+    put_users_into, put_vanity_code_into, put_verification_level_into, put_voice_states_into,
+    put_widget_channel_id_into, put_widget_enabled_into, validate_afk_channel_id, validate_afk_timeout,
+    validate_approximate_online_count, validate_approximate_user_count, validate_available, validate_boost_count,
+    validate_boost_progress_bar_enabled, validate_channels, validate_content_filter, validate_description,
+    validate_embedded_activity_states, validate_emojis, validate_features, validate_hub_type, validate_id,
+    validate_large, validate_max_presences, validate_max_stage_channel_video_users, validate_max_users,
+    validate_max_voice_channel_video_users, validate_message_notification, validate_mfa, validate_name,
+    validate_nsfw_level, validate_owner_id, validate_preferred_locale, validate_premium_tier,
+    validate_public_updates_channel_id, validate_roles, validate_rules_channel_id, validate_safety_alerts_channel_id,
+    validate_scheduled_events, validate_soundboard_sounds, validate_stages, validate_stickers,
+    validate_system_channel_flags, validate_system_channel_id, validate_threads, validate_user_count, validate_users,
+    validate_vanity_code, validate_verification_level, validate_voice_states, validate_widget_channel_id,
+    validate_widget_enabled
 )
 from .flags import SystemChannelFlag
 from .guild_premium_perks import TIERS as PREMIUM_TIERS, TIER_MAX as PREMIUM_TIER_MAX
@@ -432,8 +443,8 @@ class Guild(DiscordEntity, immortal = True):
         """
         Creates a new partial guild with the given fields.
         
-        Other Parameters
-        ----------------
+        Parameters
+        ----------
         afk_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The afk channel or its identifier.
         
@@ -455,7 +466,7 @@ class Guild(DiscordEntity, immortal = True):
         discovery_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The guild's discovery splash.
         
-        features : `None`, `tuple` of `(`int`, `GuildFeature``), Optional (Keyword only)
+        features : `None`, `iterable` of `(`int`, `GuildFeature``), Optional (Keyword only)
             The guild's features.
         
         hub_type : ``HubType``, `int`, Optional (Keyword only)
@@ -487,9 +498,6 @@ class Guild(DiscordEntity, immortal = True):
         
         public_updates_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel's identifier where the guild's public updates should go.
-        
-        roles : `None`, `iterable` of ``Role``, `dict` of (`int`, ``Role``) items, Optional (Keyword only)
-            The roles of the guild.
         
         rules_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel or its identifier where the rules of a public guild's should be.
@@ -584,7 +592,7 @@ class Guild(DiscordEntity, immortal = True):
         if icon is ...:
             icon = None
         else:
-            icon = cls.sicon.validate_icon(icon, allow_data = True)
+            icon = cls.icon.validate_icon(icon, allow_data = True)
         
         # invite_splash
         if invite_splash is ...:
@@ -804,7 +812,7 @@ class Guild(DiscordEntity, immortal = True):
         emojis : `None`, `iterable` of ``Emoji``, `dict` of (`int`, ``Emoji``) items, Optional (Keyword only)
             The emojis of the guild.
         
-        features : `None`, `tuple` of `(`int`, `GuildFeature``), Optional (Keyword only)
+        features : `None`, `features` of `(`int`, `GuildFeature``), Optional (Keyword only)
             The guild's features.
         
         hub_type : ``HubType``, `int`, Optional (Keyword only)
@@ -860,6 +868,9 @@ class Guild(DiscordEntity, immortal = True):
         
         public_updates_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel's identifier where the guild's public updates should go.
+        
+        roles : `None`, `iterable` of ``Role``, `dict` of (`int`, ``Role``) items, Optional (Keyword only)
+            The roles of the guild.
         
         rules_channel : `int`, ``Channel``, Optional (Keyword only)
             Alternative for `rules_channel_id`.
@@ -974,7 +985,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Returns
         -------
-        self : ``Guild``
+        self : `instance<cls>`
         """
         self = object.__new__(cls)
         self._cache_boosters = None
@@ -1073,7 +1084,7 @@ class Guild(DiscordEntity, immortal = True):
         
         self.users = parse_client_guild_profile(data, self.users, guild_id)
         
-        if client not in self.clients:
+        if (client is not None) and (client not in self.clients):
             try:
                 ghost_state = self.voice_states[client.id]
             except KeyError:
@@ -1085,6 +1096,79 @@ class Guild(DiscordEntity, immortal = True):
             client.guilds.add(self)
         
         return self
+    
+    
+    def to_data(self, *, defaults = False, include_internals = False):
+        """
+        Converts the guild to its json representation.
+        
+        Parameters
+        ----------
+        defaults : `bool` = `False`, Optional (Keyword only)
+            Whether default values should be included as well.
+        
+        include_internals : `bool` = `False`, Optional (Keyword only)
+            Whether internal fields should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `str`) items
+        """
+        data = {}
+        
+        put_afk_channel_id_into(self.afk_channel_id, data, defaults)
+        put_afk_timeout_into(self.afk_timeout, data, defaults)
+        put_boost_progress_bar_enabled_into(self.boost_progress_bar_enabled, data, defaults)
+        put_content_filter_into(self.content_filter, data, defaults)
+        put_description_into(self.description, data, defaults)
+        put_features_into(self.features, data, defaults)
+        put_hub_type_into(self.hub_type, data, defaults)
+        put_message_notification_into(self.message_notification, data, defaults)
+        put_mfa_into(self.mfa, data, defaults)
+        put_name_into(self.name, data, defaults)
+        put_nsfw_level_into(self.nsfw_level, data, defaults)
+        put_owner_id_into(self.owner_id, data, defaults)
+        put_preferred_locale_into(self.preferred_locale, data, defaults)
+        put_public_updates_channel_id_into(self.public_updates_channel_id, data, defaults)
+        put_rules_channel_id_into(self.rules_channel_id, data, defaults)
+        put_safety_alerts_channel_id_into(self.safety_alerts_channel_id, data, defaults)
+        put_system_channel_flags_into(self.system_channel_flags, data, defaults)
+        put_system_channel_id_into(self.system_channel_id, data, defaults)
+        put_vanity_code_into(self.vanity_code, data, defaults)
+        put_verification_level_into(self.verification_level, data, defaults)
+        put_widget_channel_id_into(self.widget_channel_id, data, defaults)
+        put_widget_enabled_into(self.widget_enabled, data, defaults)
+        
+        type(self).banner.put_into(self.banner, data, defaults, as_data = not include_internals)
+        type(self).discovery_splash.put_into(self.discovery_splash, data, defaults, as_data = not include_internals)
+        type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
+        type(self).invite_splash.put_into(self.invite_splash, data, defaults, as_data = not include_internals)
+        
+        if include_internals:
+            put_approximate_online_count_into(self.approximate_online_count, data, defaults)
+            put_approximate_user_count_into(self.approximate_user_count, data, defaults)
+            put_available_into(self.available, data, defaults)
+            put_boost_count_into(self.boost_count, data, defaults)
+            put_channels_into(self.channels, data, defaults)
+            put_embedded_activity_states_into(self.embedded_activity_states, data, defaults)
+            put_emojis_into(self.emojis, data, defaults)
+            put_id_into(self.id, data, defaults)
+            put_large_into(self.large, data, defaults)
+            put_max_presences_into(self.max_presences, data, defaults)
+            put_max_stage_channel_video_users_into(self.max_stage_channel_video_users, data, defaults)
+            put_max_users_into(self.max_users, data, defaults)
+            put_max_voice_channel_video_users_into(self.max_voice_channel_video_users, data, defaults)
+            put_premium_tier_into(self.premium_tier, data, defaults)
+            put_roles_into(self.roles, data, defaults)
+            put_scheduled_events_into(self.scheduled_events, data, defaults)
+            put_stages_into(self.stages, data, defaults)
+            put_stickers_into(self.stickers, data, defaults)
+            put_threads_into(self.threads, data, defaults)
+            put_user_count_into(self.user_count, data, defaults)
+            put_users_into(self.users, data, defaults, guild_id = self.id)
+            put_voice_states_into(self.voice_states, data, defaults)
+        
+        return data
     
     
     def _set_attributes(self, data, creation = True):
@@ -1117,6 +1201,7 @@ class Guild(DiscordEntity, immortal = True):
             self.approximate_online_count = 0
             self.approximate_user_count = 0
             self.clients = []
+            self.soundboard_sounds = None
             
             # Set entity fields
             self.channels = parse_channels(data, {}, guild_id)
@@ -1138,7 +1223,6 @@ class Guild(DiscordEntity, immortal = True):
             self._state = 0
             
             # Update fields.
-            
             self.channels = parse_channels(data, self.channels, guild_id)
             self.embedded_activity_states = parse_embedded_activity_states(data, self.embedded_activity_states, guild_id)
             self.emojis = parse_emojis(data, self.emojis, guild_id)
@@ -1154,18 +1238,381 @@ class Guild(DiscordEntity, immortal = True):
         self._update_attributes(data)
     
     
+    def _update_attributes(self, data):
+        """
+        Updates the guild and with overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Guild data received from Discord.
+        """
+        self.afk_channel_id = parse_afk_channel_id(data)
+        self.afk_timeout = parse_afk_timeout(data)
+        self.available = parse_available(data)
+        self._set_banner(data)
+        self.boost_count = parse_boost_count(data)
+        self.boost_progress_bar_enabled = parse_boost_progress_bar_enabled(data)
+        self.content_filter = parse_content_filter(data)
+        self.description = parse_description(data)
+        self._set_discovery_splash(data)
+        self.features = parse_features(data)
+        self.hub_type = parse_hub_type(data)
+        self._set_icon(data)
+        self._set_invite_splash(data)
+        self.max_presences = parse_max_presences(data)
+        self.max_stage_channel_video_users = parse_max_stage_channel_video_users(data)
+        self.max_users = parse_max_users(data)
+        self.max_voice_channel_video_users = parse_max_voice_channel_video_users(data)
+        self.message_notification = parse_message_notification(data)
+        self.mfa = parse_mfa(data)
+        self.name = parse_name(data)
+        self.nsfw_level = parse_nsfw_level(data)
+        self.owner_id = parse_owner_id(data)
+        self.preferred_locale = parse_preferred_locale(data)
+        self.premium_tier = parse_premium_tier(data)
+        self.public_updates_channel_id = parse_public_updates_channel_id(data)
+        self.rules_channel_id = parse_rules_channel_id(data)
+        self.safety_alerts_channel_id = parse_safety_alerts_channel_id(data)
+        self.system_channel_flags = parse_system_channel_flags(data)
+        self.system_channel_id = parse_system_channel_id(data)
+        self.vanity_code = parse_vanity_code(data)
+        self.verification_level = parse_verification_level(data)
+        self.widget_channel_id = parse_widget_channel_id(data)
+        self.widget_enabled = parse_widget_enabled(data)
+        
+        self._cache_boosters = None
+        self._update_counts_only(data)
+    
+    
+    def _update_counts_only(self, data):
+        """
+        Updates the guilds' counts if given.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Received guild data.
+        """
+        approximate_online_count = parse_approximate_online_count(data)
+        if approximate_online_count:
+            self.approximate_online_count = approximate_online_count
+        
+        approximate_user_count = parse_approximate_user_count(data)
+        if approximate_user_count:
+            self.approximate_user_count = approximate_user_count
+    
+    
+    def _difference_update_attributes(self, data):
+        """
+        Updates the guild and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
+        relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Guild data received from Discord.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `object`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        +-------------------------------+---------------------------------------+
+        | Keys                          | Values                                |
+        +===============================+=======================================+
+        | afk_channel_id                | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | afk_timeout                   | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | available                     | `bool`                                |
+        +-------------------------------+---------------------------------------+
+        | banner                        | ``Icon``                              |
+        +-------------------------------+---------------------------------------+
+        | boost_count                   | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | boost_progress_bar_enabled    | `bool`                                |
+        +-------------------------------+---------------------------------------+
+        | content_filter                | ``ContentFilterLevel``                |
+        +-------------------------------+---------------------------------------+
+        | description                   | `None`, `str`                         |
+        +-------------------------------+---------------------------------------+
+        | discovery_splash              | ``Icon``                              |
+        +-------------------------------+---------------------------------------+
+        | features                      | `None`, `tuple` of ``GuildFeature``   |
+        +-------------------------------+---------------------------------------+
+        | hub_type                      | ``HubType``                           |
+        +-------------------------------+---------------------------------------+
+        | icon                          | ``Icon``                              |
+        +-------------------------------+---------------------------------------+
+        | invite_splash                 | ``Icon``                              |
+        +-------------------------------+---------------------------------------+
+        | max_presences                 | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | max_stage_channel_video_users | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | max_users                     | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | max_voice_channel_video_users | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | message_notification          | ``MessageNotificationLevel``          |
+        +-------------------------------+---------------------------------------+
+        | mfa                           | ``MFA``                               |
+        +-------------------------------+---------------------------------------+
+        | name                          | `str`                                 |
+        +-------------------------------+---------------------------------------+
+        | nsfw_level                    | ``NsfwLevel``                         |
+        +-------------------------------+---------------------------------------+
+        | owner_id                      | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | preferred_locale              | ``Locale``                            |
+        +-------------------------------+---------------------------------------+
+        | premium_tier                  | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | public_updates_channel_id     | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | rules_channel_id              | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | safety_alerts_channel_id      | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | system_channel_id             | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | system_channel_flags          | ``SystemChannelFlag``                 |
+        +-------------------------------+---------------------------------------+
+        | vanity_code                   | `None`, `str`                         |
+        +-------------------------------+---------------------------------------+
+        | verification_level            | ``VerificationLevel``                 |
+        +-------------------------------+---------------------------------------+
+        | widget_channel_id             | `int`                                 |
+        +-------------------------------+---------------------------------------+
+        | widget_enabled                | `bool`                                |
+        +-------------------------------+---------------------------------------+
+        """
+        old_attributes = {}
+        
+        # afk_channel_id
+        afk_channel_id = parse_afk_channel_id(data)
+        if self.afk_channel_id != afk_channel_id:
+            old_attributes['afk_channel_id'] = self.afk_channel_id
+            self.afk_channel_id = afk_channel_id
+        
+        # afk_timeout
+        afk_timeout = parse_afk_timeout(data)
+        if self.afk_timeout != afk_timeout:
+            old_attributes['afk_timeout'] = self.afk_timeout
+            self.afk_timeout = afk_timeout
+        
+        # available
+        available = parse_available(data)
+        if self.available != available:
+            old_attributes['available'] = self.available
+            self.available = available
+        
+        # banner
+        self._update_banner(data, old_attributes)
+        
+        # boost_count
+        boost_count = parse_boost_count(data)
+        if self.boost_count != boost_count:
+            old_attributes['boost_count'] = self.boost_count
+            self.boost_count = boost_count
+        
+        # boost_progress_bar_enabled
+        boost_progress_bar_enabled = parse_boost_progress_bar_enabled(data)
+        if self.boost_progress_bar_enabled != boost_progress_bar_enabled:
+            old_attributes['boost_progress_bar_enabled'] = self.boost_progress_bar_enabled
+            self.boost_progress_bar_enabled = boost_progress_bar_enabled
+        
+        # content_filter
+        content_filter = parse_content_filter(data)
+        if self.content_filter is not content_filter:
+            old_attributes['content_filter'] = self.content_filter
+            self.content_filter = content_filter
+        
+        # description
+        description = parse_description(data)
+        if self.description != description:
+            old_attributes['description'] = self.description
+            self.description = description
+        
+        # discovery_splash
+        self._update_discovery_splash(data, old_attributes)
+        
+        # features
+        features = parse_features(data)
+        if self.features != features:
+            old_attributes['features'] = self.features
+            self.features = features
+        
+        # hub_type
+        hub_type = parse_hub_type(data)
+        if self.hub_type is not hub_type:
+            old_attributes['hub_type'] = self.hub_type
+            self.hub_type = hub_type
+        
+        # icon
+        self._update_icon(data, old_attributes)
+        
+        # invite_splash
+        self._update_invite_splash(data, old_attributes)
+        
+        # max_presences
+        max_presences = parse_max_presences(data)
+        if self.max_presences != max_presences:
+            old_attributes['max_presences'] = self.max_presences
+            self.max_presences = max_presences
+        
+        # max_stage_channel_video_users
+        max_stage_channel_video_users = parse_max_stage_channel_video_users(data)
+        if self.max_stage_channel_video_users != max_stage_channel_video_users:
+            old_attributes['max_stage_channel_video_users'] = self.max_stage_channel_video_users
+            self.max_stage_channel_video_users = max_stage_channel_video_users
+        
+        # max_users
+        max_users = parse_max_users(data)
+        if self.max_users != max_users:
+            old_attributes['max_users'] = self.max_users
+            self.max_users = max_users
+        
+        # max_voice_channel_video_users
+        max_voice_channel_video_users = parse_max_voice_channel_video_users(data)
+        if self.max_voice_channel_video_users != max_voice_channel_video_users:
+            old_attributes['max_voice_channel_video_users'] = self.max_voice_channel_video_users
+            self.max_voice_channel_video_users = max_voice_channel_video_users
+        
+        # message_notification
+        message_notification = parse_message_notification(data)
+        if self.message_notification is not message_notification:
+            old_attributes['message_notification'] = self.message_notification
+            self.message_notification = message_notification
+        
+        # mfa
+        mfa = parse_mfa(data)
+        if self.mfa is not mfa:
+            old_attributes['mfa'] = self.mfa
+            self.mfa = mfa
+        
+        # name
+        name = parse_name(data)
+        if self.name != name:
+            old_attributes['name'] = self.name
+            self.name = name
+        
+        # nsfw_level
+        nsfw_level = parse_nsfw_level(data)
+        if self.nsfw_level is not nsfw_level:
+            old_attributes['nsfw_level'] = self.nsfw_level
+            self.nsfw_level = nsfw_level
+        
+        # owner_id
+        owner_id = parse_owner_id(data)
+        if self.owner_id != owner_id:
+            old_attributes['owner_id'] = self.owner_id
+            self.owner_id = owner_id
+        
+        # preferred_locale
+        preferred_locale = parse_preferred_locale(data)
+        if self.preferred_locale is not preferred_locale:
+            old_attributes['preferred_locale'] = self.preferred_locale
+            self.preferred_locale = preferred_locale
+        
+        # premium_tier
+        premium_tier = parse_premium_tier(data)
+        if self.premium_tier != premium_tier:
+            old_attributes['premium_tier'] = self.premium_tier
+            self.premium_tier = premium_tier
+        
+        # public_updates_channel_id
+        public_updates_channel_id = parse_public_updates_channel_id(data)
+        if self.public_updates_channel_id !=  public_updates_channel_id:
+            old_attributes['public_updates_channel_id'] = self.public_updates_channel_id
+            self.public_updates_channel_id = public_updates_channel_id
+        
+        # rules_channel_id
+        rules_channel_id = parse_rules_channel_id(data)
+        if self.rules_channel_id != rules_channel_id:
+            old_attributes['rules_channel_id'] = self.rules_channel_id
+            self.rules_channel_id = rules_channel_id
+        
+        # safety_alerts_channel_id
+        safety_alerts_channel_id = parse_safety_alerts_channel_id(data)
+        if self.safety_alerts_channel_id != safety_alerts_channel_id:
+            old_attributes['safety_alerts_channel_id'] = self.safety_alerts_channel_id
+            self.safety_alerts_channel_id = safety_alerts_channel_id
+        
+        # system_channel_flags
+        system_channel_flags = parse_system_channel_flags(data)
+        if self.system_channel_flags != system_channel_flags:
+            old_attributes['system_channel_flags'] = self.system_channel_flags
+            self.system_channel_flags = system_channel_flags
+        
+        # system_channel_id
+        system_channel_id = parse_system_channel_id(data)
+        if self.system_channel_id != system_channel_id:
+            old_attributes['system_channel_id'] = self.system_channel_id
+            self.system_channel_id = system_channel_id
+        
+        # vanity_code
+        vanity_code = parse_vanity_code(data)
+        if self.vanity_code != vanity_code:
+            old_attributes['vanity_code'] = self.vanity_code
+            self.vanity_code = vanity_code
+        
+        # verification_level
+        verification_level = parse_verification_level(data)
+        if self.verification_level is not verification_level:
+            old_attributes['verification_level'] = self.verification_level
+            self.verification_level = verification_level
+        
+        # widget_channel_id
+        widget_channel_id = parse_widget_channel_id(data)
+        if self.widget_channel_id != widget_channel_id:
+            old_attributes['widget_channel_id'] = self.widget_channel_id
+            self.widget_channel_id = widget_channel_id
+        
+        # widget_enabled
+        widget_enabled = parse_widget_enabled(data)
+        if self.widget_enabled != widget_enabled:
+            old_attributes['widget_enabled'] = self.widget_enabled
+            self.widget_enabled = widget_enabled
+        
+        self._cache_boosters = None
+        self._update_counts_only(data)
+        
+        return old_attributes
+    
+    
     def __repr__(self):
         """Returns the guild's representation."""
         repr_parts = [
             '<', self.__class__.__name__,
-            ' id = ', repr(self.id),
         ]
         
+        guild_id = self.id
+        if guild_id:
+            repr_parts.append(' id = ')
+            repr_parts.append(str(guild_id))
+            
+            fields_added = True
+        else:
+            fields_added = False
+        
         if self.partial:
-            repr_parts.append(' (partial)')
+            if fields_added:
+                repr_parts.append(' (partial)')
+            else:
+                repr_parts.append(' partial')
+                fields_added = True
         
         name = self.name
         if name:
+            if fields_added:
+                repr_parts.append(',')
+            else:
+                fields_added = True
+            
             repr_parts.append(', name = ')
             repr_parts.append(repr(name))
         
@@ -1218,7 +1665,706 @@ class Guild(DiscordEntity, immortal = True):
         )
     
     
+    def __eq__(self, other):
+        """Returns whether the two guilds are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        self_id = self.id
+        other_id = other.id
+        if self_id and other_id:
+            return self_id == other_id
+        
+        return self._is_equal_partial(other)
+    
+    
+    def __ne__(self, other):
+        """Returns whether the two guilds are not equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        self_id = self.id
+        other_id = other.id
+        if self_id and other_id:
+            return self_id != other_id
+        
+        return not self._is_equal_partial(other)
+    
+
+    def _is_equal_partial(self, other):
+        """
+        Returns whether the guild is equal to the given one.
+        This function is called when one or both the guilds are templates.
+        
+        Parameters
+        ----------
+        other : ``instance<type<self>>``
+            The other guild to compare self to.
+        
+        Returns
+        -------
+        is_equal : `bool`
+        """
+        # afk_channel_id
+        if self.afk_channel_id != other.afk_channel_id:
+            return False
+        
+        # afk_timeout
+        if self.afk_timeout != other.afk_timeout:
+            return False
+        
+        # banner
+        if self.banner != other.banner:
+            return False
+        
+        # boost_progress_bar_enabled
+        if self.boost_progress_bar_enabled != other.boost_progress_bar_enabled:
+            return False
+        
+        # content_filter
+        if self.content_filter is not other.content_filter:
+            return False
+        
+        # discovery_splash
+        if self.discovery_splash != other.discovery_splash:
+            return False
+        
+        # description
+        if self.description != other.description:
+            return False
+        
+        # features
+        if self.features != other.features:
+            return False
+        
+        # hub_type
+        if self.hub_type is not other.hub_type:
+            return False
+        
+        # icon
+        if self.icon != other.icon:
+            return False
+        
+        # invite_splash
+        if self.invite_splash != other.invite_splash:
+            return False
+        
+        # message_notification
+        if self.message_notification is not other.message_notification:
+            return False
+        
+        # mfa
+        if self.mfa != other.mfa:
+            return False
+        
+        # name
+        if self.name != other.name:
+            return False
+        
+        # nsfw_level
+        if self.nsfw_level is not other.nsfw_level:
+            return False
+        
+        # owner_id
+        if self.owner_id != other.owner_id:
+            return False
+        
+        # preferred_locale
+        if self.preferred_locale is not other.preferred_locale:
+            return False
+        
+        # public_updates_channel_id
+        if self.public_updates_channel_id != other.public_updates_channel_id:
+            return False
+        
+        # safety_alerts_channel_id
+        if self.safety_alerts_channel_id != other.safety_alerts_channel_id:
+            return False
+        
+        # rules_channel_id
+        if self.rules_channel_id != other.rules_channel_id:
+            return False
+        
+        # system_channel_id
+        if self.system_channel_id != other.system_channel_id:
+            return False
+        
+        # system_channel_flags
+        if self.system_channel_flags != other.system_channel_flags:
+            return False
+        
+        # vanity_code
+        if self.vanity_code != other.vanity_code:
+            return False
+        
+        # verification_level
+        if self.verification_level is not other.verification_level:
+            return False
+        
+        # widget_channel_id
+        if self.widget_channel_id != other.widget_channel_id:
+            return False
+        
+        # widget_enabled
+        if self.widget_enabled != other.widget_enabled:
+            return False
+        
+        return True
+    
+    def __hash__(self):
+        guild_id = self.id
+        if guild_id:
+            return guild_id
+        
+        return self._get_hash_partial()
+    
+    
+    def _get_hash_partial(self):
+        """
+        Hashes the fields of the guild.
+        
+        Returns
+        -------
+        hash_value : `int`
+        """
+        hash_value = 0
+        
+        # afk_channel_id
+        afk_channel_id = self.afk_channel_id
+        if afk_channel_id:
+            hash_value ^= 1 << 0
+            hash_value ^= afk_channel_id
+        
+        # afk_timeout
+        hash_value ^= self.afk_timeout
+        
+        # banner
+        banner = self.banner
+        if banner:
+            hash_value ^= 1 << 1
+            hash_value ^= hash(banner)
+        
+        # boost_progress_bar_enabled
+        hash_value ^= self.boost_progress_bar_enabled << 2
+        
+        # content_filter
+        hash_value ^= self.content_filter.value << 10
+        
+        # discovery_splash
+        discovery_splash = self.discovery_splash
+        if discovery_splash:
+            hash_value ^= 1 << 3
+            hash_value ^= hash(discovery_splash)
+        
+        # description
+        description = self.description
+        if (description is not None):
+            hash_value ^= hash(description)
+        
+        # features
+        features = self.features
+        if (features is not None):
+            hash_value ^= len(features) << 12
+            
+            for feature in features:
+                hash_value^= hash(feature)
+        
+        # hub_type
+        hash_value ^= self.hub_type.value << 14
+        
+        # icon
+        icon = self.icon
+        if icon:
+            hash_value ^= 1 << 4
+            hash_value ^= hash(icon)
+        
+        # invite_splash
+        invite_splash = self.invite_splash
+        if invite_splash:
+            hash_value ^= 1 << 5
+            hash_value ^= hash(invite_splash)
+        
+        # message_notification
+        hash_value ^= self.message_notification.value << 16
+        
+        # mfa
+        hash_value ^= self.mfa.value << 18
+        
+        # name
+        name = self.name
+        if (description is None) or (description != name):
+            hash_value ^= hash(name)
+        
+        # nsfw_level
+        hash_value ^= self.nsfw_level.value << 20
+        
+        # owner_id
+        owner_id = self.owner_id
+        if owner_id:
+            hash_value ^= 1 << 6
+            hash_value ^= owner_id
+        
+        # preferred_locale
+        hash_value ^= hash(self.preferred_locale)
+        
+        # public_updates_channel_id
+        public_updates_channel_id = self.public_updates_channel_id
+        if public_updates_channel_id:
+            hash_value ^= 1 << 7
+            hash_value ^= public_updates_channel_id
+        
+        # safety_alerts_channel_id
+        safety_alerts_channel_id = self.safety_alerts_channel_id
+        if safety_alerts_channel_id:
+            hash_value ^= 1 << 8
+            hash_value ^= safety_alerts_channel_id
+        
+        # rules_channel_id
+        rules_channel_id = self.rules_channel_id
+        if rules_channel_id:
+            hash_value ^= 1 << 9
+            hash_value ^= rules_channel_id
+        
+        # system_channel_id
+        system_channel_id = self.system_channel_id
+        if system_channel_id:
+            hash_value ^= 1 << 10
+            hash_value ^= system_channel_id
+        
+        # system_channel_flags
+        hash_value ^= self.system_channel_flags << 22
+        
+        # vanity_code
+        vanity_code = self.vanity_code
+        if (vanity_code is not None):
+            hash_value ^= hash(vanity_code)
+        
+        # verification_level
+        hash_value ^= self.verification_level.value << 24
+        
+        # widget_channel_id
+        widget_channel_id = self.widget_channel_id
+        if widget_channel_id:
+            hash_value ^= 1 << 11
+            hash_value ^= widget_channel_id
+        
+        # widget_enabled
+        hash_value ^= self.widget_enabled << 12
+        
+        return hash_value
+    
+    
+    def copy(self):
+        """
+        Copies the guild.
+        
+        Returns
+        -------
+        new : `instance<type<cls>>`
+        """
+        new = object.__new__(type(self))
+        new._cache_boosters = None
+        new._cache_permission = None
+        new._state = 0
+        new.afk_channel_id = self.afk_channel_id
+        new.afk_timeout = self.afk_timeout
+        new.approximate_online_count = 0
+        new.approximate_user_count = 0
+        new.available = True
+        new.banner = self.banner
+        new.boost_count = 0
+        new.boost_progress_bar_enabled = self.boost_progress_bar_enabled
+        new.channels = {}
+        new.clients = []
+        new.content_filter = self.content_filter
+        new.discovery_splash = self.discovery_splash
+        new.description = self.description
+        new.embedded_activity_states = None
+        new.emojis = {}
+        features = self.features
+        if (features is not None):
+            features = (*(feature for feature in features),)
+        new.features = features
+        new.hub_type = self.hub_type
+        new.icon = self.icon
+        new.id = 0
+        new.invite_splash = self.invite_splash
+        new.large = False
+        new.max_presences = MAX_PRESENCES_DEFAULT
+        new.max_stage_channel_video_users = MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
+        new.max_users = MAX_USERS_DEFAULT
+        new.max_voice_channel_video_users = MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
+        new.message_notification =self. message_notification
+        new.mfa = self.mfa
+        new.name = self.name
+        new.nsfw_level = self.nsfw_level
+        new.owner_id = self.owner_id
+        new.preferred_locale = self.preferred_locale
+        new.premium_tier = 0
+        new.public_updates_channel_id = self.public_updates_channel_id
+        new.safety_alerts_channel_id = self.safety_alerts_channel_id
+        new.roles = {}
+        new.rules_channel_id = self.rules_channel_id
+        new.scheduled_events = {}
+        new.soundboard_sounds = None
+        new.stages = None
+        new.stickers = {}
+        new.system_channel_id = self.system_channel_id
+        new.system_channel_flags = self.system_channel_flags
+        new.threads = {}
+        new.user_count = 0
+        new.users = GUILD_USERS_TYPE()
+        new.vanity_code = self.vanity_code
+        new.verification_level = self.verification_level
+        new.voice_states = {}
+        new.widget_channel_id = self.widget_channel_id
+        new.widget_enabled = self.widget_enabled
+        
+        return new
+    
+    
+    def copy_with(
+        self,
+        afk_channel_id = ...,
+        afk_timeout = ...,
+        banner = ...,
+        boost_progress_bar_enabled = ...,
+        content_filter = ...,
+        discovery_splash = ...,
+        description = ...,
+        features = ...,
+        hub_type = ...,
+        icon = ...,
+        invite_splash = ...,
+        message_notification = ...,
+        mfa = ...,
+        name = ...,
+        nsfw_level = ...,
+        owner_id = ...,
+        preferred_locale = ...,
+        public_updates_channel_id = ...,
+        safety_alerts_channel_id = ...,
+        rules_channel_id = ...,
+        system_channel_id = ...,
+        system_channel_flags = ...,
+        vanity_code = ...,
+        verification_level = ...,
+        widget_channel_id = ...,
+        widget_enabled = ...,
+    ):
+        """
+        Copies the guild with the given fields.
+        
+        Parameters
+        ----------
+        afk_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The afk channel or its identifier.
+        
+        afk_timeout : `int`, Optional (Keyword only)
+            The afk timeout at the `afk_channel`.
+        
+        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The guild's banner.
+        
+        boost_progress_bar_enabled : `bool`, Optional (Keyword only)
+            Whether the guild has the boost progress bar enabled.
+        
+        content_filter : ``ContentFilterLevel``, `int`, Optional (Keyword only)
+            The explicit content filter level of the guild.
+        
+        description : `None`, `str`
+            Description of the guild. The guild must be a Community guild.
+        
+        discovery_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The guild's discovery splash.
+        
+        features : `None`, `iterable` of `(`int`, `GuildFeature``), Optional (Keyword only)
+            The guild's features.
+        
+        hub_type : ``HubType``, `int`, Optional (Keyword only)
+            The guild's hub type.
+        
+        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The guild's icon.
+        
+        invite_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The guild's invite splash.
+        
+        message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
+            The message notification level of the guild.
+        
+        mfa : ``MFA``, `int`, Optional (Keyword only)
+            The required multi-factor authentication level for the guild.
+        
+        name : `str`, Optional (Keyword only)
+            The guild's name.
+        
+        nsfw_level : ``NsfwLevel``, `int`, Optional (Keyword only)
+            The nsfw level of the guild.
+        
+        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+            The guild's owner or their id.
+        
+        preferred_locale : ``Locale``, `int`, Optional (Keyword only)
+            The preferred language of the guild.
+        
+        public_updates_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's identifier where the guild's public updates should go.
+        
+        rules_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel or its identifier where the rules of a public guild's should be.
+        
+        safety_alerts_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel or its identifier where safety alerts are sent by Discord.
+        
+        system_channel_flags : ``SystemChannelFlag``, `int`, Optional (Keyword only)
+            Describe which type of messages are sent automatically to the system channel.
+        
+        system_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel or its identifier where the system messages are sent.
+        
+        vanity_code : `None`, `str`, Optional (Keyword only)
+            The guild's vanity invite's code if it has.
+        
+        verification_level : ``VerificationLevel``, `int`, Optional (Keyword only)
+            The minimal verification needed to join or to interact with guild.
+        
+        widget_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel or its identifier for which the guild's widget is for.
+        
+        widget_enabled : `bool`, Optional (Keyword only)
+            Whether the guild's widget is enabled.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If any parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # afk_channel_id
+        if afk_channel_id is ...:
+            afk_channel_id = self.afk_channel_id
+        else:
+            afk_channel_id = validate_afk_channel_id(afk_channel_id)
+        
+        # afk_timeout
+        if afk_timeout is ...:
+            afk_timeout = self.afk_timeout
+        else:
+            afk_timeout = validate_afk_timeout(afk_timeout)
+        
+        # banner
+        if banner is ...:
+            banner = self.banner
+        else:
+            banner = type(self).banner.validate_icon(banner, allow_data = True)
+        
+        # boost_progress_bar_enabled
+        if boost_progress_bar_enabled is ...:
+            boost_progress_bar_enabled = self.boost_progress_bar_enabled
+        else:
+            boost_progress_bar_enabled = validate_boost_progress_bar_enabled(boost_progress_bar_enabled)
+        
+        # content_filter
+        if content_filter is ...:
+            content_filter = self.content_filter
+        else:
+            content_filter = validate_content_filter(content_filter)
+        
+        # discovery_splash
+        if discovery_splash is ...:
+            discovery_splash = self.discovery_splash
+        else:
+            discovery_splash = type(self).discovery_splash.validate_icon(discovery_splash, allow_data = True)
+        
+        # description
+        if description is ...:
+            description = self.description
+        else:
+            description = validate_description(description)
+        
+        # features
+        if features is ...:
+            features = self.features
+            if (features is not None):
+                features = (*(feature for feature in features),)
+        else:
+            features = validate_features(features)
+        
+        # hub_type
+        if hub_type is ...:
+            hub_type = self.hub_type
+        else:
+            hub_type = validate_hub_type(hub_type)
+        
+        # icon
+        if icon is ...:
+            icon = self.icon
+        else:
+            icon = type(self).icon.validate_icon(icon, allow_data = True)
+        
+        # invite_splash
+        if invite_splash is ...:
+            invite_splash = self.invite_splash
+        else:
+            invite_splash = type(self).invite_splash.validate_icon(invite_splash, allow_data = True)
+        
+        # message_notification
+        if message_notification is ...:
+            message_notification = self.message_notification
+        else:
+            message_notification = validate_message_notification(message_notification)
+        
+        # mfa
+        if mfa is ...:
+            mfa = self.mfa
+        else:
+            mfa = validate_mfa(mfa)
+        
+        # name
+        if name is ...:
+            name = self.name
+        else:
+            name = validate_name(name)
+        
+        # nsfw_level
+        if nsfw_level is ...:
+            nsfw_level = self.nsfw_level
+        else:
+            nsfw_level = validate_nsfw_level(nsfw_level)
+        
+        # owner_id
+        if owner_id is ...:
+            owner_id = self.owner_id
+        else:
+            owner_id = validate_owner_id(owner_id)
+        
+        # preferred_locale
+        if preferred_locale is ...:
+            preferred_locale = self.preferred_locale
+        else:
+            preferred_locale = validate_preferred_locale(preferred_locale)
+        
+        # public_updates_channel_id
+        if public_updates_channel_id is ...:
+            public_updates_channel_id = self.public_updates_channel_id
+        else:
+            public_updates_channel_id = validate_public_updates_channel_id(public_updates_channel_id)
+        
+        # safety_alerts_channel_id
+        if safety_alerts_channel_id is ...:
+            safety_alerts_channel_id = self.safety_alerts_channel_id
+        else:
+            safety_alerts_channel_id = validate_safety_alerts_channel_id(safety_alerts_channel_id)
+        
+        # rules_channel_id
+        if rules_channel_id is ...:
+            rules_channel_id = self.rules_channel_id
+        else:
+            rules_channel_id = validate_rules_channel_id(rules_channel_id)
+        
+        # system_channel_id
+        if system_channel_id is ...:
+            system_channel_id = self.system_channel_id
+        else:
+            system_channel_id = validate_system_channel_id(system_channel_id)
+        
+        # system_channel_flags
+        if system_channel_flags is ...:
+            system_channel_flags = self.system_channel_flags
+        else:
+            system_channel_flags = validate_system_channel_flags(system_channel_flags)
+        
+        # vanity_code
+        if vanity_code is ...:
+            vanity_code = self.vanity_code
+        else:
+            vanity_code = validate_vanity_code(vanity_code)
+        
+        # verification_level
+        if verification_level is ...:
+            verification_level = self.verification_level
+        else:
+            verification_level = validate_verification_level(verification_level)
+        
+        # widget_channel_id
+        if widget_channel_id is ...:
+            widget_channel_id = self.widget_channel_id
+        else:
+            widget_channel_id = validate_widget_channel_id(widget_channel_id)
+        
+        # widget_enabled
+        if widget_enabled is ...:
+            widget_enabled = self.widget_enabled
+        else:
+            widget_enabled = validate_widget_enabled(widget_enabled)
+        
+        # Construct
+        new = object.__new__(type(self))
+        new._cache_boosters = None
+        new._cache_permission = None
+        new._state = 0
+        new.afk_channel_id = afk_channel_id
+        new.afk_timeout = afk_timeout
+        new.approximate_online_count = 0
+        new.approximate_user_count = 0
+        new.available = True
+        new.banner = banner
+        new.boost_count = 0
+        new.boost_progress_bar_enabled = boost_progress_bar_enabled
+        new.channels = {}
+        new.clients = []
+        new.content_filter = content_filter
+        new.discovery_splash = discovery_splash
+        new.description = description
+        new.embedded_activity_states = None
+        new.emojis = {}
+        new.features = features
+        new.hub_type = hub_type
+        new.icon = icon
+        new.id = 0
+        new.invite_splash = invite_splash
+        new.large = False
+        new.max_presences = MAX_PRESENCES_DEFAULT
+        new.max_stage_channel_video_users = MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
+        new.max_users = MAX_USERS_DEFAULT
+        new.max_voice_channel_video_users = MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
+        new.message_notification = message_notification
+        new.mfa = mfa
+        new.name = name
+        new.nsfw_level = nsfw_level
+        new.owner_id = owner_id
+        new.preferred_locale = preferred_locale
+        new.premium_tier = 0
+        new.public_updates_channel_id = public_updates_channel_id
+        new.safety_alerts_channel_id = safety_alerts_channel_id
+        new.roles = {}
+        new.rules_channel_id = rules_channel_id
+        new.scheduled_events = {}
+        new.soundboard_sounds = None
+        new.stages = None
+        new.stickers = {}
+        new.system_channel_id = system_channel_id
+        new.system_channel_flags = system_channel_flags
+        new.threads = {}
+        new.user_count = 0
+        new.users = GUILD_USERS_TYPE()
+        new.vanity_code = vanity_code
+        new.verification_level = verification_level
+        new.voice_states = {}
+        new.widget_channel_id = widget_channel_id
+        new.widget_enabled = widget_enabled
+        
+        return new
+    
+    
     widget_url = module_urls.guild_widget_url
+    
     
     def _delete(self, client):
         """
@@ -1417,19 +2563,6 @@ class Guild(DiscordEntity, immortal = True):
         channels : `list` of ``Channel``
         """
         return [channel for channel in self.channels.values() if channel.is_guild_store()]
-    
-    
-    @property
-    def thread_channels(self):
-        """
-        Returns the thread channels of the guild.
-        
-        Returns
-        -------
-        channels : `list` of ``Channel``
-        """
-        return list(self.threads.values())
-    
     
     @property
     def stage_channels(self):
@@ -2423,352 +3556,6 @@ class Guild(DiscordEntity, immortal = True):
         return Permission(permissions)
     
     
-    def _difference_update_attributes(self, data):
-        """
-        Updates the guild and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
-        relation.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `object`) items
-            Guild data received from Discord.
-        
-        Returns
-        -------
-        old_attributes : `dict` of (`str`, `object`) items
-            All item in the returned dict is optional.
-        
-        Returned Data Structure
-        -----------------------
-        +-------------------------------+---------------------------------------+
-        | Keys                          | Values                                |
-        +===============================+=======================================+
-        | afk_channel_id                | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | afk_timeout                   | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | available                     | `bool`                                |
-        +-------------------------------+---------------------------------------+
-        | banner                        | ``Icon``                              |
-        +-------------------------------+---------------------------------------+
-        | boost_count                   | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | boost_progress_bar_enabled    | `bool`                                |
-        +-------------------------------+---------------------------------------+
-        | content_filter                | ``ContentFilterLevel``                |
-        +-------------------------------+---------------------------------------+
-        | description                   | `None`, `str`                         |
-        +-------------------------------+---------------------------------------+
-        | discovery_splash              | ``Icon``                              |
-        +-------------------------------+---------------------------------------+
-        | features                      | `None`, `tuple` of ``GuildFeature``   |
-        +-------------------------------+---------------------------------------+
-        | hub_type                      | ``HubType``                           |
-        +-------------------------------+---------------------------------------+
-        | icon                          | ``Icon``                              |
-        +-------------------------------+---------------------------------------+
-        | invite_splash                 | ``Icon``                              |
-        +-------------------------------+---------------------------------------+
-        | max_presences                 | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | max_stage_channel_video_users | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | max_users                     | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | max_voice_channel_video_users | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | message_notification          | ``MessageNotificationLevel``          |
-        +-------------------------------+---------------------------------------+
-        | mfa                           | ``MFA``                               |
-        +-------------------------------+---------------------------------------+
-        | name                          | `str`                                 |
-        +-------------------------------+---------------------------------------+
-        | nsfw_level                    | ``NsfwLevel``                         |
-        +-------------------------------+---------------------------------------+
-        | owner_id                      | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | preferred_locale              | ``Locale``                            |
-        +-------------------------------+---------------------------------------+
-        | premium_tier                  | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | public_updates_channel_id     | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | rules_channel_id              | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | safety_alerts_channel_id      | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | system_channel_id             | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | system_channel_flags          | ``SystemChannelFlag``                 |
-        +-------------------------------+---------------------------------------+
-        | vanity_code                   | `None`, `str`                         |
-        +-------------------------------+---------------------------------------+
-        | verification_level            | ``VerificationLevel``                 |
-        +-------------------------------+---------------------------------------+
-        | widget_channel_id             | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | widget_enabled                | `bool`                                |
-        +-------------------------------+---------------------------------------+
-        """
-        old_attributes = {}
-        
-        # afk_channel_id
-        afk_channel_id = parse_afk_channel_id(data)
-        if self.afk_channel_id != afk_channel_id:
-            old_attributes['afk_channel_id'] = self.afk_channel_id
-            self.afk_channel_id = afk_channel_id
-        
-        # afk_timeout
-        afk_timeout = parse_afk_timeout(data)
-        if self.afk_timeout != afk_timeout:
-            old_attributes['afk_timeout'] = self.afk_timeout
-            self.afk_timeout = afk_timeout
-        
-        # available
-        available = parse_available(data)
-        if self.available != available:
-            old_attributes['available'] = self.available
-            self.available = available
-        
-        # banner
-        self._update_banner(data, old_attributes)
-        
-        # boost_count
-        boost_count = parse_boost_count(data)
-        if self.boost_count != boost_count:
-            old_attributes['boost_count'] = self.boost_count
-            self.boost_count = boost_count
-        
-        # boost_progress_bar_enabled
-        boost_progress_bar_enabled = parse_boost_progress_bar_enabled(data)
-        if self.boost_progress_bar_enabled != boost_progress_bar_enabled:
-            old_attributes['boost_progress_bar_enabled'] = self.boost_progress_bar_enabled
-            self.boost_progress_bar_enabled = boost_progress_bar_enabled
-        
-        # content_filter
-        content_filter = parse_content_filter(data)
-        if self.content_filter is not content_filter:
-            old_attributes['content_filter'] = self.content_filter
-            self.content_filter = content_filter
-        
-        # description
-        description = parse_description(data)
-        if self.description != description:
-            old_attributes['description'] = self.description
-            self.description = description
-        
-        # discovery_splash
-        self._update_discovery_splash(data, old_attributes)
-        
-        # features
-        features = parse_features(data)
-        if self.features != features:
-            old_attributes['features'] = self.features
-            self.features = features
-        
-        # hub_type
-        hub_type = parse_hub_type(data)
-        if self.hub_type is not hub_type:
-            old_attributes['hub_type'] = self.hub_type
-            self.hub_type = hub_type
-        
-        # icon
-        self._update_icon(data, old_attributes)
-        
-        # invite_splash
-        self._update_invite_splash(data, old_attributes)
-        
-        # max_presences
-        max_presences = parse_max_presences(data)
-        if self.max_presences != max_presences:
-            old_attributes['max_presences'] = self.max_presences
-            self.max_presences = max_presences
-        
-        # max_stage_channel_video_users
-        max_stage_channel_video_users = parse_max_stage_channel_video_users(data)
-        if self.max_stage_channel_video_users != max_stage_channel_video_users:
-            old_attributes['max_stage_channel_video_users'] = self.max_stage_channel_video_users
-            self.max_stage_channel_video_users = max_stage_channel_video_users
-        
-        # max_users
-        max_users = parse_max_users(data)
-        if self.max_users != max_users:
-            old_attributes['max_users'] = self.max_users
-            self.max_users = max_users
-        
-        # max_voice_channel_video_users
-        max_voice_channel_video_users = parse_max_voice_channel_video_users(data)
-        if self.max_voice_channel_video_users != max_voice_channel_video_users:
-            old_attributes['max_voice_channel_video_users'] = self.max_voice_channel_video_users
-            self.max_voice_channel_video_users = max_voice_channel_video_users
-        
-        # message_notification
-        message_notification = parse_message_notification(data)
-        if self.message_notification is not message_notification:
-            old_attributes['message_notification'] = self.message_notification
-            self.message_notification = message_notification
-        
-        # mfa
-        mfa = parse_mfa(data)
-        if self.mfa is not mfa:
-            old_attributes['mfa'] = self.mfa
-            self.mfa = mfa
-        
-        # name
-        name = parse_name(data)
-        if self.name != name:
-            old_attributes['name'] = self.name
-            self.name = name
-        
-        # nsfw_level
-        nsfw_level = parse_nsfw_level(data)
-        if self.nsfw_level is not nsfw_level:
-            old_attributes['nsfw_level'] = self.nsfw_level
-            self.nsfw_level = nsfw_level
-        
-        # owner_id
-        owner_id = parse_owner_id(data)
-        if self.owner_id != owner_id:
-            old_attributes['owner_id'] = self.owner_id
-            self.owner_id = owner_id
-        
-        # preferred_locale
-        preferred_locale = parse_preferred_locale(data)
-        if self.preferred_locale is not preferred_locale:
-            old_attributes['preferred_locale'] = self.preferred_locale
-            self.preferred_locale = preferred_locale
-        
-        # premium_tier
-        premium_tier = parse_premium_tier(data)
-        if self.premium_tier != premium_tier:
-            old_attributes['premium_tier'] = self.premium_tier
-            self.premium_tier = premium_tier
-        
-        # public_updates_channel_id
-        public_updates_channel_id = parse_public_updates_channel_id(data)
-        if self.public_updates_channel_id !=  public_updates_channel_id:
-            old_attributes['public_updates_channel_id'] = self.public_updates_channel_id
-            self.public_updates_channel_id = public_updates_channel_id
-        
-        # rules_channel_id
-        rules_channel_id = parse_rules_channel_id(data)
-        if self.rules_channel_id != rules_channel_id:
-            old_attributes['rules_channel_id'] = self.rules_channel_id
-            self.rules_channel_id = rules_channel_id
-        
-        # safety_alerts_channel_id
-        safety_alerts_channel_id = parse_safety_alerts_channel_id(data)
-        if self.safety_alerts_channel_id != safety_alerts_channel_id:
-            old_attributes['safety_alerts_channel_id'] = self.safety_alerts_channel_id
-            self.safety_alerts_channel_id = safety_alerts_channel_id
-        
-        # system_channel_flags
-        system_channel_flags = parse_system_channel_flags(data)
-        if self.system_channel_flags != system_channel_flags:
-            old_attributes['system_channel_flags'] = self.system_channel_flags
-            self.system_channel_flags = system_channel_flags
-        
-        # system_channel_id
-        system_channel_id = parse_system_channel_id(data)
-        if self.system_channel_id != system_channel_id:
-            old_attributes['system_channel_id'] = self.system_channel_id
-            self.system_channel_id = system_channel_id
-        
-        # vanity_code
-        vanity_code = parse_vanity_code(data)
-        if self.vanity_code != vanity_code:
-            old_attributes['vanity_code'] = self.vanity_code
-            self.vanity_code = vanity_code
-        
-        # verification_level
-        verification_level = parse_verification_level(data)
-        if self.verification_level is not verification_level:
-            old_attributes['verification_level'] = self.verification_level
-            self.verification_level = verification_level
-        
-        # widget_channel_id
-        widget_channel_id = parse_widget_channel_id(data)
-        if self.widget_channel_id != widget_channel_id:
-            old_attributes['widget_channel_id'] = self.widget_channel_id
-            self.widget_channel_id = widget_channel_id
-        
-        # widget_enabled
-        widget_enabled = parse_widget_enabled(data)
-        if self.widget_enabled != widget_enabled:
-            old_attributes['widget_enabled'] = self.widget_enabled
-            self.widget_enabled = widget_enabled
-        
-        self._cache_boosters = None
-        self._update_counts_only(data)
-        
-        return old_attributes
-    
-    
-    def _update_attributes(self, data):
-        """
-        Updates the guild and with overwriting it's old attributes.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `object`) items
-            Guild data received from Discord.
-        """
-        self.afk_channel_id = parse_afk_channel_id(data)
-        self.afk_timeout = parse_afk_timeout(data)
-        self.available = parse_available(data)
-        self._set_banner(data)
-        self.boost_count = parse_boost_count(data)
-        self.boost_progress_bar_enabled = parse_boost_progress_bar_enabled(data)
-        self.content_filter = parse_content_filter(data)
-        self.description = parse_description(data)
-        self._set_discovery_splash(data)
-        self.features = parse_features(data)
-        self.hub_type = parse_hub_type(data)
-        self._set_icon(data)
-        self._set_invite_splash(data)
-        self.max_presences = parse_max_presences(data)
-        self.max_stage_channel_video_users = parse_max_stage_channel_video_users(data)
-        self.max_users = parse_max_users(data)
-        self.max_voice_channel_video_users = parse_max_voice_channel_video_users(data)
-        self.message_notification = parse_message_notification(data)
-        self.mfa = parse_mfa(data)
-        self.name = parse_name(data)
-        self.nsfw_level = parse_nsfw_level(data)
-        self.owner_id = parse_owner_id(data)
-        self.preferred_locale = parse_preferred_locale(data)
-        self.premium_tier = parse_premium_tier(data)
-        self.public_updates_channel_id = parse_public_updates_channel_id(data)
-        self.rules_channel_id = parse_rules_channel_id(data)
-        self.safety_alerts_channel_id = parse_safety_alerts_channel_id(data)
-        self.system_channel_flags = parse_system_channel_flags(data)
-        self.system_channel_id = parse_system_channel_id(data)
-        self.vanity_code = parse_vanity_code(data)
-        self.verification_level = parse_verification_level(data)
-        self.widget_channel_id = parse_widget_channel_id(data)
-        self.widget_enabled = parse_widget_enabled(data)
-        
-        self._cache_boosters = None
-        self._update_counts_only(data)
-    
-    
-    def _update_counts_only(self, data):
-        """
-        Updates the guilds' counts if given.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `object`) items
-            Received guild data.
-        """
-        approximate_online_count = parse_approximate_online_count(data)
-        if approximate_online_count:
-            self.approximate_online_count = approximate_online_count
-        
-        approximate_user_count = parse_approximate_user_count(data)
-        if approximate_user_count:
-            self.approximate_user_count = approximate_user_count
-    
-    
     def _update_emojis(self, data):
         """
         Updates the emojis o the guild and returns all the changes broke down for each changes emoji.
@@ -3502,3 +4289,23 @@ class Guild(DiscordEntity, immortal = True):
         )
         
         return self.large
+
+    
+    @property
+    def thread_channels(self):
+        """
+        Returns the thread channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``Channel``
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.thread_channels` is deprecated and will be removed in 2023 December. '
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return [*self.threads.values()]

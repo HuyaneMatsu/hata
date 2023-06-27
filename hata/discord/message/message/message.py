@@ -2512,7 +2512,7 @@ class Message(DiscordEntity, immortal = True):
         return mentioned_channels
     
     
-    @ property
+    @property
     def mentioned_channels(self):
         """
         The mentioned channels by the message. If there is non returns `None`.

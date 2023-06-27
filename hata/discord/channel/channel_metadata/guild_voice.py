@@ -169,6 +169,11 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         return True
     
     
+    @copy_docs(ChannelMetadataGuildVoiceBase._get_display_name)
+    def _get_display_name(self):
+        return self.name.title()
+    
+    
     @classmethod
     @copy_docs(ChannelMetadataGuildVoiceBase._create_empty)
     def _create_empty(cls):

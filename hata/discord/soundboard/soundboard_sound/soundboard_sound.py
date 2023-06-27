@@ -118,7 +118,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
     
     
     @classmethod
-    def from_data(cls, data):
+    def from_data(cls, data, *, strong_cache = True):
         """
         Creates a new soundboard sound from the given data.
         
@@ -126,6 +126,8 @@ class SoundboardSound(DiscordEntity, immortal = True):
         ----------
         data : `dict<str, object>`
             Sound data.
+        strong_cache : `bool` = `True`, Optional (Keyword only)
+            Whether the instance should be put into its strong cache.
         
         Returns
         -------
@@ -138,25 +140,27 @@ class SoundboardSound(DiscordEntity, immortal = True):
         except KeyError:
             self = object.__new__(cls)
             self.id = sound_id
+            self._set_attributes(data)
             SOUNDBOARD_SOUNDS[sound_id] = self
         else:
-            if not self.partial:
+            if strong_cache and (not self.partial):
                 return self
             
-        self._set_attributes(data)
+            self._set_attributes(data)
         
-        try:
-            guild = GUILDS[self.guild_id]
-        except KeyError:
-            pass
-        else:
-            soundboard_sounds = guild.soundboard_sounds
-            if soundboard_sounds is None:
-                soundboard_sounds = {}
-                guild.soundboard_sounds = soundboard_sounds
+        if strong_cache:
+            try:
+                guild = GUILDS[self.guild_id]
+            except KeyError:
+                pass
+            else:
+                soundboard_sounds = guild.soundboard_sounds
+                if soundboard_sounds is None:
+                    soundboard_sounds = {}
+                    guild.soundboard_sounds = soundboard_sounds
+                
+                soundboard_sounds[sound_id] = self
             
-            soundboard_sounds[sound_id] = self
-        
         return self
     
     
@@ -183,12 +187,14 @@ class SoundboardSound(DiscordEntity, immortal = True):
         except KeyError:
             self = object.__new__(cls)
             self.id = sound_id
+            self._set_attributes(data)
             SOUNDBOARD_SOUNDS[sound_id] = self
+        
         else:
             if not self.partial:
                 return self, False
             
-        self._set_attributes(data)
+            self._set_attributes(data)
         
         try:
             guild = GUILDS[self.guild_id]

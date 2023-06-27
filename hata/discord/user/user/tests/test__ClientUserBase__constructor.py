@@ -96,7 +96,7 @@ def test__ClientUserBase__create_empty():
     vampytest.assert_eq(user.id, user_id)
 
 
-def test_ClientUserBase___from_client__0():
+def test__ClientUserBase___from_client__0():
     """
     Tests whether ``ClientUserBase._from_client`` works as intended.
     
@@ -158,7 +158,7 @@ def test_ClientUserBase___from_client__0():
         client = None
 
 
-def test_ClientUserBase___from_client__1():
+def test__ClientUserBase___from_client__1():
     """
     Tests whether ``ClientUserBase._from_client`` works as intended.
     

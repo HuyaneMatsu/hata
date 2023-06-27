@@ -56,7 +56,7 @@ class ClientCompoundRoleEndpoints(Compound):
         if guild is None:
             guild = create_partial_guild_from_id(guild_id)
         
-        guild._sync_roles(data)
+        guild._update_roles(data)
         
         return [*guild.roles.values()]
     

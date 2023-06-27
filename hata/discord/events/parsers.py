@@ -12,24 +12,25 @@ from ..auto_moderation import AutoModerationActionExecutionEvent, AutoModeration
 from ..channel import Channel, VoiceChannelEffect
 from ..core import (
     APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, AUTO_MODERATION_RULES, CHANNELS, CLIENTS, GUILDS, KOKORO,
-    MESSAGES, ROLES, SCHEDULED_EVENTS, SOUNDBOARD_SOUNDS, STAGES, USERS
+    MESSAGES, ROLES, SCHEDULED_EVENTS, STAGES, USERS
 )
 from ..emoji import ReactionAddEvent, ReactionDeleteEvent
 from ..emoji.reaction_events.fields import (
     parse_emoji as parse_reaction_event_emoji, parse_message as parse_reaction_event_message,
     parse_user as parse_reaction_event_user
 )
-from ..guild import (
-    EMOJI_UPDATE_CREATE, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, Guild, GuildJoinRequest, GuildJoinRequestDeleteEvent,
-    STICKER_UPDATE_CREATE, STICKER_UPDATE_DELETE, STICKER_UPDATE_EDIT, VOICE_STATE_JOIN, VOICE_STATE_LEAVE,
-    VOICE_STATE_MOVE, VOICE_STATE_UPDATE, create_partial_guild_from_id
-)
+from ..guild import Guild, GuildJoinRequest, GuildJoinRequestDeleteEvent, create_partial_guild_from_id
 from ..guild.embedded_activity_state.constants import (
     EMBEDDED_ACTIVITY_UPDATE_CREATE, EMBEDDED_ACTIVITY_UPDATE_DELETE, EMBEDDED_ACTIVITY_UPDATE_UPDATE,
     EMBEDDED_ACTIVITY_UPDATE_USER_ADD, EMBEDDED_ACTIVITY_UPDATE_USER_DELETE,
 )
 from ..guild.embedded_activity_state.utils import (
     difference_handle_embedded_activity_update_event, handle_embedded_activity_update_event
+)
+from ..guild.guild.constants import (
+    EMOJI_EVENT_CREATE, EMOJI_EVENT_DELETE, EMOJI_EVENT_UPDATE, STICKER_EVENT_CREATE, STICKER_EVENT_DELETE,
+    STICKER_EVENT_UPDATE, VOICE_STATE_EVENT_JOIN, VOICE_STATE_EVENT_LEAVE, VOICE_STATE_EVENT_MOVE,
+    VOICE_STATE_EVENT_UPDATE
 )
 from ..integration import Integration
 from ..interaction import InteractionEvent
@@ -1510,25 +1511,25 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client, data):
         guild_sync(client, data, None)
         return
 
-    changes = guild._update_emojis(data['emojis'])
+    changes = guild._difference_update_emojis(data['emojis'])
     
     if not changes:
         return
     
     for action, emoji, old_attributes in changes:
-        if action == EMOJI_UPDATE_EDIT:
+        if action == EMOJI_EVENT_UPDATE:
             event_handler = client.events.emoji_edit
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client, emoji, old_attributes))
             continue
             
-        if action == EMOJI_UPDATE_CREATE:
+        if action == EMOJI_EVENT_CREATE:
             event_handler = client.events.emoji_create
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client, emoji))
             continue
         
-        if action == EMOJI_UPDATE_DELETE:
+        if action == EMOJI_EVENT_DELETE:
             event_handler = client.events.emoji_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client, emoji))
@@ -1550,7 +1551,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
         clients.close()
         return
     
-    changes = guild._update_emojis(data['emojis'])
+    changes = guild._difference_update_emojis(data['emojis'])
     
     if not changes:
         clients.close()
@@ -1558,19 +1559,19 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
     
     for client_ in clients:
         for action, emoji, old_attributes in changes:
-            if action == EMOJI_UPDATE_EDIT:
+            if action == EMOJI_EVENT_UPDATE:
                 event_handler = client_.events.emoji_edit
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client_, emoji, old_attributes))
                 continue
             
-            if action == EMOJI_UPDATE_CREATE:
+            if action == EMOJI_EVENT_CREATE:
                 event_handler = client_.events.emoji_create
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client_, emoji))
                 continue
             
-            if action == EMOJI_UPDATE_DELETE:
+            if action == EMOJI_EVENT_DELETE:
                 event_handler = client_.events.emoji_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client_, emoji))
@@ -1588,7 +1589,7 @@ def GUILD_EMOJIS_UPDATE__OPT_SC(client, data):
         guild_sync(client, data, None)
         return
     
-    guild._sync_emojis(data['emojis'])
+    guild._update_emojis(data['emojis'])
 
 
 def GUILD_EMOJIS_UPDATE__OPT_MC(client, data):
@@ -1602,7 +1603,7 @@ def GUILD_EMOJIS_UPDATE__OPT_MC(client, data):
     if first_client(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client) is not client:
         return
     
-    guild._sync_emojis(data['emojis'])
+    guild._update_emojis(data['emojis'])
 
 
 add_parser(
@@ -1625,25 +1626,25 @@ def GUILD_STICKERS_UPDATE__CAL_SC(client, data):
         guild_sync(client, data, None)
         return
 
-    changes = guild._update_stickers(data['stickers'])
+    changes = guild._difference_update_stickers(data['stickers'])
     
     if not changes:
         return
     
     for action, sticker, old_attributes in changes:
-        if action == STICKER_UPDATE_EDIT:
+        if action == STICKER_EVENT_UPDATE:
             event_handler = client.events.sticker_edit
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client, sticker, old_attributes))
             continue
             
-        if action == STICKER_UPDATE_CREATE:
+        if action == STICKER_EVENT_CREATE:
             event_handler = client.events.sticker_create
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client, sticker))
             continue
         
-        if action == STICKER_UPDATE_DELETE:
+        if action == STICKER_EVENT_DELETE:
             event_handler = client.events.sticker_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client, sticker))
@@ -1664,7 +1665,7 @@ def GUILD_STICKERS_UPDATE__CAL_MC(client, data):
         clients.close()
         return
     
-    changes = guild._update_stickers(data['stickers'])
+    changes = guild._difference_update_stickers(data['stickers'])
     
     if not changes:
         clients.close()
@@ -1672,19 +1673,19 @@ def GUILD_STICKERS_UPDATE__CAL_MC(client, data):
     
     for client_ in clients:
         for action, sticker, old_attributes in changes:
-            if action == STICKER_UPDATE_EDIT:
+            if action == STICKER_EVENT_UPDATE:
                 event_handler = client_.events.sticker_edit
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client_, sticker, old_attributes))
                 continue
                 
-            if action == STICKER_UPDATE_CREATE:
+            if action == STICKER_EVENT_CREATE:
                 event_handler = client_.events.sticker_create
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client_, sticker))
                 continue
             
-            if action == STICKER_UPDATE_DELETE:
+            if action == STICKER_EVENT_DELETE:
                 event_handler = client_.events.sticker_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client_, sticker))
@@ -1701,7 +1702,8 @@ def GUILD_STICKERS_UPDATE__OPT_SC(client, data):
         guild_sync(client, data, None)
         return
     
-    guild._sync_stickers(data['stickers'])
+    guild._update_stickers(data['stickers'])
+
 
 def GUILD_STICKERS_UPDATE__OPT_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -1714,7 +1716,7 @@ def GUILD_STICKERS_UPDATE__OPT_MC(client, data):
     if first_client(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client) is not client:
         return
     
-    guild._sync_stickers(data['stickers'])
+    guild._update_stickers(data['stickers'])
 
 add_parser(
     'GUILD_STICKERS_UPDATE',
@@ -2732,7 +2734,7 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
     
     if user is client:
         for action, voice_state, change in guild._update_voice_state(data, user):
-            if action == VOICE_STATE_JOIN:
+            if action == VOICE_STATE_EVENT_JOIN:
                 event_handler = client.events.voice_client_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client, voice_state))
@@ -2743,7 +2745,7 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
                 
                 continue
             
-            if action == VOICE_STATE_MOVE:
+            if action == VOICE_STATE_EVENT_MOVE:
                 event_handler = client.events.voice_client_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(KOKORO, event_handler(client, voice_state, change))
@@ -2754,7 +2756,7 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
                 
                 continue
             
-            if action == VOICE_STATE_LEAVE:
+            if action == VOICE_STATE_EVENT_LEAVE:
                 event_handler = client.events.voice_client_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(KOKORO, event_handler(client, voice_state, change))
@@ -2765,7 +2767,7 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
                 
                 continue
             
-            if action == VOICE_STATE_UPDATE:
+            if action == VOICE_STATE_EVENT_UPDATE:
                 event_handler = client.events.voice_client_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(KOKORO, event_handler(client, voice_state, change))
@@ -2778,25 +2780,25 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
     
     else:
         for action, voice_state, change in guild._update_voice_state(data, user):
-            if action == VOICE_STATE_JOIN:
+            if action == VOICE_STATE_EVENT_JOIN:
                 event_handler = client.events.user_voice_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client, voice_state))
                 continue
             
-            if action == VOICE_STATE_MOVE:
+            if action == VOICE_STATE_EVENT_MOVE:
                 event_handler = client.events.user_voice_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client, voice_state, change))
                 continue
             
-            if action == VOICE_STATE_LEAVE:
+            if action == VOICE_STATE_EVENT_LEAVE:
                 event_handler = client.events.user_voice_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client, voice_state, change))
                 continue
             
-            if action == VOICE_STATE_UPDATE:
+            if action == VOICE_STATE_EVENT_UPDATE:
                 event_handler = client.events.user_voice_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client, voice_state, change))
@@ -2832,32 +2834,32 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
     
     user = User.from_data(user_data, guild_profile_data, guild_id)
     
-    actions = list(guild._update_voice_state(data, user))
+    actions = [*guild._update_voice_state(data, user)]
     if not actions:
         clients.close()
         return
     
     if isinstance(user, Client):
         for action, voice_state, change in actions:
-            if action == VOICE_STATE_JOIN:
+            if action == VOICE_STATE_EVENT_JOIN:
                 event_handler = user.events.voice_client_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(user, voice_state))
                 continue
             
-            if action == VOICE_STATE_MOVE:
+            if action == VOICE_STATE_EVENT_MOVE:
                 event_handler = user.events.voice_client_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(KOKORO, event_handler(user, voice_state, change))
                 continue
             
-            if action == VOICE_STATE_LEAVE:
+            if action == VOICE_STATE_EVENT_LEAVE:
                 event_handler = user.events.voice_client_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(KOKORO, event_handler(user, voice_state, change))
                 continue
             
-            if action == VOICE_STATE_UPDATE:
+            if action == VOICE_STATE_EVENT_UPDATE:
                 event_handler = user.events.voice_client_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(KOKORO, event_handler(user, voice_state, change))
@@ -2865,25 +2867,25 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
     
     for client_ in clients:
         for action, voice_state, change in actions:
-            if action == VOICE_STATE_JOIN:
+            if action == VOICE_STATE_EVENT_JOIN:
                 event_handler = client_.events.user_voice_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client_, voice_state))
                 continue
             
-            if action == VOICE_STATE_MOVE:
+            if action == VOICE_STATE_EVENT_MOVE:
                 event_handler = client_.events.user_voice_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client_, voice_state, change))
                 continue
             
-            if action == VOICE_STATE_LEAVE:
+            if action == VOICE_STATE_EVENT_LEAVE:
                 event_handler = client_.events.user_voice_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client_, voice_state, change))
                 continue
             
-            if action == VOICE_STATE_UPDATE:
+            if action == VOICE_STATE_EVENT_UPDATE:
                 event_handler = client_.events.user_voice_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client_, voice_state, change))
@@ -2915,25 +2917,25 @@ def VOICE_STATE_UPDATE__OPT_SC(client, data):
     
     if user is client:
         for action, voice_state, change in guild._update_voice_state(data, user):
-            if action == VOICE_STATE_JOIN:
+            if action == VOICE_STATE_EVENT_JOIN:
                 event_handler = client.events.voice_client_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client, voice_state))
                 continue
             
-            if action == VOICE_STATE_MOVE:
+            if action == VOICE_STATE_EVENT_MOVE:
                 event_handler = client.events.voice_client_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(KOKORO, event_handler(client, voice_state, change))
                 continue
             
-            if action == VOICE_STATE_LEAVE:
+            if action == VOICE_STATE_EVENT_LEAVE:
                 event_handler = client.events.voice_client_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(KOKORO, event_handler(client, voice_state, change))
                 continue
             
-            if action == VOICE_STATE_UPDATE:
+            if action == VOICE_STATE_EVENT_UPDATE:
                 event_handler = client.events.voice_client_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(KOKORO, event_handler(client, voice_state, change))
@@ -2971,25 +2973,25 @@ def VOICE_STATE_UPDATE__OPT_MC(client, data):
     
     if isinstance(user, Client):
         for action, voice_state, change in guild._update_voice_state(data, user):
-            if action == VOICE_STATE_JOIN:
+            if action == VOICE_STATE_EVENT_JOIN:
                 event_handler = user.events.voice_client_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(user, voice_state))
                 continue
             
-            if action == VOICE_STATE_MOVE:
+            if action == VOICE_STATE_EVENT_MOVE:
                 event_handler = user.events.voice_client_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(KOKORO, event_handler(user, voice_state, change))
                 continue
             
-            if action == VOICE_STATE_LEAVE:
+            if action == VOICE_STATE_EVENT_LEAVE:
                 event_handler = user.events.voice_client_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(KOKORO, event_handler(user, voice_state, change))
                 continue
             
-            if action == VOICE_STATE_UPDATE:
+            if action == VOICE_STATE_EVENT_UPDATE:
                 event_handler = user.events.voice_client_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(KOKORO, event_handler(user, voice_state, change))

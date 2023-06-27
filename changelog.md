@@ -10,6 +10,19 @@
 - `Guild.__eq__` now supports template instances.
 - `Guild.__hash__` now supports template instances.
 - Add `Guild.copy`.
+- `Guild.widget_url` is now a property to match other `..._url` properties. Added `..._url_as` version.
+- Add `Guild.get_roles_like`.
+- Add `Guild.get_channels_like`.
+- Add `Guild.iter_channels`.
+- Add `Guild.get_users_like`.
+- Add `Guild.iter_users`.
+- Add `Guild.iter_roles`.
+- Add `Guild.iter_emojis`.
+- Add `Guild.iter_stickers`.
+- Add `Guild.iter_scheduled_events`.
+- Add `Guild.iter_stages`.
+- Add `Guild.iter_threads`.
+- Add `Guild.iter_voice_states`.
 
 #### Bug Fixes
 
@@ -18,6 +31,13 @@
 - A message was updated with non-intent data even if there was a client with intent data.
     This was caused by checking whether "any" mask is matching instead "all".
 - `NsfwLevel.age_restricted` had incorrect `.value`.
+- Fix `Channel.display_name` formatting for multiple types.
+- Fix `AttributeError` in `Guild.channel_list_flattened`.
+- Channel sorting was partially broken producing incorrect order.
+- `Guild.permissions_for` returned incorrect value if a webhook was given and the guild's default role had
+    administrator permission.
+- `Guild.permissions_for` did not handle guild profile roles and guild roles de-sync correctly.
+- `Guild.permissions_for_roles` did not ignore partial roles as intended. Broke probably a few years ago.
 
 #### Renames, Deprecation & Removals
 
@@ -26,6 +46,36 @@
 - Deprecate `Guild.is_large`.
 - Rename `Guild._embedded_activity_states` to `embedded_activity_states`.
 - Deprecate `Guild.thread_channels`.
+- Rename `Guild.widget_url` to `.widget_url_as`.
+- Rename `EMOJI_UPDATE_EDIT` to `EMOJI_EVENT_UPDATE`. No longer directly importable, since used in internal functions.
+- Rename `EMOJI_UPDATE_DELETE` to `EMOJI_EVENT_DELETE`. No longer directly importable, since used in internal functions.
+- Rename `EMOJI_UPDATE_CREATE` to `EMOJI_EVENT_CREATE`. No longer directly importable, since used in internal functions.
+- Rename `EMOJI_UPDATE_NONE` to `EMOJI_EVENT_NONE`. No longer directly importable, since used in internal functions.
+- Rename `STICKER_UPDATE_EDIT` to `STICKER_EVENT_UPDATE`.
+    No longer directly importable, since used in internal functions.
+- Rename `STICKER_UPDATE_DELETE` to `STICKER_EVENT_DELETE`.
+    No longer directly importable, since used in internal functions.
+- Rename `STICKER_UPDATE_CREATE` to `STICKER_EVENT_CREATE`.
+    No longer directly importable, since used in internal functions.
+- Rename `STICKER_UPDATE_NONE` to `STICKER_EVENT_NONE`. No longer directly importable, since used in internal functions.
+- Rename `VOICE_STATE_NONE` to `VOICE_STATE_EVENT_NONE`.
+    No longer directly importable, since used in internal functions.
+- Rename `VOICE_STATE_JOIN` to `VOICE_STATE_EVENT_JOIN`.
+    No longer directly importable, since used in internal functions.
+- Rename `VOICE_STATE_LEAVE` to `VOICE_STATE_EVENT_LEAVE`.
+    No longer directly importable, since used in internal functions.
+- Rename `VOICE_STATE_UPDATE` to `VOICE_STATE_EVENT_UPDATE`.
+    No longer directly importable, since used in internal functions.
+- Rename `VOICE_STATE_MOVE` to `VOICE_STATE_EVENT_MOVE`. No longer directly importable, since used in internal functions.
+- Deprecate `Guild.text_channels`. Use `[*Guild.iter_channels(Channel.is_guild_text)]` instead.
+- Deprecate `Guild.voice_channels`. Use `[*Guild.iter_channels(Channel.is_guild_voice)]` instead.
+- Deprecate `Guild.category_channels`. Use `[*Guild.iter_channels(Channel.is_guild_category)]` instead.
+- Deprecate `Guild.announcement_channels`. Use `[*Guild.iter_channels(Channel.is_guild_announcements)]` instead.
+- Deprecate `Guild.store_channels`. Use `[*Guild.iter_channels(Channel.is_guild_store)]` instead.
+- Deprecate `Guild.stage_channels`. Use `[*Guild.iter_channels(Channel.is_guild_stage)]` instead.
+- Deprecate `Guild.forum_channels`. Use `[*Guild.iter_channels(Channel.is_guild_forum)]` instead.
+- Deprecate `Guild.messageable_channels`. Use `[*Guild.iter_channels(Channel.is_in_group_guild_textual)]` instead.
+- Deprecate `Guild.connectable_channels`. Use `[*Guild.iter_channels(Channel.is_in_group_guild_connectable)]` instead.
 
 ## 1.3.31 *\[2023-05-30\]*
 

@@ -47,17 +47,23 @@ class GuildUserChunkEvent(EventBase):
                 user = User.from_data(guild_profile_data['user'], guild_profile_data, guild_id)
                 users.append(user)
             
-            try:
-                presence_datas = data['presences']
-            except KeyError:
-                pass
-            else:
+            presence_datas = data.get('presences', None)
+            if (presence_datas is not None):
                 try:
                     guild = GUILDS[guild_id]
                 except KeyError:
                     pass
                 else:
-                    guild._apply_presences(presence_datas)
+                    users = guild.users
+                    for presence_data in presence_datas:
+                        user_id = int(presence_data['user']['id'])
+                        try:
+                            user = users[user_id]
+                        except KeyError:
+                            pass
+                        else:
+                            user._update_presence(presence_data)
+            
             
             self = object.__new__(GuildUserChunkEvent)
             self.guild_id = guild_id

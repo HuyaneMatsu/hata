@@ -88,39 +88,52 @@ def test__Channel__sort():
     """
     Tests whether sorting channels works.
     """
-    channel_id_1 = 202209180144
-    position_1 = 0
-    channel_type_1 = ChannelType.guild_voice
+    channel_0 = Channel.precreate(202209180144, channel_type = ChannelType.guild_voice, position = 0)
+    channel_1 = Channel.precreate(202209180145, channel_type = ChannelType.guild_voice, position = 0)
+    channel_2 = Channel.precreate(202209180146, channel_type = ChannelType.guild_text, position = 2)
+    channel_3 = Channel.precreate(202306270080, channel_type = ChannelType.guild_category, position = 4)
+    channel_4 = Channel.precreate(202306270081, channel_type = ChannelType.guild_category, position = 0)
     
-    channel_id_2 = 202209180145
-    position_2 = 0
-    channel_type_2 = ChannelType.guild_voice
-    
-    channel_id_3 = 202209180146
-    position_3 = 2
-    channel_type_3 = ChannelType.guild_text
-    
-    channel_1 = Channel.precreate(channel_id_1, channel_type = channel_type_1, position = position_1)
-    channel_2 = Channel.precreate(channel_id_2, channel_type = channel_type_2, position = position_2)
-    channel_3 = Channel.precreate(channel_id_3, channel_type = channel_type_3, position = position_3)
-    
-    to_sort = [channel_2, channel_1, channel_3]
+    to_sort = [channel_0, channel_1, channel_2, channel_3, channel_4]
     to_sort.sort()
     
     vampytest.assert_eq(
         to_sort,
-        [channel_3, channel_1, channel_2]
+        [channel_2, channel_0, channel_1, channel_4, channel_3]
     )
 
 
-def test__Channel__format():
+@vampytest.call_from(['', 'm', 'd', 'c'])
+def test__Channel__format__passing(format_code):
     """
     Tests whether ``Channel.__format__`` works as intended.
-    """
-    channel_id = 202209200019
-    channel = Channel.precreate(channel_id)
     
-    for format_code in ('', 'm', 'd', 'c'):
-        string = format(channel, format_code)
-        
-        vampytest.assert_instance(string, str)
+    Case: Passing.
+    
+    Parameters
+    ----------
+    format_code : `str`
+        The format code to test.
+    """
+    channel = Channel()
+    
+    output = format(channel, format_code)
+    vampytest.assert_instance(output, str)
+
+
+@vampytest.raising(ValueError)
+@vampytest.call_from(['_', 'm_', 'dd', '_c'])
+def test__Channel__format__failing(format_code):
+    """
+    Tests whether ``Channel.__format__`` works as intended.
+    
+    Case: failing.
+    
+    Parameters
+    ----------
+    format_code : `str`
+        The format code to test.
+    """
+    channel = Channel()
+    
+    format(channel, format_code)

@@ -291,7 +291,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     
     @copy_docs(ChannelMetadataGuildMainBase._get_display_name)
     def _get_display_name(self):
-        return self.name.upper()
+        return self.name.lower()
     
     
     @classmethod

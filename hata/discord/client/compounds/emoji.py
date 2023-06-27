@@ -123,7 +123,7 @@ class ClientCompoundEmojiEndpoints(Compound):
         if guild is None:
             emojis = [Emoji.from_data(emoji_data, guild_id) for emoji_data in emoji_datas]
         else:
-            guild._sync_emojis(emoji_datas)
+            guild._update_emojis(emoji_datas)
             emojis = [*guild.emojis.values()]
         
         return emojis

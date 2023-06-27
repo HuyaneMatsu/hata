@@ -40,7 +40,7 @@ VALID_STICKER_IMAGE_MEDIA_TYPES = frozenset(('image/gif', 'image/png', 'applicat
 VALID_IMAGE_MEDIA_TYPES_ALL = frozenset((*VALID_ICON_MEDIA_TYPES_EXTENDED, *VALID_STICKER_IMAGE_MEDIA_TYPES))
 
 
-STYLE_PATTERN = re.compile('(^shield$)|(^banner[1-4]$)')
+WIDGET_STYLE_RP = re.compile('shield|banner[1-4]')
 
 MESSAGE_JUMP_URL_RP = re.compile(
     '(?:https://)?(?:(?:canary|ptb)\.)?discord(?:app)?.com/channels/(?:(\d{7,21})|@me)/(\d{7,21})/(\d{7,21})'
@@ -435,11 +435,24 @@ def guild_banner_url_as(guild, ext = None, size = None):
     return f'{CDN_ENDPOINT}/banners/{guild.id}/{prefix}{guild.banner_hash:0>32x}.{ext}{end}'
 
 
-def guild_widget_url(guild, style = 'shield'):
+def guild_widget_url(guild):
     """
     Returns the guild's widget image's url in `.png` format.
     
-    This function is a shared method of ``Guild``, ``GuildPreview``.
+    This function is a shared property of ``Guild``-s.
+    
+    Returns
+    -------
+    url : `str`
+    """
+    return f'{API_ENDPOINT}/guilds/{guild.id}/widget.png?style=shield'
+
+
+def guild_widget_url_as(guild, style = 'shield'):
+    """
+    Returns the guild's widget image's url in `.png` format.
+    
+    This function is a shared method of ``Guild``-s.
     
     Parameters
     ----------
@@ -455,7 +468,7 @@ def guild_widget_url(guild, style = 'shield'):
     ValueError
         If `style` was not passed as any of the expected values.
     """
-    if STYLE_PATTERN.match(style) is None:
+    if WIDGET_STYLE_RP.fullmatch(style) is None:
         raise ValueError(f'Invalid style: {style!r}')
     
     return f'{API_ENDPOINT}/guilds/{guild.id}/widget.png?style={style}'

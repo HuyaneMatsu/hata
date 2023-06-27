@@ -545,7 +545,7 @@ class ClientCompoundStickerEndpoints(Compound):
         if guild is None:
             stickers = [Sticker.from_data(sticker_data) for sticker_data in sticker_datas]
         else:
-            guild._sync_stickers(sticker_datas)
+            guild._update_stickers(sticker_datas)
             stickers = [*guild.stickers.values()]
         
         return stickers

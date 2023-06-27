@@ -10,22 +10,49 @@ from ....env import CACHE_USER
 
 from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ...channel import Channel
+from ...channel.channel_metadata.constants import (
+    NAME_LENGTH_MAX as CHANNEL_NAME_LENGTH_MAX, NAME_LENGTH_MIN as CHANNEL_NAME_LENGTH_MIN
+)
 from ...core import GUILDS
 from ...emoji import Emoji
+from ...emoji.emoji.constants import NAME_LENGTH_MAX as EMOJI_NAME_LENGTH_MAX, NAME_LENGTH_MIN as EMOJI_NAME_LENGTH_MIN
+from ...emoji.emoji.fields import parse_id as parse_emoji_id
 from ...http import urls as module_urls
 from ...localization.utils import LOCALE_DEFAULT
 from ...permission import Permission
 from ...permission.permission import PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR, PERMISSION_NONE
+from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...role import Role
+from ...role.role.constants import NAME_LENGTH_MAX as ROLE_NAME_LENGTH_MAX, NAME_LENGTH_MIN as ROLE_NAME_LENGTH_MIN
+from ...soundboard import SoundboardSound
+from ...soundboard.soundboard_sound.constants import (
+    NAME_LENGTH_MAX as SOUNDBOARDS_SOUND_NAME_LENGTH_MAX, NAME_LENGTH_MIN as SOUNDBOARDS_SOUND_NAME_LENGTH_MIN
+)
+from ...soundboard.soundboard_sound.fields import parse_id as parse_soundboard_sound_id
 from ...sticker import Sticker
-from ...user import ClientUserBase, User, VoiceState, ZEROUSER, create_partial_user_from_id
+from ...sticker.sticker.constants import (
+    NAME_LENGTH_MAX as STICKER_NAME_LENGTH_MAX, NAME_LENGTH_MIN as STICKER_NAME_LENGTH_MIN
+)
+from ...sticker.sticker.fields import parse_id as parse_sticker_id
+from ...user import VoiceState, ZEROUSER, create_partial_user_from_id
+from ...user.guild_profile.constants import (
+    NICK_LENGTH_MAX as USER_NICK_LENGTH_MAX, NICK_LENGTH_MIN as USER_NICK_LENGTH_MIN
+)
+from ...user.user.constants import NAME_LENGTH_MAX as USER_NAME_LENGTH_MAX, NAME_LENGTH_MIN as USER_NAME_LENGTH_MIN
+
+from ...user.user.matching_with_discrimiantor import (
+    is_user_matching_name_with_discriminator, parse_name_with_discriminator
+)
 from ...utils import DATETIME_FORMAT_CODE, EMOJI_NAME_RP
+from ...webhook import WebhookBase
 
 from .constants import (
-    GUILD_STATE_MASK_SOUNDBOARD_SOUNDS_CACHED, MAX_PRESENCES_DEFAULT, MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT,
-    MAX_USERS_DEFAULT, MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT,
-    EMOJI_UPDATE_CREATE, STICKER_UPDATE_CREATE, STICKER_UPDATE_DELETE, STICKER_UPDATE_EDIT,
-    VOICE_STATE_JOIN, VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, VOICE_STATE_MOVE, LARGE_GUILD_LIMIT
+    EMOJI_EVENT_CREATE, EMOJI_EVENT_DELETE, EMOJI_EVENT_UPDATE, GUILD_STATE_MASK_CACHE_ALL,
+    GUILD_STATE_MASK_CACHE_BOOSTERS, GUILD_STATE_MASK_SOUNDBOARD_SOUNDS_CACHED, LARGE_GUILD_LIMIT,
+    MAX_PRESENCES_DEFAULT, MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT, MAX_USERS_DEFAULT,
+    MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT, SOUNDBOARD_SOUND_EVENT_CREATE, SOUNDBOARD_SOUND_EVENT_DELETE,
+    SOUNDBOARD_SOUND_EVENT_UPDATE, STICKER_EVENT_CREATE, STICKER_EVENT_DELETE, STICKER_EVENT_UPDATE,
+    VOICE_STATE_EVENT_JOIN, VOICE_STATE_EVENT_LEAVE, VOICE_STATE_EVENT_MOVE, VOICE_STATE_EVENT_UPDATE
 )
 from .emoji_counts import EmojiCounts
 from .fields import (
@@ -67,9 +94,11 @@ from .preinstanced import (
     ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel
 )
 from .sticker_counts import StickerCounts
-from .helpers import _user_date_sort_key, _emoji_match_sort_key, _soundboard_sound_match_sort_key, \
-    _sticker_match_sort_key, _strip_emoji_name
-from ...precreate_helpers import process_precreate_parameters_and_raise_extra
+from .helpers import (
+    _channel_match_sort_key, _emoji_match_sort_key, _role_match_sort_key, _soundboard_sound_match_sort_key,
+    _sticker_match_sort_key, _strip_emoji_name, _user_date_sort_key, _user_match_sort_key, STICKER_MATCH_WEIGHT_NAME,
+    STICKER_MATCH_WEIGHT_TAG, USER_MATCH_WEIGHT_DISPLAY_NAME, USER_MATCH_WEIGHT_NAME, USER_MATCH_WEIGHT_NICK
+)
 
 
 Client = include('Client')
@@ -168,6 +197,10 @@ PRECREATE_FIELDS = {
 }
 
 
+USER_ALL_NAME_LENGTH_MAX = max(USER_NAME_LENGTH_MAX, USER_NICK_LENGTH_MAX)
+USER_ALL_NAME_LENGTH_MIN = max(USER_NAME_LENGTH_MIN, USER_NICK_LENGTH_MIN)
+USER_ALL_NAME_LENGTH_MAX_WITH_DISCRIMINATOR = USER_ALL_NAME_LENGTH_MAX + 5
+
 @export
 class Guild(DiscordEntity, immortal = True):
     """
@@ -175,7 +208,7 @@ class Guild(DiscordEntity, immortal = True):
     
     Attributes
     ----------
-    _cache_boosters : `None`, `list` of ``ClientUserBase`` objects
+    _cache_boosters : `None`, `list` of ``ClientUserBase``
         Cached slot for the boosters of the guild.
     
     _cache_permission : `None`, `dict` of (`int`, ``Permission``) items
@@ -1217,10 +1250,8 @@ class Guild(DiscordEntity, immortal = True):
             self.voice_states = parse_voice_states(data, {}, guild_id)
             
         else:
-            # Clear cache
-            self._cache_boosters = None
+            # Clear permission cache
             self._cache_permission = None
-            self._state = 0
             
             # Update fields.
             self.channels = parse_channels(data, self.channels, guild_id)
@@ -1247,6 +1278,9 @@ class Guild(DiscordEntity, immortal = True):
         data : `dict` of (`str`, `object`) items
             Guild data received from Discord.
         """
+        # Clear generic cache.
+        self._clear_cache()
+        
         self.afk_channel_id = parse_afk_channel_id(data)
         self.afk_timeout = parse_afk_timeout(data)
         self.available = parse_available(data)
@@ -1281,7 +1315,6 @@ class Guild(DiscordEntity, immortal = True):
         self.widget_channel_id = parse_widget_channel_id(data)
         self.widget_enabled = parse_widget_enabled(data)
         
-        self._cache_boosters = None
         self._update_counts_only(data)
     
     
@@ -1390,6 +1423,9 @@ class Guild(DiscordEntity, immortal = True):
         | widget_enabled                | `bool`                                |
         +-------------------------------+---------------------------------------+
         """
+        # Clear generic cache.
+        self._clear_cache()
+        
         old_attributes = {}
         
         # afk_channel_id
@@ -1578,7 +1614,6 @@ class Guild(DiscordEntity, immortal = True):
             old_attributes['widget_enabled'] = self.widget_enabled
             self.widget_enabled = widget_enabled
         
-        self._cache_boosters = None
         self._update_counts_only(data)
         
         return old_attributes
@@ -2363,9 +2398,6 @@ class Guild(DiscordEntity, immortal = True):
         return new
     
     
-    widget_url = module_urls.guild_widget_url
-    
-    
     def _delete(self, client):
         """
         When a client leaves (gets kicked or banned) from a guild, this method is called. If the guild loses it's last
@@ -2378,12 +2410,12 @@ class Guild(DiscordEntity, immortal = True):
         """
         clients = self.clients
         
+        client.guilds.discard(self)
+        
         try:
             clients.remove(client)
         except ValueError:
-            pass
-        
-        client.guilds.discard(self)
+            return
         
         if clients:
             return
@@ -2391,16 +2423,17 @@ class Guild(DiscordEntity, immortal = True):
         # Clean up guild profiles
         guild_id = self.id
         for user in self.users.values():
-            if isinstance(user, User):
+            if not isinstance(user, Client):
                 try:
                     del user.guild_profiles[guild_id]
                 except KeyError:
                     pass
     
+    # ---- Extra Updaters ----
     
     def _update_voice_state(self, data, user):
         """
-        Called by dispatch event. Updates the voice state of the represented user by `user_id` with the given `data`.
+        Called by dispatch event. Updates the voice state of the represented user with the given `data`.
         
         This method is an iterable generator.
         
@@ -2418,27 +2451,27 @@ class Guild(DiscordEntity, immortal = True):
             
             Can be one of the following:
             
-            +-----------------------+-------+
-            | Respective name       | Value |
-            +=======================+=======+
-            | VOICE_STATE_NONE      | 0     |
-            +-----------------------+-------+
-            | VOICE_STATE_JOIN      | 1     |
-            +-----------------------+-------+
-            | VOICE_STATE_LEAVE     | 2     |
-            +-----------------------+-------+
-            | VOICE_STATE_UPDATE    | 3     |
-            +-----------------------+-------+
-            | VOICE_STATE_MOVE      | 4     |
-            +-----------------------+-------+
+            +-----------------------------+-------+
+            | Respective name           | Value |
+            +==============================+=======+
+            | VOICE_STATE_EVENT_NONE      | 0     |
+            +-----------------------------+-------+
+            | VOICE_STATE_EVENT_JOIN      | 1     |
+            +-----------------------------+-------+
+            | VOICE_STATE_EVENT_LEAVE     | 2     |
+            +-----------------------------+-------+
+            | VOICE_STATE_EVENT_UPDATE    | 3     |
+            +-----------------------------+-------+
+            | VOICE_STATE_EVENT_MOVE      | 4     |
+            +-----------------------------+-------+
         
         voice_state : `None`, ``VoiceState``
             The user's respective voice state.
             
-            Will be returned as `None` if action is `VOICE_STATE_NONE`.
+            Will be returned as `None` if action is `VOICE_STATE_EVENT_NONE`.
         
         old_attributes / old_channel_id : `None` or (`dict` of (`str`, `object`) items / `int`)
-            If `action` is `VOICE_STATE_UPDATE`, then `old_attributes` is returned as a `dict` containing the changed
+            If `action` is `VOICE_STATE_EVENT_UPDATE`, then `old_attributes` is returned as a `dict` containing the changed
             attributes in `attribute-name` - `old-value` relation. All item at the returned dictionary is optional.
             
             +---------------+-------------------+
@@ -2457,7 +2490,7 @@ class Guild(DiscordEntity, immortal = True):
             | self_video    | `bool`            |
             +---------------+-------------------+
             
-            If `action` is `VOICE_STATE_LEAVE`, `VOICE_STATE_MOVE`, then the old channel's identifier is returned.
+            If `action` is `VOICE_STATE_EVENT_LEAVE`, `VOICE_STATE_EVENT_MOVE`, then the old channel's identifier is returned.
         """
         try:
             voice_state = self.voice_states[user.id]
@@ -2465,19 +2498,19 @@ class Guild(DiscordEntity, immortal = True):
             voice_state = VoiceState.from_data(data, self.id)
             if (voice_state is not None):
                 voice_state._set_cache_user(user)
-                yield VOICE_STATE_JOIN, voice_state, None
+                yield VOICE_STATE_EVENT_JOIN, voice_state, None
         
         else:
             voice_state._set_cache_user(user)
             old_attributes = voice_state._difference_update_attributes(data)
             if old_attributes:
-                yield VOICE_STATE_UPDATE, voice_state, old_attributes
+                yield VOICE_STATE_EVENT_UPDATE, voice_state, old_attributes
             
             old_channel_id, new_channel_id = voice_state._update_channel(data)
             if new_channel_id == 0:
-                yield VOICE_STATE_LEAVE, voice_state, old_channel_id
+                yield VOICE_STATE_EVENT_LEAVE, voice_state, old_channel_id
             elif old_channel_id != new_channel_id:
-                yield VOICE_STATE_MOVE, voice_state, old_channel_id
+                yield VOICE_STATE_EVENT_MOVE, voice_state, old_channel_id
     
     
     def _update_voice_state_restricted(self, data, user):
@@ -2505,112 +2538,418 @@ class Guild(DiscordEntity, immortal = True):
             voice_state._update_attributes(data)
     
     
-    @property
-    def text_channels(self):
+    def _difference_update_emojis(self, data):
         """
-        Returns the text channels of the guild. Announcement channels are not included.
+        Updates the emojis o the guild and returns all the changes broke down for each changes emoji.
+        
+        Parameters
+        ----------
+        data : `list` of (`dict` of (`str`, `object`) items)
+            Received emoji datas.
         
         Returns
         -------
-        channels : `list` of ``Channel``
+        changes : `list` of `tuple` (`int`, ``Emoji``, (`None`, `dict` of (`str`, `object`) items)))
+            The changes broken down for each changed emoji. Each element of the list is a tuple of 3 elements:
+            
+            +-------+-------------------+-----------------------------------------------+
+            | Index | Respective name   | Type                                          |
+            +=======+===================+===============================================+
+            | 0     | action            | `int`                                         |
+            +-------+-------------------+-----------------------------------------------+
+            | 1     | emoji             | ``Emoji``                                     |
+            +-------+-------------------+-----------------------------------------------+
+            | 2     | old_attributes    | `None`, `dict` of (`str`, `object`) items     |
+            +-------+-------------------+-----------------------------------------------+
+            
+            Possible actions:
+            
+            +-----------------------+-------+
+            | Respective name       | Value |
+            +=======================+=======+
+            | EMOJI_EVENT_NONE      | `0`   |
+            +-----------------------+-------+
+            | EMOJI_EVENT_CREATE    | `1`   |
+            +-----------------------+-------+
+            | EMOJI_EVENT_DELETE    | `2`   |
+            +-----------------------+-------+
+            | EMOJI_EVENT_UPDATE    | `3`   |
+            +-----------------------+-------+
+            
+            If action is `EMOJI_EVENT_UPDATE`, then `old_attributes` is passed as a dictionary containing the changed
+            attributes in an `attribute-name` - `old-value` relation. Every item in `old_attributes` is optional.
+            
+            +-------------------+-------------------------------+
+            | Keys              | Values                        |
+            +===================+===============================+
+            | animated          | `bool`                        |
+            +-------------------+-------------------------------+
+            | available         | `bool`                        |
+            +-------------------+-------------------------------+
+            | managed           | `bool`                        |
+            +-------------------+-------------------------------+
+            | name              | `int`                         |
+            +-------------------+-------------------------------+
+            | require_colons    | `bool`                        |
+            +-------------------+-------------------------------+
+            | roles_ids         | `None`, `tuple` of `int`      |
+            +-------------------+-------------------------------+
         """
-        return [channel for channel in self.channels.values() if channel.is_guild_text()]
+        emojis = self.emojis
+        changes = []
+        old_ids = set(emojis)
+        
+        for emoji_data in data:
+            emoji_id = parse_emoji_id(emoji_data)
+            try:
+                emoji = emojis[emoji_id]
+            except KeyError:
+                emoji = Emoji.from_data(emoji_data, self.id)
+                emojis[emoji.id] = emoji
+                changes.append((EMOJI_EVENT_CREATE, emoji, None),)
+            else:
+                old_attributes = emoji._difference_update_attributes(emoji_data)
+                if old_attributes:
+                    changes.append((EMOJI_EVENT_UPDATE, emoji, old_attributes),)
+                old_ids.remove(emoji_id)
+        
+        for emoji_id in old_ids:
+            try:
+                emoji = emojis.pop(emoji_id)
+            except KeyError:
+                pass
+            else:
+                changes.append((EMOJI_EVENT_DELETE, emoji, None),)
+        
+        return changes
     
     
-    @property
-    def voice_channels(self):
+    def _difference_update_soundboard_sounds(self, data):
         """
-        Returns the voice channels of the guild.
+        Updates the soundboard_sounds of the guild and returns the changes broke down for each changed soundboard sound.
+        
+        Parameters
+        ----------
+        data : `list` of (`dict` of (`str`, `object`) items)
+            Received soundboard sound datas.
         
         Returns
         -------
-        channels : `list` of ``Channel``
+        changes : `list` of `tuple` (`int`, ``SoundboardSound``, (`None`, `dict` of (`str`, `object`) items)))
+            The changes broken down for each changed soundboard sound.
+            Each element of the list is a tuple of 3 elements:
+            
+            +-------+-------------------+-----------------------------------------------+
+            | Index | Respective name   | Type                                          |
+            +=======+===================+===============================================+
+            | 0     | action            | `int`                                         |
+            +-------+-------------------+-----------------------------------------------+
+            | 1     | soundboard_sound  | ``SoundboardSound``                           |
+            +-------+-------------------+-----------------------------------------------+
+            | 2     | old_attributes    | `None`, `dict` of (`str`, `object`) items     |
+            +-------+-------------------+-----------------------------------------------+
+            
+            Possible actions:
+            
+            +-------------------------------+-------+
+            | Respective name               | Value |
+            +===============================+=======+
+            | SOUNDBOARD_SOUND_EVENT_NONE   | `0`   |
+            +-------------------------------+-------+
+            | SOUNDBOARD_SOUND_EVENT_CREATE | `1`   |
+            +-------------------------------+-------+
+            | SOUNDBOARD_SOUND_EVENT_DELETE | `2`   |
+            +-------------------------------+-------+
+            | SOUNDBOARD_SOUND_EVENT_UPDATE | `3`   |
+            +-------------------------------+-------+
+            
+            If action is `SOUNDBOARD_SOUND_EVENT_UPDATE`, then `old_attributes` is passed as a dictionary containing
+            the changed attributes in an `attribute-name` - `old-value` relation. Every item in `old_attributes` is
+            optional.
+            
+            +-----------+-------------------+
+            | Keys      | Values            |
+            +===========+===================+
+            | available | `bool`            |
+            +-----------+-------------------+
+            | emoji     | `None`, ``Emoji`` |
+            +-----------+-------------------+
+            | name      | `str`             |
+            +-----------+-------------------+
+            | volume    | `float`           |
+            +-----------+-------------------+
         """
-        return [channel for channel in self.channels.values() if channel.is_guild_voice()]
+        soundboard_sounds = self.soundboard_sounds
+        changes = []
+        
+        if soundboard_sounds is None:
+            old_ids = None
+        else:
+            old_ids = set(soundboard_sounds)
+        
+        if data:
+            if soundboard_sounds is None:
+                soundboard_sounds = {}
+                self.soundboard_sounds = soundboard_sounds
+            
+            for soundboard_sound_data in data:
+                soundboard_sound_id = parse_soundboard_sound_id(soundboard_sound_data)
+                
+                try:
+                    soundboard_sound = soundboard_sounds[soundboard_sound_id]
+                except KeyError:
+                    soundboard_sound = SoundboardSound.from_data(soundboard_sound_data)
+                    soundboard_sounds[soundboard_sound.id] = soundboard_sound
+                    changes.append((SOUNDBOARD_SOUND_EVENT_CREATE, soundboard_sound, None),)
+                
+                else:
+                    old_attributes = soundboard_sound._difference_update_attributes(soundboard_sound_data)
+                    if old_attributes:
+                        changes.append((SOUNDBOARD_SOUND_EVENT_UPDATE, soundboard_sound, old_attributes),)
+                    
+                    if (old_ids is not None):
+                        old_ids.remove(soundboard_sound_id)
+        
+        else:
+            self.soundboard_sounds = None
+        
+        if (old_ids is not None):
+            for soundboard_sound_id in old_ids:
+                try:
+                    soundboard_sound = soundboard_sounds.pop(soundboard_sound_id)
+                except KeyError:
+                    pass
+                else:
+                    changes.append((SOUNDBOARD_SOUND_EVENT_DELETE, soundboard_sound, None),)
+        
+        self.soundboard_sounds_cached = True
+        
+        return changes
     
     
-    @property
-    def category_channels(self):
+    def _difference_update_stickers(self, data):
         """
-        Returns the category channels of the guild.
+        Updates the stickers of the guild and returns the changes broke down for each changed sticker.
+        
+        Parameters
+        ----------
+        data : `list` of (`dict` of (`str`, `object`) items)
+            Received sticker datas.
         
         Returns
         -------
-        channels : `list` of ``Channel``
+        changes : `list` of `tuple` (`int`, ``Sticker``, (`None`, `dict` of (`str`, `object`) items)))
+            The changes broken down for each changed sticker. Each element of the list is a tuple of 3 elements:
+            
+            +-------+-------------------+-----------------------------------------------+
+            | Index | Respective name   | Type                                          |
+            +=======+===================+===============================================+
+            | 0     | action            | `int`                                         |
+            +-------+-------------------+-----------------------------------------------+
+            | 1     | sticker           | ``Sticker``                                   |
+            +-------+-------------------+-----------------------------------------------+
+            | 2     | old_attributes    | `None`, `dict` of (`str`, `object`) items     |
+            +-------+-------------------+-----------------------------------------------+
+            
+            Possible actions:
+            
+            +-----------------------+-------+
+            | Respective name       | Value |
+            +=======================+=======+
+            | STICKER_EVENT_NONE    | `0`   |
+            +-----------------------+-------+
+            | STICKER_EVENT_CREATE  | `1`   |
+            +-----------------------+-------+
+            | STICKER_EVENT_DELETE  | `2`   |
+            +-----------------------+-------+
+            | STICKER_EVENT_UPDATE  | `3`   |
+            +-----------------------+-------+
+            
+            If action is `STICKER_EVENT_UPDATE`, then `old_attributes` is passed as a dictionary containing the changed
+            attributes in an `attribute-name` - `old-value` relation. Every item in `old_attributes` is optional.
+            
+            +-----------------------+-----------------------------------+
+            | Keys                  | Values                            |
+            +=======================+===================================+
+            | available             | `bool`                            |
+            +-----------------------+-----------------------------------+
+            | description           | `None`, `str`                     |
+            +-----------------------+-----------------------------------+
+            | name                  | `str`                             |
+            +-----------------------+-----------------------------------+
+            | sort_value            | `int`                             |
+            +-----------------------+-----------------------------------+
+            | tags                  | `None`  or `frozenset` of `str`   |
+            +-----------------------+-----------------------------------+
         """
-        return [channel for channel in self.channels.values() if channel.is_guild_category()]
-    
-    
-    @property
-    def announcement_channels(self):
-        """
-        Returns the announcement channels of the guild.
+        stickers = self.stickers
+        changes = []
+        old_ids = set(stickers)
         
-        Returns
-        -------
-        channels : `list` of ``Channel``
-        """
-        return [channel for channel in self.channels.values() if channel.is_guild_announcements()]
-    
-    
-    @property
-    def store_channels(self):
-        """
-        Returns the store channels of the guild.
+        for sticker_data in data:
+            sticker_id = parse_sticker_id(sticker_data)
+            try:
+                sticker = stickers[sticker_id]
+            except KeyError:
+                sticker = Sticker.from_data(sticker_data)
+                stickers[sticker.id] = sticker
+                changes.append((STICKER_EVENT_CREATE, sticker, None),)
+            else:
+                old_attributes = sticker._difference_update_attributes(sticker_data)
+                if old_attributes:
+                    changes.append((STICKER_EVENT_UPDATE, sticker, old_attributes),)
+                old_ids.remove(sticker_id)
         
-        Returns
-        -------
-        channels : `list` of ``Channel``
-        """
-        return [channel for channel in self.channels.values() if channel.is_guild_store()]
-    
-    @property
-    def stage_channels(self):
-        """
-        Returns the stage channels of the guild.
+        for sticker_id in old_ids:
+            try:
+                sticker = stickers.pop(sticker_id)
+            except KeyError:
+                pass
+            else:
+                changes.append((STICKER_EVENT_DELETE, sticker, None),)
         
-        Returns
-        -------
-        channels : `list` of ``Channel``
-        """
-        return [channel for channel in self.channels.values() if channel.is_guild_stage()]
+        return changes
     
     
-    @property
-    def forum_channels(self):
+    def _update_generic(self, data):
         """
-        Returns the forum channels of the guild.
+        Syncs the guild with the requested guild data.
         
-        Returns
-        -------
-        channels : `list` of ``Channel``
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Received guild data.
         """
-        return [channel for channel in self.channels.values() if channel.is_guild_forum()]
-    
-    
-    @property
-    def messageable_channels(self):
-        """
-        Returns the messageable channels (excluding threads) of the guild.
+        self.emojis = parse_emojis(data, self.emojis, self.id)
+        self.roles = parse_roles(data, self.roles, self.id)
+        self.stickers = parse_stickers(data, self.stickers)
         
-        Returns
-        -------
-        channels : `list` of ``Channel``
-        """
-        return [channel for channel in self.channels.values() if channel.is_in_group_guild_textual()]
-    
-    
-    @property
-    def connectable_channels(self):
-        """
-        Returns the connectable channels of the guild.
+        self._update_attributes(data)
         
-        Returns
-        -------
-        channels : `list` of ``Channel``
-        """
-        return [channel for channel in self.channels.values() if channel.is_in_group_guild_connectable()]
+        # We do not receive large, but we still want to update it
+        self.large = self.large or (self.approximate_user_count >= LARGE_GUILD_LIMIT)
+        
+        # No other data received.
     
+    
+    def _update_channels(self, data):
+        """
+        Syncs the guild's channels with the given guild channel datas.
+        
+        Parameters
+        ----------
+        data `list` of `dict` of (`str`, `object`) items
+            Received guild channel datas.
+        """
+        channels = self.channels
+        if channels:
+            old_channels = [*channels.values()]
+            channels.clear()
+        
+        guild_id = self.id
+        
+        for channel_data in data:
+            channel = Channel.from_data(channel_data, None, guild_id, strong_cache = False)
+            channels[channel.id] = channel
+    
+    
+    def _update_emojis(self, emoji_datas):
+        """
+        Syncs the emojis of the guild.
+        
+        Parameters
+        ----------
+        emoji_datas : `list` of (`dict` of (`str`, `object`) items)
+            Received emoji datas.
+        """
+        emojis = self.emojis
+        if emojis:
+            emoji_cache = [*emojis.values()]
+            emojis.clear()
+        
+        guild_id = self.id
+        
+        for emoji_data in emoji_datas:
+            emoji = Emoji.from_data(emoji_data, guild_id)
+            emojis[emoji.id] = emoji
+    
+    
+    def _update_roles(self, data):
+        """
+        Syncs the guild's roles with the given guild role datas.
+        
+        Parameters
+        ----------
+        data `list` of `dict` of (`str`, `object`) items
+            Received guild role datas.
+        """
+        roles = self.roles
+        if roles:
+            old_roles = [*roles.values()]
+            roles.clear()
+        
+        guild_id = self.id
+        
+        for role_data in data:
+            role = Role.from_data(role_data, guild_id, strong_cache = False)
+            roles[role.id] = role
+    
+    
+    def _update_soundboard_sounds(self, data):
+        """
+        Syncs the guild's soundboard_sounds with the given guild soundboard_sound datas.
+        
+        Parameters
+        ----------
+        data `list` of `dict` of (`str`, `object`) items
+            Received guild soundboard sound datas.
+        """
+        if data:
+            soundboard_sounds = self.soundboard_sounds
+            if (soundboard_sounds is None):
+                soundboard_sounds = {}
+                self.soundboard_sounds = soundboard_sounds
+            else:
+                old_soundboard_sounds = [*soundboard_sounds.values()]
+                soundboard_sounds.clear()
+            
+            for soundboard_sound_data in data:
+                soundboard_sound = SoundboardSound.from_data(soundboard_sound_data, strong_cache = False)
+                soundboard_sounds[soundboard_sound.id] = soundboard_sound
+        
+        else:
+            self.soundboard_sounds = None
+        
+        self.soundboard_sounds_cached = True
+    
+    
+    def _update_stickers(self, sticker_datas):
+        """
+        Syncs the stickers of the guild.
+        
+        Parameters
+        ----------
+        sticker_datas : `list` of (`dict` of (`str`, `object`) items)
+            Received sticker datas.
+        """
+        stickers = self.stickers
+        if stickers:
+            sticker_cache = [*stickers.values()]
+            stickers.clear()
+        
+        for sticker_data in sticker_datas:
+            sticker = Sticker.from_data(sticker_data)
+            stickers[sticker.id] = sticker
+
+    
+    # ---- urls ----
+    
+    widget_url = property(module_urls.guild_widget_url)
+    widget_url_as = module_urls.guild_widget_url_as
+    vanity_url = property(module_urls.guild_vanity_invite_url)
+    widget_json_url = property(module_urls.guild_widget_json_url)
+    
+    # ---- properties ----
     
     @property
     def default_role(self):
@@ -2640,1140 +2979,6 @@ class Guild(DiscordEntity, immortal = True):
         return (not self.clients)
     
     
-    def _sync(self, data):
-        """
-        Syncs the guild with the requested guild data.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `object`) items
-            Received guild data.
-        """
-        self.large = parse_large(data) or (self.approximate_user_count >= LARGE_GUILD_LIMIT)
-        
-        self._update_attributes(data)
-        
-        try:
-            role_datas = data['roles']
-        except KeyError:
-            pass
-        else:
-            self._sync_roles(role_datas)
-        
-        try:
-            emoji_datas = data['emojis']
-        except KeyError:
-            pass
-        else:
-            self._sync_emojis(emoji_datas)
-
-##        # sadly we don't get voice states with guild_get
-##        try:
-##            voice_state_datas = data['voice_states']
-##        except KeyError:
-##            self.voice_states.clear()
-##        else:
-##            old_voice_states = self.voice_states
-##            new_voice_states = self.voice_states = {}
-##
-##            for voice_state_data in voice_state_datas:
-##                user = create_partial_user_from_id(int(voice_state_data['user_id']))
-##
-##                channel_id = voice_state_data.get('channel_id', None)
-##                if channel_id is None:
-##                    continue
-##                channel = self.channels[int(channel_id)]
-##
-##                try:
-##                    voice_state = old_voice_states[user.id]
-##                except KeyError:
-##                    new_voice_states[user.id] = VoiceState(voice_state_data, channel)
-##                    continue
-##
-##                voice_state._update_attributes(voice_state_data, channel)
-##                new_voice_states[user.id] = voice_state
-    
-    def _apply_presences(self, data):
-        """
-        Applies the presences to the guild user's. Called when the guild is created or if a user chunk is received if
-        presence caching is enabled.
-        
-        Parameters
-        ----------
-        data : `list` of (`dict` of (`str`, `object`) items)
-            Guild's users' presences' data.
-        """
-        users = self.users
-        for presence_data in data:
-            user_id = int(presence_data['user']['id'])
-            try:
-                user = users[user_id]
-            except KeyError:
-                pass
-            else:
-                user._update_presence(presence_data)
-    
-    
-    def _sync_channels(self, data):
-        """
-        Syncs the guild's channels with the given guild channel datas.
-        
-        Parameters
-        ----------
-        data `list` of (`dict` of (`str`, `object`) items)
-            Received guild channel datas.
-        """
-        channels = self.channels
-        old_ids = set(channels)
-        
-        for channel_data in data:
-            channel = Channel.from_data(channel_data, None, self.id)
-            channel_id = channel.id
-            try:
-                old_ids.remove(channel_id)
-            except KeyError:
-                pass
-            else:
-                # old channel -> update
-                channel._update_attributes(channel_data)
-        
-        # deleting
-        for channel_id in old_ids:
-            channels[channel_id]._delete(None)
-    
-    
-    def _sync_roles(self, data):
-        """
-        Syncs the guild's roles with the given guild role datas.
-        
-        Parameters
-        ----------
-        data `list` of (`dict` of (`str`, `object`) items)
-            Received guild role datas.
-        """
-        roles = self.roles
-        old_ids = set(roles)
-        # every new role can cause mass switchings at the role orders, can it mess up the order tho?
-        for role_data in data:
-            role = Role.from_data(role_data, self.id)
-            try:
-                old_ids.remove(role.id)
-                role._update_attributes(role_data)
-            except KeyError:
-                pass
-        
-        for role_id in old_ids:
-            roles[role_id]._delete()
-    
-    
-    def get_user(self, name, default = None):
-        """
-        Tries to find the a user with the given name at the guild. Returns the first matched one.
-        
-        The search order is the following:
-        - `full_name`
-        - `name`
-        - `nick`
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        default : `object` = `None`, Optional
-            The value what is returned when no user was found. Defaults to `None`.
-        
-        Returns
-        -------
-        user : ``ClientUserBase``, `default`
-        """
-        name_length = len(name)
-        if name_length < 1:
-            return default
-        
-        users = self.users
-        
-        if name_length > 6:
-            if name_length > 37:
-                return default
-            
-            if name[-5] == '#':
-                try:
-                    discriminator = int(name[-4:])
-                except ValueError:
-                    pass
-                else:
-                    stripped_name = name[:-5]
-                    for user in users.values():
-                        if (user.discriminator == discriminator) and (user.name == stripped_name):
-                            return user
-        
-        if name_length > 32:
-            return default
-        
-        for user in users.values():
-            if user.name == name:
-                return user
-        
-        for user in users.values():
-            display_name = user.display_name
-            if (display_name is not None) and (display_name == name):
-                return user
-        
-        guild_id = self.id
-        for user in users.values():
-            try:
-                guild_profile = user.guild_profiles[guild_id]
-            except KeyError:
-                pass
-            else:
-                nick = guild_profile.nick
-                if (nick is not None) and (nick == name):
-                    return user
-        
-        return default
-    
-    
-    def get_user_like(self, name, default = None):
-        """
-        Searches a user, who's name or nick starts with the given string and returns the first find. Also matches full
-        name.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        default : `object` = `None`, Optional
-            The value what is returned when no user was found. Defaults to `None`.
-        
-        Returns
-        -------
-        user : ``ClientUserBase``, `default`
-        """
-        name_length = len(name)
-        if name_length < 1:
-            return default
-        
-        users = self.users
-        
-        if name_length > 6:
-            if name_length > 37:
-                return default
-            
-            if name[-5] == '#':
-                try:
-                    discriminator = int(name[-4:])
-                except ValueError:
-                    pass
-                else:
-                    stripped_name = name[:-5]
-                    for user in users.values():
-                        if (user.discriminator == discriminator) and (user.name == stripped_name):
-                            return user
-        
-        if name_length > 32:
-            return default
-        
-        pattern = re_compile(re_escape(name), re_ignore_case)
-        guild_id = self.id
-        for user in self.users.values():
-            if (pattern.search(user.name) is not None):
-                return user
-            
-            display_name = user.display_name
-            if (display_name is not None) and (pattern.search(display_name) is not None):
-                return user
-            
-            try:
-                guild_profile = user.guild_profiles[guild_id]
-            except KeyError:
-                pass
-            else:
-                nick = guild_profile.nick
-                if (nick is not None) and (pattern.search(nick) is not None):
-                    return user
-            
-        return default
-    
-    
-    def get_users_like(self, name):
-        """
-        Searches the users, who's name or nick start with the given string.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        
-        Returns
-        -------
-        users : `list` of ``ClientUserBase``
-        """
-        result = []
-        
-        name_length = len(name)
-        if name_length < 0:
-            return result
-        
-        users = self.users
-        
-        if name_length > 6:
-            if name_length > 37:
-                return result
-            
-            if name[-5] == '#':
-                try:
-                    discriminator = int(name[-4:])
-                except ValueError:
-                    pass
-                else:
-                    stripped_name = name[:-5]
-                    for user in users.values():
-                        if (user.discriminator == discriminator) and (user.name == stripped_name):
-                            result.append(user)
-                            break
-        
-        if name_length > 32:
-            return result
-        
-        pattern = re_compile(re_escape(name), re_ignore_case)
-        guild_id = self.id
-        for user in self.users.values():
-            if pattern.search(user.name) is not None:
-                result.append(user)
-                continue
-            
-            display_name = user.display_name
-            if (display_name is not None) and (pattern.search(display_name) is not None):
-                result.append(user)
-                continue
-            
-            try:
-                guild_profile = user.guild_profiles[guild_id]
-            except KeyError:
-                pass
-            else:
-                nick = guild_profile.nick
-                if (nick is not None) and (pattern.search(nick) is not None):
-                    result.append(user)
-                    continue
-        
-        return result
-    
-    
-    def get_users_like_ordered(self, name):
-        """
-        Searches the users, who's name or nick start with the given string. At the orders them at the same ways, as
-        Discord orders them when requesting guild member chunk.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        
-        Returns
-        -------
-        users : `list` of ``ClientUserBase`` objects
-        """
-        to_sort = []
-        if (not 1 < len(name) < 33):
-            return to_sort
-        
-        now_date_time = None
-        
-        pattern = re_compile(re_escape(name), re_ignore_case)
-        guild_id = self.id
-        for user in self.users.values():
-            try:
-                guild_profile = user.guild_profiles[guild_id]
-            except KeyError:
-                continue
-            
-            # Use goto
-            while True:
-                if pattern.search(user.name) is not None:
-                    matched = True
-                    break
-                
-                display_name = user.display_name
-                if (display_name is not None) and (pattern.search(display_name) is not None):
-                    matched = True
-                    break
-                
-                nick = guild_profile.nick
-                if (nick is not None) and (pattern.search(nick) is not None):
-                    matched = True
-                    break
-                
-                matched = False
-                break
-            
-            if not matched:
-                continue
-            
-            joined_at = guild_profile.joined_at
-            
-            if joined_at is None:
-                # Instead of defaulting to `user.created_at` use the current date
-                if now_date_time is None:
-                    now_date_time = DateTime.utcnow()
-                
-                joined_at = now_date_time
-            
-            
-            to_sort.append((user, joined_at))
-        
-        if not to_sort:
-            return to_sort
-        
-        to_sort.sort(key = _user_date_sort_key)
-        return [item[0] for item in to_sort]
-    
-    
-    def get_emoji(self, name, default = None):
-        """
-        Searches an emoji of the guild, what's name equals the given name.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        default : `object` = `None`, Optional
-            The value what is returned when no emoji was found. Defaults to `None`.
-        
-        Returns
-        -------
-        emoji : ``Emoji``, `default`
-        """
-        parsed = EMOJI_NAME_RP.fullmatch(name)
-        if (parsed is not None):
-            name = parsed.group(1)
-            for emoji in self.emojis.values():
-                if emoji.name == name:
-                    return emoji
-        
-        return default
-    
-    
-    def get_emoji_like(self, name, default = None):
-        """
-        Searches an emoji of the guild that matches the given `name` the most.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        default : `object` = `None`, Optional
-            The value what is returned when no emoji was found. Defaults to `None`.
-        
-        Returns
-        -------
-        emoji : ``Emoji``, `default`
-        """
-        name = _strip_emoji_name(name)
-        
-        emoji_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
-        
-        accurate_emoji = default
-        accurate_match_key = (100, 100)
-        
-        for emoji in self.emojis.values():
-            emoji_name = emoji.name
-            parsed = emoji_name_pattern.search(emoji_name)
-            if parsed is None:
-                continue
-            
-            match_start = parsed.start()
-            match_length = parsed.end() - match_start
-            
-            match_rate = (match_length, match_length)
-            if accurate_match_key < match_rate:
-                continue
-            
-            accurate_emoji = emoji
-            accurate_match_key = match_rate
-        
-        return accurate_emoji
-    
-    
-    def get_emojis_like(self, name):
-        """
-        Searches the emojis, what's name match the given value.
-        
-        The returned value is ordered by match rate.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        
-        Returns
-        -------
-        emojis : `list` of ``Emoji``
-        """
-        name = _strip_emoji_name(name)
-        
-        emoji_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
-        
-        to_sort = []
-        
-        for emoji in self.emojis.values():
-            emoji_name = emoji.name
-            parsed = emoji_name_pattern.search(emoji_name)
-            if parsed is None:
-                continue
-            
-            match_start = parsed.start()
-            match_length = parsed.end() - match_start
-            
-            to_sort.append((emoji, (match_length, match_start)))
-        
-        if not to_sort:
-            return to_sort
-        
-        to_sort.sort(key = _emoji_match_sort_key)
-        return [item[0] for item in to_sort]
-    
-    
-    def get_sticker(self, name, default = None):
-        """
-        Searches a sticker of the guild, what's name equals to the given name.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        default : `object` = `None`, Optional
-            The value what is returned when no emoji was found. Defaults to `None`.
-        
-        Returns
-        -------
-        sticker : ``Sticker``, `default`
-        """
-        for sticker in self.stickers.values():
-            if sticker.name == name:
-                return sticker
-        
-        return default
-    
-    
-    def get_sticker_like(self, name, default = None):
-        """
-        Searches a sticker of the guild that's name or tag matches the given `name` the most.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        default : `object` = `None`, Optional
-            The value what is returned when no emoji was found. Defaults to `None`.
-        
-        Returns
-        -------
-        sticker : ``Sticker``, `default`
-        """
-        sticker_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
-        
-        accurate_sticker = default
-        matching_names_only = False
-        accurate_match_key = (100, 100)
-        
-        for sticker in self.stickers.values():
-            sticker_name = sticker.name
-            
-            parsed = sticker_name_pattern.search(sticker_name)
-            if (parsed is not None):
-            
-                match_start = parsed.start()
-                match_length = parsed.end() - match_start
-                
-                match_rate = (match_length, match_length)
-                if accurate_match_key > match_rate:
-                    accurate_sticker = sticker
-                    accurate_match_key = match_rate
-                    matching_names_only = True
-                    continue
-            
-            if not matching_names_only:
-                sticker_tags = sticker.tags
-                if (sticker_tags is not None):
-                    for sticker_tag in sticker_tags:
-                        
-                        parsed = sticker_name_pattern.search(sticker_tag)
-                        if (parsed is not None):
-                            
-                            match_start = parsed.start()
-                            match_length = parsed.end() - match_start
-                            
-                            match_rate = (match_length, match_length)
-                            if accurate_match_key > match_rate:
-                                accurate_sticker = sticker
-                                accurate_match_key = match_rate
-                                continue
-        
-        return accurate_sticker
-    
-    
-    def get_stickers_like(self, name):
-        """
-        Searches the stickers, what's name and tags matches the given value.
-        
-        The returned value is ordered by match rate.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        
-        Returns
-        -------
-        stickers : `list` of ``Sticker``
-        """
-        sticker_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
-        
-        matches = {}
-        
-        for sticker in self.stickers.values():
-            sticker_name = sticker.name
-            
-            parsed = sticker_name_pattern.search(sticker_name)
-            if (parsed is not None):
-            
-                match_start = parsed.start()
-                match_length = parsed.end() - match_start
-                
-                match_rate = (False, match_length, match_length)
-                
-                matches[sticker] = match_rate
-                continue
-            
-            sticker_tags = sticker.tags
-            if (sticker_tags is not None):
-                for sticker_tag in sticker_tags:
-                    
-                    parsed = sticker_name_pattern.search(sticker_tag)
-                    if (parsed is not None):
-                        
-                        match_start = parsed.start()
-                        match_length = parsed.end() - match_start
-                        
-                        match_rate = (True, match_length, match_length)
-                        
-                        try:
-                            accurate_match_rate = matches[sticker]
-                        except KeyError:
-                            pass
-                        else:
-                            if accurate_match_rate <= match_rate:
-                                continue
-                                
-                        matches[sticker] = match_rate
-                        continue
-        
-        
-        if not matches:
-            return []
-        
-        return [item[0] for item in sorted(matches.items(), key = _sticker_match_sort_key)]
-    
-    
-    def get_channel(self, name, default = None):
-        """
-        Searches a channel of the guild, what's name equals the given name.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        default : `object` = `None`, Optional
-            The value what is returned when no channel was found. Defaults to `None`.
-        
-        Returns
-        -------
-        channel : ``Channel``, `default`
-        """
-        if name.startswith('#'):
-            name = name[1:]
-        
-        for channel in self.channels.values():
-            if channel.display_name == name:
-                return channel
-        
-        for channel in self.channels.values():
-            if channel.name == name:
-                return channel
-        
-        return default
-    
-    
-    def get_channel_like(self, name, default = None, type_checker = None):
-        """
-        Searches a channel of the guild, whats name starts with the given string and returns the first find.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        default : `object` = `None`, Optional
-            The value what is returned when no channel was found. Defaults to `None`.
-        
-        Returns
-        -------
-        channel : ``Channel``, `default`
-        """
-        if isinstance(type_checker, type):
-            type_checker = None
-        
-        if name.startswith('#'):
-            name = name[1:]
-        
-        target_name_length = len(name)
-        if (target_name_length < 2) or (target_name_length > 100):
-            return default
-        
-        pattern = re_compile(re_escape(name), re_ignore_case)
-        
-        accurate_channel = default
-        accurate_name_length = 101
-        
-        for channel in self.channels.values():
-            if (type_checker is not None) and (not type_checker(channel)):
-                continue
-            
-            channel_name = channel.name
-            name_length = len(channel_name)
-            if name_length > accurate_name_length:
-                continue
-            
-            if pattern.search(channel_name) is None:
-                continue
-
-            if name_length < accurate_name_length:
-                accurate_channel = channel
-                accurate_name_length = name_length
-            
-            # Compare with display name
-            if (name_length == target_name_length) and (name == channel.display_name):
-                return channel
-            
-            continue
-        
-        return accurate_channel
-    
-    
-    def get_role(self, name, default = None):
-        """
-        Searches a role of the guild, what's name equals the given name.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        default : `object` = `None`, Optional
-            The value what is returned when no role was found. Defaults to `None`.
-        
-        Returns
-        -------
-        role : ``Role``, `default`
-        """
-        for role in self.roles.values():
-            if role.name == name:
-                return role
-        
-        return default
-    
-    
-    def get_role_like(self, name, default = None):
-        """
-        Searches a role of the guild, whats name starts with the given string and returns the first find.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        default : `object` = `None`, Optional
-            The value what is returned when no role was found. Defaults to `None`.
-        
-        Returns
-        -------
-        role : ``Role``, `default`
-        """
-        target_name_length = len(name)
-        if (target_name_length < 2) or (target_name_length > 32):
-            return default
-        
-        pattern = re_compile(re_escape(name), re_ignore_case)
-        
-        accurate_role = default
-        accurate_name_length = 33
-        
-        for role in self.roles.values():
-            role_name = role.name
-            name_length = len(role_name)
-            if name_length > accurate_name_length:
-                continue
-            
-            if pattern.search(role_name) is None:
-                continue
-            
-            if name_length < accurate_name_length:
-                accurate_role = role
-                accurate_name_length = name_length
-            
-            if (name_length == target_name_length) and (name == role_name):
-                return role
-            
-            continue
-        
-        return accurate_role
-    
-    
-    def permissions_for(self, user):
-        """
-        Returns the permissions for the given user at the guild.
-        
-        Parameters
-        ----------
-        user : ``UserBase``
-            The user to calculate it's permissions of.
-        
-        Returns
-        -------
-        permissions : ``Permission``
-            The calculated permissions.
-        
-        See Also
-        --------
-        ``.cached_permissions_for`` : Cached permission calculator.
-        """
-        guild_id = self.id
-        if not isinstance(user, ClientUserBase):
-            if user.channel_id in self.channels:
-                role_everyone = self.roles.get(guild_id, None)
-                if role_everyone is None:
-                    permissions = PERMISSION_NONE
-                else:
-                    permissions = role_everyone.permissions
-                
-                return permissions
-            else:
-                return PERMISSION_NONE
-        
-        if user.id == self.owner_id:
-            return PERMISSION_ALL
-        
-        role_everyone = self.roles.get(guild_id, None)
-        if role_everyone is None:
-            permissions = 0
-        else:
-            permissions = role_everyone.permissions
-        
-        try:
-            guild_profile = user.guild_profiles[guild_id]
-        except KeyError:
-            return PERMISSION_NONE
-        
-        roles = guild_profile.roles
-        if (roles is not None):
-            for role in roles:
-                permissions |= role.permissions
-        
-        if permissions & PERMISSION_MASK_ADMINISTRATOR:
-            return PERMISSION_ALL
-        
-        return Permission(permissions)
-    
-    
-    def cached_permissions_for(self, user):
-        """
-        Returns the permissions for the given user at the guild. If the user's permissions are not cached, calculates
-        and stores them first.
-        
-        Parameters
-        ----------
-        user : ``UserBase``
-            The user to calculate it's permissions of.
-        
-        Returns
-        -------
-        permissions : ``Permission``
-            The calculated permissions.
-        
-        Notes
-        -----
-        Mainly designed for getting clients' permissions and stores only their as well. Do not caches other user's
-        permissions.
-        """
-        if not isinstance(user, Client):
-            return self.permissions_for(user)
-        
-        permission_cache = self._cache_permission
-        if permission_cache is None:
-            self._cache_permission = permission_cache = {}
-        else:
-            try:
-                return permission_cache[user.id]
-            except KeyError:
-                pass
-        
-        permissions = self.permissions_for(user)
-        permission_cache[user.id] = permissions
-        return permissions
-    
-    
-    def permissions_for_roles(self, *roles):
-        """
-        Returns the permissions of an imaginary user who would have the listed roles.
-        
-        Parameters
-        ----------
-        *roles : ``Role``
-            The roles to calculate final permissions from.
-        
-        Returns
-        -------
-        permissions : ``Permission``
-            The calculated permissions.
-        
-        Notes
-        -----
-        Partial roles and roles from other guilds as well are ignored.
-        """
-        default_role = self.roles.get(self.id, None)
-        if default_role is None:
-            permissions = 0
-        else:
-            permissions = default_role.permissions
-        
-        roles = sorted(roles)
-        
-        for role in roles:
-            if role.guild is self:
-                permissions |= role.permissions
-        
-        if permissions & PERMISSION_MASK_ADMINISTRATOR:
-            return PERMISSION_ALL
-        
-        return Permission(permissions)
-    
-    
-    def _update_emojis(self, data):
-        """
-        Updates the emojis o the guild and returns all the changes broke down for each changes emoji.
-        
-        Parameters
-        ----------
-        data : `list` of (`dict` of (`str`, `object`) items)
-            Received emoji datas.
-        
-        Returns
-        -------
-        changes : `list` of `tuple` (`int`, ``Emoji``, (`None`, `dict` of (`str`, `object`) items)))
-            The changes broken down for each changed emoji. Each element of the list is a tuple of 3 elements:
-            
-            +-------+-------------------+-----------------------------------------------+
-            | Index | Respective name   | Type                                          |
-            +=======+===================+===============================================+
-            | 0     | action            | `int`                                         |
-            +-------+-------------------+-----------------------------------------------+
-            | 1     | emoji             | ``Emoji``                                     |
-            +-------+-------------------+-----------------------------------------------+
-            | 2     | old_attributes    | `None`, `dict` of (`str`, `object`) items     |
-            +-------+-------------------+-----------------------------------------------+
-            
-            Possible actions:
-            
-            +-----------------------+-------+
-            | Respective name       | Value |
-            +=======================+=======+
-            | EMOJI_UPDATE_NONE     | `0`   |
-            +-----------------------+-------+
-            | EMOJI_UPDATE_CREATE   | `1`   |
-            +-----------------------+-------+
-            | EMOJI_UPDATE_DELETE   | `2`   |
-            +-----------------------+-------+
-            | EMOJI_UPDATE_EDIT     | `3`   |
-            +-----------------------+-------+
-            
-            If action is `EMOJI_UPDATE_EDIT`, then `old_attributes` is passed as a dictionary containing the changed
-            attributes in an `attribute-name` - `old-value` relation. Every item in `old_attributes` is optional.
-            
-            +-------------------+-------------------------------+
-            | Keys              | Values                        |
-            +===================+===============================+
-            | animated          | `bool`                        |
-            +-------------------+-------------------------------+
-            | available         | `bool`                        |
-            +-------------------+-------------------------------+
-            | managed           | `bool`                        |
-            +-------------------+-------------------------------+
-            | name              | `int`                         |
-            +-------------------+-------------------------------+
-            | require_colons    | `bool`                        |
-            +-------------------+-------------------------------+
-            | roles_ids         | `None`, `tuple` of `int`      |
-            +-------------------+-------------------------------+
-        """
-        emojis = self.emojis
-        changes = []
-        old_ids = set(emojis)
-        
-        for emoji_data in data:
-            emoji_id = int(emoji_data['id'])
-            try:
-                emoji = emojis[emoji_id]
-            except KeyError:
-                emoji = Emoji.from_data(emoji_data, self.id)
-                emojis[emoji.id] = emoji
-                changes.append((EMOJI_UPDATE_CREATE, emoji, None),)
-            else:
-                old_attributes = emoji._difference_update_attributes(emoji_data)
-                if old_attributes:
-                    changes.append((EMOJI_UPDATE_EDIT, emoji, old_attributes),)
-                old_ids.remove(emoji_id)
-        
-        for emoji_id in old_ids:
-            try:
-                emoji = emojis.pop(emoji_id)
-            except KeyError:
-                pass
-            else:
-                changes.append((EMOJI_UPDATE_DELETE, emoji, None),)
-        
-        return changes
-    
-    
-    def _sync_emojis(self, emoji_datas):
-        """
-        Syncs the emojis of the guild.
-        
-        Parameters
-        ----------
-        emoji_datas : `list` of (`dict` of (`str`, `object`) items)
-            Received emoji datas.
-        """
-        emojis = self.emojis
-        if emojis:
-            emoji_cache = [*emojis.values()]
-            emojis.clear()
-        
-        for emoji_data in emoji_datas:
-            emoji = Emoji.from_data(emoji_data, self.id)
-            emojis[emoji.id] = emoji
-    
-    
-    def _update_stickers(self, data):
-        """
-        Updates the stickers of the guild and returns the changes broke down for each changed sticker.
-        
-        Parameters
-        ----------
-        data : `list` of (`dict` of (`str`, `object`) items)
-            Received sticker datas.
-        
-        Returns
-        -------
-        changes : `list` of `tuple` (`int`, ``Sticker``, (`None`, `dict` of (`str`, `object`) items)))
-            The changes broken down for each changed sticker. Each element of the list is a tuple of 3 elements:
-            
-            +-------+-------------------+-----------------------------------------------+
-            | Index | Respective name   | Type                                          |
-            +=======+===================+===============================================+
-            | 0     | action            | `int`                                         |
-            +-------+-------------------+-----------------------------------------------+
-            | 1     | sticker           | ``Sticker``                                   |
-            +-------+-------------------+-----------------------------------------------+
-            | 2     | old_attributes    | `None`, `dict` of (`str`, `object`) items     |
-            +-------+-------------------+-----------------------------------------------+
-            
-            Possible actions:
-            
-            +-----------------------+-------+
-            | Respective name       | Value |
-            +=======================+=======+
-            | STICKER_UPDATE_NONE   | `0`   |
-            +-----------------------+-------+
-            | STICKER_UPDATE_CREATE | `1`   |
-            +-----------------------+-------+
-            | STICKER_UPDATE_DELETE | `2`   |
-            +-----------------------+-------+
-            | STICKER_UPDATE_EDIT   | `3`   |
-            +-----------------------+-------+
-            
-            If action is `STICKER_UPDATE_EDIT`, then `old_attributes` is passed as a dictionary containing the changed
-            attributes in an `attribute-name` - `old-value` relation. Every item in `old_attributes` is optional.
-            
-            +-----------------------+-----------------------------------+
-            | Keys                  | Values                            |
-            +=======================+===================================+
-            | available             | `bool`                            |
-            +-----------------------+-----------------------------------+
-            | description           | `None`, `str`                     |
-            +-----------------------+-----------------------------------+
-            | name                  | `str`                             |
-            +-----------------------+-----------------------------------+
-            | sort_value            | `int`                             |
-            +-----------------------+-----------------------------------+
-            | tags                  | `None`  or `frozenset` of `str`   |
-            +-----------------------+-----------------------------------+
-        """
-        stickers = self.stickers
-        changes = []
-        old_ids = set(stickers)
-        
-        for sticker_data in data:
-            sticker_id = int(sticker_data['id'])
-            try:
-                sticker = stickers[sticker_id]
-            except KeyError:
-                sticker = Sticker.from_data(sticker_data)
-                stickers[sticker.id] = sticker
-                changes.append((STICKER_UPDATE_CREATE, sticker, None),)
-            else:
-                old_attributes = sticker._difference_update_attributes(sticker_data)
-                if old_attributes:
-                    changes.append((STICKER_UPDATE_EDIT, sticker, old_attributes),)
-                old_ids.remove(sticker_id)
-        
-        for sticker_id in old_ids:
-            try:
-                sticker = stickers.pop(sticker_id)
-            except KeyError:
-                pass
-            else:
-                changes.append((STICKER_UPDATE_DELETE, sticker, None),)
-        
-        return changes
-    
-    
-    def _sync_stickers(self, sticker_datas):
-        """
-        Syncs the stickers of the guild.
-        
-        Parameters
-        ----------
-        sticker_datas : `list` of (`dict` of (`str`, `object`) items)
-            Received sticker datas.
-        """
-        stickers = self.stickers
-        if stickers:
-            sticker_cache = [*stickers.values()]
-            stickers.clear()
-        
-        for sticker_data in sticker_datas:
-            sticker = Sticker.from_data(sticker_data)
-            stickers[sticker.id] = sticker
-
-    
-    
-    def _invalidate_cache_permission(self):
-        """
-        Invalidates the cached permissions of the guild.
-        """
-        self._cache_permission = None
-        for channel in self.channels.values():
-            channel.metadata._invalidate_cache_permission()
-    
-    
     @property
     def owner(self):
         """
@@ -3792,42 +2997,7 @@ class Guild(DiscordEntity, immortal = True):
         
         return owner
     
-    
-    def iter_features(self):
-        """
-        Iterates over the features of the guild.
-        
-        This method is an iterable generator.
-        
-        Yields
-        ------
-        feature : ``GuildFeature``
-        """
-        features = self.features
-        if (features is not None):
-            yield from features
-    
-    
-    def has_feature(self, feature):
-        """
-        Returns whether the guild has the give feature.
-        
-        Parameters
-        ----------
-        feature : ``GuildFeature``
-            The feature to look for.
-        
-        Returns
-        -------
-        has_feature : `bool`
-        """
-        features = self.features
-        if features is None:
-            return False
-        
-        return feature in features
-    
-    
+
     @property
     def premium_perks(self):
         """
@@ -3898,131 +3068,6 @@ class Guild(DiscordEntity, immortal = True):
             limit = 30
         
         return limit
-    
-    
-    widget_json_url = property(module_urls.guild_widget_json_url)
-    
-    
-    @property
-    def boosters(self):
-        """
-        The boosters of the guild sorted by their subscription date.
-        
-        These users are queried from the guild's `.users` dictionary, so make sure that is populated before accessing
-        the property.
-        
-        Returns
-        -------
-        boosters : `list` of ``ClientUserBase``
-        """
-        boosters = self._cache_boosters
-        if boosters is None:
-            if self.boost_count:
-                boosters_ordered = []
-                guild_id = self.id
-                for user in self.users.values():
-                    try:
-                        guild_profile = user.guild_profiles[guild_id]
-                    except KeyError:
-                        continue
-                    
-                    boosts_since = guild_profile.boosts_since
-                    if boosts_since is None:
-                        continue
-                    
-                    boosters_ordered.append((user, boosts_since),)
-                    
-                boosters_ordered.sort(key = _user_date_sort_key)
-                boosters = [element[0] for element in boosters_ordered]
-            else:
-                boosters = []
-            
-            self._cache_boosters = boosters
-
-        return boosters
-    
-    
-    @property
-    def emoji_counts(self):
-        """
-        Returns the emoji counts of the guild.
-        
-        Returns
-        -------
-        emoji_counts : ``EmojiCounts``
-        """
-        return EmojiCounts.from_emojis(self.emojis.values())
-    
-    
-    @property
-    def sticker_counts(self):
-        """
-        Returns the sticker counts of the guild for each type.
-        
-        Returns
-        -------
-        sticker_counts : ``StickerCounts``
-        """
-        return StickerCounts.from_stickers(self.stickers.values())
-    
-    
-    @property
-    def sticker_count(self):
-        """
-        `.sticker_count` is deprecated and will be removed in 2023 August. Please use `.sticker_counts` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.sticker_count` is deprecated and will be removed in 2023 August. '
-                f'Please use `.sticker_counts` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.sticker_counts
-    
-    
-    @property
-    def channel_list(self):
-        """
-        Returns the channels of the guild in a list in their display order. Note, that channels inside of categories are
-        excluded.
-        
-        Returns
-        -------
-        channels : `list` of ``Channel``
-        """
-        return sorted(channel for channel in self.channels.values() if channel.parent is None)
-    
-    
-    @property
-    def channel_list_flattened(self):
-        """
-        Returns the channels of the guild in a list in their display order. Note, that channels inside of categories are
-        included as well.
-        
-        channels : `list` of ``Channel``
-        """
-        channels = []
-        for channel in sorted(channel for channel in self.channels.values() if channel.parent is None):
-            channels.append(channel)
-            if channel.is_guild_category():
-                channels.extend(channel.list_channels)
-        
-        return channels
-    
-    
-    @property
-    def role_list(self):
-        """
-        Returns the roles of the guild in their display order.
-        
-        Returns
-        -------
-        roles : `list` of ``Role``
-        """
-        return sorted(self.roles.values())
     
     
     @property
@@ -4121,27 +3166,73 @@ class Guild(DiscordEntity, immortal = True):
             return self.channels.get(widget_channel_id, None)
     
     
-    vanity_url = property(module_urls.guild_vanity_invite_url)
-
-
     @property
-    def max_video_channel_users(self):
+    def emoji_counts(self):
         """
-        `.max_video_channel_users` is deprecated and will be removed in 2023 August.
-        Please use `.max_voice_channel_video_users` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.max_video_channel_users` is deprecated and will be removed in 2023 August. '
-                f'Please use `.max_voice_channel_video_users` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
+        Returns the emoji counts of the guild.
         
-        return self.max_voice_channel_video_users
+        Returns
+        -------
+        emoji_counts : ``EmojiCounts``
+        """
+        return EmojiCounts.from_emojis(self.emojis.values())
     
-    # Soundboard
+    
+    @property
+    def sticker_counts(self):
+        """
+        Returns the sticker counts of the guild for each type.
+        
+        Returns
+        -------
+        sticker_counts : ``StickerCounts``
+        """
+        return StickerCounts.from_stickers(self.stickers.values())
+    
+    
+    @property
+    def channel_list(self):
+        """
+        Returns the channels of the guild in a list in their display order. Note, that channels inside of categories are
+        excluded.
+        
+        Returns
+        -------
+        channels : `list` of ``Channel``
+        """
+        return sorted(channel for channel in self.channels.values() if channel.parent_id == 0)
+    
+    
+    @property
+    def channel_list_flattened(self):
+        """
+        Returns the channels of the guild in a list in their display order. Note, that channels inside of categories are
+        included as well.
+        
+        channels : `list` of ``Channel``
+        """
+        channels = []
+        for channel in sorted(channel for channel in self.channels.values() if channel.parent_id == 0):
+            channels.append(channel)
+            if channel.is_guild_category():
+                channels.extend(channel.channels)
+        
+        return channels
+    
+    
+    @property
+    def role_list(self):
+        """
+        Returns the roles of the guild in their display order.
+        
+        Returns
+        -------
+        roles : `list` of ``Role``
+        """
+        return sorted(self.roles.values())
+    
+    
+    # ---- cache ----
     
     @property
     def soundboard_sounds_cached(self):
@@ -4160,20 +3251,470 @@ class Guild(DiscordEntity, immortal = True):
             state &= ~GUILD_STATE_MASK_SOUNDBOARD_SOUNDS_CACHED
         self._state = state
     
+
+    def _invalidate_cache_permission(self):
+        """
+        Invalidates the cached permissions of the guild.
+        """
+        self._cache_permission = None
+        for channel in self.channels.values():
+            channel.metadata._invalidate_cache_permission()
     
-    def iter_soundboard_sounds(self):
+    
+    def _clear_cache(self):
         """
-        Iterates over the guild's soundboard sounds.
-        
-        This method is an iterable generator.
-        
-        Yields
-        ------
-        soundboard_sound : ``SoundboardSound``
+        Clears the guild's cache fields.
         """
-        soundboard_sounds = self.soundboard_sounds
-        if (soundboard_sounds is not None):
-            yield from soundboard_sounds.values()
+        self._state &= ~ GUILD_STATE_MASK_CACHE_ALL
+        self._cache_boosters = None
+    
+    
+    def _get_boosters(self):
+        """
+        Iterates over the users of the guild and selects the ones boosting. The output is sorted.
+        
+        Returns
+        -------
+        boosters : `None`, `tuple` of ``ClientUserBase``
+        """
+        if not self.boost_count:
+            return None
+        
+        boosters = []
+        guild_id = self.id
+        
+        for user in self.users.values():
+            try:
+                guild_profile = user.guild_profiles[guild_id]
+            except KeyError:
+                continue
+            
+            boosts_since = guild_profile.boosts_since
+            if boosts_since is None:
+                continue
+            
+            boosters.append((user, boosts_since),)
+        
+        boosters.sort(key = _user_date_sort_key)
+        return tuple(element[0] for element in boosters)
+    
+    
+    @property
+    def boosters(self):
+        """
+        The boosters of the guild sorted by their subscription date.
+        
+        These users are queried from the guild's `.users` dictionary, so make sure that is populated before accessing
+        the property.
+        
+        Returns
+        -------
+        boosters : `None`, `tuple` of ``ClientUserBase``
+        """
+        state = self._state
+        if state & GUILD_STATE_MASK_CACHE_BOOSTERS:
+            boosters = self._cache_boosters
+        else:
+            boosters = self._get_boosters()
+            self._cache_boosters = boosters
+            self._state = state | GUILD_STATE_MASK_CACHE_BOOSTERS
+        
+        return boosters
+    
+    # ---- getters -----
+    
+    def get_channel(self, name, default = None, type_checker = None):
+        """
+        Searches a channel of the guild, what's name equals the given name.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `object` = `None`, Optional
+            The value what is returned when no channel was found.
+        type_checker : `None`, `FunctionType` = `None`, Optional
+            Function specifically to check the channel's type.
+        
+        Returns
+        -------
+        channel : ``Channel``, `default`
+        """
+        if isinstance(type_checker, type):
+            warnings.warn(
+                f'`type_checker` cannot be `type`, but should be a function. Got {type_checker!r}.',
+                FutureWarning,
+                stacklevel = 2,
+            )
+            type_checker = None
+        
+        if name.startswith('#'):
+            name = name[1:]
+        
+        name_length = len(name)
+        if (name_length < CHANNEL_NAME_LENGTH_MIN) or (name_length > CHANNEL_NAME_LENGTH_MAX):
+            return default
+        
+        for channel in self.channels.values():
+            if (type_checker is not None) and (not type_checker(channel)):
+                continue
+            
+            if channel.display_name == name:
+                return channel
+        
+        for channel in self.channels.values():
+            if (type_checker is not None) and (not type_checker(channel)):
+                continue
+            
+            if channel.name == name:
+                return channel
+        
+        return default
+    
+    
+    def get_channel_like(self, name, default = None, type_checker = None):
+        """
+        Searches a channel of the guild, whats name starts with the given string and returns the first find.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `object` = `None`, Optional
+            The value what is returned when no channel was found.
+        type_checker : `None`, `FunctionType` = `None`, Optional
+            Function specifically to check the channel's type.
+        
+        Returns
+        -------
+        channel : ``Channel``, `default`
+        """
+        if isinstance(type_checker, type):
+            warnings.warn(
+                f'`type_checker` cannot be `type`, but should be a function. Got {type_checker!r}.',
+                FutureWarning,
+                stacklevel = 2,
+            )
+            type_checker = None
+        
+        if name.startswith('#'):
+            name = name[1:]
+        
+        name_length = len(name)
+        if name_length > CHANNEL_NAME_LENGTH_MAX:
+            return default
+        
+        channel_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        
+        accurate_channel = default
+        accurate_match_key = None
+        
+        for channel in self.channels.values():
+            if (type_checker is not None) and (not type_checker(channel)):
+                continue
+            
+            channel_name = channel.name
+            parsed = channel_name_pattern.search(channel_name)
+            if parsed is None:
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            match_rate = (match_length, match_start)
+            if (accurate_match_key is not None) and (accurate_match_key < match_rate):
+                continue
+            
+            accurate_channel = channel
+            accurate_match_key = match_rate
+            continue
+        
+        return accurate_channel
+    
+    
+    def get_channels_like(self, name, type_checker = None):
+        """
+        Searches the channels, what's name match the given value.
+        
+        The returned value is ordered by match rate.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        type_checker : `None`, `FunctionType` = `None`, Optional
+            Function specifically to check the channel's type.
+        
+        Returns
+        -------
+        channels : `list` of ``Channel``
+        """
+        if isinstance(type_checker, type):
+            warnings.warn(
+                f'`type_checker` cannot be `type`, but should be a function. Got {type_checker!r}.',
+                FutureWarning,
+                stacklevel = 2,
+            )
+            type_checker = None
+        
+        if name.startswith('#'):
+            name = name[1:]
+        
+        name_length = len(name)
+        if name_length > CHANNEL_NAME_LENGTH_MAX:
+            return []
+        
+        channel_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        
+        matches = []
+        
+        for channel in self.channels.values():
+            if (type_checker is not None) and (not type_checker(channel)):
+                continue
+            
+            channel_name = channel.name
+            parsed = channel_name_pattern.search(channel_name)
+            if parsed is None:
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            matches.append((channel, (match_length, match_start)))
+        
+        if not matches:
+            return matches
+        
+        matches.sort(key = _channel_match_sort_key)
+        return [item[0] for item in matches]
+    
+    
+    def get_emoji(self, name, default = None):
+        """
+        Searches an emoji of the guild, what's name equals the given name.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `object` = `None`, Optional
+            The value what is returned when no emoji was found. Defaults to `None`.
+        
+        Returns
+        -------
+        emoji : ``Emoji``, `default`
+        """
+        parsed = EMOJI_NAME_RP.fullmatch(name)
+        if (parsed is None):
+            return default
+        
+        name = parsed.group(1)
+        
+        name_length = len(name)
+        if (name_length < EMOJI_NAME_LENGTH_MIN) or (name_length > EMOJI_NAME_LENGTH_MAX):
+            return default
+        
+        for emoji in self.emojis.values():
+            if emoji.name == name:
+                return emoji
+    
+        return default
+    
+    
+    def get_emoji_like(self, name, default = None):
+        """
+        Searches an emoji of the guild that matches the given `name` the most.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `object` = `None`, Optional
+            The value what is returned when no emoji was found. Defaults to `None`.
+        
+        Returns
+        -------
+        emoji : ``Emoji``, `default`
+        """
+        name = _strip_emoji_name(name)
+        
+        name_length = len(name)
+        if name_length > EMOJI_NAME_LENGTH_MAX:
+            return default
+        
+        emoji_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        
+        accurate_emoji = default
+        accurate_match_key = None
+        
+        for emoji in self.emojis.values():
+            emoji_name = emoji.name
+            parsed = emoji_name_pattern.search(emoji_name)
+            if parsed is None:
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            match_rate = (match_length, match_start)
+            if (accurate_match_key is not None) and (accurate_match_key < match_rate):
+                continue
+            
+            accurate_emoji = emoji
+            accurate_match_key = match_rate
+        
+        return accurate_emoji
+    
+    
+    def get_emojis_like(self, name):
+        """
+        Searches the emojis, what's name match the given value.
+        
+        The returned value is ordered by match rate.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        
+        Returns
+        -------
+        emojis : `list` of ``Emoji``
+        """
+        name = _strip_emoji_name(name)
+        name_length = len(name)
+        if name_length > EMOJI_NAME_LENGTH_MAX:
+            return []
+        
+        emoji_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        
+        matches = []
+        
+        for emoji in self.emojis.values():
+            emoji_name = emoji.name
+            parsed = emoji_name_pattern.search(emoji_name)
+            if parsed is None:
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            matches.append((emoji, (match_length, match_start)))
+        
+        if not matches:
+            return []
+        
+        matches.sort(key = _emoji_match_sort_key)
+        return [item[0] for item in matches]
+    
+
+    def get_role(self, name, default = None):
+        """
+        Searches a role of the guild, what's name equals the given name.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `object` = `None`, Optional
+            The value what is returned when no role was found. Defaults to `None`.
+        
+        Returns
+        -------
+        role : ``Role``, `default`
+        """
+        name_length = len(name)
+        if (name_length < ROLE_NAME_LENGTH_MIN) or (name_length > ROLE_NAME_LENGTH_MAX):
+            return default
+        
+        for role in self.roles.values():
+            if role.name == name:
+                return role
+        
+        return default
+    
+    
+    def get_role_like(self, name, default = None):
+        """
+        Searches a role of the guild, whats name starts with the given string and returns the first find.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `object` = `None`, Optional
+            The value what is returned when no role was found. Defaults to `None`.
+        
+        Returns
+        -------
+        role : ``Role``, `default`
+        """
+        name_length = len(name)
+        if (name_length > ROLE_NAME_LENGTH_MAX):
+            return default
+        
+        role_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        
+        accurate_role = default
+        accurate_match_key = None
+        
+        for role in self.roles.values():
+            parsed = role_name_pattern.search(role.name)
+            if parsed is None:
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            match_rate = (match_length, match_start)
+            if (accurate_match_key is not None) and (accurate_match_key < match_rate):
+                continue
+            
+            accurate_role = role
+            accurate_match_key = match_rate
+            continue
+        
+        return accurate_role
+    
+    
+    def get_roles_like(self, name):
+        """
+        Searches the roles, what's name match the given value.
+        
+        The returned value is ordered by match rate.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        
+        Returns
+        -------
+        roles : `list` of ``Role``
+        """
+        name_length = len(name)
+        if (name_length > ROLE_NAME_LENGTH_MAX):
+            return []
+        
+        role_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        
+        matches = []
+        
+        for role in self.roles.values():
+            parsed = role_name_pattern.search(role.name)
+            if parsed is None:
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            matches.append((role, (match_length, match_start)))
+        
+        if not matches:
+            return []
+        
+        matches.sort(key = _role_match_sort_key)
+        return [item[0] for item in matches]
     
     
     def get_soundboard_sound(self, name, default = None):
@@ -4191,6 +3732,10 @@ class Guild(DiscordEntity, immortal = True):
         -------
         soundboard_sound : ``SoundboardSound``, `default`
         """
+        name_length = len(name)
+        if (name_length < SOUNDBOARDS_SOUND_NAME_LENGTH_MIN) or (name_length > SOUNDBOARDS_SOUND_NAME_LENGTH_MAX):
+            return default
+        
         for soundboard_sound in self.iter_soundboard_sounds():
             if soundboard_sound.name == name:
                 return soundboard_sound
@@ -4213,26 +3758,30 @@ class Guild(DiscordEntity, immortal = True):
         -------
         soundboard_sound : ``SoundboardSound``, `default`
         """
+        name_length = len(name)
+        if name_length > SOUNDBOARDS_SOUND_NAME_LENGTH_MAX:
+            return default
+        
         soundboard_sound_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
         
         accurate_soundboard_sound = default
-        accurate_match_key = (100, 100)
+        accurate_match_key = None
         
         for soundboard_sound in self.iter_soundboard_sounds():
-            soundboard_sound_name = soundboard_sound.name
-            parsed = soundboard_sound_name_pattern.search(soundboard_sound_name)
+            parsed = soundboard_sound_name_pattern.search(soundboard_sound.name)
             if parsed is None:
                 continue
             
             match_start = parsed.start()
             match_length = parsed.end() - match_start
             
-            match_rate = (match_length, match_length)
-            if accurate_match_key < match_rate:
+            match_rate = (match_length, match_start)
+            if (accurate_match_key is not None) and (accurate_match_key < match_rate):
                 continue
             
             accurate_soundboard_sound = soundboard_sound
             accurate_match_key = match_rate
+            continue
         
         return accurate_soundboard_sound
     
@@ -4252,26 +3801,881 @@ class Guild(DiscordEntity, immortal = True):
         -------
         soundboard_sounds : `list` of ``SoundboardSound``
         """
+        name_length = len(name)
+        if name_length > SOUNDBOARDS_SOUND_NAME_LENGTH_MAX:
+            return []
+        
         soundboard_sound_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
         
-        to_sort = []
+        matches = []
         
         for soundboard_sound in self.iter_soundboard_sounds():
-            soundboard_sound_name = soundboard_sound.name
-            parsed = soundboard_sound_name_pattern.search(soundboard_sound_name)
+            parsed = soundboard_sound_name_pattern.search(soundboard_sound.name)
             if parsed is None:
                 continue
             
             match_start = parsed.start()
             match_length = parsed.end() - match_start
             
-            to_sort.append((soundboard_sound, (match_length, match_start)))
+            matches.append((soundboard_sound, (match_length, match_start)))
         
-        if not to_sort:
-            return to_sort
+        if not matches:
+            return []
         
-        to_sort.sort(key = _soundboard_sound_match_sort_key)
-        return [item[0] for item in to_sort]
+        matches.sort(key = _soundboard_sound_match_sort_key)
+        return [item[0] for item in matches]
+    
+    
+    def get_sticker(self, name, default = None):
+        """
+        Searches a sticker of the guild, what's name equals to the given name.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `object` = `None`, Optional
+            The value what is returned when no emoji was found. Defaults to `None`.
+        
+        Returns
+        -------
+        sticker : ``Sticker``, `default`
+        """
+        name_length = len(name)
+        if (name_length < STICKER_NAME_LENGTH_MIN) or (name_length > STICKER_NAME_LENGTH_MAX):
+            return default
+        
+        for sticker in self.stickers.values():
+            if sticker.name == name:
+                return sticker
+        
+        return default
+    
+    
+    def get_sticker_like(self, name, default = None):
+        """
+        Searches a sticker of the guild that's name or tag matches the given `name` the most.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `object` = `None`, Optional
+            The value what is returned when no emoji was found. Defaults to `None`.
+        
+        Returns
+        -------
+        sticker : ``Sticker``, `default`
+        """
+        name_length = len(name)
+        if name_length > STICKER_NAME_LENGTH_MAX:
+            return default
+        
+        sticker_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        
+        accurate_sticker = default
+        accurate_match_key = None
+        
+        for sticker in self.stickers.values():
+            parsed = sticker_name_pattern.search(sticker.name)
+            if (parsed is None):
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            match_rate = (STICKER_MATCH_WEIGHT_NAME, match_length, match_start)
+            if (accurate_match_key is not None) and (accurate_match_key < match_rate):
+                continue
+            
+            accurate_sticker = sticker
+            accurate_match_key = match_rate
+            continue
+        
+        if (accurate_match_key is not None):
+            return accurate_sticker
+        
+        for sticker in self.stickers.values():
+            sticker_tags = sticker.tags
+            if (sticker_tags is not None):
+                for sticker_tag in sticker_tags:
+                    
+                    parsed = sticker_name_pattern.search(sticker_tag)
+                    if (parsed is None):
+                        continue
+                    
+                    match_start = parsed.start()
+                    match_length = parsed.end() - match_start
+                    
+                    match_rate = (STICKER_MATCH_WEIGHT_TAG, match_length, match_start)
+                    if (accurate_match_key is not None) and (accurate_match_key < match_rate):
+                        continue
+                    
+                    accurate_sticker = sticker
+                    accurate_match_key = match_rate
+                    continue
+        
+        return accurate_sticker
+    
+    
+    def get_stickers_like(self, name):
+        """
+        Searches the stickers, what's name and tags matches the given value.
+        
+        The returned value is ordered by match rate.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        
+        Returns
+        -------
+        stickers : `list` of ``Sticker``
+        """
+        name_length = len(name)
+        if name_length > STICKER_NAME_LENGTH_MAX:
+            return []
+        
+        sticker_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        matches = []
+        
+        for sticker in self.stickers.values():
+            # name
+            
+            parsed = sticker_name_pattern.search(sticker.name)
+            if (parsed is not None):
+                
+                match_start = parsed.start()
+                match_length = parsed.end() - match_start
+                
+                match_rate = (STICKER_MATCH_WEIGHT_NAME, match_length, match_start)
+                
+                matches.append((sticker, match_rate))
+                continue
+            
+            # tags
+            
+            sticker_tags = sticker.tags
+            if (sticker_tags is not None):
+                accurate_match_key = None
+                
+                for sticker_tag in sticker_tags:
+                    
+                    parsed = sticker_name_pattern.search(sticker_tag)
+                    if (parsed is not None):
+                        
+                        match_start = parsed.start()
+                        match_length = parsed.end() - match_start
+                        
+                        match_rate = (STICKER_MATCH_WEIGHT_TAG, match_length, match_start)
+                        
+                        if (accurate_match_key is not None) and (accurate_match_key < match_rate):
+                            continue
+                        
+                        accurate_match_key = match_rate
+                        continue
+                
+                if (accurate_match_key is not None):
+                    matches.append((sticker, accurate_match_key))
+        
+        if not matches:
+            return []
+        
+        return [item[0] for item in sorted(matches, key = _sticker_match_sort_key)]
+    
+    
+    def get_user(self, name, default = None):
+        """
+        Tries to find the a user with the given name at the guild. Returns the first matched one.
+        
+        The search order is the following:
+        - name with discriminator
+        - name
+        - global name
+        - nick
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `object` = `None`, Optional
+            The value what is returned when no user was found. Defaults to `None`.
+        
+        Returns
+        -------
+        user : ``ClientUserBase``, `default`
+        """
+        name_length = len(name)
+        if (name_length < USER_ALL_NAME_LENGTH_MIN) or (name_length > USER_ALL_NAME_LENGTH_MAX_WITH_DISCRIMINATOR):
+            return default
+        
+        users = self.users
+        
+        # name with discriminator
+        
+        name_with_discriminator = parse_name_with_discriminator(name)
+        if (name_with_discriminator is not None):
+            for user in users.values():
+                if is_user_matching_name_with_discriminator(user, name_with_discriminator):
+                    return user
+        
+        if name_length > USER_ALL_NAME_LENGTH_MAX:
+            return default
+        
+        # name
+        for user in users.values():
+            if user.name == name:
+                return user
+        
+        # global_name
+        for user in users.values():
+            user_display_name = user.display_name
+            if (user_display_name is not None) and (user_display_name == name):
+                return user
+        
+        # nick
+        guild_id = self.id
+        for user in users.values():
+            try:
+                guild_profile = user.guild_profiles[guild_id]
+            except KeyError:
+                pass
+            else:
+                nick = guild_profile.nick
+                if (nick is not None) and (nick == name):
+                    return user
+        
+        return default
+    
+    
+    def get_user_like(self, name, default = None):
+        """
+        Searches a user, who's name or nick starts with the given string and returns the first find. Also matches full
+        name.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        default : `object` = `None`, Optional
+            The value what is returned when no user was found. Defaults to `None`.
+        
+        Returns
+        -------
+        user : ``ClientUserBase``, `default`
+        """
+        name_length = len(name)
+        if name_length > USER_ALL_NAME_LENGTH_MAX_WITH_DISCRIMINATOR:
+            return default
+        
+        users = self.users
+        
+        # name with discriminator
+        
+        name_with_discriminator = parse_name_with_discriminator(name)
+        if (name_with_discriminator is not None):
+            for user in users.values():
+                if is_user_matching_name_with_discriminator(user, name_with_discriminator):
+                    return user
+        
+        if name_length > USER_ALL_NAME_LENGTH_MAX:
+            return default
+        
+        user_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        
+        
+        accurate_user = default
+        accurate_match_key = None
+        
+        # name
+        
+        for user in self.users.values():
+            parsed = user_name_pattern.search(user.name)
+            if (parsed is None):
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            match_rate = (USER_MATCH_WEIGHT_NAME, match_length, match_start)
+            if (accurate_match_key is not None) and (accurate_match_key < match_rate):
+                continue
+            
+            accurate_user = user
+            accurate_match_key = match_rate
+            continue
+        
+        if (accurate_match_key is not None):
+            return accurate_user
+        
+        # display name
+
+        for user in self.users.values():
+            user_display_name = user.display_name
+            if (user_display_name is None):
+                continue
+            
+            parsed = user_name_pattern.search(user_display_name)
+            if (parsed is None):
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            match_rate = (USER_MATCH_WEIGHT_DISPLAY_NAME, match_length, match_start)
+            if (accurate_match_key is not None) and (accurate_match_key < match_rate):
+                continue
+            
+            accurate_user = user
+            accurate_match_key = match_rate
+            continue
+        
+        if (accurate_match_key is not None):
+            return accurate_user
+        
+        # nick
+        
+        guild_id = self.id
+        for user in self.users.values():
+            try:
+                guild_profile = user.guild_profiles[guild_id]
+            except KeyError:
+                continue
+            
+            user_nick = guild_profile.nick
+            if (user_nick is None):
+                continue
+            
+            parsed = user_name_pattern.search(user_nick)
+            if (parsed is None):
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            match_rate = (USER_MATCH_WEIGHT_NICK, match_length, match_start)
+            if (accurate_match_key is not None) and (accurate_match_key < match_rate):
+                continue
+            
+            accurate_user = user
+            accurate_match_key = match_rate
+            continue
+        
+        return accurate_user
+    
+    
+    def get_users_like(self, name):
+        """
+        Searches the users, who's name or nick start with the given string.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        
+        Returns
+        -------
+        users : `list` of ``ClientUserBase``
+        """
+        name_length = len(name)
+        if name_length > USER_ALL_NAME_LENGTH_MAX_WITH_DISCRIMINATOR:
+            return []
+        
+        users = self.users
+        
+        # name with discriminator
+        
+        name_with_discriminator = parse_name_with_discriminator(name)
+        if (name_with_discriminator is not None):
+            for user in users.values():
+                if is_user_matching_name_with_discriminator(user, name_with_discriminator):
+                    return [user]
+        
+        if name_length > USER_ALL_NAME_LENGTH_MAX:
+            return []
+        
+        user_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        matches = []
+        guild_id = self.id
+        
+        for user in users.values():
+            # name
+            
+            parsed = user_name_pattern.search(user.name)
+            if (parsed is not None):
+                match_start = parsed.start()
+                match_length = parsed.end() - match_start
+                
+                match_rate = (USER_MATCH_WEIGHT_NAME, match_length, match_start)
+                
+                matches.append((user, match_rate))
+                continue
+            
+            # display_name
+            
+            user_display_name = user.display_name
+            if (user_display_name is not None):
+                parsed = user_name_pattern.search(user_display_name)
+                if (parsed is not None):
+                    match_start = parsed.start()
+                    match_length = parsed.end() - match_start
+                    
+                    match_rate = (USER_MATCH_WEIGHT_DISPLAY_NAME, match_length, match_start)
+                    
+                    matches.append((user, match_rate))
+                    continue
+            
+            # nick
+            
+            try:
+                guild_profile = user.guild_profiles[guild_id]
+            except KeyError:
+                pass
+            else:
+                user_nick = guild_profile.nick
+                if (user_nick is not None):
+                    parsed = user_name_pattern.search(user_nick)
+                    if (parsed is not None):
+                        match_start = parsed.start()
+                        match_length = parsed.end() - match_start
+                        
+                        match_rate = (USER_MATCH_WEIGHT_NICK, match_length, match_start)
+                        
+                        matches.append((user, match_rate))
+                        continue
+        
+        
+        return [item[0] for item in sorted(matches, key = _user_match_sort_key)]
+    
+    
+    def get_users_like_ordered(self, name):
+        """
+        Searches the users, who's name or nick start with the given string. At the orders them at the same ways, as
+        Discord orders them when requesting guild users chunk.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        
+        Returns
+        -------
+        users : `list` of ``ClientUserBase``
+        """
+        name_length = len(name)
+        
+        if (name_length > USER_ALL_NAME_LENGTH_MAX):
+            return []
+        
+        matches = []
+        now_date_time = None
+        
+        pattern = re_compile(re_escape(name), re_ignore_case)
+        guild_id = self.id
+        for user in self.users.values():
+            try:
+                guild_profile = user.guild_profiles[guild_id]
+            except KeyError:
+                continue
+            
+            # Use goto
+            while True:
+                if (pattern.search(user.name) is not None):
+                    matched = True
+                    break
+                
+                user_display_name = user.display_name
+                if (user_display_name is not None) and (pattern.search(user_display_name) is not None):
+                    matched = True
+                    break
+                
+                user_nick = guild_profile.nick
+                if (user_nick is not None) and (pattern.search(user_nick) is not None):
+                    matched = True
+                    break
+                
+                matched = False
+                break
+            
+            if not matched:
+                continue
+            
+            joined_at = guild_profile.joined_at
+            
+            if joined_at is None:
+                # Instead of defaulting to `user.created_at` use the current date
+                if now_date_time is None:
+                    now_date_time = DateTime.utcnow()
+                
+                joined_at = now_date_time
+            
+            
+            matches.append((user, joined_at))
+        
+        if not matches:
+            return []
+        
+        matches.sort(key = _user_date_sort_key)
+        return [item[0] for item in matches]
+    
+    # ---- iterators ----
+    
+    def iter_channels(self, type_checker = None):
+        """
+        Iterates over the channels of the guild.
+        
+        This method is an iterable generator.
+        
+        Parameters
+        ----------
+        type_checker : `None`, `FunctionType` = `None`, Optional
+            Function specifically to check the channel's type.
+        
+        Yields
+        -------
+        channel : ``Channel``
+        """
+        if type_checker is None:
+            yield from self.channels.values()
+            return
+        
+        for channel in self.channels.values():
+            if type_checker(channel):
+                yield channel
+    
+    
+    def iter_embedded_activity_states(self):
+        """
+        Iterates over the embedded activity states of the guild.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        embedded_activity_state : ``EmbeddedActivityState``
+        """
+        embedded_activity_states = self.embedded_activity_states
+        if (embedded_activity_states is not None):
+            yield from embedded_activity_states
+    
+    
+    def iter_emojis(self):
+        """
+        Iterates over the emojis of the guild.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        emoji : ``Emoji``
+        """
+        yield from self.emojis.values()
+    
+    
+    def iter_features(self):
+        """
+        Iterates over the features of the guild.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        feature : ``GuildFeature``
+        """
+        features = self.features
+        if (features is not None):
+            yield from features
+    
+    
+    def iter_roles(self):
+        """
+        Iterates over the roles of the guild.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        role : ``Role``
+        """
+        yield from self.roles.values()
+    
+    
+    def iter_scheduled_events(self):
+        """
+        Iterates overt he scheduled events of the guild.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        scheduled_event : ``ScheduledEvent``
+        """
+        yield from self.scheduled_events.values()
+    
+    
+    def iter_soundboard_sounds(self):
+        """
+        Iterates over the guild's soundboard sounds.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        soundboard_sound : ``SoundboardSound``
+        """
+        soundboard_sounds = self.soundboard_sounds
+        if (soundboard_sounds is not None):
+            yield from soundboard_sounds.values()
+    
+    
+    def iter_stages(self):
+        """
+        Iterates over the stages of the guild.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        stage : ``Stage``
+        """
+        stages = self.stages
+        if (stages is not None):
+            yield from stages.values()
+    
+    
+    def iter_stickers(self):
+        """
+        Iterates over the stickers of the guild.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        sticker : ``Sticker``
+        """
+        yield from self.stickers.values()
+    
+    
+    def iter_threads(self):
+        """
+        Iterates over the threads of the guild.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        thread : ``Channel``
+        """
+        yield from self.threads.values()
+    
+    
+    def iter_users(self):
+        """
+        Iterates over the users of the guild.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        user : ``ClientUserBase``
+        """
+        yield from self.users.values()
+    
+    
+    def iter_voice_states(self):
+        """
+        Iterates over the voice state of the guild.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        voice_state : ``VoiceState``
+        """
+        yield from self.voice_states.values()
+    
+    # ---- has ----
+
+    def has_feature(self, feature):
+        """
+        Returns whether the guild has the give feature.
+        
+        Parameters
+        ----------
+        feature : ``GuildFeature``
+            The feature to look for.
+        
+        Returns
+        -------
+        has_feature : `bool`
+        """
+        features = self.features
+        if features is None:
+            return False
+        
+        return feature in features
+    
+    
+    # ---- permissions ----
+    
+    def permissions_for(self, user):
+        """
+        Returns the permissions for the given user at the guild.
+        
+        Parameters
+        ----------
+        user : ``UserBase``
+            The user to calculate it's permissions of.
+        
+        Returns
+        -------
+        permissions : ``Permission``
+            The calculated permissions.
+        
+        See Also
+        --------
+        ``.cached_permissions_for`` : Cached permission calculator.
+        """
+        guild_id = self.id
+        roles = self.roles
+        
+        if isinstance(user, WebhookBase):
+            if user.channel_id not in self.channels:
+                return PERMISSION_NONE
+            
+            role_everyone = roles.get(guild_id, None)
+            if role_everyone is None:
+                permissions = PERMISSION_NONE
+            else:
+                permissions = role_everyone.permissions
+                if permissions & PERMISSION_MASK_ADMINISTRATOR:
+                    permissions = PERMISSION_ALL
+            
+            return permissions
+        
+        if user.id == self.owner_id:
+            return PERMISSION_ALL
+        
+        role_everyone = roles.get(guild_id, None)
+        if role_everyone is None:
+            permissions = 0
+        else:
+            permissions = role_everyone.permissions
+        
+        try:
+            guild_profile = user.guild_profiles[guild_id]
+        except KeyError:
+            return PERMISSION_NONE
+        
+        role_ids = guild_profile.role_ids
+        if (role_ids is not None):
+            for role_id in role_ids:
+                try:
+                    role = roles[role_id]
+                except KeyError:
+                    continue
+                
+                permissions |= role.permissions
+                continue
+        
+        if permissions & PERMISSION_MASK_ADMINISTRATOR:
+            return PERMISSION_ALL
+        
+        return Permission(permissions)
+    
+    
+    def cached_permissions_for(self, user):
+        """
+        Returns the permissions for the given user at the guild. If the user's permissions are not cached, calculates
+        and stores them first.
+        
+        Parameters
+        ----------
+        user : ``UserBase``
+            The user to calculate it's permissions of.
+        
+        Returns
+        -------
+        permissions : ``Permission``
+            The calculated permissions.
+        
+        Notes
+        -----
+        Mainly designed for getting clients' permissions and stores only their as well. Do not caches other user's
+        permissions.
+        """
+        if not isinstance(user, Client):
+            return self.permissions_for(user)
+        
+        permission_cache = self._cache_permission
+        if permission_cache is None:
+            self._cache_permission = permission_cache = {}
+        else:
+            try:
+                return permission_cache[user.id]
+            except KeyError:
+                pass
+        
+        permissions = self.permissions_for(user)
+        permission_cache[user.id] = permissions
+        return permissions
+    
+    
+    def permissions_for_roles(self, *roles):
+        """
+        Returns the permissions of an imaginary user who would have the listed roles.
+        
+        Parameters
+        ----------
+        *roles : ``Role``
+            The roles to calculate final permissions from.
+        
+        Returns
+        -------
+        permissions : ``Permission``
+            The calculated permissions.
+        
+        Notes
+        -----
+        Partial roles and roles from other guilds as well are ignored.
+        """
+        self_roles = self.roles
+        
+        default_role = self_roles.get(self.id, None)
+        if default_role is None:
+            permissions = 0
+        else:
+            permissions = default_role.permissions
+        
+        for role in roles:
+            if role.id in self_roles:
+                permissions |= role.permissions
+        
+        if permissions & PERMISSION_MASK_ADMINISTRATOR:
+            return PERMISSION_ALL
+        
+        return Permission(permissions)
+    
+    
+    # ---- deprecations ----
+    
+    @property
+    def max_video_channel_users(self):
+        """
+        `.max_video_channel_users` is deprecated and will be removed in 2023 August.
+        Please use `.max_voice_channel_video_users` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.max_video_channel_users` is deprecated and will be removed in 2023 August. '
+                f'Please use `.max_voice_channel_video_users` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return self.max_voice_channel_video_users
     
     
     @property
@@ -4309,3 +4713,209 @@ class Guild(DiscordEntity, immortal = True):
         )
         
         return [*self.threads.values()]
+    
+    
+    @property
+    def sticker_count(self):
+        """
+        `.sticker_count` is deprecated and will be removed in 2023 August. Please use `.sticker_counts` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.sticker_count` is deprecated and will be removed in 2023 August. '
+                f'Please use `.sticker_counts` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return self.sticker_counts
+
+
+    @property
+    def text_channels(self):
+        """
+        Returns the text channels of the guild. Announcement channels are not included.
+        
+        Returns
+        -------
+        channels : `list` of ``Channel``
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.text_channels` is deprecated and will be removed in 2023 December. '
+                f'Please use `[*Guild.iter_channels(Channel.is_guild_text)]` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return [channel for channel in self.channels.values() if channel.is_guild_text()]
+    
+    
+    @property
+    def voice_channels(self):
+        """
+        Returns the voice channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``Channel``
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.voice_channels` is deprecated and will be removed in 2023 December. '
+                f'Please use `[*Guild.iter_channels(Channel.is_guild_voice)]` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return [channel for channel in self.channels.values() if channel.is_guild_voice()]
+    
+    
+    @property
+    def category_channels(self):
+        """
+        Returns the category channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``Channel``
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.category_channels` is deprecated and will be removed in 2023 December. '
+                f'Please use `[*Guild.iter_channels(Channel.is_guild_category)]` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return [channel for channel in self.channels.values() if channel.is_guild_category()]
+    
+    
+    @property
+    def announcement_channels(self):
+        """
+        Returns the announcement channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``Channel``
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.announcement_channels` is deprecated and will be removed in 2023 December. '
+                f'Please use `[*Guild.iter_channels(Channel.is_guild_announcements)]` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return [channel for channel in self.channels.values() if channel.is_guild_announcements()]
+    
+    
+    @property
+    def store_channels(self):
+        """
+        Returns the store channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``Channel``
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.store_channels` is deprecated and will be removed in 2023 December. '
+                f'Please use `[*Guild.iter_channels(Channel.is_guild_store)]` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return [channel for channel in self.channels.values() if channel.is_guild_store()]
+    
+    
+    @property
+    def stage_channels(self):
+        """
+        Returns the stage channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``Channel``
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.stage_channels` is deprecated and will be removed in 2023 December. '
+                f'Please use `[*Guild.iter_channels(Channel.is_guild_stage)]` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return [channel for channel in self.channels.values() if channel.is_guild_stage()]
+    
+    
+    @property
+    def forum_channels(self):
+        """
+        Returns the forum channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``Channel``
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.forum_channels` is deprecated and will be removed in 2023 December. '
+                f'Please use `[*Guild.iter_channels(Channel.is_guild_forum)]` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return [channel for channel in self.channels.values() if channel.is_guild_forum()]
+    
+    
+    @property
+    def messageable_channels(self):
+        """
+        Returns the messageable channels (excluding threads) of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``Channel``
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.messageable_channels` is deprecated and will be removed in 2023 December. '
+                f'Please use `[*Guild.iter_channels(Channel.is_in_group_guild_textual)]` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return [channel for channel in self.channels.values() if channel.is_in_group_guild_textual()]
+    
+    
+    @property
+    def connectable_channels(self):
+        """
+        Returns the connectable channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``Channel``
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.connectable_channels` is deprecated and will be removed in 2023 December. '
+                f'Please use `[*Guild.iter_channels(Channel.is_in_group_guild_connectable)]` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return [channel for channel in self.channels.values() if channel.is_in_group_guild_connectable()]

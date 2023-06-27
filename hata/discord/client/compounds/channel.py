@@ -1037,7 +1037,7 @@ class ClientCompoundChannelEndpoints(Compound):
         if guild is None:
             guild = create_partial_guild_from_id(guild_id)
         
-        guild._sync_channels(data)
+        guild._update_channels(data)
         
         return [*guild.channels.values()]
     

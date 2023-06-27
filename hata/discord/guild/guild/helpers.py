@@ -1,21 +1,24 @@
 __all__ = ()
 
 
-def _user_date_sort_key(item):
+# ---- channel ----
+
+def _channel_match_sort_key(item):
     """
-    Sort key used inside ``Guild.get_users_like_ordered`` and in ``Guild.boosters`` to sort users by a specified date.
+    Sort key used inside of ``Guild.get_channels_like`` to sort channels based on their match rate.
     
     Parameters
     ----------
-    item : `tuple` (``ClientUserBase``, `datetime`)
-        The user and it's specific date.
+    item : `tuple` (``Channel``, `tuple` (`int`, `int`))
+        The channel and it's match rate.
     
     Returns
     -------
-    date : `datetime`
+    match_rate : `tuple` (`int`, `int`)
     """
     return item[1]
 
+# ---- emoji ----
 
 def _emoji_match_sort_key(item):
     """
@@ -29,38 +32,6 @@ def _emoji_match_sort_key(item):
     Returns
     -------
     match_rate : `tuple` (`int`, `int`)
-    """
-    return item[1]
-
-
-def _soundboard_sound_match_sort_key(item):
-    """
-    Sort key used inside of ``Guild.get_soundboard_sounds_like`` to sort soundboard sounds based on their match rate.
-    
-    Parameters
-    ----------
-    item : `tuple` (``Sticker``, `tuple` (`int`, `int`))
-        The soundboard sound and it's match rate.
-    
-    Returns
-    -------
-    match_rate : `tuple` (`int`, `int`)
-    """
-    return item[1]
-
-
-def _sticker_match_sort_key(item):
-    """
-    Sort key used inside of ``Guild.get_stickers_like`` to sort stickers based on their match rate.
-    
-    Parameters
-    ----------
-    item : `tuple` (``Sticker``, `tuple` (`bool`, `int`, `int`))
-        The sticker and it's match rate.
-    
-    Returns
-    -------
-    match_rate : `tuple` (`bool`, `int`, `int`)
     """
     return item[1]
 
@@ -92,3 +63,100 @@ def _strip_emoji_name(name):
         name = name[starts_at : ends_at]
     
     return name
+
+
+# ---- role ----
+def _role_match_sort_key(item):
+    """
+    Sort key used inside of ``Guild.get_roles_like`` to sort roles based on their match rate.
+    
+    Parameters
+    ----------
+    item : `tuple` (``Role``, `tuple` (`int`, `int`))
+        The role and it's match rate.
+    
+    Returns
+    -------
+    match_rate : `tuple` (`int`, `int`)
+    """
+    return item[1]
+
+
+# ---- soundboard sound ----
+
+def _soundboard_sound_match_sort_key(item):
+    """
+    Sort key used inside of ``Guild.get_soundboard_sounds_like`` to sort soundboard sounds based on their match rate.
+    
+    Parameters
+    ----------
+    item : `tuple` (``Sticker``, `tuple` (`int`, `int`))
+        The soundboard sound and it's match rate.
+    
+    Returns
+    -------
+    match_rate : `tuple` (`int`, `int`)
+    """
+    return item[1]
+
+
+# ---- sticker ----
+
+STICKER_MATCH_WEIGHT_NAME = 1
+STICKER_MATCH_WEIGHT_TAG = 2
+
+
+def _sticker_match_sort_key(item):
+    """
+    Sort key used inside of ``Guild.get_stickers_like`` to sort stickers based on their match rate.
+    
+    Parameters
+    ----------
+    item : `tuple` (``Sticker``, `tuple` (`int`, `int`, `int`))
+        The sticker and it's match rate.
+    
+    Returns
+    -------
+    match_rate : `tuple` (`int`, `int`, `int`)
+    """
+    return item[1]
+
+
+# ---- user ----
+
+
+def _user_date_sort_key(item):
+    """
+    Sort key used inside ``Guild.get_users_like_ordered`` and in ``Guild.boosters`` to sort users by a specified date.
+    
+    Parameters
+    ----------
+    item : `tuple` (``ClientUserBase``, `datetime`)
+        The user and it's specific date.
+    
+    Returns
+    -------
+    date : `datetime`
+    """
+    return item[1]
+
+
+USER_MATCH_WEIGHT_NAME = 1
+USER_MATCH_WEIGHT_DISPLAY_NAME = 2
+USER_MATCH_WEIGHT_NICK = 3
+
+
+def _user_match_sort_key(item):
+    """
+    Sort key used inside of ``Guild.get_users_like`` to sort users based on their match rate.
+    
+    Parameters
+    ----------
+    item : `tuple` (``ClientUserBase``, `tuple` (`int`, `int`, `int`))
+        The user and it's match rate.
+    
+    Returns
+    -------
+    match_rate : `tuple` (`int`, `int`, `int`)
+    """
+    return item[1]

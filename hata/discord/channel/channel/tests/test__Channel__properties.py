@@ -193,46 +193,64 @@ def test__Channel__parent__2():
     vampytest.assert_is(parent, parent_channel)
 
 
-def test__Channel__display_name():
+def _iter_options__display_name():
+    name = 'orin dAnce'
+    
+    yield ChannelType.unknown, None, None, None
+    yield ChannelType.guild_text, None, None, None
+    yield ChannelType.guild_text, name, name.lower(), None
+    yield ChannelType.private, None, None, None
+    yield ChannelType.private, None, None, [('users', [User.precreate(202209200004)])]
+    yield ChannelType.private, None, None, [('users', [User.precreate(202209200005), User.precreate(202209200006)])]
+    yield ChannelType.guild_voice, name, name.title(), None
+    yield ChannelType.private_group, None, None, None
+    yield ChannelType.private_group, name, name, None
+    yield ChannelType.private_group, name, name, [('users', [User.precreate(202209200007)])]
+    yield ChannelType.guild_category, name, name.upper(), None
+    yield ChannelType.guild_announcements, name, name.lower(), None
+    yield ChannelType.guild_store, name, name.lower(), None
+    yield ChannelType.guild_thread_announcements, name, name, None
+    yield ChannelType.guild_thread_public, name, name, None
+    yield ChannelType.guild_thread_private, name, name, None
+    yield ChannelType.guild_stage, name, name.upper(), None
+    yield ChannelType.guild_directory, name, name.lower(), None
+    yield ChannelType.guild_forum, name, name.lower(), None
+
+
+@vampytest.call_from(_iter_options__display_name())
+def test__Channel__display_name(channel_type, input_name, expected_output_name, additional_keyword_parameters):
     """
     Tests whether ``Channel.display_name`` works as intended.
+    
+    Parameters
+    ----------
+    channel_type : ``ChannelType``
+        Type of the channel to create.
+    input_name : `None`, `str`
+        The name to pass to create the channel with. Ignored if `None`.
+    expected_output_name : `None`, `str`
+        The channel's expected display name. Ignored if `None`.
+    additional_keyword_parameters : `None`, `list<(str, object)>`
+        Additional keyword parameters in key-value pairs. Ignored if `None`.
     """
-    for channel_type, channel_name, additional_keyword_parameters in (
-        (ChannelType.unknown, None, None),
-        (ChannelType.guild_text, None, None),
-        (ChannelType.guild_text, 'hello', None),
-        (ChannelType.private, None, None),
-        (ChannelType.private, None, [('users', [User.precreate(202209200004)])]),
-        (ChannelType.private, None, [('users', [User.precreate(202209200005), User.precreate(202209200006)])]),
-        (ChannelType.guild_voice, 'hello', None),
-        (ChannelType.private_group, None, None),
-        (ChannelType.private_group, 'hello', None),
-        (ChannelType.private_group, 'hello', [('users', [User.precreate(202209200007)])]),
-        (ChannelType.guild_category, 'hello', None),
-        (ChannelType.guild_announcements, 'hello', None),
-        (ChannelType.guild_store, 'hello', None),
-        (ChannelType.guild_thread_announcements, 'hello', None),
-        (ChannelType.guild_thread_public, 'hello', None),
-        (ChannelType.guild_thread_private, 'hello', None),
-        (ChannelType.guild_stage, 'hello', None),
-        (ChannelType.guild_directory, 'hello', None),
-        (ChannelType.guild_forum, 'hello', None),
-    ):
-        keyword_parameters = {'channel_type': channel_type}
-        
-        if (channel_name is not None):
-            keyword_parameters['name'] = channel_name
-        
-        if (additional_keyword_parameters is not None):
-            keyword_parameters.update(additional_keyword_parameters)
-        
-        channel = Channel(**keyword_parameters)
-        
-        display_name = channel.display_name
-        vampytest.assert_instance(display_name, str)
-        
-        if (channel_name is not None):
-            vampytest.assert_eq(display_name.casefold(), channel_name)
+    keyword_parameters = {'channel_type': channel_type}
+    
+    if (input_name is not None):
+        keyword_parameters['name'] = input_name
+    
+    if (additional_keyword_parameters is not None):
+        keyword_parameters.update(additional_keyword_parameters)
+    
+    channel = Channel(**keyword_parameters)
+    
+    display_name = channel.display_name
+    vampytest.assert_instance(display_name, str)
+    
+    if (input_name is not None):
+        vampytest.assert_eq(display_name.casefold(), input_name.casefold())
+    
+    if (expected_output_name is not None):
+        vampytest.assert_eq(display_name, expected_output_name)
 
 
 def test__Channel__mention():

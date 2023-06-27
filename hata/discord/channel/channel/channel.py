@@ -285,7 +285,7 @@ class Channel(DiscordEntity, immortal = True):
         """
         metadata = self.metadata
         metadata.users.append(user)
-        metadata._created(self, client)
+        metadata._created(self, client, True)
     
     
     def __repr__(self):
@@ -1103,7 +1103,6 @@ class Channel(DiscordEntity, immortal = True):
         if type(self) is not type(other):
             return NotImplemented
         
-        
         self_metadata = self.metadata
         other_metadata = other.metadata
         
@@ -1117,18 +1116,17 @@ class Channel(DiscordEntity, immortal = True):
             if self_order_group > other_order_group:
                 return True
             
-            if self_order_group != self_order_group:
+            if self_order_group < other_order_group:
                 return False
-                
+            
             self_position = self_metadata.position
             other_position = other_metadata.position
             
             if self_position > other_position:
                 return True
             
-            if self_position != other_position:
+            if self_position < other_position:
                 return False
-        
         
         return self.id > other.id
     
@@ -1151,7 +1149,7 @@ class Channel(DiscordEntity, immortal = True):
             if self_order_group > other_order_group:
                 return True
             
-            if self_order_group != self_order_group:
+            if self_order_group < other_order_group:
                 return False
                 
             self_position = self_metadata.position
@@ -1160,7 +1158,7 @@ class Channel(DiscordEntity, immortal = True):
             if self_position > other_position:
                 return True
             
-            if self_position != other_position:
+            if self_position < other_position:
                 return False
         
         
@@ -1236,7 +1234,7 @@ class Channel(DiscordEntity, immortal = True):
             if self_order_group < other_order_group:
                 return True
             
-            if self_order_group != self_order_group:
+            if self_order_group > other_order_group:
                 return False
             
             self_position = self_metadata.position
@@ -1245,7 +1243,7 @@ class Channel(DiscordEntity, immortal = True):
             if self_position < other_position:
                 return True
             
-            if self_position != other_position:
+            if self_position > other_position:
                 return False
         
         
@@ -1270,7 +1268,7 @@ class Channel(DiscordEntity, immortal = True):
             if self_order_group < other_order_group:
                 return True
             
-            if self_order_group != self_order_group:
+            if self_order_group > other_order_group:
                 return False
                 
             self_position = self_metadata.position
@@ -1279,7 +1277,7 @@ class Channel(DiscordEntity, immortal = True):
             if self_position < other_position:
                 return True
             
-            if self_position != other_position:
+            if self_position > other_position:
                 return False
         
         

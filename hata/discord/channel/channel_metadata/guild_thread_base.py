@@ -424,11 +424,6 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         )
     
     
-    @copy_docs(ChannelMetadataGuildBase._get_display_name)
-    def _get_display_name(self):
-        return self.name.lower()
-    
-    
     @copy_docs(ChannelMetadataGuildBase._get_created_at)
     def _get_created_at(self, channel_entity):
         created_at = self._created_at

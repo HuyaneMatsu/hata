@@ -12,7 +12,7 @@ from ..core import KOKORO
 from ..events.core import PARSERS
 from ..events.handling_helpers import call_unknown_dispatch_event_event_handler
 from ..exceptions import DiscordGatewayException, GATEWAY_EXCEPTION_CODE_TABLE
-from ..guild import LARGE_GUILD_LIMIT
+from ..guild.guild.constants import LARGE_GUILD_LIMIT
 
 from .heartbeat import Kokoro
 from .rate_limit import GatewayRateLimiter

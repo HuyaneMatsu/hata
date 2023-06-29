@@ -45,15 +45,44 @@ EVENT_HANDLER_ATTRIBUTES = frozenset((
     '_plugins',
 ))
 
+# All silent added at 2023-06-29
+
 DEPRECATION_LEVEL_NONE = 0
-DEPRECATION_LEVEL_REMOVED = 1
-DEPRECATION_LEVEL_SHOULD_WRAP = 2
+DEPRECATION_LEVEL_REMOVED = 1 << 0
+DEPRECATION_LEVEL_SHOULD_WRAP = 1 << 1
+DEPRECATION_LEVEL_RENAMED_SILENT = 1 << 2
+
+
+EVENT_DEPRECATION_TABLE = {
+    'client_edit': DEPRECATION_LEVEL_RENAMED_SILENT,
+    'message_edit': DEPRECATION_LEVEL_RENAMED_SILENT,
+    'user_edit': DEPRECATION_LEVEL_RENAMED_SILENT,
+    'guild_user_edit': DEPRECATION_LEVEL_RENAMED_SILENT | DEPRECATION_LEVEL_SHOULD_WRAP,
+    'channel_edit': DEPRECATION_LEVEL_RENAMED_SILENT,
+    'emoji_edit': DEPRECATION_LEVEL_RENAMED_SILENT,
+    'sticker_edit': DEPRECATION_LEVEL_RENAMED_SILENT,
+    'guild_edit': DEPRECATION_LEVEL_RENAMED_SILENT,
+    'integration_edit': DEPRECATION_LEVEL_RENAMED_SILENT,
+    'role_edit': DEPRECATION_LEVEL_RENAMED_SILENT,
+    'stage_edit': DEPRECATION_LEVEL_RENAMED_SILENT,
+    'scheduled_event_edit': DEPRECATION_LEVEL_RENAMED_SILENT,
+    'auto_moderation_rule_edit': DEPRECATION_LEVEL_RENAMED_SILENT,
+    'webhook_update': DEPRECATION_LEVEL_SHOULD_WRAP,
+    'guild_user_update': DEPRECATION_LEVEL_SHOULD_WRAP,
+    'role_delete': DEPRECATION_LEVEL_SHOULD_WRAP
+}
+
 
 def _get_event_deprecation_state(name):
     """
     Checks whether the event is deprecated.
     
     If it is deprecated returns `True` and drops a warning.
+    
+    Parameters
+    ----------
+    name : `str`
+        The event handler's name.
     
     Returns
     -------
@@ -70,15 +99,40 @@ def _get_event_deprecation_state(name):
     #    )
     #    
     #    return DEPRECATION_LEVEL_REMOVED
+    return EVENT_DEPRECATION_TABLE.get(name, DEPRECATION_LEVEL_NONE)
+
+
+SILENT_NAME_TRANSLATION_TABLE = {
+    'client_edit': 'client_update',
+    'message_edit': 'message_update',
+    'user_edit': 'user_update',
+    'guild_user_edit': 'guild_user_update',
+    'channel_edit': 'channel_update',
+    'emoji_edit': 'emoji_update',
+    'sticker_edit': 'sticker_update',
+    'guild_edit': 'guild_update',
+    'integration_edit': 'integration_update',
+    'role_edit': 'role_update',
+    'stage_edit': 'stage_update',
+    'scheduled_event_edit': 'scheduled_event_update',
+    'auto_moderation_rule_edit': 'auto_moderation_rule_update',
+}
+
+
+def _translate_name_deprecation_silent(name):
+    """
+    Translates silent name deprecation without warning.
     
+    Parameters
+    ----------
+    name : `str`
+        The event handler's name.
     
-    if name == 'webhook_update':
-        return DEPRECATION_LEVEL_SHOULD_WRAP
-    
-    if name == 'role_delete':
-        return DEPRECATION_LEVEL_SHOULD_WRAP
-        
-    return DEPRECATION_LEVEL_NONE
+    Returns
+    -------
+    name : `str`
+    """
+    return SILENT_NAME_TRANSLATION_TABLE.get(name, name)
 
 
 def _wrap_maybe_deprecated_event(name, func):
@@ -89,12 +143,12 @@ def _wrap_maybe_deprecated_event(name, func):
     ----------
     name : `str`
         The event's name.
-    func : `Any`
+    func : `object`
         Event handler.
     
     Returns
     -------
-    func : `Any`
+    func : ``FunctionType``
         The wrapper or maybe not wrapped event handler.
     """
     if name == 'webhook_update':
@@ -128,6 +182,49 @@ def _wrap_maybe_deprecated_event(name, func):
                 return await func(client, event.channel)
             
             return webhook_update_event_handler_wrapper
+    
+    elif name == 'guild_user_update':
+        analyzer = CallableAnalyzer(func)
+        if analyzer.is_async():
+            real_analyzer = analyzer
+        else:
+            real_analyzer = CallableAnalyzer(func.__call__, as_method = True)
+        
+        for index, parameter in enumerate(real_analyzer.parameters, 0):
+            if 'guild' in parameter.name:
+                guild_parameter_index = index
+                break
+        else:
+            guild_parameter_index = -1
+        
+        for index, parameter in enumerate(real_analyzer.parameters, 0):
+            if 'user' in parameter.name:
+                user_parameter_index = index
+                break
+        else:
+            user_parameter_index = -1
+        
+        if (
+            guild_parameter_index != -1 and user_parameter_index != -1 and
+            guild_parameter_index > user_parameter_index
+        ):
+            warnings.warn(
+                (
+                    f'`Client.events.guild_user_update`\'s `user` and `guild` parameters have been switched to match'
+                    f'other event handlers.\n'
+                    f'Please change your event handler definition to `client, guild, user, old_attributes`.'
+                ),
+                FutureWarning,
+                stacklevel = 3,
+            )
+            
+            if analyzer is not real_analyzer:
+                func = func()
+            
+            async def guild_user_update_event_handler_wrapper(client, guild, user, old_attributes):
+                return await func(client, guild, user, old_attributes)
+            
+            return guild_user_update_event_handler_wrapper
     
     
     elif name == 'role_delete':
@@ -312,7 +409,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     auto_moderation_rule_delete(client : ``Client``, auto_moderation_rule: ``AutoModerationRule``)
         Called when an auto moderation rule is deleted.
     
-    auto_moderation_rule_edit(client: ``Client``, auto_moderation_rule: ``AutoModerationRule``, 
+    auto_moderation_rule_update(client: ``Client``, auto_moderation_rule: ``AutoModerationRule``, 
             old_attributes: {`None`, `dict`})
         Called when an auto moderation rule is updated.
         
@@ -349,8 +446,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     channel_delete(client: ``Client``, channel: ``Channel``)
         Called when a channel is deleted.
     
-    channel_edit(client: ``Client``, channel: ``Channel``, old_attributes: {`dict`, `None`})
-        Called when a channel is edited. The passed `old_attributes` parameter contains the channel's overwritten
+    channel_update(client: ``Client``, channel: ``Channel``, old_attributes: {`dict`, `None`})
+        Called when a channel is updated. The passed `old_attributes` parameter contains the channel's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
         If the channel is uncached, but is updated, `old_attributes` will be given as `None`. This can happen when a
@@ -427,8 +524,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     channel_pin_update(client: ``Client``, channel: ``Channel``):
         Called when a channel's pins are updated.
     
-    client_edit(client: ``Client``, old_attributes: `dict`):
-        Called when the client is edited. The passed `old_attributes` parameter contains the client's overwritten
+    client_update(client: ``Client``, old_attributes: `dict`):
+        Called when the client is updated. The passed `old_attributes` parameter contains the client's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
@@ -464,7 +561,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------+-----------------------+
     
     embed_update(client: ``Client``, message: ``Message``, change_state: `int`):
-        Called when a message is not edited, only it's embeds are updated.
+        Called when a message is not updated, only it's embeds are updated.
         
         Possible `change_state` values:
         
@@ -541,8 +638,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         Deleted emoji's `.guild` attribute is set to `None`.
         
-    emoji_edit(client : Client, emoji: ``Emoji``, old_attributes: `dict`):
-        Called when an emoji is edited. The passed `old_attributes` parameter contains the emoji's overwritten
+    emoji_update(client : Client, emoji: ``Emoji``, old_attributes: `dict`):
+        Called when an emoji is updated. The passed `old_attributes` parameter contains the emoji's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
@@ -563,7 +660,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | role_ids          | `None`, `tuple` of `int`      |
         +-------------------+-------------------------------+
     
-    error(client: ``Client``, name: `str`, err: `Any`):
+    error(client: ``Client``, name: `str`, err: `object`):
         Called when an unexpected error happens. Mostly the user itself should define where it is called, because
         it is not Discord event bound, but an internal event.
         
@@ -589,8 +686,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Called when the guild is deleted or just the client left (kicked or banned as well) from it. The `profile`
         parameter is the client's respective guild profile for the guild.
     
-    guild_edit(client: ``Client``, guild: ``Guild``, old_attributes: `dict`):
-        Called when a guild is edited. The passed `old_attributes` parameter contains the guild's overwritten attributes
+    guild_update(client: ``Client``, guild: ``Guild``, old_attributes: `dict`):
+        Called when a guild is updated. The passed `old_attributes` parameter contains the guild's overwritten attributes
         in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
@@ -689,9 +786,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Called when a user left (kicked or banned counts as well) from a guild. The `profile` parameter is the user's
         respective guild profile for the guild.
     
-    guild_user_edit(client : Client, user: ``ClientUserBase``, guild: ``Guild``, old_attributes: `dict`):
-        Called when a user's ``GuildProfile`` is updated. The passed `old_attributes` parameter contains the message's
-        overwritten attributes in `attribute-name` - `old-value` relation.
+    guild_user_update(client : Client, guild: ``Guild``, user: ``ClientUserBase``, old_attributes: `dict`):
+        Called when a user's ``GuildProfile`` is updated. The passed `old_attributes` parameter contains the
+        guild profile's overwritten attributes in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
         
@@ -722,8 +819,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Called when a guild has one of it's integrations deleted. If the integration is bound to an application, like
         a bot, then `application_id` is given as `int`.
     
-    integration_edit(client: ``Client``, guild: ``Guild``, integration: ``Integration``):
-        Called when an integration is edited inside of a guild.
+    integration_update(client: ``Client``, guild: ``Guild``, integration: ``Integration``):
+        Called when an integration is updated inside of a guild.
     
     integration_update(client: ``Client``, guild: ``Guild``):
         Called when an ``Integration`` of a guild is updated.
@@ -749,8 +846,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     message_delete(client: ``Client``, message: ``Message``):
         Called when a loaded message is deleted.
     
-    message_edit(client: ``Client``, message: ``Message``, old_attributes: {`None`, `dict`}):
-        Called when a loaded message is edited. The passed `old_attributes` parameter contains the message's overwritten
+    message_update(client: ``Client``, message: ``Message``, old_attributes: {`None`, `dict`}):
+        Called when a loaded message is updated. The passed `old_attributes` parameter contains the message's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
@@ -826,8 +923,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     role_delete(client: ``Client``, role: ``Role``):
         Called when a role is deleted from a guild.
     
-    role_edit(client: ``Client``, role: ``Role``, old_attributes: `dict`):
-        Called when a role is edited.
+    role_update(client: ``Client``, role: ``Role``, old_attributes: `dict`):
+        Called when a role is updated.
         
         Every item in `old_attributes` is optional and they can be any of the following:
         
@@ -859,8 +956,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     scheduled_event_delete(client: ``Client``, scheduled_event: ``ScheduledEvent``):
         Called when a scheduled event is deleted.
     
-    scheduled_event_edit(client: ``Client``, scheduled_event: ``ScheduledEvent``, old_attributes: `None | dict`):
-        Called when a scheduled event is edited.
+    scheduled_event_update(client: ``Client``, scheduled_event: ``ScheduledEvent``, old_attributes: `None | dict`):
+        Called when a scheduled event is updated.
         
         If the scheduled event is cached, `old_attributes` will be a dictionary including the changed attributes in
         `attribute-name` - `old-value` relation.
@@ -942,8 +1039,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     stage_delete(client : ``Client``, stage : ``Stage``):
         Called when a stage is deleted.
     
-    stage_edit(client : ``Client``, stage : ``Stage``, old_attributes : `None | dict`):
-        Called when a stage is edited.
+    stage_update(client : ``Client``, stage : ``Stage``, old_attributes : `None | dict`):
+        Called when a stage is updated.
         
         If the stage is cached, `old_attributes` will be a dictionary including the changed attributes in
         `attribute-name` - `old-value` relation.
@@ -968,8 +1065,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     sticker_delete(client: ``Client``, sticker: ``Sticker``):
         Called when an sticker is deleted.
     
-    sticker_edit(client : Client, sticker: ``Sticker``, old_attributes: `dict`):
-        Called when an sticker is edited. The passed `old_attributes` parameter contains the sticker's overwritten
+    sticker_update(client : Client, sticker: ``Sticker``, old_attributes: `dict`):
+        Called when an sticker is updated. The passed `old_attributes` parameter contains the sticker's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
@@ -995,6 +1092,21 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             thread_profile: ``ThreadProfile``):
         Called when a user is removed or left a thread channel.
     
+    thread_user_update(client : ``Client``, thread_channel: ``Channel``, user: ``ClientUserBase``, \
+            old_attributes: `dict`):
+        Called when a user's thread profile is updated. The passed `old_attributes` parameter contains the
+        thread profile's overwritten attributes in `attribute-name` - `old-value` relation.
+        
+        > Note that this event is limited only to the respective client and is not triggered for other users.
+        
+        Every item in `old_attributes` is optional they can be any of the following:
+        
+        +-------------------+-------------------------------+
+        | Keys              | Values                        |
+        +===================+===============================+
+        | flags             | ``ThreadProfileFlag``         |
+        +-------------------+-------------------------------+
+    
     typing(client: ``Client``, channel: ``Channel``, user: ``ClientUserBase``, timestamp: `datetime`):
         Called when a user is typing at a channel. The `timestamp` parameter represents when the typing started.
         
@@ -1003,9 +1115,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     unknown_dispatch_event(client: ``Client``, name: `str`, data: `object`):
         Called when an unknown dispatch event is received.
     
-    user_edit(client: ``Client``, user: ``ClientUserBase``, old_attributes: `dict`):
-        Called when a user is edited This event not includes guild profile changes. The passed `old_attributes`
-        parameter contains the message's overwritten attributes in `attribute-name` - `old-value` relation.
+    user_update(client: ``Client``, user: ``ClientUserBase``, old_attributes: `dict`):
+        Called when a user is updated This event not includes guild profile changes. The passed `old_attributes`
+        parameter contains the user's overwritten attributes in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional they can be any of the following:
         
@@ -1237,8 +1349,11 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         name = check_name(func, name)
         
         deprecation_state = _get_event_deprecation_state(name)
-        if deprecation_state == DEPRECATION_LEVEL_REMOVED:
+        if deprecation_state & DEPRECATION_LEVEL_REMOVED:
             return
+        
+        if deprecation_state & DEPRECATION_LEVEL_RENAMED_SILENT:
+            name = _translate_name_deprecation_silent(name)
         
         plugin, parameter_count = get_plugin_event_handler_and_parameter_count(self, name)
         
@@ -1250,8 +1365,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         else:
             parser_names = None
         
-        if deprecation_state == DEPRECATION_LEVEL_SHOULD_WRAP:
+        if deprecation_state & DEPRECATION_LEVEL_SHOULD_WRAP:
             func = _wrap_maybe_deprecated_event(name, func)
+        
         func = check_parameter_count_and_convert(func, parameter_count, name = name)
         
         actual = getattr(plugin, name)
@@ -1338,8 +1454,11 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             return
         
         deprecation_state = _get_event_deprecation_state(name)
-        if deprecation_state == DEPRECATION_LEVEL_REMOVED:
+        if deprecation_state & DEPRECATION_LEVEL_REMOVED:
             return
+        
+        if deprecation_state & DEPRECATION_LEVEL_RENAMED_SILENT:
+            name = _translate_name_deprecation_silent(name)
         
         plugin, parameter_count = get_plugin_event_handler_and_parameter_count(self, name)
         
@@ -1352,7 +1471,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             parser_names = None
         
         
-        if deprecation_state == DEPRECATION_LEVEL_SHOULD_WRAP:
+        if deprecation_state & DEPRECATION_LEVEL_SHOULD_WRAP:
             value = _wrap_maybe_deprecated_event(name, value)
         func = check_parameter_count_and_convert(value, parameter_count, name = name)
         
@@ -1404,8 +1523,12 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         AttributeError
             The ``EventHandlerManager`` has no attribute named as the given `name`.
         """
-        if _get_event_deprecation_state(name) == DEPRECATION_LEVEL_REMOVED:
+        deprecation_state = _get_event_deprecation_state(name)
+        if deprecation_state & DEPRECATION_LEVEL_REMOVED:
             return
+        
+        if deprecation_state & DEPRECATION_LEVEL_RENAMED_SILENT:
+            name = _translate_name_deprecation_silent(name)
         
         plugin, parser_names = get_plugin_event_handler_and_parser_names(self, name)
         if plugin is None:
@@ -1441,7 +1564,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         Returns
         -------
-        event_handler : `Any`
+        event_handler : `object`
             Registered event handler if any.
         
         Raises
@@ -1449,6 +1572,14 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         AttributeError
             If non of the plugins have the given attribute.
         """
+        deprecation_state = _get_event_deprecation_state(name)
+        if deprecation_state & DEPRECATION_LEVEL_RENAMED_SILENT:
+            name = _translate_name_deprecation_silent(name)
+            try:
+                return object.__getattribute__(self, name)
+            except AttributeError:
+                pass
+        
         plugin_events = self._plugin_events
         if (plugin_events is not None):
             try:
@@ -1489,7 +1620,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         Returns
         -------
-        event_handler : `None`, `Any`
+        event_handler : `None`, `object`
             The matched event handler if any.
         """
         plugin = get_plugin_event_handler(self, name)
@@ -1521,7 +1652,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        func : `Any`
+        func : `object`
             The event handler to remove.
         name : `None`, `str` = `None`, Optional
             The event's name.
@@ -1535,8 +1666,12 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         name = check_name(func, name)
         
-        if _get_event_deprecation_state(name) == DEPRECATION_LEVEL_REMOVED:
+        deprecation_state = _get_event_deprecation_state(name)
+        if deprecation_state & DEPRECATION_LEVEL_REMOVED:
             return
+        
+        if deprecation_state & DEPRECATION_LEVEL_RENAMED_SILENT:
+            name = _translate_name_deprecation_silent(name)
         
         plugin = get_plugin_event_handler(self, name)
         

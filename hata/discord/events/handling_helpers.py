@@ -1787,17 +1787,17 @@ class EventWaitforMeta(type):
     
     The supported events by default are the following:
     - `message_create`
-    - `message_edit`
+    - `message_update`
     - `message_delete`
     - `channel_create`
-    - `channel_edit`
+    - `channel_update`
     - `channel_delete`
     - `role_create`
-    - `role_edit`
+    - `role_update`
     - `role_delete`
     - `guild_delete`
-    - `guild_edit`
-    - `emoji_edit`
+    - `guild_update`
+    - `emoji_update`
     - `emoji_delete`
     - `reaction_add`
     - `reaction_delete`
@@ -1844,7 +1844,7 @@ class EventWaitforMeta(type):
     _call_waitfors['message_create'] = _call_message_create
     del _call_message_create
     
-    async def _call_message_edit(self, client, message, old_attributes):
+    async def _call_message_update(self, client, message, old_attributes):
         args = (client, message, old_attributes)
         channel = message.channel
         self._run_waitfors_for(channel, args)
@@ -1853,8 +1853,9 @@ class EventWaitforMeta(type):
             return
         self._run_waitfors_for(guild, args)
     
-    _call_waitfors['message_edit'] = _call_message_edit
-    del _call_message_edit
+    _call_waitfors['message_edit'] = _call_message_update
+    _call_waitfors['message_update'] = _call_message_update
+    del _call_message_update
     
     async def _call_message_delete(self, client, message,):
         args = (client, message)
@@ -1889,7 +1890,7 @@ class EventWaitforMeta(type):
     _call_waitfors['channel_create'] = _call_channel_create
     del _call_channel_create
     
-    async def _call_channel_edit(self, client, channel, old_attributes):
+    async def _call_channel_update(self, client, channel, old_attributes):
         args = (client, channel, old_attributes)
         self._run_waitfors_for(channel, args)
         guild = channel.guild
@@ -1897,8 +1898,9 @@ class EventWaitforMeta(type):
             return
         self._run_waitfors_for(guild, args)
     
-    _call_waitfors['channel_edit'] = _call_channel_edit
-    del _call_channel_edit
+    _call_waitfors['channel_edit'] = _call_channel_update
+    _call_waitfors['channel_update'] = _call_channel_update
+    del _call_channel_update
     
     async def _call_channel_delete(self, client, channel):
         args = (client, channel)
@@ -1920,7 +1922,7 @@ class EventWaitforMeta(type):
     _call_waitfors['role_create'] = _call_role_create
     del _call_role_create
     
-    async def _call_role_edit(self, client, role, old_attributes):
+    async def _call_role_update(self, client, role, old_attributes):
         args = (client, role, old_attributes)
         self._run_waitfors_for(role, args)
         
@@ -1928,8 +1930,9 @@ class EventWaitforMeta(type):
         if (guild is not None):
             self._run_waitfors_for(guild, args)
     
-    _call_waitfors['role_edit'] = _call_role_edit
-    del _call_role_edit
+    _call_waitfors['role_edit'] = _call_role_update
+    _call_waitfors['role_update'] = _call_role_update
+    del _call_role_update
 
     async def _call_role_delete(self, client, role):
         args = (client, role)
@@ -1949,12 +1952,13 @@ class EventWaitforMeta(type):
     _call_waitfors['guild_delete'] = _call_guild_delete
     del _call_guild_delete
     
-    async def _call_guild_edit(self, client, guild, old_attributes):
+    async def _call_guild_update(self, client, guild, old_attributes):
         args = (client, guild, old_attributes)
         self._run_waitfors_for(guild, args)
     
-    _call_waitfors['guild_edit'] = _call_guild_edit
-    del _call_guild_edit
+    _call_waitfors['guild_edit'] = _call_guild_update
+    _call_waitfors['guild_update'] = _call_guild_update
+    del _call_guild_update
     
     async def _call_emoji_create(self, client, emoji):
         args = (client, emoji)
@@ -1964,14 +1968,15 @@ class EventWaitforMeta(type):
     _call_waitfors['emoji_create'] = _call_emoji_create
     del _call_emoji_create
     
-    async def _call_emoji_edit(self, client, emoji, old_attributes):
+    async def _call_emoji_update(self, client, emoji, old_attributes):
         args = (client, emoji, old_attributes)
         self._run_waitfors_for(emoji, args)
         guild = emoji.guild
         self._run_waitfors_for(guild, args)
     
-    _call_waitfors['emoji_edit'] = _call_emoji_edit
-    del _call_emoji_edit
+    _call_waitfors['emoji_edit'] = _call_emoji_update
+    _call_waitfors['emoji_update'] = _call_emoji_update
+    del _call_emoji_update
 
     async def _call_emoji_delete(self, client, emoji):
         args = (client, emoji)

@@ -5,16 +5,14 @@ from math import floor
 from os import getpid as get_process_identifier
 from sys import platform as PLATFORM
 
-from scarletio import (
-    Future, RichAttributeErrorBaseType, Task, from_json, run_coroutine, sleep, to_json
-)
+from scarletio import Future, RichAttributeErrorBaseType, Task, from_json, run_coroutine, sleep, to_json
 
 from ...discord.activity import Activity
 from ...discord.channel import Channel
 from ...discord.client.request_helpers import get_channel_id, get_guild_id, get_user_id
 from ...discord.core import KOKORO
 from ...discord.guild import create_partial_guild_from_data
-from ...discord.message.utils import process_message_chunk
+from ...discord.message.message.utils import process_message_chunk
 from ...discord.preconverters import preconvert_snowflake
 from ...discord.user import ZEROUSER
 
@@ -26,7 +24,7 @@ from .constants import (
     CLOSE_PAYLOAD_KEY_MESSAGE, DEFAULT_OPERATION_NAME, DISPATCH_EVENT_ACTIVITY_JOIN,
     DISPATCH_EVENT_ACTIVITY_JOIN_REQUEST, DISPATCH_EVENT_ACTIVITY_SPECTATE, DISPATCH_EVENT_CHANNEL_CREATE,
     DISPATCH_EVENT_CHANNEL_VOICE_SELECT, DISPATCH_EVENT_GUILD_CREATE, DISPATCH_EVENT_GUILD_STATUS_UPDATE,
-    DISPATCH_EVENT_MESSAGE_CREATE, DISPATCH_EVENT_MESSAGE_DELETE, DISPATCH_EVENT_MESSAGE_EDIT,
+    DISPATCH_EVENT_MESSAGE_CREATE, DISPATCH_EVENT_MESSAGE_DELETE, DISPATCH_EVENT_MESSAGE_UPDATE,
     DISPATCH_EVENT_NOTIFICATION_CREATE, DISPATCH_EVENT_SPEAKING_START, DISPATCH_EVENT_SPEAKING_STOP,
     DISPATCH_EVENT_USER_VOICE_CREATE, DISPATCH_EVENT_USER_VOICE_DELETE, DISPATCH_EVENT_USER_VOICE_UPDATE,
     DISPATCH_EVENT_VOICE_CONNECTION_STATUS, DISPATCH_EVENT_VOICE_SETTINGS_UPDATE, IPC_VERSION, OPERATION_CLOSE,
@@ -62,7 +60,7 @@ SUBSCRIPTION_KEY_TO_PARAMETERS_DATA = {
     DISPATCH_EVENT_USER_VOICE_DELETE: channel_key_transformer,
     DISPATCH_EVENT_VOICE_CONNECTION_STATUS: None,
     DISPATCH_EVENT_MESSAGE_CREATE: channel_key_transformer,
-    DISPATCH_EVENT_MESSAGE_EDIT: channel_key_transformer,
+    DISPATCH_EVENT_MESSAGE_UPDATE: channel_key_transformer,
     DISPATCH_EVENT_MESSAGE_DELETE: channel_key_transformer,
     DISPATCH_EVENT_SPEAKING_START: channel_key_transformer,
     DISPATCH_EVENT_SPEAKING_STOP: channel_key_transformer,
@@ -1870,7 +1868,7 @@ class RPCClient(RichAttributeErrorBaseType):
         channel_id = get_channel_id(channel, Channel.is_in_group_textual)
         
         await self._subscribe(
-            DISPATCH_EVENT_MESSAGE_EDIT,
+            DISPATCH_EVENT_MESSAGE_UPDATE,
             channel_id,
         )
     
@@ -1898,7 +1896,7 @@ class RPCClient(RichAttributeErrorBaseType):
         channel_id = get_channel_id(channel, Channel.is_in_group_textual)
 
         await self._unsubscribe(
-            DISPATCH_EVENT_MESSAGE_EDIT,
+            DISPATCH_EVENT_MESSAGE_UPDATE,
             channel_id,
         )
     

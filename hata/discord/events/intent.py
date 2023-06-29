@@ -88,6 +88,7 @@ INTENT_SHIFT_EVENTS = {
         'GUILD_SOUNDBOARD_SOUND_CREATE',
         'GUILD_SOUNDBOARD_SOUND_DELETE',
         'GUILD_SOUNDBOARD_SOUND_UPDATE',
+        'GUILD_SOUNDBOARD_SOUNDS_UPDATE',
         'GUILD_STICKERS_UPDATE',
         'SOUNDBOARD_SOUNDS',
     ),
@@ -264,6 +265,7 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
     |                                               |       |                               | GUILD_SOUNDBOARD_SOUND_CREATE,              |
     |                                               |       |                               | GUILD_SOUNDBOARD_SOUND_DELETE,              |
     |                                               |       |                               | GUILD_SOUNDBOARD_SOUND_UPDATE,              |
+    |                                               |       |                               | GUILD_SOUNDBOARD_SOUNDS_UPDATE,             |
     |                                               |       |                               | GUILD_STICKERS_UPDATE,                      |
     |                                               |       |                               | SOUNDBOARD_SOUNDS                           |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+

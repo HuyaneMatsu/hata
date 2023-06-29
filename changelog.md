@@ -26,6 +26,10 @@
 - `Guild.get_user...` methods now handle `display_name` correctly.
 - `Channel.get_user...` methods now handle `display_name` correctly.
 - Add `GUILD_SOUNDBOARD_SOUNDS_UPDATE` event parsers.
+- Add never linked (ops) `thread_user_update` event.
+- `guild_user_update` has been changed from `client, user, guild, old_attributes` to
+    `client, guild, user, old_attributes` to match other event handlers.
+- Rename `..._edit` event handlers to `..._update` to reflect better what happened. `..._edit` format is still accepted.
 
 #### Bug Fixes
 
@@ -41,6 +45,7 @@
     administrator permission.
 - `Guild.permissions_for` did not handle guild profile roles and guild roles de-sync correctly.
 - `Guild.permissions_for_roles` did not ignore partial roles as intended. Broke probably a few years ago.
+- Fix broken import in `ext.rpc`.
 
 #### Renames, Deprecation & Removals
 

@@ -11,7 +11,7 @@ from .constants import (
     DISPATCH_EVENT_ACTIVITY_JOIN, DISPATCH_EVENT_ACTIVITY_JOIN_REQUEST, DISPATCH_EVENT_ACTIVITY_SPECTATE,
     DISPATCH_EVENT_CHANNEL_CREATE, DISPATCH_EVENT_CHANNEL_VOICE_SELECT, DISPATCH_EVENT_GUILD_CREATE,
     DISPATCH_EVENT_GUILD_STATUS_UPDATE, DISPATCH_EVENT_MESSAGE_CREATE, DISPATCH_EVENT_MESSAGE_DELETE,
-    DISPATCH_EVENT_MESSAGE_EDIT, DISPATCH_EVENT_NOTIFICATION_CREATE, DISPATCH_EVENT_READY,
+    DISPATCH_EVENT_MESSAGE_UPDATE, DISPATCH_EVENT_NOTIFICATION_CREATE, DISPATCH_EVENT_READY,
     DISPATCH_EVENT_SPEAKING_START, DISPATCH_EVENT_SPEAKING_STOP, DISPATCH_EVENT_USER_VOICE_CREATE,
     DISPATCH_EVENT_USER_VOICE_DELETE, DISPATCH_EVENT_USER_VOICE_UPDATE, DISPATCH_EVENT_VOICE_CONNECTION_STATUS,
     DISPATCH_EVENT_VOICE_SETTINGS_UPDATE
@@ -90,7 +90,7 @@ def handle_dispatch_message_create(rpc_client, data):
     Task(KOKORO, rpc_client.events.message_create(rpc_client, message))
 
 
-def handle_dispatch_message_edit(rpc_client, data):
+def handle_dispatch_message_update(rpc_client, data):
     message_id = int(data['id'])
     message = MESSAGES.get(message_id, None)
     if message is None:
@@ -111,7 +111,7 @@ def handle_dispatch_message_edit(rpc_client, data):
             message._update_embed_no_return(data)
             return
     
-    Task(KOKORO, rpc_client.events.message_edit(rpc_client, message, old_attributes))
+    Task(KOKORO, rpc_client.events.message_update(rpc_client, message, old_attributes))
 
 
 def handle_dispatch_message_delete(rpc_client, data):
@@ -173,7 +173,7 @@ DISPATCH_EVENT_HANDLERS = {
     DISPATCH_EVENT_USER_VOICE_DELETE: handle_dispatch_user_voice_delete,
     DISPATCH_EVENT_VOICE_CONNECTION_STATUS: handle_dispatch_voice_connection_status,
     DISPATCH_EVENT_MESSAGE_CREATE: handle_dispatch_message_create,
-    DISPATCH_EVENT_MESSAGE_EDIT: handle_dispatch_message_edit,
+    DISPATCH_EVENT_MESSAGE_UPDATE: handle_dispatch_message_update,
     DISPATCH_EVENT_MESSAGE_DELETE: handle_dispatch_message_delete,
     DISPATCH_EVENT_SPEAKING_START: handle_dispatch_speaking_start,
     DISPATCH_EVENT_SPEAKING_STOP: handle_dispatch_speaking_stop,
@@ -195,7 +195,7 @@ del handle_dispatch_user_voice_update
 del handle_dispatch_user_voice_delete
 del handle_dispatch_voice_connection_status
 del handle_dispatch_message_create
-del handle_dispatch_message_edit
+del handle_dispatch_message_update
 del handle_dispatch_message_delete
 del handle_dispatch_speaking_start
 del handle_dispatch_speaking_stop

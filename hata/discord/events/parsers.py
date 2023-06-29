@@ -148,7 +148,7 @@ def USER_UPDATE__CAL(client, data):
     if not old_attributes:
         return
     
-    Task(KOKORO, client.events.client_edit(client, old_attributes))
+    Task(KOKORO, client.events.client_update(client, old_attributes))
 
 def USER_UPDATE__OPT(client, data):
     client._update_attributes(data)
@@ -417,7 +417,7 @@ def MESSAGE_UPDATE__CAL_SC(client, data):
         
         # Dead event handling
         message = Message.from_data(data)
-        Task(KOKORO, client.events.message_edit(client, message, None))
+        Task(KOKORO, client.events.message_update(client, message, None))
         return
     
     
@@ -426,7 +426,7 @@ def MESSAGE_UPDATE__CAL_SC(client, data):
         if not old_attributes:
             return
         
-        Task(KOKORO, client.events.message_edit(client, message, old_attributes))
+        Task(KOKORO, client.events.message_update(client, message, old_attributes))
     
     else:
         change_state = message._update_embed(data)
@@ -450,7 +450,7 @@ def MESSAGE_UPDATE__CAL_MC(client, data):
     channel = message.channel
     if channel is None:
         # If channel is not there, we do not need to dispatch it for all the clients, because we just can't.
-        event_handler = client.events.message_edit
+        event_handler = client.events.message_update
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(KOKORO, event_handler(client, message, None))
     
@@ -471,7 +471,7 @@ def MESSAGE_UPDATE__CAL_MC(client, data):
             old_attributes = None
         
         for client_ in clients:
-            event_handler = client_.events.message_edit
+            event_handler = client_.events.message_update
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client_, message, old_attributes))
     else:
@@ -910,7 +910,7 @@ if CACHE_PRESENCE:
         if presence:
             event_handler = client.events.user_presence_update
         else:
-            event_handler = client.events.user_edit
+            event_handler = client.events.user_update
         
         Task(KOKORO, event_handler(client, user, old_attributes))
     
@@ -941,7 +941,7 @@ if CACHE_PRESENCE:
                 if presence:
                     event_handler = client_.events.user_presence_update
                 else:
-                    event_handler = client_.events.user_edit
+                    event_handler = client_.events.user_update
                 
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client_, user, old_attributes))
@@ -994,7 +994,7 @@ if CACHE_USER:
         if isinstance(user, Client):
             guild._invalidate_cache_permission()
         
-        Task(KOKORO, client.events.guild_user_edit(client, user, guild, old_attributes))
+        Task(KOKORO, client.events.guild_user_update(client, guild, user, old_attributes))
     
     def GUILD_MEMBER_UPDATE__CAL_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -1020,9 +1020,9 @@ if CACHE_USER:
         
         clients.send(user)
         for client_ in clients:
-            event_handler = client_.events.guild_user_edit
+            event_handler = client_.events.guild_user_update
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(KOKORO, event_handler(client_, user, guild, old_attributes))
+                Task(KOKORO, event_handler(client_, guild, user, old_attributes))
     
     def GUILD_MEMBER_UPDATE__OPT_SC(client, data):
         guild_id = int(data['guild_id'])
@@ -1073,7 +1073,7 @@ else:
         
         guild._invalidate_cache_permission()
         
-        Task(KOKORO, client.events.guild_user_edit(client, client, guild, old_attributes))
+        Task(KOKORO, client.events.guild_user_update(client, guild, client, old_attributes))
     
     GUILD_MEMBER_UPDATE__CAL_MC = GUILD_MEMBER_UPDATE__CAL_SC
     
@@ -1177,7 +1177,7 @@ def CHANNEL_UPDATE__CAL_SC(client, data):
     if not old_attributes:
         return
     
-    Task(KOKORO, client.events.channel_edit(client, channel, old_attributes))
+    Task(KOKORO, client.events.channel_update(client, channel, old_attributes))
 
 def CHANNEL_UPDATE__CAL_MC(client, data):
     channel_id = int(data['id'])
@@ -1198,7 +1198,7 @@ def CHANNEL_UPDATE__CAL_MC(client, data):
         return
     
     for client_ in clients:
-        event_handler = client_.events.channel_edit
+        event_handler = client_.events.channel_update
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(KOKORO, event_handler(client_, channel, old_attributes))
 
@@ -1257,7 +1257,7 @@ def THREAD_UPDATE__CAL_SC(client, data):
         if not old_attributes:
             return
     
-    Task(KOKORO, client.events.channel_edit(client, channel, old_attributes))
+    Task(KOKORO, client.events.channel_update(client, channel, old_attributes))
 
 def THREAD_UPDATE__CAL_MC(client, data):
     guild_id = data.get('guild_id', None)
@@ -1293,12 +1293,12 @@ def THREAD_UPDATE__CAL_MC(client, data):
             return
     
     if (clients is None):
-        event_handler = client.events.channel_edit
+        event_handler = client.events.channel_update
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(KOKORO, event_handler(client, channel, old_attributes))
     else:
         for client_ in clients:
-            event_handler = client_.events.channel_edit
+            event_handler = client_.events.channel_update
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client_, channel, old_attributes))
 
@@ -1517,7 +1517,7 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client, data):
     
     for action, emoji, old_attributes in changes:
         if action == EMOJI_EVENT_UPDATE:
-            event_handler = client.events.emoji_edit
+            event_handler = client.events.emoji_update
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client, emoji, old_attributes))
             continue
@@ -1559,7 +1559,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
     for client_ in clients:
         for action, emoji, old_attributes in changes:
             if action == EMOJI_EVENT_UPDATE:
-                event_handler = client_.events.emoji_edit
+                event_handler = client_.events.emoji_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client_, emoji, old_attributes))
                 continue
@@ -1632,7 +1632,7 @@ def GUILD_STICKERS_UPDATE__CAL_SC(client, data):
     
     for action, sticker, old_attributes in changes:
         if action == STICKER_EVENT_UPDATE:
-            event_handler = client.events.sticker_edit
+            event_handler = client.events.sticker_update
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client, sticker, old_attributes))
             continue
@@ -1673,7 +1673,7 @@ def GUILD_STICKERS_UPDATE__CAL_MC(client, data):
     for client_ in clients:
         for action, sticker, old_attributes in changes:
             if action == STICKER_EVENT_UPDATE:
-                event_handler = client_.events.sticker_edit
+                event_handler = client_.events.sticker_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(KOKORO, event_handler(client_, sticker, old_attributes))
                 continue
@@ -2159,7 +2159,7 @@ def GUILD_UPDATE__CAL_SC(client, data):
     if not old_attributes:
         return
     
-    Task(KOKORO, client.events.guild_edit(client, guild, old_attributes))
+    Task(KOKORO, client.events.guild_update(client, guild, old_attributes))
 
 def GUILD_UPDATE__CAL_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -2180,7 +2180,7 @@ def GUILD_UPDATE__CAL_MC(client, data):
         return
     
     for client_ in clients:
-        event_handler = client_.events.guild_edit
+        event_handler = client_.events.guild_update
         if (event_handler is DEFAULT_EVENT_HANDLER):
             Task(KOKORO, event_handler(client_, guild, old_attributes))
 
@@ -2412,7 +2412,7 @@ def INTEGRATION_UPDATE__CAL(client, data):
     
     integration = Integration.from_data(data)
     
-    Task(KOKORO, client.events.integration_edit(client, guild, integration))
+    Task(KOKORO, client.events.integration_update(client, guild, integration))
 
 def INTEGRATION_UPDATE__OPT(client, data):
     pass
@@ -2608,7 +2608,7 @@ def GUILD_ROLE_UPDATE__CAL_SC(client, data):
     if not old_attributes:
         return
     
-    Task(KOKORO, client.events.role_edit(client, role, old_attributes))
+    Task(KOKORO, client.events.role_update(client, role, old_attributes))
 
 def GUILD_ROLE_UPDATE__CAL_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -2638,7 +2638,7 @@ def GUILD_ROLE_UPDATE__CAL_MC(client, data):
         return
     
     for client_ in clients:
-        event_handler = client_.events.role_edit
+        event_handler = client_.events.role_update
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(KOKORO, event_handler(client_, role, old_attributes))
 
@@ -3403,7 +3403,7 @@ def STAGE_INSTANCE_UPDATE__CAL_SC(client, data):
     if not old_attributes:
         return
     
-    Task(KOKORO, client.events.stage_edit(client, stage, old_attributes))
+    Task(KOKORO, client.events.stage_update(client, stage, old_attributes))
 
 def STAGE_INSTANCE_UPDATE__CAL_MC(client, data):
     stage_id = int(data['id'])
@@ -3422,7 +3422,7 @@ def STAGE_INSTANCE_UPDATE__CAL_MC(client, data):
         return
     
     for client_ in clients:
-        event_handler = client_.events.stage_edit
+        event_handler = client_.events.stage_update
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(KOKORO, event_handler(client_, stage, old_attributes))
 
@@ -3541,7 +3541,7 @@ def THREAD_MEMBER_UPDATE__CAL_SC(client, data):
     if (old_attributes is None):
         return
     
-    Task(KOKORO, client.user_thread_profile_edit(client, thread_channel, client, old_attributes))
+    Task(KOKORO, client.events.thread_user_update(client, thread_channel, client, old_attributes))
 
 
 def THREAD_MEMBER_UPDATE__CAL_MC(client, data):
@@ -3562,7 +3562,7 @@ def THREAD_MEMBER_UPDATE__CAL_MC(client, data):
         return
     
     for client_ in clients:
-        event_handler = client_.user_thread_profile_edit
+        event_handler = client_.events.thread_user_update
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(KOKORO, event_handler(client_, thread_channel, client, old_attributes))
 
@@ -3844,7 +3844,7 @@ def GUILD_SCHEDULED_EVENT_UPDATE__CAL_SC(client, data):
         if not old_attributes:
             return
     
-    Task(KOKORO, client.events.scheduled_event_edit(client, scheduled_event, old_attributes))
+    Task(KOKORO, client.events.scheduled_event_update(client, scheduled_event, old_attributes))
 
 
 def GUILD_SCHEDULED_EVENT_UPDATE__CAL_MC(client, data):
@@ -3871,12 +3871,12 @@ def GUILD_SCHEDULED_EVENT_UPDATE__CAL_MC(client, data):
             return
     
     if clients is None:
-        event_handler = client.events.scheduled_event_edit
+        event_handler = client.events.scheduled_event_update
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(KOKORO, event_handler(client, scheduled_event, old_attributes))
     else:
         for client_ in clients:
-            event_handler = client_.events.scheduled_event_edit
+            event_handler = client_.events.scheduled_event_update
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client_, scheduled_event, old_attributes))
 
@@ -4190,7 +4190,7 @@ def AUTO_MODERATION_RULE_UPDATE__CAL_SC(client, data):
     else:
         old_attributes = auto_moderation_rule._difference_update_attributes(data)
     
-    Task(KOKORO, client.events.auto_moderation_rule_edit(client, auto_moderation_rule, old_attributes))
+    Task(KOKORO, client.events.auto_moderation_rule_update(client, auto_moderation_rule, old_attributes))
 
 
 def AUTO_MODERATION_RULE_UPDATE__CAL_MC(client, data):
@@ -4214,7 +4214,7 @@ def AUTO_MODERATION_RULE_UPDATE__CAL_MC(client, data):
             if not old_attributes:
                 return
         
-        event_handler = client.events.auto_moderation_rule_edit
+        event_handler = client.events.auto_moderation_rule_update
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(KOKORO, event_handler(client, auto_moderation_rule, old_attributes))
         
@@ -4238,7 +4238,7 @@ def AUTO_MODERATION_RULE_UPDATE__CAL_MC(client, data):
                 return
         
         for client_ in clients:
-            event_handler = client_.events.auto_moderation_rule_edit
+            event_handler = client_.events.auto_moderation_rule_update
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client_, auto_moderation_rule, old_attributes))
 

@@ -15,7 +15,7 @@ DEFAULT_PARAMETER_COUNTS = {
     'guild_status_update': 2,
     'message_create': 2,
     'message_delete': 2,
-    'message_edit': 3,
+    'message_update': 3,
     'notification_create': 2,
     'ready': 1,
     'speaking_start': 2,
@@ -60,8 +60,8 @@ class RPCEventHandlerManager:
     message_delete(rpc_client: ``RPCClient``, message: ``Message``)
         Called when a message is deleted in a subscribed text channel.
     
-    message_edit(rpc_client: ``RPCClient``, message: ``Message``, old_attributes : {`dict`, `None`})
-        Called when a message is edited in a subscribed text channel.
+    message_update(rpc_client: ``RPCClient``, message: ``Message``, old_attributes : {`dict`, `None`})
+        Called when a message is updated in a subscribed text channel.
     
     notification_create(rpc_client: ``RPCClient``, event: ``NotificationCreateEvent``)
         Called when the client receives a notification (mention and such).
@@ -95,7 +95,7 @@ class RPCEventHandlerManager:
     """
     __slots__ = (
         'activity_join', 'activity_join_request', 'activity_spectate', 'channel_create', 'guild_create',
-        'guild_status_update', 'message_create', 'message_delete', 'message_edit', 'notification_create', 'ready',
+        'guild_status_update', 'message_create', 'message_delete', 'message_update', 'notification_create', 'ready',
         'speaking_start', 'speaking_stop', 'voice_channel_select', 'voice_connection_status', 'voice_settings_update',
         'voice_state_create', 'voice_state_delete', 'voice_state_update'
     )

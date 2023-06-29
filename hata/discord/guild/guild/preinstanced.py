@@ -1,8 +1,9 @@
 __all__ = (
     'ContentFilterLevel', 'GuildFeature', 'HubType', 'MFA', 'MessageNotificationLevel', 'NsfwLevel', 'VerificationLevel'
 )
+import warnings
 
-from scarletio import export
+from scarletio import class_property, export
 
 from ...bases import Preinstance as P, PreinstancedBase
 
@@ -480,7 +481,7 @@ class MessageNotificationLevel(PreinstancedBase):
     +-----------------------+---------------+-------+
     | no_message            | no_messages   | 2     |
     +-----------------------+---------------+-------+
-    | null                  | null          | 3     |
+    | none                  | none          | 3     |
     +-----------------------+---------------+-------+
     """
     INSTANCES = {}
@@ -492,7 +493,24 @@ class MessageNotificationLevel(PreinstancedBase):
     all_messages = P(0, 'all_messages')
     only_mentions = P(1, 'only_mentions')
     no_messages = P(2, 'no_messages')
-    null = P(3, 'null')
+    none = P(3, 'none')
+    
+    
+    @class_property
+    def null(cls):
+        """
+        `.null` is deprecated and will be removed in 2023 January. Please use `.none` instead.
+        """
+        warnings.warn(
+            (
+                f'`{cls.__name__}.null` is deprecated and will be removed in 2023 December. '
+                f'Please use `.none` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 3,
+        )
+        
+        return cls.none
 
 
 class MFA(PreinstancedBase):

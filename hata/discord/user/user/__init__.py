@@ -3,7 +3,7 @@ from .client_user_presence_base import *
 from .constants import *
 from .fields import *
 from .flags import *
-from .matching_with_discrimiantor import *
+from .matching import *
 from .helpers import *
 from .orin_user_base import *
 from .preinstanced import *
@@ -19,7 +19,7 @@ __all__ = (
     *fields.__all__,
     *flags.__all__,
     *helpers.__all__,
-    *matching_with_discrimiantor.__all__,
+    *matching.__all__,
     *orin_user_base.__all__,
     *preinstanced.__all__,
     *user.__all__,

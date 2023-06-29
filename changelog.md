@@ -23,6 +23,8 @@
 - Add `Guild.iter_stages`.
 - Add `Guild.iter_threads`.
 - Add `Guild.iter_voice_states`.
+- `Guild.get_user...` methods now handle `display_name` correctly.
+- `Channel.get_user...` methods now handle `display_name` correctly.
 
 #### Bug Fixes
 
@@ -76,6 +78,8 @@
 - Deprecate `Guild.forum_channels`. Use `[*Guild.iter_channels(Channel.is_guild_forum)]` instead.
 - Deprecate `Guild.messageable_channels`. Use `[*Guild.iter_channels(Channel.is_in_group_guild_textual)]` instead.
 - Deprecate `Guild.connectable_channels`. Use `[*Guild.iter_channels(Channel.is_in_group_guild_connectable)]` instead.
+- Rename `MessageNotificationLevel.null` to `.none`.
+- Deprecate `MessageNotificationLevel.null`. Use `.null` instead.
 
 ## 1.3.31 *\[2023-05-30\]*
 

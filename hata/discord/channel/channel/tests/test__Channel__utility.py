@@ -104,6 +104,7 @@ def test__Channel__get_user__0():
         output = channel.get_user(input_value)
         vampytest.assert_is(output, expected_output)
 
+
 def test__Channel__get_user__1():
     """
     Tests whether ``Channel.get_user`` works as intended.
@@ -397,8 +398,6 @@ def test__Channel__permissions_for():
 def test__Channel__cached_permissions_for():
     """
     Tests whether `channel.cached_permissions_for` wont raise when called and returns the correct type.
-    
-    TODO add extra test cases.
     """
     client = Client(
         token = 'token_20220909_0003',

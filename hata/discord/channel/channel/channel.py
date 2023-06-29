@@ -2,7 +2,7 @@ __all__ = ('Channel',)
 
 import warnings
 from collections import deque
-from re import I as re_ignore_case, escape as re_escape, match as re_match, search as re_search
+from re import I as re_ignore_case, compile as re_compile, escape as re_escape, match as re_match, search as re_search
 
 from scarletio import LOOP_TIME, copy_docs, export, include
 
@@ -13,6 +13,14 @@ from ...core import CHANNELS, GUILDS
 from ...core import MESSAGES
 from ...permission.permission import PERMISSION_STAGE_MODERATOR
 from ...user import ZEROUSER, create_partial_user_from_id
+from ...user.guild_profile.constants import (
+    NICK_LENGTH_MAX as USER_NICK_LENGTH_MAX, NICK_LENGTH_MIN as USER_NICK_LENGTH_MIN
+)
+from ...user.user.constants import NAME_LENGTH_MAX as USER_NAME_LENGTH_MAX, NAME_LENGTH_MIN as USER_NAME_LENGTH_MIN
+from ...user.user.matching import (
+    USER_MATCH_WEIGHT_DISPLAY_NAME, USER_MATCH_WEIGHT_NAME, USER_MATCH_WEIGHT_NICK,
+    _is_user_matching_name_with_discriminator, _parse_name_with_discriminator, _user_match_sort_key
+)
 from ...utils import DATETIME_FORMAT_CODE
 
 from ..channel_metadata import ChannelMetadataBase, ChannelMetadataGuildMainBase
@@ -34,8 +42,14 @@ from .flags import (
 create_partial_channel_from_id = include('create_partial_channel_from_id')
 Message = include('Message')
 
+
 CHANNEL_TYPE_MASK_GUILD_TEXTUAL = CHANNEL_TYPE_MASK_GUILD | CHANNEL_TYPE_MASK_TEXTUAL
 CHANNEL_TYPE_MASK_GUILD_CONNECTABLE = CHANNEL_TYPE_MASK_GUILD | CHANNEL_TYPE_MASK_CONNECTABLE
+
+
+USER_ALL_NAME_LENGTH_MAX = max(USER_NAME_LENGTH_MAX, USER_NICK_LENGTH_MAX)
+USER_ALL_NAME_LENGTH_MIN = max(USER_NAME_LENGTH_MIN, USER_NICK_LENGTH_MIN)
+USER_ALL_NAME_LENGTH_MAX_WITH_DISCRIMINATOR = USER_ALL_NAME_LENGTH_MAX + 5
 
 
 @export
@@ -473,7 +487,48 @@ class Channel(DiscordEntity, immortal = True):
         -------
         user : ``ClientUserBase``, `default`
         """
-        return self.metadata._get_user(self, name, default)
+        name_length = len(name)
+        if (name_length < USER_ALL_NAME_LENGTH_MIN) or (name_length > USER_ALL_NAME_LENGTH_MAX_WITH_DISCRIMINATOR):
+            return default
+        
+        users = self.metadata._get_users(self)
+        
+        # name with discriminator
+        
+        name_with_discriminator = _parse_name_with_discriminator(name)
+        if (name_with_discriminator is not None):
+            for user in users:
+                if _is_user_matching_name_with_discriminator(user, name_with_discriminator):
+                    return user
+        
+        if name_length > USER_ALL_NAME_LENGTH_MAX:
+            return default
+        
+        # name
+        for user in users:
+            if user.name == name:
+                return user
+        
+        # global_name
+        for user in users:
+            user_display_name = user.display_name
+            if (user_display_name is not None) and (user_display_name == name):
+                return user
+        
+        # nick
+        guild_id = self.guild_id
+        if guild_id:
+            for user in users:
+                try:
+                    guild_profile = user.guild_profiles[guild_id]
+                except KeyError:
+                    pass
+                else:
+                    nick = guild_profile.nick
+                    if (nick is not None) and (nick == name):
+                        return user
+        
+        return default
     
     
     def get_user_like(self, name, default = None):
@@ -491,7 +546,104 @@ class Channel(DiscordEntity, immortal = True):
         -------
         user : ``ClientUserBase``, `default`
         """
-        return self.metadata._get_user_like(self, name, default)
+        name_length = len(name)
+        if name_length > USER_ALL_NAME_LENGTH_MAX_WITH_DISCRIMINATOR:
+            return default
+        
+        users = self.metadata._get_users(self)
+        
+        # name with discriminator
+        
+        name_with_discriminator = _parse_name_with_discriminator(name)
+        if (name_with_discriminator is not None):
+            for user in users:
+                if _is_user_matching_name_with_discriminator(user, name_with_discriminator):
+                    return user
+        
+        if name_length > USER_ALL_NAME_LENGTH_MAX:
+            return default
+        
+        user_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        
+        accurate_user = default
+        accurate_match_key = None
+        
+        # name
+        
+        for user in users:
+            parsed = user_name_pattern.search(user.name)
+            if (parsed is None):
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            match_rate = (USER_MATCH_WEIGHT_NAME, match_length, match_start)
+            if (accurate_match_key is not None) and (accurate_match_key < match_rate):
+                continue
+            
+            accurate_user = user
+            accurate_match_key = match_rate
+            continue
+        
+        if (accurate_match_key is not None):
+            return accurate_user
+        
+        # display name
+
+        for user in users:
+            user_display_name = user.display_name
+            if (user_display_name is None):
+                continue
+            
+            parsed = user_name_pattern.search(user_display_name)
+            if (parsed is None):
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            match_rate = (USER_MATCH_WEIGHT_DISPLAY_NAME, match_length, match_start)
+            if (accurate_match_key is not None) and (accurate_match_key < match_rate):
+                continue
+            
+            accurate_user = user
+            accurate_match_key = match_rate
+            continue
+        
+        if (accurate_match_key is not None):
+            return accurate_user
+        
+        # nick
+        
+        guild_id = self.id
+        if guild_id:
+            for user in users:
+                try:
+                    guild_profile = user.guild_profiles[guild_id]
+                except KeyError:
+                    continue
+                
+                user_nick = guild_profile.nick
+                if (user_nick is None):
+                    continue
+                
+                parsed = user_name_pattern.search(user_nick)
+                if (parsed is None):
+                    continue
+                
+                match_start = parsed.start()
+                match_length = parsed.end() - match_start
+                
+                match_rate = (USER_MATCH_WEIGHT_NICK, match_length, match_start)
+                if (accurate_match_key is not None) and (accurate_match_key < match_rate):
+                    continue
+                
+                accurate_user = user
+                accurate_match_key = match_rate
+                continue
+        
+        return accurate_user
     
     
     def get_users_like(self, name):
@@ -507,7 +659,75 @@ class Channel(DiscordEntity, immortal = True):
         -------
         users : `list` of ``ClientUserBase``
         """
-        return self.metadata._get_users_like(self, name)
+        name_length = len(name)
+        if name_length > USER_ALL_NAME_LENGTH_MAX_WITH_DISCRIMINATOR:
+            return []
+        
+        users = self.metadata._get_users(self)
+        
+        # name with discriminator
+        
+        name_with_discriminator = _parse_name_with_discriminator(name)
+        if (name_with_discriminator is not None):
+            for user in users:
+                if _is_user_matching_name_with_discriminator(user, name_with_discriminator):
+                    return [user]
+        
+        if name_length > USER_ALL_NAME_LENGTH_MAX:
+            return []
+        
+        user_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        matches = []
+        guild_id = self.guild_id
+        
+        for user in users:
+            # name
+            
+            parsed = user_name_pattern.search(user.name)
+            if (parsed is not None):
+                match_start = parsed.start()
+                match_length = parsed.end() - match_start
+                
+                match_rate = (USER_MATCH_WEIGHT_NAME, match_length, match_start)
+                
+                matches.append((user, match_rate))
+                continue
+            
+            # display_name
+            
+            user_display_name = user.display_name
+            if (user_display_name is not None):
+                parsed = user_name_pattern.search(user_display_name)
+                if (parsed is not None):
+                    match_start = parsed.start()
+                    match_length = parsed.end() - match_start
+                    
+                    match_rate = (USER_MATCH_WEIGHT_DISPLAY_NAME, match_length, match_start)
+                    
+                    matches.append((user, match_rate))
+                    continue
+            
+            # nick
+            
+            if guild_id:
+                try:
+                    guild_profile = user.guild_profiles[guild_id]
+                except KeyError:
+                    pass
+                else:
+                    user_nick = guild_profile.nick
+                    if (user_nick is not None):
+                        parsed = user_name_pattern.search(user_nick)
+                        if (parsed is not None):
+                            match_start = parsed.start()
+                            match_length = parsed.end() - match_start
+                            
+                            match_rate = (USER_MATCH_WEIGHT_NICK, match_length, match_start)
+                            
+                            matches.append((user, match_rate))
+                            continue
+        
+        return [item[0] for item in sorted(matches, key = _user_match_sort_key)]
     
     
     @property

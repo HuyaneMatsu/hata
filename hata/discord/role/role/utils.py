@@ -13,12 +13,12 @@ from .fields import (
     put_unicode_emoji_into, validate_color, validate_mentionable, validate_name, validate_permissions,
     validate_position, validate_separated, validate_unicode_emoji
 )
-from .role import Role
+from .role import ROLE_ICON, Role
 
 
 ROLE_FIELD_CONVERTERS = {
     'color': (validate_color, put_color_into),
-    'icon': (partial_func(Role.icon.validate_icon, allow_data = True), partial_func(Role.icon.put_into, as_data = True)),
+    'icon': (partial_func(ROLE_ICON.validate_icon, allow_data = True), partial_func(ROLE_ICON.put_into, as_data = True)),
     'mentionable': (validate_mentionable, put_mentionable_into),
     'name': (validate_name, put_name_into),
     'permissions': (validate_permissions, put_permissions_into),

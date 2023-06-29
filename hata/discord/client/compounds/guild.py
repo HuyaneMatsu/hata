@@ -1,27 +1,53 @@
 __all__ = ()
 
-import reprlib
+import warnings
 
 from scarletio import Compound
 
 from ...audit_logs import AuditLog, AuditLogEvent, AuditLogIterator
 from ...bases import maybe_snowflake
-from ...channel import Channel, VoiceRegion
+from ...channel import VoiceRegion
 from ...guild import (
-    ContentFilterLevel, Guild, GuildFeature, GuildPreview, GuildWidget, MessageNotificationLevel, SystemChannelFlag,
-    VerificationLevel, VerificationScreen, WelcomeScreen, create_partial_guild_from_data
+    Guild, GuildFeature, GuildPreview, GuildWidget, VerificationScreen, WelcomeScreen, create_partial_guild_from_data
 )
+from ...guild.guild.utils import GUILD_FIELD_CONVERTERS, create_new_guild_data
 from ...guild.verification_screen.utils import VERIFICATION_SCREEN_FIELD_CONVERTERS
 from ...guild.welcome_screen.utils import WELCOME_SCREEN_FIELD_CONVERTERS
-from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES, VALID_ICON_MEDIA_TYPES_EXTENDED
-from ...localization.utils import Locale
+from ...http import DiscordHTTPClient
 from ...payload_building import build_edit_payload
 from ...role import Role
 from ...onboarding import OnboardingScreen
-from ...user import ClientUserBase, GuildProfile, PremiumType, User, UserBase, UserFlag
-from ...utils import get_image_media_type, image_to_base64, log_time_converter
+from ...user import ClientUserBase, GuildProfile, PremiumType, User, UserFlag
+from ...utils import log_time_converter
 
 from ..request_helpers import get_guild_and_id, get_guild_id, get_role_id, get_user_id
+
+
+def _assert__guild_create__limit(client):
+    """
+    Asserts in how much guilds the client is in.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client to assert its guild creation limit of.
+    """
+    if client.bot:
+        guild_create_limit = 10
+    elif client.flags.staff:
+        guild_create_limit = 200
+    elif (client.premium_type is PremiumType.nitro):
+        guild_create_limit = 200
+    else:
+        guild_create_limit = 100
+    
+    guild_count = len(client.guilds)
+    if guild_count >= guild_create_limit:
+        raise AssertionError(
+            f'Guild count over creation limit; limit = {guild_create_limit}; count = {guild_count!r}.'
+        )
+    
+    return True
 
 
 class ClientCompoundGuildEndpoints(Compound):
@@ -467,12 +493,7 @@ class ClientCompoundGuildEndpoints(Compound):
         await self.http.guild_delete(guild_id)
     
     
-    async def guild_create(
-        self, name, *, icon = None, roles = None, channels = None, afk_channel_id = None, system_channel_id = None,
-        afk_timeout = None, verification_level = VerificationLevel.medium,
-        message_notification = MessageNotificationLevel.only_mentions, content_filter = ContentFilterLevel.disabled,
-        boost_progress_bar_enabled = None, safety_alerts_channel_id = None
-    ):
+    async def guild_create(self, name, **keyword_parameters):
         """
         Creates a guild with the given parameter. Bot accounts can create guilds only when they have less than 10.
         User account guild limit is 100, meanwhile staff guild limit is 200.
@@ -483,205 +504,63 @@ class ClientCompoundGuildEndpoints(Compound):
         ----------
         name : `str`
             The name of the new guild.
-        icon : `None`, `bytes-like` = `None`, Optional (Keyword only)
-            The icon of the new guild.
-        roles : `None`, `list` of `dict` = `None`, Optional (Keyword only)
-            A list of roles of the new guild. It should contain role data objects.
-        channels : `None`, `list` of `dict` = `None`, Optional (Keyword only)
-            A list of channels of the new guild. It should contain channel data objects.
-        afk_channel_id : `None`, `int` = `None`, Optional (Keyword only)
+        
+        Parameters
+        ----------
+        **keyword_parameters : Keyword parameters
+            Additional parameters to create the guild with.
+        
+        Other Parameters
+        ----------------
+        afk_channel_id : `None`, `int`, Optional (Keyword only)
             The id of the guild's afk channel. The id should be one of the channel's id from `channels`.
-        system_channel_id: `int`, Optional (Keyword only)
-            The id of the guild's system channel. The id should be one of the channel's id from `channels`.
+        
         afk_timeout : `None`, `int` = `None`, Optional (Keyword only)
             The afk timeout for the users at the guild's afk channel.
         
-        verification_level : ``VerificationLevel``, `int` = `VerificationLevel.medium`, Optional (Keyword only)
-            The verification level of the new guild.
-        message_notification : ``MessageNotificationLevel``, `int` = `MessageNotificationLevel.only_mentions`
-                , Optional (Keyword only)
-            The message notification level of the new guild.
-        content_filter : ``ContentFilterLevel``, `int` = `ContentFilterLevel.disabled`, Optional (Keyword only)
+        channels : `None`, `list` of (`dict<str, object>`, ``Channel``), Optional (Keyword only)
+            A list of channels of the new guild. It should contain channel data objects.
+        
+        content_filter : ``ContentFilterLevel``, `int`, Optional (Keyword only)
             The content filter level of the guild.
-        boost_progress_bar_enabled : `None`, `bool` = `None`, Optional (Keyword only)
-            Whether the guild has the boost progress bar should be enabled.
-        safety_alerts_channel_id : `None`, `int`, ``Channel`` = `None`, Optional (Keyword only)
-            The channel where safety alerts are sent by Discord.
+        
+        icon : `None`, `bytes-like`, Optional (Keyword only)
+            The icon of the new guild.
+        
+        roles : `None`, `list` of (`dict<str, object>`, ``Role``), Optional (Keyword only)
+            A list of roles of the new guild. It should contain role data objects.
+        
+        message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
+            The message notification level of the new guild.
+        
+        system_channel_flags : ``SystemChannelFlag``, `int`, Optional (Keyword only)
+            Describe which type of messages are sent automatically to the system channel.
+        
+        system_channel_id: `int`, Optional (Keyword only)
+            The id of the guild's system channel. The id should be one of the channel's id from `channels`.
+        
+        verification_level : ``VerificationLevel``, `int`, Optional (Keyword only)
+            The verification level of the new guild.
         
         Returns
         -------
-        guild : ``Guild`` object
+        guild : ``Guild``
             A partial guild made from the received data.
         
         Raises
         ------
         TypeError
-            - If `icon` is neither `None`, `bytes-like`.
-            - If `verification_level` was not given neither as ``VerificationLevel`` not `int`.
-            - If `content_filter` was not given neither as ``ContentFilterLevel`` not `int`.
-            - If `message_notification` was not given neither as ``MessageNotificationLevel`` nor `int`.
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If the client cannot create more guilds.
-            - If `name` was not given as `str`.
-            - If the `name`'s length is out of range [2:100].
-            - If `icon` is passed as `bytes-like`, but it's format is not a valid image format.
-            - If `afk-timeout` was not given as `int`.
-            - If `afk_timeout` was passed and not as one of: `60, 300, 900, 1800, 3600`.
-            - If `boost_progress_bar_enabled` was not given as `bool`.
         """
-        if __debug__:
-            if self.bot:
-                guild_create_limit = 10
-            elif self.flags.staff:
-                guild_create_limit = 200
-            elif (self.premium_type is PremiumType.nitro):
-                guild_create_limit = 200
-            else:
-                guild_create_limit = 100
-            
-            if len(self.guilds) >= guild_create_limit:
-                raise AssertionError(
-                    f'Guild count over creation limit; limit={guild_create_limit}; count={len(self.guilds)!r}.'
-                )
+        assert _assert__guild_create__limit(self)
         
-        
-        if __debug__:
-            if not isinstance(name, str):
-                raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                )
-            
-            name_length = len(name)
-            if name_length < 2 or name_length > 100:
-                raise AssertionError(
-                    f'`name` length can be in range [2:100], got {name_length!r}; {name!r}.'
-                )
-        
-        
-        if icon is None:
-            icon_data = None
-        else:
-            icon_type = icon.__class__
-            if not issubclass(icon_type, (bytes, bytearray, memoryview)):
-                raise TypeError(
-                    f'`icon` can be `None`, `bytes-like`, got {icon_type.__name__}; {reprlib.repr(icon)}.'
-                )
-            
-            if __debug__:
-                media_type = get_image_media_type(icon)
-                if media_type not in VALID_ICON_MEDIA_TYPES:
-                    raise AssertionError(
-                        f'Invalid `icon` type: {media_type}; {reprlib.repr(icon)}.'
-                    )
-            
-            icon_data = image_to_base64(icon)
-        
-        if isinstance(verification_level, VerificationLevel):
-            verification_level_value = verification_level.value
-        elif isinstance(verification_level, int):
-            verification_level_value = verification_level
-        else:
-            raise TypeError(
-                f'`verification_level` can be `{VerificationLevel.__name__}`, `int`, got '
-                f'{verification_level.__class__.__name__}; {verification_level!r}.'
-            )
-        
-        
-        if isinstance(message_notification, MessageNotificationLevel):
-            message_notification_value = message_notification.value
-        elif isinstance(message_notification, int):
-            message_notification_value = message_notification
-        else:
-            raise TypeError(
-                f'`message_notification` can be `{MessageNotificationLevel.__name__}`, `int`, got '
-                f'{message_notification.__class__.__name__}; {message_notification!r}.'
-            )
-        
-        
-        if isinstance(content_filter, ContentFilterLevel):
-            content_filter_value = content_filter.value
-        elif isinstance(content_filter, int):
-            content_filter_value = content_filter
-        else:
-            raise TypeError(
-                f'`content_filter` can be {ContentFilterLevel.__name__}, `int` , got '
-                f'{content_filter.__class__.__name__}; {content_filter!r}.'
-            )
-        
-        if roles is None:
-            roles = []
-        
-        if channels is None:
-            channels = []
-        
-        data = {
-            'name': name,
-            'icon': icon_data,
-            'verification_level': verification_level_value,
-            'default_message_notifications': message_notification_value,
-            'explicit_content_filter': content_filter_value,
-            'roles': roles,
-            'channels': channels,
-        }
-        
-        if (afk_channel_id is not None):
-            if __debug__:
-                if not isinstance(afk_channel_id, int):
-                    raise AssertionError(
-                        f'`afk_channel_id` can be `int`, got {afk_channel_id.__class__.__name__}; {afk_channel_id!r}.'
-                    )
-            
-            data['afk_channel_id'] = afk_channel_id
-        
-        
-        if (safety_alerts_channel_id is not None):
-            if __debug__:
-                if not isinstance(safety_alerts_channel_id, int):
-                    raise AssertionError(
-                        f'`safety_alerts_channel_id` can be `int`, got {safety_alerts_channel_id.__class__.__name__}; {safety_alerts_channel_id!r}.'
-                    )
-            
-            data['safety_alerts_channel_id'] = safety_alerts_channel_id
-        
-        
-        if (system_channel_id is not None):
-            if __debug__:
-                if not isinstance(system_channel_id, int):
-                    raise AssertionError(
-                        f'`system_channel_id` can be `int`, got {system_channel_id.__class__.__name__}; '
-                        f'{system_channel_id!r}.'
-                    )
-            
-            data['system_channel_id'] = system_channel_id
-        
-        if (afk_timeout is not None):
-            if __debug__:
-                if not isinstance(afk_timeout, int):
-                    raise AssertionError(
-                        f'`afk_timeout` can be `int`, got {afk_timeout.__class__.__name__}; {afk_timeout!r}.'
-                    )
-                
-                if afk_timeout not in (60, 300, 900, 1800, 3600):
-                    raise AssertionError(
-                        f'`afk_timeout` can be 60, 300, 900, 1800, 3600 seconds; got {afk_timeout!r}.'
-                    )
-            
-            data['afk_timeout'] = afk_timeout
-        
-        if (boost_progress_bar_enabled is not None):
-            if __debug__:
-                if not isinstance(boost_progress_bar_enabled, bool):
-                    raise AssertionError(
-                        f'`boost_progress_bar_enabled` can be `bool`, got '
-                        f'{boost_progress_bar_enabled.__class__.__name__}; {boost_progress_bar_enabled!r}.'
-                    )
-            
-            data['premium_progress_bar_enabled'] = boost_progress_bar_enabled
-        
+        data = create_new_guild_data(name = name, **keyword_parameters)
         
         data = await self.http.guild_create(data)
         # we can create only partial, because the guild data is not completed usually
@@ -856,11 +735,14 @@ class ClientCompoundGuildEndpoints(Compound):
     
     
     async def guild_edit(
-        self, guild, *, name = ..., icon=..., invite_splash=..., discovery_splash=..., banner=...,
-        afk_channel = ..., system_channel = ..., rules_channel = ..., public_updates_channel = ..., owner=...,
-        afk_timeout = ..., verification_level=..., content_filter=..., message_notification=..., description = ...,
-        preferred_locale=..., system_channel_flags=..., add_feature=..., remove_feature=...,
-        boost_progress_bar_enabled=..., safety_alerts_channel = ..., reason = None
+        self,
+        guild,
+        guild_template = None,
+        *,
+        add_feature = ...,
+        remove_feature = ...,
+        reason = None,
+        **keyword_parameters,
     ):
         """
         Edits the guild with the given parameters.
@@ -871,419 +753,122 @@ class ClientCompoundGuildEndpoints(Compound):
         ----------
         guild : ``Guild``, `int`
             The guild to edit.
-        name : `str`, Optional (Keyword only)
-            The guild's new name.
-        icon : `None`, `bytes-like`, Optional (Keyword only)
-            The new icon of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. If the guild has
-            `ANIMATED_ICON` feature, it can be `'gif'` as well. By passing `None` you can remove the current one.
-        invite_splash : `None`, `bytes-like`, Optional (Keyword only)
-            The new invite splash of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
-            `INVITE_SPLASH` feature. By passing it as `None` you can remove the current one.
-        discovery_splash : `None`, `bytes-like`, Optional (Keyword only)
-            The new splash of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
-            `DISCOVERABLE` feature. By passing it as `None` you can remove the current one.
-        banner : `None`, `bytes-like`, Optional (Keyword only)
-            The new banner of the guild. Can be `'jpg'`, `'png'`, `'webp'`, `'gif'` image's raw data. The guild must
-            have `BANNER` feature. `ANIMATED_BANNER` for `gif` banner. By passing it as `None` you can remove the
-            current one.
-        afk_channel : `None`, ``Channel``, `int`, Optional (Keyword only)
-            The new afk channel of the guild. You can remove the current one by passing is as `None`.
-        system_channel : `None`, ``Channel``, `int`, Optional (Keyword only)
-            The new system channel of the guild. You can remove the current one by passing is as `None`.
-        rules_channel : `None`, ``Channel``, `int`, Optional (Keyword only)
-            The new rules channel of the guild. The guild must be a Community guild. You can remove the current
-            one by passing is as `None`.
-        public_updates_channel : `None`, ``Channel``, `int`, Optional (Keyword only)
-            The new public updates channel of the guild. The guild must be a Community guild. You can remove the
-            current one by passing is as `None`.
-        owner : ``ClientUserBase``, `int`, Optional (Keyword only)
-            The new owner of the guild. You must be the owner of the guild to transfer ownership.
-            
-        afk_timeout : `int`, Optional (Keyword only)
-            The new afk timeout for the users at the guild's afk channel.
-            
-            Can be one of: `60, 300, 900, 1800, 3600`.
-        verification_level : ``VerificationLevel``, `int`, Optional (Keyword only)
-            The new verification level of the guild.
-        content_filter : ``ContentFilterLevel``, `int`, Optional (Keyword only)
-            The new content filter level of the guild.
-        message_notification : ``MessageNotificationLevel``, Optional (Keyword only)
-            The new message notification level of the guild.
-        description : `None`, `str`, Optional (Keyword only)
-            The new description of the guild. By passing `None`, or an empty string you can remove the current one.
-        preferred_locale : ``Locale``, `str`, Optional (Keyword only)
-            The guild's preferred locale. The guild must be a Community guild.
-        system_channel_flags : ``SystemChannelFlag``, Optional (Keyword only)
-            The guild's system channel's new flags.
-        add_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional (Keyword only)
-            Guild feature(s) to add to the guild.
-            
-            If `guild` is given as an id, then `add_feature` should contain all the features of the guild to set.
-        remove_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional (Keyword only)
-            Guild feature(s) to remove from the guild's.
-        boost_progress_bar_enabled : `bool`, Optional (Keyword only)
-            Whether the guild has the boost progress bar should be enabled.
-        safety_alerts_channel : `None`, ``Channel``, `int`, Optional (Keyword only)
-            The new safety alerts channel of the guild. You can remove the current one by passing is as `None`.
+        
+        guild_template : `None`, ``Guild`` = `None`, Optional
+            Guild entity to use as a template.
+        
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the guild's audit logs.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to edit the guild with.
+        
+        Other Parameters
+        ----------------
+        afk_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The afk channel or its identifier.
+        
+        afk_timeout : `int`, Optional (Keyword only)
+            The afk timeout at the `afk_channel`.
+        
+        banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The guild's banner.
+        
+        boost_progress_bar_enabled : `bool`, Optional (Keyword only)
+            Whether the guild has the boost progress bar enabled.
+        
+        content_filter : ``ContentFilterLevel``, `int`, Optional (Keyword only)
+            The explicit content filter level of the guild.
+        
+        description : `None`, `str`
+            Description of the guild. The guild must be a Community guild.
+        
+        discovery_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The guild's discovery splash.
+        
+        features : `None`, `iterable` of `(`int`, `GuildFeature``), Optional (Keyword only)
+            The guild's features.
+        
+        hub_type : ``HubType``, `int`, Optional (Keyword only)
+            The guild's hub type.
+        
+        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The guild's icon.
+        
+        invite_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The guild's invite splash.
+        
+        message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
+            The message notification level of the guild.
+        
+        mfa : ``MFA``, `int`, Optional (Keyword only)
+            The required multi-factor authentication level for the guild.
+        
+        name : `str`, Optional (Keyword only)
+            The guild's name.
+        
+        nsfw_level : ``NsfwLevel``, `int`, Optional (Keyword only)
+            The nsfw level of the guild.
+        
+        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+            The guild's owner or their id.
+        
+        preferred_locale : ``Locale``, `int`, Optional (Keyword only)
+            The preferred language of the guild.
+        
+        public_updates_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel's identifier where the guild's public updates should go.
+        
+        rules_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel or its identifier where the rules of a public guild's should be.
+        
+        safety_alerts_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel or its identifier where safety alerts are sent by Discord.
+        
+        system_channel_flags : ``SystemChannelFlag``, `int`, Optional (Keyword only)
+            Describe which type of messages are sent automatically to the system channel.
+        
+        system_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel or its identifier where the system messages are sent.
+        
+        vanity_code : `None`, `str`, Optional (Keyword only)
+            The guild's vanity invite's code if it has.
+        
+        verification_level : ``VerificationLevel``, `int`, Optional (Keyword only)
+            The minimal verification needed to join or to interact with guild.
+        
+        widget_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel or its identifier for which the guild's widget is for.
+        
+        widget_enabled : `bool`, Optional (Keyword only)
+            Whether the guild's widget is enabled.
         
         Raises
         ------
         TypeError
             - If a parameter's type is invalid.
+        ValueError
+            - If a parameter's value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = {}
-        
         guild, guild_id = get_guild_and_id(guild)
         
-        if (name is not ...):
-            if __debug__:
-                if not isinstance(name, str):
-                    raise AssertionError(
-                        f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                    )
-                
-                name_length = len(name)
-                if name_length < 2 or name_length > 100:
-                    raise ValueError(
-                        f'Guild\'s name\'s length can be between 2-100, got {name_length}: {name!r}.'
-                    )
-            
-            data['name'] = name
-        
-        
-        if (icon is not ...):
-            if icon is None:
-                icon_data = None
-            
-            else:
-                if not isinstance(icon, (bytes, bytearray, memoryview)):
-                    raise TypeError(
-                        f'`icon` can be `None`, `bytes-like`, got {icon.__class__.__name__}; {reprlib.repr(icon)}.'
-                    )
-                
-                if __debug__:
-                    media_type = get_image_media_type(icon)
-                    if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
-                        raise AssertionError(
-                            f'Invalid `icon` type for the guild: {media_type}; got {reprlib.repr(icon)}.'
-                        )
-                
-                icon_data = image_to_base64(icon)
-            
-            data['icon'] = icon_data
-        
-        
-        if (banner is not ...):
-            if banner is None:
-                banner_data = None
-            else:
-                if not isinstance(banner, (bytes, bytearray, memoryview)):
-                    raise TypeError(
-                        f'`banner` can be `None`, `bytes-like`, got '
-                        f'{banner.__class__.__name__}; got {reprlib.repr(banner)}.'
-                    )
-                
-                if __debug__:
-                    media_type = get_image_media_type(banner)
-                    if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
-                        raise AssertionError(
-                            f'Invalid `banner` type: {media_type}; got {reprlib.repr(banner)}.'
-                        )
-                
-                banner_data = image_to_base64(banner)
-            
-            data['banner'] = banner_data
-        
-        
-        if (invite_splash is not ...):
-            if invite_splash is None:
-                invite_splash_data = None
-            else:
-                if not isinstance(invite_splash, (bytes, bytearray, memoryview)):
-                    raise TypeError(
-                        f'`invite_splash` can be `None`, `bytes-like`, got '
-                        f'{invite_splash.__class__.__name__}; {reprlib.repr(invite_splash)}.'
-                    )
-                
-                if __debug__:
-                    media_type = get_image_media_type(invite_splash)
-                    if media_type not in VALID_ICON_MEDIA_TYPES:
-                        raise AssertionError(
-                            f'Invalid `invite_splash` type: {media_type}; got {reprlib.repr(invite_splash)}.'
-                        )
-                
-                invite_splash_data = image_to_base64(invite_splash)
-            
-            data['splash'] = invite_splash_data
-        
-        
-        if (discovery_splash is not ...):
-            if discovery_splash is None:
-                discovery_splash_data = None
-            else:
-                if not isinstance(discovery_splash, (bytes, bytearray, memoryview)):
-                    raise TypeError(
-                        f'`discovery_splash` can be `None`, `bytes-like`, got '
-                        f'{discovery_splash.__class__.__name__}; {reprlib.repr(discovery_splash)}.'
-                    )
-                
-                if __debug__:
-                    media_type = get_image_media_type(discovery_splash)
-                    if media_type not in VALID_ICON_MEDIA_TYPES:
-                        raise AssertionError(
-                            f'Invalid `discovery_splash` type: {media_type}; got {reprlib.repr(discovery_splash)}.'
-                        )
-                
-                discovery_splash_data = image_to_base64(discovery_splash)
-            
-            data['discovery_splash'] = discovery_splash_data
-        
-        
-        if (afk_channel is not ...):
-            while True:
-                if afk_channel is None:
-                    afk_channel_id = None
-                    break
-                
-                elif isinstance(afk_channel, Channel):
-                    if afk_channel.is_guild_voice() or afk_channel.partial:
-                        afk_channel_id = afk_channel.id
-                        break
-                
-                else:
-                    afk_channel_id = maybe_snowflake(afk_channel)
-                    if afk_channel_id is not None:
-                        break
-                
-                raise TypeError(
-                    f'`afk_channel` can be `None`, guild voice channel, `int` , got '
-                    f'{afk_channel.__class__.__name__}; {afk_channel!r}.'
-                )
-            
-            data['afk_channel_id'] = afk_channel_id
-        
-        
-        if (safety_alerts_channel is not ...):
-            while True:
-                if safety_alerts_channel is None:
-                    safety_alerts_channel_id = None
-                    break
-                
-                elif isinstance(safety_alerts_channel, Channel):
-                    if safety_alerts_channel.is_guild_voice() or safety_alerts_channel.partial:
-                        safety_alerts_channel_id = safety_alerts_channel.id
-                        break
-                
-                else:
-                    safety_alerts_channel_id = maybe_snowflake(safety_alerts_channel)
-                    if safety_alerts_channel_id is not None:
-                        break
-                
-                raise TypeError(
-                    f'`safety_alerts_channel` can be `None`, guild voice channel, `int` , got '
-                    f'{safety_alerts_channel.__class__.__name__}; {safety_alerts_channel!r}.'
-                )
-            
-            data['safety_alerts_channel_id'] = safety_alerts_channel_id
-        
-        
-        if (system_channel is not ...):
-            while True:
-                if system_channel is None:
-                    system_channel_id = None
-                    break
-                
-                elif isinstance(system_channel, Channel):
-                    if system_channel.is_in_group_guild_system() or system_channel.partial:
-                        system_channel_id = system_channel.id
-                        break
-                
-                else:
-                    system_channel_id = maybe_snowflake(system_channel)
-                    if system_channel_id is not None:
-                        break
-                
-                raise TypeError(
-                    f'`system_channel` can be `None`, guild text channel, `int`, got '
-                    f'{system_channel.__class__.__name__}; {system_channel!r}.'
-                )
-            
-            data['system_channel_id'] = system_channel_id
-        
-        
-        if (rules_channel is not ...):
-            while True:
-                if rules_channel is None:
-                    rules_channel_id = None
-                    break
-                
-                elif isinstance(rules_channel, Channel):
-                    if rules_channel.is_in_group_guild_system() or rules_channel.partial:
-                        rules_channel_id = rules_channel.id
-                        break
-                
-                else:
-                    rules_channel_id = maybe_snowflake(rules_channel)
-                    if rules_channel_id is not None:
-                        break
-                
-                raise TypeError(
-                    f'`rules_channel` can be `None`, guild text channel, `int` , got '
-                    f'{rules_channel.__class__.__name__}.'
-                )
-            
-            data['rules_channel_id'] = rules_channel_id
-        
-        
-        if (public_updates_channel is not ...):
-            while True:
-                if public_updates_channel is None:
-                    public_updates_channel_id = None
-                    break
-                
-                elif isinstance(public_updates_channel, Channel):
-                    if public_updates_channel.is_in_group_guild_system() or public_updates_channel.partial:
-                        public_updates_channel_id = public_updates_channel.id
-                        break
-                    
-                else:
-                    public_updates_channel_id = maybe_snowflake(public_updates_channel)
-                    if public_updates_channel_id is not None:
-                        break
-                
-                raise TypeError(
-                    f'`public_updates_channel` can be `None`, guild text channel, `int`, got '
-                    f'{public_updates_channel.__class__.__name__}; {public_updates_channel!r}.'
-                )
-            
-            data['public_updates_channel_id'] = public_updates_channel_id
-        
-        
-        if (owner is not ...):
-            if __debug__:
-                if (guild is not None) and (guild.owner_id != self.id):
-                    raise AssertionError(
-                        f'You must be owner to transfer ownership; got {owner!r}; actual owner={guild.owner!r}; '
-                        f'guild={guild!r}.'
-                    )
-            
-            if isinstance(owner, ClientUserBase):
-                owner_id = owner.id
-            else:
-                owner_id = maybe_snowflake(owner)
-                if owner_id is None:
-                    raise TypeError(
-                        f'`owner` can be `{UserBase.__name__}`, `int`, got {owner.__class__.__name__}; {owner!r}.'
-                    )
-            
-            
-            data['owner_id'] = owner_id
-        
-        if (afk_timeout is not ...):
-            if __debug__:
-                if not isinstance(afk_timeout, int):
-                    raise AssertionError(
-                        f'`afk_timeout` can be `int`, got {afk_timeout.__class__.__name__}; {afk_timeout!r}.'
-                    )
-                
-                if afk_timeout not in (60, 300, 900, 1800, 3600):
-                    raise AssertionError(
-                        f'`afk_timeout` can be one of (60, 300, 900, 1800, 3600) seconds, got {afk_timeout!r}.'
-                    )
-            
-            data['afk_timeout'] = afk_timeout
-        
-        
-        if (verification_level is not ...):
-            if isinstance(verification_level, VerificationLevel):
-                verification_level_value = verification_level.value
-            elif isinstance(verification_level, int):
-                verification_level_value = verification_level
-            else:
-                raise TypeError(
-                    f'`verification_level` can be `{VerificationLevel.__name__}`, `int`, got '
-                    f'{verification_level.__class__.__name__}; {verification_level!r}.'
-                )
-            
-            data['verification_level'] = verification_level_value
-        
-        
-        if (content_filter is not ...):
-            if isinstance(content_filter, ContentFilterLevel):
-                content_filter_value = content_filter.value
-            elif isinstance(content_filter, int):
-                content_filter_value = content_filter
-            else:
-                raise TypeError(
-                    f'`content_filter` can be `{ContentFilterLevel.__name__}`, `int`, got '
-                    f'{content_filter.__class__.__name__}; {content_filter!r}.'
-                )
-            
-            data['explicit_content_filter'] = content_filter_value
-        
-        
-        if (message_notification is not ...):
-            if isinstance(message_notification, MessageNotificationLevel):
-                message_notification_value = message_notification.value
-            elif isinstance(message_notification, int):
-                message_notification_value = message_notification
-            else:
-                raise TypeError(
-                    f'`message_notification` can be `{MessageNotificationLevel.__name__}`, `int`, got '
-                    f'{message_notification.__class__.__name__}; {message_notification!r}.'
-                )
-            
-            data['default_message_notifications'] = message_notification_value
-        
-        
-        if (description is not ...):
-            if description is None:
-                pass
-            elif isinstance(description, str):
-                if not description:
-                    description = None
-            else:
-                raise TypeError(
-                    f'`description` can be `None`, `str`, got {description.__class__.__name__}; {description!r}.'
-                )
-            
-            data['description'] = description
-        
-        
-        if (preferred_locale is not ...):
-            if isinstance(preferred_locale, Locale):
-                preferred_locale_value = preferred_locale.value
-            
-            elif isinstance(preferred_locale, str):
-                preferred_locale_value = preferred_locale
-            
-            else:
-                raise TypeError(
-                    f'`preferred_locale` can be `{Locale.__name__}`, `str`, got {preferred_locale.__class__.__name__}; '
-                    f'{preferred_locale!r}.'
-                )
-            
-            data['preferred_locale'] = preferred_locale_value
-        
-        
-        if (system_channel_flags is not ...):
-            if __debug__:
-                if not isinstance(system_channel_flags, int):
-                    raise AssertionError(
-                        f'`system_channel_flags` can be `{SystemChannelFlag.__name__}`, `int`, got '
-                        f'{system_channel_flags.__class__.__name__}; {system_channel_flags!r}.'
-                    )
-            
-            data['system_channel_flags'] = system_channel_flags
-        
+        data = build_edit_payload(guild, guild_template, GUILD_FIELD_CONVERTERS, keyword_parameters)
         
         if (add_feature is not ...) or (remove_feature is not ...):
+            warnings.warn(
+                (
+                    f'`add_feature` and `remove_feature` parameters are deprecated of '
+                    f'`{self.__class__.__name__}.guild_edit` and they will be removed in 2023 December. '
+                    f'Please use the `features` parameter accordingly.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
             # Collect actual
             features = set()
             if (guild is not None):
@@ -1370,19 +955,8 @@ class ClientCompoundGuildEndpoints(Compound):
             
             data['features'] = features
         
-        
-        if (boost_progress_bar_enabled is not ...):
-            if __debug__:
-                if not isinstance(boost_progress_bar_enabled, bool):
-                    raise AssertionError(
-                        f'`boost_progress_bar_enabled` can be `bool`, got '
-                        f'{boost_progress_bar_enabled.__class__.__name__}; {boost_progress_bar_enabled!r}.'
-                    )
-            
-            data['premium_progress_bar_enabled'] = boost_progress_bar_enabled
-        
-        
-        await self.http.guild_edit(guild_id, data, reason)
+        if data:
+            await self.http.guild_edit(guild_id, data, reason)
     
     
     async def guild_widget_get(self, guild):
@@ -1449,10 +1023,10 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        data = {'limit': 1000, 'after': 0}
+        query_parameters = {'limit': 1000, 'after': 0}
         users = []
         while True:
-            guild_profile_datas = await self.http.guild_user_get_chunk(guild_id, data)
+            guild_profile_datas = await self.http.guild_user_get_chunk(guild_id, query_parameters)
             for guild_profile_data in guild_profile_datas:
                 user = User.from_data(guild_profile_data['user'], guild_profile_data, guild_id)
                 users.append(user)
@@ -1460,7 +1034,7 @@ class ClientCompoundGuildEndpoints(Compound):
             if len(guild_profile_datas) < 1000:
                 break
             
-            data['after'] = user.id
+            query_parameters['after'] = user.id
         
         return users
     
@@ -1487,14 +1061,15 @@ class ClientCompoundGuildEndpoints(Compound):
         If the client finished starting up, all the guilds should be already loaded.
         """
         result = []
-        params = {'after': 0}
+        
+        query_parameters = {'after': 0}
         while True:
-            data = await self.http.guild_get_all(params)
+            data = await self.http.guild_get_all(query_parameters)
             result.extend(create_partial_guild_from_data(guild_data) for guild_data in data)
             if len(data) < 100:
                 break
             
-            params['after'] = result[-1].id
+            query_parameters['after'] = result[-1].id
         
         return result
     
@@ -1567,7 +1142,7 @@ class ClientCompoundGuildEndpoints(Compound):
         return voice_regions
     
     
-    async def audit_log_get_chunk(self, guild, limit=100, *, before = None, after = None, user = None, event = None):
+    async def audit_log_get_chunk(self, guild, limit = 100, *, before = None, after = None, user = None, event = None):
         """
         Request a batch of audit logs of the guild and returns them. The `after`, `around` and the `before` parameters
         are mutually exclusive and they can be `int`, or as a ``DiscordEntity`` or as a `datetime`

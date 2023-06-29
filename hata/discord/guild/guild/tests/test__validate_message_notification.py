@@ -11,8 +11,8 @@ def test__validate_message_notification__0():
     Case: passing.
     """
     for input_value, expected_output in (
-        (MessageNotificationLevel.null, MessageNotificationLevel.null),
-        (MessageNotificationLevel.null.value, MessageNotificationLevel.null)
+        (MessageNotificationLevel.none, MessageNotificationLevel.none),
+        (MessageNotificationLevel.none.value, MessageNotificationLevel.none)
     ):
         output = validate_message_notification(input_value)
         vampytest.assert_eq(output, expected_output)

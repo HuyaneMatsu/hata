@@ -10,7 +10,7 @@ def test__parse_message_notification():
     """
     for input_data, expected_output in (
         ({}, MessageNotificationLevel.all_messages),
-        ({'default_message_notifications': MessageNotificationLevel.null.value}, MessageNotificationLevel.null),
+        ({'default_message_notifications': MessageNotificationLevel.none.value}, MessageNotificationLevel.none),
     ):
         output = parse_message_notification(input_data)
         vampytest.assert_eq(output, expected_output)

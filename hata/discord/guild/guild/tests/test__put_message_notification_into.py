@@ -10,9 +10,9 @@ def test__put_message_notification_into():
     """
     for input_value, defaults, expected_output in (
         (
-            MessageNotificationLevel.null,
+            MessageNotificationLevel.none,
             False,
-            {'default_message_notifications': MessageNotificationLevel.null.value},
+            {'default_message_notifications': MessageNotificationLevel.none.value},
         ),
     ):
         data = put_message_notification_into(input_value, {}, defaults)

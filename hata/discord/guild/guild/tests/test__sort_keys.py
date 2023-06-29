@@ -1,5 +1,3 @@
-from datetime import datetime as DateTime
-
 import vampytest
 
 from ....channel import Channel
@@ -7,46 +5,11 @@ from ....emoji import Emoji
 from ....role import Role
 from ....soundboard import SoundboardSound
 from ....sticker import Sticker
-from ....user import User
 
 from ..helpers import (
     _channel_match_sort_key, _emoji_match_sort_key, _role_match_sort_key, _soundboard_sound_match_sort_key,
-    _sticker_match_sort_key, _user_date_sort_key, _user_match_sort_key
+    _sticker_match_sort_key
 )
-
-
-def _iter_options__users():
-    user_0 = User.precreate(202306180000)
-    user_1 = User.precreate(202306180001)
-    user_2 = User.precreate(202306180002)
-    
-    date_time_0 = DateTime(2016, 5, 14)
-    date_time_1 = DateTime(2017, 5, 14)
-    date_time_2 = DateTime(2018, 5, 14)
-    
-    yield [], []
-    yield [(user_0, date_time_0)], [(user_0, date_time_0)]
-    yield (
-        [(user_0, date_time_1), (user_1, date_time_0), (user_2, date_time_2)],
-        [(user_1, date_time_0), (user_0, date_time_1), (user_2, date_time_2)],
-    )
-
-
-@vampytest._(vampytest.call_from(_iter_options__users()).returning_last())
-def test__user_date_sort_key(input_items):
-    """
-    Tests whether ``_user_date_sort_key`` works as intended.
-    
-    Parameters
-    ----------
-    input_items : `list` of `tuple` (``ClientUserBase``, `datetime`)
-        Input items to sort.
-    
-    Returns
-    -------
-    sorted_items : `list` of `tuple` (``ClientUserBase``, `datetime`)
-    """
-    return sorted(input_items, key = _user_date_sort_key)
 
 
 def _iter_options__emojis():
@@ -234,37 +197,3 @@ def test__channel_match_sort_key(input_items):
     sorted_items : `list` of `tuple` (``Channel``, `tuple` (`int`, `int`))
     """
     return sorted(input_items, key = _channel_match_sort_key)
-
-
-def _iter_options__user():
-    user_0 = User.precreate(202306250043)
-    user_1 = User.precreate(202306250044)
-    user_2 = User.precreate(202306250045)
-    
-    match_rate_0 = (1, 1, 3)
-    match_rate_1 = (1, 2, 3)
-    match_rate_2 = (2, 1, 4)
-    
-    yield [], []
-    yield [(user_0, match_rate_0)], [(user_0, match_rate_0)]
-    yield (
-        [(user_0, match_rate_1), (user_1, match_rate_0), (user_2, match_rate_2)],
-        [(user_1, match_rate_0), (user_0, match_rate_1), (user_2, match_rate_2)],
-    )
-
-
-@vampytest._(vampytest.call_from(_iter_options__user()).returning_last())
-def test__user_match_sort_key(input_items):
-    """
-    Tests whether ``_user_match_sort_key`` works as intended.
-    
-    Parameters
-    ----------
-    input_items : `list` of `tuple` (``ClientUserBase``, `tuple` (`int`, `int`, `int`))
-        Input items to sort.
-    
-    Returns
-    -------
-    sorted_items : `list` of `tuple` (``ClientUserBase``, `tuple` (`int`, `int`, `int`))
-    """
-    return sorted(input_items, key = _user_match_sort_key)

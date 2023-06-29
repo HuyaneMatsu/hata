@@ -2,11 +2,11 @@ import vampytest
 
 from ....role import Role
 
-from ..fields import validate_roles
+from ..fields import validate_roles_and_role_datas
 
 
 def iter_options__passing():
-    role_id = 202306080008
+    role_id = 20230606290001
     role_name = 'Koishi'
     
     role = Role.precreate(
@@ -14,17 +14,17 @@ def iter_options__passing():
         name = role_name,
     )
     
-    yield None, {}
-    yield [], {}
-    yield {}, {}
-    yield [role], {role_id: role}
-    yield {role_id: role}, {role_id: role}
+    yield None, None
+    yield [], None
+    yield [role], [role]
+    yield [{'name': role_name}], [{'name': role_name}]
+    yield [role, {'name': role_name}], [role, {'name': role_name}]
 
     
 @vampytest._(vampytest.call_from(iter_options__passing()).returning_last())
-def test__validate_roles__passing(input_value):
+def test__validate_roles_and_role_datas__passing(input_value):
     """
-    Tests whether ``validate_roles`` works as intended.
+    Tests whether ``validate_roles_and_role_datas`` works as intended.
     
     Case: passing.
     
@@ -35,22 +35,22 @@ def test__validate_roles__passing(input_value):
     
     Returns
     -------
-    expected_output : `None | dict<int, Role>`
+    expected_output : `None | list<Role | dict>`
     """
-    return validate_roles(input_value)
+    return validate_roles_and_role_datas(input_value)
 
 
 def iter_options__type_error():
     yield 12.6
     yield [12.6]
-    yield {12.6: 12.6}
+    yield {}
 
 
 @vampytest.raising(TypeError)
 @vampytest.call_from(iter_options__type_error())
-def test__validate_roles__type_error(input_value):
+def test__validate_roles_and_role_datas__type_error(input_value):
     """
-    Tests whether ``validate_roles`` works as intended.
+    Tests whether ``validate_roles_and_role_datas`` works as intended.
     
     Case: `TypeError`.
     
@@ -64,4 +64,4 @@ def test__validate_roles__type_error(input_value):
     TypeError
         The occurred exception.
     """
-    validate_roles(input_value)
+    validate_roles_and_role_datas(input_value)

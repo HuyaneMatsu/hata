@@ -40,8 +40,9 @@ from ...user.guild_profile.constants import (
 )
 from ...user.user.constants import NAME_LENGTH_MAX as USER_NAME_LENGTH_MAX, NAME_LENGTH_MIN as USER_NAME_LENGTH_MIN
 
-from ...user.user.matching_with_discrimiantor import (
-    is_user_matching_name_with_discriminator, parse_name_with_discriminator
+from ...user.user.matching import (
+    _user_date_sort_key, _user_match_sort_key, USER_MATCH_WEIGHT_DISPLAY_NAME, USER_MATCH_WEIGHT_NAME,
+    USER_MATCH_WEIGHT_NICK, _is_user_matching_name_with_discriminator, _parse_name_with_discriminator
 )
 from ...utils import DATETIME_FORMAT_CODE, EMOJI_NAME_RP
 from ...webhook import WebhookBase
@@ -96,8 +97,7 @@ from .preinstanced import (
 from .sticker_counts import StickerCounts
 from .helpers import (
     _channel_match_sort_key, _emoji_match_sort_key, _role_match_sort_key, _soundboard_sound_match_sort_key,
-    _sticker_match_sort_key, _strip_emoji_name, _user_date_sort_key, _user_match_sort_key, STICKER_MATCH_WEIGHT_NAME,
-    STICKER_MATCH_WEIGHT_TAG, USER_MATCH_WEIGHT_DISPLAY_NAME, USER_MATCH_WEIGHT_NAME, USER_MATCH_WEIGHT_NICK
+    _sticker_match_sort_key, _strip_emoji_name, STICKER_MATCH_WEIGHT_NAME, STICKER_MATCH_WEIGHT_TAG
 )
 
 
@@ -200,6 +200,7 @@ PRECREATE_FIELDS = {
 USER_ALL_NAME_LENGTH_MAX = max(USER_NAME_LENGTH_MAX, USER_NICK_LENGTH_MAX)
 USER_ALL_NAME_LENGTH_MIN = max(USER_NAME_LENGTH_MIN, USER_NICK_LENGTH_MIN)
 USER_ALL_NAME_LENGTH_MAX_WITH_DISCRIMINATOR = USER_ALL_NAME_LENGTH_MAX + 5
+
 
 @export
 class Guild(DiscordEntity, immortal = True):
@@ -4014,10 +4015,10 @@ class Guild(DiscordEntity, immortal = True):
         
         # name with discriminator
         
-        name_with_discriminator = parse_name_with_discriminator(name)
+        name_with_discriminator = _parse_name_with_discriminator(name)
         if (name_with_discriminator is not None):
             for user in users.values():
-                if is_user_matching_name_with_discriminator(user, name_with_discriminator):
+                if _is_user_matching_name_with_discriminator(user, name_with_discriminator):
                     return user
         
         if name_length > USER_ALL_NAME_LENGTH_MAX:
@@ -4073,10 +4074,10 @@ class Guild(DiscordEntity, immortal = True):
         
         # name with discriminator
         
-        name_with_discriminator = parse_name_with_discriminator(name)
+        name_with_discriminator = _parse_name_with_discriminator(name)
         if (name_with_discriminator is not None):
             for user in users.values():
-                if is_user_matching_name_with_discriminator(user, name_with_discriminator):
+                if _is_user_matching_name_with_discriminator(user, name_with_discriminator):
                     return user
         
         if name_length > USER_ALL_NAME_LENGTH_MAX:
@@ -4186,10 +4187,10 @@ class Guild(DiscordEntity, immortal = True):
         
         # name with discriminator
         
-        name_with_discriminator = parse_name_with_discriminator(name)
+        name_with_discriminator = _parse_name_with_discriminator(name)
         if (name_with_discriminator is not None):
             for user in users.values():
-                if is_user_matching_name_with_discriminator(user, name_with_discriminator):
+                if _is_user_matching_name_with_discriminator(user, name_with_discriminator):
                     return [user]
         
         if name_length > USER_ALL_NAME_LENGTH_MAX:

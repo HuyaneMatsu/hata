@@ -857,3 +857,159 @@ validate_widget_channel_id = entity_id_validator_factory('widget_channel_id', Ch
 parse_widget_enabled = bool_parser_factory('widget_enabled', False)
 put_widget_enabled_into = bool_optional_putter_factory('widget_enabled', False)
 validate_widget_enabled = bool_validator_factory('widget_enabled', False)
+
+
+# ---- extra ----
+
+def validate_channels_and_channel_datas(channels):
+    """
+    Validates the given `channels` value. This function is used when creating a new guild.
+    
+    Parameters
+    ----------
+    channels : `None`, `list` of (``Channel``, `dict`)
+    
+    Returns
+    -------
+    validated : `None`, `list` of (``Channel``, `dict`)
+    
+    Raises
+    ------
+    TypeError
+        - If a `channel`'s type is incorrect.
+    ValueError
+        - If a `channel`'s channels is incorrect.
+    """
+    validated = None
+    
+    if channels is None:
+        pass
+    
+    elif isinstance(channels, list):
+        for element in channels:
+            if not isinstance(element, (Channel, dict)):
+                raise TypeError(
+                    f'`channel` elements can be `{Channel.__name__}`, `dict`. '
+                    f'Got {element.__class__.__name__}; {element!r}; channels = {channels!r}'
+                )
+        
+            if validated is None:
+                validated = []
+            
+            validated.append(element)
+    
+    else:
+        raise TypeError(
+            f'`channels` can be `None` or `dict` of `{Channel.__name__}`, `dict` elements. '
+            f'Got {channels.__class__.__name__}; {channels!r}.'
+        )
+    
+    return validated
+
+
+def validate_roles_and_role_datas(roles):
+    """
+    Validates the given `roles` value. This function is used when creating a new guild.
+    
+    Parameters
+    ----------
+    roles : `None`, `list` of (``Role``, `dict`)
+    
+    Returns
+    -------
+    validated : `None`, `list` of (``Role``, `dict`)
+    
+    Raises
+    ------
+    TypeError
+        - If a `role`'s type is incorrect.
+    ValueError
+        - If a `role`'s roles is incorrect.
+    """
+    validated = None
+    
+    if roles is None:
+        pass
+    
+    elif isinstance(roles, list):
+        for element in roles:
+            if not isinstance(element, (Role, dict)):
+                raise TypeError(
+                    f'`role` elements can be `{Role.__name__}`, `dict`. '
+                    f'Got {element.__class__.__name__}; {element!r}; roles = {roles!r}'
+                )
+        
+            if validated is None:
+                validated = []
+            
+            validated.append(element)
+    
+    else:
+        raise TypeError(
+            f'`roles` can be `None` or `dict` of `{Role.__name__}`, `dict` elements. '
+            f'Got {roles.__class__.__name__}; {roles!r}.'
+        )
+    
+    return validated
+
+
+def put_channels_and_channel_datas_into(channels, data, defaults):
+    """
+    Puts the given channels or their data into the given `data` json serializable object.
+    
+    Parameters
+    ----------
+    channels : `None`, `list` of (``Channel``, `dict`)
+        Channels or channel datas.
+    data : `dict` of (`str`, `object`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `object`) items
+    """
+    channel_datas = []
+    
+    if (channels is not None):
+        for channel in channels:
+            if isinstance(channel, Channel):
+                channel_data = channel.to_data(defaults = defaults, include_internals = True)
+            else:
+                channel_data = channel
+            channel_datas.append(channel_data)
+    
+    data['channels'] = channel_datas
+    return data
+
+
+def put_roles_and_role_datas_into(roles, data, defaults):
+    """
+    Puts the given roles or their data into the given `data` json serializable object.
+    
+    Parameters
+    ----------
+    roles : `None`, `list` of (``Role``, `dict`)
+        Roles or role datas.
+    data : `dict` of (`str`, `object`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `object`) items
+    """
+    role_datas = []
+    
+    if (roles is not None):
+        for role in roles:
+            if isinstance(role, Role):
+                role_data = role.to_data(defaults = defaults, include_internals = True)
+            else:
+                role_data = role
+            role_datas.append(role_data)
+    
+    data['roles'] = role_datas
+    return data

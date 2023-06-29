@@ -164,7 +164,7 @@ class ClientCompoundRoleEndpoints(Compound):
             Shows up at the guild's audit logs.
         
         **keyword_parameters : Keyword parameters
-            Additional keyword parameters to create the role with.
+            Additional keyword parameters to edit the role with.
         
         Other Parameters
         ----------------

@@ -2,11 +2,11 @@ import vampytest
 
 from ....channel import Channel, ChannelType
 
-from ..fields import validate_channels
+from ..fields import validate_channels_and_channel_datas
 
 
 def iter_options__passing():
-    channel_id = 202306080007
+    channel_id = 20230606290000
     channel_name = 'Koishi'
     
     channel = Channel.precreate(
@@ -15,17 +15,17 @@ def iter_options__passing():
         name = channel_name,
     )
     
-    yield None, {}
-    yield [], {}
-    yield {}, {}
-    yield [channel], {channel_id: channel}
-    yield {channel_id: channel}, {channel_id: channel}
+    yield None, None
+    yield [], None
+    yield [channel], [channel]
+    yield [{'name': channel_name}], [{'name': channel_name}]
+    yield [channel, {'name': channel_name}], [channel, {'name': channel_name}]
 
     
 @vampytest._(vampytest.call_from(iter_options__passing()).returning_last())
-def test__validate_channels__passing(input_value):
+def test__validate_channels_and_channel_datas__passing(input_value):
     """
-    Tests whether ``validate_channels`` works as intended.
+    Tests whether ``validate_channels_and_channel_datas`` works as intended.
     
     Case: passing.
     
@@ -36,22 +36,22 @@ def test__validate_channels__passing(input_value):
     
     Returns
     -------
-    expected_output : `None | dict<int, Channel>`
+    expected_output : `None | list<Channel | dict>`
     """
-    return validate_channels(input_value)
+    return validate_channels_and_channel_datas(input_value)
 
 
 def iter_options__type_error():
     yield 12.6
     yield [12.6]
-    yield {12.6: 12.6}
+    yield {}
 
 
 @vampytest.raising(TypeError)
 @vampytest.call_from(iter_options__type_error())
-def test__validate_channels__type_error(input_value):
+def test__validate_channels_and_channel_datas__type_error(input_value):
     """
-    Tests whether ``validate_channels`` works as intended.
+    Tests whether ``validate_channels_and_channel_datas`` works as intended.
     
     Case: `TypeError`.
     
@@ -65,4 +65,4 @@ def test__validate_channels__type_error(input_value):
     TypeError
         The occurred exception.
     """
-    validate_channels(input_value)
+    validate_channels_and_channel_datas(input_value)

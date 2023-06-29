@@ -25,6 +25,13 @@ from .fields import (
 from .preinstanced import RoleManagerType
 
 
+ROLE_ICON = IconSlot(
+    'icon',
+    'icon',
+    module_urls.role_icon_url,
+    module_urls.role_icon_url_as,
+)
+
 PRECREATE_FIELDS = {
     'color': ('color', validate_color),
     'manager_metadata': ('manager_metadata', validate_manager_metadata),
@@ -95,12 +102,7 @@ class Role(DiscordEntity, immortal = True):
         'separated', 'unicode_emoji'
     )
     
-    icon = IconSlot(
-        'icon',
-        'icon',
-        module_urls.role_icon_url,
-        module_urls.role_icon_url_as,
-    )
+    icon = ROLE_ICON
     
     
     def __new__(
@@ -391,17 +393,7 @@ class Role(DiscordEntity, immortal = True):
         icon : `None`, ``Icon``, `str`, Optional (Keyword only)
             The role's icon.
             
-            > Mutually exclusive with `icon_type`, `icon_hash` and with `unicode_emoji`.
-        
-        icon_type : ``IconType``, Optional (Keyword only)
-            The role's icon's type.
-            
-            > Mutually exclusive with `icon` and with `unicode_emoji`.
-            
-        icon_hash : `int`, Optional (Keyword only)
-            The role's icon's hash.
-            
-            > Mutually exclusive with `icon`  and with `unicode_emoji`.
+            > Mutually exclusive with the `unicode_emoji` parameter.
         
         manager : `None`, `tuple` (``RoleManagerType``, ``RoleManagerMetadataBase``), Optional (Keyword only)
             The role's manager.
@@ -472,7 +464,7 @@ class Role(DiscordEntity, immortal = True):
             if (icon is not None) and (unicode_emoji is not None):
                 raise ValueError(
                     f'`icon` and `unicode_emoji` parameters are mutually exclusive, got '
-                    f'icon={icon!r}; unicode_emoji={unicode_emoji!r}.'
+                    f'icon = {icon!r}; unicode_emoji={unicode_emoji!r}.'
                 )
             
             # manager

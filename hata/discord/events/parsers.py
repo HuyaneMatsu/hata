@@ -1,6 +1,6 @@
 __all__ = ()
 
-from datetime import datetime
+from datetime import datetime as DateTime
 
 from scarletio import Task, include
 
@@ -22,13 +22,14 @@ from ..emoji.reaction_events.fields import (
 from ..guild import Guild, GuildJoinRequest, GuildJoinRequestDeleteEvent, create_partial_guild_from_id
 from ..guild.embedded_activity_state.constants import (
     EMBEDDED_ACTIVITY_UPDATE_CREATE, EMBEDDED_ACTIVITY_UPDATE_DELETE, EMBEDDED_ACTIVITY_UPDATE_UPDATE,
-    EMBEDDED_ACTIVITY_UPDATE_USER_ADD, EMBEDDED_ACTIVITY_UPDATE_USER_DELETE,
+    EMBEDDED_ACTIVITY_UPDATE_USER_ADD, EMBEDDED_ACTIVITY_UPDATE_USER_DELETE
 )
 from ..guild.embedded_activity_state.utils import (
     difference_handle_embedded_activity_update_event, handle_embedded_activity_update_event
 )
 from ..guild.guild.constants import (
-    EMOJI_EVENT_CREATE, EMOJI_EVENT_DELETE, EMOJI_EVENT_UPDATE, STICKER_EVENT_CREATE, STICKER_EVENT_DELETE,
+    EMOJI_EVENT_CREATE, EMOJI_EVENT_DELETE, EMOJI_EVENT_UPDATE, SOUNDBOARD_SOUND_EVENT_CREATE,
+    SOUNDBOARD_SOUND_EVENT_DELETE, SOUNDBOARD_SOUND_EVENT_UPDATE, STICKER_EVENT_CREATE, STICKER_EVENT_DELETE,
     STICKER_EVENT_UPDATE, VOICE_STATE_EVENT_JOIN, VOICE_STATE_EVENT_LEAVE, VOICE_STATE_EVENT_MOVE,
     VOICE_STATE_EVENT_UPDATE
 )
@@ -42,9 +43,7 @@ from ..scheduled_event.scheduled_event.fields import (
     parse_guild_id as parse_scheduled_event_guild_id, parse_id as parse_scheduled_event_id
 )
 from ..soundboard import SoundboardSound, SoundboardSoundsEvent, create_partial_soundboard_sound_from_partial_data
-from ..soundboard.soundboard_sound.fields import (
-    parse_guild_id as parse_soundboard_guild_id, parse_id as parse_soundboard_sound_id
-)
+from ..soundboard.soundboard_sound.fields import parse_guild_id as parse_soundboard_guild_id
 from ..stage import Stage
 from ..user import (
     User, create_partial_user_from_id, thread_user_create, thread_user_delete, thread_user_difference_update,
@@ -3042,8 +3041,7 @@ if CACHE_PRESENCE:
         
         user_id = int(data['user_id'])
         user = create_partial_user_from_id(user_id)
-        
-        timestamp = datetime.utcfromtimestamp(data.get('timestamp', None))
+        timestamp = DateTime.utcfromtimestamp(data.get('timestamp', None))
         
         Task(KOKORO, client.events.typing(client, channel, user, timestamp))
     
@@ -4484,3 +4482,119 @@ add_parser(
 del GUILD_SOUNDBOARD_SOUND_DELETE__CAL__SC, \
     GUILD_SOUNDBOARD_SOUND_DELETE__CAL__MC, \
     GUILD_SOUNDBOARD_SOUND_DELETE__OPT
+
+
+def GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_SC(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+
+    changes = guild._difference_update_soundboard_sounds(data['soundboard_sounds'])
+    
+    if not changes:
+        return
+    
+    for action, soundboard_sound, old_attributes in changes:
+        if action == SOUNDBOARD_SOUND_EVENT_UPDATE:
+            event_handler = client.events.soundboard_sound_update
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(KOKORO, event_handler(client, soundboard_sound, old_attributes))
+            continue
+            
+        if action == SOUNDBOARD_SOUND_EVENT_CREATE:
+            event_handler = client.events.soundboard_sound_create
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(KOKORO, event_handler(client, soundboard_sound))
+            continue
+        
+        if action == SOUNDBOARD_SOUND_EVENT_DELETE:
+            event_handler = client.events.soundboard_sound_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(KOKORO, event_handler(client, soundboard_sound))
+            continue
+        
+        # no more case
+        continue
+
+
+def GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_MC(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client)
+    if clients.send(None) is not client:
+        clients.close()
+        return
+    
+    changes = guild._difference_update_soundboard_sounds(data['soundboard_sounds'])
+    
+    if not changes:
+        clients.close()
+        return
+    
+    for client_ in clients:
+        for action, soundboard_sound, old_attributes in changes:
+            if action == SOUNDBOARD_SOUND_EVENT_UPDATE:
+                event_handler = client_.events.soundboard_sound_update
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(KOKORO, event_handler(client_, soundboard_sound, old_attributes))
+                continue
+            
+            if action == SOUNDBOARD_SOUND_EVENT_CREATE:
+                event_handler = client_.events.soundboard_sound_create
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(KOKORO, event_handler(client_, soundboard_sound))
+                continue
+            
+            if action == SOUNDBOARD_SOUND_EVENT_DELETE:
+                event_handler = client_.events.soundboard_sound_delete
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(KOKORO, event_handler(client_, soundboard_sound))
+                continue
+            
+            # no more case
+            continue
+
+
+def GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_SC(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    guild._update_soundboard_sounds(data['soundboard_sounds'])
+
+
+def GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_MC(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    if first_client(guild.clients, INTENT_MASK_GUILD_EXPRESSIONS, client) is not client:
+        return
+    
+    guild._update_soundboard_sounds(data['soundboard_sounds'])
+
+
+add_parser(
+    'GUILD_SOUNDBOARD_SOUNDS_UPDATE',
+    GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_SC,
+    GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_MC,
+    GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_SC,
+    GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_MC)
+del GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_SC, \
+    GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_MC, \
+    GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_SC, \
+    GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_MC

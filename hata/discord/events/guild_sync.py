@@ -22,7 +22,7 @@ async def sync_task(queue_id, coroutine, queue):
         The respective guild's id to identify queued up unhandled dispatch event when de-sync happened.
     coroutine : `CoroutineType`
         ``Client.guild_sync`` coroutine.
-    queue : `list` of `tuple` (``Client``, `Any`, (`str`, `tuple` (`str`, `function`, `Any`)))
+    queue : `list` of `tuple` (``Client``, `object`, (`str`, `tuple` (`str`, `function`, `object`)))
         A queue of events to call with the specified parameters.
         
         First element of the queue is always the respective client of the received dispatch event. The second is the
@@ -79,14 +79,14 @@ def guild_sync(client, data, parser_and_checker):
     ----------
     client : ``Client``
         The respective client of the dispatch event.
-    data : `Any`
+    data : `object`
         The payload of the dispatch event.
-    parser_and_checker : `None`, `str`, `tuple` (`str`, `function`, `Any`)
+    parser_and_checker : `None`, `str`, `tuple` (`str`, `function`, `object`)
         - Is passed as `None` if only the syncer task should run.
         - Is passed as `str`, if the respective parser should be called when syncing is done.
-        - Is passed as `tuple` of 3 elements : `str`, `function`, `Any`; if the respective parser's calling is bound to
+        - Is passed as `tuple` of 3 elements : `str`, `function`, `object`; if the respective parser's calling is bound to
             a condition. The passed `function` should contain the condition and accept the respective guild and the
-            third value (the type `Any` one) as parameters and return the condition's result.
+            third value (the type `object` one) as parameters and return the condition's result.
     """
     try:
         guild_id = int(data['guild_id'])

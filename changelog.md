@@ -25,6 +25,7 @@
 - Add `Guild.iter_voice_states`.
 - `Guild.get_user...` methods now handle `display_name` correctly.
 - `Channel.get_user...` methods now handle `display_name` correctly.
+- Add `GUILD_SOUNDBOARD_SOUNDS_UPDATE` event parsers.
 
 #### Bug Fixes
 

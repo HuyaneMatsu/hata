@@ -5,46 +5,77 @@ from ....guild import Guild
 from ..fields import validate_guild_id
 
 
-def test__validate_guild_id__0():
-    """
-    Tests whether ``validate_guild_id`` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options__passing():
     guild_id = 202211170031
     
-    for input_value, expected_output in (
-        (None, 0),
-        (guild_id, guild_id),
-        (Guild.precreate(guild_id), guild_id),
-        (str(guild_id), guild_id)
-    ):
-        output = validate_guild_id(input_value)
-        vampytest.assert_eq(output, expected_output)
+    yield None, 0
+    yield 0, 0
+    yield guild_id, guild_id
+    yield Guild.precreate(guild_id), guild_id
+    yield str(guild_id), guild_id
 
 
-def test__validate_guild_id__1():
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+def test__validate_guild_id__passing(input_value):
     """
-    Tests whether ``validate_guild_id`` works as intended.
+    Tests whether `validate_guild_id` works as intended.
     
-    Case: `ValueError`.
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to get `guild_id` of.
+    
+    Returns
+    -------
+    output : `int`
     """
-    for input_value in (
-        '1',
-        -1,
-    ):
-        with vampytest.assert_raises(AssertionError, ValueError):
-            validate_guild_id(input_value)
+    return validate_guild_id(input_value)
 
 
-def test__validate_guild_id__2():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_guild_id__type_error():
     """
-    Tests whether ``validate_guild_id`` works as intended.
+    Tests whether `validate_guild_id` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to get `guild_id` of.
+    
+    Raises
+    ------
+    TypeError
+        The occurred exception.
     """
     for input_value in (
         12.6,
     ):
         with vampytest.assert_raises(TypeError):
             validate_guild_id(input_value)
+
+
+@vampytest.raising(ValueError)
+@vampytest.call_with('-1')
+@vampytest.call_with('1111111111111111111111')
+@vampytest.call_with(-1)
+@vampytest.call_with(1111111111111111111111)
+def test__validate_guild_id__value_error(input_value):
+    """
+    Tests whether `validate_guild_id` works as intended.
+    
+    Case: `ValueError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to get `guild_id` of.
+    
+    Raises
+    ------
+    ValueError
+        The occurred exception.
+    """
+    validate_guild_id(input_value)

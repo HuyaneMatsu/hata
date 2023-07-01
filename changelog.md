@@ -30,6 +30,11 @@
 - `guild_user_update` has been changed from `client, user, guild, old_attributes` to
     `client, guild, user, old_attributes` to match other event handlers.
 - Rename `..._edit` event handlers to `..._update` to reflect better what happened. `..._edit` format is still accepted.
+- Repurpose and rename `GuildUserChunkEvent.__new__` to `.from_data`.
+- Add `GuildUserChunkEvent.__new__`.
+- Add `GuildUserChunkEvent.to_data`.
+- Add `GuildUserChunkEvent.copy`.
+- Add `GuildUserChunkEvent.copy_with`.
 
 #### Bug Fixes
 
@@ -46,6 +51,7 @@
 - `Guild.permissions_for` did not handle guild profile roles and guild roles de-sync correctly.
 - `Guild.permissions_for_roles` did not ignore partial roles as intended. Broke probably a few years ago.
 - Fix broken import in `ext.rpc`.
+- Fix `TypeError` from `GuildUserChunkEvent.__repr__` (bad return).
 
 #### Renames, Deprecation & Removals
 
@@ -86,6 +92,10 @@
 - Deprecate `Guild.connectable_channels`. Use `[*Guild.iter_channels(Channel.is_in_group_guild_connectable)]` instead.
 - Rename `MessageNotificationLevel.null` to `.none`.
 - Deprecate `MessageNotificationLevel.null`. Use `.null` instead.
+- Rename `GuildUserChunkEvent.index` too `.chunk_index`.
+- Deprecate `GuildUserChunkEvent.index`.
+- Rename `GuildUserChunkEvent.count` too `.chunk_count`.
+- Deprecate `GuildUserChunkEvent.count`.
 
 ## 1.3.31 *\[2023-05-30\]*
 

@@ -152,7 +152,7 @@ class MassUserChunker:
             Whether the last chunk was received.
         """
         self.last = LOOP_TIME()
-        if event.index + 1 != event.count:
+        if event.chunk_index + 1 != event.chunk_count:
             return False
         
         self.waiter.set_result_if_pending(True)

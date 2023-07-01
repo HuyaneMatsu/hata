@@ -287,7 +287,7 @@ def maybe_snowflake(value):
     
     Parameters
     ----------
-    value : `str`, `int`, `Any`
+    value : `str`, `int`, `object`
         A value what might be snowflake.
     
     Returns
@@ -302,24 +302,20 @@ def maybe_snowflake(value):
     """
     if isinstance(value, int):
         pass
+    
     elif isinstance(value, str):
-        if value.isdigit():
-            if __debug__:
-                value_length = len(value)
-                if (value_length < 7) or (value_length > 21):
-                    raise AssertionError('An `id` was given as `str`, but it\'s value is out of 64uint '
-                        f'range, got {value!r}.')
-            
+        try:
             value = int(value)
-        else:
+        except ValueError:
             return None
+    
     else:
         return None
     
-    if __debug__:
-        if (value < 0) or (value > ((1 << 64) - 1)):
-            raise AssertionError('An `id` was given as `str`, but it\'s value is out of 64uint range, got '
-                f'{value!r}.')
+    if (value < 0) or (value > ((1 << 64) - 1)):
+        raise ValueError(
+            f'An `id` was given with a value out of the expected 64uint range, got {value!r}.'
+        )
     
     return value
 
@@ -330,7 +326,7 @@ def maybe_snowflake_pair(value):
     
     Parameters
     ----------
-    value : `tuple` of (`str`, `int`) or `Any`
+    value : `tuple` of (`str`, `int`) or `object`
         A value what might be snowflake.
     
     Returns
@@ -369,7 +365,7 @@ def maybe_snowflake_token_pair(value):
     
     Parameters
     ----------
-    value : `tuple` of (`str`, `int`) or `Any`
+    value : `tuple` of (`str`, `int`) or `object`
         A value what might be snowflake.
     
     Returns

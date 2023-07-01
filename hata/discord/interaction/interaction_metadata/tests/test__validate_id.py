@@ -27,7 +27,7 @@ def test__validate_id__1():
     Case: `ValueError`.
     """
     for input_value in (
-        '1',
+        '-1',
         -1,
     ):
         with vampytest.assert_raises(AssertionError, ValueError):

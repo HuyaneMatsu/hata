@@ -48,7 +48,7 @@ def test__parse_users__cache_presence(input_data):
     
     Returns
     -------
-    output : `dict<int, Channel>`
+    output : `dict<int, ClientUserBase>`
     """
     guild_id = 202306150004
     guild = Guild.precreate(guild_id)
@@ -102,7 +102,7 @@ def test__parse_users__no_cache_presence(input_data):
     
     Returns
     -------
-    output : `dict<int, Channel>`
+    output : `dict<int, ClientUserBase>`
     """
     guild_id = 202306160001
     guild = Guild.precreate(guild_id)

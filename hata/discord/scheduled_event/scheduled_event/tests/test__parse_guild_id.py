@@ -3,16 +3,26 @@ import vampytest
 from ..fields import parse_guild_id
 
 
-def test__parse_guild_id():
-    """
-    Tests whether ``parse_guild_id`` works as intended.
-    """
+def _iter_options():
     guild_id = 202303150000
     
-    for input_data, expected_output in (
-        ({}, 0),
-        ({'guild_id': None}, 0),
-        ({'guild_id': str(guild_id)}, guild_id),
-    ):
-        output = parse_guild_id(input_data)
-        vampytest.assert_eq(output, expected_output)
+    yield {}, 0
+    yield {'guild_id': None}, 0
+    yield {'guild_id': str(guild_id)}, guild_id
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_guild_id(input_data):
+    """
+    Tests whether ``parse_guild_id`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to try to parse the guild identifier from.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    return parse_guild_id(input_data)

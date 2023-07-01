@@ -31,7 +31,7 @@ def test__validate_scheduled_event_id__1():
     Case: `ValueError`.
     """
     for input_value in (
-        '1',
+        '-1',
         -1,
     ):
         with vampytest.assert_raises(AssertionError, ValueError):

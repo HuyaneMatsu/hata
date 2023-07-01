@@ -58,33 +58,47 @@ class User(USER_BASE_TYPE):
     
     avatar_hash : `int`
         The user's avatar's hash in `uint128`.
+    
     avatar_type : ``IconType``
         The user's avatar's type.
+    
     avatar_decoration_hash : `int`
         The user's avatar decoration's hash in `uint128`.
+    
     avatar_decoration_type : ``IconType``
         The user's avatar decoration's type.
+    
     banner_color : `None`, ``Color``
         The user's banner color if has any.
+    
     banner_hash : `int`
         The user's banner's hash in `uint128`.
+    
     banner_type : ``IconType``
         The user's banner's type.
+    
     bot : `bool`
         Whether the user is a bot or a user account.
+    
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
+    
     display_name : `None`, `str`
         The user's non-unique display name.
+    
     flags : ``UserFlag``
         The user's user flags.
+    
     guild_profiles : `dict` of (`int`, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
+    
     id : `int`
         The user's unique identifier number.
+    
     name : str
         The user's name.
+    
     status : `Status`
         The user's display status.
         

@@ -6,6 +6,7 @@ from .guild_join_request import *
 from .guild_join_request_delete_event import *
 from .guild_join_request_form_response import *
 from .guild_preview import *
+from .guild_user_chunk_event import *
 from .guild_widget import *
 from .guild_widget_channel import *
 from .guild_widget_user import *
@@ -24,6 +25,7 @@ __all__ = (
     *guild_join_request_delete_event.__all__,
     *guild_join_request_form_response.__all__,
     *guild_preview.__all__,
+    *guild_user_chunk_event.__all__,
     *guild_widget.__all__,
     *guild_widget_channel.__all__,
     *guild_widget_user.__all__,

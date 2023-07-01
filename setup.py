@@ -102,6 +102,7 @@ setup(
         'hata.discord.guild.guild_join_request_delete_event',
         'hata.discord.guild.guild_join_request_form_response',
         'hata.discord.guild.guild_preview',
+        'hata.discord.guild.guild_user_chunk_event',
         'hata.discord.guild.guild_widget',
         'hata.discord.guild.guild_widget_channel',
         'hata.discord.guild.guild_widget_user',

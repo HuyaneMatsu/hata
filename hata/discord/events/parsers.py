@@ -19,7 +19,9 @@ from ..emoji.reaction_events.fields import (
     parse_emoji as parse_reaction_event_emoji, parse_message as parse_reaction_event_message,
     parse_user as parse_reaction_event_user
 )
-from ..guild import Guild, GuildJoinRequest, GuildJoinRequestDeleteEvent, create_partial_guild_from_id
+from ..guild import (
+    Guild, GuildJoinRequest, GuildJoinRequestDeleteEvent, GuildUserChunkEvent, create_partial_guild_from_id
+)
 from ..guild.embedded_activity_state.constants import (
     EMBEDDED_ACTIVITY_UPDATE_CREATE, EMBEDDED_ACTIVITY_UPDATE_DELETE, EMBEDDED_ACTIVITY_UPDATE_UPDATE,
     EMBEDDED_ACTIVITY_UPDATE_USER_ADD, EMBEDDED_ACTIVITY_UPDATE_USER_DELETE
@@ -52,7 +54,7 @@ from ..user import (
 from ..utils import Gift, Relationship
 
 from .core import DEFAULT_EVENT_HANDLER, add_parser, maybe_ensure_launch
-from .event_types import ApplicationCommandCountUpdate, GuildUserChunkEvent, VoiceServerUpdateEvent, WebhookUpdateEvent
+from .event_types import ApplicationCommandCountUpdate, VoiceServerUpdateEvent, WebhookUpdateEvent
 from .filters import (
     filter_clients, filter_clients_or_me, filter_content_intent_client, filter_just_me, first_client,
     first_client_or_me, first_content_intent_client
@@ -2336,7 +2338,7 @@ del GUILD_BAN_REMOVE__CAL, \
 
 
 def GUILD_MEMBERS_CHUNK(client, data):
-    event = GuildUserChunkEvent(data)
+    event = GuildUserChunkEvent.from_data(data)
     
     Task(KOKORO, client.events.guild_user_chunk(client, event))
 

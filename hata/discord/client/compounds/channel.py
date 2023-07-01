@@ -606,7 +606,7 @@ class ClientCompoundChannelEndpoints(Compound):
         
         users : `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
             The users in the channel.
-            
+        
         video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
             The video quality of the voice channel.
         

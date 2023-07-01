@@ -1,7 +1,6 @@
 import vampytest
 
 from ....guild import Guild
-
 from ....user import User, GuildProfile
 
 from ..guild_user_chunk_event import GuildUserChunkEvent

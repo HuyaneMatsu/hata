@@ -118,6 +118,7 @@ class ActivityMetadataCustom(ActivityMetadataBase):
             repr_parts.append(' state = ')
             repr_parts.append(repr(state))
         
+        repr_parts.append('>')
         return ''.join(repr_parts)
     
     

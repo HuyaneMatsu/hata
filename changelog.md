@@ -52,6 +52,7 @@
 - `Guild.permissions_for_roles` did not ignore partial roles as intended. Broke probably a few years ago.
 - Fix broken import in `ext.rpc`.
 - Fix `TypeError` from `GuildUserChunkEvent.__repr__` (bad return).
+- Fix `ActivityMetadataCustom.__repr__` format. (Missing `>` sign.)
 
 #### Renames, Deprecation & Removals
 

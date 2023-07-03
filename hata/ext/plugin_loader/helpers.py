@@ -484,10 +484,11 @@ def _is_plugin_name_in_plugin_root_names(plugin_root_names, plugin_name):
         if not plugin_name.startswith(plugin_root_name):
             continue
         
-        if plugin_name_length == len(plugin_root_name):
+        plugin_root_name_length = len(plugin_root_name)
+        if plugin_name_length == plugin_root_name_length:
             return True
         
-        if plugin_root_name[plugin_name_length] == '.':
+        if plugin_root_name_length > plugin_name_length and plugin_root_name[plugin_name_length] == '.':
             return True
     
     return False

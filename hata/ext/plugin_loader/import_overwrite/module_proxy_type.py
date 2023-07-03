@@ -53,7 +53,8 @@ class PluginModuleProxyType(ModuleType):
         else:
             warnings.warn(
                 f'Unallowed attribute assignment: `{attribute_name} = {attribute_value!r}` of type '
-                f'`{type(attribute_value).__name__}` to `{self.__spec__.name}`'
+                f'`{type(attribute_value).__name__}` to `{self.__spec__.name}`',
+                stacklevel = 2,
             )
     
     

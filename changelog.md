@@ -50,9 +50,14 @@
     administrator permission.
 - `Guild.permissions_for` did not handle guild profile roles and guild roles de-sync correctly.
 - `Guild.permissions_for_roles` did not ignore partial roles as intended. Broke probably a few years ago.
-- Fix broken import in `ext.rpc`.
 - Fix `TypeError` from `GuildUserChunkEvent.__repr__` (bad return).
 - Fix `ActivityMetadataCustom.__repr__` format. (Missing `>` sign.)
+
+##### ext.plugin_loader
+- Fix `IndexError` in `_is_plugin_name_in_plugin_root_names`.
+
+##### ext.rpc
+- Fix a broken import.
 
 #### Renames, Deprecation & Removals
 

@@ -1096,7 +1096,7 @@ class ClientCompoundChannelEndpoints(Compound):
         - ``.forum_tag_delete`` : Delete a forum tag.
         - ``.forum_tag_edit`` : Modify a forum tag.
         """
-        channel_id = get_channel_id(forum_channel, Channel.is_guild_forum)
+        channel_id = get_channel_id(forum_channel, Channel.is_in_group_forum)
         data = build_create_payload(forum_tag, FORUM_TAG_FIELD_CONVERTERS, keyword_parameters)
         
         channel_data = await self.http.forum_tag_create(channel_id, data, reason)
@@ -1179,7 +1179,7 @@ class ClientCompoundChannelEndpoints(Compound):
         - ``.forum_tag_create`` : Create a forum tag.
         - ``.forum_tag_delete`` : Delete a forum tag.
         """
-        channel_id = get_channel_id(forum_channel, Channel.is_guild_forum)
+        channel_id = get_channel_id(forum_channel, Channel.is_in_group_forum)
         forum_tag, forum_tag_id = get_forum_tag_and_id(forum_tag)
         data = build_edit_payload(forum_tag, template_forum_tag, FORUM_TAG_FIELD_CONVERTERS, keyword_parameters)
         
@@ -1220,6 +1220,6 @@ class ClientCompoundChannelEndpoints(Compound):
         - ``.forum_tag_create`` : Create a forum tag.
         - ``.forum_tag_edit`` : Modify a forum tag.
         """
-        channel_id = get_channel_id(forum_channel, Channel.is_guild_forum)
+        channel_id = get_channel_id(forum_channel, Channel.is_in_group_forum)
         forum_tag_id = get_forum_tag_id(forum_tag)
         await self.http.forum_tag_delete(channel_id, forum_tag_id, reason)

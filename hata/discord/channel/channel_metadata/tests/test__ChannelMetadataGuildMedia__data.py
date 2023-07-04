@@ -7,25 +7,25 @@ from ...forum_tag_change import ForumTagChange
 from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
 
 from ..flags import ChannelFlag
-from ..guild_forum import ChannelMetadataGuildForum
+from ..guild_media import ChannelMetadataGuildMedia
 from ..preinstanced import ForumLayout, SortOrder
 
-from .test__ChannelMetadataGuildForum__constructor import _assert_fields_set
+from .test__ChannelMetadataGuildMedia__constructor import _assert_fields_set
 
 
-def test__ChannelMetadataGuildForum__from_data():
+def test__ChannelMetadataGuildMedia__from_data():
     """
-    Tests whether ``ChannelMetadataGuildForum.from_data` works as intended.
+    Tests whether ``ChannelMetadataGuildMedia.from_data` works as intended.
     """
-    parent_id = 202307040006
+    parent_id = 202307040106
     name = 'Armelyrics'
     permission_overwrites = [
-        PermissionOverwrite(202307040007, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202307040107, target_type = PermissionOverwriteTargetType.user)
     ]
     position = 7
     available_tags = [
         ForumTag.precreate(
-            202307040008,
+            202307040108,
             emoji = BUILTIN_EMOJIS['heart'],
             name = 'Yup',
             moderated = False,
@@ -40,7 +40,7 @@ def test__ChannelMetadataGuildForum__from_data():
     default_forum_layout = ForumLayout.list
     
     
-    channel_metadata = ChannelMetadataGuildForum.from_data({
+    channel_metadata = ChannelMetadataGuildMedia.from_data({
         'parent_id': str(parent_id),
         'name': name,
         'permission_overwrites': [
@@ -76,21 +76,21 @@ def test__ChannelMetadataGuildForum__from_data():
     vampytest.assert_is(channel_metadata.default_forum_layout, default_forum_layout)
 
 
-def test__ChannelMetadataGuildForum__to_data():
+def test__ChannelMetadataGuildMedia__to_data():
     """
-    Tests whether ``ChannelMetadataGuildForum.to_data`` works as intended.
+    Tests whether ``ChannelMetadataGuildMedia.to_data`` works as intended.
     
     Case: include defaults and internals.
     """
-    parent_id = 202307040009
+    parent_id = 202307040109
     name = 'Armelyrics'
     permission_overwrites = [
-        PermissionOverwrite(202307040010, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202307040110, target_type = PermissionOverwriteTargetType.user)
     ]
     position = 7
     available_tags = [
         ForumTag.precreate(
-            202307040011,
+            202307040111,
             emoji = BUILTIN_EMOJIS['heart'],
             name = 'Yup',
             moderated = False,
@@ -104,7 +104,7 @@ def test__ChannelMetadataGuildForum__to_data():
     default_sort_order = SortOrder.creation_date
     default_forum_layout = ForumLayout.list
     
-    channel_metadata = ChannelMetadataGuildForum(
+    channel_metadata = ChannelMetadataGuildMedia(
         parent_id = parent_id,
         name = name,
         permission_overwrites = permission_overwrites,
@@ -145,19 +145,19 @@ def test__ChannelMetadataGuildForum__to_data():
     )
 
 
-def test__ChannelMetadataGuildForum__update_attributes():
+def test__ChannelMetadataGuildMedia__update_attributes():
     """
-    Tests whether ``ChannelMetadataGuildForum._update_attributes`` works as intended.
+    Tests whether ``ChannelMetadataGuildMedia._update_attributes`` works as intended.
     """
-    old_parent_id = 202307040012
+    old_parent_id = 202307040112
     old_name = 'Armelyrics'
     old_permission_overwrites = [
-        PermissionOverwrite(202307040013, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202307040113, target_type = PermissionOverwriteTargetType.user)
     ]
     old_position = 7
     old_available_tags = [
         ForumTag.precreate(
-            202307040014,
+            202307040114,
             emoji = BUILTIN_EMOJIS['heart'],
             name = 'Yup',
             moderated = False,
@@ -171,15 +171,15 @@ def test__ChannelMetadataGuildForum__update_attributes():
     old_default_sort_order = SortOrder.creation_date
     old_default_forum_layout = ForumLayout.list
     
-    new_parent_id = 202307040015
+    new_parent_id = 202307040115
     new_name = 'Okuu'
     new_permission_overwrites = [
-        PermissionOverwrite(202307040016, target_type = PermissionOverwriteTargetType.role)
+        PermissionOverwrite(202307040116, target_type = PermissionOverwriteTargetType.role)
     ]
     new_position = 5
     new_available_tags = [
         ForumTag.precreate(
-            202307040017,
+            202307040117,
             emoji = BUILTIN_EMOJIS['duck'],
             name = 'Ashy',
             moderated = True,
@@ -193,7 +193,7 @@ def test__ChannelMetadataGuildForum__update_attributes():
     new_default_sort_order = SortOrder.latest_activity
     new_default_forum_layout = ForumLayout.gallery
     
-    channel_metadata = ChannelMetadataGuildForum(
+    channel_metadata = ChannelMetadataGuildMedia(
         parent_id = old_parent_id,
         name = old_name,
         permission_overwrites = old_permission_overwrites,
@@ -243,25 +243,25 @@ def test__ChannelMetadataGuildForum__update_attributes():
     vampytest.assert_is(channel_metadata.default_forum_layout, new_default_forum_layout)
 
 
-def test__ChannelMetadataGuildForum__difference_update_attributes():
+def test__ChannelMetadataGuildMedia__difference_update_attributes():
     """
-    Tests whether ``ChannelMetadataGuildForum._difference_update_attributes`` works as intended.
+    Tests whether ``ChannelMetadataGuildMedia._difference_update_attributes`` works as intended.
     """
-    old_parent_id = 202307040018
-    new_parent_id = 202307040019
+    old_parent_id = 202307040118
+    new_parent_id = 202307040119
     old_name = 'Armelyrics'
     new_name = 'Okuu'
     old_permission_overwrites = [
-        PermissionOverwrite(202307040020, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202307040120, target_type = PermissionOverwriteTargetType.user)
     ]
     new_permission_overwrites = [
-        PermissionOverwrite(202307040021, target_type = PermissionOverwriteTargetType.role)
+        PermissionOverwrite(202307040121, target_type = PermissionOverwriteTargetType.role)
     ]
     old_position = 7
     new_position = 5
     old_available_tags = [
         ForumTag.precreate(
-            202307040022,
+            202307040122,
             emoji = BUILTIN_EMOJIS['heart'],
             name = 'Yup',
             moderated = False,
@@ -269,7 +269,7 @@ def test__ChannelMetadataGuildForum__difference_update_attributes():
     ]
     new_available_tags = [
         ForumTag.precreate(
-            202307040023,
+            202307040123,
             emoji = BUILTIN_EMOJIS['duck'],
             name = 'Ashy',
             moderated = True,
@@ -290,7 +290,7 @@ def test__ChannelMetadataGuildForum__difference_update_attributes():
     old_default_forum_layout = ForumLayout.list
     new_default_forum_layout = ForumLayout.gallery
     
-    channel_metadata = ChannelMetadataGuildForum(
+    channel_metadata = ChannelMetadataGuildMedia(
         parent_id = old_parent_id,
         name = old_name,
         permission_overwrites = old_permission_overwrites,
@@ -372,13 +372,13 @@ def test__ChannelMetadataGuildForum__difference_update_attributes():
     vampytest.assert_eq(old_attributes['default_forum_layout'], old_default_forum_layout)
 
 
-def test__ChannelMetadataGuildForum__from_partial_data():
+def test__ChannelMetadataGuildMedia__from_partial_data():
     """
-    Tests whether ``ChannelMetadataGuildForum._from_partial_data`` works as intended.
+    Tests whether ``ChannelMetadataGuildMedia._from_partial_data`` works as intended.
     """
     name = 'Armelyrics'
     
-    channel_metadata = ChannelMetadataGuildForum._from_partial_data({
+    channel_metadata = ChannelMetadataGuildMedia._from_partial_data({
         'name': name,
     })
     _assert_fields_set(channel_metadata)

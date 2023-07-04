@@ -1,3 +1,24 @@
+## 1.3.33 *\[2023-07-??\]*
+
+#### Improvements
+
+- Add `ChannelFlag.hide_media_download_option`.
+- Add `ChannelFlag.media_channel`.
+- Add `ChannelFlag.summaries_disabled`.
+- Add `ChannelFlag.role_subscription_template_preview_channel`.
+- Add `ChannelFlag.broadcasting`.
+- Add `ChannelMetadataGuildMedia`.
+- Add `ChannelMetadataGuildForumBase`.
+- Add `ChannelTypeFlag.forum`. (This is an internal object.)
+- Add `ChannelType.guild_media`.
+- Add `Channel.is_guild_media`.
+- Add `Channel.is_in_group_forum`.
+- `guild_stage` channels are now textual. Applies to both permissions and checks.
+- `Client.forum_thread_create` now allows media channels too.
+- `Client.forum_tag_delete` now allows media channel too.
+- `Client.forum_tag_edit` now allows media channel too.
+- `Client.forum_tag_create` now allows media channel too.
+
 ## 1.3.32 *\[2023-07-04\]*
 
 #### Improvements

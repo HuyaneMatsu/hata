@@ -1369,7 +1369,7 @@ def _iter_options__get_channel_like():
     channel_0 = Channel.precreate(202306250015, name = 'orin', channel_type = ChannelType.guild_text)
     channel_1 = Channel.precreate(202306250016, name = 'rin', channel_type = ChannelType.guild_voice)
     channel_2 = Channel.precreate(202306250017, name = 'okuu', channel_type = ChannelType.guild_announcements)
-    channel_3 = Channel.precreate(202306250018, name = 'okuu', channel_type = ChannelType.guild_stage)
+    channel_3 = Channel.precreate(202306250018, name = 'okuu', channel_type = ChannelType.guild_forum)
     
     yield Guild.precreate(202306250019, channels = None), 'rin', None, None
     yield Guild.precreate(202306250020, channels = [channel_0]), 'rin', None, channel_0
@@ -1418,7 +1418,7 @@ def _iter_options__get_channels_like():
     channel_0 = Channel.precreate(202306250029, name = 'orin', channel_type = ChannelType.guild_text)
     channel_1 = Channel.precreate(202306250030, name = 'rin', channel_type = ChannelType.guild_voice)
     channel_2 = Channel.precreate(202306250031, name = 'okuu', channel_type = ChannelType.guild_announcements)
-    channel_3 = Channel.precreate(202306250032, name = 'okuu', channel_type = ChannelType.guild_stage)
+    channel_3 = Channel.precreate(202306250032, name = 'okuu', channel_type = ChannelType.guild_forum)
     
     yield Guild.precreate(202306250033, channels = None), 'rin', None, []
     yield Guild.precreate(202306250034, channels = [channel_0]), 'rin', None, [channel_0]

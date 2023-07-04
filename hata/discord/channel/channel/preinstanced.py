@@ -6,9 +6,9 @@ from ...bases import Preinstance as P, PreinstancedBase
 
 from ..channel_metadata import (
     ChannelMetadataBase, ChannelMetadataGuildAnnouncements, ChannelMetadataGuildCategory, ChannelMetadataGuildDirectory,
-    ChannelMetadataGuildForum, ChannelMetadataGuildStage, ChannelMetadataGuildStore, ChannelMetadataGuildText,
-    ChannelMetadataGuildThreadAnnouncements, ChannelMetadataGuildThreadPrivate, ChannelMetadataGuildThreadPublic,
-    ChannelMetadataGuildVoice, ChannelMetadataPrivate, ChannelMetadataPrivateGroup
+    ChannelMetadataGuildForum, ChannelMetadataGuildMedia, ChannelMetadataGuildStage, ChannelMetadataGuildStore,
+    ChannelMetadataGuildText, ChannelMetadataGuildThreadAnnouncements, ChannelMetadataGuildThreadPrivate,
+    ChannelMetadataGuildThreadPublic, ChannelMetadataGuildVoice, ChannelMetadataPrivate, ChannelMetadataPrivateGroup
 )
 
 
@@ -74,6 +74,8 @@ class ChannelType(PreinstancedBase):
     | guild_directory               | guild directory               | 14    | ``ChannelMetadataGuildDirectory``             |
     +-------------------------------+-------------------------------+-------+-----------------------------------------------+
     | guild_forum                   | guild forum                   | 15    | ``ChannelMetadataGuildForum``                 |
+    +-------------------------------+-------------------------------+-------+-----------------------------------------------+
+    | guild_media                   | guild media                   | 16    | ``ChannelMetadataGuildMedia``                 |
     +-------------------------------+-------------------------------+-------+-----------------------------------------------+
     """
     __slots__ = ('flags', 'metadata_type',)
@@ -150,6 +152,7 @@ class ChannelType(PreinstancedBase):
             textual = True,
             thread = False,
             threadable = True,
+            forum = False,
         ),
     )
     
@@ -168,6 +171,7 @@ class ChannelType(PreinstancedBase):
             textual = True,
             thread = False,
             threadable = False,
+            forum = False,
         ),
     )
     
@@ -186,6 +190,7 @@ class ChannelType(PreinstancedBase):
             textual = True,
             thread = False,
             threadable = False,
+            forum = False,
         ),
     )
     
@@ -204,6 +209,7 @@ class ChannelType(PreinstancedBase):
             textual = True,
             thread = False,
             threadable = False,
+            forum = False,
         ),
     )
     
@@ -222,6 +228,7 @@ class ChannelType(PreinstancedBase):
             textual = False,
             thread = False,
             threadable = False,
+            forum = False,
         ),
     )
     
@@ -240,6 +247,7 @@ class ChannelType(PreinstancedBase):
             textual = True,
             thread = False,
             threadable = True,
+            forum = False,
         ),
     )
     
@@ -258,6 +266,7 @@ class ChannelType(PreinstancedBase):
             textual = False,
             thread = False,
             threadable = False,
+            forum = False,
         )
     )
     
@@ -276,6 +285,7 @@ class ChannelType(PreinstancedBase):
             textual = True,
             thread = True,
             threadable = False,
+            forum = False,
         ),
     )
     
@@ -294,6 +304,7 @@ class ChannelType(PreinstancedBase):
             textual = True,
             thread = True,
             threadable = False,
+            forum = False,
         ),
     )
     
@@ -312,6 +323,7 @@ class ChannelType(PreinstancedBase):
             textual = True,
             thread = True,
             threadable = False,
+            forum = False,
         ),
     )
     
@@ -330,6 +342,7 @@ class ChannelType(PreinstancedBase):
             textual = True,
             thread = True,
             threadable = False,
+            forum = False,
         ),
     )
     
@@ -345,9 +358,10 @@ class ChannelType(PreinstancedBase):
             invitable = True,
             private = False,
             readable = False,
-            textual = False,
+            textual = True,
             thread = False,
             threadable = False,
+            forum = False,
         )
     )
     
@@ -366,6 +380,7 @@ class ChannelType(PreinstancedBase):
             textual = False,
             thread = False,
             threadable = False,
+            forum = False,
         ),
     )
     
@@ -384,5 +399,25 @@ class ChannelType(PreinstancedBase):
             textual = False,
             thread = False,
             threadable = True,
+            forum = True,
+        ),
+    )
+
+    guild_media = P(
+        16,
+        'guild media',
+        ChannelMetadataGuildMedia,
+        ChannelTypeFlag().update_by_keys(
+            connectable = False,
+            guild = True,
+            guild_sortable = True,
+            guild_system = False,
+            invitable = True,
+            private = False,
+            readable = True,
+            textual = False,
+            thread = False,
+            threadable = True,
+            forum = True,
         ),
     )

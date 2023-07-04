@@ -15,6 +15,7 @@ CHANNEL_TYPE_SHIFT_READABLE = 6
 CHANNEL_TYPE_SHIFT_TEXTUAL = 7
 CHANNEL_TYPE_SHIFT_THREAD = 8
 CHANNEL_TYPE_SHIFT_THREADABLE = 9
+CHANNEL_TYPE_SHIFT_FORUM = 10
 
 CHANNEL_TYPE_MASK_CONNECTABLE = 1 << CHANNEL_TYPE_SHIFT_CONNECTABLE
 CHANNEL_TYPE_MASK_GUILD = 1 << CHANNEL_TYPE_SHIFT_GUILD
@@ -26,6 +27,7 @@ CHANNEL_TYPE_MASK_READABLE = 1 << CHANNEL_TYPE_SHIFT_READABLE
 CHANNEL_TYPE_MASK_TEXTUAL = 1 << CHANNEL_TYPE_SHIFT_TEXTUAL
 CHANNEL_TYPE_MASK_THREAD = 1 << CHANNEL_TYPE_SHIFT_THREAD
 CHANNEL_TYPE_MASK_THREADABLE = 1 << CHANNEL_TYPE_SHIFT_THREADABLE
+CHANNEL_TYPE_MASK_FORUM = 1 << CHANNEL_TYPE_SHIFT_FORUM
 
 
 class ChannelTypeFlag(FlagBase):
@@ -59,6 +61,8 @@ class ChannelTypeFlag(FlagBase):
     +-------------------------------+-------------------+
     | threadable                    | 9                 |
     +-------------------------------+-------------------+
+    | forum                         | 10                |
+    +-------------------------------+-------------------+
     """
     __keys__ = {
         'connectable': CHANNEL_TYPE_SHIFT_CONNECTABLE,
@@ -71,6 +75,7 @@ class ChannelTypeFlag(FlagBase):
         'textual': CHANNEL_TYPE_SHIFT_TEXTUAL,
         'thread': CHANNEL_TYPE_SHIFT_THREAD,
         'threadable': CHANNEL_TYPE_SHIFT_THREADABLE,
+        'forum': CHANNEL_TYPE_SHIFT_FORUM,
     }
     
     

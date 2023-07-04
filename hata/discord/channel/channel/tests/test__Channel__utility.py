@@ -416,49 +416,6 @@ def test__Channel__cached_permissions_for():
         clients = None
 
 
-def test__Channel__checks():
-    """
-    Tests whether ``Channel`` checks work.
-    """
-    channel_type = ChannelType.guild_voice
-    
-    channel = Channel(channel_type = channel_type)
-    
-    for check, expected_output in (
-        (Channel.is_in_group_textual, True),
-        (Channel.is_in_group_guild_textual, True),
-        (Channel.is_in_group_guild_system, False),
-        (Channel.is_in_group_connectable, True),
-        (Channel.is_in_group_guild_connectable, True),
-        (Channel.is_in_group_private, False),
-        (Channel.is_in_group_guild, True),
-        (Channel.is_in_group_thread, False),
-        (Channel.is_in_group_threadable, False),
-        (Channel.is_in_group_invitable, True),
-        (Channel.is_in_group_guild_sortable, True),
-        (Channel.is_guild_text, False),
-        (Channel.is_private, False),
-        (Channel.is_guild_voice, True),
-        (Channel.is_private_group, False),
-        (Channel.is_guild_category, False),
-        (Channel.is_guild_announcements, False),
-        (Channel.is_guild_store, False),
-        (Channel.is_thread, False),
-        (Channel.is_guild_thread_announcements, False),
-        (Channel.is_guild_thread_public, False),
-        (Channel.is_guild_thread_private, False),
-        (Channel.is_guild_stage, False),
-        (Channel.is_guild_directory, False),
-        (Channel.is_guild_forum, False),
-    ):
-        output = check(channel)
-        vampytest.assert_instance(output, int)
-        if expected_output:
-            vampytest.assert_true(output)
-        else:
-            vampytest.assert_false(output)
-
-
 def test__Channel__iter_applied_tag_ids():
     """
     Tests whether ``Channel.iter_applied_tag_ids`` works as intended.

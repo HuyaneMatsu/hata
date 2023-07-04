@@ -367,7 +367,7 @@ class ClientCompoundThreadEndpoints(Compound):
         ``.message_create`` : Sending a message to a text channel.
         ``.thread_create`` : Create thread in a text channel.
         """
-        channel, channel_id = get_channel_and_id(channel_forum, Channel.is_guild_forum)
+        channel, channel_id = get_channel_and_id(channel_forum, Channel.is_in_group_forum)
         
         content, embed = validate_content_and_embed(content, embed, False)
         

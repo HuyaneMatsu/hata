@@ -6,25 +6,25 @@ from ...forum_tag import ForumTag
 from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
 
 from ..flags import ChannelFlag
-from ..guild_forum import ChannelMetadataGuildForum
+from ..guild_forum import ChannelMetadataGuildForumBase
 from ..preinstanced import ForumLayout, SortOrder
 
-from .test__ChannelMetadataGuildForum__constructor import _assert_fields_set
+from .test__ChannelMetadataGuildForumBase__constructor import _assert_fields_set
 
 
-def test__ChannelMetadataGuildForum__copy():
+def test__ChannelMetadataGuildForumBase__copy():
     """
-    Tests whether ``ChannelMetadataGuildForum.copy` works as intended.
+    Tests whether ``ChannelMetadataGuildForumBase.copy` works as intended.
     """
     name = 'alice'
-    parent_id = 202307040033
+    parent_id = 202304120157
     permission_overwrites = [
-        PermissionOverwrite(202307040034, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202304120158, target_type = PermissionOverwriteTargetType.user)
     ]
     position = 7
     available_tags = [
         ForumTag.precreate(
-            202307040035,
+            202304120159,
             emoji = BUILTIN_EMOJIS['heart'],
             name = 'Yup',
             moderated = False,
@@ -38,7 +38,7 @@ def test__ChannelMetadataGuildForum__copy():
     default_sort_order = SortOrder.creation_date
     default_forum_layout = ForumLayout.list
     
-    channel_metadata = ChannelMetadataGuildForum(
+    channel_metadata = ChannelMetadataGuildForumBase(
         name = name,
         parent_id = parent_id,
         permission_overwrites = permission_overwrites,
@@ -60,21 +60,21 @@ def test__ChannelMetadataGuildForum__copy():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataGuildForum__copy_with__0():
+def test__ChannelMetadataGuildForumBase__copy_with__0():
     """
-    Tests whether ``ChannelMetadataGuildForum.copy_with` works as intended.
+    Tests whether ``ChannelMetadataGuildForumBase.copy_with` works as intended.
     
     Case: No fields.
     """
     name = 'alice'
-    parent_id = 202307040036
+    parent_id = 202304120160
     permission_overwrites = [
-        PermissionOverwrite(202307040037, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202304120161, target_type = PermissionOverwriteTargetType.user)
     ]
     position = 7
     available_tags = [
         ForumTag.precreate(
-            202307040038,
+            202304120162,
             emoji = BUILTIN_EMOJIS['heart'],
             name = 'Yup',
             moderated = False,
@@ -88,7 +88,7 @@ def test__ChannelMetadataGuildForum__copy_with__0():
     default_sort_order = SortOrder.creation_date
     default_forum_layout = ForumLayout.list
     
-    channel_metadata = ChannelMetadataGuildForum(
+    channel_metadata = ChannelMetadataGuildForumBase(
         name = name,
         parent_id = parent_id,
         permission_overwrites = permission_overwrites,
@@ -110,21 +110,21 @@ def test__ChannelMetadataGuildForum__copy_with__0():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataGuildForum__copy_with__1():
+def test__ChannelMetadataGuildForumBase__copy_with__1():
     """
-    Tests whether ``ChannelMetadataGuildForum.copy_with` works as intended.
+    Tests whether ``ChannelMetadataGuildForumBase.copy_with` works as intended.
     
     Case: All fields.
     """
     old_name = 'alice'
-    old_parent_id = 202307040039
+    old_parent_id = 202304120163
     old_permission_overwrites = [
-        PermissionOverwrite(202307040040, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202304120164, target_type = PermissionOverwriteTargetType.user)
     ]
     old_position = 7
     old_available_tags = [
         ForumTag.precreate(
-            202307040041,
+            202304120165,
             emoji = BUILTIN_EMOJIS['heart'],
             name = 'Yup',
             moderated = False,
@@ -139,14 +139,14 @@ def test__ChannelMetadataGuildForum__copy_with__1():
     old_default_forum_layout = ForumLayout.list
     
     new_name = 'emotion'
-    new_parent_id = 202307040042
+    new_parent_id = 202304120166
     new_permission_overwrites = [
-        PermissionOverwrite(202307040043, target_type = PermissionOverwriteTargetType.role)
+        PermissionOverwrite(202304120167, target_type = PermissionOverwriteTargetType.role)
     ]
     new_position = 5
     new_available_tags = [
         ForumTag.precreate(
-            202307040044,
+            202304120168,
             emoji = BUILTIN_EMOJIS['duck'],
             name = 'Ashy',
             moderated = True,
@@ -160,7 +160,7 @@ def test__ChannelMetadataGuildForum__copy_with__1():
     new_default_sort_order = SortOrder.latest_activity
     new_default_forum_layout = ForumLayout.gallery
     
-    channel_metadata = ChannelMetadataGuildForum(
+    channel_metadata = ChannelMetadataGuildForumBase(
         name = old_name,
         parent_id = old_parent_id,
         permission_overwrites = old_permission_overwrites,
@@ -210,21 +210,21 @@ def test__ChannelMetadataGuildForum__copy_with__1():
 
 
 
-def test__ChannelMetadataGuildForum__copy_with_keyword_parameters__0():
+def test__ChannelMetadataGuildForumBase__copy_with_keyword_parameters__0():
     """
-    Tests whether ``ChannelMetadataGuildForum.copy_with_keyword_parameters` works as intended.
+    Tests whether ``ChannelMetadataGuildForumBase.copy_with_keyword_parameters` works as intended.
     
     Case: No fields.
     """
     name = 'alice'
-    parent_id = 202307040045
+    parent_id = 202304120169
     permission_overwrites = [
-        PermissionOverwrite(202307040046, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202304120170, target_type = PermissionOverwriteTargetType.user)
     ]
     position = 7
     available_tags = [
         ForumTag.precreate(
-            202307040047,
+            202304120171,
             emoji = BUILTIN_EMOJIS['heart'],
             name = 'Yup',
             moderated = False,
@@ -238,7 +238,7 @@ def test__ChannelMetadataGuildForum__copy_with_keyword_parameters__0():
     default_sort_order = SortOrder.creation_date
     default_forum_layout = ForumLayout.list
     
-    channel_metadata = ChannelMetadataGuildForum(
+    channel_metadata = ChannelMetadataGuildForumBase(
         name = name,
         parent_id = parent_id,
         permission_overwrites = permission_overwrites,
@@ -262,21 +262,21 @@ def test__ChannelMetadataGuildForum__copy_with_keyword_parameters__0():
     vampytest.assert_eq(copy, channel_metadata)
 
 
-def test__ChannelMetadataGuildForum__copy_with_keyword_parameters__1():
+def test__ChannelMetadataGuildForumBase__copy_with_keyword_parameters__1():
     """
-    Tests whether ``ChannelMetadataGuildForum.copy_with_keyword_parameters` works as intended.
+    Tests whether ``ChannelMetadataGuildForumBase.copy_with_keyword_parameters` works as intended.
     
     Case: All fields.
     """
     old_name = 'alice'
-    old_parent_id = 202307040048
+    old_parent_id = 202304120172
     old_permission_overwrites = [
-        PermissionOverwrite(202307040049, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202304120173, target_type = PermissionOverwriteTargetType.user)
     ]
     old_position = 7
     old_available_tags = [
         ForumTag.precreate(
-            202307040050,
+            202304120174,
             emoji = BUILTIN_EMOJIS['heart'],
             name = 'Yup',
             moderated = False,
@@ -291,14 +291,14 @@ def test__ChannelMetadataGuildForum__copy_with_keyword_parameters__1():
     old_default_forum_layout = ForumLayout.list
     
     new_name = 'emotion'
-    new_parent_id = 202307040051
+    new_parent_id = 202304120175
     new_permission_overwrites = [
-        PermissionOverwrite(202307040052, target_type = PermissionOverwriteTargetType.role)
+        PermissionOverwrite(202304120176, target_type = PermissionOverwriteTargetType.role)
     ]
     new_position = 5
     new_available_tags = [
         ForumTag.precreate(
-            202307040053,
+            202304120177,
             emoji = BUILTIN_EMOJIS['duck'],
             name = 'Ashy',
             moderated = True,
@@ -312,7 +312,7 @@ def test__ChannelMetadataGuildForum__copy_with_keyword_parameters__1():
     new_default_sort_order = SortOrder.latest_activity
     new_default_forum_layout = ForumLayout.gallery
     
-    channel_metadata = ChannelMetadataGuildForum(
+    channel_metadata = ChannelMetadataGuildForumBase(
         name = old_name,
         parent_id = old_parent_id,
         permission_overwrites = old_permission_overwrites,

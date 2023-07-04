@@ -1,11 +1,11 @@
-__all__ = ('ChannelMetadataGuildForum',)
+__all__ = ('ChannelMetadataGuildMedia',)
 
 from .guild_forum_base import ChannelMetadataGuildForumBase
 
 
-class ChannelMetadataGuildForum(ChannelMetadataGuildForumBase):
+class ChannelMetadataGuildMedia(ChannelMetadataGuildForumBase):
     """
-    Guild forum channel metadata.
+    Guild media channel metadata.
     
     Attributes
     ----------

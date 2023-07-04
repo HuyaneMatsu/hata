@@ -494,65 +494,71 @@ ANNOTATION_NAMES_VALUE = frozenset((
     'value',
 ))
 
-CHANNEL_TYPES_GUILD = tuple(
+CHANNEL_TYPES_FORBIDDEN = (
+    ChannelType.unknown,
+    ChannelType.thread,
+)
+
+CHANNEL_TYPES_GROUP_GUILD = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
-    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
-    if channel_type.flags.guild
+    if (channel_type not in CHANNEL_TYPES_FORBIDDEN) and channel_type.flags.guild
 )
 CHANNEL_TYPES_GUILD_CATEGORY = (ChannelType.guild_category, )
 CHANNEL_TYPES_GUILD_DIRECTORY = (ChannelType.guild_directory, )
 CHANNEL_TYPES_GUILD_STORE = (ChannelType.guild_store, )
 CHANNEL_TYPES_GUILD_SYSTEM = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
-    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
-    if channel_type.flags.guild_system
+    if (channel_type not in CHANNEL_TYPES_FORBIDDEN) and channel_type.flags.guild_system
 )
 CHANNEL_TYPES_GUILD_TEXT = (ChannelType.guild_text, )
 CHANNEL_TYPES_GUILD_ANNOUNCEMENTS = (ChannelType.guild_announcements, )
 CHANNEL_TYPES_GUILD_CONNECTABLE = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
-    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
-    if channel_type.flags.guild and channel_type.flags.connectable
+    if (channel_type not in CHANNEL_TYPES_FORBIDDEN) and channel_type.flags.guild and channel_type.flags.connectable
 )
 CHANNEL_TYPES_GUILD_VOICE = (ChannelType.guild_voice, )
 CHANNEL_TYPES_GUILD_STAGE = (ChannelType.guild_stage, )
-CHANNEL_TYPES_PRIVATE_ALL = tuple(
+CHANNEL_TYPES_GROUP_PRIVATE = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
-    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
-    if channel_type.flags.private
+    if (channel_type not in CHANNEL_TYPES_FORBIDDEN) and channel_type.flags.private
 )
 CHANNEL_TYPES_PRIVATE = (ChannelType.private, )
 CHANNEL_TYPES_PRIVATE_GROUP = (ChannelType.private_group, )
-CHANNEL_TYPES_THREAD_ALL = tuple(
+CHANNEL_TYPES_GROUP_THREAD = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
-    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
-    if channel_type.flags.thread
+    if (channel_type not in CHANNEL_TYPES_FORBIDDEN) and channel_type.flags.thread
 )
 CHANNEL_TYPES_THREAD_ANNOUNCEMENTS = (ChannelType.guild_thread_announcements, )
 CHANNEL_TYPES_THREAD_PUBLIC = (ChannelType.guild_thread_public, )
 CHANNEL_TYPES_THREAD_PRIVATE = (ChannelType.guild_thread_private, )
-CHANNEL_TYPES_TEXTUAL = tuple(
+CHANNEL_TYPES_GROUP_TEXTUAL = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
-    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
-    if channel_type.flags.textual
+    if (channel_type not in CHANNEL_TYPES_FORBIDDEN) and channel_type.flags.textual
 )
-CHANNEL_TYPES_GUILD_TEXTUAL = tuple(
+CHANNEL_TYPES_GROUP_GUILD_TEXTUAL = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
-    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
-    if channel_type.flags.guild and channel_type.flags.textual
+    if (channel_type not in CHANNEL_TYPES_FORBIDDEN) and channel_type.flags.guild and channel_type.flags.textual
 )
-CHANNEL_TYPES_CONNECTABLE = tuple(
+CHANNEL_TYPES_GROUP_CONNECTABLE = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
-    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
-    if channel_type.flags.connectable
+    if (channel_type not in CHANNEL_TYPES_FORBIDDEN) and channel_type.flags.connectable
 )
-CHANNEL_TYPES_THREADABLE = tuple(
+CHANNEL_TYPES_GROUP_THREADABLE = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
-    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
-    if channel_type.flags.threadable
+    if (channel_type not in CHANNEL_TYPES_FORBIDDEN) and channel_type.flags.threadable
 )
 CHANNEL_TYPES_GUILD_FORUM = (ChannelType.guild_forum, )
+CHANNEL_TYPES_GUILD_MEDIA = (ChannelType.guild_media, )
 
+CHANNEL_TYPES_GROUP_FORUM = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if (channel_type not in CHANNEL_TYPES_FORBIDDEN) and channel_type.flags.forum
+)
+
+CHANNEL_TYPES_GROUP_INVITABLE = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if (channel_type not in CHANNEL_TYPES_FORBIDDEN) and channel_type.flags.invitable
+)
 
 STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     # Generic
@@ -574,8 +580,8 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     
     # Channel type specific
     # - by channel name
-    f'{"channel"}{"guild"}{"base"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
-    f'{"channel"}{"guild"}{"main"}{"base"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
+    f'{"channel"}{"guild"}{"base"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GROUP_GUILD),
+    f'{"channel"}{"guild"}{"main"}{"base"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GROUP_GUILD),
     f'{"channel"}{"category"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CATEGORY),
     f'{"channel"}{"directory"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_DIRECTORY),
     f'{"channel"}{"store"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STORE),
@@ -585,9 +591,11 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     f'{"channel"}{"stage"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STAGE),
     f'{"channel"}{"private"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE),
     f'{"channel"}{"group"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE_GROUP),
-    f'{"channel"}{"thread"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_ALL),
-    f'{"channel"}{"text"}{"base"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_TEXTUAL),
+    f'{"channel"}{"thread"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GROUP_THREAD),
+    f'{"channel"}{"text"}{"base"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GROUP_GUILD_TEXTUAL),
     f'{"channel"}{"forum"}':(ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_FORUM),
+    f'{"channel"}{"media"}':(ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_MEDIA),
+    f'{"channel"}{"forum"}{"base"}':(ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GROUP_FORUM),
     # - by generic name
     'channel_guild_text': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_TEXT),
     'channel_private': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE),
@@ -601,16 +609,19 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     'channel_guild_thread_private': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_PRIVATE),
     'channel_guild_stage': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STAGE),
     'channel_guild_directory': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_DIRECTORY),
-    'channel_group_messageable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_TEXTUAL),
-    'channel_group_guild_messageable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_TEXTUAL),
+    'channel_group_messageable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GROUP_TEXTUAL),
+    'channel_group_guild_messageable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GROUP_GUILD_TEXTUAL),
     'channel_group_guild_main_text': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_SYSTEM),
-    'channel_group_connectable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_CONNECTABLE),
+    'channel_group_connectable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GROUP_CONNECTABLE),
     'channel_group_private': (ANNOTATION_TYPE_CHANNEL, ),
     'channel_group_guild_connectable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CONNECTABLE),
-    'channel_group_guild': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
-    'channel_group_thread': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_ALL),
-    'channel_group_can_contain_threads': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREADABLE),
+    'channel_group_guild': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GROUP_GUILD),
+    'channel_group_thread': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GROUP_THREAD),
+    'channel_group_can_contain_threads': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GROUP_THREADABLE),
     'channel_guild_forum': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_FORUM),
+    'channel_guild_media': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_MEDIA),
+    'channel_group_forum': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GROUP_FORUM),
+    'channel_group_invitable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GROUP_INVITABLE),
     # - id + by generic name
     'channel_id_guild_text': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_TEXT),
     'channel_id_private': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_PRIVATE),
@@ -624,16 +635,19 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     'channel_id_guild_thread_private': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_THREAD_PRIVATE),
     'channel_id_guild_stage': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_STAGE),
     'channel_id_guild_directory': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_DIRECTORY),
-    'channel_id_group_messageable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_TEXTUAL),
-    'channel_id_group_guild_messageable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_TEXTUAL),
+    'channel_id_group_messageable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GROUP_TEXTUAL),
+    'channel_id_group_guild_messageable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GROUP_GUILD_TEXTUAL),
     'channel_id_group_guild_main_text': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_SYSTEM),
-    'channel_id_group_connectable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_CONNECTABLE),
+    'channel_id_group_connectable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GROUP_CONNECTABLE),
     'channel_id_group_private': (ANNOTATION_TYPE_CHANNEL_ID, ),
     'channel_id_group_guild_connectable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_CONNECTABLE),
-    'channel_id_group_guild': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD),
-    'channel_id_group_thread': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_THREAD_ALL),
-    'channel_id_group_can_contain_threads': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_THREADABLE),
+    'channel_id_group_guild': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GROUP_GUILD),
+    'channel_id_group_thread': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GROUP_THREAD),
+    'channel_id_group_can_contain_threads': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GROUP_THREADABLE),
     'channel_id_guild_forum': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_FORUM),
+    'channel_id_guild_media': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_MEDIA),
+    'channel_id_group_forum': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GROUP_FORUM),
+    'channel_id_group_invitable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GROUP_INVITABLE),
     
     # Internal
     **un_map_pack((

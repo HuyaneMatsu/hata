@@ -1163,6 +1163,7 @@ Channel types can be defined by changing the annotated type. By default defining
 - `channel_guild_stage`
 - `channel_guild_directory`
 - `channel_guild_forum`
+- `channel_guild_media`
 
 Or use group names covering multiple one.
 
@@ -1175,6 +1176,8 @@ Or use group names covering multiple one.
 - `channel_group_guild`
 - `channel_group_thread`
 - `channel_group_can_contain_threads`
+- `channel_group_forum`
+- `channel_group_invitable`
 
 > Using `channel_id` prefix instead of `channel`, will give back their id instead.
 

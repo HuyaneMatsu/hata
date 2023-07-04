@@ -6,23 +6,23 @@ from ...forum_tag import ForumTag
 from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
 
 from ..flags import ChannelFlag
-from ..guild_forum import ChannelMetadataGuildForum
+from ..guild_forum import ChannelMetadataGuildForumBase
 from ..preinstanced import ForumLayout, SortOrder
 
 
-def test__ChannelMetadataGuildForum__repr():
+def test__ChannelMetadataGuildForumBase__repr():
     """
-    Tests whether ``.ChannelMetadataGuildForum.__repr__`` works as intended.
+    Tests whether ``.ChannelMetadataGuildForumBase.__repr__`` works as intended.
     """
-    parent_id = 202307040024
+    parent_id = 202209170095
     name = 'Armelyrics'
     permission_overwrites = [
-        PermissionOverwrite(202307040025, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202209170096, target_type = PermissionOverwriteTargetType.user)
     ]
     position = 7
     available_tags = [
         ForumTag.precreate(
-            202307040026,
+            202209170097,
             emoji = BUILTIN_EMOJIS['heart'],
             name = 'Yup',
             moderated = False,
@@ -37,7 +37,7 @@ def test__ChannelMetadataGuildForum__repr():
     default_forum_layout = ForumLayout.list
     
 
-    channel_metadata = ChannelMetadataGuildForum(
+    channel_metadata = ChannelMetadataGuildForumBase(
         parent_id = parent_id,
         name = name,
         permission_overwrites = permission_overwrites,
@@ -55,14 +55,14 @@ def test__ChannelMetadataGuildForum__repr():
     vampytest.assert_instance(repr(channel_metadata), str)
 
 
-def test__ChannelMetadataGuildForum__hash():
+def test__ChannelMetadataGuildForumBase__hash():
     """
-    Tests whether ``.ChannelMetadataGuildForum.__hash__`` works as intended.
+    Tests whether ``.ChannelMetadataGuildForumBase.__hash__`` works as intended.
     """
     parent_id = 202209180089
     name = 'Armelyrics'
     permission_overwrites = [
-        PermissionOverwrite(202307040027, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202209180090, target_type = PermissionOverwriteTargetType.user)
     ]
     position = 7
     available_tags = [
@@ -82,7 +82,7 @@ def test__ChannelMetadataGuildForum__hash():
     default_forum_layout = ForumLayout.list
     
 
-    channel_metadata = ChannelMetadataGuildForum(
+    channel_metadata = ChannelMetadataGuildForumBase(
         parent_id = parent_id,
         name = name,
         permission_overwrites = permission_overwrites,
@@ -100,19 +100,19 @@ def test__ChannelMetadataGuildForum__hash():
     vampytest.assert_instance(hash(channel_metadata), int)
 
 
-def test__ChannelMetadataGuildForum__eq():
+def test__ChannelMetadataGuildForumBase__eq():
     """
-    Tests whether ``.ChannelMetadataGuildForum.__eq__`` works as intended.
+    Tests whether ``.ChannelMetadataGuildForumBase.__eq__`` works as intended.
     """
-    parent_id = 202307040028
+    parent_id = 202209170098
     name = 'Armelyrics'
     permission_overwrites = [
-        PermissionOverwrite(202307040029, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202209170099, target_type = PermissionOverwriteTargetType.user)
     ]
     position = 7
     available_tags = [
         ForumTag.precreate(
-            202307040030,
+            2022091700100,
             emoji = BUILTIN_EMOJIS['heart'],
             name = 'Yup',
             moderated = False,
@@ -140,18 +140,18 @@ def test__ChannelMetadataGuildForum__eq():
         'default_sort_order': default_sort_order,
         'default_forum_layout': default_forum_layout,
     }
-    channel_metadata = ChannelMetadataGuildForum(**keyword_parameters)
+    channel_metadata = ChannelMetadataGuildForumBase(**keyword_parameters)
     
     vampytest.assert_eq(channel_metadata, channel_metadata)
     vampytest.assert_ne(channel_metadata, object())
     
     for field_name, field_value in (
-        ('parent_id', 202307040031),
+        ('parent_id', 202209170101),
         ('name', 'Okuu'),
         (
             'permission_overwrites',
             [
-                PermissionOverwrite(202307040032, target_type = PermissionOverwriteTargetType.role)
+                PermissionOverwrite(202209170070, target_type = PermissionOverwriteTargetType.role)
             ],
         ),
         ('position', 6),
@@ -164,6 +164,6 @@ def test__ChannelMetadataGuildForum__eq():
         ('default_sort_order', SortOrder.latest_activity),
         ('default_forum_layout', ForumLayout.gallery),
     ):
-        test_channel_metadata = ChannelMetadataGuildForum(**{**keyword_parameters, field_name: field_value})
+        test_channel_metadata = ChannelMetadataGuildForumBase(**{**keyword_parameters, field_name: field_value})
         
         vampytest.assert_ne(channel_metadata, test_channel_metadata)

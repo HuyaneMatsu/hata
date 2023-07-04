@@ -287,9 +287,6 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
-        # voice channels don't have text permissions
-        result &= PERMISSION_TEXT_DENY
-        
         if not result & PERMISSION_MASK_CONNECT:
             result &= PERMISSION_VOICE_DENY_CONNECTION
         
@@ -301,9 +298,6 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         result = self._get_base_permissions_for_roles(channel_entity, roles)
         if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
-        
-        # voice channels don't have text permissions
-        result &= PERMISSION_TEXT_DENY
         
         if not result & PERMISSION_MASK_CONNECT:
             result &= PERMISSION_VOICE_DENY_CONNECTION

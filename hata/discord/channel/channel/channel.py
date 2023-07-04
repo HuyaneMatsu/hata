@@ -33,7 +33,7 @@ from .fields import (
     validate_type
 )
 from .flags import (
-    CHANNEL_TYPE_MASK_CONNECTABLE, CHANNEL_TYPE_MASK_GUILD, CHANNEL_TYPE_MASK_GUILD_SORTABLE,
+    CHANNEL_TYPE_MASK_CONNECTABLE, CHANNEL_TYPE_MASK_FORUM, CHANNEL_TYPE_MASK_GUILD, CHANNEL_TYPE_MASK_GUILD_SORTABLE,
     CHANNEL_TYPE_MASK_GUILD_SYSTEM, CHANNEL_TYPE_MASK_INVITABLE, CHANNEL_TYPE_MASK_PRIVATE, CHANNEL_TYPE_MASK_TEXTUAL,
     CHANNEL_TYPE_MASK_THREAD, CHANNEL_TYPE_MASK_THREADABLE
 )
@@ -2645,9 +2645,9 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        is_in_group_textual : `int`
+        is_in_group_textual : `bool`
         """
-        return self.type.flags & CHANNEL_TYPE_MASK_TEXTUAL
+        return self.type.flags & CHANNEL_TYPE_MASK_TEXTUAL == CHANNEL_TYPE_MASK_TEXTUAL
     
     
     def is_in_group_guild_messageable(self):
@@ -2671,7 +2671,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        is_in_group_guild_textual : `int`
+        is_in_group_guild_textual : `bool`
         """
         return self.type.flags & CHANNEL_TYPE_MASK_GUILD_TEXTUAL == CHANNEL_TYPE_MASK_GUILD_TEXTUAL
     
@@ -2699,9 +2699,9 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        is_in_group_guild_system : `int`
+        is_in_group_guild_system : `bool`
         """
-        return self.type.flags & CHANNEL_TYPE_MASK_GUILD_SYSTEM
+        return self.type.flags & CHANNEL_TYPE_MASK_GUILD_SYSTEM == CHANNEL_TYPE_MASK_GUILD_SYSTEM
     
     
     def is_in_group_connectable(self):
@@ -2713,9 +2713,9 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        is_in_group_connectable : `int`
+        is_in_group_connectable : `bool`
         """
-        return self.type.flags & CHANNEL_TYPE_MASK_CONNECTABLE
+        return self.type.flags & CHANNEL_TYPE_MASK_CONNECTABLE == CHANNEL_TYPE_MASK_CONNECTABLE
     
     
     def is_in_group_guild_connectable(self):
@@ -2724,7 +2724,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        is_in_group_guild_connectable : `int`
+        is_in_group_guild_connectable : `bool`
         """
         return self.type.flags & CHANNEL_TYPE_MASK_GUILD_CONNECTABLE == CHANNEL_TYPE_MASK_GUILD_CONNECTABLE
     
@@ -2735,9 +2735,9 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        is_in_group_private : `int`
+        is_in_group_private : `bool`
         """
-        return self.type.flags & CHANNEL_TYPE_MASK_PRIVATE
+        return self.type.flags & CHANNEL_TYPE_MASK_PRIVATE == CHANNEL_TYPE_MASK_PRIVATE
     
     
     def is_in_group_guild(self):
@@ -2746,9 +2746,9 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        is_in_group_guild : `int`
+        is_in_group_guild : `bool`
         """
-        return self.type.flags & CHANNEL_TYPE_MASK_GUILD
+        return self.type.flags & CHANNEL_TYPE_MASK_GUILD == CHANNEL_TYPE_MASK_GUILD
     
     
     def is_in_group_thread(self):
@@ -2757,9 +2757,9 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        is_in_group_thread : `int`
+        is_in_group_thread : `bool`
         """
-        return self.type.flags & CHANNEL_TYPE_MASK_THREAD
+        return self.type.flags & CHANNEL_TYPE_MASK_THREAD == CHANNEL_TYPE_MASK_THREAD
     
     
     def is_in_group_can_contain_threads(self):
@@ -2783,9 +2783,9 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        is_in_group_threadable : `int`
+        is_in_group_threadable : `bool`
         """
-        return self.type.flags & CHANNEL_TYPE_MASK_THREADABLE
+        return self.type.flags & CHANNEL_TYPE_MASK_THREADABLE == CHANNEL_TYPE_MASK_THREADABLE
     
     
     def is_in_group_can_create_invite_to(self):
@@ -2811,7 +2811,7 @@ class Channel(DiscordEntity, immortal = True):
         -------
         is_in_group_invitable : `bool`
         """
-        return self.type.flags & CHANNEL_TYPE_MASK_INVITABLE
+        return self.type.flags & CHANNEL_TYPE_MASK_INVITABLE == CHANNEL_TYPE_MASK_INVITABLE
     
     
     def is_in_group_guild_movable(self):
@@ -2831,13 +2831,24 @@ class Channel(DiscordEntity, immortal = True):
     
     def is_in_group_guild_sortable(self):
         """
-        Returns whether the channel is a movable guild channel.
+        Returns whether the channel is a sortable guild channel.
         
         Returns
         -------
-        is_in_group_guild_sortable : `int`
+        is_in_group_guild_sortable : `bool`
         """
-        return self.type.flags & CHANNEL_TYPE_MASK_GUILD_SORTABLE
+        return self.type.flags & CHANNEL_TYPE_MASK_GUILD_SORTABLE == CHANNEL_TYPE_MASK_GUILD_SORTABLE
+    
+    
+    def is_in_group_forum(self):
+        """
+        Returns whether the channel is a forum channel. Can be either `forum` or `media`.
+        
+        Returns
+        -------
+        is_in_group_forum : `bool`
+        """
+        return self.type.flags & CHANNEL_TYPE_MASK_FORUM == CHANNEL_TYPE_MASK_FORUM
     
     
     def is_guild_text(self):
@@ -3000,3 +3011,14 @@ class Channel(DiscordEntity, immortal = True):
         is_guild_forum : `bool`
         """
         return self.type is ChannelType.guild_forum
+    
+    
+    def is_guild_media(self):
+        """
+        Returns whether the channel is a guild media channel.
+        
+        Returns
+        -------
+        is_guild_media : `bool`
+        """
+        return self.type is ChannelType.guild_media

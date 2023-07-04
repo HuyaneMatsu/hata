@@ -1498,6 +1498,7 @@ CONVERTER_CHANNEL = ConverterSetting(
         'group_can_create_invitable': Channel.is_in_group_invitable,
         'group_guild_movable': Channel.is_in_group_guild_sortable,
         'group_guild_sortable': Channel.is_in_group_guild_sortable,
+        'group_forum': Channel.is_in_group_forum,
         'guild_text': Channel.is_guild_text,
         'private': Channel.is_private,
         'guild_voice': Channel.is_guild_voice,
@@ -1512,6 +1513,7 @@ CONVERTER_CHANNEL = ConverterSetting(
         'guild_stage': Channel.is_guild_stage,
         'guild_directory': Channel.is_guild_directory,
         'guild_forum': Channel.is_guild_forum,
+        'guild_media': Channel.is_guild_media,
     }
 )
 

@@ -167,9 +167,8 @@ def create_partial_channel_data(channel):
 HAS_SLOWMODE = (
     *(
         channel_type for channel_type in ChannelType.INSTANCES.values()
-        if channel_type.flags.guild and channel_type.flags.textual
+        if channel_type.flags.guild and (channel_type.flags.textual or channel_type.flags.forum)
     ),
-    ChannelType.guild_forum,
 )
 
 

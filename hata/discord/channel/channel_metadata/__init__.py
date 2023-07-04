@@ -7,7 +7,9 @@ from .guild_base import *
 from .guild_category import *
 from .guild_directory import *
 from .guild_forum import *
+from .guild_forum_base import *
 from .guild_main_base import *
+from .guild_media import *
 from .guild_stage import *
 from .guild_store import *
 from .guild_text import *
@@ -34,7 +36,9 @@ __all__ = (
     *guild_category.__all__,
     *guild_directory.__all__,
     *guild_forum.__all__,
+    *guild_forum_base.__all__,
     *guild_main_base.__all__,
+    *guild_media.__all__,
     *guild_stage.__all__,
     *guild_store.__all__,
     *guild_text.__all__,

@@ -935,6 +935,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------+-----------------------+
         | icon          | ``Icon``              |
         +---------------+-----------------------+
+        | flags         | ``RoleFlag``          |
+        +---------------+-----------------------+
         | managed       | `bool`                |
         +---------------+-----------------------+
         | mentionable   | `bool`                |

@@ -8,6 +8,7 @@ from ....permission import Permission
 
 from ...role_manager_metadata import RoleManagerMetadataBase, RoleManagerMetadataBooster
 
+from ..flags import RoleFlag
 from ..role import Role
 from ..preinstanced import RoleManagerType
 
@@ -23,6 +24,7 @@ def _assert_is_every_attribute_set(role):
     """
     vampytest.assert_instance(role, Role)
     vampytest.assert_instance(role.color, Color)
+    vampytest.assert_instance(role.flags, RoleFlag)
     vampytest.assert_instance(role.icon, Icon)
     vampytest.assert_instance(role.guild_id, int)
     vampytest.assert_instance(role.id, int)
@@ -53,6 +55,7 @@ def test__Role__new__1():
     Case: Stuffed fill as all things should be.
     """
     color = Color(123)
+    flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBooster()
     manager_type = RoleManagerType.booster
@@ -65,6 +68,7 @@ def test__Role__new__1():
     
     role = Role(
         color = color,
+        flags = flags,
         icon = icon,
         manager = (manager_type, manager_metadata),
         mentionable = mentionable,
@@ -77,6 +81,7 @@ def test__Role__new__1():
     _assert_is_every_attribute_set(role)
     
     vampytest.assert_eq(role.color, color)
+    vampytest.assert_eq(role.flags, flags)
     vampytest.assert_eq(role.icon, icon)
     vampytest.assert_eq(role.manager_metadata, manager_metadata)
     vampytest.assert_is(role.manager_type, manager_type)
@@ -158,6 +163,7 @@ def test__Role__precreate__1():
     guild_id = 202211040034
     
     color = Color(123)
+    flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBooster()
     manager_type = RoleManagerType.booster
@@ -172,6 +178,7 @@ def test__Role__precreate__1():
         role_id,
         guild_id = guild_id,
         color = color,
+        flags = flags,
         icon = icon,
         manager = (manager_type, manager_metadata),
         mentionable = mentionable,
@@ -188,6 +195,7 @@ def test__Role__precreate__1():
     vampytest.assert_eq(role.guild_id, guild_id)
     
     vampytest.assert_eq(role.color, color)
+    vampytest.assert_eq(role.flags, flags)
     vampytest.assert_eq(role.icon, icon)
     vampytest.assert_eq(role.manager_metadata, manager_metadata)
     vampytest.assert_is(role.manager_type, manager_type)

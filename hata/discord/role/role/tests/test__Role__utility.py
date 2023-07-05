@@ -12,6 +12,7 @@ from ....utils import is_url
 
 from ...role_manager_metadata import RoleManagerMetadataBooster, RoleManagerMetadataBot, RoleManagerMetadataIntegration
 
+from ..flags import RoleFlag
 from ..role import Role
 from ..preinstanced import RoleManagerType
 
@@ -192,6 +193,7 @@ def test__Role__copy():
     guild_id = 202211040042
     
     color = Color(123)
+    flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBooster()
     manager_type = RoleManagerType.booster
@@ -206,6 +208,7 @@ def test__Role__copy():
         role_id,
         guild_id = guild_id,
         color = color,
+        flags = flags,
         icon = icon,
         manager = (manager_type, manager_metadata),
         mentionable = mentionable,
@@ -235,6 +238,7 @@ def test__Role__copy_with__0():
     guild_id = 202211040044
     
     color = Color(123)
+    flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBooster()
     manager_type = RoleManagerType.booster
@@ -249,6 +253,7 @@ def test__Role__copy_with__0():
         role_id,
         guild_id = guild_id,
         color = color,
+        flags = flags,
         icon = icon,
         manager = (manager_type, manager_metadata),
         mentionable = mentionable,
@@ -275,28 +280,33 @@ def test__Role__copy_with__1():
     Case: No fields given.
     """
     old_color = Color(123)
-    new_color = Color(999)
+    old_flags = RoleFlag(12)
     old_icon = Icon(IconType.static, 2)
-    new_icon = None
     old_manager_metadata = RoleManagerMetadataBot(bot_id = 202211040045)
-    new_manager_metadata = RoleManagerMetadataIntegration(integration_id = 202211040046)
     old_manager_type = RoleManagerType.bot
-    new_manager_type = RoleManagerType.integration
     old_mentionable = True
-    new_mentionable = False
     old_name = 'holo'
-    new_name = 'kokoro'
     old_permissions = Permission(555)
-    new_permissions = Permission(6666)
     old_position = 6
-    new_position = 4
     old_separated = True
-    new_separated = False
     old_unicode_emoji = None
+    
+    
+    new_color = Color(999)
+    new_flags = RoleFlag(11)
+    new_icon = None
+    new_manager_metadata = RoleManagerMetadataIntegration(integration_id = 202211040046)
+    new_manager_type = RoleManagerType.integration
+    new_mentionable = False
+    new_name = 'kokoro'
+    new_permissions = Permission(6666)
+    new_position = 4
+    new_separated = False
     new_unicode_emoji = BUILTIN_EMOJIS['heart']
     
     role = Role(
         color = old_color,
+        flags = old_flags,
         icon = old_icon,
         manager = (old_manager_type, old_manager_metadata),
         mentionable = old_mentionable,
@@ -309,6 +319,7 @@ def test__Role__copy_with__1():
     
     copy = role.copy_with(
         color = new_color,
+        flags = new_flags,
         icon = new_icon,
         manager = (new_manager_type, new_manager_metadata),
         mentionable = new_mentionable,
@@ -322,6 +333,7 @@ def test__Role__copy_with__1():
     vampytest.assert_is_not(role, copy)
     
     vampytest.assert_eq(copy.color, new_color)
+    vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.icon, (IconType.none, 0))
     vampytest.assert_eq(copy.manager_metadata, new_manager_metadata)
     vampytest.assert_is(copy.manager_type, new_manager_type)

@@ -83,8 +83,11 @@ class ClientCompoundRoleEndpoints(Compound):
         
         Other Parameters
         ----------------
-        color : `int`, ``Color``, Optional (Keyword only)
+        color : ``Color``, `int`, Optional (Keyword only)
             The role's color.
+        
+        flags : ``RoleFlag``, `int`, Optional (Keyword only)
+            The role's flags.
         
         icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The role's icon.
@@ -168,8 +171,11 @@ class ClientCompoundRoleEndpoints(Compound):
         
         Other Parameters
         ----------------
-        color : `int`, ``Color``, Optional (Keyword only)
+        color : ``Color``, `int`, Optional (Keyword only)
             The role's color.
+        
+        flags : ``RoleFlag``, `int`, Optional (Keyword only)
+            The role's flags.
         
         icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The role's icon.

@@ -1,13 +1,13 @@
 import vampytest
 
 from ..fields import put_flags_into
-from ..flags import UserFlag
+from ..flags import RoleFlag
 
 
 def _iter_options():
-    yield UserFlag(0), False, {'public_flags': 0}
-    yield UserFlag(0), True, {'public_flags': 0}
-    yield UserFlag(1), False, {'public_flags': 1}
+    yield RoleFlag(0), False, {}
+    yield RoleFlag(0), True, {'flags': 0}
+    yield RoleFlag(1), False, {'flags': 1}
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -17,7 +17,7 @@ def test__put_flags_into(input_value, defaults):
     
     Parameters
     ----------
-    input_value : ``UserFlag``
+    input_value : ``RoleFlag``
         The value to serialise.
     defaults : `bool`
         Whether fields of their default value should be included in the output.

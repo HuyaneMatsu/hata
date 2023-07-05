@@ -1,12 +1,12 @@
 import vampytest
 
 from ..fields import parse_flags
-from ..flags import ChannelFlag
+from ..flags import RoleFlag
 
 
 def _iter_options():
-    yield {}, ChannelFlag(0)
-    yield {'flags': 1}, ChannelFlag(1)
+    yield {}, RoleFlag(0)
+    yield {'flags': 1}, RoleFlag(1)
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -21,8 +21,8 @@ def test__parse_flags(input_data):
     
     Returns
     -------
-    output : ``ChannelFlag``
+    output : ``RoleFlag``
     """
     output = parse_flags(input_data)
-    vampytest.assert_instance(output, ChannelFlag)
+    vampytest.assert_instance(output, RoleFlag)
     return output

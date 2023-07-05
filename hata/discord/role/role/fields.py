@@ -23,6 +23,7 @@ from ..role_manager_metadata.constants import (
 )
 
 from .constants import NAME_LENGTH_MAX, NAME_LENGTH_MIN, ROLE_MANAGER_DEFAULT
+from .flags import RoleFlag
 from .preinstanced import RoleManagerType
 
 # color
@@ -30,6 +31,13 @@ from .preinstanced import RoleManagerType
 parse_color = flag_parser_factory('color', Color)
 put_color_into = flag_optional_putter_factory('color', Color())
 validate_color = flag_validator_factory('color', Color)
+
+# flags
+
+parse_flags = flag_parser_factory('flags', RoleFlag)
+put_flags_into = flag_optional_putter_factory('flags', RoleFlag())
+validate_flags = flag_validator_factory('flags', RoleFlag)
+
 
 # guild_id
 

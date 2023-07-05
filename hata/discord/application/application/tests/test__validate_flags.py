@@ -4,29 +4,49 @@ from ..fields import validate_flags
 from ..flags import ApplicationFlag
 
 
-def test__validate_flags__0():
+def iter_options__passing():
+    yield 1, ApplicationFlag(1)
+    yield ApplicationFlag(1), ApplicationFlag(1)
+
+
+@vampytest._(vampytest.call_from(iter_options__passing()).returning_last())
+def test__validate_flags__passing(input_value):
     """
     Tests whether `validate_flags` works as intended.
     
     Case: passing.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        The object to validate.
+    
+    Returns
+    -------
+    value : ``ApplicationFlag``
+        The validated value.
     """
-    for input_value, expected_output in (
-        (1, ApplicationFlag(1)),
-        (ApplicationFlag(1), ApplicationFlag(1)),
-    ):
-        output = validate_flags(input_value)
-        vampytest.assert_instance(output, ApplicationFlag)
-        vampytest.assert_eq(output, expected_output)
+    output = validate_flags(input_value)
+    vampytest.assert_instance(output, ApplicationFlag)
+    return output
 
 
-def test__validate_flags__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with('a')
+def test__validate_flags__value_error(input_value):
     """
     Tests whether `validate_flags` works as intended.
     
     Case: type error
+    
+    Parameters
+    ----------
+    input_value : `object`
+        The object to validate.
+    
+    Raises
+    ------
+    TypeError
+        The raises exception.
     """
-    for input_value in (
-        'a',
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_flags(input_value)
+    validate_flags(input_value)

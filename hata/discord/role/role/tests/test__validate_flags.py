@@ -1,12 +1,12 @@
 import vampytest
 
 from ..fields import validate_flags
-from ..flags import UserFlag
+from ..flags import RoleFlag
 
 
 def iter_options__passing():
-    yield 1, UserFlag(1)
-    yield UserFlag(1), UserFlag(1)
+    yield 1, RoleFlag(1)
+    yield RoleFlag(1), RoleFlag(1)
 
 
 @vampytest._(vampytest.call_from(iter_options__passing()).returning_last())
@@ -23,11 +23,11 @@ def test__validate_flags__passing(input_value):
     
     Returns
     -------
-    value : ``UserFlag``
+    value : ``RoleFlag``
         The validated value.
     """
     output = validate_flags(input_value)
-    vampytest.assert_instance(output, UserFlag)
+    vampytest.assert_instance(output, RoleFlag)
     return output
 
 

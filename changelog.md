@@ -18,6 +18,10 @@
 - `Client.forum_tag_delete` now allows media channel too.
 - `Client.forum_tag_edit` now allows media channel too.
 - `Client.forum_tag_create` now allows media channel too.
+- Add `RoleFlag`.
+- Add `Role.flags`.
+- Add `RoleFlags` change converter to audit logs.
+- Add `flags` parameter to `Client.role_create` and `.role_edit`.
 
 ## 1.3.32 *\[2023-07-04\]*
 

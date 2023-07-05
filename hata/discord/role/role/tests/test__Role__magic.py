@@ -7,6 +7,7 @@ from ....permission import Permission
 
 from ...role_manager_metadata import RoleManagerMetadataBot
 
+from ..flags import RoleFlag
 from ..role import Role
 from ..preinstanced import RoleManagerType
 
@@ -18,6 +19,7 @@ def test__Role__hash():
     role_id = 202211040016
     
     color = Color(123)
+    flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBot(bot_id = 202211040017)
     manager_type = RoleManagerType.bot
@@ -30,6 +32,7 @@ def test__Role__hash():
     
     keyword_parameters = {
         'color': color,
+        'flags': flags,
         'icon': icon,
         'manager': (manager_type, manager_metadata),
         'mentionable': mentionable,
@@ -52,6 +55,7 @@ def test__Role__repr():
     Tests whether ``Role.__repr__`` works as intended.
     """
     color = Color(123)
+    flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBot(bot_id = 202211040019)
     manager_type = RoleManagerType.bot
@@ -64,6 +68,7 @@ def test__Role__repr():
     
     role = Role(
         color = color,
+        flags = flags,
         icon = icon,
         manager = (manager_type, manager_metadata),
         mentionable = mentionable,
@@ -84,6 +89,7 @@ def test__Role__eq():
     role_id = 202211040020
     
     color = Color(123)
+    flags = RoleFlag(12)
     icon = None
     manager_metadata = RoleManagerMetadataBot(bot_id = 202211040021)
     manager_type = RoleManagerType.bot
@@ -96,6 +102,7 @@ def test__Role__eq():
     
     keyword_parameters = {
         'color': color,
+        'flags': flags,
         'icon': icon,
         'manager': (manager_type, manager_metadata),
         'mentionable': mentionable,
@@ -115,6 +122,7 @@ def test__Role__eq():
     
     for field_name, field_value in (
         ('color', Color(666)),
+        ('flags', RoleFlag(11)),
         ('icon', Icon(IconType.animated, 12)),
         ('manager', None),
         ('mentionable', False),
@@ -135,6 +143,7 @@ def test__Role__format():
     role_id = 202211040022
     
     color = Color(123)
+    flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBot(bot_id = 202211040023)
     manager_type = RoleManagerType.bot
@@ -147,6 +156,7 @@ def test__Role__format():
     
     keyword_parameters = {
         'color': color,
+        'flags': flags,
         'icon': icon,
         'manager': (manager_type, manager_metadata),
         'mentionable': mentionable,

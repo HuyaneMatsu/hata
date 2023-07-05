@@ -8,6 +8,7 @@ from ....permission import Permission
 
 from ...role_manager_metadata import RoleManagerMetadataBot
 
+from ..flags import RoleFlag
 from ..role import Role
 from ..preinstanced import RoleManagerType
 
@@ -22,6 +23,7 @@ def test__Role__from_data__0():
     guild_id = 202211040008
     
     color = Color(123)
+    flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBot(bot_id = 202211040009)
     manager_type = RoleManagerType.bot
@@ -35,6 +37,7 @@ def test__Role__from_data__0():
     data = {
         'id': str(role_id),
         'color': int(color),
+        'flags': int(flags),
         'icon': icon.as_base_16_hash,
         'managed': True,
         'tags': manager_metadata.to_data(),
@@ -53,6 +56,7 @@ def test__Role__from_data__0():
     vampytest.assert_eq(role.guild_id, guild_id)
     
     vampytest.assert_eq(role.color, color)
+    vampytest.assert_eq(role.flags, flags)
     vampytest.assert_eq(role.icon, icon)
     vampytest.assert_eq(role.manager_metadata, manager_metadata)
     vampytest.assert_is(role.manager_type, manager_type)
@@ -133,6 +137,7 @@ def test__Role__to_data__1():
     role_id = 202211040012
     
     color = Color(123)
+    flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBot(bot_id = 202212170026)
     manager_type = RoleManagerType.bot
@@ -146,6 +151,7 @@ def test__Role__to_data__1():
     role = Role.precreate(
         role_id,
         color = color,
+        flags = flags,
         icon = icon,
         manager = (manager_type, manager_metadata),
         mentionable = mentionable,
@@ -164,6 +170,7 @@ def test__Role__to_data__1():
         {
             'id': str(role_id),
             'color': int(color),
+            'flags': int(flags),
             'icon': icon.as_base_16_hash,
             'managed': True,
             'tags': manager_metadata.to_data(),
@@ -184,6 +191,7 @@ def test__Role__set_attributes():
     role_id = 202211040013
     
     color = Color(123)
+    flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBot(bot_id = 202212170027)
     manager_type = RoleManagerType.bot
@@ -200,6 +208,7 @@ def test__Role__set_attributes():
     
     data = {
         'color': int(color),
+        'flags': int(flags),
         'icon': icon.as_base_16_hash,
         'managed': True,
         'tags': manager_metadata.to_data(),
@@ -214,6 +223,7 @@ def test__Role__set_attributes():
     role._set_attributes(data)
     
     vampytest.assert_eq(role.color, color)
+    vampytest.assert_eq(role.flags, flags)
     vampytest.assert_eq(role.icon, icon)
     vampytest.assert_eq(role.manager_metadata, manager_metadata)
     vampytest.assert_is(role.manager_type, manager_type)
@@ -232,6 +242,7 @@ def test__Role__update_attributes():
     role_id = 202211040014
     
     color = Color(123)
+    flags = RoleFlag(12)
     icon = Icon(IconType.static, 2)
     manager_metadata = RoleManagerMetadataBot(bot_id = 202212170028)
     manager_type = RoleManagerType.bot
@@ -249,6 +260,7 @@ def test__Role__update_attributes():
     
     data = {
         'color': int(color),
+        'flags': int(flags),
         'icon': icon.as_base_16_hash,
         'managed': True,
         'tags': manager_metadata.to_data(),
@@ -263,6 +275,7 @@ def test__Role__update_attributes():
     role._update_attributes(data)
     
     vampytest.assert_eq(role.color, color)
+    vampytest.assert_eq(role.flags, flags)
     vampytest.assert_eq(role.icon, icon)
     vampytest.assert_eq(role.manager_metadata, manager_metadata)
     vampytest.assert_is(role.manager_type, manager_type)
@@ -281,25 +294,29 @@ def test__Role__difference_update_attributes():
     role_id = 202211040015
     
     old_color = Color(123)
-    new_color = Color(999)
+    old_flags = RoleFlag(12)
     old_icon = Icon(IconType.static, 2)
-    new_icon = None
-    old_mentionable = True
-    new_mentionable = False
-    old_name = 'holo'
-    new_name = 'kokoro'
     old_permissions = Permission(555)
-    new_permissions = Permission(6666)
+    old_name = 'holo'
+    old_mentionable = True
     old_position = 6
-    new_position = 4
     old_separated = True
-    new_separated = False
     old_unicode_emoji = None
+    
+    new_color = Color(999)
+    new_flags = RoleFlag(11)
+    new_icon = None
+    new_mentionable = False
+    new_name = 'kokoro'
+    new_permissions = Permission(6666)
+    new_position = 4
+    new_separated = False
     new_unicode_emoji = BUILTIN_EMOJIS['heart']
     
     role = Role.precreate(
         role_id,
         color = old_color,
+        flags = old_flags,
         icon = old_icon,
         mentionable = old_mentionable,
         name = old_name,
@@ -312,6 +329,7 @@ def test__Role__difference_update_attributes():
     data = {
         'id': str(role_id),
         'color': int(new_color),
+        'flags': int(new_flags),
         'icon': new_icon,
         'mentionable': new_mentionable,
         'name': new_name,
@@ -324,6 +342,7 @@ def test__Role__difference_update_attributes():
     old_attributes = role._difference_update_attributes(data)
     
     vampytest.assert_eq(role.color, new_color)
+    vampytest.assert_eq(role.flags, new_flags)
     vampytest.assert_eq(role.icon, new_icon)
     vampytest.assert_eq(role.mentionable, new_mentionable)
     vampytest.assert_eq(role.name, new_name)
@@ -332,20 +351,17 @@ def test__Role__difference_update_attributes():
     vampytest.assert_eq(role.separated, new_separated)
     vampytest.assert_is(role.unicode_emoji, new_unicode_emoji)
     
-    vampytest.assert_in('color', old_attributes)
-    vampytest.assert_in('icon', old_attributes)
-    vampytest.assert_in('mentionable', old_attributes)
-    vampytest.assert_in('name', old_attributes)
-    vampytest.assert_in('permissions', old_attributes)
-    vampytest.assert_in('position', old_attributes)
-    vampytest.assert_in('separated', old_attributes)
-    vampytest.assert_in('unicode_emoji', old_attributes)
-    
-    vampytest.assert_eq(old_attributes['color'], old_color)
-    vampytest.assert_eq(old_attributes['icon'], old_icon)
-    vampytest.assert_eq(old_attributes['mentionable'], old_mentionable)
-    vampytest.assert_eq(old_attributes['name'], old_name)
-    vampytest.assert_eq(old_attributes['permissions'], old_permissions)
-    vampytest.assert_eq(old_attributes['position'], old_position)
-    vampytest.assert_eq(old_attributes['separated'], old_separated)
-    vampytest.assert_is(old_attributes['unicode_emoji'], old_unicode_emoji)
+    vampytest.assert_eq(
+        old_attributes,
+        {
+            'color': old_color,
+            'flags': old_flags,
+            'icon': old_icon,
+            'mentionable': old_mentionable,
+            'name': old_name,
+            'permissions': old_permissions,
+            'position': old_position,
+            'separated': old_separated,
+            'unicode_emoji': old_unicode_emoji,
+        },
+    )

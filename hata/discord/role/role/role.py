@@ -15,13 +15,14 @@ from ..role_manager_metadata import RoleManagerMetadataBase
 
 from .constants import ROLE_MANAGER_DEFAULT
 from .fields import (
-    parse_color, parse_id, parse_manager, parse_mentionable, parse_name, parse_permissions, parse_position,
-    parse_separated, parse_unicode_emoji, put_color_into, put_id_into, put_manager_into, put_mentionable_into,
-    put_name_into, put_permissions_into, put_position_into, put_separated_into, put_unicode_emoji_into, validate_color,
-    validate_id, validate_manager, validate_manager_metadata, validate_manager_type, validate_mentionable,
-    validate_name, validate_permissions, validate_position, validate_separated, validate_unicode_emoji,
-    validate_guild_id
+    parse_color, parse_flags, parse_id, parse_manager, parse_mentionable, parse_name, parse_permissions, parse_position,
+    parse_separated, parse_unicode_emoji, put_color_into, put_flags_into, put_id_into, put_manager_into,
+    put_mentionable_into, put_name_into, put_permissions_into, put_position_into, put_separated_into,
+    put_unicode_emoji_into, validate_color, validate_flags, validate_id, validate_manager, validate_manager_metadata,
+    validate_manager_type, validate_mentionable, validate_name, validate_permissions, validate_position,
+    validate_separated, validate_unicode_emoji, validate_guild_id
 )
+from .flags import RoleFlag
 from .preinstanced import RoleManagerType
 
 
@@ -34,6 +35,7 @@ ROLE_ICON = IconSlot(
 
 PRECREATE_FIELDS = {
     'color': ('color', validate_color),
+    'flags': ('flags', validate_flags),
     'manager_metadata': ('manager_metadata', validate_manager_metadata),
     'manager_type': ('manager_type', validate_manager_type),
     'mentionable': ('mentionable', validate_mentionable),
@@ -54,6 +56,9 @@ class Role(DiscordEntity, immortal = True):
     color : ``Color``
         The role's color. If the color equals to `Color(0)`, then it is ignored meanwhile calculating towards a
         user's display color.
+    
+    flags : ``RoleFlag``
+        The role flags.
     
     icon_hash : `int`
         The guild's icon's hash in `uint128`.
@@ -98,8 +103,8 @@ class Role(DiscordEntity, immortal = True):
         Mutually exclusive with ``.icon_hash`` and ``.icon_type``.
     """
     __slots__ = (
-        'color', 'guild_id', 'manager_metadata', 'manager_type', 'mentionable', 'name', 'permissions', 'position',
-        'separated', 'unicode_emoji'
+        'color', 'flags', 'guild_id', 'manager_metadata', 'manager_type', 'mentionable', 'name', 'permissions',
+        'position', 'separated', 'unicode_emoji'
     )
     
     icon = ROLE_ICON
@@ -109,6 +114,7 @@ class Role(DiscordEntity, immortal = True):
         cls,
         *,
         color = ...,
+        flags = ...,
         icon = ...,
         manager = ...,
         mentionable = ...,
@@ -125,6 +131,9 @@ class Role(DiscordEntity, immortal = True):
         ----------
         color : `int`, ``Color``, Optional (Keyword only)
             The role's color.
+        
+        flags : ``RoleFlag``, `int`, Optional (Keyword only)
+            The role's flags.
         
         icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The role's icon.
@@ -171,6 +180,12 @@ class Role(DiscordEntity, immortal = True):
             color = Color()
         else:
             color = validate_color(color)
+        
+        # flags
+        if flags is ...:
+            flags = RoleFlag()
+        else:
+            flags = validate_flags(flags)
         
         # icon
         if icon is ...:
@@ -230,6 +245,7 @@ class Role(DiscordEntity, immortal = True):
         
         self = object.__new__(cls)
         self.color = color
+        self.flags = flags
         self.guild_id = 0
         self.icon = icon
         self.id = 0
@@ -313,6 +329,9 @@ class Role(DiscordEntity, immortal = True):
         # color
         put_color_into(self.color, data, defaults)
         
+        # flags
+        put_flags_into(self.flags, data, defaults)
+        
         # icon
         type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
         
@@ -357,6 +376,7 @@ class Role(DiscordEntity, immortal = True):
             Received role data.
         """
         self.color = parse_color(data)
+        self.flags = parse_flags(data)
         self._set_icon(data)
         self.manager_type, self.manager_metadata = parse_manager(data)
         self.mentionable = parse_mentionable(data)
@@ -387,9 +407,12 @@ class Role(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
-        color : `int`, ``Color``, Optional (Keyword only)
+        color : ``Color``, `int`, Optional (Keyword only)
             The role's color.
-
+        
+        flags : ``RoleFlag``, `int`, Optional (Keyword only)
+            The role's flags.
+        
         icon : `None`, ``Icon``, `str`, Optional (Keyword only)
             The role's icon.
             
@@ -516,6 +539,9 @@ class Role(DiscordEntity, immortal = True):
         # color
         self.color = parse_color(data)
         
+        # flags
+        self.flags = parse_flags(data)
+        
         # icon
         self._set_icon(data)
         
@@ -604,6 +630,8 @@ class Role(DiscordEntity, immortal = True):
         +===============+=======================+
         | color         | ``Color``             |
         +---------------+-----------------------+
+        | flags         | ``RoleFlag``          |
+        +---------------+-----------------------+
         | icon          | ``Icon``              |
         +---------------+-----------------------+
         | managed       | `bool`                |
@@ -630,6 +658,12 @@ class Role(DiscordEntity, immortal = True):
         if self.color != color:
             old_attributes['color'] = self.color
             self.color = color
+        
+        # flags
+        flags = parse_flags(data)
+        if self.flags != flags:
+            old_attributes['flags'] = self.flags
+            self.flags = flags
         
         # icon
         self._update_icon(data, old_attributes)
@@ -1005,6 +1039,7 @@ class Role(DiscordEntity, immortal = True):
         self.id = role_id
         
         self.color = Color()
+        self.flags = RoleFlag()
         self.guild_id = guild_id
         self.separated = False
         self.manager_metadata = ROLE_MANAGER_DEFAULT
@@ -1036,6 +1071,10 @@ class Role(DiscordEntity, immortal = True):
         """
         # color
         if self.color != other.color:
+            return False
+        
+        # flags
+        if self.flags != other.flags:
             return False
         
         # icon
@@ -1097,6 +1136,9 @@ class Role(DiscordEntity, immortal = True):
         # color
         hash_value ^= self.color
         
+        # flags
+        hash_value ^= self.flags << 16
+        
         # icon
         hash_value ^= hash(self.icon)
         
@@ -1125,12 +1167,12 @@ class Role(DiscordEntity, immortal = True):
         hash_value ^= self.position << 29
         
         # separated
-        hash_value ^= self.separated << 37
+        hash_value ^= self.separated << 5
         
         # unicode_emoji
         unicode_emoji = self.unicode_emoji
         if (unicode_emoji is not None):
-            hash_value ^= self.unicode_emoji.id << 38
+            hash_value ^= self.unicode_emoji.id << 6
         
         return hash_value
     
@@ -1145,6 +1187,7 @@ class Role(DiscordEntity, immortal = True):
         """
         new = object.__new__(type(self))
         new.color = self.color
+        new.flags = self.flags
         new.icon_hash = self.icon_hash
         new.icon_type = self.icon_type
         new.guild_id = 0
@@ -1164,6 +1207,7 @@ class Role(DiscordEntity, immortal = True):
         self,
         *,
         color = ...,
+        flags = ...,
         icon = ...,
         manager = ...,
         mentionable = ...,
@@ -1178,8 +1222,11 @@ class Role(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        color : `int`, ``Color``, Optional (Keyword only)
+        color : ``Color``, `int`, Optional (Keyword only)
             The role's color.
+        
+        flags : ``RoleFlag``, `int`, Optional (Keyword only)
+            The role's flags.
         
         icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The role's icon.
@@ -1237,6 +1284,12 @@ class Role(DiscordEntity, immortal = True):
             color = self.color
         else:
             color = validate_color(color)
+        
+        # flags
+        if flags is ...:
+            flags = self.flags
+        else:
+            flags = validate_flags(flags)
         
         # icon
         if icon is ...:
@@ -1296,6 +1349,7 @@ class Role(DiscordEntity, immortal = True):
         
         new = object.__new__(type(self))
         new.color = color
+        new.flags = flags
         new.guild_id = 0
         new.icon = icon
         new.id = 0

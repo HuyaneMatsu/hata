@@ -1,3 +1,5 @@
+from .audio_settings import *
+
 from .audio_source import *
 from .opus import *
 from .player import *
@@ -6,7 +8,10 @@ from .rtp_packet import *
 from .utils import *
 from .voice_client import *
 
+
 __all__ = (
+    *audio_settings.__all__,
+    
     *audio_source.__all__,
     *opus.__all__,
     *player.__all__,

@@ -40,12 +40,14 @@ class AudioStream(AudioSource):
     
     Class Attributes
     ----------------
+    AUDIO_SETTINGS : ``AudioSettings`` = `AUDIO_SETTINGS_DEFAULT`
+        Settings containing how the audio should be played.
     REPEATABLE : `bool` = `False`
         Whether the source can be repeated after it is exhausted once.
     """
     __slots__ = ('auto_decode', 'buffer', 'done', 'source', 'user', 'yield_decoded', 'voice_client')
     
-    def __init__(self, voice_client, user, *, auto_decode=False, yield_decoded=False):
+    def __init__(self, voice_client, user, *, auto_decode = False, yield_decoded = False):
         """
         Creates a new audio stream instance.
         

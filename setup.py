@@ -165,6 +165,7 @@ setup(
         'hata.discord.user.user',
         'hata.discord.user.voice_state',
         'hata.discord.voice',
+        'hata.discord.voice.audio_settings',
         'hata.discord.webhook',
         'hata.discord.webhook.webhook',
         'hata.discord.webhook.webhook_source_channel',

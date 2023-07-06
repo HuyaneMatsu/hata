@@ -22,6 +22,11 @@
 - Add `Role.flags`.
 - Add `RoleFlags` change converter to audit logs.
 - Add `flags` parameter to `Client.role_create` and `.role_edit`.
+- Add `AudioSetting`.
+- Add `RawAudio`.
+
+##### ext.plugin_loader
+- Test directories and files are not marked as plugins anymore.
 
 ## 1.3.32 *\[2023-07-04\]*
 

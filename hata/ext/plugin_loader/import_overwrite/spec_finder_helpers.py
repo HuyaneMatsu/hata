@@ -144,3 +144,27 @@ def find_spec_in_paths(full_name, paths):
                 return spec
     
     return None
+
+
+def is_spec_in_test_directory(module_specification):
+    """
+    Returns whether the module specification is a test directory or is in a test directory.
+    
+    Parameters
+    ----------
+    module_specification : ``ModuleSpec``
+        The module specification to check.
+    
+    Returns
+    -------
+    is_spec_in_test_directory : `bool`
+    """
+    parent = module_specification.parent
+    if parent is None:
+        return False
+    
+    for part in reversed(parent.split('.')):
+        if (part == 'tests') or part.startswith(('test_', 'tests_')) or part.endswith('_tests'):
+            return True
+    
+    return False

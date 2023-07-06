@@ -8,6 +8,8 @@ from types import ModuleType
 
 from .. import __file__ as hata_discord_init_file_path
 
+from .audio_settings import AUDIO_SETTINGS_DEFAULT
+
 opus = None
 
 class OpusError(Exception):
@@ -83,7 +85,7 @@ def load_opus():
     
     Raises
     ------
-    Any
+    BaseException
     """
     try:
         if sys.platform == 'win32':
@@ -184,14 +186,21 @@ except BaseException:
     pass
 
 
-SAMPLING_RATE = 48000 # this is the max sadly
-CHANNELS = 2
-FRAME_LENGTH = 20
-SAMPLE_SIZE = 4 # (bit_rate / 8) * CHANNELS (bit_rate == 16)
-SAMPLES_PER_FRAME = int(SAMPLING_RATE / 1000 * FRAME_LENGTH)
-FRAME_SIZE = SAMPLES_PER_FRAME * SAMPLE_SIZE
-BUFFER_SIZE = 3840
-BUFFER_TYPE = ctypes.c_char * BUFFER_SIZE
+def _set_default_encoder_settings(encoder):
+    """
+    Sets the default settings to the encoder.
+    
+    Parameters
+    ----------
+    encoder : `_ctypes.pointer.LP_EncoderStruct`
+        Pointer to the C level encoder.
+    """
+    opus.opus_encoder_control(encoder, SET_BITRATE, 131072)
+    opus.opus_encoder_control(encoder, SET_INBAND_FEC, 1)
+    opus.opus_encoder_control(encoder, SET_PACKET_LOSS_PERCENTAGE, 15)
+    opus.opus_encoder_control(encoder, SET_BANDWIDTH, BANDWIDTH_FULL)
+    opus.opus_encoder_control(encoder, SET_SIGNAL, SIGNAL_TYPE_MUSIC)
+        
 
 class OpusEncoder:
     """
@@ -199,20 +208,23 @@ class OpusEncoder:
     
     Attributes
     ----------
-    _buffer : `_ctypes.array.c_char_Array_3840`
+    _buffer : `CCharArrayType`
         A buffer used by the encoder.
     _encoder : `_ctypes.pointer.LP_EncoderStruct`
         Pointer to the C level encoder.
+    audio_settings : ``AudioSettings``
+        Audio settings describing how the encoder is set up / should be set up.
     """
-    __slots__ = ('_buffer', '_encoder', )
+    __slots__ = ('_buffer', '_encoder', 'audio_settings')
     
-    def __new__(cls):
+    def __new__(cls, *, audio_settings = ...):
         """
-        Creates a new opus decoder.
+        Creates a new opus encoder.
         
-        Returns
-        -------
-        self : ``OpusEncoder``
+        Parameters
+        ----------
+        audio_settings : ``AudioSettings``, Optional (Keyword only)
+            Audio settings describing how the encoder should be set up.
         
         Raises
         ------
@@ -222,24 +234,27 @@ class OpusEncoder:
         if opus is None:
             raise RuntimeError(f'{cls.__name__} cannot be created if opus is not loaded.')
         
-        encoder = opus.opus_encoder_create(SAMPLING_RATE, CHANNELS, APPLICATION_AUDIO, ctypes.byref(ctypes.c_int()))
+        if audio_settings is ...:
+            audio_settings = AUDIO_SETTINGS_DEFAULT
+        
+        encoder = opus.opus_encoder_create(
+            audio_settings.sampling_rate, audio_settings.channels, APPLICATION_AUDIO, ctypes.byref(ctypes.c_int())
+        )
+        _set_default_encoder_settings(encoder)
         
         self = object.__new__(cls)
         self._encoder = encoder
-        self._buffer = BUFFER_TYPE()
-        
-        opus.opus_encoder_control(encoder, SET_BITRATE, 131072)
-        opus.opus_encoder_control(encoder, SET_INBAND_FEC, 1)
-        opus.opus_encoder_control(encoder, SET_PACKET_LOSS_PERCENTAGE, 15)
-        opus.opus_encoder_control(encoder, SET_BANDWIDTH, BANDWIDTH_FULL)
-        opus.opus_encoder_control(encoder, SET_SIGNAL, SIGNAL_TYPE_MUSIC)
+        self._buffer = audio_settings.buffer_type()
+        self.audio_settings = audio_settings
         
         return self
+    
     
     def __del__(self):
         """Unallocates `self._encoder`."""
         opus.opus_encoder_destroy(self._encoder)
         self._encoder = None
+    
     
     def set_bitrate(self, kbps):
         """
@@ -255,7 +270,8 @@ class OpusEncoder:
             kbps = 512
         
         opus.opus_encoder_control(self._encoder, SET_BITRATE, kbps << 10)
-
+    
+    
     def set_bandwidth(self, bandwidth):
         """
         Set's the band-type of the encoder.
@@ -282,6 +298,7 @@ class OpusEncoder:
         """
         opus.opus_encoder_control(self._encoder, SET_BANDWIDTH, bandwidth)
     
+    
     def set_signal_type(self, signal_type):
         """
         Sets the signal type of the encoder.
@@ -305,6 +322,7 @@ class OpusEncoder:
         """
         opus.opus_encoder_control(self._encoder, SET_SIGNAL, signal_type)
     
+    
     def set_inband_fec(self, enabled):
         """
         Sets the in-band forward error correction of the encoder.
@@ -314,7 +332,8 @@ class OpusEncoder:
         enabled : `bool`
             Whether in-band fec should be enabled.
         """
-        opus.opus_encoder_control(self._encoder, SET_INBAND_FEC, int(enabled)) #do we really need to switch from sub-int-type to int-type?
+        # do we really need to switch from sub-int-type to int-type?
+        opus.opus_encoder_control(self._encoder, SET_INBAND_FEC, int(enabled)) 
     
     def set_expected_packet_loss_percent(self, percentage):
         """
@@ -334,6 +353,7 @@ class OpusEncoder:
         
         opus.opus_encoder_control(self._encoder, SET_PACKET_LOSS_PERCENTAGE, percentage)
     
+    
     def encode(self, data):
         """
         Encodes the given `PCM` (Pulse Code Modulation) data.
@@ -350,8 +370,33 @@ class OpusEncoder:
         data = ctypes.cast(data, ctypes.POINTER(ctypes.c_int16))
         
         buffer = self._buffer
-        end = opus.opus_encode(self._encoder, data, SAMPLES_PER_FRAME, buffer, max_data_bytes)
+        end = opus.opus_encode(self._encoder, data, self.audio_settings.samples_per_frame, buffer, max_data_bytes)
         return buffer[:end]
+    
+    
+    def set_audio_settings(self, audio_settings):
+        """
+        Sets a new audio settings to the opus encoder.
+        
+        Parameters
+        ----------
+        audio_settings : ``AudioSettings``
+            The new audio settings to set.
+        """
+        if audio_settings == self.audio_settings:
+            return
+        
+        opus.opus_encoder_destroy(self._encoder)
+        
+        encoder = opus.opus_encoder_create(
+            audio_settings.sampling_rate, audio_settings.channels, APPLICATION_AUDIO, ctypes.byref(ctypes.c_int())
+        )
+        _set_default_encoder_settings(encoder)
+        
+        self._encoder = encoder
+        self._buffer = audio_settings.buffer_type()
+        self.audio_settings = audio_settings
+
 
 class OpusDecoder:
     """
@@ -359,20 +404,23 @@ class OpusDecoder:
     
     Attributes
     ----------
-    _buffer : `_ctypes.array.c_char_Array_3840`
-        A buffer used by the encoder.
+    _buffer : `CCharArrayType`
+        A buffer used by the decoder.
     _decoder : `_ctypes.pointer.LP_DecoderStruct`
         Pointer to the C level decoder.
+    audio_settings : ``AudioSettings``
+        Audio settings describing how the decoder is set up / should be set up.
     """
-    __slots__ = ('_buffer', '_decoder',)
+    __slots__ = ('audio_settings', '_buffer', '_decoder',)
     
-    def __new__(cls):
+    def __new__(cls, *, audio_settings = ...):
         """
         Creates a new opus decoder.
         
-        Returns
-        -------
-        self : ``OpusDecoder``
+        Parameters
+        ----------
+        audio_settings : ``AudioSettings``, Optional (Keyword only)
+            Audio settings describing how the decoder should be set up.
         
         Raises
         ------
@@ -382,21 +430,25 @@ class OpusDecoder:
         if opus is None:
             raise RuntimeError(f'{cls.__name__} cannot be created if opus is not loaded.')
         
-        decoder = opus.opus_decoder_create(SAMPLING_RATE, CHANNELS, ctypes.byref(ctypes.c_int()))
+        if audio_settings is ...:
+            audio_settings = AUDIO_SETTINGS_DEFAULT
+        
+        decoder = opus.opus_decoder_create(audio_settings.sampling_rate, audio_settings.channels, ctypes.byref(ctypes.c_int()))
         
         self = object.__new__(cls)
         self._decoder = decoder
-        self._buffer = BUFFER_TYPE()
-        
+        self._buffer = audio_settings.buffer_type()
+        self.audio_settings = audio_settings
         return self
+    
     
     def __del__(self):
         """Unallocates `self._decoder`."""
         opus.opus_decoder_destroy(self._decoder)
         self._decoder = None
     
-    @staticmethod
-    def packet_get_frame_count(data):
+    
+    def packet_get_frame_count(self, data):
         """
         Returns the number of frames of the given packet.
         
@@ -410,8 +462,8 @@ class OpusDecoder:
         """
         return opus.opus_packet_get_frame_count(data, len(data))
     
-    @staticmethod
-    def packet_get_channel_count(data):
+    
+    def packet_get_channel_count(self, data):
         """
         Returns the number of channels of the given packet.
         
@@ -423,10 +475,10 @@ class OpusDecoder:
         -------
         channel_count : `int`
         """
-        return opus.opus_packet_get_channel_count(data) #number of channels
-
-    @staticmethod
-    def packet_get_samples_per_frame(data):
+        return opus.opus_packet_get_channel_count(data) # number of channels
+    
+    
+    def packet_get_samples_per_frame(self, data):
         """
         Returns the number of samples per frame for the given data.
         
@@ -438,7 +490,8 @@ class OpusDecoder:
         -------
         samples_per_frame : `int`
         """
-        return opus.opus_packet_get_samples_per_frame(data, SAMPLING_RATE)
+        return opus.opus_packet_get_samples_per_frame(data, self.audio_settings.sampling_rate)
+    
     
     def set_gain(self, adjustment): #sets decibel
         """
@@ -456,6 +509,7 @@ class OpusDecoder:
         
         opus.opus_decoder_control(self._decoder, SET_GAIN, adjustment)
     
+    
     def set_volume_percent(self, percent):
         """
         Sets the output's volume percentage of the decoder.
@@ -465,6 +519,7 @@ class OpusDecoder:
         percent : `float`
         """
         return self.set_gain(20.0 * log10(percent)) # amplitude ratio
+    
     
     def _get_last_packet_duration(self):
         """
@@ -477,6 +532,7 @@ class OpusDecoder:
         obj = ctypes.c_int32()
         opus.opus_decoder_control(self._decoder, GET_LAST_PACKET_DURATION, ctypes.byref(obj))
         return obj.value
+    
     
     def decode(self, data):
         """
@@ -496,4 +552,27 @@ class OpusDecoder:
         buffer_ptr = ctypes.cast(buffer, ctypes.POINTER(ctypes.c_int16))
         
         end = opus.opus_decode(self._decoder, data, len(data), buffer_ptr, frame_size, True)
-        return bytes(buffer[:((end << 1) * CHANNELS)])
+        return bytes(buffer[:((end << 1) * self.audio_settings.channels)])
+    
+    
+    def set_audio_settings(self, audio_settings):
+        """
+        Sets a new audio settings to the opus decoder.
+        
+        Parameters
+        ----------
+        audio_settings : ``AudioSettings``
+            The new audio settings to set.
+        """
+        if audio_settings == self.audio_settings:
+            return
+        
+        opus.opus_decoder_destroy(self._decoder)
+        
+        decoder = opus.opus_decoder_create(
+            audio_settings.sampling_rate, audio_settings.channels, ctypes.byref(ctypes.c_int())
+        )
+        
+        self._decoder = decoder
+        self._buffer = audio_settings.buffer_type()
+        self.audio_settings = audio_settings

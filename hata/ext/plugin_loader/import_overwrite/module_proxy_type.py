@@ -7,6 +7,9 @@ from scarletio import get_last_module_frame, include
 
 from ..constants import PLUGINS
 
+from .spec_finder_helpers import is_spec_in_test_directory
+
+
 PluginModuleSpecType = include('PluginModuleSpecType')
 
 
@@ -41,21 +44,27 @@ class PluginModuleProxyType(ModuleType):
             '__file__',
             '__cached__',
         }:
-            pass
+            return
         
-        elif isinstance(attribute_value, PluginModuleProxyType):
+        if isinstance(attribute_value, PluginModuleProxyType):
             spec = self.__spec__
             
             module = spec.get_module()
             if (module is not None):
                 setattr(module, attribute_name, attribute_value)
+            
+            return
         
-        else:
-            warnings.warn(
-                f'Unallowed attribute assignment: `{attribute_name} = {attribute_value!r}` of type '
-                f'`{type(attribute_value).__name__}` to `{self.__spec__.name}`',
-                stacklevel = 2,
-            )
+        if isinstance(attribute_value, ModuleType):
+            spec = attribute_value.__spec__
+            if (spec is None) or is_spec_in_test_directory(spec):
+                return
+        
+        warnings.warn(
+            f'Unallowed attribute assignment: `{attribute_name} = {attribute_value!r}` of type '
+            f'`{type(attribute_value).__name__}` to `{self.__spec__.name}`',
+            stacklevel = 2,
+        )
     
     
     def __getattr__(self, attribute_name):

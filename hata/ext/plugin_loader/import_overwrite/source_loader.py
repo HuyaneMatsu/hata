@@ -8,6 +8,7 @@ from scarletio import include
 from .module_proxy_type import PluginModuleProxyType
 from .utils import create_module_from_spec
 
+
 import_plugin = include('import_plugin')
 
 
@@ -89,5 +90,12 @@ class PluginSourceLoader(SourceFileLoader):
                 )
             
             import_plugin(self.name)
+            
         else:
-            SourceFileLoader.exec_module(self, self._module)
+            code = self.get_code(module.__name__)
+            if code is None:
+                raise ImportError(
+                    f'cannot load module {module.__name__} when `.get_code` returns None.'
+                )
+            
+            exec(code, module.__dict__)

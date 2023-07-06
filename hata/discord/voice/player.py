@@ -7,12 +7,6 @@ from scarletio import CancelledError, Event, Task, sleep, write_exception_async
 
 from ..core import KOKORO
 
-from .opus import FRAME_LENGTH, SAMPLES_PER_FRAME
-
-
-PLAYER_DELAY = FRAME_LENGTH / 1000.0
-
-del FRAME_LENGTH
 
 class AudioPlayer:
     """
@@ -56,6 +50,7 @@ class AudioPlayer:
         self.done = False
         
         self.task = Task(KOKORO, self.run())
+    
     
     async def run(self):
         """
@@ -129,15 +124,14 @@ class AudioPlayer:
                 
                 voice_client.send_packet(packet)
                 
-                timestamp = voice_client._timestamp + SAMPLES_PER_FRAME
+                timestamp = voice_client._timestamp + source.AUDIO_SETTINGS.samples_per_frame
                 if timestamp > 4294967295:
                     timestamp = 0
                 voice_client._timestamp = timestamp
                 
-                delay = PLAYER_DELAY + ((start + PLAYER_DELAY * loops) - perf_counter())
-                if delay < 0.0:
-                    continue
+                delay = (start + source.AUDIO_SETTINGS.frame_length * 0.001 * (loops + 1)) - perf_counter()
                 await sleep(delay, KOKORO)
+        
         
         except BaseException as err:
             if voice_client.player is self:
@@ -178,6 +172,7 @@ class AudioPlayer:
                 queue = voice_client.queue
                 if queue:
                     voice_client.player = type(self)(voice_client, queue.pop(0))
+    
     
     async def update(self, actual_source):
         """
@@ -223,7 +218,9 @@ class AudioPlayer:
             await actual_source.cleanup()
         
         await new_source.postprocess()
+        self.voice_client._encoder.set_audio_settings(new_source.AUDIO_SETTINGS)
         return new_source
+    
     
     def pause(self):
         """
@@ -231,6 +228,7 @@ class AudioPlayer:
         """
         self.resumed_waiter.clear()
         self.should_update = True
+    
     
     def resume(self):
         """
@@ -240,6 +238,7 @@ class AudioPlayer:
         if not resumed_waiter.is_set():
             resumed_waiter.set()
             self.should_update = True
+    
     
     def stop(self):
         """
@@ -255,6 +254,7 @@ class AudioPlayer:
         
         self.should_update = True
         self.resumed_waiter.set()
+    
     
     def set_source(self, source):
         """

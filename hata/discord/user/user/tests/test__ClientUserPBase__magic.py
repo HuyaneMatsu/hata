@@ -66,8 +66,8 @@ def test__ClientUserPBase__hash():
     statuses = {'mobile': Status.online.value}
     
     user = ClientUserPBase._create_empty(user_id)
-    vampytest.assert_instance(repr(user), str)
-
+    vampytest.assert_instance(hash(user), int)
+    
     user = ClientUserPBase(
         avatar = avatar,
         avatar_decoration = avatar_decoration,
@@ -82,7 +82,7 @@ def test__ClientUserPBase__hash():
         status = status,
         statuses = statuses,
     )
-    vampytest.assert_instance(repr(user), str)
+    vampytest.assert_instance(hash(user), int)
 
 
 def test__ClientUserPBase__eq():

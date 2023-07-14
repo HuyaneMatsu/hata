@@ -28,6 +28,13 @@
 ##### ext.plugin_loader
 - Test directories and files are not marked as plugins anymore.
 
+#### ext.slash
+- Add `InteractionResponse.__eq__`.
+
+#### Bug Fixes
+
+- Fix `TypeError` in `User.__hash__`. Occurred at the case of partial users.
+
 ## 1.3.32 *\[2023-07-04\]*
 
 #### Improvements

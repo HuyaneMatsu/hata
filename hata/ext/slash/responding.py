@@ -401,10 +401,10 @@ class InteractionResponse:
     
     Attributes
     ----------
+    _abort : `bool`
+        Whether the slash response is derived from an ``abort`` call.
     _event : `None`, ``InteractionEvent``
         The interaction event to use instead of the default one.
-    _is_abort : `bool`
-        Whether the slash response is derived from an ``abort`` call.
     _message : `Ellipsis`, `None`, ``Message``.
         Whether a message should be edited instead of creating a new one.
     _parameters : `dict` of (`str`, `object`) items
@@ -422,7 +422,7 @@ class InteractionResponse:
         - `'suppress_embeds'`
         - `'tts'`
     """
-    __slots__ = ('_event', '_is_abort', '_message', '_parameters',)
+    __slots__ = ('_abort', '_event', '_message', '_parameters',)
     
     def __init__(
         self,
@@ -485,7 +485,7 @@ class InteractionResponse:
         tts : `bool`, Optional (Keyword only)
             Whether the message is text-to-speech.
         """
-        self._is_abort = False
+        self._abort = False
         self._parameters = parameters = {}
         self._message = message
         self._event = event
@@ -597,7 +597,7 @@ class InteractionResponse:
                 need_acknowledging = False
             elif ('file' in self._parameters):
                 need_acknowledging = True
-            elif self._is_abort:
+            elif self._abort:
                 need_acknowledging = False
             elif is_return:
                 need_acknowledging = False
@@ -641,7 +641,7 @@ class InteractionResponse:
                 (interaction_event.message is not None)
             )
         ):
-            if self._is_abort:
+            if self._abort:
                 # If we are aborting we acknowledge it (if not yet) and create a new message.
                 if interaction_event.is_unanswered():
                     yield client.interaction_component_acknowledge(interaction_event)
@@ -725,23 +725,70 @@ class InteractionResponse:
     
     def __repr__(self):
         """Returns the slash response's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' ']
-        if self._is_abort:
-            repr_parts.append('(abort) ')
+        repr_parts = ['<', self.__class__.__name__]
         
-        parameters = self._parameters
-        if parameters:
-            for key, value in parameters.items():
-                repr_parts.append(key)
-                repr_parts.append(' = ')
-                repr_parts.append(repr(value))
-                repr_parts.append(', ')
+        is_abort = self._abort
+        if self._abort:
+            repr_parts.append(' abort = ')
+            repr_parts.append(repr(is_abort))
             
-            repr_parts[-1] = '>'
+            field_added = True
         else:
-            repr_parts.append('>')
+            field_added = False
         
+        event = self._event
+        if (event is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' event = ')
+            repr_parts.append(repr(event))
+        
+        message = self._message
+        if (message is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' message = ')
+            repr_parts.append(repr(message))
+        
+        for key, value in self._parameters.items():
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' ')
+            repr_parts.append(key)
+            repr_parts.append(' = ')
+            repr_parts.append(repr(value))
+        
+        repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two interaction responses are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self._abort != other._abort:
+            return False
+        
+        if self._event is not other._event:
+            return False
+        
+        if self._message is not other._message:
+            return False
+        
+        if self._parameters != other._parameters:
+            return False
+        
+        return True
 
 
 def abort(
@@ -829,7 +876,7 @@ def abort(
         tts = tts,
     )
     
-    response._is_abort = True
+    response._abort = True
     raise InteractionAbortedError(response)
 
 

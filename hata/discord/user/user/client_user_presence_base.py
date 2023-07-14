@@ -430,17 +430,19 @@ class ClientUserPBase(ClientUserBase):
         if (activities is not None):
             hash_value ^= len(activities) << 2
             
-            for mask_shift, activity in zip(count(4, 4), activities, 3):
+            for mask_shift, activity in zip(count(4, 4), activities):
                 hash_value ^= hash(activity) | (0xf << mask_shift)
         
         # status
         hash_value ^= hash(self.status)
         
         # statuses
-        hash_value ^= hash(tuple(self.statsues.items()))
+        statuses = self.statuses
+        if (statuses is not None):
+            hash_value ^= hash(tuple(statuses.items()))
         
         return hash_value
-
+    
     
     @property
     @copy_docs(ClientUserBase.activity)

@@ -1062,10 +1062,14 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         result = []
         
-        query_parameters = {'after': 0}
+        query_parameters = {'after': 0, 'with_counts': True}
         while True:
-            data = await self.http.guild_get_all(query_parameters)
-            result.extend(create_partial_guild_from_data(guild_data) for guild_data in data)
+            data = await self.http.guild_get_chunk(query_parameters)
+            for guild_data in data:
+                guild = create_partial_guild_from_data(guild_data)
+                guild._update_counts_only(guild_data)
+                result.append(guild)
+            
             if len(data) < 100:
                 break
             

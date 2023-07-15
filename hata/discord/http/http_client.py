@@ -411,9 +411,9 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/auth/logout',
         )
     
-    async def guild_get_all(self, data):
+    async def guild_get_chunk(self, data):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.guild_get_all, NO_SPECIFIC_RATE_LIMITER),
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_get_chunk, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET,
             f'{API_ENDPOINT}/users/@me/guilds',
             params = data,

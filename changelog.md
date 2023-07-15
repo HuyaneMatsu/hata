@@ -1,3 +1,14 @@
+## 1.3.34 *\[2023-07-??\]*
+
+#### Improvements
+
+- `Client.guild_get_all` now also updates the guilds' approximate counts.
+
+#### Renames, Deprecation & Removals
+
+- Rename `DiscordHTTPClient.guild_get_all` to `.guild_get_chunk`.
+- Rename `RATE_LIMIT_GROUPS.guild_get_all` to `.guild_get_chunk`.
+
 ## 1.3.33 *\[2023-07-15\]*
 
 #### Improvements

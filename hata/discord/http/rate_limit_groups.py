@@ -1763,7 +1763,7 @@ Group Details
     - Limit : `OPT`
     - Resets after : `OPT`
 
-- guild_get_all
+- guild_get_chunk
     - Endpoint : `/users/@me/guilds`
     - Method : `GET`
     - Required auth : `bot`
@@ -2221,7 +2221,7 @@ channel_private_get_all = RateLimitGroup(optimistic = True)
 channel_private_create = RateLimitGroup.unlimited()
 client_connection_get_all = RateLimitGroup(optimistic = True)
 user_connection_get_all = RateLimitGroup(optimistic = True)
-guild_get_all = RateLimitGroup()
+guild_get_chunk = RateLimitGroup()
 user_guild_get_all = RateLimitGroup()
 guild_leave = RateLimitGroup.unlimited()
 relationship_friend_request = RateLimitGroup(optimistic = True) # untested

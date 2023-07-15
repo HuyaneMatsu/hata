@@ -15,7 +15,7 @@ async def ready(client):
     print(f'{client:f} is connected!')
 
 # Registered variables to extension loader, show up in each loaded extension file.
-add_default_plugin_variables(Sakuya=Sakuya)
+add_default_plugin_variables(Sakuya = Sakuya)
 # Adds the extensions file or the extensions files recursive in the directory
 register_plugin('modules')
 # Loads all the added extension files.

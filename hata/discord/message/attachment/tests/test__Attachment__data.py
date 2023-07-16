@@ -1,6 +1,7 @@
 import vampytest
 
 from ..attachment import Attachment
+from ..flags import AttachmentFlag
 
 from .test__Attachment__constructor import _assert_fields_set
 
@@ -15,6 +16,7 @@ def test__Attachment__from_data():
     content_type = 'application/json'
     description = 'Nue'
     duration = 12.6
+    flags = AttachmentFlag(12)
     height = 1000
     name = 'i miss you'
     size = 999
@@ -29,6 +31,7 @@ def test__Attachment__from_data():
         'content_type': content_type,
         'description': description,
         'duration_sec': duration,
+        'flags': int(flags),
         'height': height,
         'filename': name,
         'size': size,
@@ -49,6 +52,7 @@ def test__Attachment__from_data():
     vampytest.assert_eq(attachment.content_type, content_type)
     vampytest.assert_eq(attachment.description, description)
     vampytest.assert_eq(attachment.duration, duration)
+    vampytest.assert_eq(attachment.flags, flags)
     vampytest.assert_eq(attachment.height, height)
     vampytest.assert_eq(attachment.name, name)
     vampytest.assert_eq(attachment.size, size)
@@ -68,6 +72,7 @@ def test__Attachment__to_data():
     content_type = 'application/json'
     description = 'Nue'
     duration = 12.6
+    flags = AttachmentFlag(12)
     height = 1000
     name = 'i miss you'
     size = 999
@@ -82,6 +87,7 @@ def test__Attachment__to_data():
         content_type = content_type,
         description = description,
         duration = duration,
+        flags = flags,
         height = height,
         name = name,
         proxy_url = proxy_url,
@@ -102,6 +108,7 @@ def test__Attachment__to_data():
             'content_type': content_type,
             'description': description,
             'duration_sec': duration,
+            'flags': int(flags),
             'height': height,
             'filename': name,
             'size': size,

@@ -4,19 +4,22 @@ from ...bases import DiscordEntity
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
-    parse_content_type, parse_description, parse_duration, parse_height, parse_id, parse_name, parse_proxy_url,
-    parse_size, parse_temporary, parse_url, parse_waveform, parse_width, put_content_type_into, put_description_into,
-    put_duration_into, put_height_into, put_id_into, put_name_into, put_proxy_url_into, put_size_into,
-    put_temporary_into, put_url_into, put_waveform_into, put_width_into, validate_content_type, validate_description,
-    validate_duration, validate_height, validate_id, validate_name, validate_proxy_url, validate_size,
-    validate_temporary, validate_url, validate_waveform, validate_width
+    parse_content_type, parse_description, parse_duration, parse_flags, parse_height, parse_id, parse_name,
+    parse_proxy_url, parse_size, parse_temporary, parse_url, parse_waveform, parse_width, put_content_type_into,
+    put_description_into, put_duration_into, put_flags_into, put_height_into, put_id_into, put_name_into,
+    put_proxy_url_into, put_size_into, put_temporary_into, put_url_into, put_waveform_into, put_width_into,
+    validate_content_type, validate_description, validate_duration, validate_flags, validate_height, validate_id,
+    validate_name, validate_proxy_url, validate_size, validate_temporary, validate_url, validate_waveform,
+    validate_width
 )
+from .flags import AttachmentFlag
 
 
 PRECREATE_FIELDS = {
     'content_type': ('content_type', validate_content_type),
     'description': ('description', validate_description),
     'duration': ('duration', validate_duration),
+    'flags': ('flags', validate_flags),
     'height': ('height', validate_height),
     'name': ('name', validate_name),
     'proxy_url': ('proxy_url', validate_proxy_url),
@@ -49,6 +52,9 @@ class Attachment(DiscordEntity):
         The attachment's duration in seconds. Applicable for voice messages only.
         
         > Defaults to `0.0`.
+    
+    flags : ``AttachmentFlag``
+        Flags of the attachment.
     
     height : `int`
         The height of the attachment if applicable.
@@ -85,7 +91,7 @@ class Attachment(DiscordEntity):
         > Defaults to `0`.
     """
     __slots__ = (
-        'content_type', 'description', 'duration', 'height', 'name', 'proxy_url', 'size', 'temporary', 'url',
+        'content_type', 'description', 'duration', 'flags', 'height', 'name', 'proxy_url', 'size', 'temporary', 'url',
         'waveform', 'width'
     )
     
@@ -95,6 +101,7 @@ class Attachment(DiscordEntity):
         content_type = ...,
         description = ...,
         duration = ...,
+        flags = ...,
         height = ...,
         name = ...,
         size = ...,
@@ -112,10 +119,13 @@ class Attachment(DiscordEntity):
             The attachment's media type.
         
         description : `None`, `str`, Optional (Keyword only)
-            The attachment's duration in seconds.
+            Description for the file.
         
         duration : `float`, Optional (Keyword only)
-            The length of the file in seconds.
+            The attachment's duration in seconds.
+        
+        flags : ``AttachmentFlag``, `int`, Optional (Keyword only)
+            The attachment's flags.
         
         height : `int`, Optional (Keyword only)
             The height of the attachment if applicable.
@@ -162,6 +172,12 @@ class Attachment(DiscordEntity):
             duration = 0.0
         else:
             duration = validate_duration(duration)
+        
+        # flags
+        if flags is ...:
+            flags = AttachmentFlag()
+        else:
+            flags = validate_flags(flags)
         
         # height
         if height is ...:
@@ -211,6 +227,7 @@ class Attachment(DiscordEntity):
         self.content_type = content_type
         self.description = description
         self.duration = duration
+        self.flags = flags
         self.height = height
         self.id = 0
         self.name = name
@@ -230,13 +247,14 @@ class Attachment(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received attachment data.
         """
         self = object.__new__(cls)
         self.content_type = parse_content_type(data)
         self.description = parse_description(data)
         self.duration = parse_duration(data)
+        self.flags = parse_flags(data)
         self.height = parse_height(data)
         self.id = parse_id(data)
         self.name = parse_name(data)
@@ -322,6 +340,10 @@ class Attachment(DiscordEntity):
         if self.duration != other.duration:
             return False
         
+        # flags
+        if self.flags != other.flags:
+            return False
+        
         # height
         if self.height != other.height:
             return False
@@ -371,6 +393,9 @@ class Attachment(DiscordEntity):
         duration = self.duration
         if duration:
             hash_value ^= hash(duration)
+        
+        # flags
+        hash_value ^= self.flags << 3
         
         # height
         hash_value ^= self.height
@@ -425,47 +450,25 @@ class Attachment(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`)
+        data : `dict` of (`str`, `object`)
         """
         data = {}
         
-        # content_type
         put_content_type_into(self.content_type, data, defaults)
-        
-        # description
         put_description_into(self.description, data, defaults)
-        
-        # duration
         put_duration_into(self.duration, data, defaults)
-        
-        # height
+        put_flags_into(self.flags, data, defaults)
         put_height_into(self.height, data, defaults)
+        put_name_into(self.name, data, defaults)
+        put_size_into(self.size, data, defaults)
+        put_temporary_into(self.temporary, data, defaults)
+        put_url_into(self.url, data, defaults)
+        put_waveform_into(self.waveform, data, defaults)
+        put_width_into(self.width, data, defaults)
         
-        # id
         if include_internals:
             put_id_into(self.id, data, defaults)
-        
-        # name
-        put_name_into(self.name, data, defaults)
-        
-        # proxy_url
-        if include_internals:
             put_proxy_url_into(self.proxy_url, data, defaults)
-        
-        # size
-        put_size_into(self.size, data, defaults)
-        
-        # temporary
-        put_temporary_into(self.temporary, data, defaults)
-        
-        # url
-        put_url_into(self.url, data, defaults)
-        
-        # waveform
-        put_waveform_into(self.waveform, data, defaults)
-        
-        # width
-        put_width_into(self.width, data, defaults)
         
         return data
     
@@ -484,6 +487,7 @@ class Attachment(DiscordEntity):
         new.content_type = self.content_type
         new.description = self.description
         new.duration = self.duration
+        new.flags = self.flags
         new.height = self.height
         new.id = 0
         new.name = self.name
@@ -502,6 +506,7 @@ class Attachment(DiscordEntity):
         content_type = ...,
         description = ...,
         duration = ...,
+        flags = ...,
         height = ...,
         name = ...,
         size = ...,
@@ -525,6 +530,9 @@ class Attachment(DiscordEntity):
         
         duration : `float`, Optional (Keyword only)
             The attachment's duration in seconds.
+        
+        flags : ``AttachmentFlag``, `int`, Optional (Keyword only)
+            The attachment's flags.
         
         height : `int`, Optional (Keyword only)
             The height of the attachment if applicable.
@@ -568,6 +576,12 @@ class Attachment(DiscordEntity):
             duration = self.duration
         else:
             duration = validate_duration(duration)
+        
+        # flags
+        if flags is ...:
+            flags = self.flags
+        else:
+            flags = validate_flags(flags)
         
         # height
         if height is ...:
@@ -617,6 +631,7 @@ class Attachment(DiscordEntity):
         new.content_type = content_type
         new.description = description
         new.duration = duration
+        new.flags = flags
         new.height = height
         new.id = 0
         new.name = name
@@ -656,6 +671,9 @@ class Attachment(DiscordEntity):
         
         duration : `float`, Optional (Keyword only)
             The attachment's duration in seconds.
+        
+        flags : ``AttachmentFlag``, `int`, Optional (Keyword only)
+            The attachment's flags.
         
         height : `int`, Optional (Keyword only)
             The height of the attachment if applicable.
@@ -699,6 +717,7 @@ class Attachment(DiscordEntity):
         self.content_type = None
         self.description = None
         self.duration = 0.0
+        self.flags = AttachmentFlag()
         self.height = 0
         self.id = attachment_id
         self.name = ''

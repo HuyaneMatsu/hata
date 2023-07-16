@@ -1,6 +1,7 @@
 import vampytest
 
 from ..attachment import Attachment
+from ..flags import AttachmentFlag
 
 
 def test__Attachment__repr():
@@ -11,6 +12,7 @@ def test__Attachment__repr():
     content_type = 'application/json'
     description = 'Nue'
     duration = 12.6
+    flags = AttachmentFlag(12)
     height = 1000
     name = 'i miss you'
     size = 999
@@ -24,6 +26,7 @@ def test__Attachment__repr():
         content_type = content_type,
         description = description,
         duration = duration,
+        flags = flags,
         height = height,
         name = name,
         proxy_url = proxy_url,
@@ -44,6 +47,7 @@ def test__Attachment__hash():
     content_type = 'application/json'
     description = 'Nue'
     duration = 12.6
+    flags = AttachmentFlag(12)
     height = 1000
     name = 'i miss you'
     size = 999
@@ -58,6 +62,7 @@ def test__Attachment__hash():
         content_type = content_type,
         description = description,
         duration = duration,
+        flags = flags,
         height = height,
         name = name,
         proxy_url = proxy_url,
@@ -79,6 +84,7 @@ def test__Attachment__eq():
     content_type = 'application/json'
     description = 'Nue'
     duration = 12.6
+    flags = AttachmentFlag(12)
     height = 1000
     name = 'i miss you'
     size = 999
@@ -92,6 +98,7 @@ def test__Attachment__eq():
         'content_type': content_type,
         'description': description,
         'duration': duration,
+        'flags': flags,
         'height': height,
         'name': name,
         'size': size,
@@ -125,6 +132,7 @@ def test__Attachment__eq():
         ('content_type', 'image/png'),
         ('description', 'Remilia'),
         ('duration', 56.6),
+        ('flags', AttachmentFlag(3)),
         ('height', 702),
         ('name', 'Slave of Scarlet'),
         ('size', 701),

@@ -1,6 +1,7 @@
 import vampytest
 
 from ..attachment import Attachment
+from ..flags import AttachmentFlag
 
 
 def _assert_fields_set(attachment):
@@ -16,6 +17,7 @@ def _assert_fields_set(attachment):
     vampytest.assert_instance(attachment.content_type, str, nullable = True)
     vampytest.assert_instance(attachment.description, str, nullable = True)
     vampytest.assert_instance(attachment.duration, float)
+    vampytest.assert_instance(attachment.flags, AttachmentFlag)
     vampytest.assert_instance(attachment.height, int)
     vampytest.assert_instance(attachment.id, int)
     vampytest.assert_instance(attachment.name, str)
@@ -46,6 +48,7 @@ def test__Attachment__new__1():
     content_type = 'application/json'
     description = 'Nue'
     duration = 12.6
+    flags = AttachmentFlag(12)
     height = 1000
     name = 'i miss you'
     size = 999
@@ -58,6 +61,7 @@ def test__Attachment__new__1():
         content_type = content_type,
         description = description,
         duration = duration,
+        flags = flags,
         height = height,
         name = name,
         size = size,
@@ -71,6 +75,7 @@ def test__Attachment__new__1():
     vampytest.assert_eq(attachment.content_type, content_type)
     vampytest.assert_eq(attachment.description, description)
     vampytest.assert_eq(attachment.duration, duration)
+    vampytest.assert_eq(attachment.flags, flags)
     vampytest.assert_eq(attachment.height, height)
     vampytest.assert_eq(attachment.name, name)
     vampytest.assert_eq(attachment.size, size)
@@ -105,6 +110,7 @@ def test__Attachment__precreate__1():
     content_type = 'application/json'
     description = 'Nue'
     duration = 12.6
+    flags = 12
     height = 1000
     name = 'i miss you'
     proxy_url = 'https://orindance.party/'
@@ -119,6 +125,7 @@ def test__Attachment__precreate__1():
         content_type = content_type,
         description = description,
         duration = duration,
+        flags = flags,
         height = height,
         name = name,
         proxy_url = proxy_url,
@@ -136,6 +143,7 @@ def test__Attachment__precreate__1():
     vampytest.assert_eq(attachment.content_type, content_type)
     vampytest.assert_eq(attachment.description, description)
     vampytest.assert_eq(attachment.duration, duration)
+    vampytest.assert_eq(attachment.flags, flags)
     vampytest.assert_eq(attachment.height, height)
     vampytest.assert_eq(attachment.name, name)
     vampytest.assert_eq(attachment.size, size)

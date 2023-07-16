@@ -3,6 +3,8 @@
 #### Improvements
 
 - `Client.guild_get_all` now also updates the guilds' approximate counts.
+- Add `AttachmentFlag`.
+- Add `Attachment.flags`.
 
 #### Renames, Deprecation & Removals
 

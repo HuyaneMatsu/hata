@@ -38,7 +38,6 @@ parse_flags = flag_parser_factory('flags', RoleFlag)
 put_flags_into = flag_optional_putter_factory('flags', RoleFlag())
 validate_flags = flag_validator_factory('flags', RoleFlag)
 
-
 # guild_id
 
 validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')

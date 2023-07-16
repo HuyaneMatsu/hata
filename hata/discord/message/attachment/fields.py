@@ -1,21 +1,22 @@
 __all__ = ()
 
 from ...field_parsers import (
-    bool_parser_factory, entity_id_parser_factory, float_parser_factory, force_string_parser_factory,
-    int_parser_factory, nullable_string_parser_factory
+    bool_parser_factory, entity_id_parser_factory, flag_parser_factory, float_parser_factory,
+    force_string_parser_factory, int_parser_factory, nullable_string_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, entity_id_putter_factory, float_optional_putter_factory, force_string_putter_factory,
-    int_putter_factory, nullable_string_optional_putter_factory, nullable_string_putter_factory,
-    url_optional_putter_factory
+    bool_optional_putter_factory, entity_id_putter_factory, flag_optional_putter_factory, float_optional_putter_factory,
+    force_string_putter_factory, int_putter_factory, nullable_string_optional_putter_factory,
+    nullable_string_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, entity_id_validator_factory, float_conditional_validator_factory,
+    bool_validator_factory, entity_id_validator_factory, flag_validator_factory, float_conditional_validator_factory,
     force_string_validator_factory, int_conditional_validator_factory, nullable_string_validator_factory,
     url_optional_validator_factory, url_required_validator_factory
 )
 
 from .constants import DESCRIPTION_LENGTH_MAX
+from .flags import AttachmentFlag
 
 # content_type
 
@@ -39,6 +40,12 @@ validate_duration = float_conditional_validator_factory(
     lambda duration : duration >= 0.0,
     '>= 0.0',
 )
+
+# flags
+
+parse_flags = flag_parser_factory('flags', AttachmentFlag)
+put_flags_into = flag_optional_putter_factory('flags', AttachmentFlag())
+validate_flags = flag_validator_factory('flags', AttachmentFlag)
 
 # height
 

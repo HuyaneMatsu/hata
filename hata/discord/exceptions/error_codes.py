@@ -577,6 +577,10 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | clyde_consent_required                                            | 310000    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| cannot_enable_onboarding_requirements_not_met                     | 350000    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| cannot_update_onboarding_requirements_not_met                     | 350001    | -         |
++-------------------------------------------------------------------+-----------+-----------+
 """
 unknown_account = 10001
 unknown_application = 10002
@@ -873,19 +877,5 @@ harmful_link_message_blocked = 240000
 
 clyde_consent_required = 310000
 
-
-def __getattr__(attribute_name):
-    """Deals with deprecations."""
-    if attribute_name == 'invalid_activity_launch_afk_channel':
-        warnings.warn(
-            (
-                '`invalid_activity_launch_afk_channel` is deprecated and will be removed in 2023 jun. '
-                'Please use `activity_launch_afk_channel` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return activity_launch_afk_channel
-        
-    raise AttributeError(attribute_name)
+cannot_enable_onboarding_requirements_not_met = 350000
+cannot_update_onboarding_requirements_not_met = 350001

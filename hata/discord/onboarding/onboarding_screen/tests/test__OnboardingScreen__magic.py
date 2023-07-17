@@ -3,6 +3,7 @@ import vampytest
 from ...onboarding_prompt import OnboardingPrompt
 
 from ..onboarding_screen import OnboardingScreen
+from ..preinstanced import OnboardingMode
 
 
 def test__OnboardingScreen__repr():
@@ -11,6 +12,7 @@ def test__OnboardingScreen__repr():
     """
     default_channel_ids = [202303040046, 202303040047]
     enabled = True
+    mode = OnboardingMode.advanced
     prompts = [
         OnboardingPrompt(name = 'ibuki'),
         OnboardingPrompt(name = 'suika'),
@@ -19,6 +21,7 @@ def test__OnboardingScreen__repr():
     screen = OnboardingScreen(
         default_channel_ids = default_channel_ids,
         enabled = enabled,
+        mode = mode,
         prompts = prompts,
     )
     
@@ -31,6 +34,7 @@ def test__OnboardingScreen__hash():
     """
     default_channel_ids = [202303040048, 202303040049]
     enabled = True
+    mode = OnboardingMode.advanced
     prompts = [
         OnboardingPrompt(name = 'ibuki'),
         OnboardingPrompt(name = 'suika'),
@@ -39,6 +43,7 @@ def test__OnboardingScreen__hash():
     screen = OnboardingScreen(
         default_channel_ids = default_channel_ids,
         enabled = enabled,
+        mode = mode,
         prompts = prompts,
     )
     
@@ -51,6 +56,7 @@ def test__OnboardingScreen__eq():
     """
     default_channel_ids = [202303040050, 202303040051]
     enabled = True
+    mode = OnboardingMode.advanced
     prompts = [
         OnboardingPrompt(name = 'ibuki'),
         OnboardingPrompt(name = 'suika'),
@@ -60,6 +66,7 @@ def test__OnboardingScreen__eq():
     keyword_parameters = {
         'default_channel_ids': default_channel_ids,
         'enabled': enabled,
+        'mode': mode,
         'prompts': prompts,
     }
     
@@ -74,6 +81,7 @@ def test__OnboardingScreen__eq():
     for field_prompts, field_value in (
         ('default_channel_ids', None),
         ('enabled', False),
+        ('mode', OnboardingMode.default),
         ('prompts', None),
     ):
         test_screen = OnboardingScreen(**{**keyword_parameters, field_prompts: field_value})

@@ -1179,6 +1179,15 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/guilds/{guild_id}/onboarding',
         )
     
+    async def onboarding_screen_edit(self, guild_id, data, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.onboarding_screen_edit, guild_id),
+            METHOD_PUT,
+            f'{API_ENDPOINT}/guilds/{guild_id}/onboarding',
+            data,
+            reason = reason,
+        )
+    
     async def voice_state_client_edit(self, guild_id, data):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.voice_state_client_edit, NO_SPECIFIC_RATE_LIMITER),

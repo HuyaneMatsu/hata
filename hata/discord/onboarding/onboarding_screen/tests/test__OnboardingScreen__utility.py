@@ -5,6 +5,7 @@ from ....channel import Channel
 from ...onboarding_prompt import OnboardingPrompt
 
 from ..onboarding_screen import OnboardingScreen
+from ..preinstanced import OnboardingMode
 
 from .test__OnboardingScreen__constructor import _assert_fields_set
 
@@ -15,6 +16,7 @@ def test__OnboardingScreen__copy():
     """
     default_channel_ids = [202303040053, 202303040054]
     enabled = True
+    mode = OnboardingMode.advanced
     prompts = [
         OnboardingPrompt(name = 'ibuki'),
         OnboardingPrompt(name = 'suika'),
@@ -23,6 +25,7 @@ def test__OnboardingScreen__copy():
     screen = OnboardingScreen(
         default_channel_ids = default_channel_ids,
         enabled = enabled,
+        mode = mode,
         prompts = prompts,
     )
     copy = screen.copy()
@@ -40,6 +43,7 @@ def test__OnboardingScreen__copy_with__0():
     """
     default_channel_ids = [202303040055, 202303040056]
     enabled = True
+    mode = OnboardingMode.advanced
     prompts = [
         OnboardingPrompt(name = 'ibuki'),
         OnboardingPrompt(name = 'suika'),
@@ -48,6 +52,7 @@ def test__OnboardingScreen__copy_with__0():
     screen = OnboardingScreen(
         default_channel_ids = default_channel_ids,
         enabled = enabled,
+        mode = mode,
         prompts = prompts,
     )
     copy = screen.copy_with()
@@ -65,6 +70,7 @@ def test__OnboardingScreen__copy_with__1():
     """
     old_default_channel_ids = [202303040057, 202303040058]
     old_enabled = True
+    old_mode = OnboardingMode.advanced
     old_prompts = [
         OnboardingPrompt(name = 'ibuki'),
         OnboardingPrompt(name = 'suika'),
@@ -72,6 +78,7 @@ def test__OnboardingScreen__copy_with__1():
     
     new_default_channel_ids = [202303040059, 202303040060]
     new_enabled = False
+    new_mode = OnboardingMode.advanced
     new_prompts = [
         OnboardingPrompt(name = 'yakumo'),
         OnboardingPrompt(name = 'ran'),
@@ -80,11 +87,13 @@ def test__OnboardingScreen__copy_with__1():
     screen = OnboardingScreen(
         default_channel_ids = old_default_channel_ids,
         enabled = old_enabled,
+        mode = old_mode,
         prompts = old_prompts,
     )
     copy = screen.copy_with(
         default_channel_ids = new_default_channel_ids,
         enabled = new_enabled,
+        mode = new_mode,
         prompts = new_prompts,
     )
     _assert_fields_set(copy)
@@ -92,6 +101,7 @@ def test__OnboardingScreen__copy_with__1():
 
     vampytest.assert_eq(copy.default_channel_ids, tuple(new_default_channel_ids))
     vampytest.assert_eq(copy.enabled, new_enabled)
+    vampytest.assert_is(copy.mode, new_mode)
     vampytest.assert_eq(copy.prompts, tuple(new_prompts))
 
 

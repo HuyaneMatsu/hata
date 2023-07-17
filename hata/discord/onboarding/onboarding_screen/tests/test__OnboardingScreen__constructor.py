@@ -3,6 +3,7 @@ import vampytest
 from ...onboarding_prompt import OnboardingPrompt
 
 from ..onboarding_screen import OnboardingScreen
+from ..preinstanced import OnboardingMode
 
 
 def _assert_fields_set(screen):
@@ -18,6 +19,7 @@ def _assert_fields_set(screen):
     vampytest.assert_instance(screen.default_channel_ids, tuple, nullable = True)
     vampytest.assert_instance(screen.enabled, bool)
     vampytest.assert_instance(screen.guild_id, int)
+    vampytest.assert_instance(screen.mode, OnboardingMode)
     vampytest.assert_instance(screen.prompts, tuple, nullable = True)
 
 
@@ -39,6 +41,7 @@ def test__OnboardingScreen__new__1():
     """
     default_channel_ids = [202303040031, 202303040032]
     enabled = True
+    mode = OnboardingMode.advanced
     prompts = [
         OnboardingPrompt(name = 'ibuki'),
         OnboardingPrompt(name = 'suika'),
@@ -47,12 +50,14 @@ def test__OnboardingScreen__new__1():
     screen = OnboardingScreen(
         default_channel_ids = default_channel_ids,
         enabled = enabled,
+        mode = mode,
         prompts = prompts,
     )
     _assert_fields_set(screen)
     
     vampytest.assert_eq(screen.default_channel_ids, tuple(default_channel_ids))
     vampytest.assert_eq(screen.enabled, enabled)
+    vampytest.assert_is(screen.mode, mode)
     vampytest.assert_eq(screen.prompts, tuple(prompts))
 
 
@@ -74,6 +79,7 @@ def test__OnboardingScreen__precreate__1():
     """
     default_channel_ids = [202303040033, 202303040034]
     enabled = True
+    mode = OnboardingMode.advanced
     prompts = [
         OnboardingPrompt(name = 'ibuki'),
         OnboardingPrompt(name = 'suika'),
@@ -84,12 +90,14 @@ def test__OnboardingScreen__precreate__1():
         default_channel_ids = default_channel_ids,
         enabled = enabled,
         prompts = prompts,
+        mode = mode,
         guild_id = guild_id,
     )
     _assert_fields_set(screen)
     
     vampytest.assert_eq(screen.default_channel_ids, tuple(default_channel_ids))
     vampytest.assert_eq(screen.enabled, enabled)
+    vampytest.assert_eq(screen.mode, mode)
     vampytest.assert_eq(screen.prompts, tuple(prompts))
     
     vampytest.assert_eq(screen.guild_id, guild_id)

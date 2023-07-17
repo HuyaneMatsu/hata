@@ -4,28 +4,48 @@ from ..fields import validate_type
 from ..preinstanced import EmbedType
 
 
-def test__validate_type__0():
+def _iter_options():
+    yield EmbedType.gifv, EmbedType.gifv
+    yield EmbedType.gifv.value, EmbedType.gifv
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_type__passing(input_value):
     """
     Tests whether `validate_type` works as intended.
     
     Case: passing.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value.
+    
+    Returns
+    -------
+    output : ``EmbedType``
     """
-    for input_value, expected_output in (
-        (EmbedType.gifv, EmbedType.gifv),
-        (EmbedType.gifv.value, EmbedType.gifv)
-    ):
-        output = validate_type(input_value)
-        vampytest.assert_eq(output, expected_output)
+    output = validate_type(input_value)
+    vampytest.assert_instance(output, EmbedType)
+    return output
 
 
-def test__validate_type__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+@vampytest.call_with(0)
+def test__validate_type__type_error(input_value):
     """
     Tests whether `validate_type` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value where we are expecting `TypeError`.
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_type(input_value)
+    validate_type(input_value)

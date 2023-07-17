@@ -5,6 +5,13 @@
 - `Client.guild_get_all` now also updates the guilds' approximate counts.
 - Add `AttachmentFlag`.
 - Add `Attachment.flags`.
+- Add `ERROR_CODES.cannot_enable_onboarding_requirements_not_met`.
+- Add `ERROR_CODES.cannot_update_onboarding_requirements_not_met`.
+- Add `OnboardingMode`.
+- Add `OnboardingScreen.mode`.
+- Add `Client.onboarding_screen_edit`.
+- Add `DiscordHTTPClient.onboarding_screen_edit`.
+- Add `RATE_LIMIT_GROUPS.onboarding_screen_edit`.
 
 #### Renames, Deprecation & Removals
 

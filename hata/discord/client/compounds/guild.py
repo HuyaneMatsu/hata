@@ -17,6 +17,7 @@ from ...http import DiscordHTTPClient
 from ...payload_building import build_edit_payload
 from ...role import Role
 from ...onboarding import OnboardingScreen
+from ...onboarding.onboarding_screen.utils import ONBOARDING_FIELD_CONVERTERS
 from ...user import ClientUserBase, GuildProfile, PremiumType, User, UserFlag
 from ...utils import log_time_converter
 
@@ -325,6 +326,62 @@ class ClientCompoundGuildEndpoints(Compound):
         
         onboarding_screen_data = await self.http.onboarding_screen_get(guild_id)
         return OnboardingScreen.from_data(onboarding_screen_data)
+    
+    
+    async def onboarding_screen_edit(
+        self, guild, onboarding_screen_template = None, *, reason = None, **keyword_parameters
+    ):
+        """
+        Edits the guild's onboarding screen.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild to edit its onboarding screen.
+        
+        onboarding_screen_template : `None`, ``OnboardingScreen`` = `None`, Optional
+            Onboarding screen to use as a template.
+        
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the guild's audit logs.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to edit the onboarding screen with.
+        
+        Returns
+        -------
+        onboarding_screen : ``OnboardingScreen``
+        
+        Other parameters
+        ----------------
+        default_channel_ids : `None`, `iterable` of (`int`, ``Channel``), Optional (Keyword only)
+            The channels' identifiers that new members get opted into automatically.
+        
+        enabled : `bool`, Optional (Keyword only)
+            Whether onboarding is enabled.
+        
+        mode : ``OnboardingMode``, `int`, Optional (Keyword only)
+            Onboarding mode.
+        
+        prompts : `None`, `iterable` of ``OnboardingPrompt``, Optional (Keyword only)
+            The prompts shown during onboarding and in customize community.
+        
+        Raises
+        ------
+        TypeError
+            - If `guild` is not ``Guild``, `int`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild_id = get_guild_id(guild)
+        data = build_edit_payload(None, onboarding_screen_template, ONBOARDING_FIELD_CONVERTERS, keyword_parameters)
+        
+        onboarding_screen_data = await self.http.onboarding_screen_edit(guild_id, data, reason)
+        return OnboardingScreen.from_data(onboarding_screen_data)
+        
+        
     
     
     async def guild_get(self, guild):

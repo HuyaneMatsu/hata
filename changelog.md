@@ -1,3 +1,14 @@
+## 1.3.35 *\[2023-07-??\]*
+
+#### Improvements
+
+- Add `raise_if_missing_or_empty` parameter to `get_bool_env`.
+- Add `raise_if_missing_or_empty` parameter to `get_int_env`.
+
+#### Bug fixes
+
+- `get_bool_env` returned incorrect value if variable was any of: `0`, `1`.
+
 ## 1.3.34 *\[2023-07-22\]*
 
 #### Improvements

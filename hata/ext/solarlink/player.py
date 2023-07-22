@@ -19,7 +19,7 @@ class SolarPlayer(SolarPlayerBase):
     
     Attributes
     ----------
-    _forward_data : `None`, `dict` of (`str`, `Any`) items
+    _forward_data : `None`, `dict` of (`str`, `object`) items
         Json to forward to the player's node as necessary.
     _position : `float`
         The position of the current track.
@@ -109,7 +109,7 @@ class SolarPlayer(SolarPlayerBase):
         return volume
     
     
-    async def append(self, track, start_time=0.0, end_time=0.0, **added_attributes):
+    async def append(self, track, start_time = 0.0, end_time = 0.0, **added_attributes):
         """
         Adds a new track to play.
         
@@ -123,7 +123,7 @@ class SolarPlayer(SolarPlayerBase):
             Where the track will start in seconds.
         end_time : `float` = `0.0`, Optional
             Where the track will start in seconds.
-        **added_attributes : `dict` of (`str`, `Any`)
+        **added_attributes : `dict` of (`str`, `object`)
             Additional user defined attributes.
         
         Returns

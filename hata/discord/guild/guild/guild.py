@@ -1649,7 +1649,7 @@ class Guild(DiscordEntity, immortal = True):
             else:
                 fields_added = True
             
-            repr_parts.append(', name = ')
+            repr_parts.append(' name = ')
             repr_parts.append(repr(name))
         
         repr_parts.append('>')

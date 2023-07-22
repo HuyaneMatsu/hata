@@ -12,7 +12,7 @@
 
 import reprlib, sys
 from base64 import b64encode
-from datetime import datetime, timedelta, timezone as TimeZone
+from datetime import datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 from email._parseaddr import _parsedate_tz as parse_date_timezone
 from functools import partial as partial_func
 from math import floor
@@ -27,9 +27,9 @@ from .core import CHANNELS, ROLES, USERS
 
 
 try:
-    from dateutil.relativedelta import relativedelta
+    from dateutil.relativedelta import relativedelta as RelativeDelta
 except ImportError:
-    relativedelta = None
+    RelativeDelta = None
 
 MESSAGE_JUMP_URL_RP = include('MESSAGE_JUMP_URL_RP')
 create_partial_user_from_id = include('create_partial_user_from_id')
@@ -148,11 +148,11 @@ def _datetime_from_parsed(parsed):
     Parameters
     ----------
     parsed : `re.Match`
-        Parsed datetime.
+        Parsed date time.
     
     Returns
     -------
-    time : `datetime`
+    time : `DateTime`
     """
     year = int(parsed.group(1))
     month = int(parsed.group(2))
@@ -167,7 +167,7 @@ def _datetime_from_parsed(parsed):
     else:
         micro = int(micro)
     
-    return datetime(year, month, day, hour, minute, second, micro)
+    return DateTime(year, month, day, hour, minute, second, micro)
 
 
 def timestamp_to_datetime(timestamp):
@@ -193,7 +193,7 @@ def timestamp_to_datetime(timestamp):
     
     Returns
     -------
-    time : `datetime`
+    time : `DateTime`
     
     Notes
     -----
@@ -209,7 +209,7 @@ def timestamp_to_datetime(timestamp):
 
 def timestamp_to_datetime_soft(timestamp):
     """
-    Creates a datetime from the given timestamp. If parsing fails returns `None`.
+    Creates a date time from the given timestamp. If parsing fails returns `None`.
     
     Parameters
     ----------
@@ -218,7 +218,7 @@ def timestamp_to_datetime_soft(timestamp):
     
     Returns
     -------
-    time : `datetime`
+    time : `DateTime`
     
     See Also
     --------
@@ -231,12 +231,12 @@ def timestamp_to_datetime_soft(timestamp):
 
 def datetime_to_timestamp(date_time):
     """
-    Converts the given datetime to it's timestamp representation.
+    Converts the given date time to it's timestamp representation.
     
     Parameters
     ----------
-    date_time : `datetime`
-        The datetime to convert to timestamp.
+    date_time : `DateTime`
+        The date time to convert to timestamp.
     
     Returns
     -------
@@ -248,7 +248,7 @@ def datetime_to_timestamp(date_time):
 @export
 def id_to_datetime(id_):
     """
-    Converts the given id to datetime.
+    Converts the given id to date time.
     
     Parameters
     ----------
@@ -257,9 +257,9 @@ def id_to_datetime(id_):
     
     Returns
     -------
-    date_time : `datetime`
+    date_time : `DateTime`
     """
-    return datetime.utcfromtimestamp(((id_ >> 22) + DISCORD_EPOCH) / 1000.0)
+    return DateTime.utcfromtimestamp(((id_ >> 22) + DISCORD_EPOCH) / 1000.0)
 
 
 DISCORD_EPOCH_START = id_to_datetime(0)
@@ -298,19 +298,19 @@ def unix_time_to_id(unix_time):
 
 def unix_time_to_datetime(unix_time):
     """
-    Converts the given unix time to datetime.
+    Converts the given unix time to date time.
     
     Parameters
     ----------
     unix_time : `int`, `float`
-        The unix time to convert to datetime.
+        The unix time to convert to date time.
     
     Returns
     -------
-    date_time : `datetime`
+    date_time : `DateTime`
     """
     try:
-        return datetime.utcfromtimestamp(unix_time)
+        return DateTime.utcfromtimestamp(unix_time)
     except ValueError:
         # Normal oses
         pass
@@ -329,16 +329,16 @@ def unix_time_to_datetime(unix_time):
 
 def millisecond_unix_time_to_datetime(millisecond_unix_time):
     """
-    Converts the given millisecond unix time to datetime.
+    Converts the given millisecond unix time to date time.
     
     Parameters
     ----------
     millisecond_unix_time : `int`, `float`
-        The unix time to convert to datetime.
+        The unix time to convert to date time.
     
     Returns
     -------
-    date_time : `datetime`
+    date_time : `date time`
     """
     return unix_time_to_datetime(millisecond_unix_time * 0.001)
 
@@ -349,8 +349,8 @@ def datetime_to_id(date_time):
     
     Parameters
     ----------
-    date_time : `datetime`
-        The datetime to convert to Discord identifier.
+    date_time : `DateTime`
+        The date time to convert to Discord identifier.
     
     Returns
     -------
@@ -365,8 +365,8 @@ def datetime_to_unix_time(date_time):
     
     Parameters
     ----------
-    date_time : `datetime`
-        The datetime to convert to unix time.
+    date_time : `DateTime`
+        The date time to convert to unix time.
     
     Returns
     -------
@@ -381,8 +381,8 @@ def datetime_to_millisecond_unix_time(date_time):
     
     Parameters
     ----------
-    date_time : `datetime`
-        The datetime to convert to unix time.
+    date_time : `DateTime`
+        The date time to convert to unix time.
     
     Returns
     -------
@@ -399,8 +399,8 @@ def _datetime_to_unix_time(date_time):
     
     Parameters
     ----------
-    date_time : `datetime`
-        The datetime to convert to unix time.
+    date_time : `DateTime`
+        The date time to convert to unix time.
     
     Returns
     -------
@@ -449,7 +449,7 @@ DATETIME_MIN = unix_time_to_datetime(UNIX_TIME_MIN)
 
 while True:
     try:
-        DATETIME_MAX = datetime(year=3000, month=1, day=1)
+        DATETIME_MAX = DateTime(year = 3000, month = 1, day = 1)
         UNIX_TIME_MAX = datetime_to_unix_time(DATETIME_MAX)
     except OverflowError:
         pass
@@ -457,14 +457,14 @@ while True:
         break
     
     try:
-        DATETIME_MAX = datetime(year=2300, month=1, day=1)
+        DATETIME_MAX = DateTime(year = 2300, month = 1, day = 1)
         UNIX_TIME_MAX = datetime_to_unix_time(DATETIME_MAX)
     except OverflowError:
         pass
     else:
         break
 
-    DATETIME_MAX = datetime(year=2038, month=1, day=1)
+    DATETIME_MAX = DateTime(year = 2038, month = 1, day = 1)
     UNIX_TIME_MAX = datetime_to_unix_time(DATETIME_MAX)
     break
 
@@ -491,8 +491,8 @@ def timedelta_to_id_difference(time_delta):
     
     Parameters
     ----------
-    time_delta : `timedelta`
-        The timedelta to convert to id difference.
+    time_delta : `TimeDelta`
+        The time delta to convert to id difference.
     
     Returns
     -------
@@ -528,14 +528,14 @@ def id_difference_to_timedelta(id_difference):
     
     Returns
     -------
-    time_delta : `timedelta`
+    time_delta : `TimeDelta`
     """
-    return timedelta(seconds=id_difference_to_seconds(id_difference))
+    return TimeDelta(seconds = id_difference_to_seconds(id_difference))
 
 
 def random_id():
     """
-    Generates a random Discord identifier number what's datetime value did not surpass the current time.
+    Generates a random Discord identifier number what's date time value did not surpass the current time.
     
     Returns
     -------
@@ -550,9 +550,9 @@ def log_time_converter(value):
     
     Parameters
     ----------
-    value : `int`, ``DiscordEntity``, `datetime`
+    value : `int`, ``DiscordEntity``, `DateTime`
         If the value is given as `int`, returns it. If given as a ``DiscordEntity``, then returns it's id and if it
-        is given as a `datetime` object, then converts that to snowflake then returns it.
+        is given as a `DateTime` object, then converts that to snowflake then returns it.
     
     Returns
     -------
@@ -569,11 +569,11 @@ def log_time_converter(value):
     if isinstance(value, DiscordEntity):
         return value.id
     
-    if isinstance(value, datetime):
+    if isinstance(value, DateTime):
         return datetime_to_id(value)
     
     raise TypeError(
-        f'Expected `int`, `{DiscordEntity.__name__}`, `datetime`, got '
+        f'Expected `int`, `{DiscordEntity.__name__}`, `DateTime`, got '
         f'{value.__class__.__name__}; {value!r}.'
     )
 
@@ -965,7 +965,7 @@ def cchunkify(lines, lang='', limit=2000):
     
     return result
 
-if relativedelta is None:
+if RelativeDelta is None:
     elapsed_time = None
     seconds_to_elapsed_time = None
 else:
@@ -1019,9 +1019,9 @@ else:
         
         Parameters
         ----------
-        delta : `datetime`, `relativedelta`
-            The time delta. If given as `datetime`, then the delta will be based on the difference between the given
-            datetime and the actual time. If given as `relativedelta`, then that will be used directly.
+        delta : `DateTime`, `RelativeDelta`
+            The time delta. If given as `DateTime`, then the delta will be based on the difference between the given
+            date time and the actual time. If given as `relativedelta`, then that will be used directly.
         limit : `int` = `3`, Optional
             The maximal amount of connected time units. Defaults to `3`.
         names : `iterable` of `tuple` (`str`, `str`) = `(('year', 'years'), ('month', 'months'), ('day', 'days')
@@ -1037,19 +1037,21 @@ else:
         Raises
         ------
         TypeError
-            If `delta` was not passed as `datetime`, `relativedelta`.
+            If `delta` was not passed as `DateTime`, `RelativeDelta`.
         """
-        if isinstance(delta, datetime):
-            delta = relativedelta(datetime.utcnow(), delta)
-        elif isinstance(delta, relativedelta):
+        if isinstance(delta, DateTime):
+            delta = RelativeDelta(DateTime.utcnow(), delta)
+        elif isinstance(delta, RelativeDelta):
             pass
         else:
-            raise TypeError(f'Expected, `relativedelta`, `datetime`, got {delta.__class__.__name__}; {delta!r}.')
+            raise TypeError(
+                f'Expected, `RelativeDelta`, `DateTime`, got {delta.__class__.__name__}; {delta!r}.'
+            )
         
         return _relative_delta_to_elapsed_time(delta, limit, names)
     
     
-    def seconds_to_elapsed_time(seconds, limit=ELAPSED_TIME_DEFAULT_LIMIT, names=ELAPSED_TIME_DEFAULT_NAMES):
+    def seconds_to_elapsed_time(seconds, limit = ELAPSED_TIME_DEFAULT_LIMIT, names = ELAPSED_TIME_DEFAULT_NAMES):
         """
         Generates an elapsed time formula from the given seconds.
         
@@ -1074,7 +1076,7 @@ else:
         TypeError
             If `seconds` was not passed as `int`, `float`.
         """
-        delta = relativedelta(seconds=floor(seconds))
+        delta = RelativeDelta(seconds = floor(seconds))
         return _relative_delta_to_elapsed_time(delta, limit, names)
 
 
@@ -1371,11 +1373,11 @@ RDELTA_KEYS = ('years', 'months', *TDELTA_KEYS)
 
 def parse_tdelta(text):
     """
-    Tries to parse out a ``timedelta`` from the inputted text.
+    Tries to parse out a `TimeDelta` from the inputted text.
     
     Returns
     -------
-    tdelta : `None`, `datetime.timedelta`
+    tdelta : `None`, `TimeDelta`
     """
     text = text.lower()
     
@@ -1397,9 +1399,9 @@ def parse_tdelta(text):
                 break
     
     if result:
-        return timedelta(**result)
+        return TimeDelta(**result)
 
-if relativedelta is None:
+if RelativeDelta is None:
     parse_rdelta = None
 else:
     def parse_rdelta(text):
@@ -1430,7 +1432,7 @@ else:
                     break
         
         if result:
-            return relativedelta(**result)
+            return RelativeDelta(**result)
 
 CHANNEL_MESSAGE_RP = re_compile('(\d{7,21})-(\d{7,21})')
 
@@ -1615,7 +1617,7 @@ def escape_markdown(content):
 
 def parse_date_header_to_datetime(date_data):
     """
-    Parsers header date value to `datetime`.
+    Parsers header date value to `DateTime`.
     
     Parameters
     ----------
@@ -1624,14 +1626,14 @@ def parse_date_header_to_datetime(date_data):
 
     Returns
     -------
-    date : `datetime`
+    date : `DateTime`
         The parsed out date time.
     """
     *date_tuple, tz = parse_date_timezone(date_data)
     if tz is None:
-        date = datetime( * date_tuple[:6])
+        date = DateTime(*date_tuple[:6])
     else:
-        date = datetime( * date_tuple[:6], tzinfo=TimeZone(timedelta(seconds=tz)))
+        date = DateTime(*date_tuple[:6], tzinfo = TimeZone(TimeDelta(seconds = tz)))
     return date
 
 
@@ -1754,7 +1756,7 @@ class TIMESTAMP_STYLES:
     
     Note, that Discord's time formatting is localized and they are all stultus when english language is selected.
     To avoid insanity, I beg you to use
-    `datetime formatting:https://docs.python.org/3/library/datetime.html#datetime.date.__format__` instead.
+    `date time formatting:https://docs.python.org/3/library/datetime.html#datetime.date.__format__` instead.
     
     > "wen day is dark always rember happy day"
     
@@ -1762,8 +1764,8 @@ class TIMESTAMP_STYLES:
     
     ```py
     >>> from hata import DATETIME_FORMAT_CODE
-    >>> from datetime import datetime
-    >>> print(f'{datetime.utcnow():{DATETIME_FORMAT_CODE}}')
+    >>> from datetime import datetime as DateTime
+    >>> print(f'{DateTime.utcnow():{DATETIME_FORMAT_CODE}}')
     2021-08-05 13:53:16
     ```
     
@@ -1772,8 +1774,8 @@ class TIMESTAMP_STYLES:
     
     ```py
     >>> from hata import elapsed_time
-    >>> from datetime import datetime, timedelta
-    >>> when = datetime.utcnow()-timedelta(days=5)
+    >>> from datetime import datetime as DateTime, timedelta as TimeDelta
+    >>> when = DateTime.utcnow() - TimeDelta(days = 5)
     >>> print(f'{elapsed_time(when)} ago')
     5 days ago
     ```
@@ -1795,8 +1797,8 @@ def format_datetime(date_time, style = None):
     
     Parameters
     ----------
-    date_time : `datetime`
-        The datetime to format.
+    date_time : `DateTime`
+        The date time to format.
     style : `None`, `str` = `None`, Optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     
@@ -1856,7 +1858,7 @@ def format_unix_time(unix_time, style = None):
     Parameters
     ----------
     unix_time : `int`
-        The datetime to format.
+        The date time to format.
     style : `None`, `str` = `None`, Optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     

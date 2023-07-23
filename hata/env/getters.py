@@ -9,7 +9,7 @@ ERROR_MESSAGE_APPENDIX = 'Please update your `.env` file.'
 
 RETURN_TYPE_VALUE = 0
 RETURN_TYPE_WARNING = 1
-RETURN_TYPE_ERROR = 2
+RETURN_TYPE_EXCEPTION = 2
 
 
 def _process_bool_env(env_variable):
@@ -109,13 +109,13 @@ def _get_env(name, default, accepted_type_name, accepted_processor, raise_if_mis
     Returns
     -------
     return_type : `int`
-    return_value / error_message : `object` / `int`
+    return_value / error_message : `object` / `str`
         Returns the returns' type and its value.
     """
     env_variable = get_environmental_variable(name)
     if env_variable is None:
         if raise_if_missing_or_empty:
-            yield RETURN_TYPE_ERROR, f'Environmental variable {name!r} is missing. {ERROR_MESSAGE_APPENDIX}'
+            yield RETURN_TYPE_EXCEPTION, f'Environmental variable {name!r} is missing. {ERROR_MESSAGE_APPENDIX}'
             return
         
         yield RETURN_TYPE_VALUE, default
@@ -134,7 +134,7 @@ def _get_env(name, default, accepted_type_name, accepted_processor, raise_if_mis
     else:
         if raise_if_missing_or_empty:
             yield (
-                RETURN_TYPE_ERROR,
+                RETURN_TYPE_EXCEPTION,
                 f'Environmental variable {name!r} is specified as empty string. {ERROR_MESSAGE_APPENDIX}'
             )
             return
@@ -150,20 +150,20 @@ def _get_env(name, default, accepted_type_name, accepted_processor, raise_if_mis
 
 def _handle_get_env_generator(generator):
     """
-    handles a ``_get_env`` generator.
+    Handles a ``_get_env`` generator.
     
     Parameters
     ----------
     generator : `iterable<(int, object)>`
         Generator to iterate over.
     
-    Raises
-    ------
-    RuntimeError
-    
     Returns
     -------
     value : `object`
+    
+    Raises
+    ------
+    RuntimeError
     """
     for return_type, return_value in generator:
         if return_type == RETURN_TYPE_VALUE:
@@ -173,7 +173,7 @@ def _handle_get_env_generator(generator):
             warn(return_value, stacklevel = 3)
             continue
         
-        if return_type == RETURN_TYPE_ERROR:
+        if return_type == RETURN_TYPE_EXCEPTION:
             raise RuntimeError(return_value)
 
 

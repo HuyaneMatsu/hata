@@ -391,7 +391,7 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
             
             # If presence cache is disabled, disable presence updates
             if not CACHE_PRESENCE:
-                intent_flag = intent_flag^(1 << INTENT_SHIFT_GUILD_PRESENCES)
+                intent_flag = intent_flag ^ (1 << INTENT_SHIFT_GUILD_PRESENCES)
         else:
             for value in cls.__keys__.values():
                 if (integer >> value) & 1:

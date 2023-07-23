@@ -1,7 +1,7 @@
 import vampytest
 
 from ..getters import (
-    ERROR_MESSAGE_APPENDIX, RETURN_TYPE_ERROR, RETURN_TYPE_VALUE, RETURN_TYPE_WARNING, _get_env,
+    ERROR_MESSAGE_APPENDIX, RETURN_TYPE_EXCEPTION, RETURN_TYPE_VALUE, RETURN_TYPE_WARNING, _get_env,
     _handle_get_env_generator, _process_int_env, _process_str_env
 )
 
@@ -16,7 +16,7 @@ def iter_options__get_env():
         False,
         None,
         [
-            (RETURN_TYPE_ERROR, f'Environmental variable {"koishi"!r} is missing. {ERROR_MESSAGE_APPENDIX}'),
+            (RETURN_TYPE_EXCEPTION, f'Environmental variable {"koishi"!r} is missing. {ERROR_MESSAGE_APPENDIX}'),
         ],
     )
     
@@ -83,7 +83,7 @@ def iter_options__get_env():
         '',
         [
             (
-                RETURN_TYPE_ERROR,
+                RETURN_TYPE_EXCEPTION,
                 f'Environmental variable {"koishi"!r} is specified as empty string. {ERROR_MESSAGE_APPENDIX}',
             ),
         ],
@@ -210,7 +210,7 @@ def test___handle_get_env_generator__error():
     
     def generator_function():
         nonlocal expected_output
-        yield RETURN_TYPE_ERROR, expected_output
+        yield RETURN_TYPE_EXCEPTION, expected_output
     
     with vampytest.assert_raises(RuntimeError(expected_output)):
         _handle_get_env_generator(generator_function())

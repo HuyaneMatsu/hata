@@ -50,7 +50,7 @@ def _save_external_command_routes(command_routes):
         file.write(content)
 
 
-def get_external_command_routes(*, fix_errors=True):
+def get_external_command_routes(*, fix_errors = True):
     """
     Reads the external command routes.
     
@@ -85,7 +85,7 @@ def get_external_command_routes(*, fix_errors=True):
     return command_routes
 
 
-def add_external_command_route(command_route, *, validate_command_route=False):
+def add_external_command_route(command_route, *, validate_command_route = False):
     """
     Adds a new external command route.
     
@@ -105,7 +105,7 @@ def add_external_command_route(command_route, *, validate_command_route=False):
         if not _validate_import_route(command_route):
             return False
     
-    command_routes = get_external_command_routes(fix_errors=False)
+    command_routes = get_external_command_routes(fix_errors = False)
     command_routes.add(command_route)
     _save_external_command_routes(command_routes)
     return True

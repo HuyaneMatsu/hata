@@ -23,7 +23,7 @@ def render_usage_line_into(into, name_trace_iterator):
     -------
     into : `list` of `str`
     """
-    into.append('Usage: ')
+    into.append('Usage:\n$ ')
     render_main_call_into(into)
     
     if (name_trace_iterator is not None):

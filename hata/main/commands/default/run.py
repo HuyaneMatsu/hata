@@ -11,7 +11,7 @@ from scarletio import Future, LOOP_TIME, Task, TaskGroup, WeakReferer
 from ....discord import (
     CLIENTS, DATETIME_FORMAT_CODE, KOKORO, stop_clients, run_console_till_interruption, wait_for_interruption
 )
-from ...core import register
+from ...core import LIBRARY_CALLED_DIRECTLY, register
 
 
 PROFILING_LIBRARY = None
@@ -391,7 +391,9 @@ def _stop_profiling():
         pass
 
 
-@register
+@register(
+    available = (not LIBRARY_CALLED_DIRECTLY),
+)
 def run(
     *,
     console: bool = False,
@@ -409,8 +411,7 @@ def run(
     To open the latest profile file use `snakeviz .profiles/latest.prof` (example).
     """
     if profile and (not _check_profiling_available()):
-        sys.stdout.write(f'Profiling library not available. Please install `yappi`.\n')
-        return
+        return f'Profiling library not available. Please install `yappi`.\n'
     
     try:
         _begin_profiling()

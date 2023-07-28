@@ -1,17 +1,17 @@
 __all__ = ()
 
 import sys
-from os import getcwd as get_current_work_directory
-from os.path import basename as get_file_name, dirname as get_directory_name, join as join_paths
+from os import sep as PATH_SEPARATOR
+from os.path import (
+    basename as get_file_name, commonpath as get_common_path, isabs as is_absolute_path, split as split_path
+)
+from sys import path as system_paths
 
 from scarletio import any_to_any, get_short_executable
 
-from ... import __file__ as PACKAGE_INIT_FILE, __package__ as PACKAGE_NAME
+from ... import __package__ as PACKAGE_NAME
 
-
-UPPER_DIRECTORY = get_directory_name(get_directory_name(PACKAGE_INIT_FILE))
-PACKAGE_MAIN_FILE = join_paths(get_directory_name(PACKAGE_INIT_FILE), '__main__.py')
-WORKING_DIRECTORY = get_current_work_directory()
+from .constants import PACKAGE_MAIN_FILE, UPPER_DIRECTORY, WORKING_DIRECTORY
 
 
 def get_main_call(with_parameters = False):
@@ -46,6 +46,7 @@ def _render_default_main_call_into(into):
     into.append(get_short_executable())
     into.append(' -m ')
     into.append(PACKAGE_NAME)
+    return into
 
 
 def _render_parameters_into(into, parameters):
@@ -77,6 +78,47 @@ def _render_parameters_into(into, parameters):
         continue
 
     return into
+
+
+def normalize_executed_file(executed_file):
+    """
+    Normalizes the executed file.
+    
+    Parameters
+    ----------
+    executed_file : `str`
+        File name or path to normalize.
+    
+    Returns
+    -------
+    executed_file : `str`
+        The executed file normalized.
+    library_mode : `bool`
+        Whether the executed file was probably ran as a library.
+    """
+    if not is_absolute_path(executed_file):
+        return executed_file, False
+    
+    directory_name, file_name =  split_path(executed_file)
+    if file_name == '__main__.py':
+        executed_file = directory_name
+    
+    longest_common_path = max(
+        (get_common_path((executed_file, system_path),) for system_path in system_paths),
+        default = None,
+        key = (lambda path: len(path)),
+    )
+    if longest_common_path is None:
+        return executed_file, True
+    
+    executed_file = executed_file[len(longest_common_path):]
+    if executed_file.startswith(PATH_SEPARATOR):
+        executed_file = executed_file[len(PATH_SEPARATOR):]
+    
+    if not executed_file:
+        executed_file = '.'
+    
+    return executed_file, True
 
 
 def render_main_call_into(into, with_parameters = False):
@@ -111,8 +153,11 @@ def render_main_call_into(into, with_parameters = False):
         else:
             into.append(get_short_executable())
             into.append(' ')
+            executed_file, library_mode = normalize_executed_file(executed_file)
+            if library_mode:
+                into.append('-m ')
             into.append(executed_file)
-            
+        
         if with_parameters:
             into = _render_parameters_into(into, system_parameters[1:])
     

@@ -21,12 +21,14 @@ class Command(RichAttributeErrorBaseType):
         Reference to itself.
     alters : `None`, `set` of `str`
         Alternative names for the command.
+    available : `bool`
+        Whether the command is available.
     name : `str`
         The command's name.
     """
-    __slots__ = ('__weakref__', '_command_category', '_self_reference', 'alters', 'name')
+    __slots__ = ('__weakref__', '_command_category', '_self_reference', 'alters', 'available', 'name')
     
-    def __new__(cls, name, alters):
+    def __new__(cls, name, alters, available):
         """
         Creates a new command line command.
         
@@ -36,6 +38,8 @@ class Command(RichAttributeErrorBaseType):
             The command's name.
         alters : `None`, `str`, `iterable` of `str`
             Alternative names for the command.
+        available : `bool`
+            Whether the command is available.
         
         Raises
         ------
@@ -48,6 +52,7 @@ class Command(RichAttributeErrorBaseType):
         self = object.__new__(cls)
         self._command_category = None
         self.alters = alters
+        self.available = available
         self.name = name
         self._self_reference = None
         
@@ -56,8 +61,7 @@ class Command(RichAttributeErrorBaseType):
         
         REGISTERED_COMMANDS.add(self)
         
-        names = [self.name]
-        alters = self.alters
+        names = [name]
         if (alters is not None):
             names.extend(alters)
         
@@ -169,21 +173,6 @@ class Command(RichAttributeErrorBaseType):
         return name
     
     
-    def walk_usage(self):
-        """
-        Walks over the usage of the command.
-        
-        This method is an iterable generator.
-        
-        Yields
-        -------
-        usage : `str`
-        """
-        for into in self.walk_usage_into([]):
-            yield ''.join(into)
-            into.clear()
-    
-    
     def get_direct_usage(self, *sub_command_stack):
         """
         Returns the direct usage of the command for the given sub-command stack.
@@ -218,39 +207,22 @@ class Command(RichAttributeErrorBaseType):
         return self._command_category.render_direct_usage_into(into, *sub_command_stack)
     
     
-    def walk_usage_into(self, into):
-        """
-        Walks over the usage of the command and renders it to the given list.
-        
-        This method is an iterable generator.
-        
-        Parameters
-        ----------
-        into : `list` of `str`
-            The list to render the commands into.
-        
-        Yields
-        -------
-        into : `list` of `str`
-        
-        Returns
-        -------
-        into : `list` of `str`
-        """
-        return (yield from self._command_category.walk_usage_into(into))
-    
-    
-    def iter_command_functions(self):
+    def iter_command_functions(self, *, sort = False):
         """
         Iterates over the command functions of the command category.
         
         This method is an iterable generator.
         
+        Parameters
+        ----------
+        sort : `bool` = `False`, Optional (Keyword only)
+            Whether the commands should be iterated in a sorted way.
+        
         Yields
         ------
         command_function : ``CommandFunction``
         """
-        yield from self._command_category.iter_command_functions()
+        yield from self._command_category.iter_command_functions(sort = sort)
     
     
     def _unregister_name(self, name):

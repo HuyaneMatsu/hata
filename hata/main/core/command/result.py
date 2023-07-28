@@ -66,6 +66,7 @@ COMMAND_RESULT_CODE_CATEGORY_UNKNOWN_SUB_COMMAND = 9
 COMMAND_RESULT_CODE_COMMAND_REQUIRED = 10
 COMMAND_RESULT_CODE_CALL = 11
 COMMAND_RESULT_CODE_COMMAND_NOT_FOUND = 12
+COMMAND_RESULT_CODE_COMMAND_NOT_AVAILABLE = 13
 
 
 def command_result_processor_conversion_failed(command_line_parameter, received_value):
@@ -430,6 +431,38 @@ def command_result_processor_call(command_function, positional_parameters, keywo
     return result
 
 
+def _render_error_box_and_available_commands_into(into, message):
+    """
+    Renders an error box with a message and lists the available commands.
+    
+    Parameters
+    ----------
+    into : `list` of `str`
+        Container to extend.
+    error_message : `str`
+        Error message to fill the box with.
+    
+    Returns
+    -------
+    into : `list` of `str`
+    """
+    into = render_error_box_into_single_line(into, message)
+    into.append('\n')
+    
+    into.append('The available commands are the following:\n')
+    
+    for command in sorted((command for command in REGISTERED_COMMANDS if command.available), key = command_sort_key):
+        into.append('- ')
+        into.append(command.name)
+        into.append('\n')
+    
+    into.append('\nTry using "$ ')
+    into = render_main_call_into(into)
+    into.append(' help COMMAND-NAME" for more information.\n')
+    
+    return into
+
+
 def command_result_processor_command_not_found(command_name):
     """
     Command result message processor if a command name was not given to run.
@@ -443,25 +476,23 @@ def command_result_processor_command_not_found(command_name):
     -------
     message : `str`
     """
-    message_parts = []
+    return ''.join(_render_error_box_and_available_commands_into([], f'No command for name: {command_name!r}.'))
+
+
+def command_result_processor_command_not_available(command_name):
+    """
+    Command result message processor if a command is not available.
     
-    message_parts = render_error_box_into_single_line(message_parts, f'No command for name: {command_name!r}.')
+    Parameters
+    ----------
+    command_name : `str`
+        Command name.
     
-    message_parts.append(
-        '\n'
-        'The available commands are the following:\n'
-    )
-    
-    for command in sorted(REGISTERED_COMMANDS, key = command_sort_key):
-        message_parts.append('- ')
-        message_parts.append(command.name)
-        message_parts.append('\n')
-    
-    message_parts.append('\nTry using "$ ')
-    render_main_call_into(message_parts)
-    message_parts.append(' help COMMAND-NAME" for more information.\n')
-    
-    return ''.join(message_parts)
+    Returns
+    -------
+    message : `str`
+    """
+    return ''.join(_render_error_box_and_available_commands_into([], f'Command not available: {command_name!r}.'))
 
 
 COMMAND_RESULT_CODE_TO_MESSAGE_PROCESSOR = {
@@ -477,4 +508,5 @@ COMMAND_RESULT_CODE_TO_MESSAGE_PROCESSOR = {
     COMMAND_RESULT_CODE_COMMAND_REQUIRED: command_result_processor_command_required,
     COMMAND_RESULT_CODE_CALL: command_result_processor_call,
     COMMAND_RESULT_CODE_COMMAND_NOT_FOUND: command_result_processor_command_not_found,
+    COMMAND_RESULT_CODE_COMMAND_NOT_AVAILABLE: command_result_processor_command_not_available,
 }

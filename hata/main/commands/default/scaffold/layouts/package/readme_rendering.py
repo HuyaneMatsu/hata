@@ -116,6 +116,8 @@ def render_readme_section_structure_into(into, project_name, bot_names):
     into.append('\n')
     render_readme_section_structure_cli(into, project_name)
     into.append('\n')
+    render_readme_section_structure_constants(into, project_name)
+    into.append('\n')
     render_readme_section_structure_bots(into, project_name)
     into.append('\n')
     render_readme_section_structure_bots_init(into, project_name, bot_names)
@@ -164,6 +166,7 @@ def render_readme_section_structure_directory_into(into, project_name, bot_names
         '    ├─ __init__.py\n'
         '    ├─ __main__.py\n'
         '    ├─ cli.py\n'
+        '    ├─ constants.py\n'
         '    ├─ bots\n'
         '    │   ├─ __init__.py\n'
     )
@@ -390,6 +393,34 @@ def render_readme_section_structure_cli(into, project_name):
         '/cli.py\n'
         '\n'
         'Contains the *command line interface* code, basically the main function is defined here.\n'
+    )
+    
+    return into
+
+
+def render_readme_section_structure_constants(into, project_name):
+    """
+    Renders the `README.md`'s `structure ./{project_name}/constants.py` section.
+    
+    Parameters
+    ----------
+    into : `list` of `str`
+        Content parts to render into.
+    project_name : `str`
+        The project's name.
+    
+    Returns
+    -------
+    into : `list` of `str`
+    """
+    into.append('### ./')
+    into.append(project_name)
+    into.append(
+        '/constants.py\n'
+        '\n'
+        'Stores the constant and the configuration variables. Variables from the `.env` file are loaded here.\n'
+        'This kind of setup allows you to keep the sensitive configuration data separate from your code and customize\n'
+        'the behavior of your application based on the environment settings.\n'
     )
     
     return into

@@ -329,21 +329,6 @@ class CommandCategory(RichAttributeErrorBaseType):
         return (self._command_categories is not None)
     
     
-    def walk_usage(self):
-        """
-        Walks over the usage of the command category.
-        
-        This method is an iterable generator.
-        
-        Yields
-        -------
-        usage : `str`
-        """
-        for into in self.walk_usage_into([]):
-            yield ''.join(into)
-            into.clear()
-    
-    
     def get_direct_usage(self, *sub_command_stack):
         """
         Returns the direct usage of the command category for the given sub-command stack.
@@ -394,36 +379,6 @@ class CommandCategory(RichAttributeErrorBaseType):
         return category.render_direct_usage_into(into, *sub_command_stack[1:])
     
     
-    def walk_usage_into(self, into):
-        """
-        Walks over the usage of the command category and renders it to the given list.
-        
-        This method is an iterable generator.
-        
-        Parameters
-        ----------
-        into : `list` of `str`
-            The list to render the usage into.
-        
-        Yields
-        ------
-        into : `list` of `str`
-        
-        Returns
-        -------
-        into : `list` of `str`
-        """
-        command_function = self._command_function
-        if (command_function is not None):
-            into = command_function.render_usage_into(into)
-            yield into
-        
-        for command_category in sorted(self.iter_sub_categories(), key = command_sort_key):
-            into = yield from command_category.walk_usage_into(into)
-        
-        return into
-    
-    
     def render_partial_usage(self):
         """
         Renders the command category's partial usage.
@@ -465,11 +420,16 @@ class CommandCategory(RichAttributeErrorBaseType):
         return into
     
     
-    def iter_command_functions(self):
+    def iter_command_functions(self, *, sort = False):
         """
         Iterates over the command functions of the command category.
         
         This method is an iterable generator.
+        
+        Parameters
+        ----------
+        sort : `bool` = `False`, Optional (Keyword only)
+            Whether the commands should be iterated in a sorted way.
         
         Yields
         ------
@@ -479,5 +439,10 @@ class CommandCategory(RichAttributeErrorBaseType):
         if (command_function is not None):
             yield command_function
         
-        for sub_category in self.iter_sub_categories():
+        if sort:
+            sub_category_iterator = sorted(self.iter_sub_categories(), key = command_sort_key)
+        else:
+            sub_category_iterator = self.iter_sub_categories()
+        
+        for sub_category in sub_category_iterator:
             yield from sub_category.iter_command_functions()

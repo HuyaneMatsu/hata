@@ -23,6 +23,7 @@ LAYOUT_DESCRIPTIONS = {
         '    ├─ __init__.py\n'
         '    ├─ __main__.py\n'
         '    ├─ cli.py\n'
+        '    ├─ constants.py\n'
         '    ├─ bots\n'
         '    │   ├─ __init__.py\n'
         '    │   ├─ { bot_names[n] }.py\n'

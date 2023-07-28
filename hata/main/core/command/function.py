@@ -230,6 +230,8 @@ class CommandFunction(RichAttributeErrorBaseType):
         if should_add_rest_field:
             into.append(' ...')
         
+        into.append('\n')
+        
         parameters_generic = []
         parameters_modifier = []
         
@@ -247,7 +249,6 @@ class CommandFunction(RichAttributeErrorBaseType):
         modifier_line_length = get_render_modifier_line_length(modifier_lengths)
         sub_command_line_length = max((len(sub_command_name) for sub_command_name in sub_command_names), default = 0)
         
-        
         line_length = 0
         if generic_line_length:
             line_length = max(line_length, generic_line_length, len(BOX_TITLE_PARAMETER))
@@ -260,7 +261,7 @@ class CommandFunction(RichAttributeErrorBaseType):
         
         if generic_line_length:
             if not field_added:
-                into.append('\n\n')
+                into.append('\n')
                 field_added = True
             
             # Render line 1
@@ -281,7 +282,7 @@ class CommandFunction(RichAttributeErrorBaseType):
         
         if modifier_line_length:
             if not field_added:
-                into.append('\n\n')
+                into.append('\n')
                 field_added = True
             
             # Render line 1
@@ -301,7 +302,7 @@ class CommandFunction(RichAttributeErrorBaseType):
         
         if sub_command_line_length:
             if not field_added:
-                into.append('\n\n')
+                into.append('\n')
                 field_added = True
             
             into = render_sub_command_box_into(into, sub_command_names, line_length)
@@ -330,6 +331,7 @@ class CommandFunction(RichAttributeErrorBaseType):
                 into.append(note_sign)
                 into.append(' ' * (note_sign_adjustment - len(note_sign)))
                 into.append(NOTE_SIGN_DESCRIPTION[note_sign])
+                into.append('\n')
         
         return into
     

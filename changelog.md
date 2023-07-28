@@ -4,6 +4,39 @@
 
 - Add `raise_if_missing_or_empty` parameter to `get_bool_env`.
 - Add `raise_if_missing_or_empty` parameter to `get_int_env`.
+- Add `EnvGetter`.
+- Add `GuildFeature.creator_accepted_new_terms`.
+- Add `GuildFeature.creator_monetizable_owner_onboarding`.
+- Add `GuildFeature.web_page`.
+- Add `GuildFeature.home_deprecation`.
+- Add `GuildFeature.guide_screen_enabled`.
+- Add `GuildFeature.clyde_disabled`.
+- Add `GuildFeature.clyde_enabled`.
+- Add `GuildFeature.soundboard_enabled`.
+- Add `GuildFeature.shard`.
+- Add `GuildFeature.summaries_disabled_by_user`.
+- Add `GuildFeature.summaries_enabled`.
+- Add `GuildFeature.summaries_enabled_by_user`.
+- Add `GuildFeature.summaries_enabled_global_access`. This is actually just a guessed name. :KoishiFail:
+- Add `GuildFeature.channel_icon_emojis_generated`.
+- Add `GuildFeature.raid_alerts_disabled`.
+- Add `GuildFeature.auto_moderation_trigger_user_profile`.
+- Add `GuildFeature.embedded_activities_had_early_access`.
+- Add `GuildFeature.users_screen_enabled`.
+- Add `GuildFeature.guests_enabled`.
+- Scaffold now uses adaptive library name everywhere (In case someone copies the library and renames it, kekw).
+- Add `GuildFeature.community_experiment_large_gated`.
+- Scaffold now uses `EnvGetter` to get all environmental variables at once & raise one exception in case multiple are
+    missing. This means the generated structure also changed.
+- `cli` now calls `help` by default and not `interpreter`.
+- `run` command not available when calling the library.
+- `scaffold` command only available when calling the library.
+- Add new `--all` parameter to `help` cli commands. This also means that `help list-all` is renamed to `help list`.
+
+#### Renames, Deprecations & Removals
+
+- Rename `GuildFeature.onboarding` to `.onboarding_enabled`.
+- Deprecate `GuildFeature.onboarding`.
 
 #### Bug fixes
 

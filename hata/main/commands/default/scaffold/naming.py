@@ -1,7 +1,5 @@
 __all__ = ()
 
-from os.path import basename as base_name
-
 
 def _split_part_by_numbers(part):
     """

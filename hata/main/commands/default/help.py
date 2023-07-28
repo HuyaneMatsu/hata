@@ -1,19 +1,74 @@
 __all__ = ()
 
+from os import get_terminal_size
 from math import floor, log10
 
-from .... import __package__ as PACKAGE_NAME
 from ...core import REGISTERED_COMMANDS, REGISTERED_COMMANDS_BY_NAME, command_sort_key, normalize_command_name, register
 from ...core.helpers import render_main_call_into
 
 
-PACKAGE = __import__(PACKAGE_NAME)
-
-BREAK_LINE = '─' * 80
+BREAK_LINE_LENGTH_DEFAULT = 80
 
 
-def show_command(command_name, sub_command_names):
+def render_break_line_into(into, character, name):
+    """
+    Renders a break line with the given name at the middle.
+    
+    Parameters
+    ----------
+    into : `list` of `str`
+        The container to render into.
+    character : `str`
+        The character to create the break from.
+    name : `str`
+        The command's name.
+    
+    Returns
+    -------
+    into : `list` of `str`
+    """
+    try:
+        terminal_size = get_terminal_size()
+    except OSError:
+        break_line_length = BREAK_LINE_LENGTH_DEFAULT
+    else:
+        break_line_length = terminal_size.columns
+    
+    leftover_space = break_line_length - len(name) - 2
+    if leftover_space <= 0:
+        into.append(name)
+    else:
+        into.append(character * (leftover_space >> 1))
+        into.append(' ')
+        into.append(name)
+        into.append(' ')
+        into.append(character * ((leftover_space >> 1) + (leftover_space & 1)))
+    
+    into.append('\n')
+    
+    return into
+
+
+def show_command(all_, command_name, sub_command_names):
+    """
+    Returns a command's description.
+    
+    Parameters
+    ----------
+    all : `bool`
+        Whether all commands should be scanned for the specified name.
+    command_name : `str`
+        The command name to query for.
+    sub_command_names : `tuple` of `str`
+        Additional sub command names to search for within the main command.
+    
+    Returns
+    -------
+    description : `str`
+    """
     command = REGISTERED_COMMANDS_BY_NAME.get(normalize_command_name(command_name), None)
+    if (not all_) and (not command.available):
+        command = None
     
     output_parts = []
     if command is None:
@@ -24,18 +79,32 @@ def show_command(command_name, sub_command_names):
         output_parts.append('\n\n')
         output_parts.append('Try using "$ ')
         render_main_call_into(output_parts)
-        output_parts.append(' help" to list all available commands.\n')
+        output_parts.append(' help" to list ')
+        output_parts.append('all the' if all_ else 'the available')
+        output_parts.append(' commands.\n')
     
     else:
         command.render_direct_usage_into(output_parts, *sub_command_names)
-        output_parts.append('\n')
     
     return ''.join(output_parts)
 
 
-def list_commands():
+def list_commands(all_):
+    """
+    Lists all commands.
+    
+    Parameters
+    ----------
+    all : `bool`
+        Whether all commands should be shown.
+    
+    Returns
+    -------
+    description : `str`
+    """
     output_parts = []
-    output_parts.append('Available commands:\n\n')
+    output_parts.append('All' if all_ else 'Available')
+    output_parts.append(' commands:\n\n')
     
     command_count = len(REGISTERED_COMMANDS)
     if command_count:
@@ -43,7 +112,13 @@ def list_commands():
     else:
         index_adjust = 1
     
-    for index, command in enumerate(sorted(REGISTERED_COMMANDS, key = command_sort_key), 1):
+    if all_:
+        commands = [*REGISTERED_COMMANDS]
+    else:
+        commands = [command for command in REGISTERED_COMMANDS if command.available]
+    commands.sort(key = command_sort_key)
+    
+    for index, command in enumerate(commands, 1):
         command_name = command.name
         output_parts.append(str(index).rjust(index_adjust))
         output_parts.append('. ')
@@ -53,8 +128,9 @@ def list_commands():
     output_parts.append('\n')
     output_parts.append('Use "$ ')
     render_main_call_into(output_parts)
-    output_parts.append(' help ')
-    output_parts.append('COMMAND-NAME')
+    output_parts.append(' help COMMAND-NAME')
+    if all_:
+        output_parts.append(' --all')
     output_parts.append('" for more information.\n')
     
     return ''.join(output_parts)
@@ -62,32 +138,43 @@ def list_commands():
 
 @register(
     name = 'help',
-    alters = 'h'
+    alters = 'h',
 )
-def help_(command_name: str = None, *sub_command_names):
+def help_(command_name: str = None, *sub_command_names, all_: bool = False):
     """Either lists the available commands, or shows the command's usage."""
     if command_name is None:
-        return list_commands()
+        return list_commands(all_)
     else:
-        return show_command(command_name, sub_command_names)
+        return show_command(all_, command_name, sub_command_names)
 
 
 @register(
-    into = help_
+    into = help_,
 )
-def list_all():
-    """Shows the help for all the available commands with their sub-commands included."""
+def list_(*, all_: bool = False):
+    """
+    Shows the help of the available commands with their sub-commands included.
+    Use the `--all` parameter to show the non-available ones as well.
+    """
     output_parts = []
-    field_added = False
     
-    for command in sorted(REGISTERED_COMMANDS, key = command_sort_key):
-        for output_parts in command.walk_usage_into(output_parts):
-            output_parts.append('\n\n')
-            output_parts.append(BREAK_LINE)
-            output_parts.append('\n\n')
-            field_added = True
+    if all_:
+        commands = [*REGISTERED_COMMANDS]
+    else:
+        commands = [command for command in REGISTERED_COMMANDS if command.available]
+    commands.sort(key = command_sort_key)
     
-    if field_added:
-        del output_parts[-3:]
+    for command in commands:
+        command_name = command.name
+        output_parts = render_break_line_into(output_parts, '=', command_name)
+        
+        for command_function in command.iter_command_functions(sort = True):
+            command_function_name = command_function.get_full_name()
+            if command_function_name != command_name:
+                output_parts = render_break_line_into(output_parts, '-', command_function_name)
+            
+            output_parts.append('\n')
+            output_parts = command_function.render_usage_into(output_parts)
+            output_parts.append('\n')
     
     return ''.join(output_parts)

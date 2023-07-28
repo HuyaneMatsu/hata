@@ -1,9 +1,8 @@
 __all__ = ()
 
-import sys
 from os.path import join as join_paths
 
-from ....core import register
+from ....core import LIBRARY_CALLED_DIRECTLY, register
 
 from .helpers import _validate_bot, _validate_layout, _validate_project_name, _validate_name
 from .layouts import DEFAULT_LAYOUT, LAYOUT_DESCRIPTIONS, get_project_structure_builder
@@ -48,7 +47,10 @@ def _build_scaffold_description():
     return ''.join(description_parts)
 
 
-@register(description = _build_scaffold_description())
+@register(
+    available = LIBRARY_CALLED_DIRECTLY,
+    description = _build_scaffold_description(),
+)
 def scaffold(
     name : str,
     *bot : str,
@@ -60,28 +62,24 @@ def scaffold(
     """
     directory_path, error_message = _validate_name(name)
     if error_message is not None:
-        sys.stdout.write(error_message)
-        return
+        return error_message
     
     bot_names, error_message = _validate_bot(bot)
     if error_message is not None:
-        sys.stdout.write(error_message)
-        return
+        return error_message
     
     project_name, error_message = _validate_project_name(project_name, name)
     if error_message is not None:
-        sys.stdout.write(error_message)
-        return
+        return error_message
     
     layout, error_message = _validate_layout(layout)
     if error_message is not None:
-        sys.stdout.write(error_message)
-        return
+        return error_message
     
     project_module_name = get_project_module_name(project_name)
     create_project_structure = get_project_structure_builder(layout)
     create_project_structure(directory_path, project_module_name, bot_names)
-    sys.stdout.write(
+    return (
         f'Project {project_module_name} created.\n'
         f'Note that scaffold command is experimental and will change in future updates.\n'
         f'Please check {join_paths(directory_path, "README.md")} about whats next.\n'

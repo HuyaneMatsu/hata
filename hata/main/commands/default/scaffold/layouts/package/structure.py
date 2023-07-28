@@ -97,8 +97,8 @@ def create_pyproject_toml_file(directory_path, project_name):
             f'name = \'{project_name}\'\n'
             f'\n'
             f'dependencies = [\n'
-            f'    \'hata\',\n'
-            f'    \'hata\[all]\',\n'
+            f'    \'{PACKAGE_NAME}\',\n'
+            f'    \'{PACKAGE_NAME}\[all]\',\n'
             f']\n'
             f'readme = \'README.md\'\n'
             f'requires-python = \'>=3.6\'\n'
@@ -181,7 +181,7 @@ def create_cli_file(directory_path):
             f'\n'
             f'def main():\n'
             f'    try:\n'
-            f'        from hata.main import execute_command_from_system_parameters\n'
+            f'        from {PACKAGE_NAME}.main import execute_command_from_system_parameters\n'
             f'    except ImportError as err:\n'
             f'        raise ImportError(\n'
             f'            \'Couldn\\\'t import {PACKAGE_NAME}. \'\n'
@@ -189,8 +189,8 @@ def create_cli_file(directory_path):
             f'            \'Did you forget to activate a virtual environment?\'\n'
             f'        ) from err\n'
             f'\n'
-            f'    from hata.ext.plugin_auto_reloader import start_auto_reloader, warn_auto_reloader_availability\n'
-            f'    from hata.ext.plugin_loader import load_all_plugin, frame_filter, register_plugin\n'
+            f'    from {PACKAGE_NAME}.ext.plugin_auto_reloader import start_auto_reloader, warn_auto_reloader_availability\n'
+            f'    from {PACKAGE_NAME}.ext.plugin_loader import load_all_plugin, frame_filter, register_plugin\n'
             f'    from scarletio import get_event_loop, write_exception_sync\n'
             f'\n'
             f'    from . import bots\n'
@@ -210,6 +210,57 @@ def create_cli_file(directory_path):
             f'    execute_command_from_system_parameters()\n'
         ),
     )
+
+
+def build_constants_file_content(bot_names):
+    """
+    Builds the content of the `/{project_name}/constants.py` file.
+    
+    Parameters
+    ----------
+    bot_names : `list` of `str`
+        The bots' names.
+    
+    Returns
+    -------
+    content : `str`
+    """
+    content_parts = []
+    
+    # Header
+    content_parts.append('__all__ = ()\n\n')
+    
+    # Imports
+    content_parts.append('from ')
+    content_parts.append(PACKAGE_NAME)
+    content_parts.append('.env import EnvGetter\n\n\n')
+    
+    # Content
+    content_parts.append('with EnvGetter() as env:\n')
+    for bot_name in bot_names:
+        constant_name = get_bot_constant_name(bot_name)
+        
+        content_parts.append('    ')
+        content_parts.append(constant_name)
+        content_parts.append('_TOKEN = env.get_str(\'')
+        content_parts.append(constant_name)
+        content_parts.append('_TOKEN\', raise_if_missing_or_empty = True)\n')
+    
+    return ''.join(content_parts)
+
+
+def create_constants_file(directory_path, bot_names):
+    """
+    Creates a new `/{project_name}/constants.py` file.
+    
+    Parameters
+    ----------
+    directory_path : `str`
+        Path to the file's directory.
+    bot_names : `list` of `str`
+        The bots' names.
+    """
+    create_file(directory_path, 'constants.py', build_constants_file_content(bot_names))
 
 
 def create_main_file(directory_path):
@@ -304,12 +355,13 @@ def create_bot_file(directory_path, bot_name):
         (
             f'__all__ = (\'{bot_variable_name}\',)\n'
             f'\n'
-            f'from hata import Client\n'
-            f'from hata.env import get_str_env\n'
+            f'from {PACKAGE_NAME} import Client\n'
+            f'\n'
+            f'from ..constants import {bot_constant_name}_TOKEN\n'
             f'\n'
             f'\n'
             f'{bot_variable_name} = Client(\n'
-            f'    get_str_env(\'{bot_constant_name}_TOKEN\', raise_if_missing_or_empty = True)\n'
+            f'    {bot_constant_name}_TOKEN,\n'
             f')\n'
         ),
     )
@@ -328,7 +380,7 @@ def create_plugins_init_file(directory_path):
         directory_path,
         '__init__.py',
         (
-            f'from hata.ext.plugin_loader import mark_as_plugin_root_directory\n'
+            f'from {PACKAGE_NAME}.ext.plugin_loader import mark_as_plugin_root_directory\n'
             f'\n'
             f'mark_as_plugin_root_directory()\n'
         ),
@@ -363,6 +415,7 @@ def create_project_structure(root_directory_path, project_name, bot_names):
     create_main_file(project_directory_path)
     create_dot_env_file(project_directory_path, bot_names)
     create_cli_file(project_directory_path)
+    create_constants_file(project_directory_path, bot_names)
     
     # root / { project_name } / bots
     bots_directory_path = join_paths(project_directory_path, 'bots')

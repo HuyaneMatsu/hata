@@ -2,10 +2,13 @@ __all__ = ('call_command', 'execute_command_from_system_parameters',)
 
 import sys
 
-from ... import KOKORO
+from ...discord import KOKORO
 
 from .command import CommandResult, normalize_command_name
-from .command.result import COMMAND_RESULT_CODE_COMMAND_NOT_FOUND, COMMAND_RESULT_CODE_COMMAND_REQUIRED
+from .command.result import (
+    COMMAND_RESULT_CODE_COMMAND_NOT_AVAILABLE,  COMMAND_RESULT_CODE_COMMAND_NOT_FOUND,
+    COMMAND_RESULT_CODE_COMMAND_REQUIRED
+)
 from .constants import REGISTERED_COMMANDS_BY_NAME, SYSTEM_DEFAULT_PARAMETER
 from .lookup import maybe_find_commands
 
@@ -25,11 +28,14 @@ def call_command(parameters, index, output_stream):
     """
     maybe_find_commands()
     
-    if index >= len(parameters):
-        command_result = CommandResult(
-            COMMAND_RESULT_CODE_COMMAND_REQUIRED,
-        )
-    else:
+    # Use goto
+    while True:
+        if index >= len(parameters):
+            command_result = CommandResult(
+                COMMAND_RESULT_CODE_COMMAND_REQUIRED,
+            )
+            break
+    
         command_name = parameters[index]
         index += 1
         command_name = normalize_command_name(command_name)
@@ -41,8 +47,18 @@ def call_command(parameters, index, output_stream):
                 COMMAND_RESULT_CODE_COMMAND_NOT_FOUND,
                 command_name,
             )
-        else:
-            command_result = command.invoke(parameters, index)
+            break
+            
+        if not command.available:
+            command_result = CommandResult(
+                COMMAND_RESULT_CODE_COMMAND_NOT_AVAILABLE,
+                command_name,
+            )
+            break
+        
+        command_result = command.invoke(parameters, index)
+        break
+            
     
     output = command_result.get_message()
     if (output is not None):

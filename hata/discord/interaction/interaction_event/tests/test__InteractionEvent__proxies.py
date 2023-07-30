@@ -245,14 +245,13 @@ def test__InteractionEvent__value():
     value = 'Yumemi'
     
     interaction_event = InteractionEvent(
-        interaction_type = InteractionType.application_command_autocomplete,
-        interaction = InteractionMetadataApplicationCommandAutocomplete(
-            options = [InteractionOption(value = value, focused = True)],
+        interaction_type = InteractionType.message_component,
+        interaction = InteractionMetadataMessageComponent(
+            values = [value]
         ),
     )
     
     vampytest.assert_eq(interaction_event.value, value)
-
 
 
 def test__InteractionEvent__iter_values():

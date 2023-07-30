@@ -1,8 +1,13 @@
 __all__ = ()
 
-from os import environ as environmental_variables, environb as environmental_variables_binary
+from os import environ as environmental_variables
 from os.path import dirname as get_directory_name, isfile as is_file, join as join_paths
 from sys import _getframe as get_frame
+
+try:
+    from os import environb as environmental_variables_binary
+except ImportError:
+    environmental_variables_binary = None
 
 from scarletio import RichAttributeErrorBaseType
 
@@ -113,7 +118,8 @@ class DotEnvResult(RichAttributeErrorBaseType):
                 value = ''
             
             environmental_variables.setdefault(key, value)
-            environmental_variables_binary.setdefault(key.encode(), value.encode())
+            if (environmental_variables_binary is not None):
+                environmental_variables_binary.setdefault(key.encode(), value.encode())
         
         return self
     

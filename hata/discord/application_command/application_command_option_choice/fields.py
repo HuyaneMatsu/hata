@@ -42,6 +42,9 @@ def validate_name(name):
     ValueError
         - If `name's length is out of the expected range.
     """
+    if name is None:
+        return ''
+    
     if isinstance(name, Enum):
         processed_name = name.name
     else:
@@ -56,12 +59,14 @@ def validate_name(name):
     
     name_length = len(processed_name)
     if (
-        (name_length < APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN) or
-        (name_length > APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX)
+        name_length and (
+            (name_length < APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN) or
+            (name_length > APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX)
+        )
     ):
         raise ValueError(
             f'`name` length` can be in range '
-            f'[{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}]'
+            f'[{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}] '
             f'got {name_length!r}; {name!r}.'
         )
     

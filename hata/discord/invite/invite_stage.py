@@ -7,6 +7,8 @@ class InviteStage:
     """
     Represents an invite's stage.
     
+    Deprecated.
+    
     Attributes
     ----------
     participant_count : `int`
@@ -21,7 +23,8 @@ class InviteStage:
     __slots__ = ('participant_count', 'participants', 'speaker_count', 'topic',)
     
     
-    def __new__(cls, data, guild_id):
+    @classmethod
+    def from_data(cls, data, guild_id):
         """
         Creates a new ``InviteStage`` from the given data.
         

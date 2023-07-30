@@ -1,13 +1,11 @@
 import vampytest
 
-from ....core import CHANNELS
-
 from ..channel import Channel
 from ..preinstanced import ChannelType
 from ..utils import create_partial_channel_from_data
 
 
-def test__create_partial_channel_from_data__0():
+def test__create_partial_channel_from_data__new():
     """
     Tests whether ``create_partial_channel_from_data`` works as intended.
     
@@ -28,15 +26,12 @@ def test__create_partial_channel_from_data__0():
     
     vampytest.assert_instance(channel, Channel)
     
-    vampytest.assert_in(channel_id, CHANNELS)
-    vampytest.assert_is(CHANNELS[channel_id], channel)
-    
     vampytest.assert_eq(channel.id, channel_id)
     vampytest.assert_eq(channel.guild_id, guild_id)
     vampytest.assert_eq(channel.name, name)
 
 
-def test__create_partial_channel_from_data__1():
+def test__create_partial_channel_from_data__guild_id_in_data():
     """
     Tests whether ``create_partial_channel_from_data`` works as intended.
     
@@ -58,15 +53,12 @@ def test__create_partial_channel_from_data__1():
     
     vampytest.assert_instance(channel, Channel)
     
-    vampytest.assert_in(channel_id, CHANNELS)
-    vampytest.assert_is(CHANNELS[channel_id], channel)
-    
     vampytest.assert_eq(channel.id, channel_id)
     vampytest.assert_eq(channel.guild_id, guild_id)
     vampytest.assert_eq(channel.name, name)
 
 
-def test__create_partial_channel_from_data__2():
+def test__create_partial_channel_from_data__existing():
     """
     Tests whether ``create_partial_channel_from_data`` works as intended.
     
@@ -85,3 +77,22 @@ def test__create_partial_channel_from_data__2():
     
     vampytest.assert_instance(channel, Channel)
     vampytest.assert_is(channel, existing_channel)
+
+
+def test__create_partial_channel_from_data__caching():
+    """
+    Tests whether ``create_partial_channel_from_data`` works as intended.
+    
+    Case: caching.
+    """
+    channel_id = 202307300006
+    guild_id = 202307300007
+    
+    data = {
+        'id': str(channel_id),
+    }
+    
+    channel_0 = create_partial_channel_from_data(data, guild_id)
+    channel_1 = create_partial_channel_from_data(data, guild_id)
+    
+    vampytest.assert_is(channel_0, channel_1)

@@ -87,28 +87,3 @@ def test__InteractionMetadataApplicationCommandAutocomplete__get_value_of():
     )
     
     vampytest.assert_eq(interaction_metadata.get_value_of('maou', 'fumo'), 'friday')
-
-
-def test__InteractionMetadataApplicationCommandAutocomplete__value__0():
-    """
-    Tests whether ``InteractionMetadataApplicationCommandAutocomplete.value`` works as intended.
-    
-    Case: nope.
-    """
-    interaction_metadata = InteractionMetadataApplicationCommandAutocomplete()
-    
-    vampytest.assert_is(interaction_metadata.value, None)
-
-
-def test__InteractionMetadataApplicationCommandAutocomplete__value__1():
-    """
-    Tests whether ``InteractionMetadataApplicationCommandAutocomplete.value`` works as intended.
-    
-    Case: yes!
-    """
-    interaction_option_1 = InteractionOption(value = 'Yumemi', focused = True)
-    interaction_metadata = InteractionMetadataApplicationCommandAutocomplete(
-        options = [interaction_option_1],
-    )
-    
-    vampytest.assert_eq(interaction_metadata.value, 'Yumemi')

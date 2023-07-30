@@ -1,4 +1,4 @@
-__all__ = ('create_partial_guild_from_data', 'create_partial_guild_from_id')
+__all__ = ('create_partial_guild_data', 'create_partial_guild_from_data', 'create_partial_guild_from_id')
 
 from functools import partial as partial_func
 
@@ -8,9 +8,9 @@ from ...core import GUILDS
 
 from .fields import (
     parse_available, parse_description, parse_features, parse_id, parse_name, parse_verification_level,
-    put_afk_channel_id_into, put_afk_timeout_into, put_boost_progress_bar_enabled_into,
+    put_afk_channel_id_into, put_afk_timeout_into, put_available_into, put_boost_progress_bar_enabled_into,
     put_channels_and_channel_datas_into, put_content_filter_into, put_description_into, put_features_into,
-    put_hub_type_into, put_message_notification_into, put_mfa_into, put_name_into, put_nsfw_level_into,
+    put_hub_type_into, put_id_into, put_message_notification_into, put_mfa_into, put_name_into, put_nsfw_level_into,
     put_owner_id_into, put_preferred_locale_into, put_public_updates_channel_id_into, put_roles_and_role_datas_into,
     put_rules_channel_id_into, put_safety_alerts_channel_id_into, put_system_channel_flags_into,
     put_system_channel_id_into, put_vanity_code_into, put_verification_level_into, put_widget_channel_id_into,
@@ -78,17 +78,13 @@ def create_partial_guild_from_data(data):
     
     Parameters
     ----------
-    data : `None`, `dict` of (`str`, `object`) items
+    data : `dict` of (`str`, `object`) items
         Partial channel data received from Discord.
     
     Returns
     -------
-    channel : `None`, ``Guild``
-        The created partial guild, or `None`, if no data was received.
+    guild : ``Guild``
     """
-    if (data is None) or (not data):
-        return None
-    
     guild_id = parse_id(data)
     try:
         return GUILDS[guild_id]
@@ -117,6 +113,34 @@ def create_partial_guild_from_data(data):
     GUILDS[guild_id] = guild
     
     return guild
+
+
+def create_partial_guild_data(guild):
+    """
+    Creates partial guild data. The opposite of ``create_partial_guild_from_data``.
+    
+    Parameters
+    ----------
+    guild : ``Guild``
+        The guild to serialize.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    data = {}
+    
+    put_available_into(guild.available, data, True)
+    put_description_into(guild.description, data, True)
+    type(guild).discovery_splash.put_into(guild.discovery_splash, data, True, as_data = False)
+    put_features_into(guild.features, data, True)
+    put_id_into(guild.id, data, True)
+    type(guild).icon.put_into(guild.icon, data, True, as_data = False)
+    type(guild).invite_splash.put_into(guild.invite_splash, data, True, as_data = False)
+    put_name_into(guild.name, data, True)
+    put_verification_level_into(guild.verification_level, data, True)
+    
+    return data
 
 
 @export

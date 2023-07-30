@@ -76,25 +76,64 @@ def test__DotEnvResult__insert_to_environmental_variables():
     
     dot_env_result = DotEnvResult(input_variables, None, None)
     
+    
     insert_variables = type(dot_env_result).insert_to_environmental_variables
-    insert_variables_copy = FunctionType(
-        insert_variables.__code__,
-        {
-            **insert_variables.__globals__,
+    
+    mocked = vampytest.mock_globals(
+        insert_variables,
+        values = {
             'environmental_variables': environmental_variables,
             'environmental_variables_binary': environmental_variables_binary,
         },
-        insert_variables.__name__,
-        insert_variables.__defaults__,
-        insert_variables.__closure__,
     )
     
-    output = insert_variables_copy(dot_env_result)
+    output = mocked(dot_env_result)
     
     vampytest.assert_is(output, dot_env_result)
     
     vampytest.assert_eq(environmental_variables, expected_environmental_variables)
     vampytest.assert_eq(environmental_variables_binary, expected_environmental_variables_binary)
+
+
+
+def test__DotEnvResult__insert_to_environmental_variables__no_binary_supported():
+    """
+    Tests whether ``DotEnvResult.insert_to_environmental_variables`` works as intended.
+    """
+    environmental_variables = {
+        'Komeiji': 'Koishi',
+    }
+    
+    input_variables = {
+        'Komeiji': 'Satori',
+        'Chen': None,
+        'Yakumo': 'Yukari',
+    }
+    
+    expected_environmental_variables = {
+        'Komeiji': 'Koishi',
+        'Chen': '',
+        'Yakumo': 'Yukari',
+    }
+    
+    dot_env_result = DotEnvResult(input_variables, None, None)
+    
+    
+    insert_variables = type(dot_env_result).insert_to_environmental_variables
+    
+    mocked = vampytest.mock_globals(
+        insert_variables,
+        values = {
+            'environmental_variables': environmental_variables,
+            'environmental_variables_binary': None,
+        },
+    )
+    
+    output = mocked(dot_env_result)
+    
+    vampytest.assert_is(output, dot_env_result)
+    
+    vampytest.assert_eq(environmental_variables, expected_environmental_variables)
 
 
 def test__DotEnvResult__raise_if_failed__0():

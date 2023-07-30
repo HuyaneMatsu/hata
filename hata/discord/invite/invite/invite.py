@@ -4,17 +4,17 @@ from datetime import datetime
 
 from scarletio import export
 
-from ..application import Application
-from ..bases import DiscordEntity, instance_or_id_to_instance
-from ..channel import Channel, create_partial_channel_from_data
-from ..core import CHANNELS, GUILDS, INVITES
-from ..guild import Guild, NsfwLevel, create_partial_guild_from_data
-from ..http import urls as module_urls
-from ..preconverters import preconvert_bool, preconvert_int, preconvert_preinstanced_type, preconvert_str
-from ..user import ClientUserBase, User, ZEROUSER
-from ..utils import DISCORD_EPOCH_START, timestamp_to_datetime
+from ...application import Application
+from ...bases import DiscordEntity, instance_or_id_to_instance
+from ...channel import Channel, create_partial_channel_from_data
+from ...core import CHANNELS, GUILDS, INVITES
+from ...guild import Guild, NsfwLevel, create_partial_guild_from_data
+from ...http import urls as module_urls
+from ...preconverters import preconvert_bool, preconvert_int, preconvert_preinstanced_type, preconvert_str
+from ...user import ClientUserBase, User, ZEROUSER
+from ...utils import DISCORD_EPOCH_START, timestamp_to_datetime
 
-from .invite_stage import InviteStage
+from ..invite_stage import InviteStage
 from .preinstanced import InviteTargetType, InviteType
 
 
@@ -51,18 +51,24 @@ class Invite(DiscordEntity, immortal = True):
     approximate_online_count : `int`
         The approximate amount of online users at the respective guild (or group channel). If not included, then set
         as `0`.
+    
     approximate_user_count : `int`
         The approximate amount of users at the respective guild (or group channel). If not included, then set as `0`.
+    
     channel : `None`, ``Channel``
         The channel where the invite redirects. If it is announcements or store channel, then the invite is a lurk
         invite. If channel data was not sent with the invite's, then this attribute is set as `None`.
+    
     code : `str`
         The invite's unique identifier.
-    created_at : `datetime`
+    
+    created_at : `DateTime`
         When the invite was created. Defaults to Discord epoch.
+    
     guild : `None`, ``Guild``
         The guild the invite is for. If not included or if the invite's channel is a group channel, then set as
         `None`.
+    
     inviter : ``ClientUserBase``
         The creator of the invite. If not included, then set as `ZEROUSER`.
     
@@ -78,22 +84,30 @@ class Invite(DiscordEntity, immortal = True):
     
     nsfw_level : ``NsfwLevel``
         The respective guild's nsfw level if applicable.
+    
     partial : `bool`
         Whether the invite is only partially loaded.
+    
     stage : `None`, ``InviteStage``
-        A invite stage instance representing the stage to which the invite is created to.
+        A invite stage instance representing the stage to which the invite is created to. (Deprecated)
+    
     target_type : ``InviteTargetType``
         The invite's target type.
+    
     target_application : `None`, ``Application``
         The invite's target application.
+    
     target_user : ``ClientUserBase``
         The target of the invite if applicable. Defaults to `ZEROUSER`.
+    
     temporary : `bool`
         Whether this invite only grants temporary membership.
         
         When the user goes offline, they get kicked, except if they got a role meanwhile.
+    
     type : ``InviteType``
         The invite's type.
+    
     uses : `None`, `int`
         The amount how much times the invite was used. If not included, set as `None`.
     """

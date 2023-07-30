@@ -5,30 +5,46 @@ from ....channel import Channel
 from ..fields import validate_channel
 
 
-def test__validate_channel__0():
+def _iter_options():
+    channel_id = 202211010012
+    channel = Channel.precreate(channel_id)
+    yield channel, channel
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_channel__passing(input_value):
     """
     Tests whether `validate_channel` works as intended.
     
     Case: passing.
-    """
-    channel_id = 202211010012
-    channel = Channel.precreate(channel_id)
     
-    for input_value, expected_output in (
-        (channel, channel),
-    ):
-        output = validate_channel(input_value)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : ``Channel``
+        The channel to validate.
+    
+    Returns
+    -------
+    output : ``Channel``
+    """
+    return validate_channel(input_value)
 
 
-def test__validate_channel__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_channel__type_error(input_value):
     """
     Tests whether `validate_channel` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Value to pass.
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_channel(input_value)
+    validate_channel(input_value)

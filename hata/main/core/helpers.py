@@ -99,7 +99,7 @@ def normalize_executed_file(executed_file):
     if not is_absolute_path(executed_file):
         return executed_file, False
     
-    directory_name, file_name =  split_path(executed_file)
+    directory_name, file_name = split_path(executed_file)
     if file_name == '__main__.py':
         executed_file = directory_name
     

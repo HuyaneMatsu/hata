@@ -466,6 +466,24 @@ def nullable_date_time_parser_factory(field_key):
     -------
     parser : `FunctionType`
     """
+    return default_date_time_parser_factory(field_key, None)
+
+
+def default_date_time_parser_factory(field_key, default):
+    """
+    Returns a new defaulted date time parser.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    default : `object`
+        Default value to return if the field is not present (or null) in the data.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
     def parser(data):
         """
         Parses out a date time from the given payload.
@@ -481,10 +499,14 @@ def nullable_date_time_parser_factory(field_key):
         -------
         field_value : `None`, `DateTime`
         """
+        nonlocal default
+        nonlocal field_key
+        
         timestamp = data.get(field_key, None)
         if (timestamp is not None):
             return timestamp_to_datetime(timestamp)
-    
+        
+        return default
     
     return parser
 

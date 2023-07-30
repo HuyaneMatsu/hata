@@ -32,6 +32,11 @@
 - `run` command not available when calling the library.
 - `scaffold` command only available when calling the library.
 - Add new `--all` parameter to `help` cli commands. This also means that `help list-all` is renamed to `help list`.
+- Add `create_partial_guild_data`.
+
+#### Improvements
+
+- `InteractionEvent.value` was bound to auto complete instead of message component. This was not intended.
 
 #### Renames, Deprecations & Removals
 

@@ -1,6 +1,6 @@
 __all__ = ('InviteTargetType', 'InviteType')
 
-from ..bases import Preinstance as P, PreinstancedBase
+from ...bases import Preinstance as P, PreinstancedBase
 
 
 class InviteTargetType(PreinstancedBase):

@@ -79,6 +79,9 @@ def validate_name(name):
             f'`name` can be `None`, `str`, got {name.__class__.__name__} ;{name!r}.'
         )
     
+    if not name:
+        return ''
+    
     validated_name = ''.join(NAME_ALLOWED_CHARACTERS.findall(name))
     
     name_length = len(validated_name)

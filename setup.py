@@ -124,6 +124,7 @@ setup(
         'hata.discord.interaction.resolved',
         'hata.discord.interaction.responding',
         'hata.discord.invite',
+        'hata.discord.invite.invite',
         'hata.discord.localization',
         'hata.discord.message',
         'hata.discord.message.attachment',

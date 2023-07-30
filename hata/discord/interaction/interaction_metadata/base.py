@@ -483,15 +483,15 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
     @property
     def value(self):
         """
-        Returns the focused option's value of the application command autocomplete interaction.
+        Returns the selected value of an component interaction.
         
         Returns
         -------
         value : `None`, `str`
         """
-        focused_option = self.focused_option
-        if (focused_option is not None):
-            return focused_option.value
+        values = self.values
+        if (values is not None):
+            return values[0]
     
     # Message component
     

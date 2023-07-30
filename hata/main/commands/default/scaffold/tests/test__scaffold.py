@@ -1,12 +1,9 @@
-from contextlib import redirect_stdout
-from io import StringIO
 from os.path import abspath as absolute_path
-from types import FunctionType
 
 import vampytest
 
 from ..command import scaffold
-from ..layouts import DEFAULT_LAYOUT, get_project_structure_builder
+from ..layouts import DEFAULT_LAYOUT
 
 
 scaffold = scaffold._function
@@ -35,11 +32,9 @@ def test__scaffold__fail(name, bots, project_name, layout):
     layout : `None`, `str`
         Layout value.
     """
-    stdout = StringIO()
-    with redirect_stdout(stdout):
-        scaffold(name, *bots, project_name = project_name, layout = layout)
+    output = scaffold(name, *bots, project_name = project_name, layout = layout)
     
-    output = stdout.getvalue()
+    vampytest.assert_instance(output, str)
     vampytest.assert_true(output)
 
 
@@ -97,28 +92,11 @@ def test__scaffold__pass(name, bots, project_name, layout, expected_layout, expe
         
         return TestType
     
+    mocked = vampytest.mock_globals(scaffold, 2, import_module = import_module)
+
+    output = mocked(name, *bots, project_name = project_name, layout = layout)
     
-    get_project_structure_builder_copy = FunctionType(
-        get_project_structure_builder.__code__,
-        {**get_project_structure_builder.__globals__, 'import_module': import_module},
-        get_project_structure_builder.__name__,
-        get_project_structure_builder.__defaults__,
-        get_project_structure_builder.__closure__,
-    )
-    
-    scaffold_copy = FunctionType(
-        scaffold.__code__,
-        {**scaffold.__globals__, 'get_project_structure_builder': get_project_structure_builder_copy},
-        scaffold.__name__,
-        scaffold.__defaults__,
-        scaffold.__closure__,
-    )
-    
-    stdout = StringIO()
-    with redirect_stdout(stdout):
-        scaffold_copy(name, *bots, project_name = project_name, layout = layout)
-    
-    output = stdout.getvalue()  
+    vampytest.assert_instance(output, str)
     vampytest.assert_true(output)
     
     vampytest.assert_true(import_module_called)

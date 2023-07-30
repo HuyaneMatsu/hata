@@ -1993,6 +1993,60 @@ def functional_putter_factory(field_key, function, *, include = None):
     return putter
 
 
+def nullable_functional_putter_factory(field_key, function, *, include = None):
+    """
+    Returns a new nullable functional putter.
+    
+    Returns
+    -------
+    field_key : `str`
+        The field's key used in payload.
+    function : `FunctionType`
+        The function to call to serialise the field value.
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The function's name to include `function` with. Should be used when `function` cannot be resolved initially.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(field_value, data, defaults):
+        """
+        Puts the given `field_value` into the given `data` json serializable object. The `field_value` is processed by
+        a function which is defined at the putter's creation.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        field_value : `None`, `object`
+            Field value.
+        data : `dict` of (`str`, `object`) items
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `object`) items
+        """
+        nonlocal function
+        nonlocal field_key
+        
+        data[field_key] = None if field_value is None else function(field_value)
+        return data
+    
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal function
+            function = value
+    
+    
+    return putter
+
+
 def flag_putter_factory(field_key):
     """
     Returns a flag putter.

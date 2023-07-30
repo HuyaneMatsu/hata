@@ -112,7 +112,12 @@ def validate_name(name):
         )
     
     name_length = len(name)
-    if (name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN) or (name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX):
+    if (
+        name_length and (
+            (name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN) or
+            (name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX)
+        )
+    ):
         raise ValueError(
             f'`name` length can be >= {APPLICATION_COMMAND_NAME_LENGTH_MIN} and '
             f'<= {APPLICATION_COMMAND_NAME_LENGTH_MAX}, got {name_length}; name = {name!r}'

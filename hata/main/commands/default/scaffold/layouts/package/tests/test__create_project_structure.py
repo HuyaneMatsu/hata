@@ -73,6 +73,7 @@ def test__create_project_structure():
             ('f', join_paths(input_root_directory_path, input_project_name, '__main__.py')),
             ('f', join_paths(input_root_directory_path, input_project_name, '.env')),
             ('f', join_paths(input_root_directory_path, input_project_name, 'cli.py')),
+            ('f', join_paths(input_root_directory_path, input_project_name, 'constants.py')),
             
             ('d', join_paths(input_root_directory_path, input_project_name, 'bots')),
             ('f', join_paths(input_root_directory_path, input_project_name, 'bots', '__init__.py')),

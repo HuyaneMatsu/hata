@@ -134,7 +134,7 @@ async def converter_self_interaction_value(client, interaction_event):
     if interaction_event.type is not INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE:
         return None
     
-    return interaction_event.value
+    return interaction_event.focused_option.value
 
 
 async def converter_int(client, interaction_event, value):

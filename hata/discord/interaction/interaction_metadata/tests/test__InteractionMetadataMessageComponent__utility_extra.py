@@ -131,3 +131,28 @@ def test__MessageComponent__entities():
         )
     ):
         vampytest.assert_eq(interaction_metadata.entities, expected_output)
+
+
+
+def _iter_options__value():
+    yield None, None
+    yield ['automatically'], 'automatically'
+    yield ['push', 'up'], 'push'
+
+
+@vampytest._(vampytest.call_from(_iter_options__value()).returning_last())
+def test__InteractionMetadataMessageComponent__value(values):
+    """
+    Tests whether ``InteractionMetadataMessageComponent.value`` works as intended.
+    
+    Parameters
+    ----------
+    values : `None`, `list` of `str`
+        Values to create the metadata with.
+    
+    Returns
+    -------
+    output : `None`, `str`
+    """
+    interaction_metadata = InteractionMetadataMessageComponent(values = values)
+    return interaction_metadata.value

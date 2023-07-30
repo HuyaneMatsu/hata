@@ -671,6 +671,10 @@ def is_valid_application_command_name(name):
     -------
     valid : `bool`
     """
+    # Ignore empty names.
+    if not name:
+        return True
+    
     return (APPLICATION_COMMAND_NAME_RP.fullmatch(name) is not None)
 
 

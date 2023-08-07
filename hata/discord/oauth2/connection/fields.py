@@ -73,7 +73,7 @@ validate_two_way_link = bool_validator_factory('two_way_link', False)
 
 # type
 
-parse_type = preinstanced_parser_factory('type', ConnectionType, ConnectionType.unknown)
+parse_type = preinstanced_parser_factory('type', ConnectionType, ConnectionType.none)
 put_type_into = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('type', ConnectionType)
 

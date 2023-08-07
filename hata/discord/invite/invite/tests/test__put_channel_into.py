@@ -6,7 +6,10 @@ from ..fields import put_channel_into
 
 
 def _iter_options():
-    yield None, {'channel': None}
+    yield None, {
+        'channel': None,
+        'channel_id': None,
+    }
     
     channel_id = 202307290003
     guild_id = 202307290004
@@ -26,7 +29,8 @@ def _iter_options():
             'guild_id': str(guild_id),
             'name': name,
             'type': channel_type.value,
-        }
+        },
+        'channel_id': str(channel_id),
     }
 
     yield channel, expected_output

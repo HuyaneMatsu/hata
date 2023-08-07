@@ -23,4 +23,6 @@ def test__parse_type(input_data):
     -------
     output : ``EmbedType``
     """
-    return parse_type(input_data)
+    output = parse_type(input_data)
+    vampytest.assert_instance(output, EmbedType)
+    return output

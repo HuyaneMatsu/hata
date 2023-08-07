@@ -10,14 +10,18 @@ if API_VERSION in (6, 7):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received permission overwrite data.
         
         Returns
         -------
         type_value : `str`
         """
-        return data['type']
+        value = data.get('type', None)
+        if value is None:
+            value = -1
+        return value
+
 else:
     def get_permission_overwrite_key_value(data):
         """
@@ -25,11 +29,16 @@ else:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received permission overwrite data.
         
         Returns
         -------
         type_value : `int`
         """
-        return int(data['type'])
+        value = data.get('type', None)
+        if value is None:
+            value = -1
+        else:
+            value = int(value)
+        return value

@@ -4,14 +4,25 @@ from ..fields import parse_type
 from ..preinstanced import VerificationScreenStepType
 
 
-def test__parse_type():
+def _iter_options():
+    yield {}, VerificationScreenStepType.none
+    yield {'field_type': VerificationScreenStepType.rules.value}, VerificationScreenStepType.rules
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_type(input_data):
     """
     Tests whether ``parse_type`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Input data.
+    
+    Returns
+    -------
+    output : ``VerificationScreenStepType``
     """
-    for input_data, expected_output in (
-        ({}, VerificationScreenStepType.none),
-        ({'field_type': VerificationScreenStepType.none.value}, VerificationScreenStepType.none),
-        ({'field_type': VerificationScreenStepType.rules.value}, VerificationScreenStepType.rules),
-    ):
-        output = parse_type(input_data)
-        vampytest.assert_eq(output, expected_output)
+    output = parse_type(input_data)
+    vampytest.assert_instance(output, VerificationScreenStepType)
+    return output

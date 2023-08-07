@@ -1,20 +1,17 @@
 __all__ = ('Integration', )
 
-import warnings
-
 from scarletio import copy_docs, export
 
 from ...bases import DiscordEntity
 from ...core import INTEGRATIONS
-from ...preconverters import preconvert_snowflake
 from ...role import create_partial_role_from_id
 from ...user import ZEROUSER
 
 from ..integration_metadata import IntegrationMetadataBase, IntegrationMetadataSubscription
 
 from .fields import (
-    parse_enabled, parse_name, parse_type, parse_user, put_enabled_into, put_name_into, put_type_into, put_user_into,
-    validate_enabled, validate_name, validate_type, validate_user
+    parse_enabled, parse_id, parse_name, parse_type, parse_user, put_enabled_into, put_id_into, put_name_into,
+    put_type_into, put_user_into, validate_enabled, validate_id, validate_name, validate_type, validate_user
 )
 from .preinstanced import IntegrationType
 
@@ -218,7 +215,7 @@ class Integration(DiscordEntity, immortal = True):
         ValueError
             - Parameter value incorrect.
         """
-        integration_id = preconvert_snowflake(integration_id, 'integration_id')
+        integration_id = validate_id(integration_id)
         
         if (integration_type is not ...) or keyword_parameters:
             processable = []
@@ -341,14 +338,14 @@ class Integration(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Integration data received from Discord.
         
         Returns
         -------
         integration : `instance<cls>`
         """
-        integration_id = int(data['id'])
+        integration_id = parse_id(data)
         
         try:
             self = INTEGRATIONS[integration_id]
@@ -378,14 +375,10 @@ class Integration(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         # metadata
         data = self.metadata.to_data(defaults = defaults)
-        
-        # id
-        if include_internals:
-            data['id'] = str(self.id)
         
         # enabled
         put_enabled_into(self.enabled, data, defaults)
@@ -398,7 +391,8 @@ class Integration(DiscordEntity, immortal = True):
         
         # user
         if include_internals:
-            put_user_into(self.user, data, defaults, include_internals = include_internals)
+            put_id_into(self.id, data, defaults)
+            put_user_into(self.user, data, defaults)
         
         return data
     
@@ -411,7 +405,7 @@ class Integration(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Integration data received from Discord.
         """
         integration_type = parse_type(data)
@@ -694,23 +688,6 @@ class Integration(DiscordEntity, immortal = True):
         new.type = integration_type
         new.user = user
         return new
-    
-    
-    @property
-    def detail(self):
-        """
-        ``Integration.detail`` is deprecated and will be removed in 2023 February. Please use ``.metadata`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.detail` is deprecated and will be removed in 2023 February. '
-                f'Please use `.metadata` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.metadata
     
     
     @property

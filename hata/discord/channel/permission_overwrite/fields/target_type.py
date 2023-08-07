@@ -12,7 +12,7 @@ def parse_target_type(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Permission overwrite data.
     
     Returns
@@ -51,14 +51,14 @@ def put_target_type_into(target_type, data, defaults):
     ----------
     target_type : ``PermissionOverwriteTargetType``
         The permission overwrite's target type.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     data['type'] = target_type.value
     

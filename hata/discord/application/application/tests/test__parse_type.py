@@ -4,13 +4,25 @@ from ..fields import parse_type
 from ..preinstanced import ApplicationType
 
 
-def test__parse_type():
+def _iter_options():
+    yield {}, ApplicationType.none
+    yield {'type': ApplicationType.game.value}, ApplicationType.game
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_type(input_data):
     """
     Tests whether ``parse_type`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Input data.
+    
+    Returns
+    -------
+    output : ``ApplicationType``
     """
-    for input_data, expected_output in (
-        ({}, ApplicationType.none),
-        ({'type': ApplicationType.game.value}, ApplicationType.game),
-    ):
-        output = parse_type(input_data)
-        vampytest.assert_eq(output, expected_output)
+    output = parse_type(input_data)
+    vampytest.assert_instance(output, ApplicationType)
+    return output

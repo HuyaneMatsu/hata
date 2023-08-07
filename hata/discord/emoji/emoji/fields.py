@@ -9,7 +9,8 @@ from ...field_putters import (
     optional_entity_id_array_optional_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, default_entity_validator, entity_id_array_validator_factory, entity_id_validator_factory
+    bool_validator_factory, default_entity_validator_factory, entity_id_array_validator_factory,
+    entity_id_validator_factory
 )
 from ...role import Role
 from ...user import ClientUserBase, User, ZEROUSER
@@ -109,5 +110,5 @@ validate_role_ids = entity_id_array_validator_factory('role_ids', Role)
 # user
 
 parse_user = default_entity_parser_factory('user', User, default = ZEROUSER)
-put_user_into = default_entity_putter_factory('user', ClientUserBase, ZEROUSER)
-validate_user = default_entity_validator('user', ClientUserBase, default = ZEROUSER)
+put_user_into = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
+validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)

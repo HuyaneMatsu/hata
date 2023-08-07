@@ -226,7 +226,7 @@ class Webhook(WebhookBase):
             put_source_guild_into(self.source_guild, data, defaults)
             put_token_into(self.token, data, defaults)
             put_type_into(self.type, data, defaults)
-            put_user_into(self.user, data, defaults, include_internals = include_internals)
+            put_user_into(self.user, data, defaults)
         
         return data
     

@@ -9,7 +9,7 @@ from ...field_putters import (
     nullable_entity_optional_putter_factory, preinstanced_putter_factory
 )
 from ...field_validators import (
-    default_entity_validator, entity_id_validator_factory, force_string_validator_factory,
+    default_entity_validator_factory, entity_id_validator_factory, force_string_validator_factory,
     nullable_entity_validator_factory, preinstanced_validator_factory
 )
 from ...user import ClientUserBase, User, ZEROUSER
@@ -58,5 +58,5 @@ validate_type = preinstanced_validator_factory('webhook_type', WebhookType)
 # user
 
 parse_user = default_entity_parser_factory('user', User, default = ZEROUSER)
-put_user_into = default_entity_putter_factory('user', ClientUserBase, ZEROUSER)
-validate_user = default_entity_validator('user', ClientUserBase, default = ZEROUSER)
+put_user_into = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
+validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)

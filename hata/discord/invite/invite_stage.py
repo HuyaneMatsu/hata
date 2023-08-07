@@ -7,7 +7,7 @@ class InviteStage:
     """
     Represents an invite's stage.
     
-    Deprecated.
+    Deprecated and will be removed in 2024 February.
     
     Attributes
     ----------
@@ -21,7 +21,6 @@ class InviteStage:
         The stage's topic if any.
     """
     __slots__ = ('participant_count', 'participants', 'speaker_count', 'topic',)
-    
     
     @classmethod
     def from_data(cls, data, guild_id):

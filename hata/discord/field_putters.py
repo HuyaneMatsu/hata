@@ -593,7 +593,7 @@ def int_optional_postprocess_putter_factory(field_key, default_value, postproces
     return putter
 
 
-def nullable_int_optional_putter_factory(field_key, default_value):
+def nulled_int_optional_putter_factory(field_key, default_value):
     """
     Returns an nullable optional `int` putter.
     

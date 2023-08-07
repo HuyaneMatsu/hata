@@ -307,7 +307,7 @@ class Sticker(DiscordEntity, immortal = True):
             put_pack_id_into(self.pack_id, data, defaults)
             put_sort_value_into(self.sort_value, data, defaults)
             put_type_into(self.type, data, defaults)
-            put_user_into(self.user, data, defaults, include_internals = include_internals)
+            put_user_into(self.user, data, defaults)
         
         return data
     

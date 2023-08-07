@@ -4,19 +4,37 @@ from ..fields import parse_target_type
 from ..preinstanced import ApplicationCommandPermissionOverwriteTargetType
 
 
-def test__parse_target_type():
+def _iter_options():
+    yield (
+        {},
+        ApplicationCommandPermissionOverwriteTargetType.none,
+    )
+    
+    yield (
+        {'type': None},
+        ApplicationCommandPermissionOverwriteTargetType.none,
+    )
+    
+    yield (
+        {'type': ApplicationCommandPermissionOverwriteTargetType.role.value},
+        ApplicationCommandPermissionOverwriteTargetType.role,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_target_type(input_data):
     """
     Tests whether ``parse_target_type`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse the target type from.
+    
+    Returns
+    -------
+    output : ``ApplicationCommandPermissionOverwriteTargetType``
     """
-    for input_value, expected_output in (
-        (
-            {'type': ApplicationCommandPermissionOverwriteTargetType.role.value},
-            ApplicationCommandPermissionOverwriteTargetType.role,
-        ), (
-            {},
-            ApplicationCommandPermissionOverwriteTargetType.none,
-        ),
-    ):
-        output = parse_target_type(input_value)
-        vampytest.assert_instance(output, ApplicationCommandPermissionOverwriteTargetType)
-        vampytest.assert_eq(output, expected_output)
+    output = parse_target_type(input_data)
+    vampytest.assert_instance(output, ApplicationCommandPermissionOverwriteTargetType)
+    return output

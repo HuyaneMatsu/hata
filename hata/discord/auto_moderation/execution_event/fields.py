@@ -10,7 +10,7 @@ from ...field_putters import (
     preinstanced_putter_factory
 )
 from ...field_validators import (
-    default_entity_validator, entity_id_validator_factory, nullable_string_validator_factory,
+    default_entity_validator_factory, entity_id_validator_factory, nullable_string_validator_factory,
     preinstanced_validator_factory
 )
 from ...message import Message
@@ -25,7 +25,7 @@ parse_action = default_entity_parser_factory(
     'action', AutoModerationAction, default_factory = lambda : AutoModerationAction()
 )
 put_action_into = entity_putter_factory('action', AutoModerationAction)
-validate_action = default_entity_validator(
+validate_action = default_entity_validator_factory(
     'action', AutoModerationAction, default_factory = lambda : AutoModerationAction()
 )
 

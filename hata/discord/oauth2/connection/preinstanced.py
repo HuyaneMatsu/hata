@@ -1,5 +1,9 @@
 __all__ = ('ConnectionType', 'ConnectionVisibility',)
 
+from warnings import warn
+
+from scarletio import class_property
+
 from ...bases import Preinstance as P, PreinstancedBase
 
 
@@ -44,6 +48,8 @@ class ConnectionType(PreinstancedBase):
     +-----------------------+-----------------------+-------------------+
     | league_of_legends     | League of Legends     | leagueoflegends   |
     +-----------------------+-----------------------+-------------------+
+    | none                  | none                  |                   |
+    +-----------------------+-----------------------+-------------------+
     | paypal                | PayPal                | paypal            |
     +-----------------------+-----------------------+-------------------+
     | playstation           | PlayStation Network   | playstation       |
@@ -66,8 +72,6 @@ class ConnectionType(PreinstancedBase):
     +-----------------------+-----------------------+-------------------+
     | twitter               | Twitter               | twitter           |
     +-----------------------+-----------------------+-------------------+
-    | unknown               | unknown               | unknown           |
-    +-----------------------+-----------------------+-------------------+
     | xbox                  | Xbox                  | xbox              |
     +-----------------------+-----------------------+-------------------+
     | youtube               | YouTube               | youtube           |
@@ -87,6 +91,7 @@ class ConnectionType(PreinstancedBase):
     github = P('github', 'GitHub')
     instagram = P('instagram', 'Instagram')
     league_of_legends = P('leagueoflegends', 'League of Legends')
+    none = P('', 'none')
     paypal = P('paypal', 'PayPal')
     playstation = P('playstation', 'PlayStation Network')
     reddit = P('reddit', 'Reddit')
@@ -99,8 +104,24 @@ class ConnectionType(PreinstancedBase):
     twitch = P('twitch', 'Twitch')
     twitter = P('twitter', 'Twitter')
     xbox = P('xbox', 'Xbox')
-    unknown = P('unknown', 'unknown')
     youtube = P('youtube', 'YouTube')
+    
+    
+    @class_property
+    def unknown(cls):
+        """
+        Deprecated and will be removed in 2024 February. Please use `.none` instead.
+        """
+        warn(
+            (
+                f'`{cls.__name__}.unknown` is deprecated and will be removed in 2024 February. '
+                f'Please use `.none` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return cls.none
 
 
 class ConnectionVisibility(PreinstancedBase):

@@ -4,13 +4,25 @@ from ..fields import parse_type
 from ..preinstanced import ApplicationCommandOptionType
 
 
-def test__parse_type():
+def _iter_options():
+    yield {}, ApplicationCommandOptionType.none
+    yield {'type': ApplicationCommandOptionType.string.value}, ApplicationCommandOptionType.string
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_type(input_data):
     """
     Tests whether ``parse_type`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Input data.
+    
+    Returns
+    -------
+    output : ``ApplicationCommandOptionType``
     """
-    for input_data, expected_output in (
-        ({}, ApplicationCommandOptionType.none),
-        ({'type': ApplicationCommandOptionType.string.value}, ApplicationCommandOptionType.string),
-    ):
-        output = parse_type(input_data)
-        vampytest.assert_eq(output, expected_output)
+    output = parse_type(input_data)
+    vampytest.assert_instance(output, ApplicationCommandOptionType)
+    return output

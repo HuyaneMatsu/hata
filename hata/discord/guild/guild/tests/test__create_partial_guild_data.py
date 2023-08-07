@@ -3,7 +3,7 @@ import vampytest
 from ....bases import Icon, IconType
 
 from ..guild import Guild
-from ..preinstanced import GuildFeature, VerificationLevel
+from ..preinstanced import GuildFeature, NsfwLevel, VerificationLevel
 from ..utils import create_partial_guild_data
 
 
@@ -20,9 +20,10 @@ def test__create_partial_guild_data():
     icon = Icon(IconType.animated, 16)
     invite_splash = Icon(IconType.animated, 18)
     name = 'Komeiji'
+    nsfw_level = NsfwLevel.explicit
     verification_level = VerificationLevel.medium
     
-
+    
     expected_output = {
         'id': str(guild_id),
         'unavailable': not available,
@@ -33,6 +34,7 @@ def test__create_partial_guild_data():
         'icon': icon.as_base_16_hash,
         'discovery_splash': discovery_splash.as_base_16_hash,
         'splash': invite_splash.as_base_16_hash,
+        'nsfw_level': nsfw_level.value,
     }
     
 
@@ -45,6 +47,7 @@ def test__create_partial_guild_data():
         icon = icon,
         invite_splash = invite_splash,
         name = name,
+        nsfw_level = nsfw_level,
         verification_level = verification_level,
     )
     

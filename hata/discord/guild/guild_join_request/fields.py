@@ -11,7 +11,7 @@ from ...field_putters import (
     url_optional_putter_factory
 )
 from ...field_validators import (
-    default_entity_validator, entity_id_validator_factory, nullable_date_time_validator_factory,
+    default_entity_validator_factory, entity_id_validator_factory, nullable_date_time_validator_factory,
     nullable_entity_validator_factory, nullable_object_array_validator_factory, nullable_string_validator_factory,
     preinstanced_validator_factory
 )
@@ -74,7 +74,7 @@ validate_status = preinstanced_validator_factory('application_status', GuildJoin
 
 parse_user = default_entity_parser_factory('user', User, default = ZEROUSER)
 put_user_into = entity_putter_factory('user', ClientUserBase, force_include_internals = True)
-validate_user = default_entity_validator('user', ClientUserBase, default = ZEROUSER)
+validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)
 
 # user_id
 

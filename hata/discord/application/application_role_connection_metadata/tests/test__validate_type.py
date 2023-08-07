@@ -4,34 +4,49 @@ from ..fields import validate_type
 from ..preinstanced import ApplicationRoleConnectionMetadataType
 
 
-def test__validate_type__0():
+def _iter_options():
+    yield None, ApplicationRoleConnectionMetadataType.none
+    yield ApplicationRoleConnectionMetadataType.integer_equal, ApplicationRoleConnectionMetadataType.integer_equal
+    yield ApplicationRoleConnectionMetadataType.integer_equal.value, ApplicationRoleConnectionMetadataType.integer_equal
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_type__passing(input_value):
     """
-    Tests whether `validate_type` works as intended.
+    Tests whether ``validate_type`` works as intended.
     
     Case: passing.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value.
+    
+    Returns
+    -------
+    output : ``ApplicationRoleConnectionMetadataType``
     """
-    for input_value, expected_output in (
-        (
-            ApplicationRoleConnectionMetadataType.integer_equal,
-            ApplicationRoleConnectionMetadataType.integer_equal,
-        ),
-        (
-            ApplicationRoleConnectionMetadataType.integer_equal.value,
-            ApplicationRoleConnectionMetadataType.integer_equal,
-        )
-    ):
-        output = validate_type(input_value)
-        vampytest.assert_eq(output, expected_output)
+    output = validate_type(input_value)
+    vampytest.assert_instance(output, ApplicationRoleConnectionMetadataType)
+    return output
 
 
-def test__validate_type__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+@vampytest.call_with('')
+def test__validate_type__type_error(input_value):
     """
-    Tests whether `validate_type` works as intended.
+    Tests whether ``validate_type`` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value where we are expecting `TypeError`.
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_type(input_value)
+    validate_type(input_value)

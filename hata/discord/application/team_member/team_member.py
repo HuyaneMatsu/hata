@@ -113,7 +113,10 @@ class TeamMember(RichAttributeErrorBaseType):
         data = {}
         put_permissions_into(self.permissions, data, defaults)
         put_state_into(self.state, data, defaults)
-        put_user_into(self.user, data, defaults, include_internals = include_internals)
+        
+        if include_internals:
+            put_user_into(self.user, data, defaults)
+        
         return data
     
     

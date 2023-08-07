@@ -37,7 +37,7 @@ from ..guild.guild.constants import (
 )
 from ..integration import Integration
 from ..interaction import InteractionEvent
-from ..invite import Invite
+from ..invite import Invite, create_partial_invite_from_data
 from ..message import EMBED_UPDATE_NONE, Message
 from ..role import Role, create_partial_role_from_id
 from ..scheduled_event import ScheduledEvent, ScheduledEventSubscribeEvent, ScheduledEventUnsubscribeEvent
@@ -3063,12 +3063,15 @@ add_parser(
 del TYPING_START__CAL, \
     TYPING_START__OPT
 
+
 def INVITE_CREATE__CAL(client, data):
-    invite = Invite(data, False)
+    invite = Invite.from_data(data)
     Task(KOKORO, client.events.invite_create(client, invite))
+
 
 def INVITE_CREATE__OPT(client, data):
     pass
+
 
 add_parser(
     'INVITE_CREATE',
@@ -3079,12 +3082,15 @@ add_parser(
 del INVITE_CREATE__CAL, \
     INVITE_CREATE__OPT
 
+
 def INVITE_DELETE__CAL(client, data):
-    invite = Invite(data, True)
+    invite = create_partial_invite_from_data(data)
     Task(KOKORO, client.events.invite_delete(client, invite))
+
 
 def INVITE_DELETE__OPT(client, data):
     pass
+
 
 add_parser('INVITE_DELETE',
     INVITE_DELETE__CAL,
@@ -3093,6 +3099,7 @@ add_parser('INVITE_DELETE',
     INVITE_DELETE__OPT)
 del INVITE_DELETE__CAL, \
     INVITE_DELETE__OPT
+
 
 def RELATIONSHIP_ADD__CAL(client, data):
     user_id = int(data['id'])

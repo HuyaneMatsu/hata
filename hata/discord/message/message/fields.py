@@ -21,10 +21,10 @@ from ...field_putters import (
     optional_entity_id_array_optional_putter_factory, preinstanced_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, default_entity_validator, entity_id_array_validator_factory, entity_id_validator_factory,
-    flag_validator_factory, nullable_date_time_validator_factory, nullable_entity_array_validator_factory,
-    nullable_entity_validator_factory, nullable_object_array_validator_factory, nullable_string_validator_factory,
-    preinstanced_validator_factory
+    bool_validator_factory, default_entity_validator_factory, entity_id_array_validator_factory,
+    entity_id_validator_factory, flag_validator_factory, nullable_date_time_validator_factory,
+    nullable_entity_array_validator_factory, nullable_entity_validator_factory, nullable_object_array_validator_factory,
+    nullable_string_validator_factory, preinstanced_validator_factory
 )
 from ...role import Role
 from ...sticker import Sticker, create_partial_sticker_data, create_partial_sticker_from_partial_data
@@ -180,7 +180,7 @@ def put_author_into(author, data, defaults, *, guild_id = 0):
     return data
 
 
-validate_author = default_entity_validator('author', UserBase, default = ZEROUSER)
+validate_author = default_entity_validator_factory('author', UserBase, default = ZEROUSER)
 
 # call
 

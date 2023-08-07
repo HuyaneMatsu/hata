@@ -4,28 +4,45 @@ from ..fields import validate_nsfw_level
 from ..preinstanced import NsfwLevel
 
 
-def test__validate_nsfw_level__0():
+def _iter_options():
+    yield NsfwLevel.safe, NsfwLevel.safe
+    yield NsfwLevel.safe.value, NsfwLevel.safe
+    
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_nsfw_level__passing(input_value):
     """
     Tests whether `validate_nsfw_level` works as intended.
     
     Case: passing.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Returns
+    -------
+    output : ``NsfwLevel``
     """
-    for input_value, expected_output in (
-        (NsfwLevel.safe, NsfwLevel.safe),
-        (NsfwLevel.safe.value, NsfwLevel.safe)
-    ):
-        output = validate_nsfw_level(input_value)
-        vampytest.assert_eq(output, expected_output)
+    return validate_nsfw_level(input_value)
 
 
-def test__validate_nsfw_level__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_nsfw_level__type_error(input_value):
     """
     Tests whether `validate_nsfw_level` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_nsfw_level(input_value)
+    validate_nsfw_level(input_value)

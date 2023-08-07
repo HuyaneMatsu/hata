@@ -559,6 +559,12 @@ class ClientCompoundChannelEndpoints(Compound):
         
         Other Parameters
         ----------------
+        applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
+             The tags' identifier which have been applied to the thread. Applicable for threads of a forum.
+        
+        auto_archive_after : `int`, Optional (Keyword only)
+            The default duration (in seconds) for newly created threads to automatically archive the themselves.
+        
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
         
@@ -585,6 +591,9 @@ class ClientCompoundChannelEndpoints(Compound):
         
         nsfw : `bool`, Optional (Keyword only)
             Whether the channel is marked as non safe for work.
+        
+        open_ : `bool`, Optional (Keyword only)
+            Whether the thread channel is open.
         
         parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
             The channel's parent's identifier.

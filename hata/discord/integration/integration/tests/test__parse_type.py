@@ -4,14 +4,25 @@ from ..fields import parse_type
 from ..preinstanced import IntegrationType
 
 
-def test__parse_type():
+def _iter_options():
+    yield {}, IntegrationType.none
+    yield {'type': IntegrationType.discord.value}, IntegrationType.discord
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_type(input_data):
     """
     Tests whether ``parse_type`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Input data.
+    
+    Returns
+    -------
+    output : ``IntegrationType``
     """
-    for input_data, expected_output in (
-        ({}, IntegrationType.none),
-        ({'type': IntegrationType.none.value}, IntegrationType.none),
-        ({'type': IntegrationType.discord.value}, IntegrationType.discord),
-    ):
-        output = parse_type(input_data)
-        vampytest.assert_eq(output, expected_output)
+    output = parse_type(input_data)
+    vampytest.assert_instance(output, IntegrationType)
+    return output

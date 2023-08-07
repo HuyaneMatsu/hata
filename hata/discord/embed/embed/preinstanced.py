@@ -70,3 +70,6 @@ class EmbedType(PreinstancedBase):
     text = P('text', 'text')
     tweet = P('tweet', 'tweet')
     video = P('video', 'video')
+
+
+EmbedType.INSTANCES[''] = EmbedType.rich

@@ -12,6 +12,8 @@ def _iter_options():
     yield {}, None
     yield {'channel': None}, None
     yield {'channel': {'id': str(channel_id)}}, channel
+    yield {'channel_id': None}, None
+    yield {'channel_id': str(channel_id)}, channel
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

@@ -1,14 +1,12 @@
 __all__ = ()
 
-import warnings
-
 from scarletio import Compound
 
 from ...application import Application
 from ...bases import maybe_snowflake
 from ...channel import Channel, ChannelType
 from ...exceptions import DiscordException, ERROR_CODES
-from ...guild import Guild, create_partial_guild_from_id
+from ...guild import Guild
 from ...http import DiscordHTTPClient
 from ...invite import Invite, InviteTargetType
 from ...permission.permission import PERMISSION_MASK_CREATE_INSTANT_INVITE
@@ -165,14 +163,7 @@ class ClientCompoundInviteEndpoints(Compound):
         else:
             vanity_code = guild.vanity_code
         
-        if vanity_code is None:
-            return None
-        
-        if guild is None:
-            guild = create_partial_guild_from_id(guild_id)
-        
-        invite_data = await self.http.invite_get(vanity_code, {})
-        return Invite._create_vanity(guild, invite_data)
+        return await self.invite_get(vanity_code)
     
     
     async def vanity_invite_edit(self, guild, vanity_code, *, reason = None):
@@ -274,7 +265,7 @@ class ClientCompoundInviteEndpoints(Compound):
         }
         
         data = await self.http.invite_create(channel_id, data)
-        return Invite(data, False)
+        return Invite.from_data(data)
     
     # 'target_user_id' :
     #     DiscordException BAD REQUEST (400), code=50035: Invalid Form Body
@@ -371,7 +362,7 @@ class ClientCompoundInviteEndpoints(Compound):
         }
         
         data = await self.http.invite_create(voice_state.channel.id, data)
-        return Invite(data, False)
+        return Invite.from_data(data)
     
     # Could not find correct application:
     #    DiscordException Bad Request (400), code=50035: Invalid Form Body
@@ -452,7 +443,7 @@ class ClientCompoundInviteEndpoints(Compound):
         }
         
         data = await self.http.invite_create(channel_id, data)
-        return Invite(data, False)
+        return Invite.from_data(data)
     
     
     async def invite_create_preferred(self, guild, **kwargs):
@@ -547,7 +538,7 @@ class ClientCompoundInviteEndpoints(Compound):
             raise
     
     
-    async def invite_get(self, invite, *, with_count=...):
+    async def invite_get(self, invite):
         """
         Requests a partial invite with the given code.
         
@@ -557,13 +548,6 @@ class ClientCompoundInviteEndpoints(Compound):
         ----------
         invite : ``Invite``, `str`
             The invites code.
-        
-        with_count : `bool`, Optional (Keyword only)
-            Whether the invite should contain the respective guild's user and online user count.
-            
-            Defaults to `True`.
-            
-            Deprecated and will be removed in 2023 January.
         
         Returns
         -------
@@ -593,28 +577,12 @@ class ClientCompoundInviteEndpoints(Compound):
                 f'{invite!r}.'
             )
         
-        if (with_count is not ...):
-            warnings.warn(
-                (
-                    f'`with_count` parameter of `{self.__class__.__name__}` is deprecated and will be removed in '
-                    f'2023 January. The parameter is always defaulting to `True`.',
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-        
-        
         invite_data = await self.http.invite_get(invite_code, {'with_counts': True})
         
         if invite is None:
-            invite = Invite(invite_data, False)
+            invite = Invite.from_data(invite_data)
         else:
-            if invite.partial:
-                updater = Invite._update_attributes
-            else:
-                updater = Invite._update_counts_only
-            
-            updater(invite, invite_data)
+            invite._update_attributes(invite_data)
         
         return invite
     
@@ -646,7 +614,7 @@ class ClientCompoundInviteEndpoints(Compound):
         guild_id = get_guild_id(guild)
         
         invite_datas = await self.http.invite_get_all_guild(guild_id)
-        return [Invite(invite_data, False) for invite_data in invite_datas]
+        return [Invite.from_data(invite_data) for invite_data in invite_datas]
     
     
     async def invite_get_all_channel(self, channel):
@@ -689,7 +657,7 @@ class ClientCompoundInviteEndpoints(Compound):
             )
         
         invite_datas = await self.http.invite_get_all_channel(channel_id)
-        return [Invite(invite_data, False) for invite_data in invite_datas]
+        return [Invite.from_data(invite_data) for invite_data in invite_datas]
     
     
     async def invite_delete(self, invite, *, reason = None):
@@ -729,7 +697,7 @@ class ClientCompoundInviteEndpoints(Compound):
         invite_data = await self.http.invite_delete(invite_code, reason)
         
         if invite is None:
-            invite = Invite(invite_data, False)
+            invite = Invite.from_data(invite_data)
         else:
             invite._update_attributes(invite_data)
         

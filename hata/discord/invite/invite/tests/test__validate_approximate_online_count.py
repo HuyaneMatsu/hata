@@ -3,12 +3,12 @@ import vampytest
 from ..fields import validate_approximate_online_count
 
 
-def _iter_options__passing():
+def _iter_options():
     yield 0, 0
     yield 1, 1
 
 
-@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__validate_approximate_online_count__passing(input_value):
     """
     Tests whether `validate_approximate_online_count` works as intended.

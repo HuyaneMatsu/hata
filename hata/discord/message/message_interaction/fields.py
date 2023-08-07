@@ -6,7 +6,7 @@ from ...application_command.application_command.constants import (
 from ...field_parsers import entity_id_parser_factory, preinstanced_parser_factory
 from ...field_putters import entity_id_putter_factory, preinstanced_putter_factory
 from ...field_validators import (
-    entity_id_validator_factory, entity_validator_factory, force_string_validator_factory,
+    default_entity_validator_factory, entity_id_validator_factory, force_string_validator_factory,
     nullable_string_array_validator_factory, preinstanced_validator_factory
 )
 from ...user import ClientUserBase, User, ZEROUSER
@@ -159,4 +159,4 @@ def put_user_into(user, data, defaults, *, guild_id = 0):
     return data
 
 
-validate_user = entity_validator_factory('user', ClientUserBase)
+validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)

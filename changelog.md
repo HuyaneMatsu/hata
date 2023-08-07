@@ -33,19 +33,35 @@
 - `scaffold` command only available when calling the library.
 - Add new `--all` parameter to `help` cli commands. This also means that `help list-all` is renamed to `help list`.
 - Add `create_partial_guild_data`.
-
-#### Improvements
-
-- `InteractionEvent.value` was bound to auto complete instead of message component. This was not intended.
-
-#### Renames, Deprecations & Removals
-
-- Rename `GuildFeature.onboarding` to `.onboarding_enabled`.
-- Deprecate `GuildFeature.onboarding`.
+- Add `ConnectionType.none`.
+- Add `create_partial_invite_data`.
+- Add `create_partial_invite_from_data`.
+- Add `Invite.channel_id`.
+- Add `Invite.guild_id`.
+- Add `Invite.InviteFlag`.
+- Add `Invite.flags`.
+- Add `Invite.target_application_id`.
+- Add `Invite.target_user_id`.
+- Add `Invite.to_data`.
+- Repurpose `Invite.__new__`.
+- `Invite.__eq__` now works with partial instances as well.
+- `Invite.__hash__` now works with partial instances as well.
+- Add `Invite.copy`.
+- Add `Invite.copy_with`.
 
 #### Bug fixes
 
+- `InteractionEvent.value` was bound to auto complete instead of message component. This was not intended.
 - `get_bool_env` returned incorrect value if variable was any of: `0`, `1`.
+- `Invite._create_empty` did not set `.target_application`.
+
+#### Renames, Deprecations & Removals
+
+- Deprecate `ConnectionType.unknown` (use `.none` instead).
+- Rename `GuildFeature.onboarding` to `.onboarding_enabled`.
+- Deprecate `GuildFeature.onboarding`.
+- Rename `Invite.__new__` to `.from_data`.
+- Deprecate unused `Invite.nsfw_level`. It is returned with the guild and not with the invite actually :KoishiFail:.
 
 ## 1.3.34 *\[2023-07-22\]*
 

@@ -4,8 +4,8 @@ from scarletio import include
 
 from ...field_parsers import functional_parser_factory
 from ...field_putters import functional_putter_factory
-from ...field_validators import entity_validator_factory
-from ...user import ClientUserBase, User, create_partial_user_from_id
+from ...field_validators import default_entity_validator_factory, entity_validator_factory
+from ...user import ClientUserBase, User, ZEROUSER, create_partial_user_from_id
 
 from ..emoji import Emoji, create_partial_emoji_data, create_partial_emoji_from_data
 
@@ -76,7 +76,7 @@ def put_user_into(user, data, defaults, *, guild_id = 0):
     return data
 
 
-validate_user = entity_validator_factory('user', ClientUserBase)
+validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)
 
 # emoji
 

@@ -5,28 +5,48 @@ from ...preinstanced import PermissionOverwriteTargetType
 from ..target_type import validate_target_type
 
 
-def test__validate_target_type__0():
+def _iter_options():
+    yield None, PermissionOverwriteTargetType.role # This is not `.unknown` because the default value is `0`!
+    yield PermissionOverwriteTargetType.user, PermissionOverwriteTargetType.user
+    yield PermissionOverwriteTargetType.user.value, PermissionOverwriteTargetType.user
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_target_type__passing(input_value):
     """
     Tests whether ``validate_target_type`` works as intended.
     
     Case: passing.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Returns
+    -------
+    output : ``PermissionOverwriteTargetType``
     """
-    for input_value, expected_output in (
-        (PermissionOverwriteTargetType.user, PermissionOverwriteTargetType.user),
-        (PermissionOverwriteTargetType.user.value, PermissionOverwriteTargetType.user),
-    ):
-        output = validate_target_type(input_value)
-        vampytest.assert_eq(output, expected_output)
+    output = validate_target_type(input_value)
+    vampytest.assert_instance(output, PermissionOverwriteTargetType)
+    return output
 
 
-def test__validate_target_type__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_target_type__type_error(input_value):
     """
     Tests whether ``validate_target_type`` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.5,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_target_type(input_value)
+    validate_target_type(input_value)

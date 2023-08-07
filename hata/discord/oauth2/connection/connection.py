@@ -136,7 +136,7 @@ class Connection(DiscordEntity):
         """
         # connection_type
         if connection_type is ...:
-            connection_type = ConnectionType.unknown
+            connection_type = ConnectionType.none
         else:
             connection_type = validate_type(connection_type)
         
@@ -311,7 +311,7 @@ class Connection(DiscordEntity):
         self.revoked = False
         self.show_activity = False
         self.two_way_link = False
-        self.type = ConnectionType.unknown
+        self.type = ConnectionType.none
         self.verified = False
         self.visibility = ConnectionVisibility.user_only
         
@@ -331,7 +331,7 @@ class Connection(DiscordEntity):
             repr_parts.append(' (partial)')
         
         connection_type = self.type
-        if (connection_type is not ConnectionType.unknown):
+        if (connection_type is not ConnectionType.none):
             repr_parts.append(', type = ')
             repr_parts.append(connection_type.name)
             repr_parts.append(' ~ ')

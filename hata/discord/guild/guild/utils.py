@@ -7,24 +7,24 @@ from scarletio import export
 from ...core import GUILDS
 
 from .fields import (
-    parse_available, parse_description, parse_features, parse_id, parse_name, parse_verification_level,
-    put_afk_channel_id_into, put_afk_timeout_into, put_available_into, put_boost_progress_bar_enabled_into,
-    put_channels_and_channel_datas_into, put_content_filter_into, put_description_into, put_features_into,
-    put_hub_type_into, put_id_into, put_message_notification_into, put_mfa_into, put_name_into, put_nsfw_level_into,
-    put_owner_id_into, put_preferred_locale_into, put_public_updates_channel_id_into, put_roles_and_role_datas_into,
-    put_rules_channel_id_into, put_safety_alerts_channel_id_into, put_system_channel_flags_into,
-    put_system_channel_id_into, put_vanity_code_into, put_verification_level_into, put_widget_channel_id_into,
-    put_widget_enabled_into, validate_afk_channel_id, validate_afk_timeout, validate_boost_progress_bar_enabled,
-    validate_channels_and_channel_datas, validate_content_filter, validate_description, validate_features,
-    validate_hub_type, validate_message_notification, validate_mfa, validate_name, validate_nsfw_level,
-    validate_owner_id, validate_preferred_locale, validate_public_updates_channel_id, validate_roles_and_role_datas,
-    validate_rules_channel_id, validate_safety_alerts_channel_id, validate_system_channel_flags,
-    validate_system_channel_id, validate_vanity_code, validate_verification_level, validate_widget_channel_id,
-    validate_widget_enabled
+    parse_available, parse_description, parse_features, parse_id, parse_name, parse_nsfw_level,
+    parse_verification_level, put_afk_channel_id_into, put_afk_timeout_into, put_available_into,
+    put_boost_progress_bar_enabled_into, put_channels_and_channel_datas_into, put_content_filter_into,
+    put_description_into, put_features_into, put_hub_type_into, put_id_into, put_message_notification_into,
+    put_mfa_into, put_name_into, put_nsfw_level_into, put_owner_id_into, put_preferred_locale_into,
+    put_public_updates_channel_id_into, put_roles_and_role_datas_into, put_rules_channel_id_into,
+    put_safety_alerts_channel_id_into, put_system_channel_flags_into, put_system_channel_id_into, put_vanity_code_into,
+    put_verification_level_into, put_widget_channel_id_into, put_widget_enabled_into, validate_afk_channel_id,
+    validate_afk_timeout, validate_boost_progress_bar_enabled, validate_channels_and_channel_datas,
+    validate_content_filter, validate_description, validate_features, validate_hub_type, validate_message_notification,
+    validate_mfa, validate_name, validate_nsfw_level, validate_owner_id, validate_preferred_locale,
+    validate_public_updates_channel_id, validate_roles_and_role_datas, validate_rules_channel_id,
+    validate_safety_alerts_channel_id, validate_system_channel_flags, validate_system_channel_id, validate_vanity_code,
+    validate_verification_level, validate_widget_channel_id, validate_widget_enabled
 )
 from .flags import SystemChannelFlag
 from .guild import GUILD_BANNER, GUILD_DISCOVERY_SPLASH, GUILD_ICON, GUILD_INVITE_SPLASH, Guild
-from .preinstanced import ContentFilterLevel, MessageNotificationLevel, VerificationLevel
+from .preinstanced import ContentFilterLevel, MessageNotificationLevel, NsfwLevel, VerificationLevel
 
 
 GUILD_FIELD_CONVERTERS = {
@@ -101,15 +101,18 @@ def create_partial_guild_from_data(data):
     guild.name = parse_name(data)
     
     # Optional
-    
-    verification_level = parse_verification_level(data)
-    if verification_level is not VerificationLevel.none:
-        guild.verification_level = verification_level
-    
     features = parse_features(data)
     if (features is not None):
         guild.features = features
     
+    nsfw_level = parse_nsfw_level(data)
+    if nsfw_level is not NsfwLevel.none:
+        guild.nsfw_level = nsfw_level
+    
+    verification_level = parse_verification_level(data)
+    if verification_level is not VerificationLevel.none:
+        guild.verification_level = verification_level
+        
     GUILDS[guild_id] = guild
     
     return guild
@@ -138,6 +141,7 @@ def create_partial_guild_data(guild):
     type(guild).icon.put_into(guild.icon, data, True, as_data = False)
     type(guild).invite_splash.put_into(guild.invite_splash, data, True, as_data = False)
     put_name_into(guild.name, data, True)
+    put_nsfw_level_into(guild.nsfw_level, data, True)
     put_verification_level_into(guild.verification_level, data, True)
     
     return data

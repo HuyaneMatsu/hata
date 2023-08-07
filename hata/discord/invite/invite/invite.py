@@ -1,20 +1,30 @@
 __all__ = ('Invite',)
 
-from datetime import datetime
+from datetime import datetime as DateTime
+from warnings import warn
 
 from scarletio import export
 
-from ...application import Application
-from ...bases import DiscordEntity, instance_or_id_to_instance
-from ...channel import Channel, create_partial_channel_from_data
-from ...core import CHANNELS, GUILDS, INVITES
-from ...guild import Guild, NsfwLevel, create_partial_guild_from_data
+from ...bases import DiscordEntity
+from ...core import INVITES
+from ...guild import NsfwLevel
 from ...http import urls as module_urls
-from ...preconverters import preconvert_bool, preconvert_int, preconvert_preinstanced_type, preconvert_str
-from ...user import ClientUserBase, User, ZEROUSER
-from ...utils import DISCORD_EPOCH_START, timestamp_to_datetime
+from ...precreate_helpers import process_precreate_parameters_and_raise_extra
+from ...user import ClientUserBase, ZEROUSER
 
-from ..invite_stage import InviteStage
+from .fields import (
+    parse_approximate_online_count, parse_approximate_user_count, parse_channel, parse_code, parse_created_at,
+    parse_flags, parse_guild, parse_inviter, parse_max_age, parse_max_uses, parse_target_application, parse_target_type,
+    parse_target_user, parse_temporary, parse_type, parse_uses, put_approximate_online_count_into,
+    put_approximate_user_count_into, put_channel_into, put_code_into, put_created_at_into, put_flags_into,
+    put_guild_into, put_inviter_into, put_max_age_into, put_max_uses_into, put_target_application_id_into,
+    put_target_application_into, put_target_type_into, put_target_user_id_into, put_target_user_into,
+    put_temporary_into, put_type_into, put_uses_into, validate_approximate_online_count,
+    validate_approximate_user_count, validate_channel, validate_code, validate_created_at, validate_flags,
+    validate_guild, validate_inviter, validate_max_age, validate_max_uses, validate_target_application,
+    validate_target_type, validate_target_user, validate_temporary, validate_type, validate_uses
+)
+from .flags import InviteFlag
 from .preinstanced import InviteTargetType, InviteType
 
 
@@ -41,6 +51,26 @@ EMBEDDED_ACTIVITY_APPLICATION_ID_TO_NAME = {
     value: key for key, value in EMBEDDED_ACTIVITY_NAME_TO_APPLICATION_ID.items()
 }
 
+
+PRECREATE_FIELDS = {
+    'approximate_user_count': ('approximate_user_count', validate_approximate_user_count),
+    'approximate_online_count': ('approximate_online_count', validate_approximate_online_count),
+    'channel': ('channel', validate_channel),
+    'created_at': ('created_at', validate_created_at),
+    'flags': ('flags', validate_flags),
+    'guild': ('guild', validate_guild),
+    'invite_type': ('type', validate_type),
+    'inviter': ('inviter', validate_inviter),
+    'max_age': ('max_age', validate_max_age),
+    'max_uses': ('max_uses', validate_max_uses),
+    'target_application': ('target_application', validate_target_application),
+    'target_type': ('target_type', validate_target_type),
+    'target_user': ('target_user', validate_target_user),
+    'temporary': ('temporary', validate_temporary),
+    'uses': ('uses', validate_uses),
+}
+
+
 @export
 class Invite(DiscordEntity, immortal = True):
     """
@@ -49,11 +79,12 @@ class Invite(DiscordEntity, immortal = True):
     Attributes
     ---------
     approximate_online_count : `int`
-        The approximate amount of online users at the respective guild (or group channel). If not included, then set
-        as `0`.
+        The approximate amount of online users at the respective guild (or group channel).
+        Defaults to `0`.
     
     approximate_user_count : `int`
-        The approximate amount of users at the respective guild (or group channel). If not included, then set as `0`.
+        The approximate amount of users at the respective guild (or group channel).
+        Defaults to `0`.
     
     channel : `None`, ``Channel``
         The channel where the invite redirects. If it is announcements or store channel, then the invite is a lurk
@@ -65,6 +96,9 @@ class Invite(DiscordEntity, immortal = True):
     created_at : `DateTime`
         When the invite was created. Defaults to Discord epoch.
     
+    flags : ``InviteFlag``
+        The invite's flags.
+    
     guild : `None`, ``Guild``
         The guild the invite is for. If not included or if the invite's channel is a group channel, then set as
         `None`.
@@ -73,32 +107,25 @@ class Invite(DiscordEntity, immortal = True):
         The creator of the invite. If not included, then set as `ZEROUSER`.
     
     max_age : `None`, `int`
-        The time in seconds after the invite will expire. If not included, then set as `None`.
+        The time in seconds after the invite will expire.
+        Defaults to `None`.
         
         If the invite was created with max age as `0`, then this value will be negative instead of the expected `0`.
     
     max_uses : `None`, `int`
-        How much times the invite can be used. If not included, then set as `None`.
+        How much times the invite can be used.
+        Defaults to `None`.
         
         If the invite has no use limit, then this value is set as `0`.
-    
-    nsfw_level : ``NsfwLevel``
-        The respective guild's nsfw level if applicable.
-    
-    partial : `bool`
-        Whether the invite is only partially loaded.
-    
-    stage : `None`, ``InviteStage``
-        A invite stage instance representing the stage to which the invite is created to. (Deprecated)
-    
-    target_type : ``InviteTargetType``
-        The invite's target type.
     
     target_application : `None`, ``Application``
         The invite's target application.
     
-    target_user : ``ClientUserBase``
-        The target of the invite if applicable. Defaults to `ZEROUSER`.
+    target_type : ``InviteTargetType``
+        The invite's target type.
+    
+    target_user : `None`, ``ClientUserBase``
+        The target of the invite if applicable.
     
     temporary : `bool`
         Whether this invite only grants temporary membership.
@@ -109,334 +136,393 @@ class Invite(DiscordEntity, immortal = True):
         The invite's type.
     
     uses : `None`, `int`
-        The amount how much times the invite was used. If not included, set as `None`.
+        The amount how much times the invite was used.
+        Defaults to `None`.
     """
     __slots__ = (
-        'approximate_user_count', 'approximate_online_count', 'channel', 'code', 'created_at', 'guild', 'inviter',
-        'max_age', 'max_uses', 'nsfw_level', 'partial', 'target_application', 'stage', 'target_type', 'target_user',
-        'temporary', 'type', 'uses'
+        'approximate_user_count', 'approximate_online_count', 'channel', 'code', 'created_at', 'flags', 'guild',
+        'inviter', 'max_age', 'max_uses', 'target_application', 'target_type', 'target_user', 'temporary', 'type',
+        'uses'
     )
     
-    def __new__(cls, data, data_partial):
+    
+    def __new__(
+        cls,
+        *, 
+        flags = ...,
+        max_age = ...,
+        max_uses = ...,
+        target_application = ...,
+        target_type = ...,
+        target_user = ...,
+        temporary = ...,
+    ):
         """
-        Creates an invite from the given invite data. The invite data can be requested or received through the gateway
-        as well.
+        Creates a partial invite with the given fields.
+        
+        Parameters
+        ----------
+        flags : ``InviteFlag``, `int`, Optional (Keyword only)
+            The invite's flags.
+        
+        max_age : `None`, `int`, Optional (Keyword only)
+            The time in seconds after the invite will expire.
+        
+        max_uses : `None`, `int`, Optional (Keyword only)
+            How much times the invite can be used.
+        
+        target_application : `None`, ``Application``, Optional (Keyword only)
+            The invite's target application.
+        
+        target_type : ``InviteTargetType``, `int`, Optional (Keyword only)
+            The invite's target type.
+        
+        target_user : `None`, ``ClientUserBase``, Optional (Keyword only)
+            The target of the invite if applicable.
+        
+        temporary : `bool`, Optional (Keyword only)
+            Whether this invite only grants temporary membership.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # flags
+        if flags is ...:
+            flags = InviteFlag()
+        else:
+            flags = validate_flags(flags)
+        
+        # max_age
+        if max_age is ...:
+            max_age = None
+        else:
+            max_age = validate_max_age(max_age)
+        
+        # max_uses
+        if max_uses is ...:
+            max_uses = None
+        else:
+            max_uses = validate_max_uses(max_uses)
+        
+        # target_application
+        if target_application is ...:
+            target_application = None
+        else:
+            target_application = validate_target_application(target_application)
+        
+        # target_type
+        if target_type is ...:
+            target_type = InviteTargetType.none
+        else:
+            target_type = validate_target_type(target_type)
+        
+        # target_user
+        if target_user is ...:
+            target_user = None
+        else:
+            target_user = validate_target_user(target_user)
+        
+        # temporary
+        if temporary is ...:
+            temporary = False
+        else:
+            temporary = validate_temporary(temporary)
+        
+        # Construct
+        self = object.__new__(cls)
+        
+        self.approximate_online_count = 0
+        self.approximate_user_count = 0
+        self.channel = None
+        self.code = ''
+        self.created_at = None
+        self.flags = flags
+        self.guild = None
+        self.inviter = ZEROUSER
+        self.max_age = max_age
+        self.max_uses = max_uses
+        self.target_application = target_application
+        self.target_type = target_type
+        self.target_user = target_user
+        self.temporary = temporary
+        self.type = InviteType.guild
+        self.uses = None
+        
+        return self
+        
+    
+    @classmethod
+    def from_data(cls, data):
+        """
+        Creates an invite from the given invite data.
         
         Parameters
         ----------
         data : `dict` of (`str`, `object`) items
             Invite data.
+        
+        Returns
+        -------
+        self : `instance<cls>`
         """
-        code = data['code']
+        code = parse_code(data)
         
         try:
             self = INVITES[code]
         except KeyError:
             self = object.__new__(cls)
             self.code = code
-            self.partial = data_partial
+            self._set_attributes(data)
             INVITES[code] = self
-            updater = cls._set_attributes
         
         else:
-            if self.partial:
-                if data_partial:
-                    updater = cls._update_attributes
-                else:
-                    updater = cls._set_attributes
-                    self.partial = False
-            else:
-                if data_partial:
-                    updater = cls._update_counts_only
-                else:
-                    updater = cls._update_attributes
+            self._update_attributes(data)
         
-        updater(self, data)
         return self
     
     
-    @classmethod
-    def _create_vanity(cls, guild, data):
+    def to_data(self, *, defaults = False, include_internals = False):
         """
-        Creates a vanity invite from the given guild and from the given invite data.
+        Converts the invite to json serializable dictionary.
         
         Parameters
         ----------
-        guild : ``Guild``
-            The respective guild of the vanity invite.
-        data : `dict` of (`str`, `object`) items
-            Invite data requested from Discord.
+        defaults : `bool` = `False`, Optional (Keyword only)
+            Whether fields with their default values should be included as well.
+        
+        include_internals : `bool` = `False`, Optional (Keyword only)
+            Whether internal fields, like id-s should be present as well.
         
         Returns
         -------
-        invite : ``Invite``
+        data : `dict` of (`str`, `object`) items
         """
-        code = guild.vanity_code
-        try:
-            self = INVITES[code]
-        except KeyError:
-            self = cls._create_empty(code)
-        else:
-            self.code = code
-            
-        self.guild = guild
-        try:
-            channel_data = data['channel']
-        except KeyError:
-            channel = None
-        else:
-            channel = create_partial_channel_from_data(channel_data, guild.id)
-        self.channel = channel
+        data = {}
         
-        self.approximate_online_count = guild.approximate_online_count
-        self.approximate_user_count = guild.approximate_user_count
-        self.nsfw_level = guild.nsfw_level
+        put_flags_into(self.flags, data, defaults)
+        put_max_age_into(self.max_age, data, defaults)
+        put_max_uses_into(self.max_uses, data, defaults)
+        put_target_type_into(self.target_type, data, defaults)
+        put_temporary_into(self.temporary, data, defaults)
         
-        return self
+        if include_internals:
+            put_approximate_user_count_into(self.approximate_user_count, data, defaults)
+            put_approximate_online_count_into(self.approximate_online_count, data, defaults)
+            put_channel_into(self.channel, data, defaults)
+            put_code_into(self.code, data, defaults)
+            put_created_at_into(self.created_at, data, defaults)
+            put_guild_into(self.guild, data, defaults)
+            put_inviter_into(self.inviter, data, defaults)
+            put_target_application_into(self.target_application, data, defaults)
+            put_target_user_into(self.target_user, data, defaults)
+            put_type_into(self.type, data, defaults)
+            put_uses_into(self.uses, data, defaults)
+        
+        else:
+            put_target_application_id_into(self.target_application_id, data, defaults)
+            put_target_user_id_into(self.target_user_id, data, defaults)
+        
+        return data
     
     
     def __repr__(self):
         """Returns the representation of the invite."""
-        return f'<{self.__class__.__name__} code={self.code!r}>'
+        return f'<{self.__class__.__name__} code = {self.code!r}>'
     
     
     def __hash__(self):
         """Returns the invite's code's hash."""
-        return hash(self.code)
+        code = self.code
+        if code:
+            return hash(code)
+        return self._get_hash_partial()
     
     
-    url = property(module_urls.invite_url)
-    
-    
-    @property
-    def id(self):
+    def _get_hash_partial(self):
         """
-        Compatibility property with other Discord entities.
+        Returns a partial invite's hash value.
         
         Returns
         -------
-        id : `int` = `0`
+        hash_value : `int`
         """
-        return 0
+        hash_value = 0
+        
+        # flags
+        hash_value ^= self.flags
+        
+        # max_age
+        hash_value ^= self.max_age << 4
+        
+        # max_uses
+        hash_value ^= self.max_uses << 8
+        
+        # target_application
+        target_application = self.target_application
+        if (target_application is not None):
+            hash_value ^= hash(target_application)
+        
+        # target_type
+        hash_value ^= self.target_type.value << 12
+        
+        # target_user
+        target_user = self.target_user
+        if (target_user is not None):
+            hash_value ^= hash(target_user)
+        
+        # temporary
+        hash_value ^= self.temporary << 16
+        
+        return hash_value
     
     
-    # When we update it we get only a partial invite from Discord. So sad.
+    def __eq__(self, other):
+        """Returns whether the two invites are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self._is_equal_same_type(other)
+    
+    
+    def __ne__(self, other):
+        """Returns whether the two invites are not equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return not self._is_equal_same_type(other)
+    
+    
+    def _is_equal_same_type(self, other):
+        """
+        Returns whether the two types are equal.
+        
+        Helper method for ``.__eq__``
+        
+        Parameters
+        ----------
+        other : `instance<type<self>>`
+            The other instance. Must be from the same type.
+        
+        Returns
+        -------
+        is_equal : `bool`
+        """
+        # flags
+        if self.flags != other.flags:
+            return False
+        
+        # max_age
+        if self.max_age != other.max_age:
+            return False
+        
+        # max_uses
+        if self.max_uses != other.max_uses:
+            return False
+        
+        # target_application
+        if self.target_application is not other.target_application:
+            return False
+        
+        # target_type
+        if self.target_type is not other.target_type:
+            return False
+        
+        # target_user
+        if self.target_user is not other.target_user:
+            return False
+        
+        # temporary
+        if self.temporary != other.temporary:
+            return False
+        
+        return True
+    
+    
     def _set_attributes(self, data):
         """
-        Updates the invite by overwriting it's old attributes.
+        Sets the invite's attributes (except code).
         
         Parameters
         ----------
         data : `dict` of (`str`, `object`) items
             Invite data.
         """
-        try:
-            guild_data = data['guild']
-        except KeyError:
-            try:
-                guild_id = data['guild_id']
-            except KeyError:
-                guild = None
-            else:
-                guild_id = int(guild_id)
-                guild = GUILDS.get(guild_id, None)
-        else:
-            guild = create_partial_guild_from_data(guild_data)
-        
-        self.guild = guild
-        
-        try:
-            channel_data = data['channel']
-        except KeyError:
-            try:
-                channel_id = data['channel_id']
-            except KeyError:
-                channel = None
-            else:
-                channel_id = int(channel_id)
-                channel = CHANNELS.get(channel_id, None)
-        else:
-            channel = create_partial_channel_from_data(channel_data, guild.id)
-        self.channel = channel
-        
-        try:
-            approximate_online_count = data['approximate_presence_count']
-        except KeyError:
-            approximate_online_count = 0
-        else:
-            if (guild is not None):
-                guild.approximate_online_count = approximate_online_count
-        
-        self.approximate_online_count = approximate_online_count
-        
-        try:
-            approximate_user_count = data['approximate_member_count']
-        except KeyError:
-            approximate_user_count = 0
-        else:
-            if (guild is not None):
-                guild.approximate_user_count = approximate_user_count
-            
-        self.approximate_user_count = approximate_user_count
-        
-        try:
-            inviter_data = data['inviter']
-        except KeyError:
-            inviter = ZEROUSER
-        else:
-            inviter = User.from_data(inviter_data)
-        self.inviter = inviter
-        
-        self.uses = data.get('uses', None)
-        self.max_age = data.get('max_age', None)
-        self.max_uses = data.get('max_uses', None)
-        self.temporary = data.get('temporary', True)
-        
-        try:
-            created_at_data = data['created_at']
-        except KeyError:
-            created_at = DISCORD_EPOCH_START
-        else:
-            created_at = timestamp_to_datetime(created_at_data)
-        self.created_at = created_at
-        
-        self.target_type = InviteTargetType.get(data.get('target_type', 0))
-        
-        try:
-            target_user_data = data['target_user']
-        except KeyError:
-            target_user = ZEROUSER
-        else:
-            target_user = User.from_data(target_user_data)
-        
-        self.target_user = target_user
-        
-        try:
-            target_application_data = data['target_application']
-        except KeyError:
-            target_application = None
-        else:
-            target_application = Application.from_data_invite(target_application_data)
-        
-        self.target_application = target_application
-        
-        try:
-            invite_stage_data = data['stage_instance']
-        except KeyError:
-            invite_stage = None
-        else:
-            invite_stage = InviteStage(invite_stage_data, guild.id)
-        self.stage = invite_stage
-        
-        self.type = InviteType.get(data.get('type', 0))
-        self.nsfw_level = NsfwLevel.get(data.get('nsfw_level', 0))
+        self._set_attributes_common(data)
+        self._set_counts_only(data)
     
     
     def _update_attributes(self, data):
         """
-        Updates the invite with the given data. Only updates the attributes, which are represented in the payload.
+        Updates the invite with the given data.
         
         Parameters
         ----------
         data : `dict` of (`str`, `object`) items
             Invite data.
         """
-        guild = self.guild
-        if guild is None:
-            try:
-                guild_data = data['guild']
-            except KeyError:
-                try:
-                    guild_id = data['guild_id']
-                except KeyError:
-                    guild = None
-                else:
-                    guild_id = int(guild_id)
-                    guild = GUILDS.get(guild_id, None)
-            else:
-                guild = create_partial_guild_from_data(guild_data)
-            
-            self.guild = guild
-        
-        if self.channel is None:
-            try:
-                channel_data = data['channel']
-            except KeyError:
-                try:
-                    channel_id = data['channel_id']
-                except KeyError:
-                    channel = None
-                else:
-                    channel_id = int(channel_id)
-                    channel = CHANNELS.get(channel_id, None)
-            else:
-                channel = create_partial_channel_from_data(channel_data, guild.id)
-            
-            self.channel = channel
-        
+        self._set_attributes_common(data)
         self._update_counts_only(data)
-        
-        try:
-            inviter_data = data['inviter']
-        except KeyError:
-            pass
-        else:
-            self.inviter = User.from_data(inviter_data)
-        
-        try:
-            self.uses = data['uses']
-        except KeyError:
-            pass
-        
-        try:
-            self.max_age = data['max_age']
-        except KeyError:
-            pass
-        
-        try:
-            self.max_uses = data['max_uses']
-        except KeyError:
-            pass
-        
-        try:
-            self.temporary = data['temporary']
-        except KeyError:
-            pass
-        
-        try:
-            created_at_data = data['created_at']
-        except KeyError:
-            pass
-        else:
-            self.created_at = timestamp_to_datetime(created_at_data)
-        
-        try:
-            target_type_value = data['target_type']
-        except KeyError:
-            pass
-        else:
-            self.target_type = InviteTargetType.get(target_type_value)
-        
-        try:
-            target_user_data = data['target_user']
-        except KeyError:
-            pass
-        else:
-            self.target_user = User.from_data(target_user_data)
     
-        try:
-            target_application_data = data['target_application']
-        except KeyError:
-            pass
-        else:
-            self.target_application = Application.from_data_invite(target_application_data)
+    
+    def _update_attributes_partial(self, data):
+        """
+        Updates the invite's fields that are received with a partial data.
         
-        try:
-            invite_stage_data = data['stage_instance']
-        except KeyError:
-            pass
-        else:
-            self.stage = InviteStage(invite_stage_data, guild.id)
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Invite data.
+        """
+        self.channel = parse_channel(data)
+        self.guild = parse_guild(data)
+    
+    
+    def _set_attributes_common(self, data):
+        """
+        Sets the common attributes of the invite. Used both in ``._set_attributes`` and ``._update_attributes``.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Invite data.
+        """
+        self.channel = parse_channel(data)
+        self.created_at = parse_created_at(data)
+        self.flags = parse_flags(data)
+        self.guild = parse_guild(data)
+        self.inviter = parse_inviter(data)
+        self.max_age = parse_max_age(data)
+        self.max_uses = parse_max_uses(data)
+        self.target_application = parse_target_application(data)
+        self.target_type = parse_target_type(data)
+        self.target_user = parse_target_user(data)
+        self.temporary = parse_temporary(data)
+        self.type = parse_type(data)
+        self.uses = parse_uses(data)
+    
+    
+    def _set_counts_only(self, data):
+        """
+        Sets the invite's counts.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Received invite data.
+        """
+        guild = self.guild
+        
+        self.approximate_online_count = approximate_online_count = parse_approximate_online_count(data)
+        if approximate_online_count and (guild is not None):
+            guild.approximate_online_count = approximate_online_count
+        
+        self.approximate_user_count = approximate_user_count = parse_approximate_user_count(data)
+        if approximate_user_count and (guild is not None):
+            guild.approximate_user_count = approximate_user_count
     
     
     def _update_counts_only(self, data):
@@ -449,27 +535,22 @@ class Invite(DiscordEntity, immortal = True):
             Received invite data.
         """
         guild = self.guild
-        try:
-            approximate_online_count = data['approximate_presence_count']
-        except KeyError:
-            pass
-        else:
+        
+        approximate_online_count = parse_approximate_online_count(data)
+        if approximate_online_count:
             self.approximate_online_count = approximate_online_count
             if (guild is not None):
                 guild.approximate_online_count = approximate_online_count
         
-        try:
-            approximate_user_count = data['approximate_member_count']
-        except KeyError:
-            pass
-        else:
+        approximate_user_count = parse_approximate_user_count(data)
+        if approximate_user_count:
             self.approximate_user_count = approximate_user_count
             if (guild is not None):
                 guild.approximate_user_count = approximate_user_count
     
     
     @classmethod
-    def precreate(cls, code, **kwargs):
+    def precreate(cls, code, **keyword_parameters):
         """
         Precreates an invite object with the given parameters.
         
@@ -477,155 +558,86 @@ class Invite(DiscordEntity, immortal = True):
         ----------
         code : `str`
             The invite's code.
-        **kwargs : keyword parameters
+        **keyword_parameters : keyword parameters
             Additional predefined attributes for the invite.
         
         Other Parameters
         ----------------
         approximate_online_count : `int`, Optional (Keyword only)
             The amount of online users at the respective guild (or group channel).
+        
         approximate_user_count : `int`, Optional (Keyword only)
             The amount of users at the respective guild (or group channel).
+        
         channel : `None`, ``Channel``, Optional (Keyword only)
             The channel where the invite redirects.
-        created_at : `datetime`, Optional (Keyword only)
+        
+        created_at : `None`, `DateTime`, Optional (Keyword only)
             When the invite was created.
+        
+        flags : ``InviteFlag``, `int`, Optional (Keyword only)
+            The invite's flags.
+        
         guild : `None`, ``Guild``, Optional (Keyword only)
             The guild the invite is for.
-        inviter : `int`, `str`, ``ClientUserBase``, Optional (Keyword only)
+        
+        invite_type : `int`, ``InviteType``, Optional (Keyword only)
+            The invite's type.
+        
+        inviter : ``ClientUserBase``, Optional (Keyword only)
             The creator of the invite.
+        
         max_age : `None`, `int`, Optional (Keyword only)
             The time in seconds after the invite will expire.
+        
         max_uses : `None`, `int`, Optional (Keyword only)
             How much times the invite can be used.
-        nsfw_level : ``NsfwLevel``, Optional (Keyword only)
-            The respective guild's nsfw level.
-        target_type : `int`, ``InviteTargetType``, Optional (Keyword only)
-            The invite's target type.
-        target_application : `int`, `str`, ``Application``, Optional (Keyword only)
+        
+        target_application : `None`, ``Application``, Optional (Keyword only)
             The target application of the invite.
-        target_user : `int`, `str`, ``ClientUserBase``, Optional (Keyword only)
+        
+        target_type : ``InviteTargetType``, `int` Optional (Keyword only)
+            The invite's target type.
+        
+        target_user : `None`, ``ClientUserBase``, Optional (Keyword only)
             The target user of the invite.
+        
         temporary : `bool`, Optional (Keyword only)
             Whether this invite only grants temporary membership.
-        type : `int`, ``InviteType``, Optional (Keyword only)
-            The invite's type.
+        
         uses : `None`, `int`, Optional (Keyword only)
             The amount how much times the invite was used.
         
         Returns
         -------
-        invite : ``Invite``
+        self : `instance<cls>`
         
         Raises
         ------
         TypeError
-            If any parameter's type is bad or if unexpected parameter is passed.
+            - If a parameter's type is incorrect.
         ValueError
-            If an parameter's type is good, but it's value is unacceptable.
+            - If a parameter's value is incorrect.
         """
-        code = preconvert_str(code, 'code', 2, 32)
+        code = validate_code(code)
 
-        if kwargs:
-            processable = []
-            for key in ('uses', 'max_age', 'max_uses' ):
-                try:
-                    value = kwargs.pop(key)
-                except KeyError:
-                    pass
-                else:
-                    if (value is not None):
-                        value = preconvert_int(value, key, 0, (1 << 64) - 1)
-                        processable.append((key, value))
-            
-            try:
-                temporary = kwargs.pop('temporary')
-            except KeyError:
-                pass
-            else:
-                temporary = preconvert_bool(temporary, 'temporary')
-                processable.append(('temporary', temporary))
-            
-            try:
-                created_at = kwargs.pop('created_at')
-            except KeyError:
-                pass
-            else:
-                if not isinstance(created_at, datetime):
-                    raise TypeError(f'`created_at` can be `int`, got {created_at.__class__.__name__}; {created_at!r}.')
-                
-                processable.append(('created_at', created_at))
-            
-            for key in ('inviter', 'target_user',):
-                try:
-                    value = kwargs.pop(key)
-                except KeyError:
-                    pass
-                else:
-                    value = instance_or_id_to_instance(value, ClientUserBase, key)
-                    processable.append((key, value))
-            
-            for key in ('approximate_online_count', 'approximate_user_count',):
-                try:
-                    value = kwargs.pop(key)
-                except KeyError:
-                    pass
-                else:
-                    value = preconvert_int(value, key, 0, (1 << 64) - 1)
-                    processable.append((key, value))
-            
-            for key, type_ in (
-                ('guild', Guild),
-                ('channel', Channel),
-            ):
-                
-                try:
-                    value = kwargs.pop(key)
-                except KeyError:
-                    pass
-                else:
-                    if (value is not None):
-                        value = instance_or_id_to_instance(value, type_, key)
-                        processable.append((key, value))
-            
-            for key, type_ in (
-                ('nsfw_level', NsfwLevel),
-                ('target_type', InviteTargetType),
-                ('type', InviteType),
-            ):
-                try:
-                    value = kwargs.pop(key)
-                except KeyError:
-                    pass
-                else:
-                    value = preconvert_preinstanced_type(value, type_, key)
-                    processable.append((key, value))
-            
-            try:
-                target_application = kwargs.pop('target_application')
-            except KeyError:
-                pass
-            else:
-                value = instance_or_id_to_instance(target_application, Application, key)
-                processable.append(('target_application', value))
-            
-            if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
-        
+        if keyword_parameters:
+            processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
         else:
-            processable = None
+            processed = None
         
         try:
             self = INVITES[code]
         except KeyError:
             self = cls._create_empty(code)
             INVITES[code] = self
-        else:
-            if not self.partial:
-                return self
         
-        if (processable is not None):
-            for item in processable:
+        else:
+            # Cannot detect if an invite is not partial -> do nothing
+            pass
+        
+        if (processed is not None):
+            for item in processed:
                 setattr(self, *item)
         
         return self
@@ -643,26 +655,312 @@ class Invite(DiscordEntity, immortal = True):
         
         Returns
         -------
-        invite : ``Invite``
+        self : `instance<cls>`
         """
         self = object.__new__(cls)
-        self.code = code
-        self.inviter = ZEROUSER
-        self.uses = None
-        self.max_age = None
-        self.max_uses = None
-        self.temporary = False
-        self.created_at = DISCORD_EPOCH_START
-        self.guild = None
-        self.channel = None
+        
         self.approximate_online_count = 0
         self.approximate_user_count = 0
+        self.channel = None
+        self.code = code
+        self.created_at = None
+        self.flags = InviteFlag()
+        self.guild = None
+        self.inviter = ZEROUSER
+        self.max_age = None
+        self.max_uses = None
+        self.target_application = None
         self.target_type = InviteTargetType.none
-        self.target_user = None
         self.target_user = ZEROUSER
-        self.partial = True
-        self.stage = None
+        self.temporary = False
         self.type = InviteType.guild
-        self.nsfw_level = NsfwLevel.none
+        self.uses = None
         
         return self
+    
+    
+    def copy(self):
+        """
+        Copies the invite returning a new partial one.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        new = object.__new__(type(self))
+        
+        new.approximate_online_count = 0
+        new.approximate_user_count = 0
+        new.channel = None
+        new.code = ''
+        new.created_at = None
+        new.flags = self.flags
+        new.guild = None
+        new.inviter = ZEROUSER
+        new.max_age = self.max_age
+        new.max_uses = self.max_uses
+        new.target_application = self.target_application
+        new.target_type = self.target_type
+        new.target_user = self.target_user
+        new.temporary = self.temporary
+        new.type = InviteType.guild
+        new.uses = None
+        
+        return new
+    
+    
+    def copy_with(
+        self,
+        *, 
+        flags = ...,
+        max_age = ...,
+        max_uses = ...,
+        target_application = ...,
+        target_type = ...,
+        target_user = ...,
+        temporary = ...,
+    ):
+        """
+        Copies the invite with the given fields.
+        
+        Parameters
+        ----------
+        flags : ``InviteFlag``, `int`, Optional (Keyword only)
+            The invite's flags.
+        
+        max_age : `None`, `int`, Optional (Keyword only)
+            The time in seconds after the invite will expire.
+        
+        max_uses : `None`, `int`, Optional (Keyword only)
+            How much times the invite can be used.
+        
+        target_application : `None`, ``Application``, Optional (Keyword only)
+            The invite's target application.
+        
+        target_type : ``InviteTargetType``, `int`, Optional (Keyword only)
+            The invite's target type.
+        
+        target_user : `None`, ``ClientUserBase``, Optional (Keyword only)
+            The target of the invite if applicable.
+        
+        temporary : `bool`, Optional (Keyword only)
+            Whether this invite only grants temporary membership.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # flags
+        if flags is ...:
+            flags = self.flags
+        else:
+            flags = validate_flags(flags)
+        
+        # max_age
+        if max_age is ...:
+            max_age = self.max_age
+        else:
+            max_age = validate_max_age(max_age)
+        
+        # max_uses
+        if max_uses is ...:
+            max_uses = self.max_uses
+        else:
+            max_uses = validate_max_uses(max_uses)
+        
+        # target_application
+        if target_application is ...:
+            target_application = self.target_application
+        else:
+            target_application = validate_target_application(target_application)
+        
+        # target_type
+        if target_type is ...:
+            target_type = self.target_type
+        else:
+            target_type = validate_target_type(target_type)
+        
+        # target_user
+        if target_user is ...:
+            target_user = self.target_user
+        else:
+            target_user = validate_target_user(target_user)
+        
+        # temporary
+        if temporary is ...:
+            temporary = self.temporary
+        else:
+            temporary = validate_temporary(temporary)
+        
+        # Construct
+        new = object.__new__(type(self))
+        
+        new.approximate_online_count = 0
+        new.approximate_user_count = 0
+        new.channel = None
+        new.code = ''
+        new.created_at = None
+        new.flags = flags
+        new.guild = None
+        new.inviter = ZEROUSER
+        new.max_age = max_age
+        new.max_uses = max_uses
+        new.target_application = target_application
+        new.target_type = target_type
+        new.target_user = target_user
+        new.temporary = temporary
+        new.type = InviteType.guild
+        new.uses = None
+        
+        return new
+        
+    
+    url = property(module_urls.invite_url)
+    
+    
+    @property
+    def id(self):
+        """
+        Compatibility property with other Discord entities.
+        
+        Returns
+        -------
+        id : `int` = `0`
+        """
+        return 0
+    
+    
+    @property
+    def target_application_id(self):
+        """
+        Returns the invite's target application's identifier.
+        
+        Returns
+        -------
+        target_application_id : `int`
+        """
+        target_application = self.target_application
+        if target_application is None:
+            target_application_id = 0
+        else:
+            target_application_id = target_application.id
+        
+        return target_application_id
+    
+    
+    @property
+    def channel_id(self):
+        """
+        Returns the invite's channel's identifier.
+        """
+        channel = self.channel
+        if channel is None:
+            channel_id = 0
+        else:
+            channel_id = channel.id
+        
+        return channel_id
+    
+    
+    @property
+    def guild_id(self):
+        """
+        Returns the invite's guild's identifier.
+        
+        Returns
+        -------
+        guild_id : `int`
+        """
+        guild = self.guild
+        if guild is None:
+            guild_id = 0
+        else:
+            guild_id = guild.id
+        
+        return guild_id
+    
+    
+    @property
+    def target_user_id(self):
+        """
+        Returns the invite's target user's identifier.
+        
+        Returns
+        -------
+        target_user_id : `int`
+        """
+        target_user = self.target_user
+        if target_user is None:
+            target_user_id = 0
+        else:
+            target_user_id = target_user.id
+        
+        return target_user_id
+    
+    
+    @property
+    def partial(self):
+        """
+        Returns whether the invite is partial.
+        
+        Since it is not possible to check whether teh invite is up to date, it will always return `True` for
+        non-template invites.
+        
+        Returns
+        -------
+        partial : `bool`
+        """
+        return False if self.code else True
+    
+    
+    @property
+    def stage(self):
+        """
+        Returns the invite's stage.
+        
+        Deprecated and will be removed in 2024 February.
+        
+        Returns
+        -------
+        stage : `None`, ``InviteStage``
+        """
+        warn(
+            f'`{self.__class__.__name__}.stage` is deprecated and will be removed in 2024 February.',
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return None
+    
+    
+    @property
+    def nsfw_level(self):
+        """
+        Returns the invite's guild's nsfw level if applicable.
+        
+        Deprecated and will be removed in 2024 February.
+        
+        Returns
+        -------
+        stage : ``NsfwLevel``
+        """
+        warn(
+            f'`{self.__class__.__name__}.nsfw_level` is deprecated and will be removed in 2024 February.',
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        guild = self.guild
+        if (guild is None):
+            nsfw_level = NsfwLevel.none
+        else:
+            nsfw_level = guild.nsfw_level
+        
+        return nsfw_level

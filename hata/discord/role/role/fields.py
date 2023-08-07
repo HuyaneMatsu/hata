@@ -10,7 +10,7 @@ from ...field_putters import (
     int_putter_factory, nullable_functional_optional_putter_factory, string_flag_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, default_entity_validator, entity_id_validator_factory, flag_validator_factory,
+    bool_validator_factory, default_entity_validator_factory, entity_id_validator_factory, flag_validator_factory,
     force_string_validator_factory, int_conditional_validator_factory, nullable_entity_conditional_validator_factory,
     preinstanced_validator_factory
 )
@@ -50,7 +50,7 @@ validate_id = entity_id_validator_factory('role_id')
 
 # manager_metadata
 
-validate_manager_metadata = default_entity_validator(
+validate_manager_metadata = default_entity_validator_factory(
     'manager_metadata', RoleManagerMetadataBase, default = ROLE_MANAGER_DEFAULT
 )
 

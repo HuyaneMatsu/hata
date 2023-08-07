@@ -4,7 +4,9 @@ from ...activity import Activity
 from ...channel import Channel
 from ...field_parsers import default_entity_parser_factory, entity_id_parser_factory
 from ...field_putters import entity_id_optional_putter_factory, entity_id_putter_factory
-from ...field_validators import default_entity_validator, entity_id_set_validator_factory, entity_id_validator_factory
+from ...field_validators import (
+    default_entity_validator_factory, entity_id_set_validator_factory, entity_id_validator_factory
+)
 from ...user import ClientUserBase
 
 from .constants import ACTIVITY_KEY
@@ -35,7 +37,7 @@ def put_activity_into(activity, data, defaults):
     return data
 
 
-validate_activity = default_entity_validator('activity', Activity, default_factory = lambda : Activity())
+validate_activity = default_entity_validator_factory('activity', Activity, default_factory = lambda : Activity())
 
 # application_id
 

@@ -4,28 +4,49 @@ from ..fields import validate_type
 from ..preinstanced import InteractionType
 
 
-def test__validate_type__0():
+def _iter_options():
+    yield None, InteractionType.none
+    yield InteractionType.application_command, InteractionType.application_command
+    yield InteractionType.application_command.value, InteractionType.application_command
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_type__passing(input_value):
     """
-    Validates whether ``validate_type`` works as intended.
+    Tests whether ``validate_type`` works as intended.
     
     Case: passing.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value.
+    
+    Returns
+    -------
+    output : ``InteractionType``
     """
-    for input_value, expected_output in (
-        (InteractionType.application_command, InteractionType.application_command),
-        (InteractionType.application_command.value, InteractionType.application_command)
-    ):
-        output = validate_type(input_value)
-        vampytest.assert_is(output, expected_output)
+    output = validate_type(input_value)
+    vampytest.assert_instance(output, InteractionType)
+    return output
 
 
-def test__validate_type__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+@vampytest.call_with('')
+def test__validate_type__type_error(input_value):
     """
-    Validates whether ``validate_type`` works as intended.
+    Tests whether ``validate_type`` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value where we are expecting `TypeError`.
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_type(input_value)
+    validate_type(input_value)

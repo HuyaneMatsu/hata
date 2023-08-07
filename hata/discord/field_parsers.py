@@ -271,7 +271,7 @@ def int_parser_factory(field_key, default_value):
 
 def int_postprocess_parser_factory(field_key, default_value, postprocessor):
     """
-    Returns an `int` parser. with a postprocessor function applied to it.
+    Returns an `int` parser with a postprocessor function applied to it.
     
     Parameters
     ----------
@@ -1107,5 +1107,40 @@ def nullable_object_array_parser_factory(field_key, object_type, *, include = No
             nonlocal object_type
             object_type = value
     
+    
+    return parser
+
+
+def nullable_int_parser_factory(field_key):
+    """
+    Returns a nullable `int` parser.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    def parser(data):
+        """
+        Parses out a nullable integer from the given payload.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Entity data.
+        
+        Returns
+        -------
+        field_value : `None`, `int`
+        """
+        nonlocal field_key
+        
+        return data.get(field_key, None)
     
     return parser

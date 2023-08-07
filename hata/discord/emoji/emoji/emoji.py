@@ -265,7 +265,7 @@ class Emoji(DiscordEntity, immortal = True):
             put_id_into(self.id, data, defaults)
             put_managed_into(self.managed, data, defaults)
             put_require_colons_into(self.require_colons, data, defaults)
-            put_user_into(self.user, data, defaults, include_internals = include_internals)
+            put_user_into(self.user, data, defaults)
         
         return data
     

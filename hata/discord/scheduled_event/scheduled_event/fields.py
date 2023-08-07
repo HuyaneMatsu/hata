@@ -13,7 +13,7 @@ from ...field_putters import (
     preinstanced_optional_putter_factory, preinstanced_putter_factory
 )
 from ...field_validators import (
-    default_entity_validator, entity_id_array_validator_factory, entity_id_validator_factory,
+    default_entity_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory,
     force_string_validator_factory, int_conditional_validator_factory, nullable_date_time_validator_factory,
     nullable_string_validator_factory, preinstanced_validator_factory
 )
@@ -34,7 +34,7 @@ validate_channel_id = entity_id_validator_factory('channel_id', Channel)
 
 parse_creator = default_entity_parser_factory('creator', User, default = ZEROUSER)
 put_creator_into = default_entity_putter_factory('creator', ClientUserBase, ZEROUSER)
-validate_creator = default_entity_validator('creator', ClientUserBase, default = ZEROUSER)
+validate_creator = default_entity_validator_factory('creator', ClientUserBase, default = ZEROUSER)
 
 # description
 

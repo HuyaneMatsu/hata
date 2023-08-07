@@ -5,6 +5,7 @@ from ..preinstanced import EmbedType
 
 
 def _iter_options():
+    yield None, EmbedType.rich
     yield EmbedType.gifv, EmbedType.gifv
     yield EmbedType.gifv.value, EmbedType.gifv
 
@@ -12,7 +13,7 @@ def _iter_options():
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__validate_type__passing(input_value):
     """
-    Tests whether `validate_type` works as intended.
+    Tests whether ``validate_type`` works as intended.
     
     Case: passing.
     
@@ -35,7 +36,7 @@ def test__validate_type__passing(input_value):
 @vampytest.call_with(0)
 def test__validate_type__type_error(input_value):
     """
-    Tests whether `validate_type` works as intended.
+    Tests whether ``validate_type`` works as intended.
     
     Case: `TypeError`.
     

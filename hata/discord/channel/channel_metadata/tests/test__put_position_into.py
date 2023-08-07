@@ -5,6 +5,7 @@ from ..fields import put_position_into
 
 def _iter_options():
     yield 0, False, {'position': 0}
+    yield 0, True, {'position': 0}
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

@@ -1552,7 +1552,7 @@ def nullable_entity_validator_factory(field_name, entity_type, *, include = None
     -------
     validator : `FunctionType`
     """
-    return default_entity_validator(field_name, entity_type, default = None, include = include)
+    return default_entity_validator_factory(field_name, entity_type, default = None, include = include)
 
 
 def nullable_entity_conditional_validator_factory(
@@ -1630,7 +1630,7 @@ def nullable_entity_conditional_validator_factory(
     return validator
 
 
-def default_entity_validator(field_name, entity_type, *, default = ..., default_factory = ..., include = None):
+def default_entity_validator_factory(field_name, entity_type, *, default = ..., default_factory = ..., include = None):
     """
     Returns a defaulted entity validator.
     

@@ -14,7 +14,7 @@ from ...field_putters import (
     preinstanced_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, default_entity_validator, entity_id_validator_factory, entity_validator_factory,
+    bool_validator_factory, default_entity_validator_factory, entity_id_validator_factory, entity_validator_factory,
     int_conditional_validator_factory, int_options_validator_factory, nullable_date_time_validator_factory,
     nullable_entity_validator_factory, preinstanced_array_validator_factory, preinstanced_validator_factory
 )
@@ -37,7 +37,7 @@ parse_account = default_entity_parser_factory(
     'account', IntegrationAccount, default_factory = lambda : IntegrationAccount._create_empty()
 )
 put_account_into = entity_putter_factory('account', IntegrationAccount)
-validate_account = default_entity_validator(
+validate_account = default_entity_validator_factory(
     'account', IntegrationAccount, default_factory = lambda : IntegrationAccount._create_empty()
 )
 
@@ -49,7 +49,7 @@ def parse_account__discord(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Integration account data.
     
     Returns
@@ -74,14 +74,14 @@ def put_account_into__discord(account, data, defaults):
     ----------
     account : ``ClientUserBase``
         Integration account of a discord integration.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default fields should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     data['account'] = {
         'id': str(account.id),

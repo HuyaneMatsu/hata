@@ -1,33 +1,50 @@
 import vampytest
 
-from ....user import User
+from ....user import User, ZEROUSER
 
 from ..fields import validate_user
 
 
-def test__validate_user__0():
+def _iter_options():
+    user = User.precreate(202308010008, name = 'Ken')
+    yield user, user
+    yield None, ZEROUSER
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_user__passing(input_value):
     """
     Tests whether `validate_user` works as intended.
     
     Case: passing.
-    """
-    user = User.precreate(202302020013, name = 'Yuuka')
     
-    for input_value, expected_output in (
-        (user, user),
-    ):
-        output = validate_user(input_value)
-        vampytest.assert_is(output, expected_output)
+    Parameters
+    ----------
+    input_value : `None`, ``ClientUserBase``
+        The value to validate.
+    
+    Returns
+    -------
+    output : ``ClientUserBase``
+    """
+    return validate_user(input_value)
 
 
-def test__validate_user__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with('a')
+def test__validate_user__type_error(input_value):
     """
     Tests whether `validate_user` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `None`, ``ClientUserBase``
+        The value to validate.
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        'a',
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_user(input_value)
+    validate_user(input_value)

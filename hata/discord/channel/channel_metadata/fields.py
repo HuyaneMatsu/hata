@@ -13,7 +13,7 @@ from ...field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, flag_optional_putter_factory,
     force_string_putter_factory, int_optional_postprocess_putter_factory, int_putter_factory,
     optional_entity_id_array_optional_putter_factory, nullable_entity_array_optional_putter_factory,
-    nullable_int_optional_putter_factory, nullable_string_putter_factory, preinstanced_optional_putter_factory
+    nulled_int_optional_putter_factory, nullable_string_putter_factory, preinstanced_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory, flag_validator_factory,
@@ -404,7 +404,7 @@ validate_default_thread_reaction = nullable_entity_validator_factory('default_th
 # default_thread_slowmode
 
 parse_default_thread_slowmode = int_parser_factory('default_thread_rate_limit_per_user', SLOWMODE_DEFAULT)
-put_default_thread_slowmode_into = nullable_int_optional_putter_factory(
+put_default_thread_slowmode_into = nulled_int_optional_putter_factory(
     'default_thread_rate_limit_per_user',
     SLOWMODE_DEFAULT,
 )
@@ -688,7 +688,7 @@ validate_region = preinstanced_validator_factory('region', VoiceRegion)
 # slowmode
 
 parse_slowmode = int_parser_factory('rate_limit_per_user', SLOWMODE_DEFAULT)
-put_slowmode_into = nullable_int_optional_putter_factory(
+put_slowmode_into = nulled_int_optional_putter_factory(
     'rate_limit_per_user',
     SLOWMODE_DEFAULT,
 )

@@ -48,12 +48,15 @@
 - `Invite.__hash__` now works with partial instances as well.
 - Add `Invite.copy`.
 - Add `Invite.copy_with`.
+- `EMBEDDED_ACTIVITY_NAME_TO_APPLICATION_ID` and related variables moved under `.discord.application.constants`.
 
 #### Bug fixes
 
 - `InteractionEvent.value` was bound to auto complete instead of message component. This was not intended.
 - `get_bool_env` returned incorrect value if variable was any of: `0`, `1`.
 - `Invite._create_empty` did not set `.target_application`.
+- `ApplicationType` was not importable directly. :KoishiFail:
+- `ActivitySecrets` was not importable directly. :KoishiFail:
 
 #### Renames, Deprecations & Removals
 

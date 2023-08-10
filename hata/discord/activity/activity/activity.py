@@ -1,11 +1,8 @@
 __all__ = ('ACTIVITY_UNKNOWN', 'Activity')
 
-import warnings
-
 from scarletio import RichAttributeErrorBaseType, copy_docs
 
 from ...http import urls as module_urls
-from ...utils import DISCORD_EPOCH_START
 
 from ..activity_metadata import ActivityMetadataBase
 
@@ -30,7 +27,7 @@ class Activity(RichAttributeErrorBaseType):
     """
     __slots__ = ('metadata', 'type')
     
-    def __new__(cls, name = None, *, activity_type = ..., type_ = ..., **keyword_parameters):
+    def __new__(cls, name = None, *, activity_type = ..., **keyword_parameters):
         """
         Creates a new activity with the given parameters.
         
@@ -59,7 +56,7 @@ class Activity(RichAttributeErrorBaseType):
             The flags of the activity.
         party : `None`, ``ActivityParty``, Optional (Keyword only)
             The activity's party.
-        secrets : `None`, ``ActivitySecret``, Optional (Keyword only)
+        secrets : `None`, ``ActivitySecrets``, Optional (Keyword only)
             The activity's secrets.
         session_id : `None`, `str`, Optional (Keyword only)
             Spotify activity's session's id.
@@ -80,18 +77,6 @@ class Activity(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        if type_ is not ...:
-            warnings.warn(
-                (
-                    f'`{cls.__name__}.__new__`\'s `type_` parameter is deprecated and will be removed in 2023 Marc. '
-                    f'Please use `activity_type` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            activity_type = type_
-        
         # activity_type
         if activity_type is ...:
             activity_type = ActivityType.game
@@ -147,11 +132,11 @@ class Activity(RichAttributeErrorBaseType):
         repr_parts = ['<', self.__class__.__name__]
         
         # type
-        type_ = self.type
+        activity_type = self.type
         repr_parts.append(' type = ')
-        repr_parts.append(type_.name)
+        repr_parts.append(activity_type.name)
         repr_parts.append(' ~ ')
-        repr_parts.append(repr(type_.value))
+        repr_parts.append(repr(activity_type.value))
         
         # metadata
         repr_parts.append(', metadata = ')
@@ -216,54 +201,6 @@ class Activity(RichAttributeErrorBaseType):
                 data['id'] = self.discord_side_id
         
         return data
-    
-    
-    def bot_dict(self):
-        """
-        Deprecated and will be removed in 2023 Jan, please use ``.to_data`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.bot_dict` is deprecated and will be removed in 2023 Jan. '
-                f'Please use `.to_data` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.to_data()
-    
-    
-    def user_dict(self):
-        """
-        Deprecated and will be removed in 2023 Jan, please use ``.to_data(user = True)`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.user_dict` is deprecated and will be removed in 2023 Jan. '
-                f'Please use `.to_data(user = True)` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.to_data(user = True)
-    
-    
-    def full_dict(self):
-        """
-        Deprecated and will be removed in 2023 Jan, please use ``.to_data(include_internals = True)`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.full_dict` is deprecated and will be removed in 2023 Jan. '
-                f'Please use `.to_data(include_internals = True)` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.to_data(include_internals = True)
     
     
     def _update_attributes(self, data):
@@ -404,7 +341,7 @@ class Activity(RichAttributeErrorBaseType):
             The name of the activity.
         party : `None`, ``ActivityParty``, Optional (Keyword only)
             The activity's party.
-        secrets : `None`, ``ActivitySecret``, Optional (Keyword only)
+        secrets : `None`, ``ActivitySecrets``, Optional (Keyword only)
             The activity's secrets.
         session_id : `None`, `str`, Optional (Keyword only)
             Spotify activity's session's id.
@@ -470,11 +407,7 @@ class Activity(RichAttributeErrorBaseType):
     @property
     @copy_docs(ActivityMetadataBase.created_at)
     def created_at(self):
-        created_at = self.metadata.created_at
-        if (created_at is None):
-            created_at = DISCORD_EPOCH_START
-        
-        return created_at
+        return self.metadata.created_at
     
     
     @property
@@ -765,22 +698,6 @@ class Activity(RichAttributeErrorBaseType):
     
     
     @property
-    def track_id(self):
-        """
-        Drops a deprecation warning and returns ``.spotify_album_cover_url``.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.track_id` is deprecated and will be removed in 2023 January. '
-                f'Please use `.spotify_track_id` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.spotify_track_id
-    
-    
-    @property
     def spotify_track_id(self):
         """
         Returns the song's identifier.
@@ -795,22 +712,6 @@ class Activity(RichAttributeErrorBaseType):
             return None
         
         return self.sync_id
-    
-    
-    @property
-    def track_url(self):
-        """
-        Drops a deprecation warning and returns ``.spotify_track_url``.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.track_url` is deprecated and will be removed in 2023 January. '
-                f'Please use `.spotify_track_url` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.spotify_track_url
     
     
     @property

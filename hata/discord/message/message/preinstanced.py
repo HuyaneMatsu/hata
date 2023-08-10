@@ -4,7 +4,7 @@ import warnings
 
 from scarletio import class_property, include
 
-from ...activity import ACTIVITY_TYPES
+from ...activity import ActivityType
 from ...bases import Preinstance as P, PreinstancedBase
 from ...embed import EmbedType
 from ...utils import elapsed_time, sanitize_mentions
@@ -175,7 +175,7 @@ def convert_new_follower_channel(self):
 def convert_stream(self):
     user = self.author
     for activity in user.activities:
-        if activity.type == ACTIVITY_TYPES.stream:
+        if activity.type is ActivityType.stream:
             activity_name = activity.name
             break
     else:

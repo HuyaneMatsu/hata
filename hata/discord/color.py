@@ -1,7 +1,6 @@
 __all__ = ('COLORS', 'Color', 'parse_color',)
 
 import re
-from colorsys import rgb_to_hls
 from math import floor
 from random import Random
 

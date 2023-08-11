@@ -157,13 +157,10 @@ class ClientCompoundInviteEndpoints(Compound):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        if (guild is None) or guild.partial:
-            invite_data = await self.http.vanity_invite_get(guild_id)
-            vanity_code = invite_data['code']
-        else:
-            vanity_code = guild.vanity_code
-        
-        return await self.invite_get(vanity_code)
+        invite_data_vanity = await self.http.vanity_invite_get(guild_id)
+        invite_data = await self.http.invite_get(invite_data_vanity['code'], {'with_counts': True})
+        invite_data['uses'] = invite_data_vanity.get('uses', None)
+        return Invite.from_data(invite_data)
     
     
     async def vanity_invite_edit(self, guild, vanity_code, *, reason = None):

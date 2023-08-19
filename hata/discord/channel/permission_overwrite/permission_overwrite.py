@@ -4,11 +4,10 @@ from scarletio import RichAttributeErrorBaseType, include
 
 from ...permission import Permission
 
-from .fields.allow import parse_allow, put_allow_into, validate_allow
-from .fields.deny import parse_deny, put_deny_into, validate_deny
-from .fields.target import validate_target
-from .fields.target_id import parse_target_id, put_target_id_into, validate_target_id
-from .fields.target_type import parse_target_type, put_target_type_into, validate_target_type
+from .fields import (
+    parse_allow, parse_deny, parse_target_id, parse_target_type, put_allow_into, put_deny_into, put_target_id_into,
+    put_target_type_into, validate_allow, validate_deny, validate_target, validate_target_id, validate_target_type
+)
 from .preinstanced import PermissionOverwriteTargetType
 
 
@@ -139,8 +138,10 @@ class PermissionOverwrite(RichAttributeErrorBaseType):
         
         put_allow_into(self.allow, data, defaults)
         put_deny_into(self.deny, data, defaults)
-        put_target_id_into(self.target_id, data, defaults, include_internals = include_internals)
         put_target_type_into(self.target_type, data, defaults)
+        
+        if include_internals:
+            put_target_id_into(self.target_id, data, defaults)
         
         return data
     

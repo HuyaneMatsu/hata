@@ -219,7 +219,7 @@ validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LEN
 
 parse_permissions = flag_parser_factory(PERMISSION_KEY, Permission)
 put_permissions_into = string_flag_putter_factory(PERMISSION_KEY)
-validate_permissions = flag_validator_factory(PERMISSION_KEY, Permission)
+validate_permissions = flag_validator_factory('permission', Permission)
 
 # position
 

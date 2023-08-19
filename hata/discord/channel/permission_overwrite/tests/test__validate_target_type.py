@@ -1,8 +1,7 @@
 import vampytest
 
-from ...preinstanced import PermissionOverwriteTargetType
-
-from ..target_type import validate_target_type
+from ..fields import validate_target_type
+from ..preinstanced import PermissionOverwriteTargetType
 
 
 def _iter_options():

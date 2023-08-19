@@ -118,7 +118,7 @@ def add_payload_fields_from_keyword_parameters(field_converters, keyword_paramet
             if unused is None:
                 unused = {}
             
-            unused[field_name] = keyword_parameters
+            unused[field_name] = field_value
             continue
         
         putter(validator(field_value), data, defaults)

@@ -639,7 +639,6 @@ class ClientCompoundChannelEndpoints(Compound):
         guild,
         channel_template = None,
         *,
-        channel_type = ChannelType.guild_text,
         reason = None,
         **keyword_parameters,
     ):
@@ -658,9 +657,6 @@ class ClientCompoundChannelEndpoints(Compound):
         
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the `guild`'s audit logs.
-        
-        channel_type : ``ChannelType``, `int` = ``ChannelType.guild_text``, Optional (Keyword only)
-            The type of the created channel.
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters to create the channel with.
@@ -684,6 +680,9 @@ class ClientCompoundChannelEndpoints(Compound):
                 
         default_thread_slowmode : `int`, Optional (Keyword only)
             The default slowmode applied to the channel's threads.
+        
+        channel_type : ``ChannelType``, `int`, Optional (Keyword only)
+            The type of the created channel.
         
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)
             The channel's flags.
@@ -734,7 +733,7 @@ class ClientCompoundChannelEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         guild_id = get_guild_id(guild)
-        keyword_parameters['channel_type'] = channel_type
+        keyword_parameters.setdefault('channel_type', ChannelType.guild_text)
         data = build_create_payload(channel_template, CHANNEL_GUILD_MAIN_FIELD_CONVERTERS, keyword_parameters)
         channel_data = await self.http.channel_create(guild_id, data, reason)
         return Channel.from_data(channel_data, self, guild_id)

@@ -188,7 +188,7 @@ class ClientCompoundStickerEndpoints(Compound):
         return sticker
     
     
-    async def sticker_create(self, guild, name, image, tags = ..., description = None, *, reason = None):
+    async def sticker_create(self, guild, name, image, tags = None, description = None, *, reason = None):
         """
         Creates a sticker in the guild.
         
@@ -199,13 +199,13 @@ class ClientCompoundStickerEndpoints(Compound):
         guild : ``Guild``, `int`
             The guild to create the sticker in.
         name : `str`
-            The sticker's name. It's length can be in range [2:32]
-        tags : ``Emoji``, `str`, `iterable` of `str`
+            The sticker's name.
+        tags : `None`, `str`, `iterable` of `str`
             The tags of the sticker.
         image : `bytes-like`
             The sticker's image in bytes.
         description : `None`, `str` = `None`, Optional
-            The sticker's representation. It's length can be in range [0:100]
+            The sticker's representation.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
         
@@ -258,9 +258,7 @@ class ClientCompoundStickerEndpoints(Compound):
         return Sticker.from_data(sticker_data)
     
     
-    async def sticker_edit(
-        self, sticker, *, name = ..., tags = ..., emoji_representation = ..., description = ..., reason = None
-    ):
+    async def sticker_edit(self, sticker, *, name = ..., tags = ..., description = ..., reason = None):
         """
         Edits the given guild bound sticker,
         
@@ -315,9 +313,9 @@ class ClientCompoundStickerEndpoints(Compound):
             description = validate_description(description)
         
         data = {}
-        put_description_into(data, description, True)
-        put_name_into(data, name, True)
-        put_tags_into(data, tags, True)
+        put_description_into(description, data, True)
+        put_name_into(name, data, True)
+        put_tags_into(tags, data, True)
         
         await self.http.sticker_edit(sticker.guild_id, sticker.id, data, reason)
     

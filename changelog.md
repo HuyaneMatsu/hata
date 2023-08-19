@@ -1,3 +1,14 @@
+## 1.3.36 *\[2023-08-??\]*
+
+#### Bug fixes
+
+- `Client.permission_overwrite_create` was not inserting the `id` key detected from the `target` parameter.
+    Could cause `RuntimeError`.
+- `Client.permission_overwrite_create` was not inserting the `id` key detected from the `target_id` parameter.
+    Could cause `RuntimeError`.
+- `PermissionOverwrite.from_data` did not handle missing keys.
+    Could cause `KeyError` at `Client.permission_overwrite_create`.
+
 ## 1.3.35 *\[2023-08-11\]*
 
 #### Improvements

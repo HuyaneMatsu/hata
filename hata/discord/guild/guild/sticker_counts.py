@@ -1,7 +1,5 @@
 __all__ = ()
 
-import warnings
-
 from scarletio import RichAttributeErrorBaseType
 
 from ...sticker import StickerFormat
@@ -193,23 +191,3 @@ class StickerCounts(RichAttributeErrorBaseType):
             shift += 4
         
         return hash_value
-    
-    
-    def __iter__(self):
-        """Deprecated and will be removed in 2023 April."""
-        warnings.warn(
-            (
-                f'Unpacking `Guild.sticker_counts` is deprecated and will be removed in 2023 April.\n'
-                f'Please do the following instead:\n'
-                f'sticker_counts = guild.sticker_counts\n'
-                f'animated = sticker_counts.animated\n'
-                f'lottie = sticker_counts.lottie\n'
-                f'static = sticker_counts.static'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        yield self.static
-        yield self.animated
-        yield self.lottie

@@ -1,8 +1,6 @@
 __all__ = ('VerificationScreenStep', )
 
-import warnings
-
-from scarletio import BaseMethodDescriptor, RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
     parse_required, parse_title, parse_type, parse_values, put_required_into, put_title_into, put_type_into,
@@ -121,36 +119,6 @@ class VerificationScreenStep(RichAttributeErrorBaseType):
         put_type_into(self.type, data, defaults)
         put_values_into(self.values, data, defaults)
         return data
-    
-    
-    @BaseMethodDescriptor
-    def custom(cls, base, *, type = ..., step_type = ..., **keyword_parameters):
-        """
-        Deprecated and will be removed in 2023 April. Please use ``.__new__`` or ``.copy_with`` respectively.
-        """
-        warnings.warn(
-            (
-                f'`{cls.__name__}.custom` is deprecated and will be removed in 2023 April. '
-                f'Please use `.__new__` or `.copy_with` respectively.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        if type is not ...:
-            warnings.warn(
-                (
-                    f'`{cls.__name__}.custom`\'s `type` parameters is deprecated. Please use `step_type` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 3,
-            )
-            step_type = type
-        
-        if base is None:
-            return cls.__new__(cls, step_type = step_type, **keyword_parameters)
-        
-        return base.copy_with(step_type = step_type, **keyword_parameters)
     
     
     def __repr__(self):

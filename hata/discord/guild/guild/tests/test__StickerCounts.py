@@ -1,5 +1,3 @@
-import warnings as module_warnings
-
 import vampytest
 
 from ....sticker import Sticker, StickerFormat
@@ -213,27 +211,3 @@ def test__StickerCounts__hash():
     )
     
     vampytest.assert_instance(hash(sticker_counts), int)
-
-
-def test__StickerCounts__iter():
-    """
-    Tests whether ``StickerCounts.__iter__`` works as intended. This field is deprecated.
-    """
-    animated = 1
-    lottie = 2
-    static = 3
-    
-    sticker_counts = StickerCounts(
-        animated = animated,
-        lottie = lottie,
-        static = static,
-    )
-    
-    with module_warnings.catch_warnings(record = True) as warnings:
-        module_warnings.simplefilter('always')
-        
-        unpacked = [*sticker_counts]
-        
-        vampytest.assert_eq(len(warnings), 1)
-    
-    vampytest.assert_eq(unpacked, [static, animated, lottie])

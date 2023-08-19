@@ -1,9 +1,5 @@
 __all__ = ('ComponentType',)
 
-import warnings
-
-from scarletio import class_property
-
 from ...bases import Preinstance as P, PreinstancedBase
 
 from ..component_metadata import (

@@ -1,7 +1,5 @@
 __all__ = ('VerificationScreen', )
 
-import warnings
-
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
@@ -211,22 +209,6 @@ class VerificationScreen(RichAttributeErrorBaseType):
         
         return True
     
-    @property
-    def created_at(self):
-        """
-        ``.created_at`` is deprecated and will be removed in 2023 April. Please use ``.edited_at`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.created_at` is deprecated and will be removed in 2023 April. '
-                f'Please use `.edited_at` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.edited_at
-    
     
     def copy(self):
         """
@@ -246,7 +228,7 @@ class VerificationScreen(RichAttributeErrorBaseType):
         return new
     
     
-    def copy_with(self, edited_at = ..., description = ..., steps = ...):
+    def copy_with(self, *, edited_at = ..., description = ..., steps = ...):
         """
         Copies the verification screen with the given fields.
         

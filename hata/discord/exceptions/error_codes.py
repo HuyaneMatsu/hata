@@ -1,7 +1,5 @@
 __all__ = ()
 
-import warnings
-
 __doc__ = """
 The possible json error codes received from Discord HTTP API requests.
 

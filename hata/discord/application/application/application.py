@@ -939,40 +939,6 @@ class Application(DiscordEntity, immortal = True):
         return data
     
     
-    def _create_update(self, data, ready_data):
-        """
-        Creates a new application if the given data refers to an other one. Updates the application and returns it.
-        
-        Deprecated and will be removed in 2023 Marc.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `object`) items, Optional
-            Application data received from Discord.
-        ready_data : `bool`
-            Whether the application data was received from a ready event.
-        
-        Returns
-        -------
-        self : ``Application``
-            The created or updated application.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.embedded_activity_configuration` is deprecated and will be removed in '
-                f'2023 Marc.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        if ready_data:
-            self = self.from_data_ready(data)
-        else:
-            self = self.from_data_own(data)
-        return self
-    
-    
     def __hash__(self):
         """Returns the application's hash value."""
         application_id = self.id
@@ -1852,22 +1818,6 @@ class Application(DiscordEntity, immortal = True):
             return True
         
         return False
-    
-    
-    @property
-    def embedded_activity_configuration(self):
-        """
-        Deprecated and will be removed in 2023 Marc.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.embedded_activity_configuration` is deprecated and will be removed in '
-                f'2023 Marc.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return None
     
     
     def iter_aliases(self):

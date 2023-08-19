@@ -257,7 +257,6 @@ class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', dis
     }
     
     __deprecated_keys__ = {
-        'manage_channel': (PERMISSION_SHIFT_MANAGE_CHANNELS, '2023 Marc', 'manage_channels'),
         'manage_emojis_and_stickers': (
             PERMISSION_SHIFT_MANAGE_GUILD_EXPRESSIONS, '2023 Sept', 'manage_guild_expressions'
         ),

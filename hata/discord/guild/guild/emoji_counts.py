@@ -1,7 +1,5 @@
 __all__ = ()
 
-import warnings
-
 from scarletio import RichAttributeErrorBaseType
 
 
@@ -273,25 +271,3 @@ class EmojiCounts(RichAttributeErrorBaseType):
             shift += 4
         
         return hash_value
-    
-    
-    def __iter__(self):
-        """Deprecated and will be removed in 2023 April."""
-        warnings.warn(
-            (
-                f'Unpacking `Guild.emoji_counts` is deprecated and will be removed in 2023 April.\n'
-                f'Please do the following instead:\n'
-                f'emoji_counts = guild.emoji_counts\n'
-                f'normal_static = emoji_counts.normal_static\n'
-                f'normal_animated = emoji_counts.normal_animated\n'
-                f'managed_static = emoji_counts.managed_static\n'
-                f'managed_animated = emoji_counts.managed_animated'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-
-        yield self.normal_static
-        yield self.normal_animated
-        yield self.managed_static
-        yield self.managed_animated

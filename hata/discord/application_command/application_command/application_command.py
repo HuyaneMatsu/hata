@@ -1,7 +1,5 @@
 __all__ = ('ApplicationCommand',)
 
-import warnings
-
 from ...bases import DiscordEntity
 from ...core import APPLICATION_COMMANDS, GUILDS
 from ...localization.helpers import get_localized_length
@@ -9,10 +7,8 @@ from ...localization.utils import hash_locale_dictionary
 from ...permission import Permission
 from ...utils import DATETIME_FORMAT_CODE, id_to_datetime
 
-from ..application_command_option import ApplicationCommandOption
 from ..helpers import with_translation
 
-from .constants import APPLICATION_COMMAND_OPTIONS_MAX
 from .fields import (
     parse_allow_in_dm, parse_application_id, parse_description, parse_description_localizations, parse_guild_id,
     parse_id, parse_name, parse_name_localizations, parse_nsfw, parse_options, parse_required_permissions,
@@ -828,106 +824,6 @@ class ApplicationCommand(DiscordEntity, immortal = True):
                 length += len(option)
         
         return length
-    
-    
-    def apply_translation(self, translation_table, replace = False):
-        """
-        Applies translation from the given nested dictionary to the application command.
-        
-        Parameters
-        ----------
-        translation_table : `None`, `dict` of ((``Locale``, `str`),
-                (`None`, `dict` (`str`, (`None`, `str`)) items)) items
-            Translation table to pull localizations from.
-        replace : `bool` = `False`, Optional
-            Whether actual translation should be replaced.
-        
-        Raises
-        ------
-        RuntimeError
-            - If the application command is not partial.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.apply_translation` is deprecated and will be removed in 2023 Jul. '
-                f'Please use `.with_translation` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        if not self.partial:
-            raise RuntimeError(
-                f'{self.__class__.__name__}.add_option` can be only called on partial '
-                f'`{self.__class__.__name__}`-s, but was called on {self!r}.'
-            )
-        
-        if translation_table is None:
-            return
-        
-        # description
-        self.description_localizations = with_translation(
-            self.description,
-            self.description_localizations,
-            translation_table,
-            replace,
-        )
-        
-        # name
-        self.name_localizations = with_translation(
-            self.name,
-            self.name_localizations,
-            translation_table,
-            replace,
-        )
-        
-        # options
-        options = self.options
-        if (options is not None):
-            for option in options:
-                option.apply_translation(translation_table, replace)
-    
-    
-    def add_option(self, option):
-        """
-        Adds a new option to the application command.
-        
-        Parameters
-        ----------
-        option : ``ApplicationCommandOption``
-            The option to add.
-        
-        Returns
-        -------
-        self : `instance<type<self>>`
-        
-        Raises
-        ------
-        RuntimeError
-            - If the entity is not partial.
-        TypeError
-            - If `option` is not ``ApplicationCommandOption``.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.add_option` is deprecated and will be removed in 2023 Jul.',
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        if not self.partial:
-            raise RuntimeError(
-                f'{self.__class__.__name__}.add_option` can be only called on partial '
-                f'`{self.__class__.__name__}`-s, but was called on {self!r}.'
-            )
-        
-        if not isinstance(option, ApplicationCommandOption):
-            raise TypeError(
-                f'`option` can be `{ApplicationCommandOption.__name__}`, got '
-                f'{option.__class__.__name__}; {option!r}.'
-            )
-        
-        self.options = (*self.iter_options(), option)[:APPLICATION_COMMAND_OPTIONS_MAX]
-        return self
     
     
     def copy(self):

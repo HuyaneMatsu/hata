@@ -1,5 +1,3 @@
-import warnings as module_warnings
-
 import vampytest
 
 from ....emoji import Emoji
@@ -343,29 +341,3 @@ def test__EmojiCounts__hash():
     )
     
     vampytest.assert_instance(hash(emoji_counts), int)
-
-
-def test__EmojiCounts__iter():
-    """
-    Tests whether ``EmojiCounts.__iter__`` works as intended. This field is deprecated.
-    """
-    managed_animated = 1
-    managed_static = 2
-    normal_animated = 3
-    normal_static = 4
-    
-    emoji_counts = EmojiCounts(
-        managed_animated = managed_animated,
-        managed_static = managed_static,
-        normal_animated = normal_animated,
-        normal_static = normal_static,
-    )
-    
-    with module_warnings.catch_warnings(record = True) as warnings:
-        module_warnings.simplefilter('always')
-        
-        unpacked = [*emoji_counts]
-        
-        vampytest.assert_eq(len(warnings), 1)
-    
-    vampytest.assert_eq(unpacked, [normal_static, normal_animated, managed_static, managed_animated])

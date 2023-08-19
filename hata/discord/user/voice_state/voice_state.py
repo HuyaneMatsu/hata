@@ -1,7 +1,5 @@
 __all__ = ('VoiceState', )
 
-import warnings
-
 from scarletio import RichAttributeErrorBaseType, include
 
 from ...core import GUILDS
@@ -775,20 +773,3 @@ class VoiceState(RichAttributeErrorBaseType):
         guild : `None`, ``Guild``
         """
         return GUILDS.get(self.guild_id, None)
-    
-    
-    @property
-    def is_speaker(self):
-        """
-        Deprecated and will be removed in 2023 Jul. Please use ``.speaker`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.is_speaker` is deprecated and will be removed in 2023 jul. '
-                f'Please use `.speaker` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.speaker

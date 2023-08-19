@@ -1,7 +1,5 @@
 __all__ = ('ApplicationCommandOptionChoice',)
 
-import warnings
-
 from scarletio import RichAttributeErrorBaseType
 
 from ...localization.helpers import get_localized_length
@@ -278,37 +276,6 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         new.value = value
         return new
 
-    
-    def apply_translation(self, translation_table, replace = False):
-        """
-        Applies translation from the given nested dictionary to the application command option choice.
-        
-        Parameters
-        ----------
-        translation_table : `None`, `dict` of ((``Locale``, `str`),
-                (`None`, `dict` (`str`, (`None`, `str`)) items)) items
-            Translation table to pull localization. from.
-        replace : `bool` = `False`, Optional
-            Whether actual translation should be replaced.
-        """
-        warnings.warn(
-            (
-                f'{self.__class__.__name__} is deprecated and will be removed in 2023 Jun.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        if translation_table is None:
-            return
-        
-        # name
-        self.name_localizations = with_translation(
-            self.name,
-            self.name_localizations,
-            translation_table,
-            replace,
-        )
-    
     
     def with_translation(self, translation_table, replace = False):
         """

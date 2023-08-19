@@ -1,8 +1,6 @@
 __all__ = ('WelcomeScreenChannel',)
 
-import warnings
-
-from scarletio import BaseMethodDescriptor, RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType
 
 from ...channel import Channel, ChannelType, create_partial_channel_from_id
 
@@ -113,37 +111,6 @@ class WelcomeScreenChannel(RichAttributeErrorBaseType):
         put_emoji_into(self.emoji, data, defaults)
         return data
     
-    
-    @BaseMethodDescriptor
-    def custom(cls, base, *, channel = ..., channel_id = ..., **keyword_parameters):
-        """
-        Deprecated and will be removed in 2023 April. Please use ``.__new__`` or ``.copy_with`` respectively.
-        """
-        warnings.warn(
-            (
-                f'`{cls.__name__}.custom` is deprecated and will be removed in 2023 April. '
-                f'Please use `.__new__` or `.copy_with` respectively.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        if channel is not ...:
-            warnings.warn(
-                (
-                    f'`{cls.__name__}.custom`\'s `channel` parameters is deprecated. Please use `channel_id` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 3,
-            )
-            channel_id = channel
-        
-        if base is None:
-            return cls.__new__(cls, channel_id = channel_id, **keyword_parameters)
-        
-        return base.copy_with(channel_id = channel_id, **keyword_parameters)
-    
-        
     
     def __repr__(self):
         """Returns the welcome channel's representation."""

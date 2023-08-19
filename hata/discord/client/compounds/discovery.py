@@ -1,7 +1,5 @@
 __all__ = ()
 
-import warnings
-
 from scarletio import Compound
 
 from ...guild import DiscoveryCategory, Guild, GuildDiscovery
@@ -103,22 +101,6 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         return GuildDiscovery.from_data(guild_discovery_data)
     
     
-    async def guild_discovery_add_subcategory(self, *positional_parameters, **keyword_parameters):
-        """
-        ``Client.guild_discovery_add_subcategory`` is deprecated and will be removed in 2023 Mar.
-        Please use ``.guild_discovery_add_sub_category`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.guild_discovery_add_subcategory` is deprecated and will be removed in '
-                f'2023 Mar. Please use `.guild_discovery_add_sub_category` instead.'
-            ),
-            FutureWarning
-        )
-        
-        return await self.guild_discovery_add_sub_category(*positional_parameters, **keyword_parameters)
-    
-    
     async def guild_discovery_add_sub_category(self, guild, category):
         """
         Adds a discovery subcategory to the guild.
@@ -161,22 +143,6 @@ class ClientCompoundDiscoveryEndpoints(Compound):
             )
         
         await self.http.guild_discovery_add_sub_category(guild_id, category_id)
-    
-    
-    async def guild_discovery_delete_subcategory(self, *positional_parameters, **keyword_parameters):
-        """
-        ``Client.guild_discovery_delete_subcategory`` is deprecated and will be removed in 2023 Mar.
-        Please use ``.guild_discovery_delete_sub_category`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.guild_discovery_delete_subcategory` is deprecated and will be removed in '
-                f'2023 Mar. Please use `.guild_discovery_delete_sub_category` instead.'
-            ),
-            FutureWarning
-        )
-        
-        return await self.guild_discovery_delete_sub_category(*positional_parameters, **keyword_parameters)
     
     
     async def guild_discovery_delete_sub_category(self, guild, category):

@@ -1,7 +1,5 @@
 __all__ = ('ApplicationCommandPermission',)
 
-import warnings
-
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
@@ -280,16 +278,3 @@ class ApplicationCommandPermission(RichAttributeErrorBaseType):
         permission_overwrites = self.permission_overwrites
         if (permission_overwrites is not None):
             yield from permission_overwrites
-    
-    
-    def add_permission_overwrite(self, permission_overwrite):
-        """
-        Deprecated and will be removed in 2023 Jun.
-        """
-        warnings.warn(
-            (
-                f'{self.__class__.__name__} is deprecated and will be removed in 2023 Jun.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )

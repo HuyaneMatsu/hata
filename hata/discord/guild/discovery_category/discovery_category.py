@@ -1,7 +1,5 @@
 __all__ = ('DiscoveryCategory',)
 
-import warnings
-
 from ...bases import Preinstance as P, PreinstancedBase
 
 from .fields import (
@@ -255,20 +253,6 @@ class DiscoveryCategory(PreinstancedBase):
         
         repr_parts.append('>')
         return ''.join(repr_parts)
-    
-    
-    def id(self):
-        """
-        Deprecated and will be removed in 2023 Mar. Please use ``.value`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.id` is deprecated and will be removed in 2023 Mar. '
-                f'Please use `.value` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
     
     
     general = P(0, 'General', True)

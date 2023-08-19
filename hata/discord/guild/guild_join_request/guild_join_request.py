@@ -558,20 +558,3 @@ class GuildJoinRequest(EventBase):
         form_responses = self.form_responses
         if (form_responses is not None):
             yield from form_responses
-    
-    
-    @property
-    def last_seen(self):
-        """
-        ``.last_seen`` is deprecated and will be removed in 2023 April. Please use ``.edited_at`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.last_seen` is deprecated and will be removed in 2023 November. '
-                f'Please use `.last_seen_at` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.last_seen_at

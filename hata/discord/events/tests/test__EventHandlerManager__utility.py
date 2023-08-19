@@ -2,7 +2,7 @@ import warnings as module_warnings
 
 import vampytest
 
-from ... import Client
+from ...client import Client
 
 
 def test__EventHandlerManager__clear():

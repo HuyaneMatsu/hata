@@ -349,7 +349,6 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
     }
     
     __deprecated_keys__ = {
-        'guild_bans': (INTENT_SHIFT_GUILD_MODERATION, '2023 Jul', 'guild_moderation'),
         'guild_emojis_and_stickers': (INTENT_SHIFT_GUILD_MODERATION, '2023 Dec', 'guild_expressions'),
     }
     

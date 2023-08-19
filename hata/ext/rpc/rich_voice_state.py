@@ -1,7 +1,5 @@
 __all__ = ('RichVoiceState', )
 
-import warnings
-
 from ...discord.user import User
 
 from .user_voice_settings import AudioBalance
@@ -73,17 +71,3 @@ class RichVoiceState:
         self.user = User.from_data(data['user'])
         self.volume = data['volume'] * 0.01
         return self
-
-    
-    @property
-    def is_speaker(self):
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.is_speaker` is deprecated and will be removed in 2023 jul. '
-                f'Please use `.speaker` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.speaker

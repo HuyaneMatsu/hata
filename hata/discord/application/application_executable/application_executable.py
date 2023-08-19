@@ -1,7 +1,5 @@
 __all__ = ('ApplicationExecutable',)
 
-import warnings
-
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
@@ -242,23 +240,6 @@ class ApplicationExecutable(RichAttributeErrorBaseType):
             hash_value ^= hash(parameters)
         
         return hash_value
-    
-    
-    @property
-    def is_launcher(self):
-        """
-        Deprecated and will be removed in 2023 Marc. Please use ``.launcher`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.is_launcher` is deprecated and will be removed in 2023 Marc. '
-                f'Please use `.launcher` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.launcher
     
     
     def copy(self):

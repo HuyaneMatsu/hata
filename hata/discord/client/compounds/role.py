@@ -1,12 +1,9 @@
 __all__ = ()
 
-import warnings
-
 from scarletio import Compound, Theory, change_on_switch
 
 from ...bases import maybe_snowflake_pair
 from ...core import GUILDS, ROLES
-from ...emoji import Emoji
 from ...guild import create_partial_guild_from_id
 from ...http import DiscordHTTPClient
 from ...payload_building import build_create_payload, build_edit_payload
@@ -61,7 +58,7 @@ class ClientCompoundRoleEndpoints(Compound):
         return [*guild.roles.values()]
     
     
-    async def role_create(self, guild, role_template = None, *, reason = None, icon = ..., **keyword_parameters):
+    async def role_create(self, guild, role_template = None, *, reason = None, **keyword_parameters):
         """
         Creates a role at the given guild.
         
@@ -122,34 +119,12 @@ class ClientCompoundRoleEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         guild_id = get_guild_id(guild)
-        
-        # checkout icon
-        if (icon is not ...):
-            if isinstance(icon, Emoji):
-                warnings.warn(
-                    (
-                        f'Passing `icon` parameters as `{Emoji.__name__}` into `{self.__class__.__name__}.role_create` '
-                        f'Is deprecated and will be removed in 2023 February. '
-                        f'Please use the `unicode_emoji` parameter instead.'
-                    ),
-                    FutureWarning,
-                    stacklevel = 2,
-                )
-                
-                icon_key = 'unicode_emoji'
-                
-            else:
-                icon_key = 'icon'
-            
-            keyword_parameters[icon_key] = icon
-        
         data = build_create_payload(role_template, ROLE_FIELD_CONVERTERS, keyword_parameters)
         role_data = await self.http.role_create(guild_id, data, reason)
-        
         return Role.from_data(role_data, guild_id)
     
     
-    async def role_edit(self, role, role_template = None, *, icon = ..., reason = None, **keyword_parameters):
+    async def role_edit(self, role, role_template = None, *, reason = None, **keyword_parameters):
         """
         Edits the role with the given parameters.
         
@@ -210,30 +185,7 @@ class ClientCompoundRoleEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         role, guild_id, role_id = get_role_role_guild_id_and_id(role)
-        
-        # checkout icon
-        if (icon is not ...):
-            if isinstance(icon, Emoji):
-                warnings.warn(
-                    (
-                        f'Passing `icon` parameters as `{Emoji.__name__}` into `{self.__class__.__name__}.role_create` '
-                        f'Is deprecated and will be removed in 2023 February. '
-                        f'Please use the `unicode_emoji` parameter instead.'
-                    ),
-                    FutureWarning,
-                    stacklevel = 2,
-                )
-                
-                icon_key = 'unicode_emoji'
-                
-            else:
-                icon_key = 'icon'
-            
-            keyword_parameters[icon_key] = icon
-        
-        
         data = build_edit_payload(role, role_template, ROLE_FIELD_CONVERTERS, keyword_parameters)
-        
         if data:
             await self.http.role_edit(guild_id, role_id, data, reason)
     

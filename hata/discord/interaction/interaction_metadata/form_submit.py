@@ -1,7 +1,5 @@
 __all__ = ('InteractionMetadataFormSubmit',)
 
-import warnings
-
 from scarletio import copy_docs
 
 from .base import InteractionMetadataBase
@@ -142,22 +140,3 @@ class InteractionMetadataFormSubmit(InteractionMetadataBase):
             return False
         
         return True
-    
-    
-    @property
-    def options(self):
-        """
-        At the case of ``InteractionMetadataFormSubmit`` instances ``.components`` is deprecated and will be removed
-        in 2023 February. Please use ``.components``.
-        
-        If you are accessing this field as a proxied attribute, you can ignore this warning.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.components` is deprecated and will be removed in 2023 February. '
-                f'Please use `.components` instead. If you are accessing this field as a proxied attribute, '
-                f'you can ignore this warning.'
-            )
-        )
-        
-        return self.components

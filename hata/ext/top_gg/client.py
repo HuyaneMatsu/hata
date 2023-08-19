@@ -44,7 +44,7 @@ async def _start_auto_post(client):
     
     # Do not post initially, we might not have all the guilds loaded yet.
     if top_gg_client._auto_post_running:
-        top_gg_client._auto_post_handler = KOKORO.call_later(
+        top_gg_client._auto_post_handler = KOKORO.call_after(
             AUTO_POST_INTERVAL,
             _trigger_auto_post,
             WeakReferer(top_gg_client),
@@ -109,7 +109,7 @@ async def _do_auto_post(top_gg_client, top_gg_client_reference):
         return
     finally:
         if top_gg_client._auto_post_running:
-            top_gg_client._auto_post_handler = KOKORO.call_later(
+            top_gg_client._auto_post_handler = KOKORO.call_after(
                 AUTO_POST_INTERVAL,
                 _trigger_auto_post,
                 top_gg_client_reference,
@@ -312,7 +312,7 @@ class TopGGClient:
                 auto_post_handler = self._auto_post_handler
                 if (auto_post_handler is None):
                     
-                    self._auto_post_handler = KOKORO.call_later(
+                    self._auto_post_handler = KOKORO.call_after(
                         AUTO_POST_INTERVAL,
                         _trigger_auto_post,
                         WeakReferer(self),

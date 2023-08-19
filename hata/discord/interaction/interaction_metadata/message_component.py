@@ -1,7 +1,5 @@
 __all__ = ('InteractionMetadataMessageComponent',)
 
-import warnings
-
 from scarletio import copy_docs
 
 from ...component import Component, ComponentType
@@ -219,40 +217,3 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
             return False
         
         return True
-    
-    
-    @property
-    def options(self):
-        """
-        At the case of ``InteractionMetadataMessageComponent`` instances ``.options`` is deprecated and will be removed
-        in 2023 February. Please use ``.values``.
-        
-        If you are accessing this field as a proxied attribute, you can ignore this warning.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.options` is deprecated and will be removed in 2023 February. '
-                f'Please use `.values` instead. If you are accessing this field as a proxied attribute, '
-                f'you can ignore this warning.'
-            ),
-            stacklevel = 2,
-        )
-        
-        return self.values
-    
-    
-    @property
-    def type(self):
-        """
-        ``InteractionMetadataMessageComponent.type`` is deprecated and will be removed in 2023 February.
-        Please use ``.component_type``.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.type` is deprecated and will be removed in 2023 February. '
-                f'Please use `.component_type` instead.'
-            ),
-            stacklevel = 2,
-        )
-        
-        return self.component_type

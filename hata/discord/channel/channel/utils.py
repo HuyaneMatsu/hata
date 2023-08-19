@@ -1,9 +1,7 @@
 __all__ = (
-    'cr_pg_channel_object', 'create_partial_channel_data', 'create_partial_channel_from_data',
-    'create_partial_channel_from_id', 
+    'create_partial_channel_data', 'create_partial_channel_from_data', 'create_partial_channel_from_id', 
 )
 
-import warnings
 from functools import partial as partial_func
 
 from scarletio import export, include
@@ -170,21 +168,3 @@ HAS_SLOWMODE = (
         if channel_type.flags.guild and (channel_type.flags.textual or channel_type.flags.forum)
     ),
 )
-
-
-
-def cr_pg_channel_object(name, channel_type, *, guild = None, **keyword_parameters):
-    """
-    Deprecated, please use `Channel(..).to_data(...)` instead.
-    
-    Will be removed in 2023 February.
-    """
-    warnings.warn(
-        (
-            f'`cr_pg_channel_object` is deprecated and will be removed in 2023 February. '
-            f'Please use `Channel(..).to_data(...)` instead.'
-        ),
-        FutureWarning,
-        stacklevel = 2,
-    )
-    return Channel(channel_type = channel_type, name = name, **keyword_parameters).to_data()

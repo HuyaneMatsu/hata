@@ -94,7 +94,7 @@ class RateLimitContext(RateLimitContextBase):
     def release(self):
         if self.acquired:
             rate_limit_group = self.rate_limit_group
-            KOKORO.call_later(rate_limit_group.reset_after, rate_limit_group.lock.release)
+            KOKORO.call_after(rate_limit_group.reset_after, rate_limit_group.lock.release)
             self.acquired = False
 
 
@@ -151,7 +151,7 @@ class StackedRateLimitContext(RateLimitContextBase):
     def release(self):
         if self.acquired:
             for rate_limit_group in self.rate_limit_groups:
-                KOKORO.call_later(rate_limit_group.reset_after, rate_limit_group.lock.release)
+                KOKORO.call_after(rate_limit_group.reset_after, rate_limit_group.lock.release)
             
             self.acquired = False
 

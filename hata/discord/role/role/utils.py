@@ -1,6 +1,5 @@
-__all__ = ('create_partial_role_from_id', 'cr_p_role_object', 'parse_role', 'parse_role_mention')
+__all__ = ('create_partial_role_from_id', 'parse_role', 'parse_role_mention')
 
-import warnings
 from functools import partial as partial_func
 
 from scarletio import export
@@ -54,23 +53,6 @@ def create_partial_role_from_id(role_id, guild_id = 0):
     ROLES[role_id] = role
     
     return role
-
-
-def cr_p_role_object(name, **keyword_parameters):
-    """
-    Deprecated, please use `Role(..).to_data(...)` instead.
-    
-    Will be removed in 2023 February.
-    """
-    warnings.warn(
-        (
-            f'`cr_p_role_object` is deprecated and will be removed in 2023 February. '
-            f'Please use `Role(..).to_data(...)` instead.'
-        ),
-        FutureWarning,
-        stacklevel = 2,
-    )
-    return Role(name = name, **keyword_parameters).to_data()
 
 
 def parse_role_mention(text):

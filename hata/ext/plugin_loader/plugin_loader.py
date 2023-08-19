@@ -76,7 +76,7 @@ def _run_maybe_blocking(coroutine, blocking):
     
     Returns
     -------
-    result : `None`, ``Task``, ``FutureAsyncWrapper``
+    result : `None`, ``Task``, ``FutureWrapperAsync``
     """
     if blocking:
         return run_coroutine(coroutine, KOKORO)
@@ -700,7 +700,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         
         Returns
         -------
-        task : `set` of ``Plugin``, ``Task`` -> ``Plugin``, ``FutureAsyncWrapper`` -> ``Plugin``
+        task : `set` of ``Plugin``, ``Task`` -> ``Plugin``, ``FutureWrapperAsync`` -> ``Plugin``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             loading is done. However if called from a sync thread, will block till the loading is done.
             
@@ -818,7 +818,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         Returns
         -------
         task : `list` of ``Plugin``, ``Task`` -> `list` of ``Plugin``,
-                ``FutureAsyncWrapper`` -> `list` of ``Plugin``
+                ``FutureWrapperAsync`` -> `list` of ``Plugin``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             loading is done. However if called from a sync thread, will block till the loading is done.
             
@@ -885,7 +885,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         Returns
         -------
         task : `list` of ``Plugin``, ``Task`` -> `list` of ``Plugin``,
-                ``FutureAsyncWrapper`` -> `list` of ``Plugin``
+                ``FutureWrapperAsync`` -> `list` of ``Plugin``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             unloading is done. However if called from a sync thread, will block till the unloading is done.
             
@@ -952,7 +952,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         Returns
         -------
         task : `list` of ``Plugin``, ``Task`` -> `list` of ``Plugin``,
-                ``FutureAsyncWrapper`` -> `list` of ``Plugin``
+                ``FutureWrapperAsync`` -> `list` of ``Plugin``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             reloading is done. However if called from a sync thread, will block till the reloading is done.
             
@@ -1011,7 +1011,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         
         Returns
         -------
-        task : `None`, ``Task``, ``FutureAsyncWrapper``
+        task : `None`, ``Task``, ``FutureWrapperAsync``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             loading is done. However if called from a sync thread, will block till the loading is done.
         blocking : `bool` = `True`, Optional (Keyword only)
@@ -1057,7 +1057,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         
         Returns
         -------
-        task : `None`, ``Task``, ``FutureAsyncWrapper``
+        task : `None`, ``Task``, ``FutureWrapperAsync``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             unloading is done. However if called from a sync thread, will block till the unloading is done.
         blocking : `bool` = `True`, Optional (Keyword only)
@@ -1103,7 +1103,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         
         Returns
         -------
-        task : `None`, ``Task``, ``FutureAsyncWrapper``
+        task : `None`, ``Task``, ``FutureWrapperAsync``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             reloading is done. However if called from a sync thread, will block till the reloading is done.
         blocking : `bool` = `True`, Optional (Keyword only)

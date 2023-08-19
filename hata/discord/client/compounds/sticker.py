@@ -1,15 +1,18 @@
 __all__ = ()
 
-import reprlib, warnings
+from reprlib import repr as short_repr
+from warnings import warn
 
 from scarletio import Compound
 from scarletio.web_common import Formdata
 
 from ...bases import maybe_snowflake_pair
-from ...core import  GUILDS, STICKERS
-from ...emoji import Emoji
+from ...core import GUILDS, STICKERS
 from ...http import DiscordHTTPClient, VALID_STICKER_IMAGE_MEDIA_TYPES
-from ...sticker import Sticker, StickerPack
+from ...sticker import Sticker, StickerPack, StickerType
+from ...sticker.sticker.fields import (
+    put_description_into, put_name_into, put_tags_into, validate_description, validate_name, validate_tags
+)
 from ...utils import MEDIA_TYPE_TO_EXTENSION, get_image_media_type
 
 from ..functionality_helpers import ForceUpdateCache
@@ -17,82 +20,6 @@ from ..request_helpers import get_guild_and_id, get_guild_id, get_sticker_and_id
 
 
 STICKER_PACK_CACHE = ForceUpdateCache()
-
-
-def _handle_emoji_representation_parameter_deprecation(instance, tags, emoji_representation):
-    """
-    Handles the deprecation of the `emoji_representation` parameter.
-    
-    Parameters
-    ----------
-    instance : ``Client``
-        Client instance used for raising correct warning.
-    tags : ``Emoji``, `str`, `iterable` of `str`
-        The tags of the sticker.
-    emoji_representation : ``Emoji``, `str`, `iterable` of `str`
-        The tags of the sticker.
-    
-    Returns
-    -------
-    tags : ``Emoji``, `str`, `iterable` of `str`
-    """
-    if emoji_representation is not ...:
-        warnings.warn(
-            (
-                f'`{instance.__class__.__name__}.sticker_create`\'s `emoji_representation` is deprecated '
-                f'and will be removed in 2023 Marc. '
-                f'Please use `tags` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        tags = emoji_representation
-    
-    return tags
-
-
-def _validate_tags(tags):
-    """
-    Validates the given tags value.
-    
-    Parameters
-    ----------
-    tags : ``Emoji``, `str`, `iterable` of `str`
-        The tags of the sticker.
-    
-    Returns
-    -------
-    tags : `set` of `str`
-        The validated tags.
-    
-    Raises
-    ------
-    TypeError
-        - If `tags`'s type is incorrect.
-    """
-    validated_tags = set()
-    
-    if isinstance(tags, str):
-        validated_tags.add(tags)
-    
-    elif isinstance(tags, Emoji):
-        validated_tags.add(tags.name)
-    
-    elif (getattr(tags, '__iter__', None) is not None):
-        for tag in tags:
-            if not isinstance(tag, str):
-                raise TypeError(
-                    f'`tags` can have `str` elements, got {tag.__class__.__name__}; {tag!r}; tags = {tags!r}'
-                )
-            validated_tags.add(tag)
-    
-    else:
-        raise TypeError(
-            f'`tags` can be `str`, `{Emoji.__name__}`, `iterable` of `str`, got {tags.__class__.__name__}; {tags!r}.'
-        )
-    
-    return validated_tags
 
 
 class ClientCompoundStickerEndpoints(Compound):
@@ -261,9 +188,7 @@ class ClientCompoundStickerEndpoints(Compound):
         return sticker
     
     
-    async def sticker_create(
-        self, guild, name, image, tags = ..., description = None, *, emoji_representation = ..., reason = None
-    ):
+    async def sticker_create(self, guild, name, image, tags = ..., description = None, *, reason = None):
         """
         Creates a sticker in the guild.
         
@@ -292,84 +217,41 @@ class ClientCompoundStickerEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `str` is neither `str` nor ``Emoji``, `iterable` of `str`.
-            - If `guild` is neither ``Guild`` nor `int`.
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         ValueError
             If `image`s media type is neither `image/png` nor `application/json`.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `name` is not `str`.
-            - If `name`'s length is out of range [2:32].
-            - If `description` is neither `None`, `str`.
-            - If `description`'s length is out of range [0:100].
         """
-        # Handle deprecation.
-        tags = _handle_emoji_representation_parameter_deprecation(self, tags, emoji_representation)
-        if tags is ...:
-            raise TypeError('`tags` parameter is required.')
-        
         guild_id = get_guild_id(guild)
         
-        if __debug__:
-            if not isinstance(name, str):
-                raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                )
+        description = validate_description(description)
+        name = validate_name(name)
+        tags = validate_tags(tags)
         
-            name_length = len(name)
-            if (name_length < 2) or (name_length > 32):
-                raise AssertionError(
-                    f'`name` length can be in range [2:32], got {name_length!r}; {name!r}.'
-                )
-        
-        if __debug__:
-            if (description is not None):
-                if (not isinstance(description, str)):
-                    raise AssertionError(
-                        f'`description` can be `str`, got {description.__class__.__name__}; {description!r}.'
-                    )
-                
-                description_length = len(description)
-                if (description_length > 100):
-                    raise AssertionError(
-                        f'`description` length can be in range [0:100], got {description_length!r}; {description!r}.'
-                    )
-        
-        if (description is not None) and (not description):
-            description = None
-        
-        tags = _validate_tags(tags)
-        
-        if __debug__:
-            if not isinstance(image, (bytes, bytearray, memoryview)):
-                raise TypeError(
-                    f'`image` can be `None`, `bytes-like`, got {image.__class__.__name__}; {reprlib.repr(image)}.'
-                )
+        if not isinstance(image, (bytes, bytearray, memoryview)):
+            raise TypeError(
+                f'`image` can be `None`, `bytes-like`, got {image.__class__.__name__}; {short_repr(image)}.'
+            )
         
         media_type = get_image_media_type(image)
         if media_type not in VALID_STICKER_IMAGE_MEDIA_TYPES:
             raise ValueError(
-                f'Invalid `image` type: {media_type}, got {reprlib.repr(image)}.'
+                f'Invalid `image` type: {media_type}, got {short_repr(image)}.'
             )
         
         extension = MEDIA_TYPE_TO_EXTENSION[media_type]
         
         form_data = Formdata()
         form_data.add_field('name', name)
-        
-        if (description is not None):
-            form_data.add_field('description', description)
-        else:
-            # If no description is given Discord drops back an unrelated error
-            form_data.add_field('description', '')
-        
+        # If no description is given Discord drops back an unrelated error
+        form_data.add_field('description', '' if description is None else description)
         form_data.add_field('tags', ', '.join(tags))
-        
         form_data.add_field('file', image, filename = f'file.{extension}', content_type = media_type)
-        
         
         sticker_data = await self.http.sticker_create(guild_id, form_data, reason)
         
@@ -400,75 +282,42 @@ class ClientCompoundStickerEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `sticker` is neither ``Sticker``, nor `int`.
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+            - Standard stickers cannot be edited.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - Non guild bound sticker cannot be edited.
-            - If `name` is not `str`.
-            - If `name`'s length is out of range [2:32].
-            - If `description` is neither `None`, `str`.
-            - If `description`'s length is out of range [0:100].
         """
-        # Handle deprecation.
-        tags = _handle_emoji_representation_parameter_deprecation(self, tags, emoji_representation)
-        
         sticker = await self.sticker_get(sticker)
         
-        if __debug__:
-            if not sticker.guild_id:
-                raise AssertionError(
-                    f'Non guild bound sticker cannot be edited, got {sticker!r}.'
-                )
+        
+        if sticker.type is StickerType.standard:
+            raise ValueError(
+                f'Standard sticker cannot be edited, got {sticker!r}.'
+            )
         
         if (name is ...):
             name = sticker.name
         else:
-            if __debug__:
-                if not isinstance(name, str):
-                    raise AssertionError(
-                        f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                    )
-            
-                name_length = len(name)
-                if (name_length < 2) or (name_length > 32):
-                    raise AssertionError(
-                        f'`name` length can be in range [2:32], got {name_length!r}; {name!r}.'
-                    )
+            name = validate_name(name)
         
         if (tags is ...):
             tags = sticker.tags
         else:
-            tags = _validate_tags(tags)
+            tags = validate_tags(tags)
         
         if (description is ...):
             description = sticker.description
         else:
-            if __debug__:
-                if (description is not None):
-                    if (not isinstance(description, str)):
-                        raise AssertionError(
-                            f'`description` can be `None`, `str`, got {description.__class__.__name__}; '
-                            f'{description!r}.'
-                        )
-            
-                    description_length = len(description)
-                    if (description_length > 100):
-                        raise AssertionError(
-                            f'`description` length can be in range [0:100], got {description_length!r}; '
-                            f'{description!r}.'
-                        )
-            
-            if (description is None):
-                description = ''
+            description = validate_description(description)
         
-        data = {
-            'name': name,
-            'tags': ', '.join(tags),
-            'description': description,
-        }
+        data = {}
+        put_description_into(data, description, True)
+        put_name_into(data, name, True)
+        put_tags_into(data, tags, True)
         
         await self.http.sticker_edit(sticker.guild_id, sticker.id, data, reason)
     
@@ -490,20 +339,19 @@ class ClientCompoundStickerEndpoints(Compound):
         ------
         TypeError
             If `sticker` is neither ``Sticker``, nor `int`.
+        ValueError
+            - Standard stickers cannot be deleted.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            Non guild bound sticker cannot be edited.
         """
         sticker = await self.sticker_get(sticker)
         
-        if __debug__:
-            if not sticker.guild_id:
-                raise AssertionError(
-                    f'Non guild bound sticker cannot be edited, got {sticker!r}.'
-                )
+        if sticker.type is StickerType.standard:
+            raise ValueError(
+                f'Standard sticker cannot be deleted, got {sticker!r}.'
+            )
         
         await self.http.sticker_delete(sticker.guild_id, sticker.id, reason)
     
@@ -555,7 +403,7 @@ class ClientCompoundStickerEndpoints(Compound):
         """
         Deprecated and will be removed in 2023 December. Please use ``.sticker_get_all_guild`` instead.
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.sticker_guild_get_all` is deprecated and will be removed in 2023 '
                 f'December. '
@@ -572,7 +420,7 @@ class ClientCompoundStickerEndpoints(Compound):
         """
         Deprecated and will be removed in 2023 December. Please use ``.sticker_create`` instead.
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.sticker_guild_create` is deprecated and will be removed in 2023 December. '
                 f'Please use `.sticker_create` instead.'
@@ -588,7 +436,7 @@ class ClientCompoundStickerEndpoints(Compound):
         """
         Deprecated and will be removed in 2023 December. Please use ``.sticker_edit`` instead.
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.sticker_guild_edit` is deprecated and will be removed in 2023 December. '
                 f'Please use `.sticker_edit` instead.'
@@ -604,7 +452,7 @@ class ClientCompoundStickerEndpoints(Compound):
         """
         Deprecated and will be removed in 2023 December. Please use ``.sticker_delete`` instead.
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.sticker_guild_delete` is deprecated and will be removed in 2023 December. '
                 f'Please use `.sticker_delete` instead.'
@@ -620,7 +468,7 @@ class ClientCompoundStickerEndpoints(Compound):
         """
         Deprecated and will be removed in 2023 December. Please use ``.sticker_get_guild`` instead.
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.sticker_guild_get` is deprecated and will be removed in 2023 December. '
                 f'Please use `.sticker_get_guild` instead.'

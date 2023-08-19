@@ -1,8 +1,8 @@
 __all__ = ('Channel',)
 
-import warnings
 from collections import deque
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape, match as re_match, search as re_search
+from warnings import warn
 
 from scarletio import LOOP_TIME, copy_docs, export, include
 
@@ -1817,7 +1817,7 @@ class Channel(DiscordEntity, immortal = True):
         """
         Deprecated and will be removed in 2023 September. Please use ``.channels`` instead.
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.channel_list` is deprecated and will be removed in '
                 f'2023 September. Please use `.channels` instead.'
@@ -2624,21 +2624,6 @@ class Channel(DiscordEntity, immortal = True):
     
     # ---- Utility methods ----
     
-    def is_in_group_messageable(self):
-        """
-        Deprecated and will be removed in 2023 January. Please use ``.is_in_group_textual`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.is_in_group_messageable` is deprecated and will be removed in '
-                f'2023 January. Please use `.is_in_group_textual` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.is_in_group_textual()
-    
-    
     def is_in_group_textual(self):
         """
         Returns whether the channel is messageable.
@@ -2650,21 +2635,6 @@ class Channel(DiscordEntity, immortal = True):
         return self.type.flags & CHANNEL_TYPE_MASK_TEXTUAL == CHANNEL_TYPE_MASK_TEXTUAL
     
     
-    def is_in_group_guild_messageable(self):
-        """
-        Deprecated and will be removed in 2023 January. Please use ``.is_in_group_guild_textual`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.is_in_group_guild_messageable` is deprecated and will be removed in '
-                f'2023 January. Please use `.is_in_group_guild_textual` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.is_in_group_guild_textual()
-    
-    
     def is_in_group_guild_textual(self):
         """
         Returns whether the channel is a guild and messageable one.
@@ -2674,21 +2644,6 @@ class Channel(DiscordEntity, immortal = True):
         is_in_group_guild_textual : `bool`
         """
         return self.type.flags & CHANNEL_TYPE_MASK_GUILD_TEXTUAL == CHANNEL_TYPE_MASK_GUILD_TEXTUAL
-    
-    
-    def is_in_group_guild_main_text(self):
-        """
-        Deprecated and will be removed in 2023 January. Please use ``.is_in_group_guild_system`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.is_in_group_guild_main_text` is deprecated and will be removed in '
-                f'2023 January. Please use `.is_in_group_guild_system` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.is_in_group_guild_system()
     
     
     def is_in_group_guild_system(self):
@@ -2762,21 +2717,6 @@ class Channel(DiscordEntity, immortal = True):
         return self.type.flags & CHANNEL_TYPE_MASK_THREAD == CHANNEL_TYPE_MASK_THREAD
     
     
-    def is_in_group_can_contain_threads(self):
-        """
-        Deprecated and will be removed in 2023 January. Please use ``.is_in_group_threadable`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.is_in_group_can_contain_threads` is deprecated and will be removed in '
-                f'2023 January. Please use `.is_in_group_threadable` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.is_in_group_threadable()
-    
-    
     def is_in_group_threadable(self):
         """
         Returns whether the channel can have threads.
@@ -2788,21 +2728,6 @@ class Channel(DiscordEntity, immortal = True):
         return self.type.flags & CHANNEL_TYPE_MASK_THREADABLE == CHANNEL_TYPE_MASK_THREADABLE
     
     
-    def is_in_group_can_create_invite_to(self):
-        """
-        Deprecated and will be removed in 2023 January. Please use ``.is_in_group_invitable`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.is_in_group_can_create_invite_to` is deprecated and will be removed in '
-                f'2023 January. Please use `.is_in_group_invitable` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.is_in_group_invitable()
-    
-    
     def is_in_group_invitable(self):
         """
         Returns whether the channel have invites created to.
@@ -2812,21 +2737,6 @@ class Channel(DiscordEntity, immortal = True):
         is_in_group_invitable : `bool`
         """
         return self.type.flags & CHANNEL_TYPE_MASK_INVITABLE == CHANNEL_TYPE_MASK_INVITABLE
-    
-    
-    def is_in_group_guild_movable(self):
-        """
-        Deprecated and will be removed in 2023 January. Please use ``.is_in_group_guild_sortable`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.is_in_group_guild_movable` is deprecated and will be removed in '
-                f'2023 January. Please use `.is_in_group_guild_sortable` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.is_in_group_guild_sortable()
     
     
     def is_in_group_guild_sortable(self):

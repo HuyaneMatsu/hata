@@ -28,6 +28,8 @@ class DefaultAvatar(PreinstancedBase):
     +-----------+-----------+-----------+
     | red       | 4         | 0xf04747  |
     +-----------+-----------+-----------+
+    | pink      | 5         | 0xff00a0  |
+    +-----------+-----------+-----------+
     
     Attributes
     ----------
@@ -135,7 +137,7 @@ class DefaultAvatar(PreinstancedBase):
     green = P(2, 'green', Color(0x43b581))
     orange = P(3, 'orange', Color(0xfaa61a))
     red = P(4, 'red', Color(0xf04747))
-
+    pink = P(5, 'pink', Color(0xff00a0))
 
 
 class HypesquadHouse(PreinstancedBase):

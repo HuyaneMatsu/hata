@@ -146,11 +146,11 @@ class RPCClient(RichAttributeErrorBaseType):
         
         Returns
         -------
-        task : `bool`, ``Task``, ``FutureAsyncWrapper``
+        task : `bool`, ``Task``, ``FutureWrapperAsync``
             - If the method was called from the client's thread (KOKORO), then returns a ``Task``. The task will return
                 `True`, if connecting was successful.
             - If the method was called from an ``EventThread``, but not from the client's, then returns a
-                `FutureAsyncWrapper`. The task will return `True`, if connecting was successful.
+                `FutureWrapperAsync`. The task will return `True`, if connecting was successful.
             - If the method was called from any other thread, then waits for the connector task to finish and returns
                 `True`, if it was successful.
         

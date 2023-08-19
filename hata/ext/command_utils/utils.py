@@ -84,7 +84,7 @@ class Timeouter:
         """
         self.owner = owner
         self.timeout = 0.0
-        self.handle = KOKORO.call_later(timeout, type(self)._step, self)
+        self.handle = KOKORO.call_after(timeout, type(self)._step, self)
     
     
     def _step(self):
@@ -96,7 +96,7 @@ class Timeouter:
         """
         timeout = self.timeout
         if timeout > 0.0:
-            self.handle = KOKORO.call_later(timeout, type(self)._step, self)
+            self.handle = KOKORO.call_after(timeout, type(self)._step, self)
             self.timeout = 0.0
             return
         

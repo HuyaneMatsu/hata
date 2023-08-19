@@ -116,20 +116,3 @@ class ComponentType(PreinstancedBase):
     role_select = P(6, 'role select', ComponentMetadataRoleSelect)
     mentionable_select = P(7, 'mentionable select', ComponentMetadataMentionableSelect)
     channel_select = P(8, 'channel select', ComponentMetadataChannelSelect)
-    
-    
-    @class_property
-    def select(cls):
-        """
-        `.select` is deprecated and will be removed in 2023 January. Please use `.string_select` instead.
-        """
-        warnings.warn(
-            (
-                f'`{cls.__name__}.select` is deprecated and will be removed in 2023 January. '
-                f'Please use `.string_select` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return cls.string_select

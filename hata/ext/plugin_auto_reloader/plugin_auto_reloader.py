@@ -482,7 +482,7 @@ class PluginAutoReloaderManager(RichAttributeErrorBaseType):
         # Start callback
         reload_callback_handle = self._reload_callback_handle
         if (reload_callback_handle is None):
-            self._reload_callback_handle = KOKORO.call_later(AUTO_RELOAD_DELAY, self._reload_callback)
+            self._reload_callback_handle = KOKORO.call_after(AUTO_RELOAD_DELAY, self._reload_callback)
     
     
     def _reload_callback(self):

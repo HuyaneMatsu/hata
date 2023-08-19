@@ -1,6 +1,6 @@
 __all__ = ('InteractionComponent',)
 
-import reprlib, warnings
+from reprlib import repr as short_repr
 
 from scarletio import RichAttributeErrorBaseType, export
 
@@ -258,9 +258,8 @@ class InteractionComponent(RichAttributeErrorBaseType):
         if type_ is not ComponentType.none:
             repr_parts.append(' type = ')
             repr_parts.append(type_.name)
-            repr_parts.append(' (')
+            repr_parts.append(' ~ ')
             repr_parts.append(repr(type_.value))
-            repr_parts.append(')')
             
             field_added = True
         
@@ -279,7 +278,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
                 field_added = True
             
             repr_parts.append(' custom_id = ')
-            repr_parts.append(reprlib.repr(custom_id))
+            repr_parts.append(short_repr(custom_id))
         
         # Extra descriptive fields : components | value
         # components
@@ -372,23 +371,6 @@ class InteractionComponent(RichAttributeErrorBaseType):
             return False
         
         return True
-    
-    
-    @property
-    def options(self):
-        """
-        `.options` is deprecated and will be removed in 2023 February. Please use `.components` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.options` is deprecated and will be removed in 2023 February. '
-                f'Please use `.components` instead.'  
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.components
     
     
     def iter_components(self):

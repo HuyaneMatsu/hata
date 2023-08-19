@@ -1,7 +1,5 @@
 __all__ = ()
 
-import warnings
-
 from scarletio import Compound, set_docs
 
 from ....env import API_VERSION
@@ -25,7 +23,7 @@ from ..request_helpers import (
 
 
 MESSAGE_FLAG_VALUE_SILENT = MessageFlag().update_by_keys(silent = True)
-MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed=True)
+MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed = True)
 
 
 class ClientCompoundThreadEndpoints(Compound):
@@ -192,33 +190,6 @@ class ClientCompoundThreadEndpoints(Compound):
                 channel_id, message_id = snowflake_pair
                 channel = CHANNELS.get(channel_id)
                 # Checkout type
-        
-        # Checkout type
-        if type_ is not ...:
-            warnings.warn(
-                (
-                    f'`type_` parameter of `{self.__class__.__name__}.thread_create` is deprecated and will be '
-                    f'removed in 2023 February. Please use `channel_type` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            channel_type = type_
-        
-        # Checkout name
-        if (channel_template is not None) and isinstance(channel_template, str) and ('name' not in keyword_parameters):
-            warnings.warn(
-                (
-                    f'`name` parameter of `{self.__class__.__name__}.thread_create` is moved to be a keyword only '
-                    f'parameter and the positional usage is deprecated and will be removed in 2023 February.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            keyword_parameters['name'] = channel_template
-            channel_template = None
         
         if channel_type is None:
             if message_id is None:
@@ -476,20 +447,6 @@ class ClientCompoundThreadEndpoints(Compound):
         message_data = add_file_to_message_data(message_data, file, contains_content, False)
         if message_data is None:
             return None, None
-        
-        # Checkout name
-        if (channel_template is not None) and isinstance(channel_template, str) and ('name' not in keyword_parameters):
-            warnings.warn(
-                (
-                    f'`name` parameter of `{self.__class__.__name__}.forum_thread_create` is moved to be a keyword '
-                    f'only parameter and the positional usage is deprecated and will be removed in 2023 February.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            keyword_parameters['name'] = channel_template
-            channel_template = None
         
         data = build_create_payload(
             channel_template, CHANNEL_GUILD_THREAD_FIELD_CONVERTERS, keyword_parameters

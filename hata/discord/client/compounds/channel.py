@@ -1,7 +1,5 @@
 __all__ = ()
 
-import warnings
-
 from scarletio import Compound
 
 from ...channel import Channel, ChannelType, ForumTag, PermissionOverwrite, create_partial_channel_from_id
@@ -22,6 +20,7 @@ from ..request_helpers import (
     get_channel_and_id, get_channel_id, get_forum_tag_and_id, get_forum_tag_id, get_guild_and_id, get_guild_id,
     get_permission_overwrite_target_id, get_user_id
 )
+
 
 def _assert__channel_group_create__users(users):
     """
@@ -639,7 +638,6 @@ class ClientCompoundChannelEndpoints(Compound):
         self, 
         guild,
         channel_template = None,
-        type_ = ...,
         *,
         channel_type = ChannelType.guild_text,
         reason = None,
@@ -736,39 +734,9 @@ class ClientCompoundChannelEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         guild_id = get_guild_id(guild)
-        
-        # Checkout type
-        if type_ is not ...:
-            warnings.warn(
-                (
-                    f'`type_` parameter of `{self.__class__.__name__}.channel_create` is deprecated and will be '
-                    f'removed in 2023 February. Please use `channel_type` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            channel_type = type_
-        
         keyword_parameters['channel_type'] = channel_type
-        
-        # Checkout name
-        if (channel_template is not None) and isinstance(channel_template, str) and ('name' not in keyword_parameters):
-            warnings.warn(
-                (
-                    f'`name` parameter of `{self.__class__.__name__}.channel_create` is moved to be a keyword only '
-                    f'parameter and the positional usage is deprecated and will be removed in 2023 February.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            keyword_parameters['name'] = channel_template
-            channel_template = None
-        
         data = build_create_payload(channel_template, CHANNEL_GUILD_MAIN_FIELD_CONVERTERS, keyword_parameters)
         channel_data = await self.http.channel_create(guild_id, data, reason)
-        
         return Channel.from_data(channel_data, self, guild_id)
     
     
@@ -981,23 +949,6 @@ class ClientCompoundChannelEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_guild_sortable)
-        
-        if (
-            (permission_overwrite_template is not None) and
-            (not isinstance(permission_overwrite_template, PermissionOverwrite)) and
-            ('target' not in keyword_parameters)
-        ):
-            warnings.warn(
-                (
-                    f'`target` parameter of `{self.__class__.__name__}.permission_overwrite_create` is moved to be '
-                    f'a keyword only parameter and the positional usage is deprecated and will be removed in 2023 '
-                    f'February.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            keyword_parameters['target'] = permission_overwrite_template
         
         data = build_create_payload(
             permission_overwrite_template, PERMISSION_OVERWRITE_FIELD_CONVERTERS, keyword_parameters

@@ -3,8 +3,9 @@ __all__ = (
     'IconSlot', 'PreinstancedBase'
 )
 
-import reprlib, sys, warnings
+import sys
 from base64 import b64encode
+from reprlib import repr as short_repr
 
 from scarletio import DOCS_ENABLED, RichAttributeErrorBaseType, copy_docs, docs_property, include
 
@@ -338,7 +339,7 @@ class IconType(PreinstancedBase):
         else:
             if not isinstance(data, (bytes, bytearray, memoryview)):
                 raise TypeError(
-                    f'`{name}` can be `None`, `bytes-like`, got {data.__class__.__name__}; {reprlib.repr(data)}'
+                    f'`{name}` can be `None`, `bytes-like`, got {data.__class__.__name__}; {short_repr(data)}'
                 )
             
             media_type = get_image_media_type(data)
@@ -506,22 +507,6 @@ class Icon(RichAttributeErrorBaseType):
         """
         self.type = icon_type
         self.hash = icon_hash
-    
-    
-    @property
-    def as_base16_hash(self):
-        """
-        Deprecated and will be removed in 2023 February. Please use ``.as_base_16_hash`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__name__}.as_base16_hash` is deprecated and will be removed in 2023 February.'
-                f'Please use `.as_base_16_hash` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.as_base_16_hash
     
     
     @property
@@ -1025,13 +1010,13 @@ class IconSlot:
         if not allow_data:
             raise TypeError(
                 f'`{self.internal_name}` can be passed as `None`, `{Icon.__name__}`, `str` '
-                f'(or bytes-like if allowed), got {icon.__class__.__name__}; {reprlib.repr(icon)}.'
+                f'(or bytes-like if allowed), got {icon.__class__.__name__}; {short_repr(icon)}.'
             )
         
         icon_type = IconType.from_data(icon)
         if icon_type and (not icon_type.media_type):
             raise ValueError(
-                f'`{self.internal_name}` received unknown media type; Got {reprlib.repr(icon_type.data)}.'
+                f'`{self.internal_name}` received unknown media type; Got {short_repr(icon_type.data)}.'
             )
         
         icon_hash = 0
@@ -1160,7 +1145,7 @@ class IconSlot:
             else:
                 raise TypeError(
                     f'`{self.internal_name}` can be passed as `None`, `{Icon.__name__}`, `str` '
-                    f'(or bytes-like if allowed), got {icon.__class__.__name__}; {reprlib.repr(icon)}.'
+                    f'(or bytes-like if allowed), got {icon.__class__.__name__}; {short_repr(icon)}.'
                 )
         
         return Icon(icon_type, icon_hash)

@@ -1053,7 +1053,7 @@ class StaticRateLimitHandler:
         headers : `None`, ``IgnoreCaseMultiValueDictionary`` of (`str`, `str`) items
             Response headers
         """
-        handle = KOKORO.call_later(self.parent.timeout, self.lock.release)
+        handle = KOKORO.call_after(self.parent.timeout, self.lock.release)
         if handle is None: # If the loop is stopped, force release it.
             self.lock.release()
     

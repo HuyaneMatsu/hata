@@ -86,9 +86,7 @@ class ClientCompoundThreadEndpoints(Compound):
         return thread_channels
     
     
-    async def thread_create(
-        self, message_or_channel, channel_template, *, type_ = ..., channel_type = None, **keyword_parameters,
-    ):
+    async def thread_create(self, message_or_channel, channel_template = None, **keyword_parameters,):
         """
         Creates a new thread derived from the given message or channel.
         
@@ -106,9 +104,6 @@ class ClientCompoundThreadEndpoints(Compound):
         channel_template : `None`, ``Channel`` = `None`, Optional
             New (thread) channel to use as a template.
         
-        channel_type : `None`, ``ChannelType``, `int` = `None`, Optional (Keyword only)
-            The type of the created (thread) channel.
-        
         **keyword_parameters : Keyword parameters
             Additional keyword parameters either to define the template, or to overwrite specific fields' values.
         
@@ -119,6 +114,9 @@ class ClientCompoundThreadEndpoints(Compound):
         
         auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
+        
+        channel_type : `None`, ``ChannelType``, `int` = `None`, Optional (Keyword only)
+            The type of the created (thread) channel.
         
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)
             The channel's flags.
@@ -191,14 +189,11 @@ class ClientCompoundThreadEndpoints(Compound):
                 channel = CHANNELS.get(channel_id)
                 # Checkout type
         
-        if channel_type is None:
-            if message_id is None:
-                channel_type = ChannelType.guild_thread_private
-            else:
-                channel_type = ChannelType.guild_thread_public
-        
-        keyword_parameters['channel_type'] = channel_type
-        
+        if message_id is None:
+            channel_type = ChannelType.guild_thread_private
+        else:
+            channel_type = ChannelType.guild_thread_public
+        keyword_parameters.setdefault('channel_type', channel_type)
         
         data = build_create_payload(channel_template, CHANNEL_GUILD_THREAD_FIELD_CONVERTERS, keyword_parameters)
         

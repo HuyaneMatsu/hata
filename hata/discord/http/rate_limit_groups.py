@@ -1467,7 +1467,7 @@ Group Details
     - Limit : `N/A`
     - Resets after : `N/A`
 
-- vanity_invite_get
+- invite_get_vanity
     - Endpoint : `/guilds/{guild_id}/vanity-url`
     - Method : `GET`
     - Required auth : `bot`
@@ -1475,7 +1475,7 @@ Group Details
     - Limit : `N/A`
     - Resets after : `N/A`
 
-- vanity_invite_edit
+- invite_edit_vanity
     - Endpoint : `/guilds/{guild_id}/vanity-url`
     - Method : `PATCH`
     - Required auth : `bot`
@@ -2193,8 +2193,8 @@ sticker_edit = RateLimitGroup()
 sticker_delete = RateLimitGroup()
 sticker_get_guild = RateLimitGroup.unlimited()
 guild_thread_get_all_active = RateLimitGroup.unlimited()
-vanity_invite_get = RateLimitGroup.unlimited()
-vanity_invite_edit = RateLimitGroup()
+invite_get_vanity = RateLimitGroup.unlimited()
+invite_edit_vanity = RateLimitGroup()
 voice_state_client_edit = RateLimitGroup()
 voice_state_user_edit = RateLimitGroup.unlimited() # untested
 welcome_screen_get = RateLimitGroup(LIMITER_GUILD, optimistic = True)

@@ -1004,16 +1004,16 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/guilds/{guild_id}/bans/{user_id}',
         )
     
-    async def vanity_invite_get(self, guild_id):
+    async def invite_get_vanity(self, guild_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.vanity_invite_get, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.invite_get_vanity, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/vanity-url',
         )
     
-    async def vanity_invite_edit(self, guild_id, data, reason):
+    async def invite_edit_vanity(self, guild_id, data, reason):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.vanity_invite_edit, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.invite_edit_vanity, guild_id),
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/vanity-url',
             data,

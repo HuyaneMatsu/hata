@@ -10,15 +10,15 @@ from ...field_parsers import (
     nullable_functional_parser_factory, nullable_int_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, default_entity_putter_factory, entity_id_putter_factory, flag_optional_putter_factory,
-    force_string_putter_factory, int_putter_factory, nullable_date_time_optional_putter_factory,
-    nullable_entity_optional_putter_factory, nullable_field_optional_putter_factory, preinstanced_putter_factory,
-    entity_id_optional_putter_factory
+    bool_optional_putter_factory, default_entity_putter_factory, entity_id_optional_putter_factory,
+    entity_id_putter_factory, flag_optional_putter_factory, force_string_putter_factory, int_putter_factory,
+    nullable_date_time_optional_putter_factory, nullable_entity_optional_putter_factory,
+    nullable_field_optional_putter_factory, preinstanced_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, default_entity_validator_factory, flag_validator_factory, force_string_validator_factory,
-    int_conditional_validator_factory, nullable_date_time_validator_factory, nullable_entity_validator_factory,
-    preinstanced_validator_factory
+    bool_validator_factory, default_entity_validator_factory, entity_id_validator_factory, flag_validator_factory,
+    force_string_validator_factory, int_conditional_validator_factory, nullable_date_time_validator_factory,
+    nullable_entity_validator_factory, preinstanced_validator_factory
 )
 from ...guild import Guild, create_partial_guild_data, create_partial_guild_from_data, create_partial_guild_from_id
 from ...user import ClientUserBase, User, ZEROUSER
@@ -261,13 +261,38 @@ validate_target_application = nullable_entity_validator_factory('target_applicat
 # put_target_application_id_into
 
 put_target_application_id_into = entity_id_optional_putter_factory('target_application_id')
+validate_target_application_id = entity_id_validator_factory('target_application_id', Application)
 
 # target_type
 
 parse_target_type = preinstanced_parser_factory(
     'target_type', InviteTargetType, InviteTargetType.none
 )
-put_target_type_into = preinstanced_putter_factory('target_type')
+
+
+def put_target_type_into(target_type, data, defaults):
+    """
+    Puts the invite's target type into the given data.
+    
+    Parameters
+    ----------
+    target-type : ``InviteTargetType``
+        The target type to serialize.
+    data : `dict<str, object>` items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if target_type is not InviteTargetType.none:
+        data['target_type'] = target_type.value
+    
+    return data
+
+
 validate_target_type = preinstanced_validator_factory('target_type', InviteTargetType)
 
 # target_user
@@ -281,6 +306,7 @@ validate_target_user = nullable_entity_validator_factory('target_user', ClientUs
 # put_target_user_id_into
 
 put_target_user_id_into = entity_id_optional_putter_factory('target_user_id')
+validate_target_user_id = entity_id_validator_factory('target_user_id', ClientUserBase)
 
 # temporary
 
@@ -293,6 +319,11 @@ validate_temporary = bool_validator_factory('temporary', False)
 parse_type = preinstanced_parser_factory('type', InviteType, InviteType.guild)
 put_type_into = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('invite_type', InviteType)
+
+# validate_unique
+
+put_unique_into = bool_optional_putter_factory('unique', False)
+validate_unique = bool_validator_factory('unique', False)
 
 # uses
 

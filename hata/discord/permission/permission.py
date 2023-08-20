@@ -50,6 +50,7 @@ PERMISSION_SHIFT_CREATE_GUILD_EXPRESSIONS = 43
 PERMISSION_SHIFT_CREATE_GUILD_EVENTS = 44
 PERMISSION_SHIFT_USE_EXTERNAL_SOUNDS = 45
 PERMISSION_SHIFT_SEND_VOICE_MESSAGES = 46
+PERMISSION_SHIFT_USE_CLYDE_AI = 47
 
 
 PERMISSION_MASK_CREATE_INSTANT_INVITE = 1 << PERMISSION_SHIFT_CREATE_INSTANT_INVITE
@@ -99,6 +100,7 @@ PERMISSION_MASK_CREATE_GUILD_EXPRESSIONS = 1 << PERMISSION_SHIFT_CREATE_GUILD_EX
 PERMISSION_MASK_CREATE_GUILD_EVENTS = 1 << PERMISSION_SHIFT_CREATE_GUILD_EVENTS
 PERMISSION_MASK_USE_EXTERNAL_SOUNDS = 1 << PERMISSION_SHIFT_USE_EXTERNAL_SOUNDS
 PERMISSION_MASK_SEND_VOICE_MESSAGES = 1 << PERMISSION_SHIFT_SEND_VOICE_MESSAGES
+PERMISSION_MASK_USE_CLYDE_AI = 1 << PERMISSION_SHIFT_USE_CLYDE_AI
 
 
 class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', disable_keyword = 'deny'):
@@ -202,6 +204,8 @@ class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', dis
     +---------------------------------------+-------------------+
     | send_voice_messages                   | 46                |
     +---------------------------------------+-------------------+
+    | user_clyde_ai                         | 47                |
+    +---------------------------------------+-------------------+
     
     Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
@@ -254,6 +258,7 @@ class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', dis
         'create_events': PERMISSION_SHIFT_CREATE_GUILD_EVENTS,
         'use_external_sounds': PERMISSION_SHIFT_USE_EXTERNAL_SOUNDS,
         'send_voice_messages': PERMISSION_SHIFT_SEND_VOICE_MESSAGES,
+        'use_clyde_ai': PERMISSION_SHIFT_USE_CLYDE_AI,
     }
     
     __deprecated_keys__ = {
@@ -310,7 +315,8 @@ PERMISSION_ALL = Permission().update_by_keys(
     create_guild_expressions = True,
     create_events = True,
     use_external_sounds = True,
-    send_voice_messages = True
+    send_voice_messages = True,
+    use_clyde_ai = True,
 )
 
 PERMISSION_NONE = Permission()
@@ -361,6 +367,7 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     create_events = False,
     use_external_sounds = True,
     send_voice_messages = True,
+    use_clyde_ai = False,
 )
 
 PERMISSION_PRIVATE_BOT = PERMISSION_PRIVATE.update_by_keys(
@@ -423,6 +430,7 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     create_events = False,
     use_external_sounds = False,
     send_voice_messages = True,
+    use_clyde_ai = True,
 )
 
 PERMISSION_TEXT_DENY = Permission(~PERMISSION_TEXT_ALL)
@@ -486,7 +494,8 @@ PERMISSION_VOICE_ONLY = Permission().update_by_keys(
     create_guild_expressions = False,
     create_events = False,
     use_external_sounds = True,
-    send_voice_messages = True
+    send_voice_messages = True,
+    use_clyde_ai = False,
 )
 
 PERMISSION_VOICE_DENY = Permission(~PERMISSION_VOICE_ONLY)
@@ -550,6 +559,7 @@ PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
     create_guild_expressions = False,
     create_events = False,
     use_external_sounds = False,
+    use_clyde_ai = False,
 )
 
 PERMISSION_CAN_SEND_MESSAGES_ALL = Permission().update_by_keys(

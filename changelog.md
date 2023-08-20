@@ -1,5 +1,11 @@
 ## 1.3.36 *\[2023-08-??\]*
 
+### Improvements
+
+- `Client.invite_create` now supports templating and additional `target_type`,
+    `target_user_id`, `target_application_id` (, ...) parameters.
+- Add `use_clyde_ai` permission.
+
 #### Bug fixes
 
 - `Client.permission_overwrite_create` was not inserting the `id` key detected from the `target` parameter.
@@ -8,6 +14,19 @@
     Could cause `RuntimeError`.
 - `PermissionOverwrite.from_data` did not handle missing keys.
     Could cause `KeyError` at `Client.permission_overwrite_create`.
+
+#### Renames, Deprecations & Removals
+
+- Deprecate `Client.stream_invite_create`. Please use `.invite_create` instead.
+- Deprecate `Client.application_invite_create`. Please use `.invite_create` instead.
+- Rename `RATE_LIMIT_GROUPS.vanity_invite_edit` to `invite_edit_vanity`.
+- Rename `RATE_LIMIT_GROUPS.vanity_invite_get` to `invite_get_vanity`.
+- Rename `DiscordHTTPClient.vanity_invite_edit` to `invite_edit_vanity`.
+- Rename `DiscordHTTPClient.vanity_invite_get` to `invite_get_vanity`.
+- Rename `Client.vanity_invite_edit` to `invite_edit_vanity`.
+- Rename `Client.vanity_invite_get` to `invite_get_vanity`.
+- Deprecate `Client.vanity_invite_edit`.
+- Deprecate `Client.vanity_invite_get`.
 
 ## 1.3.35 *\[2023-08-11\]*
 

@@ -3,9 +3,8 @@ __all__ = ()
 from scarletio import Compound, Theory
 
 from ...core import MESSAGES
-
+from ...emoji.reaction.fields import validate_type as validate_reaction_type
 from ...http import DiscordHTTPClient
-
 from ...user import ClientUserBase, User
 from ...utils import log_time_converter
 
@@ -21,7 +20,7 @@ class ClientCompoundReactionEndpoints(Compound):
     async def message_get(self, message, *, force_update = False): ...
     
     
-    async def reaction_add(self, message, emoji):
+    async def reaction_add(self, message, emoji, *, reaction_type = ...):
         """
         Adds a reaction on the given message.
         
@@ -31,14 +30,19 @@ class ClientCompoundReactionEndpoints(Compound):
         ----------
         message : ``Message``, `tuple` (`int`, `int`)
             The message on which the reaction will be put on.
+        
         emoji : ``Emoji``, `str`
             The emoji to react with.
+        
+        reaction_type : ``ReactionType``, `int`, Optional (Keyword only)
+            The reaction's type.
         
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
-            - If `emoji`'s type is incorrect.
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
@@ -47,7 +51,13 @@ class ClientCompoundReactionEndpoints(Compound):
         channel_id, message_id = get_channel_id_and_message_id(message)
         emoji_as_reaction = get_reaction(emoji)
         
-        await self.http.reaction_add(channel_id, message_id, emoji_as_reaction)
+        if reaction_type is ...:
+            query_parameters = None
+        else:
+            reaction_type = validate_reaction_type(reaction_type)
+            query_parameters = {'type': reaction_type.value}
+        
+        await self.http.reaction_add(channel_id, message_id, emoji_as_reaction, query_parameters)
     
     
     async def reaction_delete(self, message, emoji, user):

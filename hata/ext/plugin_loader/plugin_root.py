@@ -32,7 +32,7 @@ def is_tuple_starting_with(tuple_1, tuple_2):
 
 def register_plugin_root(name):
     """
-    Registers an plugin root. Plugin roots might be used to detect nested plugin files.
+    Registers a plugin root. Plugin roots might be used to detect nested plugin files.
     
     Parameters
     ----------
@@ -63,7 +63,7 @@ def register_plugin_root(name):
 
 def is_in_plugin_root(name):
     """
-    Returns whether the given name is inside of an plugin root.
+    Returns whether the given name is inside of a plugin root.
     
     Parameters
     ----------

@@ -1,10 +1,12 @@
-## 1.3.36 *\[2023-08-??\]*
+## 1.3.36 *\[2023-08-23\]*
 
 ### Improvements
 
 - `Client.invite_create` now supports templating and additional `target_type`,
     `target_user_id`, `target_application_id` (, ...) parameters.
 - Add `use_clyde_ai` permission.
+- Add `ReactionType`.
+- Add `reaction_type` parameter to `Client.reaction_add`.
 
 #### Bug fixes
 
@@ -4742,8 +4744,8 @@ Add guild sticker methods.
 
 #### Renames, Deprecation & Removals
 
-- Rename `GuildFeatures.vanity` to `.vanity_invite`.
-- Deprecate `GuildFeatures.vanity`.
+- Rename `GuildFeature.vanity` to `.vanity_invite`.
+- Deprecate `GuildFeature.vanity`.
 - Rename `RATE_LIMIT_GROUPS.guild_emoji_get_all` to `.guild_emoji_get_all` (Now matches sticker endpoints).
 - Rename `DiscordHTTPClient.guild_emoji_get_all` to `.guild_emoji_get_all` (Now matches sticker endpoints).
 - Rename `Sticker.format_type` to `.format`.

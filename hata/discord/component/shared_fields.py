@@ -92,7 +92,7 @@ def validate_components(components):
         if not isinstance(component, Component):
             raise TypeError(
                 f'`components` elements can be `{Component.__name__}` instances, got '
-                f'{component.__class__.__name__}; {component!r}; components={components}.'
+                f'{component.__class__.__name__}; {component!r}; components = {components!r}.'
             )
         
         if (components_processed is None):

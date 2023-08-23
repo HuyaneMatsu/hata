@@ -9,7 +9,7 @@ from .constants import (
 
 class PluginError(Exception):
     """
-    An exception raised by the ``PluginLoader``, if loading, reloading or unloading an plugin fails with any
+    An exception raised by the ``PluginLoader``, if loading, reloading or unloading a plugin fails with any
     reason.
     
     Attributes
@@ -262,5 +262,5 @@ class PluginError(Exception):
 
 class DoNotLoadPlugin(BaseException):
     """
-    Raised to stop an plugin loaded without error.
+    Raised to stop a plugin loaded without error.
     """

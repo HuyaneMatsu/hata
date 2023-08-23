@@ -89,7 +89,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     There are some cases when you probably want to change some functional part of your client in runtime. Load,
     unload or reload code. Hata provides an easy to use (that's what she said) solution to solve this issue.
     
-    It is called plugin loader is an plugin of hata. It is separated from `commands` plugin, but it does not
+    It is called plugin loader is a plugin of hata. It is separated from `commands` plugin, but it does not
     mean they do not go well together. But what more, plugin loader was made to complement it.
     
     Usage
@@ -221,7 +221,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     PLUGIN_LOADER.register(['cute_commands', 'nice_commands'])
     ```
     
-    If an plugin's file is not found, then `.register` will raise  `ModuleNotFoundError`. If the passed parameter
+    If a plugin's file is not found, then `.register` will raise  `ModuleNotFoundError`. If the passed parameter
     is not `str` or not `iterable` of `str`, `TypeError` is raised.
     
     Loading
@@ -296,7 +296,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     PLUGIN_LOADER.unload_all()
     ```
     
-    When unloading an plugin, the plugin loader will search a function at the plugin, what we call
+    When unloading a plugin, the plugin loader will search a function at the plugin, what we call
     `exit_point` and will run it. By default it looks for a variable named `teardown`. `exit_point` acts on the same
     way as the `entry_point`, so it can be modified for looking for other name to defining and passing a callable
     (can be async again).
@@ -369,7 +369,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         
         > These callbacks are only called once, and then cleared out.
     _execute_counter : `int`
-        Whether the plugin loader is executing an plugin.
+        Whether the plugin loader is executing a plugin.
     _loader_tasks : `dict` of (``Plugin``, ``Task``) items
         Active plugin loading tasks.
     _plugins_by_name : `dict` of (`str`, ``Plugin``) items
@@ -477,7 +477,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         Parameters
         ----------
         **variables : Keyword Parameters
-            Variables to assigned to an plugin's module before it is loaded.
+            Variables to assigned to a plugin's module before it is loaded.
         
         Raises
         ------
@@ -546,7 +546,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         take_snapshot_difference : `bool`, Optional
             Whether snapshot feature should be used.
         **variables : Keyword parameters
-            Variables to assign to an plugin(s)'s module before they are loaded.
+            Variables to assign to a plugin(s)'s module before they are loaded.
         
         Raises
         ------
@@ -593,7 +593,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         default_variables,
     ):
         """
-        Adds an plugin to the plugin loader.
+        Adds a plugin to the plugin loader.
         
         If the plugin already exists, returns that one.
         
@@ -696,7 +696,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         take_snapshot_difference : `bool`, Optional
             Whether snapshot feature should be used.
         **variables : Keyword parameters
-            Variables to assign to an plugin(s)'s module before they are loaded.
+            Variables to assign to a plugin(s)'s module before they are loaded.
         
         Returns
         -------
@@ -1121,7 +1121,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         """
         Reloads all the plugins of the plugin loader.
         
-        If an plugin is not unloaded, will load it, if the plugin is loaded, will unload, then load it.
+        If a plugin is not unloaded, will load it, if the plugin is loaded, will unload, then load it.
         Reloads each plugin one after the other. The raised exceptions' messages are collected into one exception,
         what will be raised at the end. If any of the plugins raises, will still try to reload the leftover ones.
         
@@ -1606,23 +1606,23 @@ class PluginLoader(RichAttributeErrorBaseType):
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' plugin count=',
+            ' plugin count: ',
             repr(len(PLUGINS)),
         ]
         
         entry_point = self._default_entry_point
         if (entry_point is not None):
-            repr_parts.append(', default_entry_point=')
+            repr_parts.append(', default_entry_point = ')
             repr_parts.append(repr(entry_point))
         
         exit_point = self._default_exit_point
         if (exit_point is not None):
-            repr_parts.append(', default_exit_point=')
+            repr_parts.append(', default_exit_point = ')
             repr_parts.append(repr(exit_point))
         
         default_variables = self._default_variables
         if default_variables:
-            repr_parts.append(', default_variables=')
+            repr_parts.append(', default_variables = ')
             repr_parts.append(repr(default_variables))
         
         repr_parts.append('>')
@@ -1632,7 +1632,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     
     def is_processing_plugin(self):
         """
-        Returns whether the plugin loader is processing an plugin.
+        Returns whether the plugin loader is processing a plugin.
         
         Returns
         -------

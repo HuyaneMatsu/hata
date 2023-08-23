@@ -747,7 +747,7 @@ class InteractionResponse:
             repr_parts.append(repr(event))
         
         message = self._message
-        if (message is not None):
+        if (message is not ...):
             if field_added:
                 repr_parts.append(',')
             else:

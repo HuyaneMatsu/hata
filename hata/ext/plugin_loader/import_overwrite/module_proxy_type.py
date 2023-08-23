@@ -15,7 +15,7 @@ PluginModuleSpecType = include('PluginModuleSpecType')
 
 class PluginModuleProxyType(ModuleType):
     """
-    Represents an plugin module's proxy.
+    Represents a plugin module's proxy.
     """
     def __init__(self, spec):
         """

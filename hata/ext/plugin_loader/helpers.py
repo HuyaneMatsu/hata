@@ -87,7 +87,7 @@ def validate_plugin_parameters(
     take_snapshot_difference : `bool` = `True`, Optional
         Whether snapshot feature should be used.
     **variables : Keyword parameters
-        Variables to assign to an plugin(s)'s module before they are loaded.
+        Variables to assign to a plugin(s)'s module before they are loaded.
     
     Raises
     ------
@@ -266,7 +266,7 @@ def _iter_lookup_plugin_names_and_paths(name, register_directories_as_roots, all
     Raises
     ------
     ModuleNotFoundError
-        - If `name` could not be detected as an plugin.
+        - If `name` could not be detected as a plugin.
     """
     if name.startswith(ABSOLUTE_PATH_PLUGIN_NAME_PREFIX):
         yield None, name
@@ -293,7 +293,7 @@ def _iter_lookup_path(import_name_or_path, register_directories_as_roots, allow_
     Yields
     ------
     plugin_name : `None`, `str`
-        Import name to an plugin file.
+        Import name to a plugin file.
     plugin_path : `str`
         Path of the file.
     
@@ -333,7 +333,7 @@ def _iter_lookup_path(import_name_or_path, register_directories_as_roots, allow_
                     return
     
     raise ModuleNotFoundError(
-        f'The given `import_name_or_path` could not be detected as an plugin nor an absolute path, '
+        f'The given `import_name_or_path` could not be detected as a plugin nor an absolute path, '
         f'got {import_name_or_path!r}.'
     )
 

@@ -90,7 +90,7 @@ class DiscordException(Exception):
     """
     def __init__(self, response, received_data, sent_data, debug_options):
         """
-        Creates a new ``DiscordException``.
+        Creates a new discord exception.
         
         Parameters
         ----------

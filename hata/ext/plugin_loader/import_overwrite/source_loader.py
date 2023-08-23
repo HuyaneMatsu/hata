@@ -21,7 +21,7 @@ class PluginSourceLoader(SourceFileLoader):
     _module : `None`, ``ModuleType``
         The cached module if any.
     _module_proxy : `None`, ``PluginModuleProxyType``
-        Module proxy proxying the created module through an plugin.
+        Module proxy proxying the created module through a plugin.
     name : `str`
         The name of the represented module.
     path : `str`

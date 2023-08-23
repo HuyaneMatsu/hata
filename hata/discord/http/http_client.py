@@ -810,11 +810,12 @@ class DiscordHTTPClient(HTTPClient):
     
     # reactions
     
-    async def reaction_add(self, channel_id, message_id, reaction):
+    async def reaction_add(self, channel_id, message_id, reaction, query_parameters):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.reaction_add, channel_id),
             METHOD_PUT,
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/reactions/{reaction}/@me',
+            params = query_parameters,
         )
     
     async def reaction_delete(self, channel_id, message_id, reaction, user_id):

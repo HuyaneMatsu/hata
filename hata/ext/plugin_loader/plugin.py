@@ -24,7 +24,7 @@ PLUGIN_LOADER = include('PLUGIN_LOADER')
 
 class Plugin(RichAttributeErrorBaseType):
     """
-    Represents an plugin.
+    Represents a plugin.
     
     Attributes
     ----------
@@ -80,7 +80,7 @@ class Plugin(RichAttributeErrorBaseType):
         default_variables
     ):
         """
-        Creates an plugin with the given parameters. If an plugin already exists with the given name, returns
+        Creates a plugin with the given parameters. If a plugin already exists with the given name, returns
         that.
         
         Parameters
@@ -98,7 +98,7 @@ class Plugin(RichAttributeErrorBaseType):
         locked : `bool`
             Whether the plugin should be picked up by the `{}_all` methods of the plugin loader.
         take_snapshot_difference: `bool`
-            Whether snapshots should be taken before and after loading an plugin, and when the plugin is unloaded,
+            Whether snapshots should be taken before and after loading a plugin, and when the plugin is unloaded,
             the snapshot difference should be reverted.
         default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
             An optionally weak value dictionary to store objects for assigning them to modules before loading them.

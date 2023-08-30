@@ -2,7 +2,7 @@ import vampytest
 
 from ..application_entity import ApplicationEntity
 
-from .test__ApplicationEntity__constructor import _assert_is_every_attribute_set
+from .test__ApplicationEntity__constructor import _assert_fields_set
 
 
 def test__ApplicationEntity__copy():
@@ -17,7 +17,7 @@ def test__ApplicationEntity__copy():
     )
     
     copy = application_entity.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(copy, application_entity)
     vampytest.assert_not_is(copy, application_entity)
 
@@ -36,7 +36,7 @@ def test__ApplicationEntity__copy_with__0():
     )
     
     copy = application_entity.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(copy, application_entity)
     vampytest.assert_not_is(copy, application_entity)
 
@@ -58,7 +58,7 @@ def test__ApplicationEntity__copy_with__1():
     copy = application_entity.copy_with(
         name = new_name,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(copy, application_entity)
 
     vampytest.assert_eq(copy.name, new_name)

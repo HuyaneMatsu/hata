@@ -7,7 +7,7 @@ from .shared import convert_icon, convert_nothing, convert_timestamp
 
 
 def convert_roles(name, data):
-    roles = tuple(AuditLogRole(role_data) for role_data in data['new_value'])
+    roles = tuple(AuditLogRole.from_data(role_data) for role_data in data['new_value'])
     
     if name == '$add':
         before = None

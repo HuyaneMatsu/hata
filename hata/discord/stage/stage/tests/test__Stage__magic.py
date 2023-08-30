@@ -1,6 +1,6 @@
 import vampytest
 
-from ...scheduled_event import PrivacyLevel
+from ....scheduled_event import PrivacyLevel
 
 from ..stage import Stage
 

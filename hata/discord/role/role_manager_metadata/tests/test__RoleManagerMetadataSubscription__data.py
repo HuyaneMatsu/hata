@@ -2,7 +2,7 @@ import vampytest
 
 from ..subscription import RoleManagerMetadataSubscription
 
-from .test__RoleManagerMetadataSubscription__constructor import _assert_is_every_attribute_set
+from .test__RoleManagerMetadataSubscription__constructor import _assert_fields_set
 
 
 def test__RoleManagerMetadataSubscription__from_data():
@@ -20,7 +20,7 @@ def test__RoleManagerMetadataSubscription__from_data():
     }
     
     metadata = RoleManagerMetadataSubscription.from_data(data)
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.integration_id, integration_id)
     vampytest.assert_eq(metadata.purchasable, purchasable)

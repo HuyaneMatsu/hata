@@ -3,7 +3,7 @@ import vampytest
 from ..application_executable import ApplicationExecutable
 from ..preinstanced import OperationSystem
 
-from .test__ApplicationExecutable__constructor import _assert_is_every_attribute_set
+from .test__ApplicationExecutable__constructor import _assert_fields_set
 
 
 def test__ApplicationExecutable__copy():
@@ -23,7 +23,7 @@ def test__ApplicationExecutable__copy():
     )
     
     copy = application_executable.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(application_executable, copy)
     vampytest.assert_is_not(application_executable, copy)
 
@@ -47,7 +47,7 @@ def test__ApplicationExecutable__copy_with__0():
     )
     
     copy = application_executable.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(application_executable, copy)
     vampytest.assert_is_not(application_executable, copy)
 
@@ -80,7 +80,7 @@ def test__ApplicationExecutable__copy_with__1():
         os = new_os,
         parameters = new_parameters,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(application_executable, copy)
 
     vampytest.assert_eq(copy.launcher, new_launcher)

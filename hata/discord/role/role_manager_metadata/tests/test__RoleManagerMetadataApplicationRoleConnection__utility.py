@@ -4,7 +4,7 @@ from ....integration import Integration
 
 from ..application_role_connection import RoleManagerMetadataApplicationRoleConnection
 
-from .test__RoleManagerMetadataApplicationRoleConnection__constructor import _assert_is_every_attribute_set
+from .test__RoleManagerMetadataApplicationRoleConnection__constructor import _assert_fields_set
 
 
 def test__RoleManagerMetadataApplicationRoleConnection__copy():
@@ -16,7 +16,7 @@ def test__RoleManagerMetadataApplicationRoleConnection__copy():
         integration_id = integration_id,
     )
     copy = metadata.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(copy, metadata)
     vampytest.assert_is_not(copy, metadata)
@@ -34,7 +34,7 @@ def test__RoleManagerMetadataApplicationRoleConnection__copy_with__0():
         integration_id = integration_id,
     )
     copy = metadata.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(copy, metadata)
     vampytest.assert_is_not(copy, metadata)
@@ -54,7 +54,7 @@ def test__RoleManagerMetadataApplicationRoleConnection__copy_with__1():
     copy = metadata.copy_with(
         integration_id = new_integration_id,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_is_not(copy, metadata)
     

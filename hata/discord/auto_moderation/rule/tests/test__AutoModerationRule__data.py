@@ -6,7 +6,7 @@ from ...trigger_metadata import AutoModerationRuleTriggerMetadataKeyword, AutoMo
 from ..preinstanced import AutoModerationEventType, AutoModerationRuleTriggerType
 from ..rule import AutoModerationRule
 
-from .test__AutoModerationRule__constructor import _assert_is_every_attribute_set
+from .test__AutoModerationRule__constructor import _assert_fields_set
 
 
 def test__AutoModerationRule__from_data__0():
@@ -44,7 +44,7 @@ def test__AutoModerationRule__from_data__0():
     }
     
     rule = AutoModerationRule.from_data(data)
-    _assert_is_every_attribute_set(rule)
+    _assert_fields_set(rule)
     vampytest.assert_eq(rule.id, rule_id)
     vampytest.assert_eq(rule.creator_id, creator_id)
     vampytest.assert_eq(rule.guild_id, guild_id)

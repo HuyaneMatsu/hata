@@ -2,7 +2,7 @@ import vampytest
 
 from ..third_party_sku import ThirdPartySKU
 
-from .test__ThirdPartySKU__constructor import _assert_is_every_attribute_set
+from .test__ThirdPartySKU__constructor import _assert_fields_set
 
 
 def test__ThirdPartySKU__from_data():
@@ -20,7 +20,7 @@ def test__ThirdPartySKU__from_data():
     }
     
     third_party_sku = ThirdPartySKU.from_data(data)
-    _assert_is_every_attribute_set(third_party_sku)
+    _assert_fields_set(third_party_sku)
     
     vampytest.assert_eq(third_party_sku.distributor, distributor)
     vampytest.assert_eq(third_party_sku.id, id)

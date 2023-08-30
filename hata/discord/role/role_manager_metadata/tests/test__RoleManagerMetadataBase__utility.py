@@ -2,7 +2,7 @@ import vampytest
 
 from ..base import RoleManagerMetadataBase
 
-from .test__RoleManagerMetadataBase__constructor import _assert_is_every_attribute_set
+from .test__RoleManagerMetadataBase__constructor import _assert_fields_set
 
 
 def test__RoleManagerMetadataBase__copy():
@@ -11,7 +11,7 @@ def test__RoleManagerMetadataBase__copy():
     """
     metadata = RoleManagerMetadataBase()
     copy = metadata.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(copy, metadata)
     vampytest.assert_is_not(copy, metadata)
@@ -25,7 +25,7 @@ def test__RoleManagerMetadataBase__copy_with__0():
     """
     metadata = RoleManagerMetadataBase()
     copy = metadata.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(copy, metadata)
     vampytest.assert_is_not(copy, metadata)

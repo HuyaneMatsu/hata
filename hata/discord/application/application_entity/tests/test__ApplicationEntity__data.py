@@ -2,7 +2,7 @@ import vampytest
 
 from ..application_entity import ApplicationEntity
 
-from .test__ApplicationEntity__constructor import _assert_is_every_attribute_set
+from .test__ApplicationEntity__constructor import _assert_fields_set
 
 
 def test__ApplicationEntity__from_data():
@@ -20,7 +20,7 @@ def test__ApplicationEntity__from_data():
     }
     
     application_entity = ApplicationEntity.from_data(data)
-    _assert_is_every_attribute_set(application_entity)
+    _assert_fields_set(application_entity)
     vampytest.assert_eq(application_entity.id, application_entity_id)
     
     vampytest.assert_eq(application_entity.name, name)

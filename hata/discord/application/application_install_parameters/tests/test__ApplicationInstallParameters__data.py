@@ -5,7 +5,7 @@ from ....permission import Permission
 
 from ..application_install_parameters import ApplicationInstallParameters
 
-from .test__ApplicationInstallParameters__constructor import _assert_is_every_attribute_set
+from .test__ApplicationInstallParameters__constructor import _assert_fields_set
 
 
 def test__ApplicationInstallParameters__from_data():
@@ -21,7 +21,7 @@ def test__ApplicationInstallParameters__from_data():
     }
     
     application_install_parameters = ApplicationInstallParameters.from_data(data)
-    _assert_is_every_attribute_set(application_install_parameters)
+    _assert_fields_set(application_install_parameters)
     
     vampytest.assert_eq(application_install_parameters.permissions, permissions)
     vampytest.assert_eq(application_install_parameters.scopes, tuple(scopes))

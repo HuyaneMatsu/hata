@@ -4,7 +4,7 @@ from ..application_executable import ApplicationExecutable
 from ..preinstanced import OperationSystem
 
 
-def _assert_is_every_attribute_set(application_executable):
+def _assert_fields_set(application_executable):
     """
     Asserts whether every attributes are set of the given application executable.
     
@@ -27,7 +27,7 @@ def test__ApplicationExecutable__new__0():
     Case: No parameters.
     """
     application_executable = ApplicationExecutable()
-    _assert_is_every_attribute_set(application_executable)
+    _assert_fields_set(application_executable)
 
 
 def test__ApplicationExecutable__new__1():
@@ -48,7 +48,7 @@ def test__ApplicationExecutable__new__1():
         parameters = parameters,
     )
     
-    _assert_is_every_attribute_set(application_executable)
+    _assert_fields_set(application_executable)
     vampytest.assert_eq(application_executable.launcher, launcher)
     vampytest.assert_eq(application_executable.name, name)
     vampytest.assert_is(application_executable.os, os)

@@ -1,7 +1,7 @@
 import vampytest
 
-from ...guild import Guild
-from ...scheduled_event import PrivacyLevel
+from ....guild import Guild
+from ....scheduled_event import PrivacyLevel
 
 from ..stage import Stage
 

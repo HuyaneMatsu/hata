@@ -5,7 +5,7 @@ from ...rule import AutoModerationRuleTriggerType
 
 from ..execution_event import AutoModerationActionExecutionEvent
 
-from .test__AutoModerationActionExecutionEvent__constructor import _assert_is_every_attribute_set
+from .test__AutoModerationActionExecutionEvent__constructor import _assert_fields_set
 
 
 def test__AutoModerationActionExecutionEvent__from_data():
@@ -37,7 +37,7 @@ def test__AutoModerationActionExecutionEvent__from_data():
     }
     
     event = AutoModerationActionExecutionEvent.from_data(data)
-    _assert_is_every_attribute_set(event)
+    _assert_fields_set(event)
 
     vampytest.assert_eq(event.action, action)
     vampytest.assert_eq(event.alert_system_message_id, alert_system_message_id)

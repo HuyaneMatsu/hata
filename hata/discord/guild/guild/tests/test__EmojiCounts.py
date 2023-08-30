@@ -6,7 +6,7 @@ from ....role import Role, RoleManagerType
 from ..emoji_counts import EmojiCounts
 
 
-def _assert_is_every_attribute_set(emoji_counts):
+def _assert_fields_set(emoji_counts):
     """
     Asserts whether every attributes are set of the given emoji counts.
     
@@ -48,7 +48,7 @@ def test__EmojiCounts__new__0():
     Case: No fields given.
     """
     emoji_counts = EmojiCounts()
-    _assert_is_every_attribute_set(emoji_counts)
+    _assert_fields_set(emoji_counts)
     _assert_empty(emoji_counts)
 
 
@@ -73,7 +73,7 @@ def test__EmojiCounts__new__1():
         premium_animated = premium_animated,
         premium_static = premium_static,
     )
-    _assert_is_every_attribute_set(emoji_counts)
+    _assert_fields_set(emoji_counts)
     
     vampytest.assert_eq(emoji_counts.managed_animated, managed_animated)
     vampytest.assert_eq(emoji_counts.managed_static, managed_static)
@@ -90,7 +90,7 @@ def test__EmojiCounts__from_emojis__0():
     Case: Empty iterable given.
     """
     emoji_counts = EmojiCounts.from_emojis([])
-    _assert_is_every_attribute_set(emoji_counts)
+    _assert_fields_set(emoji_counts)
     _assert_empty(emoji_counts)
 
 
@@ -120,7 +120,7 @@ def test__EmojiCounts__from_emojis__1():
     
     
     emoji_counts = EmojiCounts.from_emojis(emojis)
-    _assert_is_every_attribute_set(emoji_counts)
+    _assert_fields_set(emoji_counts)
     
     
     vampytest.assert_eq(emoji_counts.managed_animated, len(managed_animated_ids))

@@ -1,9 +1,9 @@
 import vampytest
 
-from ...channel import Channel
-from ...client import Client
-from ...guild import Guild
-from ...scheduled_event import PrivacyLevel
+from ....channel import Channel
+from ....client import Client
+from ....guild import Guild
+from ....scheduled_event import PrivacyLevel
 
 from ..stage import Stage
 

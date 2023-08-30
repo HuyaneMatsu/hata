@@ -3,16 +3,26 @@ import vampytest
 from ..fields import parse_id
 
 
-def test__parse_id():
-    """
-    Tests whether ``parse_id`` works as intended.
-    """
+def _iter_options():
     sound_id = 202305240003
     
-    for input_data, expected_output in (
-        ({}, 0),
-        ({'sound_id': None}, 0),
-        ({'sound_id': str(sound_id)}, sound_id),
-    ):
-        output = parse_id(input_data)
-        vampytest.assert_eq(output, expected_output)
+    yield {}, 0
+    yield {'sound_id': None}, 0
+    yield {'sound_id': str(sound_id)}, sound_id
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_id(input_data):
+    """
+    Tests whether ``parse_id`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    return parse_id(input_data)

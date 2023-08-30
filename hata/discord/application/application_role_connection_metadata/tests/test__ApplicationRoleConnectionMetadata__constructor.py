@@ -6,7 +6,7 @@ from ..metadata import ApplicationRoleConnectionMetadata
 from ..preinstanced import ApplicationRoleConnectionMetadataType
 
 
-def _assert_is_every_attribute_set(metadata):
+def _assert_fields_set(metadata):
     """
     Asserts whether every attributes are check of the given application role connection metadata,
     """
@@ -29,7 +29,7 @@ def test__ApplicationRoleConnectionMetadata__new__0():
     metadata_type = ApplicationRoleConnectionMetadataType.integer_greater_or_equal
     
     metadata = ApplicationRoleConnectionMetadata(name, metadata_type)
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.description, name)
     vampytest.assert_is(metadata.description_localizations, None)
@@ -64,7 +64,7 @@ def test__ApplicationRoleConnectionMetadata__new__1():
         name_localizations = name_localizations,
         metadata_type = metadata_type,
     )
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.description, description)
     vampytest.assert_eq(metadata.description_localizations, description_localizations)

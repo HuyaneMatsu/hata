@@ -12,7 +12,7 @@ from ..flags import RoleFlag
 from ..role import Role
 from ..preinstanced import RoleManagerType
 
-from .test__Role__constructor import _assert_is_every_attribute_set
+from .test__Role__constructor import _assert_fields_set
 
 
 def test__Role__from_data__0():
@@ -50,7 +50,7 @@ def test__Role__from_data__0():
     }
     
     role = Role.from_data(data, guild_id)
-    _assert_is_every_attribute_set(role)
+    _assert_fields_set(role)
     
     vampytest.assert_eq(role.id, role_id)
     vampytest.assert_eq(role.guild_id, guild_id)

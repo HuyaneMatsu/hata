@@ -3,7 +3,7 @@ import vampytest
 from ..bot import RoleManagerMetadataBot
 
 
-def _assert_is_every_attribute_set(metadata):
+def _assert_fields_set(metadata):
     """
     Asserts whether every attributes are set of the given role manager metadata.
     
@@ -22,7 +22,7 @@ def test__RoleManagerMetadataBot__new__0():
     Case: No fields given.
     """
     metadata = RoleManagerMetadataBot()
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
 
 
 def test__RoleManagerMetadataBot__new__1():
@@ -36,6 +36,6 @@ def test__RoleManagerMetadataBot__new__1():
     metadata = RoleManagerMetadataBot(
         bot_id = bot_id,
     )
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.bot_id, bot_id)

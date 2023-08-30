@@ -3,7 +3,7 @@ import vampytest
 from ..application_role_connection import RoleManagerMetadataApplicationRoleConnection
 
 
-def _assert_is_every_attribute_set(metadata):
+def _assert_fields_set(metadata):
     """
     Asserts whether every attributes are set of the given role manager metadata.
     
@@ -22,7 +22,7 @@ def test__RoleManagerMetadataApplicationRoleConnection__new__0():
     Case: No fields given.
     """
     metadata = RoleManagerMetadataApplicationRoleConnection()
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
 
 
 def test__RoleManagerMetadataApplicationRoleConnection__new__1():
@@ -36,6 +36,6 @@ def test__RoleManagerMetadataApplicationRoleConnection__new__1():
     metadata = RoleManagerMetadataApplicationRoleConnection(
         integration_id = integration_id,
     )
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.integration_id, integration_id)

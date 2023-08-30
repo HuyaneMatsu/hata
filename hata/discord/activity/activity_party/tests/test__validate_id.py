@@ -3,29 +3,47 @@ import vampytest
 from ..fields import validate_id
 
 
-def test__validate_id__0():
+def _iter_options__passing():
+    activity_party_id = 'koishi'
+    
+    yield None, None
+    yield '', None
+    yield activity_party_id, activity_party_id
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+def test__validate_id__passing(input_value):
     """
     Tests whether `validate_id` works as intended.
     
-    Case: passing.
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
+    
+    Returns
+    -------
+    output : `int`
     """
-    for input_value, expected_output in (
-        (None, None),
-        ('', None),
-        ('a', 'a'),
-    ):
-        output = validate_id(input_value)
-        vampytest.assert_eq(output, expected_output)
+    return validate_id(input_value)
 
 
-def test__validate_id__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_id__type_error(input_value):
     """
     Tests whether `validate_id` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
+    
+    Raises
+    ------
+    TypeError
+        The occurred exception.
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_id(input_value)
+    validate_id(input_value)

@@ -5,7 +5,7 @@ from ....permission import Permission
 
 from ..application_install_parameters import ApplicationInstallParameters
 
-from .test__ApplicationInstallParameters__constructor import _assert_is_every_attribute_set
+from .test__ApplicationInstallParameters__constructor import _assert_fields_set
 
 
 def test__ApplicationInstallParameters__copy():
@@ -21,7 +21,7 @@ def test__ApplicationInstallParameters__copy():
     )
     
     copy = application_install_parameters.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(application_install_parameters, copy)
     vampytest.assert_is_not(application_install_parameters, copy)
 
@@ -41,7 +41,7 @@ def test__ApplicationInstallParameters__copy_with__0():
     )
     
     copy = application_install_parameters.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(application_install_parameters, copy)
     vampytest.assert_is_not(application_install_parameters, copy)
 
@@ -66,7 +66,7 @@ def test__ApplicationInstallParameters__copy_with__1():
         permissions = new_permissions,
         scopes = new_scopes,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(application_install_parameters, copy)
 
     vampytest.assert_eq(copy.permissions, new_permissions)

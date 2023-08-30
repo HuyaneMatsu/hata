@@ -5,7 +5,7 @@ from ....localization import Locale
 from ..metadata import ApplicationRoleConnectionMetadata
 from ..preinstanced import ApplicationRoleConnectionMetadataType
 
-from .test__ApplicationRoleConnectionMetadata__constructor import _assert_is_every_attribute_set
+from .test__ApplicationRoleConnectionMetadata__constructor import _assert_fields_set
 
 
 def test__ApplicationRoleConnectionMetadata__from_data():
@@ -33,7 +33,7 @@ def test__ApplicationRoleConnectionMetadata__from_data():
     }
     
     metadata = ApplicationRoleConnectionMetadata.from_data(data)
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.description, description)
     vampytest.assert_eq(metadata.description_localizations, description_localizations)

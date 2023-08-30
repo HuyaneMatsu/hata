@@ -2,7 +2,7 @@ import vampytest
 
 from ..application_role_connection import RoleManagerMetadataApplicationRoleConnection
 
-from .test__RoleManagerMetadataApplicationRoleConnection__constructor import _assert_is_every_attribute_set
+from .test__RoleManagerMetadataApplicationRoleConnection__constructor import _assert_fields_set
 
 
 def test__RoleManagerMetadataApplicationRoleConnection__from_data():
@@ -16,7 +16,7 @@ def test__RoleManagerMetadataApplicationRoleConnection__from_data():
     }
     
     metadata = RoleManagerMetadataApplicationRoleConnection.from_data(data)
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.integration_id, integration_id)
 

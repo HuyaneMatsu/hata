@@ -2,7 +2,7 @@ import vampytest
 
 from ..keyword import AutoModerationRuleTriggerMetadataKeyword
 
-from .test__AutoModerationRuleTriggerMetadataKeyword__constructor import _assert_is_every_attribute_set
+from .test__AutoModerationRuleTriggerMetadataKeyword__constructor import _assert_fields_set
 
 
 def test__AutoModerationRuleTriggerMetadataKeyword__to_data():
@@ -44,7 +44,7 @@ def test__AutoModerationRuleTriggerMetadataKeyword__from_data__0():
     }
     
     metadata = AutoModerationRuleTriggerMetadataKeyword.from_data(data)
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.excluded_keywords, tuple(excluded_keywords))
     vampytest.assert_eq(metadata.keywords, tuple(keywords))

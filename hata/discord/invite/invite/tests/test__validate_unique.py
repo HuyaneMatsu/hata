@@ -29,7 +29,7 @@ def test__validate_unique__passing(input_value):
 
 @vampytest.raising(TypeError)
 @vampytest.call_with(12.6)
-def test__validate_unique__type_error():
+def test__validate_unique__type_error(input_value):
     """
     Tests whether `validate_unique` works as intended.
     
@@ -44,8 +44,4 @@ def test__validate_unique__type_error():
     ------
     TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_unique(input_value)
+    validate_unique(input_value)

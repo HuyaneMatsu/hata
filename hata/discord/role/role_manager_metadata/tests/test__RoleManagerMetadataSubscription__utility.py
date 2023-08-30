@@ -4,7 +4,7 @@ from ....integration import Integration
 
 from ..subscription import RoleManagerMetadataSubscription
 
-from .test__RoleManagerMetadataSubscription__constructor import _assert_is_every_attribute_set
+from .test__RoleManagerMetadataSubscription__constructor import _assert_fields_set
 
 
 def test__RoleManagerMetadataSubscription__copy():
@@ -21,7 +21,7 @@ def test__RoleManagerMetadataSubscription__copy():
         subscription_listing_id = subscription_listing_id,
     )
     copy = metadata.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(copy, metadata)
     vampytest.assert_is_not(copy, metadata)
@@ -43,7 +43,7 @@ def test__RoleManagerMetadataSubscription__copy_with__0():
         subscription_listing_id = subscription_listing_id,
     )
     copy = metadata.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(copy, metadata)
     vampytest.assert_is_not(copy, metadata)
@@ -72,7 +72,7 @@ def test__RoleManagerMetadataSubscription__copy_with__1():
         purchasable = new_purchasable,
         subscription_listing_id = new_subscription_listing_id,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_is_not(copy, metadata)
     

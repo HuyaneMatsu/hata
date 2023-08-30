@@ -1,4 +1,4 @@
-__all__ = ('TeamMemberPermission', 'TeamMembershipState')
+__all__ = ('TeamMemberPermission', 'TeamMemberRole', 'TeamMembershipState')
 
 from ...bases import Preinstance as P, PreinstancedBase
 
@@ -50,6 +50,8 @@ class TeamMemberPermission(PreinstancedBase):
     """
     Represents a permission of a ``TeamMember``.
     
+    Deprecated and will be removed in 2024 February.
+    
     Attributes
     ----------
     name : `str`
@@ -84,3 +86,52 @@ class TeamMemberPermission(PreinstancedBase):
     # predefined
     none = P('', 'none')
     admin = P('*', 'admin')
+
+
+class TeamMemberRole(PreinstancedBase):
+    """
+    Represents a role of a ``TeamMember``.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of role.
+    value : `str`
+        The Discord side identifier value of the team member role.
+        
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``TeamMemberRole``) items
+        Stores the created team member role instances. This container is accessed when translating a Discord
+        team member role's value to it's representation.
+    VALUE_TYPE : `type` = `str`
+        The team member roles' values' type.
+    DEFAULT_NAME : `str` = `'Undefined'`
+        The default name of the team member roles.
+    
+    Every predefined team member role can be accessed as class attribute as well:
+    +-----------------------+---------------+---------------+
+    | Class attribute name  | name          | value         |
+    +=======================+===============+===============+
+    | admin                 | admin         | `'admin'`     |
+    +-----------------------+---------------+---------------+
+    | developer             | developer     | `'developer'` |
+    +-----------------------+---------------+---------------+
+    | owner                 | owner         | `'owner'`     |
+    +-----------------------+---------------+---------------+
+    | read_only             | read_only     | `'read_only'` |
+    +-----------------------+---------------+---------------+
+    | none                  | none          | `''`          |
+    +-----------------------+---------------+---------------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = str
+    
+    __slots__ = ()
+    
+    # predefined
+    admin = P('admin', 'admin')
+    developer = P('developer', 'developer')
+    owner = P('owner', 'owner')
+    read_only = P('read_only', 'read_only')
+    none = P('', 'none')

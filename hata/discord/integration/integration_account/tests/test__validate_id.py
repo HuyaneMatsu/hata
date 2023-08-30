@@ -1,45 +1,49 @@
 import vampytest
 
-from ..constants import ID_LENGTH_MAX
 from ..fields import validate_id
 
 
-def test__validate_id__0():
+def _iter_options__passing():
+    integration_account_id = 'koishi'
+    
+    yield None, ''
+    yield '', ''
+    yield integration_account_id, integration_account_id
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+def test__validate_id__passing(input_value):
     """
     Tests whether `validate_id` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (None, ''),
-        ('', ''),
-        ('a', 'a'),
-    ):
-        output = validate_id(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_id__1():
-    """
-    Tests whether `validate_id` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
     
-    Case: `ValueError`.
+    Returns
+    -------
+    output : `int`
     """
-    for input_value in (
-        'a' * (ID_LENGTH_MAX + 1),
-    ):
-        with vampytest.assert_raises(ValueError):
-            validate_id(input_value)
+    return validate_id(input_value)
 
 
-def test__validate_id__2():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_id__type_error(input_value):
     """
     Tests whether `validate_id` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
+    
+    Raises
+    ------
+    TypeError
+        The occurred exception.
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_id(input_value)
+    validate_id(input_value)

@@ -14,7 +14,7 @@ from ..application import Application
 from ..flags import ApplicationFlag
 from ..preinstanced import ApplicationType
 
-from .test__Application__constructor import _assert_is_every_attribute_set
+from .test__Application__constructor import _assert_fields_set
 
 
 def test__Application__from_data__0():
@@ -33,7 +33,7 @@ def test__Application__from_data__0():
         module_warnings.simplefilter('always')
         
         application = Application.from_data(data)
-        _assert_is_every_attribute_set(application)
+        _assert_fields_set(application)
         vampytest.assert_eq(application.id, application_id)
         
         vampytest.assert_eq(len(warnings), 1)
@@ -75,7 +75,7 @@ def test__Application__from_data_ready__0():
     }
     
     application = Application.from_data_ready(data)
-    _assert_is_every_attribute_set(application)
+    _assert_fields_set(application)
     vampytest.assert_eq(application.id, application_id)
     
     vampytest.assert_eq(application.flags, flags)
@@ -195,7 +195,7 @@ def test__Application__from_data_own__0():
     }
     
     application = Application.from_data_own(data)
-    _assert_is_every_attribute_set(application)
+    _assert_fields_set(application)
     vampytest.assert_eq(application.id, application_id)
     
     vampytest.assert_eq(application.bot_public, bot_public)
@@ -323,7 +323,7 @@ def test__Application__from_data_invite__0():
     }
     
     application = Application.from_data_invite(data)
-    _assert_is_every_attribute_set(application)
+    _assert_fields_set(application)
     vampytest.assert_eq(application.id, application_id)
     
     vampytest.assert_eq(application.bot_public, bot_public)
@@ -432,7 +432,7 @@ def test__Application__from_data_detectable__0():
     }
     
     application = Application.from_data_detectable(data)
-    _assert_is_every_attribute_set(application)
+    _assert_fields_set(application)
     vampytest.assert_eq(application.id, application_id)
     
     vampytest.assert_eq(application.aliases, tuple(aliases))

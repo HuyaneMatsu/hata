@@ -6,9 +6,9 @@ from ...application_command_permission_overwrite import (
 from ..fields import put_permission_overwrites_into
 
 
-def test__parse_id():
+def test__put_permission_overwrites_into():
     """
-    Tests whether ``parse_id`` works as intended.
+    Tests whether ``put_permission_overwrites_into`` works as intended.
     """
     entity_0 = ApplicationCommandPermissionOverwrite(
         allow = True,

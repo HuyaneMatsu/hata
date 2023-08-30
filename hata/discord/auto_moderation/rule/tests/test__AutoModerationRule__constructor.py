@@ -7,7 +7,7 @@ from ..preinstanced import AutoModerationEventType, AutoModerationRuleTriggerTyp
 from ..rule import AutoModerationRule
 
 
-def _assert_is_every_attribute_set(rule):
+def _assert_fields_set(rule):
     """
     Asserts whether every attribute of the given rule is set.
     
@@ -37,7 +37,7 @@ def test__AutoModerationRule__new__0():
     Case: No parameters given.
     """
     rule = AutoModerationRule()
-    _assert_is_every_attribute_set(rule)
+    _assert_fields_set(rule)
 
 
 def test__AutoModerationRule__new__1():
@@ -63,7 +63,7 @@ def test__AutoModerationRule__new__1():
         name = name,
         mention_limit = mention_limit,
     )
-    _assert_is_every_attribute_set(rule)
+    _assert_fields_set(rule)
     
     vampytest.assert_eq(rule.actions, tuple(actions))
     vampytest.assert_eq(rule.enabled, enabled)
@@ -85,7 +85,7 @@ def test__AutoModerationRule__create_empty():
     
     rule = AutoModerationRule._create_empty(rule_id)
     
-    _assert_is_every_attribute_set(rule)
+    _assert_fields_set(rule)
     vampytest.assert_eq(rule.id, rule_id)
 
 
@@ -98,7 +98,7 @@ def test__AutoModerationRule__precreate__0():
     rule_id = 202211180000
     
     rule = AutoModerationRule.precreate(rule_id)
-    _assert_is_every_attribute_set(rule)
+    _assert_fields_set(rule)
     vampytest.assert_eq(rule.id, rule_id)
 
 
@@ -132,7 +132,7 @@ def test__AutoModerationRule__precreate__1():
         name = name,
         mention_limit = mention_limit,
     )
-    _assert_is_every_attribute_set(rule)
+    _assert_fields_set(rule)
     vampytest.assert_eq(rule.id, rule_id)
     vampytest.assert_eq(rule.creator_id, creator_id)
     vampytest.assert_eq(rule.guild_id, guild_id)

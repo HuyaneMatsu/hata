@@ -2,7 +2,7 @@ import vampytest
 
 from ..mention_spam import AutoModerationRuleTriggerMetadataMentionSpam
 
-from .test__AutoModerationRuleTriggerMetadataMentionSpam__constructor import _assert_is_every_attribute_set
+from .test__AutoModerationRuleTriggerMetadataMentionSpam__constructor import _assert_fields_set
 
 
 def test__AutoModerationRuleTriggerMetadataMentionSpam__copy__0():
@@ -18,7 +18,7 @@ def test__AutoModerationRuleTriggerMetadataMentionSpam__copy__0():
     )
     
     copy = metadata.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)
@@ -39,7 +39,7 @@ def test__AutoModerationRuleTriggerMetadataMentionSpam__copy_with__0():
     )
     
     copy = metadata.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)
@@ -66,7 +66,7 @@ def test__AutoModerationRuleTriggerMetadataMentionSpam__copy_with__1():
         raid_protection = new_raid_protection,
     )
     
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(metadata, copy)
     
     vampytest.assert_eq(copy.mention_limit, new_mention_limit)

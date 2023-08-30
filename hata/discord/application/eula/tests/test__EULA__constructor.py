@@ -3,7 +3,7 @@ import vampytest
 from ..eula import EULA
 
 
-def _assert_is_every_attribute_set(eula):
+def _assert_fields_set(eula):
     """
     Asserts whether every attributes of the given are set.
     
@@ -25,7 +25,7 @@ def test__EULA__new__0():
     Case: No parameters given.
     """
     eula = EULA()
-    _assert_is_every_attribute_set(eula)
+    _assert_fields_set(eula)
 
 
 def test__EULA__new__1():
@@ -41,7 +41,7 @@ def test__EULA__new__1():
         content = content,
         name = name,
     )
-    _assert_is_every_attribute_set(eula)
+    _assert_fields_set(eula)
     
     vampytest.assert_eq(eula.content, content)
     vampytest.assert_eq(eula.name, name)
@@ -55,7 +55,7 @@ def test__EULA__create_empty():
     eula_id = 202211260003
     
     eula = EULA._create_empty(eula_id)
-    _assert_is_every_attribute_set(eula)
+    _assert_fields_set(eula)
     vampytest.assert_eq(eula.id, eula_id)
 
 
@@ -68,7 +68,7 @@ def test__EULA__precreate__0():
     eula_id = 202211260004
     
     eula = EULA.precreate(eula_id)
-    _assert_is_every_attribute_set(eula)
+    _assert_fields_set(eula)
     vampytest.assert_eq(eula.id, eula_id)
 
 
@@ -87,7 +87,7 @@ def test__EULA__precreate__1():
         content = content,
         name = name,
     )
-    _assert_is_every_attribute_set(eula)
+    _assert_fields_set(eula)
     vampytest.assert_eq(eula.id, eula_id)
     
     vampytest.assert_eq(eula.content, content)

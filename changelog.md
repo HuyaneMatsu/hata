@@ -1,3 +1,25 @@
+## 1.3.37 *\[2023-08-??\]*
+
+### Improvements
+
+- Add `TeamMemberRole`.
+- Add `TeamMember.role`.
+- Repurpose ``AuditLogRole.__new__``, rename to `.from_data`.
+- Add `AuditLogRole.__new__`.
+- Add `AuditLogRole.to_data`.
+- Add `AuditLogRole.copy`.
+- Add `AuditLogRole.copy_with`.
+
+#### Bug fixes
+
+- `AuditLogRole.__repr__` raised `AttributeError`.
+
+#### Renames, Deprecations & Removals
+
+- Deprecate `TeamMemberPermission`.
+- Deprecate `TeamMember.permissions`.
+- Deprecate `TeamMember.iter_permissions`.
+
 ## 1.3.36 *\[2023-08-23\]*
 
 ### Improvements

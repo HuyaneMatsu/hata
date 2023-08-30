@@ -3,7 +3,7 @@ import vampytest
 from ..application_executable import ApplicationExecutable
 from ..preinstanced import OperationSystem
 
-from .test__ApplicationExecutable__constructor import _assert_is_every_attribute_set
+from .test__ApplicationExecutable__constructor import _assert_fields_set
 
 
 def test__ApplicationExecutable__from_data():
@@ -23,7 +23,7 @@ def test__ApplicationExecutable__from_data():
     }
     
     application_executable = ApplicationExecutable.from_data(data)
-    _assert_is_every_attribute_set(application_executable)
+    _assert_fields_set(application_executable)
     
     vampytest.assert_eq(application_executable.launcher, launcher)
     vampytest.assert_eq(application_executable.name, name)

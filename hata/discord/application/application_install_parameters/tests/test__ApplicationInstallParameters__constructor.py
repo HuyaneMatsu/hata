@@ -6,7 +6,7 @@ from ....permission import Permission
 from ..application_install_parameters import ApplicationInstallParameters
 
 
-def _assert_is_every_attribute_set(application_install_parameters):
+def _assert_fields_set(application_install_parameters):
     """
     Asserts whether every attributes are set of the given application install parameters.
     
@@ -27,7 +27,7 @@ def test__ApplicationInstallParameters__new__0():
     Case: No parameters.
     """
     application_install_parameters = ApplicationInstallParameters()
-    _assert_is_every_attribute_set(application_install_parameters)
+    _assert_fields_set(application_install_parameters)
 
 
 def test__ApplicationInstallParameters__new__1():
@@ -44,6 +44,6 @@ def test__ApplicationInstallParameters__new__1():
         scopes = scopes,
     )
     
-    _assert_is_every_attribute_set(application_install_parameters)
+    _assert_fields_set(application_install_parameters)
     vampytest.assert_eq(application_install_parameters.permissions, permissions)
     vampytest.assert_eq(application_install_parameters.scopes, tuple(scopes))

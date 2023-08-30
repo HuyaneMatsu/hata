@@ -1,14 +1,16 @@
 __all__ = ('TeamMember',)
 
+from warnings import warn
+
 from scarletio import RichAttributeErrorBaseType
 
 from ...user import ZEROUSER
 
 from .fields import (
-    parse_permissions, parse_state, parse_user, put_permissions_into, put_state_into, put_user_into,
-    validate_permissions, validate_state, validate_user
+    parse_role, parse_state, parse_user, put_role_into, put_state_into, put_user_into,
+    validate_role, validate_state, validate_user
 )
-from .preinstanced import TeamMembershipState
+from .preinstanced import TeamMemberPermission, TeamMemberRole, TeamMembershipState
 
 
 class TeamMember(RichAttributeErrorBaseType):
@@ -17,24 +19,23 @@ class TeamMember(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    permissions : `None`, `tuple` of ``TeamMemberPermission``
-        The permissions of the team member. Right now specific permissions are not supported, so the list has only
-        one element : `'*'`, what represents all the permissions.
+    role : `None`, `tuple` of ``TeamMemberRole``
+        The role of the team member.
     state : ``TeamMembershipState``
         The state of the team member. A member can be invited or can have the invite already accepted.
     user : ``ClientUserBase``
         The corresponding user account of the team member object.
     """
-    __slots__ = ('permissions', 'state', 'user',)
+    __slots__ = ('role', 'state', 'user',)
     
-    def __new__(cls, *, permissions = ..., state = ..., user = ...):
+    def __new__(cls, *, role = ..., state = ..., user = ...):
         """
         Creates a new team member from the given parameters.
         
         Parameters
         ----------
-        permissions : `None`, `iterable` of (`str`, ``TeamMemberPermission``), Optional (Keyword only)
-            The permissions of the team member.
+        role : `None`, `str`, ``TeamMemberRole``, Optional (Keyword only)
+            The role of the team member.
         
         state : `int`, ``TeamMembershipState``, Optional (Keyword only)
             The state of the team member.
@@ -53,11 +54,11 @@ class TeamMember(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # permissions
-        if permissions is ...:
-            permissions = None
+        # role
+        if role is ...:
+            role = TeamMemberRole.none
         else:
-            permissions = validate_permissions(permissions)
+            role = validate_role(role)
         
         # state
         if state is ...:
@@ -72,7 +73,7 @@ class TeamMember(RichAttributeErrorBaseType):
             user = validate_user(user)
         
         self = object.__new__(cls)
-        self.permissions = permissions
+        self.role = role
         self.state = state
         self.user = user
         return self
@@ -89,7 +90,7 @@ class TeamMember(RichAttributeErrorBaseType):
             Team member data received from Discord.
         """
         self = object.__new__(cls)
-        self.permissions = parse_permissions(data)
+        self.role = parse_role(data)
         self.state = parse_state(data)
         self.user = parse_user(data)
         return self
@@ -111,7 +112,7 @@ class TeamMember(RichAttributeErrorBaseType):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_permissions_into(self.permissions, data, defaults)
+        put_role_into(self.role, data, defaults)
         put_state_into(self.state, data, defaults)
         
         if include_internals:
@@ -132,12 +133,11 @@ class TeamMember(RichAttributeErrorBaseType):
         repr_parts.append(', state = ')
         repr_parts.append(self.state.name)
         
-        # permissions
-        repr_parts.append(', permissions = ')
-        repr_parts.append(repr(self.permissions))
+        # role
+        repr_parts.append(', role = ')
+        repr_parts.append(self.role.name)
         
         repr_parts.append('>')
-        
         return ''.join(repr_parts)
     
     
@@ -145,19 +145,14 @@ class TeamMember(RichAttributeErrorBaseType):
         """Returns the team member's hash value, what is equal to it's user's id."""
         hash_value = 0
         
-        # user
-        hash_value ^= hash(self.user)
+        # role
+        hash_value ^= hash(self.role.value)
         
         # state
         hash_value ^= self.state.value
         
-        # permissions
-        permissions = self.permissions
-        if (permissions is not None):
-            hash_value ^= len(permissions) << 4
-            
-            for permission in permissions:
-                hash_value ^= hash(permission)
+        # user
+        hash_value ^= hash(self.user)
         
         return hash_value
     
@@ -167,8 +162,8 @@ class TeamMember(RichAttributeErrorBaseType):
         if type(self) is not type(other):
             return False
         
-        # permissions
-        if (self.permissions != other.permissions):
+        # role
+        if (self.role is not other.role):
             return False
         
         # state
@@ -207,23 +202,20 @@ class TeamMember(RichAttributeErrorBaseType):
         new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
-        permissions = self.permissions
-        if (permissions is not None):
-            permissions = (*permissions, )
-        new.permissions = permissions
+        new.role = self.role
         new.state = self.state
         new.user = self.user
         return new
     
     
-    def copy_with(self, *, permissions = ..., state = ..., user = ...):
+    def copy_with(self, *, role = ..., state = ..., user = ...):
         """
         Copies the team member with the the defined fields.
         
         Parameters
         ----------
-        permissions : `None`, `iterable` of (`str`, ``TeamMemberPermission``), Optional (Keyword only)
-            The permissions of the team member.
+        role : `None`, `str`, ``TeamMemberRole``, Optional (Keyword only)
+            The role of the team member.
         
         state : `int`, ``TeamMembershipState``, Optional (Keyword only)
             The state of the team member.
@@ -242,13 +234,11 @@ class TeamMember(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # permissions
-        if permissions is ...:
-            permissions = self.permissions
-            if (permissions is not None):
-                permissions = (*permissions, )
+        # role
+        if role is ...:
+            role = self.role
         else:
-            permissions = validate_permissions(permissions)
+            role = validate_role(role)
         
         # state
         if state is ...:
@@ -263,7 +253,7 @@ class TeamMember(RichAttributeErrorBaseType):
             user = validate_user(user)
         
         new = object.__new__(type(self))
-        new.permissions = permissions
+        new.role = role
         new.state = state
         new.user = user
         return new
@@ -273,12 +263,32 @@ class TeamMember(RichAttributeErrorBaseType):
         """
         Iterates over the permissions of the team member.
         
+        Deprecated and will be removed in 2024 February.
+        
         This method is an iterable generator.
         
         Yields
         ------
         permission : ``TeamMemberPermission``
         """
-        permissions = self.permissions
-        if (permissions is not None):
-            yield from permissions
+        warn(
+            f'`{self.__class__.__name__}.iter_permissions` is deprecated and will be removed in 2024 February.',
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        yield TeamMemberPermission.admin
+    
+    
+    @property
+    def permissions(self):
+        """
+        Deprecated and will be removed in 2024 February.
+        """
+        warn(
+            f'`{self.__class__.__name__}.permissions` is deprecated and will be removed in 2024 February.',
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return (TeamMemberPermission.admin,)

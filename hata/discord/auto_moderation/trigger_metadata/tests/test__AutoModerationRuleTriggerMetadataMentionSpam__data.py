@@ -2,7 +2,7 @@ import vampytest
 
 from ..mention_spam import AutoModerationRuleTriggerMetadataMentionSpam
 
-from .test__AutoModerationRuleTriggerMetadataMentionSpam__constructor import _assert_is_every_attribute_set
+from .test__AutoModerationRuleTriggerMetadataMentionSpam__constructor import _assert_fields_set
 
 
 def test__AutoModerationRuleTriggerMetadataMentionSpam__to_data__0():
@@ -41,7 +41,7 @@ def test__AutoModerationRuleTriggerMetadataMentionSpam__from_data__0():
     }
     
     metadata = AutoModerationRuleTriggerMetadataMentionSpam.from_data(data)
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.mention_limit, mention_limit)
     vampytest.assert_eq(metadata.raid_protection, raid_protection)

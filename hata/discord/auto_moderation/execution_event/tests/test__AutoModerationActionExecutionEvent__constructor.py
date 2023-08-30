@@ -6,7 +6,7 @@ from ...rule import AutoModerationRuleTriggerType
 from ..execution_event import AutoModerationActionExecutionEvent
 
 
-def _assert_is_every_attribute_set(event):
+def _assert_fields_set(event):
     """
     Asserts whether every attributes are set of the given event.
     
@@ -34,7 +34,7 @@ def test__AutoModerationActionExecutionEvent__new__0():
     Case: No parameters.
     """
     event = AutoModerationActionExecutionEvent()
-    _assert_is_every_attribute_set(event)
+    _assert_fields_set(event)
 
 
 def test__AutoModerationActionExecutionEvent__new__1():
@@ -67,7 +67,7 @@ def test__AutoModerationActionExecutionEvent__new__1():
         user_id = user_id,
     )
     
-    _assert_is_every_attribute_set(event)
+    _assert_fields_set(event)
     
     vampytest.assert_eq(event.action, action)
     vampytest.assert_eq(event.alert_system_message_id, alert_system_message_id)

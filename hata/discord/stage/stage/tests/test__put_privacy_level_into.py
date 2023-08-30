@@ -1,6 +1,6 @@
 import vampytest
 
-from ...scheduled_event import PrivacyLevel
+from ....scheduled_event import PrivacyLevel
 
 from ..fields import put_privacy_level_into
 

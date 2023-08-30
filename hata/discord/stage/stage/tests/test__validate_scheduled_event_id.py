@@ -1,6 +1,6 @@
 import vampytest
 
-from ...scheduled_event import ScheduledEvent
+from ....scheduled_event import ScheduledEvent
 
 from ..fields import validate_scheduled_event_id
 

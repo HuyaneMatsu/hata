@@ -11,7 +11,7 @@ from ...trigger_metadata import AutoModerationRuleTriggerMetadataKeyword
 from ..preinstanced import AutoModerationEventType, AutoModerationRuleTriggerType
 from ..rule import AutoModerationRule
 
-from .test__AutoModerationRule__constructor import _assert_is_every_attribute_set
+from .test__AutoModerationRule__constructor import _assert_fields_set
 
 
 def test__AutoModerationRule__copy():
@@ -37,7 +37,7 @@ def test__AutoModerationRule__copy():
     )
     
     copy = rule.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, rule)
     vampytest.assert_eq(copy, rule)
 
@@ -67,7 +67,7 @@ def test__AutoModerationRule__copy_with__0():
     )
     
     copy = rule.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, rule)
     vampytest.assert_eq(copy, rule)
 
@@ -112,7 +112,7 @@ def test__AutoModerationRule__copy_with__1():
         name = new_name,
         keywords = new_keywords,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, rule)
 
     vampytest.assert_eq(copy.actions, tuple(new_actions))

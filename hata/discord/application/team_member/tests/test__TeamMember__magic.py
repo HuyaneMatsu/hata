@@ -2,7 +2,7 @@ import vampytest
 
 from ....user import User
 
-from ..preinstanced import TeamMemberPermission, TeamMembershipState
+from ..preinstanced import TeamMemberRole, TeamMembershipState
 from ..team_member import TeamMember
 
 
@@ -10,12 +10,12 @@ def test__TeamMember__repr():
     """
     Tests whether ``TeamMember.__repr__`` works as intended.
     """
-    permissions = [TeamMemberPermission.admin]
+    role = TeamMemberRole.admin
     state = TeamMembershipState.invited
     user = User.precreate(202211230006)
     
     team_member = TeamMember(
-        permissions = permissions,
+        role = role,
         state = state,
         user = user,
     )
@@ -27,12 +27,12 @@ def test__TeamMember__hash():
     """
     Tests whether ``TeamMember.__hash__`` works as intended.
     """
-    permissions = [TeamMemberPermission.admin]
+    role = TeamMemberRole.admin
     state = TeamMembershipState.invited
     user = User.precreate(202211230007)
     
     team_member = TeamMember(
-        permissions = permissions,
+        role = role,
         state = state,
         user = user,
     )
@@ -44,12 +44,12 @@ def test__TeamMember__eq():
     """
     Tests whether ``TeamMember.__eq__`` works as intended.
     """
-    permissions = [TeamMemberPermission.admin]
+    role = TeamMemberRole.admin
     state = TeamMembershipState.invited
     user = User.precreate(202211230008)
     
     keyword_parameters = {
-        'permissions': permissions,
+        'role': role,
         'state': state,
         'user': user,
     }
@@ -59,7 +59,7 @@ def test__TeamMember__eq():
     vampytest.assert_ne(team_member, object())
     
     for field_name, field_value in (
-        ('permissions', None),
+        ('role', TeamMemberRole.owner),
         ('state', TeamMembershipState.accepted),
         ('user', User.precreate(202211230009)),
     ):

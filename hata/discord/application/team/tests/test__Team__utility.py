@@ -7,7 +7,7 @@ from ...team_member import TeamMember, TeamMembershipState
 
 from ..team import Team
 
-from .test__Team__constructor import _assert_is_every_attribute_set
+from .test__Team__constructor import _assert_fields_set
 
 
 def test__Team__copy():
@@ -28,7 +28,7 @@ def test__Team__copy():
     )
     
     copy = team.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(copy, team)
     vampytest.assert_not_is(copy, team)
 
@@ -53,7 +53,7 @@ def test__Team__copy_with__0():
     )
     
     copy = team.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(copy, team)
     vampytest.assert_not_is(copy, team)
 
@@ -87,7 +87,7 @@ def test__Team__copy_with__1():
         name = new_name,
         owner_id = new_owner_id,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(copy, team)
 
     vampytest.assert_eq(copy.icon, new_icon)

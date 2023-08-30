@@ -12,7 +12,7 @@ from ..application import Application
 from ..flags import ApplicationFlag
 from ..preinstanced import ApplicationType
 
-from .test__Application__constructor import _assert_is_every_attribute_set
+from .test__Application__constructor import _assert_fields_set
 
 
 def test__Application__copy():
@@ -88,7 +88,7 @@ def test__Application__copy():
     )
     
     copy = application.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(application, copy)
 
 
@@ -167,7 +167,7 @@ def test__Application__copy_with__0():
     )
     
     copy = application.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(application, copy)
     vampytest.assert_eq(application, copy)
 
@@ -312,7 +312,7 @@ def test__Application__copy_with__1():
         application_type = new_application_type,
         verify_key = new_verify_key,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(application, copy)
     
     vampytest.assert_eq(copy.aliases, tuple(new_aliases))

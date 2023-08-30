@@ -8,7 +8,7 @@ from ...channel import Channel
 from ...http import DiscordHTTPClient
 from ...payload_building import build_create_payload, build_edit_payload
 from ...stage import Stage
-from ...stage.utils import STAGE_CREATE_FIELD_CONVERTERS, STAGE_EDIT_FIELD_CONVERTERS
+from ...stage.stage.utils import STAGE_CREATE_FIELD_CONVERTERS, STAGE_EDIT_FIELD_CONVERTERS
 
 from ..request_helpers import get_channel_id, get_stage_and_channel_id, get_stage_channel_id
 

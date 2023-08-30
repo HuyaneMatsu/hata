@@ -13,7 +13,7 @@ from ..role import Role
 from ..preinstanced import RoleManagerType
 
 
-def _assert_is_every_attribute_set(role):
+def _assert_fields_set(role):
     """
     Asserts whether every attributes of the given role is set.
     
@@ -45,7 +45,7 @@ def test__Role__new__0():
     Case: No fields given.
     """
     role = Role()
-    _assert_is_every_attribute_set(role)
+    _assert_fields_set(role)
 
 
 def test__Role__new__1():
@@ -78,7 +78,7 @@ def test__Role__new__1():
         separated = separated,
         unicode_emoji = unicode_emoji,
     )
-    _assert_is_every_attribute_set(role)
+    _assert_fields_set(role)
     
     vampytest.assert_eq(role.color, color)
     vampytest.assert_eq(role.flags, flags)
@@ -133,7 +133,7 @@ def test__Role__create_empty():
     guild_id = 202211040001
     
     role = Role._create_empty(role_id, guild_id)
-    _assert_is_every_attribute_set(role)
+    _assert_fields_set(role)
     
     vampytest.assert_eq(role.id, role_id)
     vampytest.assert_eq(role.guild_id, guild_id)
@@ -148,7 +148,7 @@ def test__Role__precreate__0():
     role_id = 202211040002
     
     role = Role.precreate(role_id)
-    _assert_is_every_attribute_set(role)
+    _assert_fields_set(role)
     
     vampytest.assert_eq(role.id, role_id)
 
@@ -189,7 +189,7 @@ def test__Role__precreate__1():
         unicode_emoji = unicode_emoji,
     )
     
-    _assert_is_every_attribute_set(role)
+    _assert_fields_set(role)
     
     vampytest.assert_eq(role.id, role_id)
     vampytest.assert_eq(role.guild_id, guild_id)
@@ -222,7 +222,7 @@ def test__Role__precreate__2():
         unicode_emoji = unicode_emoji,
     )
     
-    _assert_is_every_attribute_set(role)
+    _assert_fields_set(role)
     
     vampytest.assert_eq(role.id, role_id)
     

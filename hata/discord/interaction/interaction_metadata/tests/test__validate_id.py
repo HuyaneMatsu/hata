@@ -3,45 +3,71 @@ import vampytest
 from ..fields import validate_id
 
 
-def test__validate_id__0():
+def _iter_options__passing():
+    application_command_id = 202211010813
+    
+    yield 0, 0
+    yield application_command_id, application_command_id
+    yield str(application_command_id), application_command_id
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+def test__validate_id__passing(input_value):
     """
     Tests whether `validate_id` works as intended.
     
-    Case: passing.
-    """
-    id_ = 20221101000813
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
     
-    for input_value, expected_output in (
-        (None, 0),
-        (id_, id_),
-        (str(id_), id_)
-    ):
-        output = validate_id(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_id__1():
+    Returns
+    -------
+    output : `int`
     """
-    Tests whether `validate_id` works as intended.
-    
-    Case: `ValueError`.
-    """
-    for input_value in (
-        '-1',
-        -1,
-    ):
-        with vampytest.assert_raises(AssertionError, ValueError):
-            validate_id(input_value)
+    return validate_id(input_value)
 
 
-def test__validate_id__2():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_id__type_error(input_value):
     """
     Tests whether `validate_id` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
+    
+    Raises
+    ------
+    TypeError
+        The occurred exception.
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_id(input_value)
+    validate_id(input_value)
+
+
+@vampytest.raising(ValueError)
+@vampytest.call_with('-1')
+@vampytest.call_with('1111111111111111111111')
+@vampytest.call_with(-1)
+@vampytest.call_with(1111111111111111111111)
+def test__validate_id__value_error(input_value):
+    """
+    Tests whether `validate_id` works as intended.
+    
+    Case: `ValueError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
+    
+    Raises
+    ------
+    ValueError
+        The occurred exception.
+    """
+    validate_id(input_value)

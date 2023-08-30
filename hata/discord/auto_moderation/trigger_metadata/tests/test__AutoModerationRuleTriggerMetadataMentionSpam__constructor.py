@@ -3,7 +3,7 @@ import vampytest
 from ..mention_spam import AutoModerationRuleTriggerMetadataMentionSpam
 
 
-def _assert_is_every_attribute_set(metadata):
+def _assert_fields_set(metadata):
     """
     Asserts whether all attributes are set of the given rule trigger metadata.
     
@@ -24,7 +24,7 @@ def test__AutoModerationRuleTriggerMetadataMentionSpam__new__0():
     Case: No parameters given.
     """
     metadata = AutoModerationRuleTriggerMetadataMentionSpam()
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
 
 
 def test__AutoModerationRuleTriggerMetadataMentionSpam__new__1():
@@ -40,7 +40,7 @@ def test__AutoModerationRuleTriggerMetadataMentionSpam__new__1():
         mention_limit = mention_limit,
         raid_protection = raid_protection,
     )
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.mention_limit, mention_limit)
     vampytest.assert_eq(metadata.raid_protection, raid_protection)

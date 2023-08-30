@@ -5,7 +5,7 @@ from ....localization import Locale
 from ..metadata import ApplicationRoleConnectionMetadata
 from ..preinstanced import ApplicationRoleConnectionMetadataType
 
-from .test__ApplicationRoleConnectionMetadata__constructor import _assert_is_every_attribute_set
+from .test__ApplicationRoleConnectionMetadata__constructor import _assert_fields_set
 
 
 def test__ApplicationRoleConnectionMetadata__copy():
@@ -33,7 +33,7 @@ def test__ApplicationRoleConnectionMetadata__copy():
     )
     
     copy = metadata.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, metadata)
     vampytest.assert_eq(copy, metadata)
 
@@ -65,7 +65,7 @@ def test__ApplicationRoleConnectionMetadata__copy_with__0():
     )
     
     copy = metadata.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, metadata)
     vampytest.assert_eq(copy, metadata)
 
@@ -114,7 +114,7 @@ def test__ApplicationRoleConnectionMetadata__copy_with__1():
         name_localizations = new_name_localizations,
         metadata_type = new_metadata_type,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, metadata)
     
     vampytest.assert_eq(copy.description, new_description)

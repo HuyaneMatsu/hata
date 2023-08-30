@@ -39,7 +39,7 @@ class ActivityFieldBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        defaults : `bool`
+        defaults : `bool` = `False`, Optional (Keyword only)
             Whether fields of their default value should be included as well.
         
         Returns

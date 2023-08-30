@@ -2,7 +2,7 @@ import vampytest
 
 from ..base import RoleManagerMetadataBase
 
-from .test__RoleManagerMetadataBase__constructor import _assert_is_every_attribute_set
+from .test__RoleManagerMetadataBase__constructor import _assert_fields_set
 
 
 def test__RoleManagerMetadataBase__from_data():
@@ -12,7 +12,7 @@ def test__RoleManagerMetadataBase__from_data():
     data = {}
     
     metadata = RoleManagerMetadataBase.from_data(data)
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
 
 
 def test__RoleManagerMetadataBase__to_data():

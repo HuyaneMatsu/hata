@@ -3,7 +3,7 @@ import vampytest
 from ..third_party_sku import ThirdPartySKU
 
 
-def _assert_is_every_attribute_set(third_party_sku):
+def _assert_fields_set(third_party_sku):
     """
     Asserts whether every attributes are set of the given sku.
     
@@ -25,7 +25,7 @@ def test__ThirdPartySKU__new__0():
     Case: No sku.
     """
     third_party_sku = ThirdPartySKU()
-    _assert_is_every_attribute_set(third_party_sku)
+    _assert_fields_set(third_party_sku)
 
 
 def test__ThirdPartySKU__new__1():
@@ -44,7 +44,7 @@ def test__ThirdPartySKU__new__1():
         sku = sku,
     )
     
-    _assert_is_every_attribute_set(third_party_sku)
+    _assert_fields_set(third_party_sku)
     vampytest.assert_eq(third_party_sku.distributor, distributor)
     vampytest.assert_eq(third_party_sku.id, id)
     vampytest.assert_eq(third_party_sku.sku, sku)

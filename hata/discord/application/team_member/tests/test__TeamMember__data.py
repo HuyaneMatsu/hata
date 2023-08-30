@@ -2,30 +2,30 @@ import vampytest
 
 from ....user import User
 
-from ..preinstanced import TeamMemberPermission, TeamMembershipState
+from ..preinstanced import TeamMemberRole, TeamMembershipState
 from ..team_member import TeamMember
 
-from .test__TeamMember__constructor import _assert_is_every_attribute_set
+from .test__TeamMember__constructor import _assert_fields_set
 
 
 def test__TeamMember__from_data():
     """
     Tests whether ``TeamMember.from_data`` works as intended.
     """
-    permissions = [TeamMemberPermission.admin]
+    role = TeamMemberRole.admin
     state = TeamMembershipState.invited
     user = User.precreate(202211230004)
     
     data = {
-        'permissions': [permission.value for permission in permissions],
+        'role': role.value,
         'membership_state': state.value,
         'user': user.to_data(defaults = True, include_internals = True),
     }
     
     team_member = TeamMember.from_data(data)
-    _assert_is_every_attribute_set(team_member)
+    _assert_fields_set(team_member)
     
-    vampytest.assert_eq(team_member.permissions, tuple(permissions))
+    vampytest.assert_is(team_member.role, role)
     vampytest.assert_is(team_member.state, state)
     vampytest.assert_is(team_member.user, user)
 
@@ -36,18 +36,18 @@ def test__TeamMember__to_data():
     
     Case: Include defaults & internals.
     """
-    permissions = [TeamMemberPermission.admin]
+    role = TeamMemberRole.admin
     state = TeamMembershipState.invited
     user = User.precreate(202211230005)
     
     team_member = TeamMember(
-        permissions = permissions,
+        role = role,
         state = state,
         user = user,
     )
     
     expected_output = {
-        'permissions': [permission.value for permission in permissions],
+        'role': role.value,
         'membership_state': state.value,
         'user': user.to_data(defaults = True, include_internals = True),
     }

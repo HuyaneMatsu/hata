@@ -1,23 +1,17 @@
 __all__ = ()
 
-from ...field_parsers import (
-    default_entity_parser_factory, preinstanced_array_parser_factory, preinstanced_parser_factory
-)
-from ...field_putters import (
-    default_entity_putter_factory, preinstanced_array_putter_factory, preinstanced_putter_factory
-)
-from ...field_validators import (
-    default_entity_validator_factory, preinstanced_array_validator_factory, preinstanced_validator_factory
-)
+from ...field_parsers import default_entity_parser_factory, preinstanced_parser_factory
+from ...field_putters import default_entity_putter_factory, preinstanced_putter_factory
+from ...field_validators import default_entity_validator_factory, preinstanced_validator_factory
 from ...user import ClientUserBase, User, ZEROUSER
 
-from .preinstanced import TeamMemberPermission, TeamMembershipState
+from .preinstanced import TeamMemberRole, TeamMembershipState
 
-# permissions
+# role
 
-parse_permissions = preinstanced_array_parser_factory('permissions', TeamMemberPermission)
-put_permissions_into = preinstanced_array_putter_factory('permissions')
-validate_permissions = preinstanced_array_validator_factory('permissions', TeamMemberPermission)
+parse_role = preinstanced_parser_factory('role', TeamMemberRole, TeamMemberRole.none)
+put_role_into = preinstanced_putter_factory('role')
+validate_role = preinstanced_validator_factory('role', TeamMemberRole)
 
 # state
 

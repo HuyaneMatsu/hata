@@ -2,7 +2,7 @@ import vampytest
 
 from ..eula import EULA
 
-from .test__EULA__constructor import _assert_is_every_attribute_set
+from .test__EULA__constructor import _assert_fields_set
 
 
 def test__EULA__from_data__0():
@@ -22,7 +22,7 @@ def test__EULA__from_data__0():
     }
     
     eula = EULA.from_data(data)
-    _assert_is_every_attribute_set(eula)
+    _assert_fields_set(eula)
     vampytest.assert_eq(eula.id, eula_id)
     
     vampytest.assert_eq(eula.content, content)

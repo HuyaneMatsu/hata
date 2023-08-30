@@ -1,6 +1,6 @@
 import vampytest
 
-from ...channel import Channel
+from ....channel import Channel
 
 from ..fields import validate_channel_id
 

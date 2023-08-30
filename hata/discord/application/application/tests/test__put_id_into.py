@@ -3,16 +3,29 @@ import vampytest
 from ..fields import put_id_into
 
 
-def test__put_id_into():
-    """
-    Tests whether ``put_id_into`` works as intended.
-    """
+def _iter_options():
     application_id = 202211270012
     
-    for input_value, defaults, expected_output in (
-        (0, False, {'id': None}),
-        (0, True, {'id': None}),
-        (application_id, False, {'id': str(application_id)}),
-    ):
-        data = put_id_into(input_value, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    yield 0, False, {'id': None}
+    yield 0, True, {'id': None}
+    yield application_id, False, {'id': str(application_id)}
+    yield application_id, True, {'id': str(application_id)}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_id_into(input_value, defaults):
+    """
+    Tests whether ``put_id_into`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `int`
+        The value to serialise.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
+    """
+    return put_id_into(input_value, {}, defaults)

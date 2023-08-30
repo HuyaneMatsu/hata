@@ -7,7 +7,7 @@ from ...team_member import TeamMember
 
 from ..team import Team
 
-from .test__Team__constructor import _assert_is_every_attribute_set
+from .test__Team__constructor import _assert_fields_set
 
 
 def test__Team__from_data__0():
@@ -31,7 +31,7 @@ def test__Team__from_data__0():
     }
     
     team = Team.from_data(data)
-    _assert_is_every_attribute_set(team)
+    _assert_fields_set(team)
     vampytest.assert_eq(team.id, team_id)
     
     vampytest.assert_eq(team.icon, icon)

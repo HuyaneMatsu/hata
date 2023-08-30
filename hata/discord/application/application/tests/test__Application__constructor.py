@@ -13,7 +13,7 @@ from ..flags import ApplicationFlag
 from ..preinstanced import ApplicationType
 
 
-def _assert_is_every_attribute_set(application):
+def _assert_fields_set(application):
     """
     Asserts whether every attributes are set of the given application.
     
@@ -65,7 +65,7 @@ def test__Application__new__0():
     Case: No parameters.
     """
     application = Application()
-    _assert_is_every_attribute_set(application)
+    _assert_fields_set(application)
 
 
 def test__Application__new__1():
@@ -141,7 +141,7 @@ def test__Application__new__1():
         application_type = application_type,
         verify_key = verify_key,
     )
-    _assert_is_every_attribute_set(application)
+    _assert_fields_set(application)
     
     vampytest.assert_eq(application.aliases, tuple(aliases))
     vampytest.assert_eq(application.bot_public, bot_public)
@@ -185,7 +185,7 @@ def test__Application__precreate__0():
     """
     application_id = 202211290006
     application = Application.precreate(application_id)
-    _assert_is_every_attribute_set(application)
+    _assert_fields_set(application)
     vampytest.assert_eq(application.id, application_id)
 
 
@@ -265,7 +265,7 @@ def test__Application__precreate__1():
         application_type = application_type,
         verify_key = verify_key,
     )
-    _assert_is_every_attribute_set(application)
+    _assert_fields_set(application)
     vampytest.assert_eq(application.id, application_id)
     
     vampytest.assert_eq(application.aliases, tuple(aliases))
@@ -322,5 +322,5 @@ def test__Application__create_empty():
     """
     application_id = 202211290014
     application = Application._create_empty(application_id)
-    _assert_is_every_attribute_set(application)
+    _assert_fields_set(application)
     vampytest.assert_eq(application.id, application_id)

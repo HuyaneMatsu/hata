@@ -2,7 +2,7 @@ import vampytest
 
 from ..bot import RoleManagerMetadataBot
 
-from .test__RoleManagerMetadataBot__constructor import _assert_is_every_attribute_set
+from .test__RoleManagerMetadataBot__constructor import _assert_fields_set
 
 
 def test__RoleManagerMetadataBot__from_data():
@@ -16,7 +16,7 @@ def test__RoleManagerMetadataBot__from_data():
     }
     
     metadata = RoleManagerMetadataBot.from_data(data)
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.bot_id, bot_id)
 

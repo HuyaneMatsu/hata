@@ -4,7 +4,7 @@ from ....user import User
 
 from ..bot import RoleManagerMetadataBot
 
-from .test__RoleManagerMetadataBot__constructor import _assert_is_every_attribute_set
+from .test__RoleManagerMetadataBot__constructor import _assert_fields_set
 
 
 def test__RoleManagerMetadataBot__copy():
@@ -16,7 +16,7 @@ def test__RoleManagerMetadataBot__copy():
         bot_id = bot_id,
     )
     copy = metadata.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(copy, metadata)
     vampytest.assert_is_not(copy, metadata)
@@ -34,7 +34,7 @@ def test__RoleManagerMetadataBot__copy_with__0():
         bot_id = bot_id,
     )
     copy = metadata.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(copy, metadata)
     vampytest.assert_is_not(copy, metadata)
@@ -54,7 +54,7 @@ def test__RoleManagerMetadataBot__copy_with__1():
     copy = metadata.copy_with(
         bot_id = new_bot_id,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_is_not(copy, metadata)
     

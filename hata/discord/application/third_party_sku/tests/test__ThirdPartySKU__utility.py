@@ -2,7 +2,7 @@ import vampytest
 
 from ..third_party_sku import ThirdPartySKU
 
-from .test__ThirdPartySKU__constructor import _assert_is_every_attribute_set
+from .test__ThirdPartySKU__constructor import _assert_fields_set
 
 
 def test__ThirdPartySKU__copy():
@@ -20,7 +20,7 @@ def test__ThirdPartySKU__copy():
     )
     
     copy = third_party_sku.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(third_party_sku, copy)
     vampytest.assert_is_not(third_party_sku, copy)
 
@@ -42,7 +42,7 @@ def test__ThirdPartySKU__copy_with__0():
     )
     
     copy = third_party_sku.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(third_party_sku, copy)
     vampytest.assert_is_not(third_party_sku, copy)
 
@@ -71,7 +71,7 @@ def test__ThirdPartySKU__copy_with__1():
         sku_id = new_id,
         sku = new_sku,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(third_party_sku, copy)
 
     vampytest.assert_eq(copy.distributor, new_distributor)

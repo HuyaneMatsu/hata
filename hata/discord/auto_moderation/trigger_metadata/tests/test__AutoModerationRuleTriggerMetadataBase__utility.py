@@ -2,7 +2,7 @@ import vampytest
 
 from ..base import AutoModerationRuleTriggerMetadataBase
 
-from .test__AutoModerationRuleTriggerMetadataBase__constructor import _assert_is_every_attribute_set
+from .test__AutoModerationRuleTriggerMetadataBase__constructor import _assert_fields_set
 
 
 def test__AutoModerationRuleTriggerMetadataBase__copy():
@@ -13,7 +13,7 @@ def test__AutoModerationRuleTriggerMetadataBase__copy():
     
     copy = metadata.copy()
     
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)
 
@@ -26,7 +26,7 @@ def test__AutoModerationRuleTriggerMetadataBase__copy_with():
     
     copy = metadata.copy_with()
     
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)
 

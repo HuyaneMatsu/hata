@@ -2,7 +2,7 @@ import vampytest
 
 from ..eula import EULA
 
-from .test__EULA__constructor import _assert_is_every_attribute_set
+from .test__EULA__constructor import _assert_fields_set
 
 
 def test__EULA__copy():
@@ -18,7 +18,7 @@ def test__EULA__copy():
     )
     
     copy = eula.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(copy, eula)
     vampytest.assert_not_is(copy, eula)
 
@@ -38,7 +38,7 @@ def test__EULA__copy_with__0():
     )
     
     copy = eula.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(copy, eula)
     vampytest.assert_not_is(copy, eula)
 
@@ -63,7 +63,7 @@ def test__EULA__copy_with__1():
         content = new_content,
         name = new_name,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(copy, eula)
 
     vampytest.assert_eq(copy.content, new_content)

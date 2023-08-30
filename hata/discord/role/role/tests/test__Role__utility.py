@@ -16,7 +16,7 @@ from ..flags import RoleFlag
 from ..role import Role
 from ..preinstanced import RoleManagerType
 
-from .test__Role__constructor import _assert_is_every_attribute_set
+from .test__Role__constructor import _assert_fields_set
 
 
 def test__Role__is_default():
@@ -220,7 +220,7 @@ def test__Role__copy():
     )
     
     copy = role.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(role, copy)
     vampytest.assert_eq(role, copy)
     
@@ -265,7 +265,7 @@ def test__Role__copy_with__0():
     )
     
     copy = role.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(role, copy)
     vampytest.assert_eq(role, copy)
     
@@ -329,7 +329,7 @@ def test__Role__copy_with__1():
         separated = new_separated,
         unicode_emoji = new_unicode_emoji,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(role, copy)
     
     vampytest.assert_eq(copy.color, new_color)

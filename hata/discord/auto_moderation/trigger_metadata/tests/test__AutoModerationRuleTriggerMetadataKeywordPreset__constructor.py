@@ -4,7 +4,7 @@ from ..keyword_preset import AutoModerationRuleTriggerMetadataKeywordPreset
 from ..preinstanced import AutoModerationKeywordPresetType
 
 
-def _assert_is_every_attribute_set(metadata):
+def _assert_fields_set(metadata):
     """
     Asserts whether all attributes are set of the given rule trigger metadata.
     
@@ -25,7 +25,7 @@ def test__AutoModerationRuleTriggerMetadataKeywordPreset__new__0():
     Case: No parameters.
     """
     metadata = AutoModerationRuleTriggerMetadataKeywordPreset()
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
 
 
 def test__AutoModerationRuleTriggerMetadataKeywordPreset__new__1():
@@ -41,7 +41,7 @@ def test__AutoModerationRuleTriggerMetadataKeywordPreset__new__1():
         keyword_presets,
         excluded_keywords,
     )
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.keyword_presets, tuple(keyword_presets))
     vampytest.assert_eq(metadata.excluded_keywords, tuple(excluded_keywords))

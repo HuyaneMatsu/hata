@@ -3,7 +3,7 @@ import vampytest
 from ..keyword_preset import AutoModerationRuleTriggerMetadataKeywordPreset
 from ..preinstanced import AutoModerationKeywordPresetType
 
-from .test__AutoModerationRuleTriggerMetadataKeywordPreset__constructor import _assert_is_every_attribute_set
+from .test__AutoModerationRuleTriggerMetadataKeywordPreset__constructor import _assert_fields_set
 
 
 def test__AutoModerationRuleTriggerMetadataKeywordPreset__to_data():
@@ -37,7 +37,7 @@ def test__AutoModerationRuleTriggerMetadataKeywordPreset__from_data():
     }
     
     metadata = AutoModerationRuleTriggerMetadataKeywordPreset.from_data(data)
-    _assert_is_every_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.keyword_presets, tuple(keyword_presets))
     vampytest.assert_eq(metadata.excluded_keywords, tuple(excluded_keywords))

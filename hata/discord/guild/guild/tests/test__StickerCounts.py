@@ -5,7 +5,7 @@ from ....sticker import Sticker, StickerFormat
 from ..sticker_counts import StickerCounts
 
 
-def _assert_is_every_attribute_set(sticker_counts):
+def _assert_fields_set(sticker_counts):
     """
     Asserts whether every attributes are set of the given sticker counts.
     
@@ -41,7 +41,7 @@ def test__StickerCounts__new__0():
     Case: No fields given.
     """
     sticker_counts = StickerCounts()
-    _assert_is_every_attribute_set(sticker_counts)
+    _assert_fields_set(sticker_counts)
     _assert_empty(sticker_counts)
 
 
@@ -60,7 +60,7 @@ def test__StickerCounts__new__1():
         lottie = lottie,
         static = static,
     )
-    _assert_is_every_attribute_set(sticker_counts)
+    _assert_fields_set(sticker_counts)
     
     vampytest.assert_eq(sticker_counts.animated, animated)
     vampytest.assert_eq(sticker_counts.lottie, lottie)
@@ -74,7 +74,7 @@ def test__StickerCounts__from_stickers__0():
     Case: Empty iterable given.
     """
     sticker_counts = StickerCounts.from_stickers([])
-    _assert_is_every_attribute_set(sticker_counts)
+    _assert_fields_set(sticker_counts)
     _assert_empty(sticker_counts)
 
 
@@ -95,7 +95,7 @@ def test__StickerCounts__from_stickers__1():
     ]
     
     sticker_counts = StickerCounts.from_stickers(stickers)
-    _assert_is_every_attribute_set(sticker_counts)
+    _assert_fields_set(sticker_counts)
     
     vampytest.assert_eq(sticker_counts.animated, len(animated_ids))
     vampytest.assert_eq(sticker_counts.lottie, len(lottie_ids))

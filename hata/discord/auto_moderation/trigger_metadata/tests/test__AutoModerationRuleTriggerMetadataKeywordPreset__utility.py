@@ -3,7 +3,7 @@ import vampytest
 from ..keyword_preset import AutoModerationRuleTriggerMetadataKeywordPreset
 from ..preinstanced import AutoModerationKeywordPresetType
 
-from .test__AutoModerationRuleTriggerMetadataKeywordPreset__constructor import _assert_is_every_attribute_set
+from .test__AutoModerationRuleTriggerMetadataKeywordPreset__constructor import _assert_fields_set
 
 
 def test__AutoModerationRuleTriggerMetadataKeywordPreset__copy():
@@ -16,7 +16,7 @@ def test__AutoModerationRuleTriggerMetadataKeywordPreset__copy():
     metadata = AutoModerationRuleTriggerMetadataKeywordPreset(keyword_presets, excluded_keywords)
     
     copy = metadata.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)
 
@@ -33,7 +33,7 @@ def test__AutoModerationRuleTriggerMetadataKeywordPreset__copy_with__0():
     metadata = AutoModerationRuleTriggerMetadataKeywordPreset(keyword_presets, excluded_keywords)
     
     copy = metadata.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)
     
@@ -57,7 +57,7 @@ def test__AutoModerationRuleTriggerMetadataKeywordPreset__copy_with__1():
         keyword_presets = new_keyword_presets,
         excluded_keywords = new_excluded_keywords,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(metadata, copy)
     
     vampytest.assert_eq(copy.keyword_presets, new_keyword_presets)

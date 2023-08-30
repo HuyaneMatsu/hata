@@ -2,7 +2,7 @@ import vampytest
 
 from ..booster import RoleManagerMetadataBooster
 
-from .test__RoleManagerMetadataBooster__constructor import _assert_is_every_attribute_set
+from .test__RoleManagerMetadataBooster__constructor import _assert_fields_set
 
 
 def test__RoleManagerMetadataBooster__copy():
@@ -11,7 +11,7 @@ def test__RoleManagerMetadataBooster__copy():
     """
     metadata = RoleManagerMetadataBooster()
     copy = metadata.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(copy, metadata)
     vampytest.assert_is_not(copy, metadata)
@@ -25,7 +25,7 @@ def test__RoleManagerMetadataBooster__copy_with__0():
     """
     metadata = RoleManagerMetadataBooster()
     copy = metadata.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(copy, metadata)
     vampytest.assert_is_not(copy, metadata)

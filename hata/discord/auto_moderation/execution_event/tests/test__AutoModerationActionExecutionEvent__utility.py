@@ -11,7 +11,7 @@ from ...rule import AutoModerationRuleTriggerType
 
 from ..execution_event import AutoModerationActionExecutionEvent
 
-from .test__AutoModerationActionExecutionEvent__constructor import _assert_is_every_attribute_set
+from .test__AutoModerationActionExecutionEvent__constructor import _assert_fields_set
 
 
 def test__AutoModerationActionExecutionEvent__channel():
@@ -115,7 +115,7 @@ def test__AutoModerationActionExecutionEvent__copy():
     )
     
     copy = event.copy()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(copy, event)
     vampytest.assert_is_not(copy, event)
 
@@ -151,7 +151,7 @@ def test__AutoModerationActionExecutionEvent__copy_with__0():
     )
     
     copy = event.copy_with()
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(copy, event)
     vampytest.assert_is_not(copy, event)
 
@@ -208,7 +208,7 @@ def test__AutoModerationActionExecutionEvent__copy_with__1():
         rule_trigger_type = new_rule_trigger_type,
         user_id = new_user_id,
     )
-    _assert_is_every_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, event)
 
     vampytest.assert_eq(copy.action, new_action)

@@ -1,17 +1,16 @@
 import vampytest
 
-from ...core import BUILTIN_EMOJIS
+from ....core import BUILTIN_EMOJIS
+
 from ...emoji import Emoji
 
-from ..shared_fields import put_emoji_into
+from ..fields import put_emoji_into
 
 
 def _iter_options():
     emoji_0 = BUILTIN_EMOJIS['heart']
-    emoji_1 = Emoji.precreate(202210220000, name = 'met')
+    emoji_1 = Emoji.precreate(202308310001, name = 'met')
     
-    yield None, False, {}
-    yield None, True, {'emoji': None}
     yield emoji_0, False, {'emoji': {'name': emoji_0.unicode}}
     yield emoji_1, False, {'emoji': {'name': emoji_1.name, 'id': str(emoji_1.id)}}
     yield emoji_0, True, {'emoji': {'name': emoji_0.unicode}}

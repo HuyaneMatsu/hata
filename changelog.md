@@ -1,4 +1,4 @@
-## 1.3.37 *\[2023-08-??\]*
+## 1.3.37 *\[2023-09-03\]*
 
 ### Improvements
 
@@ -9,6 +9,7 @@
 - Add `AuditLogRole.to_data`.
 - Add `AuditLogRole.copy`.
 - Add `AuditLogRole.copy_with`.
+- Add `Reaction`. (Will be used only in the next update.)
 
 #### Bug fixes
 

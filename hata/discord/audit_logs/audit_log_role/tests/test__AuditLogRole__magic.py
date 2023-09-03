@@ -6,8 +6,6 @@ from ..audit_log_role import AuditLogRole
 def test__AuditLogRole__repr():
     """
     Tests whether ``AuditLogRole.__repr__`` works as intended.
-    
-    Case: include defaults and internals.
     """
     role_id = 202308300003
     name = 'Red'
@@ -24,8 +22,6 @@ def test__AuditLogRole__repr():
 def test__AuditLogRole__hash():
     """
     Tests whether ``AuditLogRole.__hash__`` works as intended.
-    
-    Case: include defaults and internals.
     """
     role_id = 202308300004
     name = 'Red'
@@ -41,8 +37,6 @@ def test__AuditLogRole__hash():
 def test__AuditLogRole__eq():
     """
     Tests whether ``AuditLogRole.__eq__`` works as intended.
-    
-    Case: include defaults and internals.
     """
     role_id = 202308300005
     name = 'Red'

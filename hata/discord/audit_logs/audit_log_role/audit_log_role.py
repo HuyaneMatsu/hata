@@ -64,7 +64,7 @@ class AuditLogRole(DiscordEntity):
         Parameters
         ----------
         data : `dict` of (`str`, `object`) items
-            partial role data.
+            Audit log role data.
         """
         role_id = parse_id(data)
         name = parse_name(data)

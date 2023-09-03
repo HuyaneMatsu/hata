@@ -1,16 +1,16 @@
 import vampytest
 
 from ....core import BUILTIN_EMOJIS
-from ....emoji import Emoji
+
+from ...emoji import Emoji
 
 from ..fields import validate_emoji
 
 
 def _iter_options():
     emoji_0 = BUILTIN_EMOJIS['heart']
-    emoji_1 = Emoji.precreate(202212230007, name = 'met')
+    emoji_1 = Emoji.precreate(202308310002, name = 'met')
     
-    yield None, None
     yield emoji_0, emoji_0
     yield emoji_1, emoji_1
 
@@ -35,6 +35,7 @@ def test__validate_emoji__passing(input_value):
 
 
 @vampytest.raising(TypeError)
+@vampytest.call_with(None)
 @vampytest.call_with('x')
 def test__validate_emoji__type_error(input_value):
     """

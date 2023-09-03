@@ -195,14 +195,14 @@ def put_owner_into(owner, data, defaults):
     ----------
     owner : ``ClientUserBase``, ``Team``
         The application's owner.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if owner is ZEROUSER:
         team_data = None
@@ -325,14 +325,14 @@ def put_type_into(application_type, data, defaults):
     ----------
     application_type : ``ApplicationType``
         The application's type.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if application_type is ApplicationType.none:
         value = None

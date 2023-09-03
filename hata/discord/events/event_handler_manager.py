@@ -462,7 +462,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------------------+-----------------------------------------------------------+
         | archived                              | `bool`                                                    |
         +---------------------------------------+-----------------------------------------------------------+
-        | archived_at                           | `None`, `datetime`                                        |
+        | archived_at                           | `None`, `DateTime`                                        |
         +---------------------------------------+-----------------------------------------------------------+
         | auto_archive_after                    | `int`                                                     |
         +---------------------------------------+-----------------------------------------------------------+
@@ -597,7 +597,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +===================+===================================+
         | assets            | `None`, ``ActivityAssets``        |
         +-------------------+-----------------------------------+
-        | created_at        | `datetime`                        |
+        | created_at        | `DateTime`                        |
         +-------------------+-----------------------------------+
         | details           | `None`, `str`                     |
         +-------------------+-----------------------------------+
@@ -797,7 +797,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +===================+===============================+
         | avatar            | ``Icon``                      |
         +-------------------+-------------------------------+
-        | boosts_since      | `None`, `datetime`            |
+        | boosts_since      | `None`, `DateTime`            |
         +-------------------+-------------------------------+
         | flags             | `None`, ``GuildProfileFlags`` |
         +-------------------+-------------------------------+
@@ -807,7 +807,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------+-------------------------------+
         | role_ids          | `None`, `tuple` of `int`      |
         +-------------------+-------------------------------+
-        | timed_out_until   | `None`, `datetime`            |
+        | timed_out_until   | `None`, `DateTime`            |
         +-------------------+-------------------------------+
     
     integration_create(client: ``Client``, guild: ``Guild``, integration: ``Integration``):
@@ -863,7 +863,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------------------+-----------------------------------------------------------------------+
         | content                           | `None`, `str`                                                         |
         +-----------------------------------+-----------------------------------------------------------------------+
-        | edited_at                         | `None`, `datetime`                                                    |
+        | edited_at                         | `None`, `DateTime`                                                    |
         +-----------------------------------+-----------------------------------------------------------------------+
         | embeds                            | `None`, `tuple` of ``Embed``                                          |
         +-----------------------------------+-----------------------------------------------------------------------+
@@ -973,7 +973,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------+-----------------------------------------------+
         | description               | `None`, `str`                                 |
         +---------------------------+-----------------------------------------------+
-        | end                       | `None`, `datetime`                            |
+        | end                       | `None`, `DateTime`                            |
         +---------------------------+-----------------------------------------------+
         | entity_id                 | `int`                                         |
         +---------------------------+-----------------------------------------------+
@@ -989,7 +989,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------+-----------------------------------------------+
         | sku_ids                   | `None`, `tuple` of `int`                      |
         +---------------------------+-----------------------------------------------+
-        | start                     | `None`, `datetime`                            |
+        | start                     | `None`, `DateTime`                            |
         +---------------------------+-----------------------------------------------+
         | status                    | ``ScheduledEventStatus``                      |
         +---------------------------+-----------------------------------------------+
@@ -1109,7 +1109,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | flags             | ``ThreadProfileFlag``         |
         +-------------------+-------------------------------+
     
-    typing(client: ``Client``, channel: ``Channel``, user: ``ClientUserBase``, timestamp: `datetime`):
+    typing(client: ``Client``, channel: ``Channel``, user: ``ClientUserBase``, timestamp: `DateTime`):
         Called when a user is typing at a channel. The `timestamp` parameter represents when the typing started.
         
         However a typing requests stands for 8 seconds, but the official Discord client usually just spams it.
@@ -1191,7 +1191,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------+-----------------------+
         | mute                  | `bool`                |
         +-----------------------+-----------------------+
-        | requested_to_speak_at | `None`, `datetime`    |
+        | requested_to_speak_at | `None`, `DateTime`    |
         +-----------------------+-----------------------+
         | self_deaf             | `bool`                |
         +-----------------------+-----------------------+
@@ -1258,7 +1258,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------+-----------------------+
         | mute                  | `bool`                |
         +-----------------------+-----------------------+
-        | requested_to_speak_at | `None`, `datetime`    |
+        | requested_to_speak_at | `None`, `DateTime`    |
         +-----------------------+-----------------------+
         | self_deaf             | `bool`                |
         +-----------------------+-----------------------+

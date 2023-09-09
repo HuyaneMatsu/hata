@@ -14,7 +14,7 @@ from ..core import (
     APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, AUTO_MODERATION_RULES, CHANNELS, CLIENTS, GUILDS, KOKORO,
     MESSAGES, ROLES, SCHEDULED_EVENTS, STAGES, USERS
 )
-from ..emoji import ReactionAddEvent, ReactionDeleteEvent
+from ..emoji import Reaction, ReactionAddEvent, ReactionDeleteEvent
 from ..emoji.reaction_events.fields import (
     parse_emoji as parse_reaction_event_emoji, parse_message as parse_reaction_event_message,
     parse_user as parse_reaction_event_user
@@ -530,13 +530,9 @@ del MESSAGE_UPDATE__CAL_SC, \
 
 
 def MESSAGE_REACTION_ADD__CAL_SC(client, data):
-    message = parse_reaction_event_message(data)
-    emoji = parse_reaction_event_emoji(data)
-    user = parse_reaction_event_user(data)
+    event = ReactionAddEvent.from_data(data)
+    event.message._add_reaction(event.reaction, event.user)
     
-    message._add_reaction(emoji, user)
-    
-    event = ReactionAddEvent.from_fields(message, emoji, user)
     Task(KOKORO, client.events.reaction_add(client, event))
 
 
@@ -554,13 +550,9 @@ def MESSAGE_REACTION_ADD__CAL_MC(client, data):
             clients.close()
             return
     
-    message = parse_reaction_event_message(data)
-    emoji = parse_reaction_event_emoji(data)
-    user = parse_reaction_event_user(data)
+    event = ReactionAddEvent.from_data(data)
+    event.message._add_reaction(event.reaction, event.user)
     
-    message._add_reaction(emoji, user)
-    
-    event = ReactionAddEvent.from_fields(message, emoji, user)
     if clients is None:
         event_handler = client.events.reaction_add
         if (event_handler is not DEFAULT_EVENT_HANDLER):
@@ -577,9 +569,7 @@ def MESSAGE_REACTION_ADD__OPT_SC(client, data):
     if message is None:
         return
     
-    emoji = parse_reaction_event_emoji(data)
-    user = parse_reaction_event_user(data)
-    message._add_reaction(emoji, user)
+    message._add_reaction(Reaction.from_data(data), parse_reaction_event_user(data))
 
 
 def MESSAGE_REACTION_ADD__OPT_MC(client, data):
@@ -595,9 +585,7 @@ def MESSAGE_REACTION_ADD__OPT_MC(client, data):
     ) is not client:
         return
     
-    emoji = parse_reaction_event_emoji(data)
-    user = parse_reaction_event_user(data)
-    message._add_reaction(emoji, user)
+    message._add_reaction(Reaction.from_data(data), parse_reaction_event_user(data))
 
 
 add_parser(
@@ -697,6 +685,7 @@ def MESSAGE_REACTION_REMOVE_ALL__OPT_MC(client, data):
     if (old_reactions is not None):
         old_reactions.clear()
 
+
 add_parser(
     'MESSAGE_REACTION_REMOVE_ALL',
     MESSAGE_REACTION_REMOVE_ALL__CAL_SC,
@@ -710,13 +699,9 @@ del MESSAGE_REACTION_REMOVE_ALL__CAL_SC, \
 
 
 def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
-    message = parse_reaction_event_message(data)
-    user = parse_reaction_event_user(data)
-    emoji = parse_reaction_event_emoji(data)
+    event = ReactionDeleteEvent.from_data(data)
+    event.message._remove_reaction(event.emoji, event.user)
     
-    message._remove_reaction(emoji, user)
-    
-    event = ReactionDeleteEvent.from_fields(message, emoji, user)
     Task(KOKORO, client.events.reaction_delete(client, event))
 
 
@@ -735,13 +720,8 @@ def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
             clients.close()
             return
     
-    message = parse_reaction_event_message(data)
-    emoji = parse_reaction_event_emoji(data)
-    user = parse_reaction_event_user(data)
-    
-    message._remove_reaction(emoji, user)
-    
-    event = ReactionDeleteEvent.from_fields(message, emoji, user)
+    event = ReactionDeleteEvent.from_data(data)
+    event.message._remove_reaction(event.emoji, event.user)
     
     if clients is None:
         event_handler = client.events.reaction_delete
@@ -759,9 +739,7 @@ def MESSAGE_REACTION_REMOVE__OPT_SC(client, data):
     if message is None:
         return
     
-    emoji = parse_reaction_event_emoji(data)
-    user = parse_reaction_event_user(data)
-    message._remove_reaction(emoji, user)
+    message._remove_reaction(Reaction.from_data(data), parse_reaction_event_user(data))
 
 
 def MESSAGE_REACTION_REMOVE__OPT_MC(client, data):
@@ -777,9 +755,7 @@ def MESSAGE_REACTION_REMOVE__OPT_MC(client, data):
     ) is not client:
         return
     
-    emoji = parse_reaction_event_emoji(data)
-    user = parse_reaction_event_user(data)
-    message._remove_reaction(emoji, user)
+    message._remove_reaction(Reaction.from_data(data), parse_reaction_event_user(data))
 
 
 add_parser(

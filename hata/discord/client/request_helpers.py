@@ -21,7 +21,7 @@ from ..core import (
     SOUNDBOARD_SOUNDS, STICKERS, STICKER_PACKS, USERS
 )
 from ..embed import Embed
-from ..emoji import Emoji, parse_reaction
+from ..emoji import Emoji, Reaction, ReactionType
 from ..guild import Guild
 from ..message import Attachment, Message
 from ..oauth2 import Achievement, Oauth2Access, Oauth2User
@@ -1612,9 +1612,9 @@ def get_webhook_and_id_and_token(webhook):
     return webhook, webhook_id, webhook_token
 
 
-def get_reaction(emoji):
+def get_reaction_emoji_value_and_type(reaction):
     """
-    Gets the reaction form of the given emoji.
+    Gets the reaction representation form of the given reaction.
     
     Parameters
     ----------
@@ -1623,61 +1623,29 @@ def get_reaction(emoji):
     
     Returns
     -------
-    as_reaction : `str`
+    emoji_value : `str`
         The emoji's reaction form.
+    reaction_type : ``ReactionType``
+        The reaction's type.
     
     Raises
     ------
     TypeError
-        If `emoji`'s type is incorrect.
+        If `reaction`'s type is incorrect.
     """
-    if isinstance(emoji, Emoji):
-        as_reaction = emoji.as_reaction
-    elif isinstance(emoji, str):
-        as_reaction = emoji
-    else:
-        raise TypeError(
-            f'`emoji` can be `{Emoji.__class__}`, `str`, got {emoji.__class__.__name__}; {emoji!r}.'
-        )
+    if isinstance(reaction, Emoji):
+        return reaction.as_reaction, ReactionType.standard
     
-    return as_reaction
-
-
-def get_emoji_from_reaction(emoji):
-    """
-    Gets emoji from the given emoji or reaction string.
+    if isinstance(reaction, Reaction):
+        return reaction.emoji.as_reaction, reaction.type
     
-    Parameters
-    ----------
-    emoji : ``Emoji``, `str`
-        The emoji or reaction to get the emoji from.
+    if isinstance(reaction, str):
+        return reaction, ReactionType.standard
     
-    Returns
-    -------
-    emoji : ``Emoji``
-        The emoji itself.
-    
-    Raises
-    ------
-    TypeError
-        If `emoji`'s type is incorrect.
-    ValueError
-        The given `emoji` is not a valid reaction.
-    """
-    if isinstance(emoji, Emoji):
-        pass
-    elif isinstance(emoji, str):
-        emoji = parse_reaction(emoji)
-        if emoji is None:
-            raise ValueError(
-                f'The given `emoji` is not a valid reaction, got {emoji!r}.'
-            )
-    else:
-        raise TypeError(
-            f'`emoji` can be `{Emoji.__class__}`, `str`, got {emoji.__class__.__name__}; {emoji!r}.'
-        )
-    
-    return emoji
+    raise TypeError(
+        f'`reaction` can be `{Reaction.__name__}`, `{Emoji.__name__}`, `str`, '
+        f'got {reaction.__class__.__name__}; {reaction!r}.'
+    )
 
 
 def get_emoji_guild_id_and_id(emoji):

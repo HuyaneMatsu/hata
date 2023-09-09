@@ -36,6 +36,8 @@ class ConnectionType(PreinstancedBase):
     +-----------------------+-----------------------+-------------------+
     | crunchyroll           | Crunchyroll           | crunchyroll       |
     +-----------------------+-----------------------+-------------------+
+    | domain                | Domain                | domain            |
+    +-----------------------+-----------------------+-------------------+
     | ebay                  | eBay                  | ebay              |
     +-----------------------+-----------------------+-------------------+
     | epic_games            | Epic Games            | epicgames         |
@@ -70,7 +72,7 @@ class ConnectionType(PreinstancedBase):
     +-----------------------+-----------------------+-------------------+
     | twitch                | Twitch                | twitch            |
     +-----------------------+-----------------------+-------------------+
-    | twitter               | Twitter               | twitter           |
+    | twitter               | X (Twitter)           | twitter           |
     +-----------------------+-----------------------+-------------------+
     | xbox                  | Xbox                  | xbox              |
     +-----------------------+-----------------------+-------------------+
@@ -85,6 +87,7 @@ class ConnectionType(PreinstancedBase):
     
     battlenet = P('battlenet', 'Battle.net')
     crunchyroll = P('crunchyroll', 'Crunchyroll')
+    domain = P('domain', 'Domain')
     ebay = P('ebay', 'eBay')
     epic_games = P('epicgames', 'Epic Games')
     facebook = P('facebook', 'Facebook')
@@ -102,7 +105,7 @@ class ConnectionType(PreinstancedBase):
     steam = P('steam', 'Steam')
     tiktok = P('tiktok', 'TikTok')
     twitch = P('twitch', 'Twitch')
-    twitter = P('twitter', 'Twitter')
+    twitter = P('twitter', 'X (Twitter)')
     xbox = P('xbox', 'Xbox')
     youtube = P('youtube', 'YouTube')
     

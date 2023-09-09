@@ -6,9 +6,11 @@ from ...bases import EventBase
 from ...core import KOKORO
 from ...permission.permission import PERMISSION_MASK_MANAGE_MESSAGES
 
+from ..reaction import Reaction, ReactionType
+
 from .fields import (
-    parse_emoji, parse_message, parse_user, put_emoji_into, put_message_into, put_user_into, validate_emoji,
-    validate_message, validate_user
+    parse_emoji, parse_message, parse_type, parse_user, put_emoji_into, put_message_into, put_type_into, put_user_into,
+    validate_emoji, validate_message, validate_type, validate_user
 )
 from .helpers import _delete_reaction_with_task
 
@@ -23,6 +25,8 @@ class ReactionAddEvent(EventBase):
         The emoji used as reaction.
     message : ``Message``
         The message on what the reaction is added.
+    type : ``ReactionType``
+        The reaction's type.
     user : ``ClientUserBase``
         The user who added the reaction.
     
@@ -41,9 +45,9 @@ class ReactionAddEvent(EventBase):
     DELETE_REACTION_PERM = 1
     DELETE_REACTION_NOT_ADDED = 2
     
-    __slots__ = ('emoji', 'message', 'user')
+    __slots__ = ('emoji', 'message', 'type', 'user')
     
-    def __new__(cls, message, emoji, user):
+    def __new__(cls, message, emoji, user, *, reaction_type = ...):
         """
         Creates a new reaction add (or delete) instance.
         
@@ -55,6 +59,8 @@ class ReactionAddEvent(EventBase):
             The emoji used.
         user : ``ClientUserBase``
             The user who reacted.
+        reaction_type : ``ReactionType``, `int`, Optional (Keyword only)
+            The reaction's type.
         
         Raises
         ------
@@ -63,13 +69,26 @@ class ReactionAddEvent(EventBase):
         ValueError
             - If a parameter's value is incorrect.
         """
+        # emoji
         emoji = validate_emoji(emoji)
+        
+        # message
         message = validate_message(message)
+        
+        # reaction_type
+        if reaction_type is ...:
+            reaction_type = ReactionType.standard
+        else:
+            reaction_type = validate_type(reaction_type)
+        
+        # user
         user = validate_user(user)
         
+        # Construct
         self = object.__new__(cls)
         self.message = message
         self.emoji = emoji
+        self.type = reaction_type
         self.user = user
         return self
     
@@ -91,12 +110,13 @@ class ReactionAddEvent(EventBase):
         self = object.__new__(cls)
         self.emoji = parse_emoji(data)
         self.message = message = parse_message(data)
+        self.type = parse_type(data)
         self.user = parse_user(data, message.guild_id)
         return self
     
     
     @classmethod
-    def from_fields(cls, message, emoji, user):
+    def from_fields(cls, message, emoji, user, reaction_type):
         """
         Creates a new reaction add (or delete) instance.
         
@@ -108,14 +128,17 @@ class ReactionAddEvent(EventBase):
             The emoji used.
         user : ``ClientUserBase``
             The user who reacted.
+        reaction_type : ``ReactionType``
+            The reaction's type.
         
         Returns
         -------
         new : `instance<cls>`
         """
         self = object.__new__(cls)
-        self.message = message
         self.emoji = emoji
+        self.message = message
+        self.type = reaction_type
         self.user = user
         return self
     
@@ -137,6 +160,7 @@ class ReactionAddEvent(EventBase):
         put_emoji_into(self.emoji, data, defaults)
         message = self.message
         put_message_into(message, data, defaults)
+        put_type_into(self.type, data, defaults)
         put_user_into(self.user, data, defaults, guild_id = message.guild_id)
         return data
     
@@ -150,6 +174,13 @@ class ReactionAddEvent(EventBase):
         
         repr_parts.append(', emoji = ')
         repr_parts.append(repr(self.emoji))
+        
+        reaction_type = self.type
+        if reaction_type is not ReactionType.standard:
+            repr_parts.append(', type = ')
+            repr_parts.append(reaction_type.name)
+            repr_parts.append(' ~ ')
+            repr_parts.append(repr(reaction_type.value))
         
         repr_parts.append(', user = ')
         repr_parts.append(repr(self.user))
@@ -166,7 +197,7 @@ class ReactionAddEvent(EventBase):
     @copy_docs(EventBase.__iter__)
     def __iter__(self):
         yield self.message
-        yield self.emoji
+        yield self.reaction
         yield self.user
     
     
@@ -175,11 +206,13 @@ class ReactionAddEvent(EventBase):
         if type(self) is not type(other):
             return NotImplemented
         
-        # message type can be different, so check id instead of identity
-        if self.message.id != other.message.id:
+        if self.emoji is not other.emoji:
             return False
         
-        if self.emoji is not other.emoji:
+        if self.message is not other.message:
+            return False
+        
+        if self.type is not other.type:
             return False
         
         if self.user is not other.user:
@@ -198,6 +231,9 @@ class ReactionAddEvent(EventBase):
         # message
         hash_value ^= hash(self.message)
         
+        # typer
+        hash_value ^= hash(self.type)
+        
         # user
         hash_value ^= self.user.id
         
@@ -215,20 +251,23 @@ class ReactionAddEvent(EventBase):
         new = object.__new__(type(self))
         new.emoji = self.emoji
         new.message = self.message
+        new.type = self.type
         new.user = self.user
         return new
     
     
-    def copy_with(self, *, emoji = ..., message = ..., user = ...):
+    def copy_with(self, *, emoji = ..., reaction_type = ..., message = ..., user = ...):
         """
         Copies the reaction add (or remove) event with the given fields.
         
         Parameters
         ----------
-        message : ``Message``, Optional (Keyword only)
-            The respective message.
         emoji : ``Emoji``, Optional (Keyword only)
             The emoji used.
+        reaction_type : ``ReactionType``, Optional (Keyword only)
+            The reaction's type.
+        message : ``Message``, Optional (Keyword only)
+            The respective message.
         user : ``ClientUserBase``, Optional (Keyword only)
             The user who reacted.
         
@@ -254,6 +293,12 @@ class ReactionAddEvent(EventBase):
         else:
             message = validate_message(message)
         
+        # type
+        if reaction_type is ...:
+            reaction_type = self.type
+        else:
+            reaction_type = validate_type(reaction_type)
+        
         # user
         if user is ...:
             user = self.user
@@ -263,8 +308,21 @@ class ReactionAddEvent(EventBase):
         new = object.__new__(type(self))
         new.emoji = emoji
         new.message = message
+        new.type = reaction_type
         new.user = user
         return new
+    
+    
+    @property
+    def reaction(self):
+        """
+        Returns the reaction of the reaction add event.
+        
+        Returns
+        -------
+        reaction : ``Reaction``
+        """
+        return Reaction.from_fields(self.emoji, self.type)
     
     
     def delete_reaction_with(self, client):

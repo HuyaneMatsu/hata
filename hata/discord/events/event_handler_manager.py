@@ -898,7 +898,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     reaction_delete(client: ``Client``, event: ``ReactionDeleteEvent``):
         Called when a user removes it's reaction from a message.
     
-    reaction_delete_emoji(client: ``Client``, message: ``Message``, users: {`None`, ``ReactionMappingLine``}):
+    reaction_delete_emoji(client: ``Client``, message: ``Message``, emoji : ``Emoji``,
+            users: {`None`, ``ReactionMappingLine``}):
         Called when all the reactions of a specified emoji are removed from a message. The passed `users` parameter
         are the old reactor users of the given emoji.
         

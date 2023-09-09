@@ -1,3 +1,23 @@
+## 1.3.38 *\[2023-09-09\]*
+
+### Improvements
+
+- Add `ReactionAddEvent.type`.
+- Add `ReactionAddEvent.reaction`.
+- Add `ReactionMapping.reaction_count`.
+- Add `ReactionMapping.copy`.
+- `ReactionMapping` is now `Reaction` - `ReactionMappingLine` relation.
+- Rebrand twitter :rocket:.
+- Add `ConnectionType.domain`.
+- Add `set_voice_channel_status` permission.
+- `Client.reaction_add` no longer accepts the new `reaction_type` parameter, instead the `emoji`
+    (or `reaction` as it is called now) accepts `Reaction` instance.
+- `Client.reaction_delete` now accepts `Reaction` as its `emoji` (or `reaction` as it is called now) parameter.
+- `Client.reaction_delete_own` now accepts `Reaction` as its `emoji` (or `reaction` as it is called now) parameter.
+- `Client.reaction_user_get_chunk` now accepts `Reaction` as its `emoji` (or `reaction` as it is called now) parameter.
+- `Client.reaction_user_get_all` now accepts `Reaction` as its `emoji` (or `reaction` as it is called now) parameter.
+- `Client.reaction_get_all` now requests non-standard reactions as well.
+
 ## 1.3.37 *\[2023-09-03\]*
 
 ### Improvements

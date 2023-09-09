@@ -1548,14 +1548,14 @@ class Message(DiscordEntity, immortal = True):
         self.embeds = embeds
     
     
-    def _add_reaction(self, emoji, user):
+    def _add_reaction(self, reaction, user):
         """
         Adds a reaction to the message.
         
         Parameters
         ----------
-        emoji : ``Emoji``
-            The reacted emoji.
+        reaction : ``Reaction``
+            The reaction.
         user : ``ClientUserBase``
             The reactor user.
         """
@@ -1564,23 +1564,23 @@ class Message(DiscordEntity, immortal = True):
             reactions = ReactionMapping()
             self.reactions = reactions
         
-        return reactions.add(emoji, user)
+        return reactions.add(reaction, user)
     
     
-    def _remove_reaction(self, emoji, user):
+    def _remove_reaction(self, reaction, user):
         """
         Removes a reaction to the message.
         
         Parameters
         ----------
-        emoji : ``Emoji``
-            The removed emoji.
+        reaction : ``Reaction``
+            The reaction.
         user : ``ClientUserBase``
             The user who removed their reaction.
         """
         reactions = self.reactions
         if (reactions is not None):
-            return reactions.remove(emoji, user)
+            return reactions.remove(reaction, user)
     
     
     def _remove_reaction_emoji(self, emoji):
@@ -1594,7 +1594,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        line : `None`, ``ReactionMappingLine``
+        line : `None`, `dict` of (``Reaction``, ``ReactionMappingLine``) items
         """
         reactions = self.reactions
         if (reactions is not None):
@@ -2345,14 +2345,14 @@ class Message(DiscordEntity, immortal = True):
         return True
     
     
-    def did_react(self, emoji, user):
+    def did_react(self, reaction, user):
         """
         Returns whether the given user reacted with the given emoji on the message.
         
         Parameters
         ----------
-        emoji : ``Emoji``
-            The reacted emoji.
+        reaction : ``Reaction``, ``Emoji``
+            The reaction.
         user : ``ClientUserBase``
             The reactor.
         
@@ -2365,7 +2365,7 @@ class Message(DiscordEntity, immortal = True):
             return False
         
         try:
-            reactors = reactions[emoji]
+            reactors = reactions[reaction]
         except KeyError:
             return False
         

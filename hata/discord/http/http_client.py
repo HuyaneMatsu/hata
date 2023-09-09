@@ -818,11 +818,11 @@ class DiscordHTTPClient(HTTPClient):
             params = query_parameters,
         )
     
-    async def reaction_delete(self, channel_id, message_id, reaction, user_id):
+    async def reaction_delete(self, channel_id, message_id, reaction, reaction_type, user_id):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.reaction_delete, channel_id),
             METHOD_DELETE,
-            f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/reactions/{reaction}/{user_id}',
+            f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/reactions/{reaction}/{reaction_type}/{user_id}',
         )
     
     async def reaction_delete_emoji(self, channel_id, message_id, reaction):
@@ -832,11 +832,11 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/reactions/{reaction}',
         )
     
-    async def reaction_delete_own(self, channel_id, message_id, reaction):
+    async def reaction_delete_own(self, channel_id, message_id, reaction, reaction_type):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.reaction_delete_own, channel_id),
             METHOD_DELETE,
-            f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/reactions/{reaction}/@me',
+            f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/reactions/{reaction}/{reaction_type}/@me',
         )
     
     async def reaction_clear(self, channel_id, message_id):
@@ -846,12 +846,12 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/reactions',
         )
     
-    async def reaction_user_get_chunk(self, channel_id, message_id, reaction, data):
+    async def reaction_user_get_chunk(self, channel_id, message_id, reaction, query_parameters):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.reaction_user_get_chunk, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/reactions/{reaction}',
-            params = data,
+            params = query_parameters,
         )
     
     # guild

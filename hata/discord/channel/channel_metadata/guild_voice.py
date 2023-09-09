@@ -4,7 +4,7 @@ from scarletio import copy_docs
 
 from ...permission import Permission
 from ...permission.permission import (
-    PERMISSION_MASK_CONNECT, PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_STAGE_DENY,
+    PERMISSION_DENIED_FOR_GUILD_VOICE, PERMISSION_MASK_CONNECT, PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE,
     PERMISSION_VOICE_DENY_CONNECTION
 )
 
@@ -12,9 +12,8 @@ from .fields import (
     parse_nsfw, parse_video_quality_mode, put_nsfw_into, put_video_quality_mode_into, validate_nsfw,
     validate_video_quality_mode
 )
-from .preinstanced import VideoQualityMode
-
 from .guild_voice_base import ChannelMetadataGuildVoiceBase
+from .preinstanced import VideoQualityMode
 
 
 class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
@@ -333,8 +332,8 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
-        # voice channels don't have text permissions
-        result &= PERMISSION_STAGE_DENY
+        # voice channels don't have stage channel permissions
+        result &= PERMISSION_DENIED_FOR_GUILD_VOICE
         
         if not result & PERMISSION_MASK_CONNECT:
             result &= PERMISSION_VOICE_DENY_CONNECTION
@@ -348,8 +347,8 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
-        # voice channels don't have text permissions
-        result &= PERMISSION_STAGE_DENY
+        # voice channels don't have stage channel permissions
+        result &= PERMISSION_DENIED_FOR_GUILD_VOICE
         
         if not result & PERMISSION_MASK_CONNECT:
             result &= PERMISSION_VOICE_DENY_CONNECTION

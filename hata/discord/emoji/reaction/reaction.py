@@ -30,7 +30,7 @@ class Reaction(RichAttributeErrorBaseType):
         emoji : ``Emoji``
             The reaction emoji,
         reaction_type : ``ReactionType``, `int`, Optional (Keyword only)
-            The reaction's type
+            The reaction's type.
         
         Raises
         ------
@@ -126,8 +126,11 @@ class Reaction(RichAttributeErrorBaseType):
         repr_parts.append(' emoji = ')
         repr_parts.append(repr(self.emoji))
         
-        repr_parts.append(', reaction_type = ')
-        repr_parts.append(repr(self.type))
+        reaction_type = self.type
+        repr_parts.append(', type = ')
+        repr_parts.append(reaction_type.name)
+        repr_parts.append(' ~ ')
+        repr_parts.append(repr(reaction_type.value))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -194,7 +197,7 @@ class Reaction(RichAttributeErrorBaseType):
         emoji : ``Emoji``, Optional (Keyword only)
             The reaction emoji,
         reaction_type : ``ReactionType``, Optional (Keyword only)
-            The reaction's type
+            The reaction's type.
         
         Returns
         -------
@@ -213,7 +216,7 @@ class Reaction(RichAttributeErrorBaseType):
         else:
             emoji = validate_emoji(emoji)
         
-        # reaction_type
+        # type
         if reaction_type is ...:
             reaction_type = self.type
         else:

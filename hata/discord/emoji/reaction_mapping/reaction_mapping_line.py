@@ -114,7 +114,7 @@ def _validate_reaction_mapping_line_initialise_with_iterable(initialize_with):
         
         raise TypeError(
             f'`initialize_with` can contain `{ClientUserBase.__name__}` elements, got '
-            f'{user.__class__.__name__}; {user!r}; initialize_with={initialize_with!r}.'
+            f'{user.__class__.__name__}; {user!r}; initialize_with = {initialize_with!r}.'
         )
     
     return users, unknown
@@ -358,7 +358,7 @@ class ReactionMappingLine(set):
     @classmethod
     def _create_full(cls, users):
         """
-        Creates a new ``ReactionMappingLine`` with the given users with `.unknown` set to `0`.
+        Creates a new reaction mapping line with the given users with `.unknown` set to `0`.
         
         Parameters
         ----------
@@ -367,7 +367,7 @@ class ReactionMappingLine(set):
 
         Returns
         -------
-        self : ``ReactionMappingLine``
+        self : `instance<type<self>>`
         """
         self = set.__new__(cls)
         self.unknown = 0
@@ -400,7 +400,7 @@ class ReactionMappingLine(set):
         
         Returns
         -------
-        new : ``ReactionMappingLine``
+        new : `instance<type<self>>`
         """
         new = set.__new__(type(self))
         set.__init__(new, self)

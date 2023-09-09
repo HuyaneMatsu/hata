@@ -4,12 +4,11 @@ from scarletio import copy_docs
 
 from ...permission import Permission
 from ...permission.permission import (
-    PERMISSION_MASK_CONNECT, PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_TEXT_DENY,
+    PERMISSION_DENIED_FOR_GUILD_STAGE, PERMISSION_MASK_CONNECT, PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE,
     PERMISSION_VOICE_DENY_CONNECTION
 )
 
 from .fields import parse_topic, put_topic_into, validate_topic
-
 from .guild_voice_base import ChannelMetadataGuildVoiceBase
 
 
@@ -287,6 +286,9 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
+        # stage channels don't have voice channel permissions
+        result &= PERMISSION_DENIED_FOR_GUILD_STAGE
+        
         if not result & PERMISSION_MASK_CONNECT:
             result &= PERMISSION_VOICE_DENY_CONNECTION
         
@@ -298,6 +300,9 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         result = self._get_base_permissions_for_roles(channel_entity, roles)
         if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
+        
+        # stage channels don't have voice channel permissions
+        result &= PERMISSION_DENIED_FOR_GUILD_STAGE
         
         if not result & PERMISSION_MASK_CONNECT:
             result &= PERMISSION_VOICE_DENY_CONNECTION

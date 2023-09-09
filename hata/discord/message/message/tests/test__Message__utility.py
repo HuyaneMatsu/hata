@@ -6,7 +6,7 @@ from ....channel import Channel, ChannelType
 from ....component import Component, ComponentType
 from ....core import BUILTIN_EMOJIS
 from ....embed import EmbedAuthor, Embed, EmbedField, EmbedFooter, EmbedProvider, EmbedType
-from ....emoji import ReactionMapping
+from ....emoji import Reaction, ReactionMapping, ReactionType
 from ....guild import Guild
 from ....role import Role
 from ....sticker import Sticker
@@ -77,7 +77,7 @@ def test__Message__iter_contents__1():
     vampytest.assert_eq({*message.iter_contents()}, set())
 
 
-def test__Message__contents__0():
+def test__Message__contents__all_contents():
     """
     Tests whether ``Message.contents`` works as intended.
     
@@ -119,7 +119,7 @@ def test__Message__contents__0():
     vampytest.assert_eq({*output}, contents)
 
 
-def test__Message__contents__1():
+def test__Message__contents__no_contents():
     """
     Tests whether ``Message.contents`` works as intended.
     
@@ -136,29 +136,28 @@ def test__Message__add_reaction():
     """
     Tests whether ``Message._add_reaction`` works as intended.
     """
-    emoji_0 = BUILTIN_EMOJIS['x']
-    
+    reaction_0 = Reaction(BUILTIN_EMOJIS['x'], reaction_type = ReactionType.standard)
     user_0 = User.precreate(202305040098)
     user_1 = User.precreate(202305040099)
     
     message = Message()
-    message._add_reaction(emoji_0, user_0)
-    message._add_reaction(emoji_0, user_1)
+    message._add_reaction(reaction_0, user_0)
+    message._add_reaction(reaction_0, user_1)
     
-    vampytest.assert_eq(message.reactions, {emoji_0: [user_0, user_1]})
+    vampytest.assert_eq(message.reactions, {reaction_0: [user_0, user_1]})
 
 
 def test__Message__remove_reaction():
     """
     Tests whether ``Message._remove_reaction`` works as intended.
     """
-    emoji_0 = BUILTIN_EMOJIS['x']
+    reaction_0 = Reaction(BUILTIN_EMOJIS['x'], reaction_type = ReactionType.standard)
     
     user_0 = User.precreate(202305040100)
     
     message = Message()
-    message._add_reaction(emoji_0, user_0)
-    message._remove_reaction(emoji_0, user_0)
+    message._add_reaction(reaction_0, user_0)
+    message._remove_reaction(reaction_0, user_0)
     
     vampytest.assert_eq(message.reactions, {})
 
@@ -168,14 +167,21 @@ def test__Message__remove_reaction_emoji():
     Tests whether ``Message._remove_reaction_emoji`` works as intended.
     """
     emoji_0 = BUILTIN_EMOJIS['x']
+    reaction_0 = Reaction(emoji_0, reaction_type = ReactionType.standard)
     
     user_0 = User.precreate(202305040101)
     
     message = Message()
-    message._add_reaction(emoji_0, user_0)
-    message._remove_reaction_emoji(emoji_0)
+    message._add_reaction(reaction_0, user_0)
+    output = message._remove_reaction_emoji(emoji_0)
     
     vampytest.assert_eq(message.reactions, {})
+    vampytest.assert_eq(
+        output,
+        {
+            reaction_0: [user_0]
+        },
+    )
 
 
 def test__Message__copy():
@@ -613,60 +619,90 @@ def test__Message__did_react__0():
     vampytest.assert_false(output)
 
 
-def test__Message__did_react__1():
+def test__Message__did_react__emoji_mismatch():
     """
     Tests whether ``Message.did_react`` works as intended.
     
     Case: Emoji mismatch.
     """
     user_0 = User.precreate(202305040170)
-    emoji_0 = BUILTIN_EMOJIS['x']
-    emoji_1 = BUILTIN_EMOJIS['heart']
+    
+    reaction_0 = Reaction(BUILTIN_EMOJIS['x'], reaction_type = ReactionType.standard)
+    reaction_1 = Reaction(BUILTIN_EMOJIS['heart'], reaction_type = ReactionType.standard)
     
     message = Message()
-    message._add_reaction(emoji_1, user_0)
+    message._add_reaction(reaction_1, user_0)
     
-    output = message.did_react(emoji_0, user_0)
+    output = message.did_react(reaction_0, user_0)
     
     vampytest.assert_instance(output, bool)
     vampytest.assert_false(output)
 
 
-def test__Message__did_react__2():
-    """
-    Tests whether ``Message.did_react`` works as intended.
-    
-    Case: User mismatch.
-    """
+def _iter_options__did_react():
     user_0 = User.precreate(202305040171)
     user_1 = User.precreate(202305040172)
+    
     emoji_0 = BUILTIN_EMOJIS['x']
+    emoji_1 = BUILTIN_EMOJIS['heart']
+    emoji_2 = BUILTIN_EMOJIS['green_heart']
+    
+    reaction_0 = Reaction(emoji_0, reaction_type = ReactionType.standard)
+    reaction_1 = Reaction(emoji_0, reaction_type = ReactionType.burst)
+    reaction_2 = Reaction(emoji_1, reaction_type = ReactionType.standard)
+    reaction_3 = Reaction(emoji_1, reaction_type = ReactionType.burst)
+    reaction_4 = Reaction(emoji_2, reaction_type = ReactionType.standard)
+    reaction_5 = Reaction(emoji_2, reaction_type = ReactionType.burst)
+    
     
     message = Message()
-    message._add_reaction(emoji_0, user_1)
+    message._add_reaction(reaction_0, user_0)
+    message._add_reaction(reaction_2, user_1)
+    message._add_reaction(reaction_2, user_0)
+    message._add_reaction(reaction_3, user_0)
     
-    output = message.did_react(emoji_0, user_0)
-    
-    vampytest.assert_instance(output, bool)
-    vampytest.assert_false(output)
+    yield message, emoji_0, user_0, True
+    yield message, emoji_1, user_0, True
+    yield message, emoji_2, user_0, False
+    yield message, reaction_0, user_0, True
+    yield message, reaction_1, user_0, False
+    yield message, reaction_2, user_0, True
+    yield message, reaction_3, user_0, True
+    yield message, reaction_4, user_0, False
+    yield message, reaction_5, user_0, False
+
+    yield message, emoji_0, user_1, False
+    yield message, emoji_1, user_1, True
+    yield message, emoji_2, user_1, False
+    yield message, reaction_0, user_1, False
+    yield message, reaction_1, user_1, False
+    yield message, reaction_2, user_1, True
+    yield message, reaction_3, user_1, False
+    yield message, reaction_4, user_1, False
+    yield message, reaction_5, user_1, False
 
 
-def test__Message__did_react__3():
+@vampytest._(vampytest.call_from(_iter_options__did_react()).returning_last())
+def test__Message__did_react(message, reaction_or_emoji, user):
     """
     Tests whether ``Message.did_react`` works as intended.
     
-    Case: Hit.
+    Parameters
+    ----------
+    message : ``Message``
+        Message to check.
+    reaction_or_emoji : ``Reaction``, ``Emoji``
+        The reaction or emoji to request.
+    user : ``ClientUserBase``
+        The user who perhaps reacted.
+    
+    Returns
+    -------
+    output : `bool`
     """
-    user_0 = User.precreate(202305040173)
-    emoji_0 = BUILTIN_EMOJIS['x']
-    
-    message = Message()
-    message._add_reaction(emoji_0, user_0)
-    
-    output = message.did_react(emoji_0, user_0)
-    
+    output = message.did_react(reaction_or_emoji, user)
     vampytest.assert_instance(output, bool)
-    vampytest.assert_true(output)
+    return output
 
 
 def test__Message__guild():

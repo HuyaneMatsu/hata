@@ -3,64 +3,218 @@ import vampytest
 from ....core import BUILTIN_EMOJIS
 from ....user import User
 
+from ...reaction import Reaction, ReactionType
+
 from ..reaction_mapping import ReactionMapping
 
 
-def test__ReactionMapping__bool():
+NotImplementedType = type(NotImplemented)
+
+
+def _iter_options__bool():
+    yield ReactionMapping(), False
+    yield ReactionMapping({Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): [None]}), True
+
+
+@vampytest._(vampytest.call_from(_iter_options__bool()).returning_last())
+def test__ReactionMapping__bool(input_value):
     """
-    tests whether ``ReactionMapping.__bool__`` works as intended.
+    Tests whether ``ReactionMapping.__bool__`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : ``ReactionMapping``
+        The reaction mapping to get its boolean value of.
+    
+    Returns
+    -------
+    output : `bool`
     """
-    for reaction_mapping, expected_output in (
-        (ReactionMapping(), False),
-        (ReactionMapping({BUILTIN_EMOJIS['heart']: [None]}), True),
-    ):
-        vampytest.assert_eq(bool(reaction_mapping), expected_output)
+    output = bool(input_value)
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def test__ReactionMapping__repr():
     """
     tests whether ``ReactionMapping.__repr__`` works as intended.
     """
-    reaction_mapping = ReactionMapping({BUILTIN_EMOJIS['heart']: [None]})
+    reaction_mapping = ReactionMapping({
+        Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): [None]}
+    )
     vampytest.assert_instance(repr(reaction_mapping), str)
 
 
-def test__ReactionMapping__len():
+def _iter_options__len():
+    yield (
+        ReactionMapping(),
+        0,
+    )
+    
+    yield (
+        ReactionMapping({
+            Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): [None, None],
+        }),
+        1,
+    )
+    yield (
+        ReactionMapping({
+            Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): [None, None, None],
+            Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.burst): [None],
+        }),
+        2,
+    )
+    yield (
+        ReactionMapping({
+            Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): [None, None, None],
+            Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): [None],
+        }),
+        2,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__len()).returning_last())
+def test__ReactionMapping__len(input_value):
     """
     Tests whether ``ReactionMapping.__len__`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : ``ReactionMapping``
+        The reaction mapping to get its length value of.
+    
+    Returns
+    -------
+    output : `int`
     """
-    reaction_mapping = ReactionMapping({BUILTIN_EMOJIS['heart']: [None, None]})
-    
-    length = len(reaction_mapping)
-    
-    vampytest.assert_instance(length, int)
-    vampytest.assert_eq(length, 1)
+    output = len(input_value)
+    vampytest.assert_instance(output, int)
+    return output
 
 
-def test__ReactionMapping__eq():
+def _iter_options__eq():
+    emoji_0 = BUILTIN_EMOJIS['x']
+    emoji_1 = BUILTIN_EMOJIS['heart']
+    user_0 = User.precreate(202210010037)
+    
+    yield (
+        ReactionMapping(),
+        ReactionMapping(),
+        True,
+    )
+    yield (
+        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [None]}),
+        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [None]}),
+        True,
+    )
+    yield (
+        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [None]}),
+        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [None, None]}),
+        False,
+    )
+    yield (
+        ReactionMapping(),
+        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [None]}),
+        False,
+    )
+    yield (
+        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [user_0]}),
+        {Reaction.from_fields(emoji_1, ReactionType.standard): [user_0]},
+        True,
+    )
+    yield (
+        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [user_0]}),
+        {Reaction.from_fields(emoji_1, ReactionType.standard): [user_0, None]},
+        False,
+    )
+    yield (
+        ReactionMapping(),
+        {Reaction.from_fields(emoji_1, ReactionType.standard): [None]},
+        False,
+    )
+    yield (
+        ReactionMapping(),
+        {Reaction.from_fields(emoji_1, ReactionType.standard): [12.6]},
+        NotImplemented,
+    )
+    yield (
+        ReactionMapping(),
+        {12.6: [None]},
+        NotImplemented,
+    )
+    yield (
+        ReactionMapping(),
+        {Reaction.from_fields(emoji_1, ReactionType.standard): 12.5},
+        NotImplemented,
+    )
+    yield (
+        ReactionMapping(),
+        22.0,
+        NotImplemented,
+    )
+    yield (
+        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [user_0]}),
+        {Reaction.from_fields(emoji_1, ReactionType.standard): 12.5},
+        NotImplemented,
+    )
+    yield (
+        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [None]}),
+        {emoji_1: [None]},
+        True,
+    )
+    yield (
+        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.burst): [None]}),
+        {emoji_1: [None]},
+        False,
+    )
+    yield (
+        ReactionMapping({
+            Reaction.from_fields(emoji_1, ReactionType.standard): [user_0],
+        }),
+        ReactionMapping({
+            Reaction.from_fields(emoji_1, ReactionType.burst): [user_0],
+        }),
+        False,
+    )
+    yield (
+        ReactionMapping({
+            Reaction.from_fields(emoji_0, ReactionType.standard): [user_0],
+        }),
+        ReactionMapping({
+            Reaction.from_fields(emoji_1, ReactionType.standard): [user_0],
+        }),
+        False,
+    )
+    yield (
+        ReactionMapping({
+            Reaction.from_fields(emoji_0, ReactionType.burst): [user_0],
+        }),
+        ReactionMapping({
+            Reaction.from_fields(emoji_1, ReactionType.burst): [user_0],
+        }),
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__ReactionMapping__eq(value_0, value_1):
     """
     Tests whether ``ReactionMapping.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    value_0 : ``ReactionMapping``
+        The reaction mapping to execute `==` with.
+    value_1 : `object`
+        Other value to compare to.
+    
+    Returns
+    -------
+    output : `bool`, `NotImplementedType`
     """
-    emoji_1 = BUILTIN_EMOJIS['heart']
-    user_1 = User.precreate(202210010037)
-        
-    for value_1, value_2, expected_output in (
-        (ReactionMapping(), ReactionMapping(), True),
-        (ReactionMapping({emoji_1: [None]}), ReactionMapping({emoji_1: [None]}), True),
-        (ReactionMapping({emoji_1: [None]}), ReactionMapping({emoji_1: [None, None]}), False),
-        (ReactionMapping(), ReactionMapping({emoji_1: [None]}), False),
-        (ReactionMapping({emoji_1: [user_1]}), {emoji_1: [user_1]}, True),
-        (ReactionMapping({emoji_1: [user_1]}), {emoji_1: [user_1, None]}, False),
-        (ReactionMapping(), {emoji_1: [None]}, False),
-        (ReactionMapping(), {emoji_1: [12.6]}, NotImplemented),
-        (ReactionMapping(), {12.6: [None]}, NotImplemented),
-        (ReactionMapping(), {emoji_1: 12.5}, NotImplemented),
-        (ReactionMapping(), 22.0, NotImplemented),
-        (ReactionMapping({emoji_1: [user_1]}), {emoji_1: 12.5}, NotImplemented),
-    ):
-        output = ReactionMapping.__eq__(value_1, value_2)
-        
-        vampytest.assert_eq(output, expected_output)
+    output = ReactionMapping.__eq__(value_0, value_1)
+    vampytest.assert_instance(output, bool, NotImplementedType)
+    return output
 
 
 def test__ReactionMapping__hash():
@@ -74,8 +228,9 @@ def test__ReactionMapping__hash():
     user_1 = User.precreate(202305040097)
     
     mapping = ReactionMapping({
-        emoji_0: [user_0, None, None],
-        emoji_1: [user_1],
+        Reaction.from_fields(emoji_0, ReactionType.standard): [user_0, None, None],
+        Reaction.from_fields(emoji_0, ReactionType.burst): [user_0, None, None],
+        Reaction.from_fields(emoji_1, ReactionType.standard): [user_1],
     })
     
     vampytest.assert_instance(hash(mapping), int)

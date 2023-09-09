@@ -7,7 +7,7 @@ from ...emoji import Emoji
 from ..reaction_mapping import ReactionMapping
 
 
-def test__ReactionMapping__new__0():
+def test__ReactionMapping__new__no_parametres():
     """
     tests whether ``ReactionMapping.__new__`` works as intended.
     
@@ -20,7 +20,7 @@ def test__ReactionMapping__new__0():
     vampytest.assert_eq(reaction_mapping.fully_loaded, True)
 
 
-def test__ReactionMapping__new__1():
+def test__ReactionMapping__new__from_none():
     """
     tests whether ``ReactionMapping.__new__`` works as intended.
     
@@ -33,7 +33,7 @@ def test__ReactionMapping__new__1():
     vampytest.assert_eq(reaction_mapping.fully_loaded, True)
 
 
-def test__ReactionMapping__new__2():
+def test__ReactionMapping__new__from_dictionary():
     """
     tests whether ``ReactionMapping.__new__`` works as intended.
     
@@ -53,7 +53,7 @@ def test__ReactionMapping__new__2():
     vampytest.assert_eq(reaction_mapping[emoji_1], users)
 
 
-def test__ReactionMapping__new__3():
+def test__ReactionMapping__new__from_dictionary_with_unknown():
     """
     tests whether ``ReactionMapping.__new__`` works as intended.
     
@@ -73,7 +73,7 @@ def test__ReactionMapping__new__3():
     vampytest.assert_eq(reaction_mapping[emoji_1], [user_1, None])
 
 
-def test__ReactionMapping__new__4():
+def test__ReactionMapping__new__from_iterable():
     """
     tests whether ``ReactionMapping.__new__`` works as intended.
     
@@ -93,7 +93,7 @@ def test__ReactionMapping__new__4():
     vampytest.assert_eq(reaction_mapping[emoji_1], users)
 
 
-def test__ReactionMapping__new__5():
+def test__ReactionMapping__new__type_error():
     """
     tests whether ``ReactionMapping.__new__`` works as intended.
     
@@ -106,7 +106,7 @@ def test__ReactionMapping__new__5():
             ReactionMapping(input_value)
 
 
-def test__ReactionMapping__new__6():
+def test__ReactionMapping__new__dictionary_with_empty_line():
     """
     tests whether ``ReactionMapping.__new__`` works as intended.
     

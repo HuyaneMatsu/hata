@@ -407,7 +407,7 @@ def run(
     
     When `--console` is defined it will start an interactive console after the clients started up.
     When `--log` is defined (default) logging in status will be logged into `sys.stdout`.
-    When `--profile`` is defined a `.prof` file will be created on exit under the `.prof` directory.
+    When `--profile` is defined a `.prof` file will be created on exit under the `.prof` directory.
     To open the latest profile file use `snakeviz .profiles/latest.prof` (example).
     """
     if profile and (not _check_profiling_available()):

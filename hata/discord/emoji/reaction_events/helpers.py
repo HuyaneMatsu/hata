@@ -15,7 +15,7 @@ async def _delete_reaction_with_task(reaction_add_event, client):
         The client who should remove the reaction if applicable.
     """
     try:
-        await client.reaction_delete(reaction_add_event.message, reaction_add_event.emoji, reaction_add_event.user)
+        await client.reaction_delete(reaction_add_event.message, reaction_add_event.reaction, reaction_add_event.user)
     except GeneratorExit:
         raise
     

@@ -540,7 +540,7 @@ Group Details
     - Resets after : `OPT`
 
 - reaction_delete_own
-    - Endpoint : `/channels/{channel_id}/messages/{message_id}/reactions/{reaction}/@me`
+    - Endpoint : `/channels/{channel_id}/messages/{message_id}/reactions/{reaction}/{reaction_type}/@me`
     - Method : `DELETE`
     - Required auth : `bot`
     - Limiter : `channel_id`
@@ -556,7 +556,7 @@ Group Details
     - Resets after : `0.25`
 
 - reaction_delete
-    - Endpoint : `/channels/{channel_id}/messages/{message_id}/reactions/{reaction}/{user_id}`
+    - Endpoint : `/channels/{channel_id}/messages/{message_id}/reactions/{reaction}/{reaction_type}/{user_id}`
     - Method : `DELETE`
     - Required auth : `bot`
     - Limiter : `channel_id`

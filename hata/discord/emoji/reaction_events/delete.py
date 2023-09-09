@@ -12,10 +12,12 @@ class ReactionDeleteEvent(ReactionAddEvent):
     
     Attributes
     ----------
-    message : ``Message``
-        The message from what the reaction was removed.
     emoji : ``Emoji``
         The removed emoji.
+    message : ``Message``
+        The message from what the reaction was removed.
+    type : ``ReactionType``
+        The reaction's type.
     user : ``ClientUserBase``
         The user who's reaction was removed.
     

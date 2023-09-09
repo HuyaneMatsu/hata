@@ -3,12 +3,13 @@ __all__ = ()
 from scarletio import Compound, Theory
 
 from ...core import MESSAGES
-from ...emoji.reaction.fields import validate_type as validate_reaction_type
+from ...emoji import Emoji, ReactionType
+from ...emoji.reaction_mapping.fields import validate_reaction
 from ...http import DiscordHTTPClient
 from ...user import ClientUserBase, User
 from ...utils import log_time_converter
 
-from ..request_helpers import get_channel_id_and_message_id, get_emoji_from_reaction, get_reaction, get_user_id
+from ..request_helpers import get_channel_id_and_message_id, get_reaction_emoji_value_and_type, get_user_id
 
 
 class ClientCompoundReactionEndpoints(Compound):
@@ -20,7 +21,7 @@ class ClientCompoundReactionEndpoints(Compound):
     async def message_get(self, message, *, force_update = False): ...
     
     
-    async def reaction_add(self, message, emoji, *, reaction_type = ...):
+    async def reaction_add(self, message, reaction):
         """
         Adds a reaction on the given message.
         
@@ -31,11 +32,8 @@ class ClientCompoundReactionEndpoints(Compound):
         message : ``Message``, `tuple` (`int`, `int`)
             The message on which the reaction will be put on.
         
-        emoji : ``Emoji``, `str`
-            The emoji to react with.
-        
-        reaction_type : ``ReactionType``, `int`, Optional (Keyword only)
-            The reaction's type.
+        emoji : ``Reaction``, ``Emoji``, `str`
+            The reaction to react with. if given as ``Emoji`` / `str` will use standard reaction.
         
         Raises
         ------
@@ -49,18 +47,11 @@ class ClientCompoundReactionEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
-        emoji_as_reaction = get_reaction(emoji)
-        
-        if reaction_type is ...:
-            query_parameters = None
-        else:
-            reaction_type = validate_reaction_type(reaction_type)
-            query_parameters = {'type': reaction_type.value}
-        
-        await self.http.reaction_add(channel_id, message_id, emoji_as_reaction, query_parameters)
+        emoji_value, reaction_type = get_reaction_emoji_value_and_type(reaction)
+        await self.http.reaction_add(channel_id, message_id, emoji_value, {'type': reaction_type.value})
     
     
-    async def reaction_delete(self, message, emoji, user):
+    async def reaction_delete(self, message, reaction, user):
         """
         Removes the specified reaction of the user from the given message.
         
@@ -70,30 +61,30 @@ class ClientCompoundReactionEndpoints(Compound):
         ----------
         message : ``Message``, `tuple` (`int`, `int`)
             The message from which the reaction will be removed.
-        emoji : ``Emoji``, `str`
-            The emoji to remove.
+            
+        reaction : ``Reaction``, ``Emoji``, `str`
+            The reaction to remove.
+            
         user : ```ClientUserBase``, `int`
             The user, who's reaction will be removed.
         
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
-            - If `user` was not given neither as ``ClientUserBase`` nor `int`.
-            - If `emoji` was not given as ``Emoji``, `str`.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
-        emoji_as_reaction = get_reaction(emoji)
+        emoji_value, reaction_type = get_reaction_emoji_value_and_type(reaction)
         user_id = get_user_id(user)
         
         if user_id == self.id:
-            await self.http.reaction_delete_own(channel_id, message_id, emoji_as_reaction)
+            await self.http.reaction_delete_own(channel_id, message_id, emoji_value, reaction_type.value)
         else:
-            await self.http.reaction_delete(channel_id, message_id, emoji_as_reaction, user_id)
+            await self.http.reaction_delete(channel_id, message_id, emoji_value, reaction_type.value, user_id)
     
     
     async def reaction_delete_emoji(self, message, emoji):
@@ -106,26 +97,34 @@ class ClientCompoundReactionEndpoints(Compound):
         ----------
         message : ``Message``, `tuple` (`int`, `int`)
             The message from which the reactions will be removed.
+            
         emoji : ``Emoji``, `str`
             The reaction to remove.
         
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
-            - If `emoji`'s type is incorrect.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
-        as_reaction = get_reaction(emoji)
         
-        await self.http.reaction_delete_emoji(channel_id, message_id, as_reaction)
+        if isinstance(emoji, Emoji):
+            emoji_value = emoji.as_reaction
+        elif isinstance(emoji, str):
+            emoji_value = emoji
+        else:
+            raise TypeError(
+                f'`emoji` can be `{Emoji.__name__}`, `str`, got {emoji.__class__.__name__}; {emoji!r}.'
+            )
+        
+        await self.http.reaction_delete_emoji(channel_id, message_id, emoji_value)
     
     
-    async def reaction_delete_own(self, message, emoji):
+    async def reaction_delete_own(self, message, reaction):
         """
         Removes the specified reaction of the client from the given message.
         
@@ -135,22 +134,22 @@ class ClientCompoundReactionEndpoints(Compound):
         ----------
         message : ``Message``, `tuple` (`int`, `int`)
             The message from which the reaction will be removed.
-        emoji : ``Emoji``, `str`
-            The emoji to remove.
+            
+        emoji : ``Reaction``, ``Emoji``, `str`
+            The reaction to remove.
         
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
-            - If `emoji`'s type is incorrect.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
-        as_reaction = get_reaction(emoji)
-        await self.http.reaction_delete_own(channel_id, message_id, as_reaction)
+        emoji_value, reaction_type = get_reaction_emoji_value_and_type(reaction)
+        await self.http.reaction_delete_own(channel_id, message_id, emoji_value, reaction_type.value)
     
     
     async def reaction_clear(self, message):
@@ -178,7 +177,7 @@ class ClientCompoundReactionEndpoints(Compound):
         await self.http.reaction_clear(channel_id, message_id)
     
     
-    async def reaction_user_get_chunk(self, message, emoji, *, limit=None, after=None):
+    async def reaction_user_get_chunk(self, message, reaction, *, limit = None, after = None):
         """
         Requests the users, who reacted on the given message with the given emoji.
         
@@ -191,10 +190,10 @@ class ClientCompoundReactionEndpoints(Compound):
         ----------
         message : ``Message``, `tuple` (`int`, `int`)
             The message, what's reactions will be requested.
-        emoji : ``Emoji``, `str`
+        reaction : ``Reaction``, ``Emoji``, `str`
             The emoji, what's reactors will be requested.
         limit : `None`, `int` = `None`, Optional (Keyword only)
-            The amount of users to request. Can be in range [1:100]. Defaults to 25 by Discord.
+            The amount of users to request. Can be in range [1:100]. Defaults to 100 by Discord.
         after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp after the message's reactors were created.
         
@@ -205,39 +204,34 @@ class ClientCompoundReactionEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
-            - If `after` was passed with an unexpected type.
-            - If `emoji`'s type is incorrect.
+            - If a parameter's type is incorrect.
         ValueError
             The given `emoji` is not a valid reaction.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `limit` was not given neither as `None`, `int`.
-            - If `limit` is out of the expected range [1:100].
         
         Notes
         -----
         `before` parameter is not supported by Discord.
         """
         if limit is None:
-            limit = 25
+            limit = 100
+        
+        elif isinstance(limit, int):
+            if limit < 1:
+                limit = 1
+            elif limit > 100:
+                limit = 100
+        
         else:
-            if __debug__:
-                if not isinstance(limit, int):
-                    raise AssertionError(
-                        f'`limit` can be `None`, `int`, got {limit.__class__.__name__}; {limit!r}.'
-                    )
-                
-                if limit < 1 or limit > 100:
-                    raise AssertionError(
-                        f'`limit` can be between in range [1:100], got {limit!r}.'
-                    )
+            raise TypeError(
+                f'`limit` can be `None`, `int`, got {limit.__class__.__name__}; {limit!r}.'
+            )
         
         channel_id, message_id = get_channel_id_and_message_id(message)
-        emoji = get_emoji_from_reaction(emoji)
+        reaction = validate_reaction(reaction)
         
         try:
             message = MESSAGES[message_id]
@@ -250,7 +244,7 @@ class ClientCompoundReactionEndpoints(Compound):
                 return []
             
             try:
-                line = reactions[emoji]
+                line = reactions[reaction]
             except KeyError:
                 return []
             
@@ -260,27 +254,31 @@ class ClientCompoundReactionEndpoints(Compound):
                 users = line.filter_after(limit, after)
                 return users
         
-        data = {}
-        if limit != 25:
-            data['limit'] = limit
+        query_parameters = {
+            'limit': limit,
+            'type': reaction.type.value,
+        }
         
         if (after is not None):
-            data['after'] = log_time_converter(after)
+            query_parameters['after'] = log_time_converter(after)
         
+        # Before is not supported!
         # if (before is not None):
         #     data['before'] = log_time_converter(before)
         
-        data = await self.http.reaction_user_get_chunk(channel_id, message_id, emoji.as_reaction, data)
+        data = await self.http.reaction_user_get_chunk(
+            channel_id, message_id, reaction.emoji.as_reaction, query_parameters
+        )
         
         users = [User.from_data(user_data) for user_data in data]
         
         if (reactions is not None):
-            reactions._update_some_users(emoji, users)
+            reactions._update_some_users(reaction, users)
         
         return users
     
     
-    async def reaction_user_get_all(self, message, emoji):
+    async def reaction_user_get_all(self, message, reaction):
         """
         Requests the all the users, which reacted on the message with the given message.
         
@@ -293,8 +291,8 @@ class ClientCompoundReactionEndpoints(Compound):
         ----------
         message : ``Message``, `tuple` (`int`, `int`)
             The message, what's reactions will be requested.
-        emoji : ``Emoji``, `str`
-            The emoji, what's reactors will be requested.
+        reaction : ``Reacton``, ``Emoji``, `str`
+            The reaction, what's reactors will be requested.
         
         Returns
         -------
@@ -303,8 +301,7 @@ class ClientCompoundReactionEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
-            - If `emoji`'s type is incorrect.
+            - If a parameter's type is incorrect.
         ValueError
             The given `emoji` is not a valid reaction.
         ConnectionError
@@ -313,7 +310,7 @@ class ClientCompoundReactionEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
-        emoji = get_emoji_from_reaction(emoji)
+        reaction = validate_reaction(reaction)
         
         try:
             message = MESSAGES[message_id]
@@ -326,29 +323,36 @@ class ClientCompoundReactionEndpoints(Compound):
                 return []
             
             try:
-                line = reactions[emoji]
+                line = reactions[reaction]
             except KeyError:
                 return []
             
             if not line.unknown:
-                users = list(line)
+                users = [*line]
                 return users
         
-        data = {'limit': 100, 'after': 0}
+        query_parameters = {
+            'after': 0,
+            'limit': 100,
+            'type': reaction.type.value,
+        }
+        
         users = []
-        reaction = emoji.as_reaction
+        emoji_value = reaction.emoji.as_reaction
         
         while True:
-            user_datas = await self.http.reaction_user_get_chunk(channel_id, message_id, reaction, data)
+            user_datas = await self.http.reaction_user_get_chunk(
+                channel_id, message_id, emoji_value, query_parameters
+            )
             users.extend(User.from_data(user_data) for user_data in user_datas)
             
             if len(user_datas) < 100:
                 break
             
-            data['after'] = users[-1].id
+            query_parameters['after'] = users[-1].id
         
         if (reactions is not None):
-            reactions._update_all_users(emoji, users)
+            reactions._update_all_users(reaction, users)
         
         return users
     
@@ -374,39 +378,43 @@ class ClientCompoundReactionEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id, message_id = get_channel_id_and_message_id(message)
-        message = MESSAGES.get(message_id, None)
-        if (message is None):
-            message = await self.message_get((channel_id, message_id))
+        # Get message
+        message = await self.message_get(message)
         
+        # Get reactions
         reactions = message.reactions
         if (reactions is not None) and reactions:
             users = []
-            data = {'limit': 100}
+            query_parameters = {
+                'limit': 100,
+            }
             
-            for emoji, line in reactions.items():
+            for reaction, line in reactions.items():
                 if not line.unknown:
                     continue
                 
-                reaction = emoji.as_reaction
-                data['after'] = 0
+                emoji_value = reaction.emoji.as_reaction
+                query_parameters['after'] = 0
+                query_parameters['type'] = reaction.type.value
                 
                 while True:
-                    user_datas = await self.http.reaction_user_get_chunk(channel_id, message_id, reaction, data)
+                    user_datas = await self.http.reaction_user_get_chunk(
+                        message.channel_id, message.id, emoji_value, query_parameters
+                    )
                     users.extend(User.from_data(user_data) for user_data in user_datas)
                     
                     if len(user_datas) < 100:
                         break
                     
-                    data['after'] = users[-1].id
+                    query_parameters['after'] = users[-1].id
                 
-                reactions._update_all_users(emoji, users)
+                reactions._update_all_users(reaction, users)
                 users.clear()
         
         return message

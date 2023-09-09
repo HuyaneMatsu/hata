@@ -2,12 +2,10 @@ __all__ = ()
 
 from scarletio import include
 
-from ...field_parsers import functional_parser_factory
-from ...field_putters import functional_putter_factory
 from ...field_validators import default_entity_validator_factory, entity_validator_factory
 from ...user import ClientUserBase, User, ZEROUSER, create_partial_user_from_id
 
-from ..emoji import Emoji, create_partial_emoji_data, create_partial_emoji_from_data
+from ..reaction.fields import parse_emoji, parse_type, put_emoji_into, put_type_into, validate_emoji, validate_type
 
 
 Message = include('Message')
@@ -77,12 +75,6 @@ def put_user_into(user, data, defaults, *, guild_id = 0):
 
 
 validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)
-
-# emoji
-
-parse_emoji = functional_parser_factory('emoji', create_partial_emoji_from_data)
-put_emoji_into = functional_putter_factory('emoji', create_partial_emoji_data)
-validate_emoji = entity_validator_factory('emoji', Emoji)
 
 # message
 

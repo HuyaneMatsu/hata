@@ -43,6 +43,13 @@ def detail_converter_auto_moderation_rule_trigger_type(key, value):
     return key, AutoModerationRuleTriggerType.get(value)
 
 
+def detail_converter_status(key, value):
+    if (value is not None) and (not value):
+        value = None
+    
+    return key, value
+
+
 def detail_converter_nothing(key, value):
     return key, value
 
@@ -58,5 +65,6 @@ DETAIL_CONVERTERS = {
     'members_removed': detail_converter_users_removed,
     'message_id': detail_converter_message,
     'role_name': detail_converter_nothing,
+    'status': detail_converter_status,
     'type': detail_converter_permission_overwrite_target_type,
 }

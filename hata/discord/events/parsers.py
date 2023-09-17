@@ -1333,6 +1333,81 @@ del THREAD_UPDATE__CAL_SC, \
     THREAD_UPDATE__OPT_SC, \
     THREAD_UPDATE__OPT_MC
 
+
+def VOICE_CHANNEL_STATUS_UPDATE__CAL_SC(client, data):
+    channel_id = int(data['id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    old_attributes = channel._difference_update_status(data)
+    if not old_attributes:
+        return
+    
+    Task(KOKORO, client.events.channel_update(client, channel, old_attributes))
+
+def VOICE_CHANNEL_STATUS_UPDATE__CAL_MC(client, data):
+    channel_id = int(data['id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    clients = filter_clients(channel.clients, INTENT_MASK_GUILDS, client)
+    if clients.send(None) is not client:
+        clients.close()
+        return
+    
+    old_attributes = channel._difference_update_status(data)
+    if not old_attributes:
+        clients.close()
+        return
+    
+    for client_ in clients:
+        event_handler = client_.events.channel_update
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(KOKORO, event_handler(client_, channel, old_attributes))
+
+
+def VOICE_CHANNEL_STATUS_UPDATE__OPT_SC(client, data):
+    channel_id = int(data['id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    channel._update_status(data)
+
+def VOICE_CHANNEL_STATUS_UPDATE__OPT_MC(client, data):
+    channel_id = int(data['id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    if first_client(channel.clients, INTENT_MASK_GUILDS, client) is not client:
+        return
+    
+    channel._update_status(data)
+
+
+add_parser(
+    'VOICE_CHANNEL_STATUS_UPDATE',
+    VOICE_CHANNEL_STATUS_UPDATE__CAL_SC,
+    VOICE_CHANNEL_STATUS_UPDATE__CAL_MC,
+    VOICE_CHANNEL_STATUS_UPDATE__OPT_SC,
+    VOICE_CHANNEL_STATUS_UPDATE__OPT_MC)
+del VOICE_CHANNEL_STATUS_UPDATE__CAL_SC, \
+    VOICE_CHANNEL_STATUS_UPDATE__CAL_MC, \
+    VOICE_CHANNEL_STATUS_UPDATE__OPT_SC, \
+    VOICE_CHANNEL_STATUS_UPDATE__OPT_MC
+
+
 def CHANNEL_CREATE__CAL(client, data):
     guild_id = data.get('guild_id', None)
     if guild_id is None:
@@ -1363,6 +1438,7 @@ add_parser(
 del CHANNEL_CREATE__CAL, \
     CHANNEL_CREATE__OPT
 
+
 def CHANNEL_PINS_UPDATE__CAL(client, data):
     channel_id = int(data['channel_id'])
     try:
@@ -1377,6 +1453,7 @@ def CHANNEL_PINS_UPDATE__CAL(client, data):
 def CHANNEL_PINS_UPDATE__OPT(client, data):
     pass
 
+
 add_parser(
     'CHANNEL_PINS_UPDATE',
     CHANNEL_PINS_UPDATE__CAL,
@@ -1385,6 +1462,7 @@ add_parser(
     CHANNEL_PINS_UPDATE__OPT)
 del CHANNEL_PINS_UPDATE__CAL, \
     CHANNEL_PINS_UPDATE__OPT
+
 
 def CHANNEL_RECIPIENT_ADD_CAL(client, data):
     channel_id = int(data['channel_id'])
@@ -1420,6 +1498,7 @@ add_parser(
     CHANNEL_RECIPIENT_ADD__OPT)
 del CHANNEL_RECIPIENT_ADD_CAL, \
     CHANNEL_RECIPIENT_ADD__OPT
+
 
 def CHANNEL_RECIPIENT_REMOVE__CAL_SC(client, data):
     channel_id = int(data['channel_id'])
@@ -1469,6 +1548,7 @@ def CHANNEL_RECIPIENT_REMOVE__OPT(client, data):
     except ValueError:
         pass
 
+
 add_parser(
     'CHANNEL_RECIPIENT_REMOVE',
     CHANNEL_RECIPIENT_REMOVE__CAL_SC,
@@ -1514,6 +1594,7 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client, data):
         
         # no more case
         continue
+
 
 def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -1695,6 +1776,7 @@ def GUILD_STICKERS_UPDATE__OPT_MC(client, data):
     
     guild._update_stickers(data['stickers'])
 
+
 add_parser(
     'GUILD_STICKERS_UPDATE',
     GUILD_STICKERS_UPDATE__CAL_SC,
@@ -1735,7 +1817,7 @@ def GUILD_MEMBER_ADD__CAL_MC(client, data):
             return
     
     user = User.from_data(data['user'], data, guild_id)
-    guild.user_count +=1
+    guild.user_count += 1
     
     if clients is None:
         event_handler = client.events.guild_user_add
@@ -1756,7 +1838,7 @@ if CACHE_USER:
             return
         
         User.from_data(data['user'], data, guild_id)
-        guild.user_count +=1
+        guild.user_count += 1
     
     def GUILD_MEMBER_ADD__OPT_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -1792,6 +1874,7 @@ else:
         
         guild.user_count += 1
 
+
 add_parser(
     'GUILD_MEMBER_ADD',
     GUILD_MEMBER_ADD__CAL_SC,
@@ -1802,6 +1885,7 @@ del GUILD_MEMBER_ADD__CAL_SC, \
     GUILD_MEMBER_ADD__CAL_MC, \
     GUILD_MEMBER_ADD__OPT_SC, \
     GUILD_MEMBER_ADD__OPT_MC
+
 
 if CACHE_USER:
     def GUILD_MEMBER_REMOVE__CAL_SC(client, data):
@@ -1967,6 +2051,7 @@ else:
         
         guild.user_count -= 1
 
+
 add_parser(
     'GUILD_MEMBER_REMOVE',
     GUILD_MEMBER_REMOVE__CAL_SC,
@@ -2125,6 +2210,7 @@ add_parser(
 del GUILD_CREATE__CAL, \
     GUILD_CREATE__OPT
 
+
 def GUILD_UPDATE__CAL_SC(client, data):
     guild_id = int(data['guild_id'])
     try:
@@ -2185,6 +2271,7 @@ def GUILD_UPDATE__OPT_MC(client, data):
     
     guild._update_attributes(data)
 
+
 add_parser(
     'GUILD_UPDATE',
     GUILD_UPDATE__CAL_SC,
@@ -2195,6 +2282,7 @@ del GUILD_UPDATE__CAL_SC, \
     GUILD_UPDATE__CAL_MC, \
     GUILD_UPDATE__OPT_SC, \
     GUILD_UPDATE__OPT_MC
+
 
 def GUILD_DELETE__CAL(client, data):
     guild_id = int(data['id'])
@@ -2237,6 +2325,7 @@ def GUILD_DELETE__OPT(client, data):
     if (ready_state is not None):
         ready_state.discard_guild(guild)
 
+
 add_parser(
     'GUILD_DELETE',
     GUILD_DELETE__CAL,
@@ -2254,6 +2343,7 @@ def GUILD_AUDIT_LOG_ENTRY_CREATE__CAL(client, data):
 
 def GUILD_AUDIT_LOG_ENTRY_CREATE__OPT(client, data):
     pass
+
 
 add_parser(
     'GUILD_AUDIT_LOG_ENTRY_CREATE',
@@ -2280,6 +2370,7 @@ def GUILD_BAN_ADD__CAL(client, data):
 def GUILD_BAN_ADD__OPT(client, data):
     pass
 
+
 add_parser(
     'GUILD_BAN_ADD',
     GUILD_BAN_ADD__CAL,
@@ -2288,6 +2379,7 @@ add_parser(
     GUILD_BAN_ADD__OPT)
 del GUILD_BAN_ADD__CAL, \
     GUILD_BAN_ADD__OPT
+
 
 def GUILD_BAN_REMOVE__CAL(client, data):
     guild_id = int(data['guild_id'])
@@ -2302,6 +2394,7 @@ def GUILD_BAN_REMOVE__CAL(client, data):
 
 def GUILD_BAN_REMOVE__OPT(client, data):
     pass
+
 
 add_parser(
     'GUILD_BAN_REMOVE',
@@ -2318,6 +2411,7 @@ def GUILD_MEMBERS_CHUNK(client, data):
     
     Task(KOKORO, client.events.guild_user_chunk(client, event))
 
+
 add_parser(
     'GUILD_MEMBERS_CHUNK',
     GUILD_MEMBERS_CHUNK,
@@ -2325,6 +2419,7 @@ add_parser(
     GUILD_MEMBERS_CHUNK,
     GUILD_MEMBERS_CHUNK)
 del GUILD_MEMBERS_CHUNK
+
 
 def INTEGRATION_CREATE__CAL(client, data):
     guild_id = int(data['guild_id'])
@@ -2341,6 +2436,7 @@ def INTEGRATION_CREATE__CAL(client, data):
 def INTEGRATION_CREATE__OPT(client, data):
     pass
 
+
 add_parser(
     'INTEGRATION_CREATE',
     INTEGRATION_CREATE__CAL,
@@ -2349,6 +2445,7 @@ add_parser(
     INTEGRATION_CREATE__OPT)
 del INTEGRATION_CREATE__CAL, \
     INTEGRATION_CREATE__OPT
+
 
 def INTEGRATION_DELETE__CAL(client, data):
     guild_id = int(data['guild_id'])
@@ -2371,6 +2468,7 @@ def INTEGRATION_DELETE__CAL(client, data):
 def INTEGRATION_DELETE__OPT(client, data):
     pass
 
+
 add_parser(
     'INTEGRATION_DELETE',
     INTEGRATION_DELETE__CAL,
@@ -2379,6 +2477,7 @@ add_parser(
     INTEGRATION_DELETE__OPT)
 del INTEGRATION_DELETE__CAL, \
     INTEGRATION_DELETE__OPT
+
 
 def INTEGRATION_UPDATE__CAL(client, data):
     guild_id = int(data['guild_id'])
@@ -2394,6 +2493,7 @@ def INTEGRATION_UPDATE__CAL(client, data):
 
 def INTEGRATION_UPDATE__OPT(client, data):
     pass
+
 
 add_parser(
     'INTEGRATION_UPDATE',
@@ -2417,6 +2517,7 @@ def GUILD_INTEGRATIONS_UPDATE__CAL(client, data):
 
 def GUILD_INTEGRATIONS_UPDATE__OPT(client, data):
     pass
+
 
 add_parser(
     'GUILD_INTEGRATIONS_UPDATE',
@@ -2565,6 +2666,7 @@ del GUILD_ROLE_DELETE__CAL_SC, \
     GUILD_ROLE_DELETE__CAL_MC, \
     GUILD_ROLE_DELETE__OPT_SC, \
     GUILD_ROLE_DELETE__OPT_MC
+
 
 def GUILD_ROLE_UPDATE__CAL_SC(client, data):
     guild_id = int(data['guild_id'])
@@ -3135,7 +3237,7 @@ add_parser(
 del RELATIONSHIP_REMOVE__CAL, \
     RELATIONSHIP_REMOVE__OPT
 
-#empty list
+# Empty list.
 def PRESENCES_REPLACE(client, data):
     pass
 
@@ -3147,6 +3249,7 @@ add_parser(
     PRESENCES_REPLACE)
 del PRESENCES_REPLACE
 
+# Hooman only event.
 def USER_SETTINGS_UPDATE(client, data):
     pass
 
@@ -3181,7 +3284,7 @@ add_parser(
 del GIFT_CODE_UPDATE__CAL, \
     GIFT_CODE_UPDATE__OPT
 
-#hooman only event
+# Hooman only event.
 def USER_ACHIEVEMENT_UPDATE(client, data):
     pass
 
@@ -3193,7 +3296,7 @@ add_parser(
     USER_ACHIEVEMENT_UPDATE)
 del USER_ACHIEVEMENT_UPDATE
 
-#hooman only event
+# Hooman only event.
 def MESSAGE_ACK(client, data):
     # contains `message_id` and `channel_id`, no clue, how it could be useful.
     pass
@@ -3206,7 +3309,7 @@ add_parser(
     MESSAGE_ACK)
 del MESSAGE_ACK
 
-#hooman only event, with the own presence data, what we get anyways.
+# Hooman only event, with the own presence data, what we get anyways.
 def SESSIONS_REPLACE(client, data):
     pass
 
@@ -3218,7 +3321,7 @@ add_parser(
     SESSIONS_REPLACE)
 del SESSIONS_REPLACE
 
-# Hooman only event,
+# Hooman only event.
 def USER_GUILD_SETTINGS_UPDATE(client, data):
     # individual guild settings data.
     pass
@@ -3232,7 +3335,7 @@ add_parser(
 del USER_GUILD_SETTINGS_UPDATE
 
 
-# Hooman only event,
+# Hooman only event.
 def CHANNEL_UNREAD_UPDATE(client, data):
     pass
 
@@ -3245,6 +3348,17 @@ add_parser(
 del CHANNEL_UNREAD_UPDATE
 
 
+# Deprecated event, use `VOICE_CHANNEL_STATUS_UPDATE` instead.
+def CHANNEL_TOPIC_UPDATE(client, data):
+    pass
+
+add_parser(
+    'CHANNEL_TOPIC_UPDATE',
+    CHANNEL_TOPIC_UPDATE,
+    CHANNEL_TOPIC_UPDATE,
+    CHANNEL_TOPIC_UPDATE,
+    CHANNEL_TOPIC_UPDATE)
+del CHANNEL_TOPIC_UPDATE
 
 
 def INTERACTION_CREATE__CAL(client, data):

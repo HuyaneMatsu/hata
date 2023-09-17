@@ -818,7 +818,7 @@ def filter_content(content):
     return [match[1] or match[0] for match in FILTER_RP.findall(content)]
 
 
-def chunkify(lines, limit=2000):
+def chunkify(lines, limit = 2000):
     """
     Creates chunks of strings from the given lines.
     
@@ -888,7 +888,7 @@ def chunkify(lines, limit=2000):
     return result
 
 
-def cchunkify(lines, lang='', limit=2000):
+def cchunkify(lines, lang = '', limit = 2000):
     """
     Creates code block chunks from the given lines.
     
@@ -1002,7 +1002,7 @@ else:
             parts.append(str(value))
             parts.append(' ')
             
-            name = name_pair[value!=1]
+            name = name_pair[value != 1]
             
             parts.append(name)
             parts.append(', ')
@@ -1309,7 +1309,7 @@ def url_cutter(url):
             return f'{url[:28]}...{url[-19:]}'
         
         position = url.find('/', position)
-        position +=1
+        position += 1
         if position == 0 or position == len(url):
             return f'{url[:28]}...{url[-19:]}'
     
@@ -1319,7 +1319,7 @@ def url_cutter(url):
         position = url.find('/', position)
         if position == -1:
             break
-        position +=1
+        position += 1
         if position == len(url):
             break
         positions.append(position)
@@ -1336,9 +1336,9 @@ def url_cutter(url):
                 from_start = 47 - from_end
                 break
             else:
-                index +=1
+                index += 1
                 if index == len(positions):
-                    value  =0
+                    value = 0
                 else:
                     value = positions[len(positions) - index]
                 value = top_limit - value

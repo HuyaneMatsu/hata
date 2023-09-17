@@ -46,7 +46,7 @@ INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE = InteractionType.application_
 INTERACTION_TYPE_FORM_SUBMIT = InteractionType.form_submit
 
 # It is 7 days, but lets re-request after 6
-OWNERS_ACCESS_REQUEST_INTERVAL = timedelta(days=6)
+OWNERS_ACCESS_REQUEST_INTERVAL = timedelta(days = 6)
 
 
 def match_application_commands_to_commands(application_commands, commands, match_schema):

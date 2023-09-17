@@ -20,6 +20,7 @@ def test__ChannelMetadataGuildVoice__repr():
     bitrate = 50000
     region = VoiceRegion.brazil
     user_limit = 4
+    status = 'koishi love'
     nsfw = True
     video_quality_mode = VideoQualityMode.auto
     
@@ -30,6 +31,7 @@ def test__ChannelMetadataGuildVoice__repr():
         position = position,
         bitrate = bitrate,
         region = region,
+        status = status,
         user_limit = user_limit,
         nsfw = nsfw,
         video_quality_mode = video_quality_mode,
@@ -50,6 +52,7 @@ def test__ChannelMetadataGuildVoice__hash():
     position = 7
     bitrate = 50000
     region = VoiceRegion.brazil
+    status = 'koishi love'
     user_limit = 4
     nsfw = True
     video_quality_mode = VideoQualityMode.auto
@@ -61,6 +64,7 @@ def test__ChannelMetadataGuildVoice__hash():
         position = position,
         bitrate = bitrate,
         region = region,
+        status = status,
         user_limit = user_limit,
         nsfw = nsfw,
         video_quality_mode = video_quality_mode,
@@ -81,6 +85,7 @@ def test__ChannelMetadataGuildVoice__eq():
     position = 7
     bitrate = 50000
     region = VoiceRegion.brazil
+    status = 'koishi love'
     user_limit = 4
     nsfw = True
     video_quality_mode = VideoQualityMode.auto
@@ -92,6 +97,7 @@ def test__ChannelMetadataGuildVoice__eq():
         'position': position,
         'bitrate': bitrate,
         'region': region,
+        'status': status,
         'user_limit': user_limit,
         'nsfw': nsfw,
         'video_quality_mode': video_quality_mode,
@@ -113,6 +119,7 @@ def test__ChannelMetadataGuildVoice__eq():
         ('position', 6),
         ('bitrate', 60000),
         ('region', VoiceRegion.india),
+        ('status', 'satori love'),
         ('user_limit', 5),
         ('nsfw', False),
         ('video_quality_mode', VideoQualityMode.full)

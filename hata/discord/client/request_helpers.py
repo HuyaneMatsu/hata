@@ -725,10 +725,10 @@ def validate_content_and_embed(content, embed, is_edit):
     return content, embed
 
 
-TIMEOUT_MAX_DURATION = timedelta(days=28)
+TIMEOUT_MAX_DURATION = timedelta(days = 28)
 TIMEOUT_MAX_DURATION_SECONDS_FLOAT = TIMEOUT_MAX_DURATION.total_seconds()
 TIMEOUT_MAX_DURATION_SECONDS_INT = floor(TIMEOUT_MAX_DURATION_SECONDS_FLOAT)
-ZERO_TIMEDELTA = timedelta(seconds=0)
+ZERO_TIMEDELTA = timedelta(seconds = 0)
 
 
 def validate_timeout_duration(timeout_duration):

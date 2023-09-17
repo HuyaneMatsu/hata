@@ -1,19 +1,19 @@
 import vampytest
 
-from ..fields import parse_topic
+from ..fields import parse_status
 
 
 def _iter_options():
     yield {}, None
-    yield {'topic': None}, None
-    yield {'topic': ''}, None
-    yield {'topic': 'a'}, 'a'
+    yield {'status': None}, None
+    yield {'status': ''}, None
+    yield {'status': 'a'}, 'a'
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__parse_topic(input_data):
+def test__parse_status(input_data):
     """
-    Tests whether ``parse_topic`` works as intended.
+    Tests whether ``parse_status`` works as intended.
     
     Parameters
     ----------
@@ -24,4 +24,4 @@ def test__parse_topic(input_data):
     -------
     output : `None`, `str`
     """
-    return parse_topic(input_data)
+    return parse_status(input_data)

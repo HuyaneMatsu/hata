@@ -348,6 +348,11 @@ class AuditLogEvent(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------+-----------------------------------+
     | home_remove_item                      | home_remove_item                      | 172   | none                              |
     +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | channel_status_update                 | channel status update                 | 192   | channel                           |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | channel_status_delete                 | channel status delete                 | 193   | channel                           |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -470,6 +475,8 @@ class AuditLogEvent(PreinstancedBase):
     home_feature_item = P(171, 'home_feature_item', AuditLogTargetType.none)
     home_remove_item = P(172, 'home_remove_item', AuditLogTargetType.none)
     
+    channel_status_update = P(192, 'channel status update', AuditLogTargetType.channel)
+    channel_status_delete = P(193, 'channel status delete', AuditLogTargetType.channel)
     
     def __init__(self, value, name, target_type):
         """

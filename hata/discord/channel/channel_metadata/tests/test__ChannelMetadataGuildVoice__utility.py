@@ -21,6 +21,7 @@ def test__ChannelMetadataGuildVoice__copy():
     bitrate = 50000
     region = VoiceRegion.brazil
     user_limit = 4
+    status = 'koishi love'
     nsfw = True
     video_quality_mode = VideoQualityMode.full
     
@@ -31,6 +32,7 @@ def test__ChannelMetadataGuildVoice__copy():
         position = position,
         bitrate = bitrate,
         region = region,
+        status = status,
         user_limit = user_limit,
         nsfw = nsfw,
         video_quality_mode = video_quality_mode,
@@ -57,6 +59,7 @@ def test__ChannelMetadataGuildVoice__copy_with__0():
     position = 7
     bitrate = 50000
     region = VoiceRegion.brazil
+    status = 'koishi love'
     user_limit = 4
     nsfw = True
     video_quality_mode = VideoQualityMode.full
@@ -68,6 +71,7 @@ def test__ChannelMetadataGuildVoice__copy_with__0():
         position = position,
         bitrate = bitrate,
         region = region,
+        status = status,
         user_limit = user_limit,
         nsfw = nsfw,
         video_quality_mode = video_quality_mode,
@@ -94,6 +98,7 @@ def test__ChannelMetadataGuildVoice__copy_with__1():
     old_position = 7
     old_bitrate = 50000
     old_region = VoiceRegion.brazil
+    old_status = 'koishi love'
     old_user_limit = 4
     old_nsfw = True
     old_video_quality_mode = VideoQualityMode.full
@@ -106,6 +111,7 @@ def test__ChannelMetadataGuildVoice__copy_with__1():
     new_position = 5
     new_bitrate = 60000
     new_region = VoiceRegion.india
+    new_status = 'satori love'
     new_user_limit = 5
     new_nsfw = False
     new_video_quality_mode = VideoQualityMode.auto
@@ -117,6 +123,7 @@ def test__ChannelMetadataGuildVoice__copy_with__1():
         position = old_position,
         bitrate = old_bitrate,
         region = old_region,
+        status = old_status,
         user_limit = old_user_limit,
         nsfw = old_nsfw,
         video_quality_mode = old_video_quality_mode,
@@ -129,6 +136,7 @@ def test__ChannelMetadataGuildVoice__copy_with__1():
         position = new_position,
         bitrate = new_bitrate,
         region = new_region,
+        status = new_status,
         user_limit = new_user_limit,
         nsfw = new_nsfw,
         video_quality_mode = new_video_quality_mode,
@@ -145,6 +153,7 @@ def test__ChannelMetadataGuildVoice__copy_with__1():
     vampytest.assert_eq(copy.position, new_position)
     vampytest.assert_eq(copy.bitrate, new_bitrate)
     vampytest.assert_eq(copy.region, new_region)
+    vampytest.assert_eq(copy.status, new_status)
     vampytest.assert_eq(copy.user_limit, new_user_limit)
     vampytest.assert_eq(copy.nsfw, new_nsfw)
     vampytest.assert_eq(copy.video_quality_mode, new_video_quality_mode)
@@ -164,6 +173,7 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__0():
     position = 7
     bitrate = 50000
     region = VoiceRegion.brazil
+    status = 'koishi love'
     user_limit = 4
     nsfw = True
     video_quality_mode = VideoQualityMode.full
@@ -175,6 +185,7 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__0():
         position = position,
         bitrate = bitrate,
         region = region,
+        status = status,
         user_limit = user_limit,
         nsfw = nsfw,
         video_quality_mode = video_quality_mode,
@@ -203,6 +214,7 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__1():
     old_position = 7
     old_bitrate = 50000
     old_region = VoiceRegion.brazil
+    old_status = 'koishi love'
     old_user_limit = 4
     old_nsfw = True
     old_video_quality_mode = VideoQualityMode.full
@@ -215,6 +227,7 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__1():
     new_position = 5
     new_bitrate = 60000
     new_region = VoiceRegion.india
+    new_status = 'satori love'
     new_user_limit = 5
     new_nsfw = False
     new_video_quality_mode = VideoQualityMode.auto
@@ -226,6 +239,7 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__1():
         position = old_position,
         bitrate = old_bitrate,
         region = old_region,
+        status = old_status,
         user_limit = old_user_limit,
         nsfw = old_nsfw,
         video_quality_mode = old_video_quality_mode,
@@ -238,6 +252,7 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__1():
         'position': new_position,
         'bitrate': new_bitrate,
         'region': new_region,
+        'status': new_status,
         'user_limit': new_user_limit,
         'nsfw': new_nsfw,
         'video_quality_mode': new_video_quality_mode,
@@ -257,6 +272,7 @@ def test__ChannelMetadataGuildVoice__copy_with_keyword_parameters__1():
     vampytest.assert_eq(copy.position, new_position)
     vampytest.assert_eq(copy.bitrate, new_bitrate)
     vampytest.assert_eq(copy.region, new_region)
+    vampytest.assert_eq(copy.status, new_status)
     vampytest.assert_eq(copy.user_limit, new_user_limit)
     vampytest.assert_eq(copy.nsfw, new_nsfw)
     vampytest.assert_eq(copy.video_quality_mode, new_video_quality_mode)

@@ -1,3 +1,22 @@
+## 1.3.39 *\[2023-09-17\]*
+
+### Improvements
+
+- Add `AutoModerationRuleTriggerType.user_profile`.
+- Add `AutoModerationEventType.user_update`.
+- Add `AutoModerationActionType.block_user_interaction`.
+- Add `ChannelMetadataBase.status`.
+- Add `Channel.status`.
+- Implement `.status` at `ChannelMetadataGuildVoice`.
+- Add `AuditLogEvent.channel_status_update`.
+- Add `AuditLogEvent.channel_status_delete`.
+- Add `status` detail converter.
+- Add `VOICE_CHANNEL_STATUS_UPDATE` parser.
+- Add `CHANNEL_TOPIC_UPDATE` parser.
+- Add `Client.channel_edit_status`.
+- Add `DiscordHTTPClient.channel_edit_status`.
+- Add `RATE_LIMIT_GROUPS.channel_edit_status`
+
 ## 1.3.38 *\[2023-09-09\]*
 
 ### Improvements

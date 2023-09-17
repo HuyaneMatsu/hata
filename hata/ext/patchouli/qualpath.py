@@ -93,7 +93,7 @@ class QualPath:
             while True:
                 part = parts[index]
                 repr_parts.append(part)
-                index +=1
+                index += 1
                 if index == limit:
                     break
                 

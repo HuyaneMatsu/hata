@@ -29,7 +29,7 @@ class ClientCompoundWebhookEndpoints(Compound):
     http : DiscordHTTPClient
     
     
-    async def webhook_create(self, channel, name, *, avatar=None):
+    async def webhook_create(self, channel, name, *, avatar = None):
         """
         Creates a webhook at the given channel.
         
@@ -788,7 +788,7 @@ class ClientCompoundWebhookEndpoints(Compound):
     
     
     async def webhook_message_edit(
-        self, webhook, message, content=..., *, embed = ..., file=..., allowed_mentions = ..., components = ...
+        self, webhook, message, content = ..., *, embed = ..., file = ..., allowed_mentions = ..., components = ...
     ):
         """
         Edits the message sent by the given webhook. The message's author must be the webhook itself.

@@ -421,7 +421,7 @@ class ChooseMenu(PaginationBase):
                 parts.append(title)
                 parts.append('\n')
             
-            index +=1
+            index += 1
             if index == end:
                 break
         

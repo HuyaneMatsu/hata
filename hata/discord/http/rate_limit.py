@@ -704,7 +704,7 @@ class RateLimitHandler:
         while can_free > 0:
             future = queue.popleft()
             future.set_result(None)
-            can_free -=1
+            can_free -= 1
             continue
     
     

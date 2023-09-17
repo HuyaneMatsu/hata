@@ -67,7 +67,7 @@ class SolarClient(RichAttributeErrorBaseType):
         return self
     
     
-    def add_node(self, host, port, password, region, resume_key = None, reconnect_attempts=3):
+    def add_node(self, host, port, password, region, resume_key = None, reconnect_attempts = 3):
         """
         Adds a node to Lavalink's node manager.
         
@@ -476,7 +476,7 @@ class SolarClient(RichAttributeErrorBaseType):
         self.nodes.discard(node)
     
     
-    def find_ideal_node(self, region=None):
+    def find_ideal_node(self, region = None):
         """
         Finds the least used node in the given region.
         

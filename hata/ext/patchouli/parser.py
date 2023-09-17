@@ -100,7 +100,7 @@ def remove_indents(lines):
                 
                 continue
             else:
-                ignore_index +=1
+                ignore_index += 1
                 continue
             
             break
@@ -157,7 +157,7 @@ def parse_sections(lines):
         else:
             section_lines.append(line)
         
-        index+=1
+        index += 1
         
         if index >= limit:
             while section_lines:
@@ -202,7 +202,7 @@ def detect_table(lines, index, limit):
                     
                     line = lines[index]
                     if (TABLE_ANY_RP.fullmatch(line) is not None):
-                        index +=1
+                        index += 1
                         continue
                     
                     break
@@ -247,7 +247,7 @@ class TextTable:
                 break
             
             line = lines[start]
-            start +=1
+            start += 1
             
             if (TABLE_BORDER_RP.fullmatch(line) is not None):
                 splitted_lines.append(None)
@@ -338,7 +338,7 @@ class TextTable:
                 break
             
             splitted_line = splitted_lines[index]
-            index +=1
+            index += 1
             
             if splitted_line is None:
                 # If we are at a border line, join the continuous lines together.
@@ -537,7 +537,7 @@ def detect_description(lines, index, limit):
         if (TABLE_ANY_RP.fullmatch(line) is not None):
             return index
         
-        index +=1
+        index += 1
         continue
 
 
@@ -617,12 +617,12 @@ def detect_indent(lines, index, limit):
         
         line = lines[index]
         if not line:
-            index +=1
+            index += 1
             continue
         
         if line[0] in (' ', '\t'):
             found_indented = True
-            index +=1
+            index += 1
             continue
         
         break
@@ -876,7 +876,7 @@ def detect_void(lines, index, limit):
         if line:
             return index
         
-        index +=1
+        index += 1
         continue
 
 
@@ -960,7 +960,7 @@ def parse_section(lines):
             break
         
         built = builts[index]
-        index +=1
+        index += 1
         
         if type(built) is not TextDescription:
             continue
@@ -982,8 +982,8 @@ def parse_section(lines):
         
         built._content = f'{built._content} {maybe_description._content}'
         del next_built[0]
-        index +=1
-        limit -=1
+        index += 1
+        limit -= 1
         continue
     
     return builts

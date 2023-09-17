@@ -257,6 +257,44 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         return {}
     
     
+    def _update_status(self, data):
+        """
+        Updates the channel metadata's status.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Channel status update data received from Discord.
+        """
+        pass
+    
+    
+    def _difference_update_status(self, data):
+        """
+        Updates the channel metadata's status and if changed returns it in a `dict` with a
+        `attribute-name` - `old-value` relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Channel status update data received from Discord.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `object`) items
+            All item in the returned dict is optional.
+            
+            Might contain the following items:
+            
+            +-----------+---------------+
+            | Keys      | Values        |
+            +===========+===============+
+            | status    | `None`, `str` |
+            +-----------+---------------+
+        """
+        return {}
+    
+    
     @classmethod
     def _from_partial_data(cls, data):
         """
@@ -644,6 +682,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         """
     )
     
+    
     default_sort_order = PlaceHolder(
         SortOrder.latest_activity,
         """
@@ -870,6 +909,20 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     )
     
     
+    status = PlaceHolder(
+        None,
+        """
+        Returns the channel's status.
+        
+        If the channel has no status, returns `None`.
+        
+        Returns
+        -------
+        status : `None`, `str`
+        """
+    )
+    
+    
     topic = PlaceHolder(
         None,
         """
@@ -887,7 +940,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     user_limit = PlaceHolder(
         0,
         """
-        Returns the maximal amount of users, who can join the voice channel
+        Returns the maximal amount of users, who can join the voice channel.
         
         If the channel has not user limit, returns `0`.
         

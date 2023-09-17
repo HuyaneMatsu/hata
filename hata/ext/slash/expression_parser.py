@@ -459,8 +459,8 @@ def evaluate_numeric_hexadecimal(array, start, end):
             f'Hexadecimal integer conversion over limit is disallowed: {LIMIT_INTEGER_HEXADECIMAL_MAX}.',
         )
     
-    raw_value = bytes(array[start:end])
-    value = int(raw_value, base=16)
+    raw_value = bytes(array[start : end])
+    value = int(raw_value, base = 16)
     return value, STATIC_NUMERIC_HEXADECIMAL_ID
 
 
@@ -498,8 +498,8 @@ def evaluate_numeric_octal(array, start, end):
             f'Octal integer conversion over limit is disallowed: {LIMIT_INTEGER_OCTAL_MAX}.',
         )
     
-    raw_value = bytes(array[start:end])
-    value = int(raw_value, base=8)
+    raw_value = bytes(array[start : end])
+    value = int(raw_value, base = 8)
     return value, STATIC_NUMERIC_OCTAL_ID
 
 def evaluate_numeric_binary(array, start, end):
@@ -537,7 +537,7 @@ def evaluate_numeric_binary(array, start, end):
         )
     
     raw_value = bytes(array[start:end])
-    value = int(raw_value, base=2)
+    value = int(raw_value, base = 2)
     return value, STATIC_NUMERIC_BINARY_ID
 
 

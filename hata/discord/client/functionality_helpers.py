@@ -229,7 +229,7 @@ class DiscoveryCategoryRequestCacher:
     """
     __slots__ = ('_active_request', '_last_update', '_waiter', 'cached', 'func', 'timeout',)
     
-    def __init__(self, func, timeout, cached=...):
+    def __init__(self, func, timeout, cached = ...):
         """
         Creates a ``DiscoveryCategoryRequestCacher``.
         
@@ -400,7 +400,7 @@ class DiscoveryTermRequestCacher:
         'timeout'
     )
     
-    def __init__(self, func, timeout, rate_limit_group, rate_limit_limiter=None,):
+    def __init__(self, func, timeout, rate_limit_group, rate_limit_limiter = None):
         """
         Creates a new ``DiscoveryTermRequestCacher`` object with the given parameters.
         

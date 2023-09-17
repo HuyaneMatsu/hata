@@ -327,7 +327,7 @@ class UserInfo(metaclass=Slotted):
         
         # color
         try:
-            color = Color(data[JSON_KEY_USER_INFO_COLOR], base=16)
+            color = Color(data[JSON_KEY_USER_INFO_COLOR], base = 16)
         except ValueError:
             color = Color()
         self.color = color

@@ -41,6 +41,7 @@ def test__ChannelMetadataBase__place_holders():
     vampytest.assert_instance(channel_metadata.region, VoiceRegion)
     vampytest.assert_instance(channel_metadata.slowmode, int)
     vampytest.assert_instance(channel_metadata.thread_users, dict, nullable = True)
+    vampytest.assert_instance(channel_metadata.status, str, nullable = True)
     vampytest.assert_instance(channel_metadata.topic, str, nullable = True)
     vampytest.assert_instance(channel_metadata.user_limit, int)
     vampytest.assert_instance(channel_metadata.video_quality_mode, VideoQualityMode)

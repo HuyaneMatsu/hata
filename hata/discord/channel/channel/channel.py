@@ -167,6 +167,9 @@ class Channel(DiscordEntity, immortal = True):
         topic : `None`, `str`, Optional (Keyword only)
             The channel's topic.
         
+        status : `None`, `str`, Optional (Keyword only)
+            The voice channel's status.
+        
         user_limit : `int`, Optional (Keyword only)
             The maximal amount of users, who can join the voice channel, or `0` if unlimited.
             
@@ -1007,6 +1010,45 @@ class Channel(DiscordEntity, immortal = True):
         return old_attributes
     
     
+    
+    def _update_status(self, data):
+        """
+        Updates the channel's status.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Channel status update data received from Discord.
+        """
+        self.metadata._update_status(data)
+    
+    
+    def _difference_update_status(self, data):
+        """
+        Updates the channel's status and if changed returns it in a `dict` with a `attribute-name` - `old-value`
+        relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Channel status update data received from Discord.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `object`) items
+            All item in the returned dict is optional.
+            
+            Might contain the following items:
+            
+            +-----------+---------------+
+            | Keys      | Values        |
+            +===========+===============+
+            | status    | `None`, `str` |
+            +-----------+---------------+
+        """
+        return self.metadata._difference_update_status(data)
+        
+    
     def _delete(self, client):
         """
         Called when the channel is deleted.
@@ -1213,6 +1255,9 @@ class Channel(DiscordEntity, immortal = True):
         
         topic : `None`, `str`, Optional (Keyword only)
             The channel's topic.
+        
+        status : `None`, `str`, Optional (Keyword only)
+            The voice channel's status.
         
         user_limit : `int`, Optional (Keyword only)
             The maximal amount of users, who can join the voice channel, or `0` if unlimited.
@@ -1652,6 +1697,12 @@ class Channel(DiscordEntity, immortal = True):
     @copy_docs(ChannelMetadataBase.topic)
     def topic(self):
         return self.metadata.topic
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.status)
+    def status(self):
+        return self.metadata.status
     
     
     @property

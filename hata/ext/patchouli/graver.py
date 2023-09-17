@@ -729,7 +729,7 @@ class GravedTable:
             line = []
             for _ in range(x):
                 element = array[index]
-                index +=1
+                index += 1
                 
                 line.append(element)
             
@@ -740,9 +740,9 @@ class GravedTable:
         result = [
             '<',
             self.__class__.__name__,
-            ', size=',
+            ', size = ',
             repr(self.size),
-            ', table=[',
+            ', table = [',
         ]
         
         for line in self:
@@ -755,6 +755,7 @@ class GravedTable:
         
         result.append(']>')
         return ''.join(result)
+
 
 def apply_warnings_to_path(warnings, path):
     """

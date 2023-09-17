@@ -81,7 +81,7 @@ def reconstruct_json_into(value, into, indent):
         into.append(TYPE_NAME_STRING)
         into.append('(')
         into.append(MODIFIER_LENGTH)
-        into.append('=')
+        into.append(' = ')
         into.append(str(len(value)))
         into.append('): ')
         into.append(reprlib.repr(value))
@@ -192,7 +192,7 @@ def reconstruct_string_into(value, into, indent, is_file):
         into.append(TYPE_NAME_STRING)
         into.append('(')
         into.append(MODIFIER_LENGTH)
-        into.append('=')
+        into.append(' = ')
         into.append(str(length))
         into.append(')')
     
@@ -370,7 +370,7 @@ def reconstruct_binary_into(value, into):
     into.append(TYPE_NAME_BINARY)
     into.append('(')
     into.append(MODIFIER_LENGTH)
-    into.append('=')
+    into.append(' = ')
     into.append(str(len(value)))
     into.append(')')
 

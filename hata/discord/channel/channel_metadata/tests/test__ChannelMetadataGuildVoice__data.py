@@ -21,6 +21,7 @@ def test__ChannelMetadataGuildVoice__from_data():
     position = 7
     bitrate = 50000
     region = VoiceRegion.brazil
+    status = 'koishi love'
     user_limit = 4
     nsfw = True
     video_quality_mode = VideoQualityMode.auto
@@ -35,6 +36,7 @@ def test__ChannelMetadataGuildVoice__from_data():
         'position': position,
         'bitrate': bitrate,
         'rtc_region': region.value,
+        'status': status,
         'user_limit': user_limit,
         'nsfw': nsfw,
         'video_quality_mode': video_quality_mode.value,
@@ -50,6 +52,7 @@ def test__ChannelMetadataGuildVoice__from_data():
     vampytest.assert_eq(channel_metadata.position, position)
     vampytest.assert_eq(channel_metadata.bitrate, bitrate)
     vampytest.assert_eq(channel_metadata.region, region)
+    vampytest.assert_eq(channel_metadata.status, status)
     vampytest.assert_eq(channel_metadata.user_limit, user_limit)
     vampytest.assert_eq(channel_metadata.nsfw, nsfw)
     vampytest.assert_eq(channel_metadata.video_quality_mode, video_quality_mode)
@@ -69,6 +72,7 @@ def test__ChannelMetadataGuildVoice__to_data():
     position = 7
     bitrate = 50000
     region = VoiceRegion.brazil
+    status = 'koishi love'
     user_limit = 4
     nsfw = True
     video_quality_mode = VideoQualityMode.auto
@@ -80,6 +84,7 @@ def test__ChannelMetadataGuildVoice__to_data():
         position = position,
         bitrate = bitrate,
         region = region,
+        status = status,
         user_limit = user_limit,
         nsfw = nsfw,
         video_quality_mode = video_quality_mode,
@@ -99,6 +104,7 @@ def test__ChannelMetadataGuildVoice__to_data():
             'position': position,
             'bitrate': bitrate,
             'rtc_region': region.value,
+            'status': status,
             'user_limit': user_limit,
             'nsfw': nsfw,
             'video_quality_mode': video_quality_mode.value,
@@ -278,3 +284,46 @@ def test__ChannelMetadataGuildVoice__from_partial_data():
     _assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)
+
+
+def test__ChannelMetadataGuildVoice__update_status():
+    """
+    Tests whether ``ChannelMetadataGuildVoice._update_status`` works as intended.
+    """
+    status = 'koishi love'
+    
+    channel_metadata = ChannelMetadataGuildVoice()
+    
+    data = {
+        'status': status,
+    }
+    
+    channel_metadata._update_status(data)
+    
+    vampytest.assert_eq(channel_metadata.status, status)
+
+
+def test__ChannelMetadataGuildVoice__difference_update_status():
+    """
+    Tests whether ``ChannelMetadataGuildVoice._difference_update_status`` works as intended.
+    """
+    old_status = 'koishi love'
+    
+    new_status = 'satori love'
+    
+    channel_metadata = ChannelMetadataGuildVoice(status = old_status)
+    
+    data = {
+        'status': new_status,
+    }
+    
+    old_attributes = channel_metadata._difference_update_status(data)
+    
+    vampytest.assert_eq(
+        old_attributes,
+        {
+            'status': old_status,
+        },
+    )
+
+    vampytest.assert_eq(channel_metadata.status, new_status)

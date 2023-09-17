@@ -307,7 +307,7 @@ class ClientCompoundClientEndpoints(Compound):
     
     
     async def guild_profile_edit(
-        self, guild, *, nick=..., avatar=..., timeout_duration = ..., reason = None
+        self, guild, *, nick = ..., avatar = ..., timeout_duration = ..., reason = None
     ):
         """
         Edits the client guild profile in the given guild. Nick and guild specific avatars can be edited on this way.

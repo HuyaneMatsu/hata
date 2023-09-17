@@ -1164,7 +1164,7 @@ class CachedSearcher:
         
         return cached_possibilities, cached_relations
     
-    def __call__(self, value, limit=100):
+    def __call__(self, value, limit = 100):
         """
         Returns all the found units with the given value in their path. Case insensitive.
         
@@ -1179,7 +1179,7 @@ class CachedSearcher:
         """
         possibilities, relations = self._prepare()
         
-        matcheds = get_close_matches(value, possibilities, n=limit, cutoff=0.60)
+        matcheds = get_close_matches(value, possibilities, n = limit, cutoff = 0.60)
         
         paths = []
         collected = set()

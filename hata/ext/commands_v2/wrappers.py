@@ -107,7 +107,7 @@ class CommandConverterConfigurerWrapper(CommandWrapper):
     """
     __slots__ = ('_detail', '_flags', '_modifiers', )
     
-    def __new__(cls, annotation, flags=None, **modifiers):
+    def __new__(cls, annotation, flags = None, **modifiers):
         """
         Creates a new command wrapper instance for modifying converter flags.
     

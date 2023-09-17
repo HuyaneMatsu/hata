@@ -175,7 +175,7 @@ class CooldownHandler:
     """
     __slots__ = ('cache', 'checker', 'limit', 'reset', 'weight',)
     
-    def __new__(cls, for_, reset, limit=1, weight=1):
+    def __new__(cls, for_, reset, limit = 1, weight = 1):
         """
         Creates a new ``CooldownHandler`` from the given parameters.
         

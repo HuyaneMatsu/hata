@@ -83,7 +83,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         cls,
         name = ...,
         actions = ...,
-        trigger_type=...,
+        trigger_type = ...,
         *,
         enabled = ...,
         event_type = ...,
@@ -761,7 +761,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         excluded_channel_ids = ...,
         excluded_role_ids = ...,
         name = ...,
-        trigger_type=...,
+        trigger_type = ...,
         **keyword_parameters,
     ):
         """

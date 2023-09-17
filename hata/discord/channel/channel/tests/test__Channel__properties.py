@@ -34,40 +34,51 @@ def test__Channel__thread_users__0():
     vampytest.assert_is(channel.thread_users, None)
 
 
-def test__Channel__general_properties():
+def _iter_options__general_properties():
+    yield (ChannelType.private_group, 'application_id', 202301210011)
+    yield (ChannelType.guild_thread_public, 'applied_tag_ids', (202209180147, 202209180148))
+    yield (ChannelType.guild_thread_public, 'archived', True)
+    yield (ChannelType.guild_thread_public, 'archived_at', DateTime(2022, 5, 14))
+    yield (ChannelType.guild_thread_public, 'auto_archive_after', 604800)
+    yield (ChannelType.guild_forum, 'available_tags', (ForumTag('tumoneko'), ))
+    yield (ChannelType.guild_voice, 'bitrate', 50000)
+    yield (ChannelType.guild_forum, 'default_thread_auto_archive_after', 604800)
+    yield (ChannelType.guild_forum, 'default_thread_reaction', BUILTIN_EMOJIS['heart'])
+    yield (ChannelType.guild_forum, 'default_thread_slowmode', 69)
+    yield (ChannelType.guild_forum, 'flags', ChannelFlag(1))
+    yield (ChannelType.guild_thread_private, 'invitable', False)
+    yield (ChannelType.guild_thread_private, 'name', 'fated')
+    yield (ChannelType.guild_text, 'nsfw', True)
+    yield (ChannelType.guild_thread_private, 'open', False)
+    yield (ChannelType.guild_thread_private, 'owner_id', 202209180149)
+    yield (ChannelType.guild_thread_private, 'parent_id', 202209180150)
+    yield (ChannelType.guild_text, 'position', 7)
+    yield (ChannelType.guild_voice, 'region', VoiceRegion.brazil)
+    yield (ChannelType.guild_text, 'slowmode', 32)
+    yield (ChannelType.guild_text, 'topic', 'determination')
+    yield (ChannelType.guild_voice, 'status', 'koishi love')
+    yield (ChannelType.guild_voice, 'user_limit', 66)
+    yield (ChannelType.guild_voice, 'video_quality_mode', VideoQualityMode.full)
+    yield (ChannelType.guild_forum, 'default_sort_order', SortOrder.creation_date)
+    yield (ChannelType.guild_forum, 'default_forum_layout', ForumLayout.list)
+
+
+@vampytest.call_from(_iter_options__general_properties())
+def test__Channel__general_properties(channel_type, field_name, field_value):
     """
     Checks whether the general proxy properties of the ``Channel`` work as intended.
+    
+    Parameters
+    ----------
+    channel_type : ``ChannelType``
+        Channel type to create channel with.
+    field_name : `str`
+        The field's name to test.
+    field_value : `object`
+        The field's value.
     """
-    for channel_type, field_name, value in (
-        (ChannelType.private_group, 'application_id', 202301210011),
-        (ChannelType.guild_thread_public, 'applied_tag_ids', (202209180147, 202209180148)),
-        (ChannelType.guild_thread_public, 'archived', True),
-        (ChannelType.guild_thread_public, 'archived_at', DateTime(2022, 5, 14)),
-        (ChannelType.guild_thread_public, 'auto_archive_after', 604800),
-        (ChannelType.guild_forum, 'available_tags', (ForumTag('tumoneko'), )),
-        (ChannelType.guild_voice, 'bitrate', 50000),
-        (ChannelType.guild_forum, 'default_thread_auto_archive_after', 604800),
-        (ChannelType.guild_forum, 'default_thread_reaction', BUILTIN_EMOJIS['heart']),
-        (ChannelType.guild_forum, 'default_thread_slowmode', 69),
-        (ChannelType.guild_forum, 'flags', ChannelFlag(1)),
-        (ChannelType.guild_thread_private, 'invitable', False),
-        (ChannelType.guild_thread_private, 'name', 'fated'),
-        (ChannelType.guild_text, 'nsfw', True),
-        (ChannelType.guild_thread_private, 'open', False),
-        (ChannelType.guild_thread_private, 'owner_id', 202209180149),
-        (ChannelType.guild_thread_private, 'parent_id', 202209180150),
-        (ChannelType.guild_text, 'position', 7),
-        (ChannelType.guild_voice, 'region', VoiceRegion.brazil),
-        (ChannelType.guild_text, 'slowmode', 32),
-        (ChannelType.guild_text, 'topic', 'determination'),
-        (ChannelType.guild_voice, 'user_limit', 66),
-        (ChannelType.guild_voice, 'video_quality_mode', VideoQualityMode.full),
-        (ChannelType.guild_forum, 'default_sort_order', SortOrder.creation_date),
-        (ChannelType.guild_forum, 'default_forum_layout', ForumLayout.list),
-    ):
-        channel = Channel(channel_type = channel_type, **{field_name: value})
-        
-        vampytest.assert_eq(getattr(channel, field_name), value)
+    channel = Channel(channel_type = channel_type, **{field_name: field_value})
+    vampytest.assert_eq(getattr(channel, field_name), field_value)
 
 
 def test__Channel__icon():

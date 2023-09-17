@@ -1372,7 +1372,7 @@ class TypeSerializer:
     """
     __slots__ = ('object', 'sections', 'path')
     
-    def __init__(self, object_, path=None):
+    def __init__(self, object_, path = None):
         """
         Parameters
         ----------
@@ -1695,7 +1695,7 @@ class ModuleSerializer:
     """
     __slots__ = ('object', 'sections', 'path')
     
-    def __init__(self, object_, path=None):
+    def __init__(self, object_, path = None):
         """
         Creates a module serializer to html serialize a module.
         

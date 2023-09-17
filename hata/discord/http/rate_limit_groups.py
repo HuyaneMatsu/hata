@@ -373,6 +373,15 @@ Group Details
     - Resets after : `OPT`
     - Notes : Untested.
 
+- channel_edit_status
+    - Endpoint : `/channels/{channel_id}/voice-status`
+    - Method : `PUT`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `50`
+    - Resets after : `0.95`
+    - Notes : unknown.
+
 - channel_directory_counts
     - Endpoint : `/channels/{channel_id}/directory-entries/counts`
     - Method : `GET`
@@ -2061,6 +2070,7 @@ channel_delete = RateLimitGroup.unlimited()
 channel_group_leave = RateLimitGroup.unlimited() # untested; same as channel_delete?
 channel_edit = RateLimitGroup(LIMITER_CHANNEL)
 channel_group_edit = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?
+channel_edit_status = RateLimitGroup()
 channel_directory_counts = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?
 channel_directory_get_all = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?
 channel_directory_search = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?

@@ -10,6 +10,9 @@ from ...channel.permission_overwrite.utils import (
     PERMISSION_OVERWRITE_FIELD_CONVERTERS, PERMISSION_OVERWRITE_PERMISSION_FIELD_CONVERTERS
 )
 from ...channel.forum_tag.utils import FORUM_TAG_FIELD_CONVERTERS
+from ...channel.channel_metadata.fields import (
+    put_status_into as put_channel_status_into, validate_status as validate_channel_status
+)
 from ...guild import Guild, create_partial_guild_from_id
 from ...http import DiscordHTTPClient
 from ...payload_building import build_create_payload, build_edit_payload
@@ -314,7 +317,7 @@ class ClientCompoundChannelEndpoints(Compound):
         return channels
     
     
-    async def channel_move(self, channel, visual_position, *, parent=..., lock_permissions = False, reason = None):
+    async def channel_move(self, channel, visual_position, *, parent = ..., lock_permissions = False, reason = None):
         """
         Moves a guild channel to the given visual position under it's parent, or guild. If the algorithm can not
         place the channel exactly on that location, it will place it as close, as it can. If there is nothing to
@@ -632,6 +635,37 @@ class ClientCompoundChannelEndpoints(Compound):
         
         if data:
             await self.http.channel_edit(channel_id, data, reason)
+    
+    
+    async def channel_edit_status(self, channel, status, *, reason = None):
+        """
+        Edits the channel with the given status. Channel should be a guild voice.
+        
+        this function is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``Channel``, `int`
+            The channel to edit.
+        
+        status : `None`, `str`
+            The channel's status.
+        
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the respective guild's audit logs.
+        
+        Raises
+        ------
+        TypeError
+            - If any parameter's type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        channel_id = get_channel_id(channel, Channel.is_guild_voice)
+        data = put_channel_status_into(validate_channel_status(status), {}, True)
+        await self.http.channel_edit(channel_id, data, reason)
     
     
     async def channel_create(

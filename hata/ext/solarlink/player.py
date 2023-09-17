@@ -252,7 +252,7 @@ class SolarPlayer(SolarPlayerBase):
         self._current_track = None
     
     
-    async def skip(self, index=0):
+    async def skip(self, index = 0):
         """
         Skips the given track by it's index and returns it.
         
@@ -341,7 +341,7 @@ class SolarPlayer(SolarPlayerBase):
         return track
     
     
-    async def remove(self, index=0):
+    async def remove(self, index = 0):
         """
         Removes the track with the given index from the queue and returns it.
         

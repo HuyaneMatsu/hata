@@ -17,6 +17,7 @@ def _assert_fields_set(channel_metadata):
     vampytest.assert_instance(channel_metadata.position, int)
     vampytest.assert_instance(channel_metadata.bitrate, int)
     vampytest.assert_instance(channel_metadata.region, VoiceRegion, nullable = True)
+    vampytest.assert_instance(channel_metadata.status, str, nullable = True)
     vampytest.assert_instance(channel_metadata.user_limit, int)
     vampytest.assert_instance(channel_metadata.nsfw, bool)
     vampytest.assert_instance(channel_metadata.video_quality_mode, VideoQualityMode)
@@ -36,6 +37,7 @@ def test__ChannelMetadataGuildVoice__new__0():
     position = 7
     bitrate = 50000
     region = VoiceRegion.brazil
+    status = 'koishi love'
     user_limit = 4
     nsfw = True
     video_quality_mode = VideoQualityMode.auto
@@ -47,6 +49,7 @@ def test__ChannelMetadataGuildVoice__new__0():
         position = position,
         bitrate = bitrate,
         region = region,
+        status = status,
         user_limit = user_limit,
         nsfw = nsfw,
         video_quality_mode = video_quality_mode,
@@ -62,6 +65,7 @@ def test__ChannelMetadataGuildVoice__new__0():
     vampytest.assert_eq(channel_metadata.position, position)
     vampytest.assert_eq(channel_metadata.bitrate, bitrate)
     vampytest.assert_eq(channel_metadata.region, region)
+    vampytest.assert_eq(channel_metadata.status, status)
     vampytest.assert_eq(channel_metadata.user_limit, user_limit)
     vampytest.assert_eq(channel_metadata.nsfw, nsfw)
     vampytest.assert_eq(channel_metadata.video_quality_mode, video_quality_mode)
@@ -92,6 +96,7 @@ def test__ChannelMetadataGuildVoice__from_keyword_parameters__0():
     bitrate = 50000
     region = VoiceRegion.brazil
     user_limit = 4
+    status = 'koishi love'
     nsfw = True
     video_quality_mode = VideoQualityMode.auto
     
@@ -102,6 +107,7 @@ def test__ChannelMetadataGuildVoice__from_keyword_parameters__0():
         'position': position,
         'bitrate': bitrate,
         'region': region,
+        'status': status,
         'user_limit': user_limit,
         'nsfw': nsfw,
         'video_quality_mode': video_quality_mode,
@@ -119,6 +125,7 @@ def test__ChannelMetadataGuildVoice__from_keyword_parameters__0():
     vampytest.assert_eq(channel_metadata.position, position)
     vampytest.assert_eq(channel_metadata.bitrate, bitrate)
     vampytest.assert_eq(channel_metadata.region, region)
+    vampytest.assert_eq(channel_metadata.status, status)
     vampytest.assert_eq(channel_metadata.user_limit, user_limit)
     vampytest.assert_eq(channel_metadata.nsfw, nsfw)
     vampytest.assert_eq(channel_metadata.video_quality_mode, video_quality_mode)

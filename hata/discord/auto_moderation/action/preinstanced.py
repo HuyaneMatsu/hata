@@ -21,7 +21,6 @@ class AutoModerationActionType(PreinstancedBase):
     metadata_type : ``AutoModerationActionMetadataBase``
         The action type's respective metadata type.
     
-    
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`str`, ``AutoModerationActionType``) items
@@ -35,17 +34,19 @@ class AutoModerationActionType(PreinstancedBase):
     
     Every predefined auto moderation action type is also stored as a class attribute:
     
-    +-----------------------+-----------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
-    | Class attribute name  | Name                  | Value     | Metadata type                                     | Description                                                           |
-    +=======================+=======================+===========+===================================================+=======================================================================+
-    | none                  | none                  | 0         | ``AutoModerationActionMetadataBase``              | N/A                                                                   |
-    +-----------------------+-----------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
-    | block_message         | block message         | 1         | ``AutoModerationActionMetadataBlock``             | Blocks the message's content according to the rule.                   |
-    +-----------------------+-----------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
-    | send_alert_message    | send alert message    | 2         | ``AutoModerationActionMetadataSendAlertMessage``  | Sends an alert message to the specified channel.                      |
-    +-----------------------+-----------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
-    | timeout               | timeout               | 3         | ``AutoModerationActionMetadataTimeout``           | Timeouts the user. Only applicable for `keyword` rules. Max 4 weeks.  |
-    +-----------------------+-----------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
+    +---------------------------+---------------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
+    | Class attribute name      | Name                      | Value     | Metadata type                                     | Description                                                           |
+    +===========================+===========================+===========+===================================================+=======================================================================+
+    | none                      | none                      | 0         | ``AutoModerationActionMetadataBase``              | N/A                                                                   |
+    +---------------------------+---------------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
+    | block_message             | block message             | 1         | ``AutoModerationActionMetadataBlock``             | Blocks the message's content according to the rule.                   |
+    +---------------------------+---------------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
+    | send_alert_message        | send alert message        | 2         | ``AutoModerationActionMetadataSendAlertMessage``  | Sends an alert message to the specified channel.                      |
+    +---------------------------+---------------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
+    | timeout                   | timeout                   | 3         | ``AutoModerationActionMetadataTimeout``           | Timeouts the user. Only applicable for `keyword` rules. Max 4 weeks.  |
+    +---------------------------+---------------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
+    | block_user_interaction    | block user interaction    | 4         | ``AutoModerationActionMetadataBase``              | Blocks the user from using text, voice and interactions.              |
+    +---------------------------+---------------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
     """
     __slots__ = ('metadata_type',)
     
@@ -99,3 +100,4 @@ class AutoModerationActionType(PreinstancedBase):
     block_message = P(1, 'block message', AutoModerationActionMetadataBlock)
     send_alert_message = P(2, 'send alert message', AutoModerationActionMetadataSendAlertMessage)
     timeout = P(3, 'timeout', AutoModerationActionMetadataTimeout)
+    block_user_interaction = P(4, 'block user interaction', AutoModerationActionMetadataBase)

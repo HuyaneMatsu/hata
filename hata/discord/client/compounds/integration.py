@@ -132,7 +132,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
     
     
     async def integration_edit(
-        self, integration, *, expire_behavior=..., expire_grace_period=..., enable_emojis=...
+        self, integration, *, expire_behavior = ..., expire_grace_period = ..., enable_emojis = ...
     ):
         """
         Edits the given integration.

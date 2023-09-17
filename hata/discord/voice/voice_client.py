@@ -724,7 +724,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         return True
     
     
-    def skip(self, index=0):
+    def skip(self, index = 0):
         """
         Skips the currently played audio at the given index and returns it.
         

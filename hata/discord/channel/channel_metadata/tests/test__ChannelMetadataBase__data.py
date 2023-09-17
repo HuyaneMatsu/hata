@@ -53,3 +53,22 @@ def test__ChannelMetadataBase__from_partial_data():
     """
     channel_metadata = ChannelMetadataBase._from_partial_data({})
     _assert_fields_set(channel_metadata)
+
+
+def test__ChannelMetadataBase__update_status():
+    """
+    Tests whether ``ChannelMetadataBase._update_status`` works as intended.
+    """
+    channel_metadata = ChannelMetadataBase()
+    
+    channel_metadata._update_status({})
+
+
+def test__ChannelMetadataBase__difference_update_status():
+    """
+    Tests whether ``ChannelMetadataBase._difference_update_status`` works as intended.
+    """
+    channel_metadata = ChannelMetadataBase()
+    
+    old_attributes = channel_metadata._difference_update_status({})
+    vampytest.assert_eq(old_attributes, {})

@@ -307,7 +307,9 @@ class ClientCompoundOauth2Endpoints(Compound):
         access._renew(data)
     
     
-    async def guild_user_add(self, guild, access, user = None, *, nick=None, roles=None, mute=False, deaf=False):
+    async def guild_user_add(
+        self, guild, access, user = None, *, nick = None, roles = None, mute = False, deaf = False
+    ):
         """
         Adds the passed to the guild. The user must have granted you the `'guilds.join'` oauth2 scope.
         

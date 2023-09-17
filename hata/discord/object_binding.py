@@ -5,7 +5,7 @@ from collections import OrderedDict
 from scarletio import RichAttributeErrorBaseType, WeakItemDictionary, WeakKeyDictionary, copy_docs
 
 
-def bind(bind_to, bind_with, name, *, weak=False, weak_cache_size=0):
+def bind(bind_to, bind_with, name, *, weak = False, weak_cache_size = 0):
     """
     A cool hata features, that lets you bind object to existing one.
     

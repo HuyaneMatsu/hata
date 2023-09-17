@@ -810,7 +810,7 @@ def parse_color(text):
     
     parsed = COLOR_HTML_3_RP.fullmatch(text)
     if (parsed is not None):
-        raw_value = int(parsed.group(1), base=16)
+        raw_value = int(parsed.group(1), base = 16)
         red = (raw_value >> 8) * 17
         green = ((raw_value >> 4) & 0xf) * 17
         blue = (raw_value & 0xf) * 17

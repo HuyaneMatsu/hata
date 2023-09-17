@@ -116,7 +116,7 @@ class ClientCompoundClientGateway(Compound):
     def gateway_for(self, guild_id): ...
     
     
-    async def edit_presence(self, *, activity=..., status=..., afk=False):
+    async def edit_presence(self, *, activity = ..., status = ..., afk = False):
         """
         Changes the client's presence (status and activity). If a parameter is not defined, it will not be changed.
         

@@ -12,8 +12,8 @@ from ...field_parsers import (
 from ...field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, flag_optional_putter_factory,
     force_string_putter_factory, int_optional_postprocess_putter_factory, int_putter_factory,
-    optional_entity_id_array_optional_putter_factory, nullable_entity_array_optional_putter_factory,
-    nulled_int_optional_putter_factory, nullable_string_putter_factory, preinstanced_optional_putter_factory
+    nullable_entity_array_optional_putter_factory, nullable_string_putter_factory, nulled_int_optional_putter_factory,
+    optional_entity_id_array_optional_putter_factory, preinstanced_optional_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory, flag_validator_factory,
@@ -29,8 +29,8 @@ from ..permission_overwrite import PermissionOverwrite
 
 from .constants import (
     AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS, BITRATE_DEFAULT, BITRATE_MAX, BITRATE_MIN, NAME_LENGTH_MAX,
-    NAME_LENGTH_MIN, SLOWMODE_DEFAULT, SLOWMODE_MAX, SLOWMODE_MIN, TOPIC_LENGTH_MAX, TOPIC_LENGTH_MIN,
-    USER_LIMIT_DEFAULT, USER_LIMIT_MAX, USER_LIMIT_MIN
+    NAME_LENGTH_MIN, SLOWMODE_DEFAULT, SLOWMODE_MAX, SLOWMODE_MIN, STATUS_LENGTH_MAX, STATUS_LENGTH_MIN,
+    TOPIC_LENGTH_MAX, TOPIC_LENGTH_MIN, USER_LIMIT_DEFAULT, USER_LIMIT_MAX, USER_LIMIT_MIN
 )
 from .flags import ChannelFlag
 from .preinstanced import ForumLayout, SortOrder, VideoQualityMode, VoiceRegion
@@ -701,6 +701,12 @@ validate_slowmode = int_conditional_validator_factory(
     ),
     f'>= {SLOWMODE_MIN} and <= {SLOWMODE_MAX},'
 )
+
+# status
+
+parse_status = nullable_string_parser_factory('status')
+put_status_into = url_optional_putter_factory('status')
+validate_status = nullable_string_validator_factory('status', STATUS_LENGTH_MIN, STATUS_LENGTH_MAX)
 
 # topic
 

@@ -1,19 +1,19 @@
 import vampytest
 
-from ..fields import put_topic_into
+from ..fields import put_status_into
 
 
 def _iter_options():
-    yield None, False, {'topic': ''}
-    yield None, True, {'topic': ''}
-    yield 'a', False, {'topic': 'a'}
-    yield 'a', True, {'topic': 'a'}
+    yield None, False, {}
+    yield None, True, {'status': None}
+    yield 'a', False, {'status': 'a'}
+    yield 'a', True, {'status': 'a'}
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_topic_into(input_value, defaults):
+def test__put_status_into(input_value, defaults):
     """
-    Tests whether ``put_topic_into`` is working as intended.
+    Tests whether ``put_status_into`` is working as intended.
     
     Parameters
     ----------
@@ -26,4 +26,4 @@ def test__put_topic_into(input_value, defaults):
     -------
     data : `dict<str, object>`
     """
-    return put_topic_into(input_value, {}, defaults)
+    return put_status_into(input_value, {}, defaults)

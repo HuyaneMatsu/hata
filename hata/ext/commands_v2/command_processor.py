@@ -567,7 +567,7 @@ class CommandProcessor(EventWaitforBase):
         return self._default_category
     
     
-    def create_category(self, category_name, *, checks=None, description = None):
+    def create_category(self, category_name, *, checks = None, description = None):
         """
         Creates a category with the given parameters.
         

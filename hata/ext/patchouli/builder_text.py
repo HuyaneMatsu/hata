@@ -15,9 +15,10 @@ DO_NOT_PREVIEW_RP = re.compile('this [a-z]+ is a [a-z]+\.?', re.I)
 SPACE_CHAR_DEFAULT = ' '
 SPACE_CHAR_UNICODE = (b'\xe2\xa0\x80').decode()
 
-DEFAULT_LISTING_HEAD = '-'*(INDENT_SIZE_DEFAULT << 4)
+DEFAULT_LISTING_HEAD = '-' * (INDENT_SIZE_DEFAULT << 4)
 
 EMBED_DESCRIPTION_MAX_SIZE = 4096
+
 
 def sizify(words, max_length):
     """
@@ -77,6 +78,7 @@ def sizify(words, max_length):
     
     return lines
 
+
 def preview_string(graved):
     """
     Creates preview string of the given graved content.
@@ -125,6 +127,7 @@ def preview_string(graved):
     
     return content
 
+
 def graved_to_single_graved_words(graved):
     """
     Translates the given graved content to words.
@@ -157,7 +160,7 @@ def graved_to_single_graved_words(graved):
             
             local_words = element.split(' ')
             if (not add_space_before) and words:
-                words[-1] = words[-1]+local_words.pop(0)
+                words[-1] = words[-1] + local_words.pop(0)
             
             words.extend(local_words)
         
@@ -166,6 +169,7 @@ def graved_to_single_graved_words(graved):
             words.append(local_word)
     
     return words
+
 
 def graved_to_source_words(graved):
     """
@@ -214,6 +218,7 @@ def graved_to_source_words(graved):
     
     return words
 
+
 def graved_to_escaped_words(graved):
     """
     Translates the given graved content to words where underscores are escaped..
@@ -246,7 +251,7 @@ def graved_to_escaped_words(graved):
             
             local_words = element.replace('_', '\_').split(' ')
             if (not add_space_before) and words:
-                words[-1] = words[-1]+local_words.pop(0)
+                words[-1] = words[-1] + local_words.pop(0)
             
             words.extend(local_words)
         
@@ -255,6 +260,7 @@ def graved_to_escaped_words(graved):
             words.append(local_word)
     
     return words
+
 
 class BuilderContext:
     """
@@ -292,6 +298,7 @@ class BuilderContext:
 EMBED_SIZED_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_UNICODE, 79, graved_to_escaped_words)
 TEXT_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_DEFAULT, 120, graved_to_single_graved_words)
 TEXT_SOURCE_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_DEFAULT, 120, graved_to_source_words)
+
 
 class TableLine:
     """
@@ -367,6 +374,7 @@ class TableLine:
         
         self.lines = lines
     
+    
     @property
     def line_count(self):
         """
@@ -377,6 +385,7 @@ class TableLine:
         length : `int`
         """
         return len(self.lines)
+    
     
     @property
     def character_count(self):
@@ -392,6 +401,7 @@ class TableLine:
             length += len(line)
         
         return length
+
 
 class TableConverter:
     """
@@ -557,6 +567,7 @@ class TableConverter:
         self.separator_line = separator_line
         yield self
     
+    
     @property
     def character_count(self):
         """
@@ -573,6 +584,7 @@ class TableConverter:
         
         return length
     
+    
     @property
     def row_count(self):
         """
@@ -583,6 +595,7 @@ class TableConverter:
         length : `int`
         """
         return len(self.lines)
+    
     
     @property
     def line_count(self):
@@ -600,6 +613,7 @@ class TableConverter:
         
         return length
     
+    
     def _do_break(self, number_of_rows):
         """
         Does break after the given amount of rows.
@@ -614,13 +628,13 @@ class TableConverter:
         table_1 : ``TableConverter``
         table_2 : ``TableConverter``
         """
-        number_of_rows +=1
+        number_of_rows += 1
         lines = self.lines
         head = lines[0]
         
         table_1 = object.__new__(type(self))
         table_1.head_under_line = self.head_under_line
-        table_1.lines = [head, *lines[1:number_of_rows]]
+        table_1.lines = [head, *lines[1 : number_of_rows]]
         table_1.separator_line = self.separator_line
         
         table_2 = object.__new__(type(self))
@@ -629,6 +643,7 @@ class TableConverter:
         table_2.separator_line = self.separator_line
         
         return table_1, table_2
+    
     
     def _test_break(self):
         """
@@ -645,6 +660,7 @@ class TableConverter:
             return False
         
         return True
+    
     
     def do_break(self, number_of_chars):
         """
@@ -678,6 +694,7 @@ class TableConverter:
         
         return best_fit
     
+    
     def render_to(self, to_extend):
         """
         Renders the table's lines to the given `list`.
@@ -699,6 +716,7 @@ class TableConverter:
         for line in lines[1:]:
             to_extend.extend(line.lines)
             to_extend.append(separator_line)
+    
     
     def __repr__(self):
         """Returns the table's representation."""
@@ -901,12 +919,12 @@ class CodeBlockConverter:
             
             line = lines[index]
             if not line.startswith('>>>'):
-                index +=1
+                index += 1
                 continue
             
-            rows_found +=1
+            rows_found += 1
             if rows_found != number_of_rows:
-                index +=1
+                index += 1
                 continue
             
             code_block_1 = self._create_remove_empty_lines(lines[:index], self.starter, self.ender)
@@ -1822,7 +1840,7 @@ class SectionConverter:
         last_part = None
         for part in self.parts:
             if should_insert_linebreak(last_part, part):
-                length +=1
+                length += 1
             
             length += part.character_count
             last_part = part
@@ -1842,7 +1860,7 @@ class SectionConverter:
         last_part = None
         for part in self.parts:
             if should_insert_linebreak(last_part, part):
-                length +=1
+                length += 1
             
             length += part.line_count
             last_part = part

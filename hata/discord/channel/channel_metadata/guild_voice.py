@@ -9,8 +9,8 @@ from ...permission.permission import (
 )
 
 from .fields import (
-    parse_nsfw, parse_video_quality_mode, put_nsfw_into, put_video_quality_mode_into, validate_nsfw,
-    validate_video_quality_mode
+    parse_nsfw, parse_status, parse_video_quality_mode, put_nsfw_into, put_status_into, put_video_quality_mode_into,
+    validate_nsfw, validate_status, validate_video_quality_mode
 )
 from .guild_voice_base import ChannelMetadataGuildVoiceBase
 from .preinstanced import VideoQualityMode
@@ -38,6 +38,8 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         The channel's position.
     region : ``VoiceRegion``
         The voice region of the channel.
+    status : `None`, `str`
+        The voice channel's status.
     user_limit : `int`
         The maximal amount of users, who can join the voice channel, or `0` if unlimited.
     video_quality_mode : ``VideoQualityMode``
@@ -48,7 +50,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     order_group: `int` = `2`
         The channel's order group used when sorting channels.
     """
-    __slots__ = ('nsfw', 'video_quality_mode',)
+    __slots__ = ('nsfw', 'status', 'video_quality_mode',)
     
     
     def __new__(
@@ -61,6 +63,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         permission_overwrites = ...,
         position = ...,
         region = ...,
+        status = ...,
         user_limit = ...,
         video_quality_mode = ...,
     ):
@@ -83,6 +86,8 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             The channel's position.
         region : ``VoiceRegion``, `str`, Optional (Keyword only)
             The voice region of the channel.
+        status : `None`, `str`, Optional (Keyword only)
+            The voice channel's status.
         user_limit : `int`, Optional (Keyword only)
             The maximal amount of users, who can join the voice channel, or `0` if unlimited.
         video_quality_mode : ``VideoQualityMode``, `int`, Optional (Keyword only)
@@ -100,6 +105,12 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             nsfw = False
         else:
             nsfw = validate_nsfw(nsfw)
+        
+        # status
+        if status is ...:
+            status = None
+        else:
+            status = validate_status(status)
         
         # video_quality_mode
         if video_quality_mode is ...:
@@ -119,6 +130,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             user_limit = user_limit,
         )
         self.nsfw = nsfw
+        self.status = status
         self.video_quality_mode = video_quality_mode
         return self
     
@@ -134,6 +146,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
             position = keyword_parameters.pop('position', ...),
             region = keyword_parameters.pop('region', ...),
+            status = keyword_parameters.pop('status', ...),
             user_limit = keyword_parameters.pop('user_limit', ...),
             video_quality_mode = keyword_parameters.pop('video_quality_mode', ...),
         )
@@ -146,10 +159,26 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         # nsfw
         hash_value ^= self.nsfw << 28
         
+        # status
+        status = self.status
+        if (status is not None):
+            hash_value ^= hash(status)
+        
         # video_quality_mode
         hash_value ^= self.video_quality_mode.value << 11
         
         return hash_value
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataGuildVoiceBase.from_data)
+    def from_data(cls, data):
+        self = super(ChannelMetadataGuildVoice, cls).from_data(data)
+        
+        # status | Its only received with the initial channel payload.
+        self.status = parse_status(data)
+        
+        return self
     
     
     @copy_docs(ChannelMetadataGuildVoiceBase._is_equal_same_type)
@@ -159,6 +188,10 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         
         # nsfw
         if self.nsfw != other.nsfw:
+            return False
+        
+        # status
+        if self.status != other.status:
             return False
         
         # video_quality_mode
@@ -179,6 +212,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         self = super(ChannelMetadataGuildVoice, cls)._create_empty()
         
         self.nsfw = False
+        self.status = None
         self.video_quality_mode = VideoQualityMode.none
         
         return self
@@ -188,6 +222,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     def copy(self):
         new = ChannelMetadataGuildVoiceBase.copy(self)
         new.nsfw = self.nsfw
+        new.status = self.status
         new.video_quality_mode = self.video_quality_mode
         return new
     
@@ -202,6 +237,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         permission_overwrites = ...,
         position = ...,
         region = ...,
+        status = ...,
         user_limit = ...,
         video_quality_mode = ...,
     ):
@@ -224,6 +260,8 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             The channel's position.
         region : ``VoiceRegion``, `str`, Optional (Keyword only)
             The voice region of the channel.
+        status : `None`, `str`, Optional (Keyword only)
+            The voice channel's status.
         user_limit : `int`, Optional (Keyword only)
             The maximal amount of users, who can join the voice channel, or `0` if unlimited.
         video_quality_mode : ``VideoQualityMode``, `int`, Optional (Keyword only)
@@ -246,6 +284,12 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         else:
             nsfw = validate_nsfw(nsfw)
         
+        # status
+        if status is ...:
+            status = self.status
+        else:
+            status = validate_status(status)
+        
         # video_quality_mode
         if video_quality_mode is ...:
             video_quality_mode = self.video_quality_mode
@@ -264,6 +308,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             user_limit = user_limit,
         )
         new.nsfw = nsfw
+        new.status = status
         new.video_quality_mode = video_quality_mode
         return new
     
@@ -278,6 +323,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             permission_overwrites = keyword_parameters.pop('permission_overwrites', ...),
             position = keyword_parameters.pop('position', ...),
             region = keyword_parameters.pop('region', ...),
+            status = keyword_parameters.pop('status', ...),
             user_limit = keyword_parameters.pop('user_limit', ...),
             video_quality_mode = keyword_parameters.pop('video_quality_mode', ...),
         )
@@ -313,12 +359,35 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         return old_attributes
     
     
+    @copy_docs(ChannelMetadataGuildVoiceBase._update_status)
+    def _update_status(self, data):
+        
+        # status
+        self.status = parse_status(data)
+    
+    
+    @copy_docs(ChannelMetadataGuildVoiceBase._difference_update_status)
+    def _difference_update_status(self, data):
+        old_attributes = {}
+
+        # status
+        status = parse_status(data)
+        if self.status != status:
+            old_attributes['status'] = self.status
+            self.status = status
+        
+        return old_attributes
+    
+    
     @copy_docs(ChannelMetadataGuildVoiceBase.to_data)
     def to_data(self, *, defaults = False, include_internals = False):
         data = ChannelMetadataGuildVoiceBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # nsfw
         put_nsfw_into(self.nsfw, data, defaults)
+        
+        # status
+        put_status_into(self.status, data, defaults)
         
         # video_quality_mode
         put_video_quality_mode_into(self.video_quality_mode, data, defaults)

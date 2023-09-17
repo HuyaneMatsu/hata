@@ -1,7 +1,7 @@
 import vampytest
 
-from ..constants import TOPIC_LENGTH_MAX
-from ..fields import validate_topic
+from ..constants import STATUS_LENGTH_MAX
+from ..fields import validate_status
 
 
 def _iter_options():
@@ -11,9 +11,9 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_topic__passing(input_value):
+def test__validate_status__passing(input_value):
     """
-    Tests whether `validate_topic` works as intended.
+    Tests whether `validate_status` works as intended.
     
     Case: passing.
     
@@ -26,14 +26,14 @@ def test__validate_topic__passing(input_value):
     -------
     output : `None`, `str`
     """
-    return validate_topic(input_value)
+    return validate_status(input_value)
 
 
 @vampytest.raising(TypeError)
 @vampytest.call_with(12.6)
-def test__validate_topic__type_error(input_value):
+def test__validate_status__type_error(input_value):
     """
-    Tests whether `validate_topic` works as intended.
+    Tests whether `validate_status` works as intended.
     
     Case: `TypeError`.
     
@@ -46,15 +46,15 @@ def test__validate_topic__type_error(input_value):
     ------
     TypeError
     """
-    validate_topic(input_value)
+    validate_status(input_value)
 
 
 
 @vampytest.raising(ValueError)
-@vampytest.call_with('a' * (TOPIC_LENGTH_MAX + 1))
-def test__validate_topic__value_error(input_value):
+@vampytest.call_with('a' * (STATUS_LENGTH_MAX + 1))
+def test__validate_status__value_error(input_value):
     """
-    Tests whether `validate_topic` works as intended.
+    Tests whether `validate_status` works as intended.
     
     Case: `ValueError`.
     
@@ -67,4 +67,4 @@ def test__validate_topic__value_error(input_value):
     ------
     ValueError
     """
-    validate_topic(input_value)
+    validate_status(input_value)

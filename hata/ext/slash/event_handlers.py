@@ -23,7 +23,7 @@ async def _do_initial_sync(client):
             return
     
     # If the client's extension disappeared or if initial sync passed, remove the event handler.
-    client.events.remove(_do_initial_sync, 'launch', count=1)
+    client.events.remove(_do_initial_sync, 'launch', count = 1)
 
 
 async def _application_command_create_watcher(client, guild_id, application_command):

@@ -36,21 +36,23 @@ class AutoModerationRuleTriggerType(PreinstancedBase):
     
     Every predefined auto moderation trigger type is also stored as a class attribute:
     
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
-    | Class attribute name  | Name              | Value     | Max per guild | Metadata type                                       |
-    +=======================+===================+===========+===============+=====================================================+
-    | none                  | none              | 0         | 0             | ``AutoModerationRuleTriggerMetadataBase``           |
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
-    | keyword               | keyword           | 1         | 5             | ``AutoModerationRuleTriggerMetadataKeyword``        |
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
-    | harmful_link          | harmful link      | 2         | 1             | ``AutoModerationRuleTriggerMetadataBase``           |
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
-    | spam                  | spam              | 3         | 1             | ``AutoModerationRuleTriggerMetadataBase``           |
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
-    | keyword_preset        | keyword preset    | 4         | 1             | ``AutoModerationRuleTriggerMetadataKeywordPreset``  |
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
-    | mention_spam          | mention spam      | 5         | 1             | ``AutoModerationRuleTriggerMetadataMentionSpam``    |
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
+    +-----------------------+-------------------+-----------+---------------+-------------------------------------------------------+
+    | Class attribute name  | Name              | Value     | Max per guild | Metadata type                                         |
+    +=======================+===================+===========+===============+=======================================================+
+    | none                  | none              | 0         | 0             | ``AutoModerationRuleTriggerMetadataBase``             |
+    +-----------------------+-------------------+-----------+---------------+-------------------------------------------------------+
+    | keyword               | keyword           | 1         | 5             | ``AutoModerationRuleTriggerMetadataKeyword``          |
+    +-----------------------+-------------------+-----------+---------------+-------------------------------------------------------+
+    | harmful_link          | harmful link      | 2         | 1             | ``AutoModerationRuleTriggerMetadataBase``             |
+    +-----------------------+-------------------+-----------+---------------+-------------------------------------------------------+
+    | spam                  | spam              | 3         | 1             | ``AutoModerationRuleTriggerMetadataBase``             |
+    +-----------------------+-------------------+-----------+---------------+-------------------------------------------------------+
+    | keyword_preset        | keyword preset    | 4         | 1             | ``AutoModerationRuleTriggerMetadataKeywordPreset``    |
+    +-----------------------+-------------------+-----------+---------------+-------------------------------------------------------+
+    | mention_spam          | mention spam      | 5         | 1             | ``AutoModerationRuleTriggerMetadataMentionSpam``      |
+    +-----------------------+-------------------+-----------+---------------+-------------------------------------------------------+
+    | user_profile          | user profile      | 6         | 1             | ``AutoModerationRuleTriggerMetadataKeyword``          |
+    +-----------------------+-------------------+-----------+---------------+-------------------------------------------------------+
     """
     __slots__ = ('max_per_guild', 'metadata_type')
     
@@ -110,6 +112,7 @@ class AutoModerationRuleTriggerType(PreinstancedBase):
     spam = P(3, 'spam', 1, AutoModerationRuleTriggerMetadataBase)
     keyword_preset = P(4, 'keyword preset', 1, AutoModerationRuleTriggerMetadataKeywordPreset)
     mention_spam = P(5, 'mention spam', 1, AutoModerationRuleTriggerMetadataMentionSpam)
+    user_profile = P(6, 'user profile', 1, AutoModerationRuleTriggerMetadataKeyword)
 
 
 class AutoModerationEventType(PreinstancedBase):
@@ -143,6 +146,8 @@ class AutoModerationEventType(PreinstancedBase):
     +-----------------------+-------------------+-----------+
     | message_send          | message send      | 1         |
     +-----------------------+-------------------+-----------+
+    | user_update           | user update       | 2         |
+    +-----------------------+-------------------+-----------+
     """
     __slots__ = ()
     
@@ -152,3 +157,4 @@ class AutoModerationEventType(PreinstancedBase):
     # predefined
     none = P(0, 'none')
     message_send = P(1, 'message send')
+    user_update = P(2, 'user update')

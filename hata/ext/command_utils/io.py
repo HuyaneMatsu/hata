@@ -834,7 +834,7 @@ class ChannelInputStream:
         return False
 
 
-def get_channel_stdout(client, channel, *, chunk_size=1000, sanitize=False):
+def get_channel_stdout(client, channel, *, chunk_size = 1000, sanitize = False):
     """
     Gets output stream towards the given channel.
     

@@ -589,7 +589,7 @@ class SubterraneanHelpCommand:
     
     __slots__ = ('embed_postprocessor', 'prefix')
     
-    def __new__(cls, prefix = None, embed_postprocessor=None):
+    def __new__(cls, prefix = None, embed_postprocessor = None):
         """
         Creates a new ``SubterraneanHelpCommand``.
         
@@ -907,7 +907,7 @@ class SubterraneanHelpCommand:
             page.append(' ')
             page.append(command_name)
             
-            page_line_count +=1
+            page_line_count += 1
             
             if page_line_count == MAX_LINE_PER_PAGE:
                 pages.append(''.join(page))

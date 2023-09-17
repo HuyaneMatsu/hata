@@ -759,7 +759,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         self._from_class_constructor = from_class_constructor
     
     
-    def __call__(self, func=..., *args, **kwargs):
+    def __call__(self, func = ..., *args, **kwargs):
         """
         Adds the given `func` to all of the represented client's respective event handler managers.
         
@@ -1419,7 +1419,7 @@ class eventlist(list):
     
     __slots__ = ('kwargs', 'type')
     
-    def __new__(cls, iterable=None, type_=None, **kwargs):
+    def __new__(cls, iterable = None, type_ = None, **kwargs):
         """
         Creates a new eventlist from the the given parameters.
         
@@ -1640,7 +1640,7 @@ class eventlist(list):
             while True:
                 element=list.__getitem__(self, index)
                 repr_parts.append(repr(element))
-                index +=1
+                index += 1
                 
                 if index == limit:
                     break
@@ -2411,7 +2411,7 @@ class asynclist(list):
     """
     __slots__ = ()
     
-    def __init__(self, iterable=None):
+    def __init__(self, iterable = None):
         """
         Creates a new asynclist from the given iterable.
         

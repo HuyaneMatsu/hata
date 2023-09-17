@@ -9,15 +9,16 @@ from sqlalchemy.engine.strategies import DefaultEngineStrategy
 
 
 class KOKOROEngine:
-    __slots__=('_engine', '_worker',)
+    __slots__ = ('_engine', '_worker',)
     
-    def __init__(self, pool, dialect, u, single_worker=True, **kwargs):
+    def __init__(self, pool, dialect, u, single_worker = True, **keyword_parameters):
         if single_worker:
             worker = ExecutorThread()
         else:
             worker = None
         self._worker = worker
-        self._engine = Engine(pool, dialect, u, **kwargs)
+        self._engine = Engine(pool, dialect, u, **keyword_parameters)
+    
     
     @property
     def uses_single_worker(self):
@@ -30,27 +31,34 @@ class KOKOROEngine:
         """
         return (self._worker is not None)
     
+    
     @property
     def dialect(self):
         return self._engine.dialect
+    
     
     @property
     def _has_events(self):
         return self._engine._has_events
     
+    
     @property
     def logger(self):
         return self._engine.logger
+    
     
     @property
     def _execution_options(self):
         return self._engine._execution_options
     
+    
     def _should_log_info(self):
         return self._engine._should_log_info()
     
+    
     def connect(self):
         return ConnectionContextManager(self._connect())
+    
     
     async def _connect(self):
         executor = self._worker
@@ -59,37 +67,47 @@ class KOKOROEngine:
         connection = await executor.execute(self._engine.connect)
         return AsyncConnection(connection, executor)
     
+    
     def begin(self, close_with_result=False):
-        executor=self._worker
+        executor = self._worker
         if executor is None:
             executor = current_thread().claim_executor()
         return EngineTransactionContextManager(self, close_with_result, executor)
     
-    async def execute(self, *args, **kwargs):
+    
+    async def execute(self, *positional_parameters, **keyword_parameters):
         executor = self._worker
         if executor is None:
             executor = current_thread().claim_executor()
-        result_proxy = await executor.execute(alchemy_incendiary(self._engine.execute, args, kwargs))
+        result_proxy = await executor.execute(alchemy_incendiary(
+            self._engine.execute, positional_parameters, keyword_parameters,
+        ))
         return AsyncResultProxy(result_proxy, executor)
     
-    async def scalar(self, *args, **kwargs):
+    
+    async def scalar(self, *positional_parameters, **keyword_parameters):
         executor = self._worker
         if executor is None:
             executor = current_thread().claim_executor()
-        result_proxy = await executor.execute(alchemy_incendiary(self._engine.execute, args, kwargs))
+        result_proxy = await executor.execute(alchemy_incendiary(
+            self._engine.execute, positional_parameters, keyword_parameters,
+        ))
         async_result_proxy = AsyncResultProxy(result_proxy, executor)
         return await async_result_proxy.scalar()
     
-    async def has_table(self, table_name, schema=None):
+    
+    async def has_table(self, table_name, schema = None):
         return await current_thread().run_in_executor(alchemy_incendiary(self._engine.has_table, (table_name, schema)))
     
-    async def table_names(self, schema=None, connection=None):
+    
+    async def table_names(self, schema = None, connection = None):
         task = alchemy_incendiary(self._engine.table_names, (schema, None if connection else connection._connection))
         executor = self._worker
         if executor is None:
             return await current_thread().run_in_executor(task)
         else:
             return await executor.execute(task)
+    
     
     def __del__(self):
         worker = self._worker
@@ -99,40 +117,56 @@ class KOKOROEngine:
 
 
 class AsyncConnection:
-    __slots__=('_connection', 'executor',)
+    __slots__ = ('_connection', 'executor',)
+    
     def __init__(self, connection, executor):
         self._connection = connection
         self.executor = executor
     
-    async def execute(self, *args, **kwargs):
-        result_proxy = await self.executor.execute(alchemy_incendiary(self._connection.execute, args, kwargs))
+    
+    async def execute(self, *positional_parameters, **keyword_parameters):
+        result_proxy = await self.executor.execute(alchemy_incendiary(
+            self._connection.execute, positional_parameters, keyword_parameters,
+        ))
         return AsyncResultProxy(result_proxy, self.executor)
     
-    async def scalar(self, *args, **kwargs):
-        result_proxy = await self.executor.execute(alchemy_incendiary(self._connection.execute, args, kwargs))
+    
+    async def scalar(self, *positional_parameters, **keyword_parameters):
+        result_proxy = await self.executor.execute(alchemy_incendiary(
+            self._connection.execute, positional_parameters, keyword_parameters,
+        ))
         async_result_proxy = AsyncResultProxy(result_proxy, self.executor)
         return await async_result_proxy.scalar()
     
-    async def close(self, *args, **kwargs):
-        await self.executor.execute(alchemy_incendiary(self._connection.close, args, kwargs))
+    
+    async def close(self, *positional_parameters, **keyword_parameters):
+        await self.executor.execute(alchemy_incendiary(
+            self._connection.close, positional_parameters, keyword_parameters
+        ))
+    
     
     @property
     def closed(self):
         return self._connection.closed
     
+    
     def begin(self):
         return TransactionContextManager(self._begin())
+    
     
     async def _begin(self):
         transaction = await self.executor.execute(self._connection.begin)
         return AsyncTransaction(transaction, self.executor)
     
+    
     def begin_nested(self):
         return TransactionContextManager(self._begin_nested())
+    
     
     async def _begin_nested(self):
         transaction = await self.executor.execute(self._connection.begin_nested)
         return AsyncTransaction(transaction, self.executor)
+    
     
     def in_transaction(self):
         return self._connection.in_transaction()
@@ -145,11 +179,14 @@ class AsyncTransaction:
         self._transaction = transaction
         self.executor = executor
     
+    
     async def commit(self):
         return await self.executor.execute(self._transaction.commit)
     
+    
     async def rollback(self):
         return await self.executor.execute(self._transaction.rollback)
+    
     
     async def close(self):
         await self.executor.execute(self._transaction.close)
@@ -162,8 +199,10 @@ class AsyncResultProxyIterator:
         self._result_proxy = result_proxy
         self.executor = executor
     
+    
     def __aiter__(self):
         return self
+    
     
     async def __anext__(self):
         row = await self.executor.execute(self._result_proxy.fetchone)
@@ -179,37 +218,48 @@ class AsyncResultProxy:
         self._result_proxy = result_proxy
         self.executor = executor
     
+    
     def __aiter__(self):
         return AsyncResultProxyIterator(self._result_proxy, self.executor)
+    
     
     async def fetchone(self):
         return await self.executor.execute(self._result_proxy.fetchone)
     
+    
     async def fetchmany(self, size = None):
         return await self.executor.execute(self._result_proxy.fetchmany, size = size)
+    
     
     async def fetchall(self):
         return await self.executor.execute(self._result_proxy.fetchall)
     
+    
     async def scalar(self):
         return await self.executor.execute(self._result_proxy.scalar)
+    
     
     async def first(self):
         return await self.executor.execute(self._result_proxy.first)
     
+    
     async def keys(self):
         return await self.executor.execute(self._result_proxy.keys)
     
+    
     async def close(self):
         return await self.executor.execute(self._result_proxy.close)
+    
     
     @property
     def returns_rows(self):
         return self._result_proxy.returns_rows
     
+    
     @property
     def rowcount(self):
         return self._result_proxy.rowcount
+    
     
     @property
     def inserted_primary_key(self):
@@ -224,10 +274,13 @@ class EngineTransactionContextManager:
         self._close_with_result = close_with_result
         self.executor = executor
     
+    
     async def __aenter__(self):
         self._context = await self.executor.execute(
-            alchemy_incendiary(self._engine._engine.begin, (self._close_with_result,)))
+            alchemy_incendiary(self._engine._engine.begin, (self._close_with_result,))
+        )
         return AsyncConnection(self._context.__enter__(), self.executor)
+    
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return await self.executor.execute(alchemy_incendiary(self._context.__exit__, (exc_type, exc_val, exc_tb),))
@@ -240,12 +293,15 @@ class ConnectionContextManager:
         self.task = task
         self.result = None
         
+        
     def __await__(self):
         return self.task.__await__()
+    
     
     async def __aenter__(self):
         self.result = await self.task
         return self.result
+    
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.result.close()
@@ -262,6 +318,7 @@ class TransactionContextManager(ConnectionContextManager):
                     await self.result.rollback()
         else:
             await self.result.rollback()
+
 
 KOKORO_STRATEGY = 'KOKORO'
 

@@ -126,6 +126,8 @@ class AutoModerationRuleTriggerMetadataBase(RichAttributeErrorBaseType):
         keywords : `None`, `tuple` of `str`
         """
     )
+    
+    
     mention_limit = PlaceHolder(
         0,
         """
@@ -136,6 +138,7 @@ class AutoModerationRuleTriggerMetadataBase(RichAttributeErrorBaseType):
         mention_limit : `int`
         """
     )
+    
     
     raid_protection = PlaceHolder(
         False,

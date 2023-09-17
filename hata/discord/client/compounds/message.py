@@ -814,7 +814,9 @@ class ClientCompoundMessageEndpoints(Compound):
             raise last_exception
     
         
-    async def message_delete_sequence(self, channel, *, after=None, before=None, limit=None, filter=None, reason = None):
+    async def message_delete_sequence(
+        self, channel, *, after = None, before = None, limit = None, filter = None, reason = None
+    ):
         """
         Deletes messages between an interval determined by `before` and `after`. They can be `int`, or as
         a ``DiscordEntity`` or as a `datetime` object.
@@ -1162,7 +1164,7 @@ class ClientCompoundMessageEndpoints(Compound):
     
     
     async def multi_client_message_delete_sequence(
-        self, channel, *, after=None, before=None, limit=None, filter=None, reason = None
+        self, channel, *, after = None, before = None, limit = None, filter = None, reason = None
     ):
         """
         Deletes messages between an interval determined by `before` and `after`. They can be `int`, or as
@@ -1853,7 +1855,7 @@ class ClientCompoundMessageEndpoints(Compound):
         return messages[index]
     
     
-    async def message_get_all_in_range(self, channel, start=0, end=100):
+    async def message_get_all_in_range(self, channel, start = 0, end = 100):
         """
         Returns a list of the message between the `start` - `end` area. If the client has no permission to request
         messages, or there are no messages at the given area returns an empty list.
@@ -1950,7 +1952,7 @@ class ClientCompoundMessageEndpoints(Compound):
         return result
     
     
-    async def message_iterator(self, channel, *, chunk_size=99):
+    async def message_iterator(self, channel, *, chunk_size = 99):
         """
         Returns an asynchronous message iterator over the given text channel.
         

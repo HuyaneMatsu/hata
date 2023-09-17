@@ -30,7 +30,7 @@ class MessageIterator:
     """
     __slots__ = ('_can_read_history', '_index', 'channel', 'chunk_size', 'client',)
     
-    async def __new__(cls, client, channel, chunk_size=99):
+    async def __new__(cls, client, channel, chunk_size = 99):
         """
         Creates a message iterator.
         

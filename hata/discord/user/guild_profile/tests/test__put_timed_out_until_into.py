@@ -7,16 +7,29 @@ from ....utils import datetime_to_timestamp
 from ..fields import put_timed_out_until_into
 
 
-def test__put_timed_out_until_into():
+def _iter_options():
+    until = DateTime(2016, 5, 14)
+    
+    yield None, False, {}
+    yield None, True, {'communication_disabled_until': None}
+    yield until, False, {'communication_disabled_until': datetime_to_timestamp(until)}
+    yield until, True, {'communication_disabled_until': datetime_to_timestamp(until)}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_timed_out_until_into(input_value, defaults):
     """
     Tests whether ``put_timed_out_until_into`` works as intended.
-    """
-    timed_out_until = DateTime(2016, 5, 14)
     
-    for input_value, defaults, expected_output in (
-        (None, False, {}),
-        (None, True, {'communication_disabled_until': None}),
-        (timed_out_until, False, {'communication_disabled_until': datetime_to_timestamp(timed_out_until)}),
-    ):
-        output = put_timed_out_until_into(input_value, {}, defaults)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `bool`
+        The value to serialise.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
+    """
+    return put_timed_out_until_into(input_value, {}, defaults)

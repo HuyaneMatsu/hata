@@ -9,47 +9,14 @@ from ...channel import Channel
 from ...color import Color
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES, VALID_ICON_MEDIA_TYPES_EXTENDED
 from ...oauth2 import Connection
+from ...payload_building import add_payload_fields_from_keyword_parameters
 from ...user import PremiumType
+from ...user.guild_profile.utils import GUILD_PROFILE_SELF_FIELD_CONVERTERS
 from ...user.user.fields import validate_display_name
 from ...utils import datetime_to_timestamp, get_image_media_type, image_to_base64
 
-from ..request_helpers import get_guild_and_id, get_guild_id, get_channel_guild_id_and_id, validate_timeout_duration
+from ..request_helpers import get_guild_id, get_channel_guild_id_and_id
 
-
-def _assert__guild_profile_edit__nick(nick):
-    """
-    Asserts the `nick` parameter of ``Client.guild_profile_edit`` method.
-    
-    Parameters
-    ----------
-    nick : `Ellipsis`, `None`, `int`
-        The new nick of the user.
-    
-    Raises
-    ------
-    AssertionError
-        - If `nick` was not given neither as `None`, `str`.
-        - If `nick` length is out of the expected range [0:32].
-    """
-    if nick is ...:
-        pass
-    
-    elif nick is None:
-        pass
-    
-    elif isinstance(nick, str):
-        nick_length = len(nick)
-        if nick_length > 32:
-            raise AssertionError(
-                f'`nick` length can be in range [0:32], got {nick_length}; {nick!r}.'
-            )
-    
-    else:
-        raise AssertionError(
-            f'`nick` can be `None`, `str`, got {nick.__class__.__name__}; {nick!r}.'
-        )
-    
-    return True
 
 
 def _assert__guild_profile_edit__avatar(avatar, client):
@@ -293,7 +260,7 @@ class ClientCompoundClientEndpoints(Compound):
         
         
         data = await self.http.client_edit(data)
-        self._set_attributes(data)
+        self._update_attributes(data)
         
         
         if not self.bot:
@@ -306,9 +273,7 @@ class ClientCompoundClientEndpoints(Compound):
                 self.token = token
     
     
-    async def guild_profile_edit(
-        self, guild, *, nick = ..., avatar = ..., timeout_duration = ..., reason = None
-    ):
+    async def guild_profile_edit(self, guild, *, reason = None, **keyword_parameters):
         """
         Edits the client guild profile in the given guild. Nick and guild specific avatars can be edited on this way.
         
@@ -322,6 +287,14 @@ class ClientCompoundClientEndpoints(Compound):
             The guild where the client's nickname will be changed. If `guild` is given as `None`, then the function
             returns instantly.
         
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters representing which field of the guild profile should be edited.
+        
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Will show up at the respective guild's audit logs.
+        
+        Other Parameters
+        ----------------
         nick : `None`, `str`, Optional (Keyword only)
             The client's new nickname. Pass it as `None` to remove it. Empty strings are interpreted as `None`.
         
@@ -330,17 +303,6 @@ class ClientCompoundClientEndpoints(Compound):
             
             Can be a `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
             `'gif'` as well. By passing `None` you can remove the client's current avatar.
-        
-        timeout_duration: `None`, `int`, `float`, `timedelta`, `datetime`, Optional (Keyword only)
-            The timeout duration of the user in seconds.
-            
-            Pass it as `None` or as a non-positive duration to remove it.
-            
-            The max allowed value equals to 28 days.
-        
-        reason : `None`, `str` = `None`, Optional (Keyword only)
-            Will show up at the respective guild's audit logs.
-        
         Raises
         ------
         TypeError
@@ -350,54 +312,10 @@ class ClientCompoundClientEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild, guild_id = get_guild_and_id(guild)
-        
-        assert _assert__guild_profile_edit__nick(nick)
-        assert _assert__guild_profile_edit__avatar(avatar, self)
+        guild_id = get_guild_id(guild)
         
         data = {}
-        
-        if (nick is not ...):
-            # Non debug mode: Translate empty nick to `None`
-            if (nick is not None) and (not nick):
-                nick = None
-            
-            # Check whether we should edit the nick.
-            if guild is None:
-                # `guild` can be `None` if `guild` parameter was given as `int`.
-                should_edit_nick = True
-            else:
-                try:
-                    guild_profile = self.guild_profiles[guild.id]
-                except KeyError:
-                    # we aren't at the guild probably ->  will raise the request for us, if really
-                    should_edit_nick = True
-                else:
-                    should_edit_nick = (guild_profile.nick != nick)
-        
-        
-            if should_edit_nick:
-                data['nick'] = nick
-        
-        
-        if (avatar is not ...):
-            if avatar is None:
-                avatar_data = None
-            else:
-                avatar_data = image_to_base64(avatar)
-            
-            data['avatar'] = avatar_data
-        
-        
-        if (timeout_duration is not ...):
-            timeout_ends_at = validate_timeout_duration(timeout_duration)
-            
-            if (timeout_ends_at is None):
-                timed_out_until_raw = None
-            else:
-                timed_out_until_raw = datetime_to_timestamp(timeout_ends_at)
-            data['communication_disabled_until'] = timed_out_until_raw
-        
+        add_payload_fields_from_keyword_parameters(GUILD_PROFILE_SELF_FIELD_CONVERTERS, keyword_parameters, data, True)
         
         if data:
             await self.http.client_guild_profile_edit(guild_id, data, reason)
@@ -453,7 +371,7 @@ class ClientCompoundClientEndpoints(Compound):
         await self.http.guild_leave(guild_id)
 
 
-    async def join_speakers(self, channel, *, request=False):
+    async def join_speakers(self, channel, *, request = False):
         """
         Request to speak or joins the client as a speaker inside of a stage channel. The client must be in the stage
         channel.

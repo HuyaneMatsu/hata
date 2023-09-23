@@ -19,6 +19,9 @@ from .flags import GuildProfileFlag
 create_partial_role_from_id = include('create_partial_role_from_id')
 
 
+GUILD_PROFILE_AVATAR = IconSlot('avatar', 'avatar', None, None)
+
+
 class GuildProfile(metaclass = Slotted):
     """
     Represents a user's profile at a guild.
@@ -57,7 +60,7 @@ class GuildProfile(metaclass = Slotted):
     """
     __slots__ = ('boosts_since', 'flags', 'joined_at', 'nick', 'pending', 'role_ids', 'timed_out_until')
     
-    avatar = IconSlot('avatar', 'avatar', None, None)
+    avatar = GUILD_PROFILE_AVATAR
     
     def __new__(
         cls,

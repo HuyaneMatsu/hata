@@ -1,3 +1,30 @@
+## 1.3.40 *\[2023-09-??\]*
+
+### Improvements
+
+- Add `GuildInventorySettings`.
+- Add `Guild.inventory_settings`.
+- Add `RATE_LIMIT_GROUPS.guild_inventory_settings_edit`.
+- Add `DiscordHttpClient.guild_inventory_edit`.
+- Add `Client.guild_inventory_settings_edit`.
+- Add `GuildIncidents`.
+- Add `Guild.incidents`.
+- Add `RATE_LIMIT_GROUPS.guild_incidents_edit`.
+- Add `DiscordHttpClient.guild_inventory_edit`.
+- Add `Client.guild_incidents_edit`.
+- Add `MessageType.guild_incidents_enable`.
+- Add `MessageType.guild_incidents_disable`.
+- Add `timed_out_until` parameter to `Client.user_guild_profile_edit`.
+    Now its purpose is different from the `duration` one.
+- Remove `timeout_duration` parameter of `Client.guild_profile_edit`. You could never actually edit it.
+
+#### Bug fixes
+
+- `Client.edit` raised `AttributeError`.
+
+##### ext.commands_v2
+- `guild_converter` failed for a long time (probably).
+
 ## 1.3.39 *\[2023-09-17\]*
 
 ### Improvements

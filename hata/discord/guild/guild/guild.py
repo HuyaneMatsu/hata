@@ -60,16 +60,17 @@ from .fields import (
     parse_afk_channel_id, parse_afk_timeout, parse_approximate_online_count, parse_approximate_user_count,
     parse_available, parse_boost_count, parse_boost_progress_bar_enabled, parse_channels, parse_client_guild_profile,
     parse_content_filter, parse_description, parse_embedded_activity_states, parse_emojis, parse_features,
-    parse_hub_type, parse_id, parse_large, parse_max_presences, parse_max_stage_channel_video_users, parse_max_users,
-    parse_max_voice_channel_video_users, parse_message_notification, parse_mfa, parse_name, parse_nsfw_level,
-    parse_owner_id, parse_preferred_locale, parse_premium_tier, parse_public_updates_channel_id, parse_roles,
-    parse_rules_channel_id, parse_safety_alerts_channel_id, parse_scheduled_events, parse_stages, parse_stickers,
-    parse_system_channel_flags, parse_system_channel_id, parse_threads, parse_user_count, parse_users,
-    parse_vanity_code, parse_verification_level, parse_voice_states, parse_widget_channel_id, parse_widget_enabled,
-    put_afk_channel_id_into, put_afk_timeout_into, put_approximate_online_count_into, put_approximate_user_count_into,
-    put_available_into, put_boost_count_into, put_boost_progress_bar_enabled_into, put_channels_into,
-    put_content_filter_into, put_description_into, put_embedded_activity_states_into, put_emojis_into,
-    put_features_into, put_hub_type_into, put_id_into, put_large_into, put_max_presences_into,
+    parse_hub_type, parse_id, parse_incidents, parse_inventory_settings, parse_large, parse_max_presences,
+    parse_max_stage_channel_video_users, parse_max_users, parse_max_voice_channel_video_users,
+    parse_message_notification, parse_mfa, parse_name, parse_nsfw_level, parse_owner_id, parse_preferred_locale,
+    parse_premium_tier, parse_public_updates_channel_id, parse_roles, parse_rules_channel_id,
+    parse_safety_alerts_channel_id, parse_scheduled_events, parse_stages, parse_stickers, parse_system_channel_flags,
+    parse_system_channel_id, parse_threads, parse_user_count, parse_users, parse_vanity_code, parse_verification_level,
+    parse_voice_states, parse_widget_channel_id, parse_widget_enabled, put_afk_channel_id_into, put_afk_timeout_into,
+    put_approximate_online_count_into, put_approximate_user_count_into, put_available_into, put_boost_count_into,
+    put_boost_progress_bar_enabled_into, put_channels_into, put_content_filter_into, put_description_into,
+    put_embedded_activity_states_into, put_emojis_into, put_features_into, put_hub_type_into, put_id_into,
+    put_incidents_into, put_inventory_settings_into, put_large_into, put_max_presences_into,
     put_max_stage_channel_video_users_into, put_max_users_into, put_max_voice_channel_video_users_into,
     put_message_notification_into, put_mfa_into, put_name_into, put_nsfw_level_into, put_owner_id_into,
     put_preferred_locale_into, put_premium_tier_into, put_public_updates_channel_id_into, put_roles_into,
@@ -80,14 +81,14 @@ from .fields import (
     validate_approximate_online_count, validate_approximate_user_count, validate_available, validate_boost_count,
     validate_boost_progress_bar_enabled, validate_channels, validate_content_filter, validate_description,
     validate_embedded_activity_states, validate_emojis, validate_features, validate_hub_type, validate_id,
-    validate_large, validate_max_presences, validate_max_stage_channel_video_users, validate_max_users,
-    validate_max_voice_channel_video_users, validate_message_notification, validate_mfa, validate_name,
-    validate_nsfw_level, validate_owner_id, validate_preferred_locale, validate_premium_tier,
-    validate_public_updates_channel_id, validate_roles, validate_rules_channel_id, validate_safety_alerts_channel_id,
-    validate_scheduled_events, validate_soundboard_sounds, validate_stages, validate_stickers,
-    validate_system_channel_flags, validate_system_channel_id, validate_threads, validate_user_count, validate_users,
-    validate_vanity_code, validate_verification_level, validate_voice_states, validate_widget_channel_id,
-    validate_widget_enabled
+    validate_incidents, validate_inventory_settings, validate_large, validate_max_presences,
+    validate_max_stage_channel_video_users, validate_max_users, validate_max_voice_channel_video_users,
+    validate_message_notification, validate_mfa, validate_name, validate_nsfw_level, validate_owner_id,
+    validate_preferred_locale, validate_premium_tier, validate_public_updates_channel_id, validate_roles,
+    validate_rules_channel_id, validate_safety_alerts_channel_id, validate_scheduled_events, validate_soundboard_sounds,
+    validate_stages, validate_stickers, validate_system_channel_flags, validate_system_channel_id, validate_threads,
+    validate_user_count, validate_users, validate_vanity_code, validate_verification_level, validate_voice_states,
+    validate_widget_channel_id, validate_widget_enabled
 )
 from .flags import SystemChannelFlag
 from .guild_premium_perks import TIERS as PREMIUM_TIERS, TIER_MAX as PREMIUM_TIER_MAX
@@ -157,6 +158,8 @@ PRECREATE_FIELDS = {
     'features': ('features', validate_features),
     'hub_type': ('hub_type', validate_hub_type),
     'icon': ('icon', GUILD_ICON.validate_icon),
+    'incidents': ('incidents', validate_incidents),
+    'inventory_settings': ('inventory_settings', validate_inventory_settings),
     'invite_splash': ('invite_splash', GUILD_INVITE_SPLASH.validate_icon),
     'large': ('large', validate_large),
     'max_presences': ('max_presences', validate_max_presences),
@@ -288,6 +291,12 @@ class Guild(DiscordEntity, immortal = True):
     
     icon_type : ``IconType``
         The guild's icon's type.
+    
+    incidents : `None`, ``GuildIncidents``
+        The guild's incidents (if any).
+    
+    inventory_settings : `None`, ``GuildInventorySettings``
+        The guild's inventory settings (if any).
     
     id : `int`
         The unique identifier number of the guild.
@@ -431,12 +440,13 @@ class Guild(DiscordEntity, immortal = True):
     __slots__ = (
         '_cache_boosters', '_cache_permission', '_state', 'afk_channel_id', 'afk_timeout', 'approximate_online_count',
         'approximate_user_count', 'available', 'boost_count', 'boost_progress_bar_enabled', 'channels', 'clients',
-        'content_filter', 'description', 'embedded_activity_states', 'emojis', 'features', 'hub_type', 'large',
-        'max_presences', 'max_stage_channel_video_users', 'max_users', 'max_voice_channel_video_users',
-        'message_notification', 'mfa', 'name', 'nsfw_level', 'owner_id', 'preferred_locale', 'premium_tier',
-        'public_updates_channel_id', 'roles', 'rules_channel_id', 'safety_alerts_channel_id', 'scheduled_events',
-        'soundboard_sounds', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id', 'threads', 'user_count',
-        'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled'
+        'content_filter', 'description', 'embedded_activity_states', 'emojis', 'features', 'hub_type', 'incidents',
+        'inventory_settings', 'large', 'max_presences', 'max_stage_channel_video_users', 'max_users',
+        'max_voice_channel_video_users', 'message_notification', 'mfa', 'name', 'nsfw_level', 'owner_id',
+        'preferred_locale', 'premium_tier', 'public_updates_channel_id', 'roles', 'rules_channel_id',
+        'safety_alerts_channel_id', 'scheduled_events', 'soundboard_sounds', 'stages', 'stickers',
+        'system_channel_flags', 'system_channel_id', 'threads', 'user_count', 'users', 'vanity_code',
+        'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled'
     )
     
     banner = GUILD_BANNER
@@ -748,6 +758,8 @@ class Guild(DiscordEntity, immortal = True):
         self.hub_type = hub_type
         self.icon = icon
         self.id = 0
+        self.incidents = None
+        self.inventory_settings = None
         self.invite_splash = invite_splash
         self.large = False
         self.max_presences = MAX_PRESENCES_DEFAULT
@@ -854,6 +866,12 @@ class Guild(DiscordEntity, immortal = True):
         
         icon : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's icon.
+        
+        incidents : `None`, ``GuildIncidents``, Optional (Keyword only)
+            The guild's incidents.
+        
+        inventory_settings : `None`, ``GuildInventorySettings``, Optional (Keyword only)
+            The guild's inventory settings.
         
         invite_splash : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's invite splash.
@@ -1046,6 +1064,8 @@ class Guild(DiscordEntity, immortal = True):
         self.hub_type = HubType.none
         self.icon_hash = 0
         self.icon_type = ICON_TYPE_NONE
+        self.incidents = None
+        self.inventory_settings = None
         self.id = guild_id
         self.invite_splash_hash = 0
         self.invite_splash_type = ICON_TYPE_NONE
@@ -1186,6 +1206,8 @@ class Guild(DiscordEntity, immortal = True):
             put_channels_into(self.channels, data, defaults)
             put_embedded_activity_states_into(self.embedded_activity_states, data, defaults)
             put_emojis_into(self.emojis, data, defaults)
+            put_incidents_into(self.incidents, data, defaults)
+            put_inventory_settings_into(self.inventory_settings, data, defaults)
             put_id_into(self.id, data, defaults)
             put_large_into(self.large, data, defaults)
             put_max_presences_into(self.max_presences, data, defaults)
@@ -1256,7 +1278,9 @@ class Guild(DiscordEntity, immortal = True):
             
             # Update fields.
             self.channels = parse_channels(data, self.channels, guild_id)
-            self.embedded_activity_states = parse_embedded_activity_states(data, self.embedded_activity_states, guild_id)
+            self.embedded_activity_states = parse_embedded_activity_states(
+                data, self.embedded_activity_states, guild_id
+            )
             self.emojis = parse_emojis(data, self.emojis, guild_id)
             self.large = parse_large(data) or (user_count >= LARGE_GUILD_LIMIT)
             self.roles = parse_roles(data, self.roles, guild_id)
@@ -1294,6 +1318,8 @@ class Guild(DiscordEntity, immortal = True):
         self.features = parse_features(data)
         self.hub_type = parse_hub_type(data)
         self._set_icon(data)
+        self.incidents = parse_incidents(data)
+        self.inventory_settings = parse_inventory_settings(data)
         self._set_invite_splash(data)
         self.max_presences = parse_max_presences(data)
         self.max_stage_channel_video_users = parse_max_stage_channel_video_users(data)
@@ -1380,6 +1406,10 @@ class Guild(DiscordEntity, immortal = True):
         | hub_type                      | ``HubType``                           |
         +-------------------------------+---------------------------------------+
         | icon                          | ``Icon``                              |
+        +-------------------------------+---------------------------------------+
+        | incidents                     | `None`, ``GuildIncidents``            |
+        +-------------------------------+---------------------------------------+
+        | inventory_settings            | `None`, ``GuildInventorySettings``    |
         +-------------------------------+---------------------------------------+
         | invite_splash                 | ``Icon``                              |
         +-------------------------------+---------------------------------------+
@@ -1491,6 +1521,18 @@ class Guild(DiscordEntity, immortal = True):
         
         # icon
         self._update_icon(data, old_attributes)
+        
+        # incidents
+        incidents = parse_incidents(data)
+        if self.incidents != incidents:
+            old_attributes['incidents'] = self.incidents
+            self.incidents = incidents
+        
+        # inventory_settings
+        inventory_settings = parse_inventory_settings(data)
+        if self.inventory_settings != inventory_settings:
+            old_attributes['inventory_settings'] = self.inventory_settings
+            self.inventory_settings = inventory_settings
         
         # invite_splash
         self._update_invite_splash(data, old_attributes)
@@ -1847,6 +1889,7 @@ class Guild(DiscordEntity, immortal = True):
         
         return True
     
+    
     def __hash__(self):
         guild_id = self.id
         if guild_id:
@@ -2024,6 +2067,8 @@ class Guild(DiscordEntity, immortal = True):
         new.hub_type = self.hub_type
         new.icon = self.icon
         new.id = 0
+        new.incidents = None
+        new.inventory_settings = None
         new.invite_splash = self.invite_splash
         new.large = False
         new.max_presences = MAX_PRESENCES_DEFAULT
@@ -2364,6 +2409,8 @@ class Guild(DiscordEntity, immortal = True):
         new.hub_type = hub_type
         new.icon = icon
         new.id = 0
+        new.incidents = None
+        new.inventory_settings = None
         new.invite_splash = invite_splash
         new.large = False
         new.max_presences = MAX_PRESENCES_DEFAULT
@@ -2453,8 +2500,8 @@ class Guild(DiscordEntity, immortal = True):
             Can be one of the following:
             
             +-----------------------------+-------+
-            | Respective name           | Value |
-            +==============================+=======+
+            | Respective name             | Value |
+            +=============================+=======+
             | VOICE_STATE_EVENT_NONE      | 0     |
             +-----------------------------+-------+
             | VOICE_STATE_EVENT_JOIN      | 1     |

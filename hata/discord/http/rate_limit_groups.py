@@ -1109,6 +1109,14 @@ Group Details
     - Limit : `10`
     - Resets after : `20.0`
 
+- guild_incidents_edit
+    - Endpoint : `/guilds/{guild_id}/incident-actions`
+    - Method : `PUT`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `50`
+    - Resets after : `0.95`
+
 - integration_get_all
     - Endpoint : `/guilds/{guild_id}/integrations`
     - Method : `GET`
@@ -1152,6 +1160,14 @@ Group Details
     - Limit : `OPT`
     - Resets after : `OPT`
     - Notes : Untested.
+
+- guild_inventory_settings_edit
+    - Endpoint : `/guilds/{guild_id}/inventory/settings`
+    - Method : `PATCH`
+    - Required auth : `user`
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
 
 - invite_get_all_guild
     - Endpoint : `/guilds/{guild_id}/invites`
@@ -1407,7 +1423,7 @@ Group Details
     - Required auth : `user`
     - Limiter : `GLOBAL`
     - Limit : `50`
-    - Resets after : `0.019`
+    - Resets after : `0.95`
     - Notes : `DiscordException Method Not Allowed (405): Method Not Allowed`
 
 - soundboard_sound_delete
@@ -1416,7 +1432,7 @@ Group Details
     - Required auth : `user`
     - Limiter : `GLOBAL`
     - Limit : `50`
-    - Resets after : `0.019`
+    - Resets after : `0.95`
     - Notes : `DiscordException Method Not Allowed (405): Method Not Allowed`
 
 - soundboard_sound_edit
@@ -1425,7 +1441,7 @@ Group Details
     - Required auth : `user`
     - Limiter : `GLOBAL`
     - Limit : `50`
-    - Resets after : `0.019`
+    - Resets after : `0.95`
     - Notes : `DiscordException Method Not Allowed (405): Method Not Allowed`
 
 - sticker_get_all_guild
@@ -1613,7 +1629,7 @@ Group Details
     - Required auth : `bot`
     - Limiter : `GLOBAL`
     - Limit : `50`
-    - Resets after : `0.019`
+    - Resets after : `0.95`
 
 - stage_get_all
     - Endpoint : `/stage-instances`
@@ -2158,11 +2174,13 @@ emoji_create = RateLimitGroup(LIMITER_GUILD)
 emoji_delete = RateLimitGroup()
 emoji_get = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 emoji_edit = RateLimitGroup()
+guild_incidents_edit = RateLimitGroup()
 integration_get_all = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 integration_create = RateLimitGroup(optimistic = True) # untested
 integration_delete = RateLimitGroup(optimistic = True) # untested
 integration_edit = RateLimitGroup(optimistic = True) # untested
 integration_sync = RateLimitGroup(optimistic = True) # untested
+guild_inventory_settings_edit = RateLimitGroup.unlimited()
 invite_get_all_guild = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 verification_screen_get = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 verification_screen_edit = RateLimitGroup(LIMITER_GUILD, optimistic = True)

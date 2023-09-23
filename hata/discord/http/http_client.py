@@ -1127,6 +1127,16 @@ class DiscordHTTPClient(HTTPClient):
         )
     
     
+    async def guild_incidents_edit(self, guild_id, data, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_incidents_edit, guild_id),
+            METHOD_PUT,
+            f'{API_ENDPOINT}/guilds/{guild_id}/incident-actions',
+            data,
+            reason = reason,
+        )
+    
+    
     async def integration_get_all(self, guild_id, data):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.integration_get_all, guild_id),
@@ -1167,6 +1177,16 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.integration_sync, guild_id),
             METHOD_POST,
             f'{API_ENDPOINT}/guilds/{guild_id}/integrations/{integration_id}/sync',
+        )
+    
+    
+    async def guild_inventory_settings_edit(self, guild_id, data, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_inventory_settings_edit, guild_id),
+            METHOD_PATCH,
+            f'{API_ENDPOINT}/guilds/{guild_id}/inventory/settings',
+            data,
+            reason = reason,
         )
     
     

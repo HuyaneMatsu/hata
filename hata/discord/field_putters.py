@@ -1431,7 +1431,7 @@ def nullable_object_array_optional_putter_factory(field_key):
     return putter
 
 
-def nullable_entity_putter_factory(field_key, entity_type):
+def nullable_entity_putter_factory(field_key, entity_type, *, force_include_internals = False):
     """
     Returns a new nullable entity putter.
     
@@ -1439,14 +1439,20 @@ def nullable_entity_putter_factory(field_key, entity_type):
     -------
     field_key : `str`
         The field's key used in payload.
+    
     entity_type : `object` with `{to_data}`
         The expected entity type.
+    
+    force_include_internals : `bool`, Optional (Keyword only)
+        Whether `include_internals` should be passed as `True` always.
     
     Returns
     -------
     putter : `FunctionType`
     """
-    return default_entity_putter_factory(field_key, entity_type, None)
+    return default_entity_putter_factory(
+        field_key, entity_type, None, force_include_internals = force_include_internals
+    )
 
 
 def default_entity_putter_factory(field_key, entity_type, default, *, force_include_internals = False):

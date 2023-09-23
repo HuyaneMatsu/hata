@@ -2,6 +2,8 @@ from .discovery import *
 from .discovery_category import *
 from .embedded_activity_state import *
 from .guild import *
+from .guild_incidents import *
+from .guild_inventory_settings import *
 from .guild_join_request import *
 from .guild_join_request_delete_event import *
 from .guild_join_request_form_response import *
@@ -21,6 +23,8 @@ __all__ = (
     *discovery_category.__all__,
     *embedded_activity_state.__all__,
     *guild.__all__,
+    *guild_incidents.__all__,
+    *guild_inventory_settings.__all__,
     *guild_join_request.__all__,
     *guild_join_request_delete_event.__all__,
     *guild_join_request_form_response.__all__,

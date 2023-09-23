@@ -7,16 +7,26 @@ from ....utils import datetime_to_timestamp
 from ..fields import parse_joined_at
 
 
-def test__parse_joined_at():
+def _iter_options():
+    until = DateTime(2016, 5, 14)
+    
+    yield {}, None
+    yield {'joined_at': None}, None
+    yield {'joined_at': datetime_to_timestamp(until)}, until
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_joined_at(input_data):
     """
     Tests whether ``parse_joined_at`` works as intended.
-    """
-    joined_at = DateTime(2016, 5, 14)
     
-    for input_value, expected_output in (
-        ({}, None),
-        ({'joined_at': None}, None),
-        ({'joined_at': datetime_to_timestamp(joined_at)}, joined_at),
-    ):
-        output = parse_joined_at(input_value)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `DateTime`
+    """
+    return parse_joined_at(input_data)

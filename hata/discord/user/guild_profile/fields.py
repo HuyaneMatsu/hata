@@ -9,7 +9,7 @@ from ...field_putters import (
     optional_entity_id_array_optional_putter_factory, nullable_string_optional_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, flag_validator_factory, entity_id_array_validator_factory,
+    bool_validator_factory, duration_validator_factory, flag_validator_factory, entity_id_array_validator_factory,
     nullable_date_time_validator_factory, nullable_string_validator_factory
 )
 
@@ -51,6 +51,10 @@ validate_pending = bool_validator_factory('pending', False)
 parse_role_ids = entity_id_array_parser_factory('roles')
 put_role_ids_into = optional_entity_id_array_optional_putter_factory('roles')
 validate_role_ids = entity_id_array_validator_factory('role_ids', NotImplemented, include = 'Role')
+
+# timeout_duration
+
+validate_timeout_duration = duration_validator_factory('timeout_duration')
 
 # timed_out_until
 

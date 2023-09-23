@@ -59,9 +59,9 @@ def test__GuildPreview__from_data():
     vampytest.assert_eq(guild_preview.name, name)
 
 
-def test__GuildFeature__to_data():
+def test__GuildPreview__to_data():
     """
-    Tests whether ``GuildFeature.to_data`` works as intended.
+    Tests whether ``GuildPreview.to_data`` works as intended.
     
     Case: Include defaults.
     """

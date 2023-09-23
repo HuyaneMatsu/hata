@@ -11,6 +11,8 @@ from ...guild import (
     Guild, GuildFeature, GuildPreview, GuildWidget, VerificationScreen, WelcomeScreen, create_partial_guild_from_data
 )
 from ...guild.guild.utils import GUILD_FIELD_CONVERTERS, create_new_guild_data
+from ...guild.guild_incidents.utils import GUILD_INCIDENTS_FIELD_CONVERTERS
+from ...guild.guild_inventory_settings.utils import GUILD_INVENTORY_SETTINGS_FIELD_CONVERTERS
 from ...guild.verification_screen.utils import VERIFICATION_SCREEN_FIELD_CONVERTERS
 from ...guild.welcome_screen.utils import WELCOME_SCREEN_FIELD_CONVERTERS
 from ...http import DiscordHTTPClient
@@ -1317,3 +1319,130 @@ class ClientCompoundGuildEndpoints(Compound):
         audit_log_iterator : ``AuditLogIterator``
         """
         return AuditLogIterator(self, guild, user = user, event = event)
+    
+    
+    async def guild_incidents_edit(
+        self,
+        guild,
+        incidents_template = None,
+        *,
+        reason = None,
+        **keyword_parameters,
+    ):
+        """
+        Edits the guild's incidents with the given parameters.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild to edit the incidents of.
+        
+        incidents_template : `None`, ``GuildIncidents`` = `None`, Optional
+            Guild incidents to use as a template.
+        
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the guild's audit logs.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to edit the guild incidents with.
+        
+        Other Parameters
+        ----------------
+        direct_messages_disabled_duration : `int`, `TimeDelta`, `float`, Optional (Keyword only)
+            The duration while the direct messages should be disabled in the guild in seconds or time delta.
+        
+        direct_messages_disabled_until : `None`, `DateTime`, Optional (Keyword only)
+            Until when are the direct messages disabled in the guild.
+        
+        direct_messages_disabled_duration : `int`, `TimeDelta`, `float`, Optional (Keyword only)
+            The duration while the invites should be disabled in the guild in seconds or time delta.
+        
+        invites_disabled_until : `None`, `DateTime`, Optional (Keyword only)
+           Until when are the invites disabled of the guild.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is invalid.
+        ValueError
+            - If a parameter's value is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild, guild_id = get_guild_and_id(guild)
+        if guild is None:
+            incidents = None
+        else:
+            incidents = guild.incidents
+        
+        data = build_edit_payload(
+            incidents,
+            incidents_template,
+            GUILD_INCIDENTS_FIELD_CONVERTERS,
+            keyword_parameters,
+        )
+        if data:
+            await self.http.guild_incidents_edit(guild_id, data, reason)
+
+
+    async def guild_inventory_settings_edit(
+        self,
+        guild,
+        inventory_settings_template = None,
+        *,
+        reason = None,
+        **keyword_parameters,
+    ):
+        """
+        Edits the guild's inventory settings with the given parameters.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild to edit the inventory settings of.
+        
+        inventory_settings_template : `None`, ``GuildInventorySettings`` = `None`, Optional
+            Guild inventory settings to use as a template.
+        
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the guild's audit logs.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to edit the guild inventory settings with.
+        
+        Other Parameters
+        ----------------
+        emoji_pack_collectible : `bool`, Optional (Keyword only)
+            Whether you can collect this guild's emojis and use it across all guilds.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is invalid.
+        ValueError
+            - If a parameter's value is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild, guild_id = get_guild_and_id(guild)
+        if guild is None:
+            inventory_settings = None
+        else:
+            inventory_settings = guild.inventory_settings
+        
+        data = build_edit_payload(
+            inventory_settings,
+            inventory_settings_template,
+            GUILD_INVENTORY_SETTINGS_FIELD_CONVERTERS,
+            keyword_parameters,
+        )
+        if data:
+            await self.http.guild_inventory_settings_edit(guild_id, data, reason)

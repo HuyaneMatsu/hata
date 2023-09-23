@@ -8,20 +8,21 @@ from ...channel import Channel
 from ...emoji import Emoji
 from ...field_parsers import (
     bool_parser_factory, entity_id_parser_factory, flag_parser_factory, force_string_parser_factory, int_parser_factory,
-    negated_bool_parser_factory, nullable_string_parser_factory, preinstanced_array_parser_factory,
-    preinstanced_parser_factory
+    negated_bool_parser_factory, nullable_entity_parser_factory, nullable_string_parser_factory,
+    preinstanced_array_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
     bool_optional_putter_factory, entity_dictionary_putter_factory, entity_id_optional_putter_factory,
     entity_id_putter_factory, flag_putter_factory, force_string_putter_factory, int_optional_putter_factory,
-    int_putter_factory, negated_bool_optional_putter_factory, nullable_string_optional_putter_factory,
-    preinstanced_array_putter_factory, preinstanced_putter_factory
+    int_putter_factory, negated_bool_optional_putter_factory, nullable_entity_putter_factory,
+    nullable_string_optional_putter_factory, preinstanced_array_putter_factory, preinstanced_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_dictionary_validator_factory, entity_id_validator_factory, flag_validator_factory,
     force_string_validator_factory, int_conditional_validator_factory, int_options_validator_factory,
     nullable_entity_dictionary_validator_factory, nullable_entity_set_validator_factory,
-    nullable_string_validator_factory, preinstanced_array_validator_factory, preinstanced_validator_factory
+    nullable_entity_validator_factory, nullable_string_validator_factory, preinstanced_array_validator_factory,
+    preinstanced_validator_factory
 )
 from ...localization import Locale
 from ...localization.utils import LOCALE_DEFAULT
@@ -33,6 +34,8 @@ from ...sticker import Sticker
 from ...user import ClientUserBase, User, VoiceState
 
 from ..embedded_activity_state import EmbeddedActivityState
+from ..guild_incidents import GuildIncidents
+from ..guild_inventory_settings import GuildInventorySettings
 
 from .constants import (
     AFK_TIMEOUT_DEFAULT, AFK_TIMEOUT_OPTIONS, DESCRIPTION_LENGTH_MAX, MAX_PRESENCES_DEFAULT,
@@ -322,6 +325,18 @@ validate_hub_type = preinstanced_validator_factory('hub_type', HubType)
 parse_id = entity_id_parser_factory('id')
 put_id_into = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('guild_id')
+
+# incidents
+
+parse_incidents = nullable_entity_parser_factory('incidents_data', GuildIncidents)
+put_incidents_into = nullable_entity_putter_factory('incidents_data', GuildIncidents, force_include_internals = True)
+validate_incidents = nullable_entity_validator_factory('incidents', GuildIncidents)
+
+# inventory_settings
+
+parse_inventory_settings = nullable_entity_parser_factory('inventory_settings', GuildInventorySettings)
+put_inventory_settings_into = nullable_entity_putter_factory('inventory_settings', GuildInventorySettings)
+validate_inventory_settings = nullable_entity_validator_factory('inventory_settings', GuildInventorySettings)
 
 # large
 

@@ -7,7 +7,7 @@ from scarletio import class_property, include
 from ...activity import ActivityType
 from ...bases import Preinstance as P, PreinstancedBase
 from ...embed import EmbedType
-from ...utils import elapsed_time, sanitize_mentions
+from ...utils import DATETIME_FORMAT_CODE, elapsed_time, sanitize_mentions, timestamp_to_datetime
 
 
 Client = include('Client')
@@ -278,6 +278,22 @@ def convert_stage_speaker(self):
     return f'{self.author.name_at(self.guild_id)} is now a speaker'
 
 
+def convert_guild_incidents_enable(self):
+    content_parts = [self.author.name_at(self.guild_id), ' enabled security actions']
+    
+    content = self.content
+    if content is not None:
+        content_parts.append(' until ')
+        content_parts.append(format(timestamp_to_datetime(content), DATETIME_FORMAT_CODE))
+    
+    content_parts.append('.')
+    return ''.join(content_parts)
+
+
+def convert_guild_incidents_disable(self):
+    return f'{self.author.name_at(self.guild_id)} disabled security actions.'
+
+
 class MessageType(PreinstancedBase):
     """
     Represents a ``Message``'s type.
@@ -380,6 +396,10 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | premium_referral                          | premium referral                          | 35    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | guild_incidents_enable                    | guild incidents enable                    | 36    | convert_guild_incidents_enable                    | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | guild_incidents_disable                   | guild incidents disable                   | 37    | convert_guild_incidents_disable                   | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -443,7 +463,7 @@ class MessageType(PreinstancedBase):
         repr_parts.append(', value = ')
         repr_parts.append(repr(self.value))
         
-        repr_parts.append(' converter = ')
+        repr_parts.append(', converter = ')
         repr_parts.append(repr(self.converter))
         
         repr_parts.append(', deletable = ')
@@ -493,7 +513,9 @@ class MessageType(PreinstancedBase):
     application_subscription = P(32, 'application subscription', MESSAGE_DEFAULT_CONVERTER, True)
     private_channel_integration_add = P(33, 'private channel integration add', MESSAGE_DEFAULT_CONVERTER, True)
     private_channel_integration_remove = P(34, 'private channel integration remove', MESSAGE_DEFAULT_CONVERTER, True)
-    premium_referral = P(34, 'premium referral', MESSAGE_DEFAULT_CONVERTER, True)
+    premium_referral = P(35, 'premium referral', MESSAGE_DEFAULT_CONVERTER, True)
+    guild_incidents_enable = P(36, 'guild incidents enable', convert_guild_incidents_enable, False)
+    guild_incidents_disable = P(37, 'guild incidents disable', convert_guild_incidents_disable, False)
 
 
     @class_property
@@ -554,6 +576,8 @@ del convert_stage_end
 del convert_stage_topic_change
 del convert_stage_speaker
 del convert_auto_moderation_action
+del convert_guild_incidents_enable
+del convert_guild_incidents_disable
 
 GENERIC_MESSAGE_TYPES = frozenset((
     MessageType.default,

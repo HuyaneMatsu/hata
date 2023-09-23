@@ -2,99 +2,17 @@ __all__ = ()
 
 from scarletio import Compound
 
-from ...bases import maybe_snowflake
 from ...channel import Channel
 from ...core import GUILDS
 from ...guild import Guild
 from ...http import DiscordHTTPClient
-from ...role import Role
+from ...payload_building import add_payload_fields_from_keyword_parameters
 from ...user import ClientUserBase, User
-from ...utils import datetime_to_timestamp
+from ...user.guild_profile.utils import GUILD_PROFILE_FIELD_CONVERTERS
 
 from ..request_helpers import (
-    get_guild_and_id, get_guild_id, get_channel_guild_id_and_id, get_role_guild_id_and_id, get_user_and_id, get_user_id,
-    validate_timeout_duration
+    get_channel_guild_id_and_id, get_guild_id, get_role_guild_id_and_id, get_user_and_id, get_user_id
 )
-
-
-def _assert__user_guild_profile_edit__nick(nick):
-    """
-    Asserts the `nick` parameter of ``Client.user_guild_profile_edit`` method.
-    
-    Parameters
-    ----------
-    nick : `Ellipsis`, `None`, `int`
-        The new nick of the user.
-    
-    Raises
-    ------
-    AssertionError
-        - If `nick` was not given neither as `None`, `str`.
-        - If `nick` length is out of the expected range [0:32].
-    """
-    if nick is ...:
-        pass
-    
-    elif nick is None:
-        pass
-    
-    elif isinstance(nick, str):
-        nick_length = len(nick)
-        if nick_length > 32:
-            raise AssertionError(
-                f'`nick` length can be in range [0:32], got {nick_length}; {nick!r}.'
-            )
-    
-    else:
-        raise AssertionError(
-            f'`nick` can be `None`, `str`, got {nick.__class__.__name__}; {nick!r}.'
-        )
-    
-    return True
-
-
-def _assert__user_guild_profile_edit__deaf(deaf):
-    """
-    Asserts the `deaf` parameter of ``Client.user_guild_profile_edit`` method.
-    
-    Parameters
-    ----------
-    deaf : `Ellipsis`, `bool`
-        Whether the user should be deafen at the voice channels.
-    
-    Raises
-    ------
-    AssertionError
-        - If `deaf` was not given as `bool`.
-    """
-    if (deaf is not ...) and (not isinstance(deaf, bool)):
-        raise TypeError(
-            f'`deaf` can be `bool`, got {deaf.__class__.__name__}; {deaf!r}'
-        )
-    
-    return True
-
-
-def _assert__user_guild_profile_edit__mute(mute):
-    """
-    Asserts the `mute` parameter of ``Client.user_guild_profile_edit`` method.
-    
-    Parameters
-    ----------
-    mute : `Ellipsis`, `bool`
-        Whether the user should be muted at the voice channels.
-    
-    Raises
-    ------
-    AssertionError
-        - If `mute` was not given as `bool`.
-    """
-    if (mute is not ...) and (not isinstance(mute, bool)):
-        raise TypeError(
-            f'`mute` can be `bool`, got {mute.__class__.__name__}; {mute!r}'
-        )
-    
-    return True
 
 
 def _assert__guild_user_search__query(query):
@@ -158,13 +76,8 @@ class ClientCompoundUserEndpoints(Compound):
         guild,
         user,
         *,
-        nick = ...,
-        deaf = ...,
-        mute = ...,
-        voice_channel = ...,
-        roles = ...,
-        timeout_duration = ...,
         reason = None,
+        **keyword_parameters,
     ):
         """
         Edits the user's guild profile at the given guild.
@@ -179,138 +92,69 @@ class ClientCompoundUserEndpoints(Compound):
         user : ``ClientUserBase``, `int`
             The user to edit, or their identifier.
         
-        nick : `None`, `str`, Optional (Keyword only)
-            The new nick of the user. You can remove the current one by passing it as `None`, an empty string.
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Will show up at the guild's audit logs.
         
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters representing which field of the guild profile should be edited.
+        
+        Other Parameters
+        ----------------
         deaf : `bool`, Optional (Keyword only)
             Whether the user should be deafen at the voice channels.
         
         mute : `bool`, Optional (Keyword only)
             Whether the user should be muted at the voice channels.
         
+        nick : `None`, `str`, Optional (Keyword only)
+            The new nick of the user. You can remove the current one by passing it as `None`, an empty string.
+        
         voice_channel : `None`, ``Channel``, `int` , Optional (Keyword only)
             Moves the user to the given voice channel. Only applicable if the user is already at a voice channel.
             
             Pass it as `None` to disconnect the user from it's voice channel.
         
-        roles : `None`, `iterable` of (``Role``, `int`), Optional (Keyword only)
+        role_ids : `None`, `iterable` of (``Role``, `int`), Optional (Keyword only)
             The new roles of the user. Give it as `None` to remove all of the user's roles.
         
-        timeout_duration: `None`, `int`, `float`, `timedelta`, `datetime`, Optional (Keyword only)
+        roles : `None`, `iterable` of (``Role``, `int`), Optional (Keyword only)
+            Alternative of `role_ids`.
+        
+        timed_out_until : `None`, `DateTime`, Optional (Keyword only)
+            Until when the user is timed out.
+        
+        timeout_duration : `int`, `float`, `TimeDelta`, Optional (Keyword only)
             The timeout duration of the user in seconds.
-            
-            Pass it as `None` or as a non-positive duration to remove it.
-            
+        
             The max allowed value equals to 28 days.
+        
+        voice_channel : `None`, ``Channel``, `int` , Optional (Keyword only)
+            Alternative of `voice_channel_id`.
+        
+        voice_channel_id : `None`, ``Channel``, `int` , Optional (Keyword only)
+            Moves the user to the given voice channel. Only applicable if the user is already at a voice channel.
             
-        reason : `None`, `str` = `None`, Optional (Keyword only)
-            Will show up at the guild's audit logs.
+            Pass it as `None` to disconnect the user from it's voice channel.
         
         Raises
         ------
         TypeError
+            - If a parameter's type is incorrect.
+        ValueError
             - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild, guild_id = get_guild_and_id(guild)
-        user, user_id = get_user_and_id(user)
-        
-        assert _assert__user_guild_profile_edit__nick(nick)
-        assert _assert__user_guild_profile_edit__deaf(deaf)
-        assert _assert__user_guild_profile_edit__mute(mute)
+        guild_id = get_guild_id(guild)
+        user_id = get_user_id(user)
         
         data = {}
-        if (nick is not ...):
-            if (nick is not None) and (not nick):
-                nick = None
-            
-            if (guild is not None) and (user is not None) and (not guild.partial):
-                try:
-                    guild_profile = user.guild_profiles[guild.id]
-                except KeyError:
-                    should_edit_nick = True
-                else:
-                    if guild_profile.nick == nick:
-                        should_edit_nick = False
-                    else:
-                        should_edit_nick = True
-            else:
-                should_edit_nick = True
-            
-            if should_edit_nick:
-                if self.id == user_id:
-                    await self.http.client_guild_profile_edit(guild_id, {'nick': nick}, reason)
-                else:
-                    data['nick'] = nick
-                    
-        if (deaf is not ...):
-            data['deaf'] = deaf
+        add_payload_fields_from_keyword_parameters(GUILD_PROFILE_FIELD_CONVERTERS, keyword_parameters, data, True)
         
-        if (mute is not ...):
-            data['mute'] = mute
-        
-        if (voice_channel is not ...):
-            while True:
-                if voice_channel is None:
-                    voice_channel_id = None
-                    break
-                
-                elif isinstance(voice_channel, Channel):
-                    if voice_channel.is_in_group_guild_connectable() or voice_channel.partial:
-                        voice_channel_id = voice_channel.id
-                        break
-                
-                else:
-                    voice_channel_id = maybe_snowflake(voice_channel)
-                    if voice_channel_id is not None:
-                        break
-                
-                raise TypeError(
-                    f'`voice_channel` can be `None`, any guild connectable channel, `int`, got '
-                    f'{voice_channel.__class__.__name__}; {voice_channel!r}.'
-                )
-            
-            data['channel_id'] = voice_channel_id
-        
-        
-        if (roles is not ...):
-            role_ids = set()
-            if (roles is not None):
-                if getattr(roles, '__iter__', None) is None:
-                    raise TypeError(
-                        f'`roles` can be `None`, `iterable`, got {roles.__class__.__name__}; {roles!r}.'
-                    )
-                
-                for role in roles:
-                    
-                    if isinstance(role, Role):
-                        role_id = role.id
-                    else:
-                        role_id = maybe_snowflake(role)
-                        if role_id is None:
-                            raise TypeError(
-                                f'`roles` can contain `{Role.__name__}`, `int` elements, got '
-                                f'{role.__class__.__name__}; {role!r}; roles={roles!r}.'
-                            )
-                    
-                    role_ids.add(role_id)
-            
-            data['roles'] = role_ids
-        
-        
-        if (timeout_duration is not ...):
-            timeout_ends_at = validate_timeout_duration(timeout_duration)
-            
-            if (timeout_ends_at is None):
-                timed_out_until_raw = None
-            else:
-                timed_out_until_raw = datetime_to_timestamp(timeout_ends_at)
-            data['communication_disabled_until'] = timed_out_until_raw
-        
-        await self.http.user_guild_profile_edit(guild_id, user_id, data, reason)
+        if data:
+            await self.http.user_guild_profile_edit(guild_id, user_id, data, reason)
     
     
     async def user_role_add(self, user, role, *, reason = None):

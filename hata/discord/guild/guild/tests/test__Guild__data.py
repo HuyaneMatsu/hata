@@ -1,3 +1,5 @@
+from datetime import datetime as DateTime
+
 import vampytest
 
 from ....activity import Activity
@@ -14,6 +16,8 @@ from ....sticker import Sticker
 from ....user import GuildProfile, User, VoiceState
 
 from ...embedded_activity_state import EmbeddedActivityState
+from ...guild_incidents import GuildIncidents
+from ...guild_inventory_settings import GuildInventorySettings
 
 from ..constants import (
     EMOJI_EVENT_CREATE, EMOJI_EVENT_DELETE, EMOJI_EVENT_UPDATE, SOUNDBOARD_SOUND_EVENT_CREATE,
@@ -30,7 +34,7 @@ from ..preinstanced import (
 from .test__Guild__constructor import _assert_fields_set
 
 
-def test__Guild__from_data__0():
+def test__Guild__from_data__no_fields():
     """
     Tests whether ``Guild.from_data`` works as intended.
     
@@ -48,7 +52,7 @@ def test__Guild__from_data__0():
     vampytest.assert_eq(guild.id, guild_id)
 
 
-def test__Guild__from_data__1():
+def test__Guild__from_data__all_fields():
     """
     Tests whether ``Guild.from_data`` works as intended.
     
@@ -82,6 +86,8 @@ def test__Guild__from_data__1():
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
+    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     invite_splash = Icon(IconType.animated, 18)
     large = True
     max_presences = 420
@@ -154,6 +160,8 @@ def test__Guild__from_data__1():
         'emojis': [emoji.to_data(include_internals = True) for emoji in emojis],
         'features': [feature.value for feature in features],
         'hub_type': hub_type.value,
+        'incidents_data': incidents.to_data(include_internals = True),
+        'inventory_settings': inventory_settings.to_data(),
         'large': large,
         'max_presences': max_presences,
         'max_stage_video_channel_users': max_stage_channel_video_users,
@@ -216,6 +224,8 @@ def test__Guild__from_data__1():
     vampytest.assert_eq(guild.features, tuple(features))
     vampytest.assert_is(guild.hub_type, hub_type)
     vampytest.assert_eq(guild.icon, icon)
+    vampytest.assert_eq(guild.incidents, incidents)
+    vampytest.assert_eq(guild.inventory_settings, inventory_settings)
     vampytest.assert_eq(guild.invite_splash, invite_splash)
     vampytest.assert_eq(guild.large, large)
     vampytest.assert_eq(guild.max_presences, max_presences)
@@ -251,7 +261,7 @@ def test__Guild__from_data__1():
     vampytest.assert_eq(guild.widget_enabled, widget_enabled)
 
 
-def test__Guild__from_data__2():
+def test__Guild__from_data__caching():
     """
     Tests whether ``Guild.from_data`` works as intended.
     
@@ -269,7 +279,7 @@ def test__Guild__from_data__2():
     vampytest.assert_is(guild_0, guild_1)
 
 
-def test__Guild__from_data__3():
+def test__Guild__from_data__string_caching():
     """
     Tests whether ``Guild.from_data`` works as intended.
     
@@ -331,6 +341,8 @@ def test__Guild__to_data():
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
+    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     invite_splash = Icon(IconType.animated, 18)
     large = True
     max_presences = 420
@@ -405,6 +417,8 @@ def test__Guild__to_data():
         'emojis': [emoji.to_data(defaults = True, include_internals = True) for emoji in emojis],
         'features': [feature.value for feature in features],
         'hub_type': hub_type.value,
+        'incidents_data': incidents.to_data(defaults = True, include_internals = True),
+        'inventory_settings': inventory_settings.to_data(defaults = True),
         'large': large,
         'max_presences': max_presences,
         'max_stage_video_channel_users': max_stage_channel_video_users,
@@ -467,6 +481,8 @@ def test__Guild__to_data():
         features = features,
         hub_type = hub_type,
         icon = icon,
+        incidents = incidents,
+        inventory_settings = inventory_settings,
         invite_splash = invite_splash,
         large = large,
         max_presences = max_presences,
@@ -540,6 +556,8 @@ def test__Guild__set_attributes__create():
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
+    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     invite_splash = Icon(IconType.animated, 18)
     large = True
     max_presences = 420
@@ -612,6 +630,8 @@ def test__Guild__set_attributes__create():
         'emojis': [emoji.to_data(include_internals = True) for emoji in emojis],
         'features': [feature.value for feature in features],
         'hub_type': hub_type.value,
+        'incidents_data': incidents.to_data(include_internals = True),
+        'inventory_settings': inventory_settings.to_data(),
         'large': large,
         'max_presences': max_presences,
         'max_stage_video_channel_users': max_stage_channel_video_users,
@@ -676,6 +696,8 @@ def test__Guild__set_attributes__create():
     vampytest.assert_eq(guild.features, tuple(features))
     vampytest.assert_is(guild.hub_type, hub_type)
     vampytest.assert_eq(guild.icon, icon)
+    vampytest.assert_eq(guild.incidents, incidents)
+    vampytest.assert_eq(guild.inventory_settings, inventory_settings)
     vampytest.assert_eq(guild.invite_splash, invite_splash)
     vampytest.assert_eq(guild.large, large)
     vampytest.assert_eq(guild.max_presences, max_presences)
@@ -745,6 +767,8 @@ def test__Guild__set_attributes__existing():
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
+    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     invite_splash = Icon(IconType.animated, 18)
     large = True
     max_presences = 420
@@ -817,6 +841,8 @@ def test__Guild__set_attributes__existing():
         'emojis': [emoji.to_data(include_internals = True) for emoji in emojis],
         'features': [feature.value for feature in features],
         'hub_type': hub_type.value,
+        'incidents_data': incidents.to_data(include_internals = True),
+        'inventory_settings': inventory_settings.to_data(),
         'large': large,
         'max_presences': max_presences,
         'max_stage_video_channel_users': max_stage_channel_video_users,
@@ -880,6 +906,8 @@ def test__Guild__set_attributes__existing():
     vampytest.assert_eq(guild.features, tuple(features))
     vampytest.assert_is(guild.hub_type, hub_type)
     vampytest.assert_eq(guild.icon, icon)
+    vampytest.assert_eq(guild.incidents, incidents)
+    vampytest.assert_eq(guild.inventory_settings, inventory_settings)
     vampytest.assert_eq(guild.invite_splash, invite_splash)
     vampytest.assert_eq(guild.large, large)
     vampytest.assert_eq(guild.max_presences, max_presences)
@@ -935,6 +963,8 @@ def test__Guild__update_attributes():
     old_features = [GuildFeature.animated_icon]
     old_hub_type = HubType.college
     old_icon = Icon(IconType.animated, 16)
+    old_incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    old_inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     old_invite_splash = Icon(IconType.animated, 18)
     old_max_presences = 420
     old_max_stage_channel_video_users = 421
@@ -971,6 +1001,8 @@ def test__Guild__update_attributes():
     new_features = [GuildFeature.animated_banner]
     new_hub_type = HubType.high_school
     new_icon = Icon(IconType.animated, 116)
+    new_incidents = GuildIncidents(direct_messages_disabled_until = DateTime(2016, 5, 14))
+    new_inventory_settings = GuildInventorySettings(emoji_pack_collectible = False)
     new_invite_splash = Icon(IconType.animated, 118)
     new_max_presences = 1420
     new_max_stage_channel_video_users = 1421
@@ -1010,6 +1042,8 @@ def test__Guild__update_attributes():
         features = old_features,
         hub_type = old_hub_type,
         icon = old_icon,
+        incidents = old_incidents,
+        inventory_settings = old_inventory_settings,
         invite_splash = old_invite_splash,
         max_presences = old_max_presences,
         max_stage_channel_video_users = old_max_stage_channel_video_users,
@@ -1045,6 +1079,8 @@ def test__Guild__update_attributes():
         'description': new_description,
         'features': [feature.value for feature in new_features],
         'hub_type': new_hub_type.value,
+        'incidents_data': new_incidents.to_data(include_internals = True),
+        'inventory_settings': new_inventory_settings.to_data(),
         'max_presences': new_max_presences,
         'max_stage_video_channel_users': new_max_stage_channel_video_users,
         'max_members': new_max_users,
@@ -1087,6 +1123,8 @@ def test__Guild__update_attributes():
     vampytest.assert_eq(guild.features, tuple(new_features))
     vampytest.assert_is(guild.hub_type, new_hub_type)
     vampytest.assert_eq(guild.icon, new_icon)
+    vampytest.assert_eq(guild.incidents, new_incidents)
+    vampytest.assert_eq(guild.inventory_settings, new_inventory_settings)
     vampytest.assert_eq(guild.invite_splash, new_invite_splash)
     vampytest.assert_eq(guild.max_presences, new_max_presences)
     vampytest.assert_eq(guild.max_stage_channel_video_users, new_max_stage_channel_video_users)
@@ -1161,6 +1199,8 @@ def test__Guild__difference_update_attributes():
     old_features = [GuildFeature.animated_icon]
     old_hub_type = HubType.college
     old_icon = Icon(IconType.animated, 16)
+    old_incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    old_inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     old_invite_splash = Icon(IconType.animated, 18)
     old_max_presences = 420
     old_max_stage_channel_video_users = 421
@@ -1197,6 +1237,8 @@ def test__Guild__difference_update_attributes():
     new_features = [GuildFeature.animated_banner]
     new_hub_type = HubType.high_school
     new_icon = Icon(IconType.animated, 116)
+    new_incidents = GuildIncidents(direct_messages_disabled_until = DateTime(2016, 5, 14))
+    new_inventory_settings = GuildInventorySettings(emoji_pack_collectible = False)
     new_invite_splash = Icon(IconType.animated, 118)
     new_max_presences = 1420
     new_max_stage_channel_video_users = 1421
@@ -1236,6 +1278,8 @@ def test__Guild__difference_update_attributes():
         features = old_features,
         hub_type = old_hub_type,
         icon = old_icon,
+        incidents = old_incidents,
+        inventory_settings = old_inventory_settings,
         invite_splash = old_invite_splash,
         max_presences = old_max_presences,
         max_stage_channel_video_users = old_max_stage_channel_video_users,
@@ -1271,6 +1315,8 @@ def test__Guild__difference_update_attributes():
         'description': new_description,
         'features': [feature.value for feature in new_features],
         'hub_type': new_hub_type.value,
+        'incidents_data': new_incidents.to_data(include_internals = True),
+        'inventory_settings': new_inventory_settings.to_data(),
         'max_presences': new_max_presences,
         'max_stage_video_channel_users': new_max_stage_channel_video_users,
         'max_members': new_max_users,
@@ -1313,6 +1359,8 @@ def test__Guild__difference_update_attributes():
     vampytest.assert_eq(guild.features, tuple(new_features))
     vampytest.assert_is(guild.hub_type, new_hub_type)
     vampytest.assert_eq(guild.icon, new_icon)
+    vampytest.assert_eq(guild.incidents, new_incidents)
+    vampytest.assert_eq(guild.inventory_settings, new_inventory_settings)
     vampytest.assert_eq(guild.invite_splash, new_invite_splash)
     vampytest.assert_eq(guild.max_presences, new_max_presences)
     vampytest.assert_eq(guild.max_stage_channel_video_users, new_max_stage_channel_video_users)
@@ -1352,6 +1400,8 @@ def test__Guild__difference_update_attributes():
             'features': tuple(old_features),
             'hub_type': old_hub_type,
             'icon': old_icon,
+            'incidents': old_incidents,
+            'inventory_settings': old_inventory_settings,
             'invite_splash': old_invite_splash,
             'max_presences': old_max_presences,
             'max_stage_channel_video_users': old_max_stage_channel_video_users,
@@ -1713,7 +1763,7 @@ def test__Guild__update_voice_state_restricted__no_change():
     vampytest.assert_is(voice_state._cache_user, user)
 
 
-def test__Guild__sync__0():
+def test__Guild__sync__default():
     """
     Tests whether ``Guild._update_generic`` works as intended.
     """
@@ -1733,6 +1783,8 @@ def test__Guild__sync__0():
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
+    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     invite_splash = Icon(IconType.animated, 18)
     max_presences = 420
     max_stage_channel_video_users = 421
@@ -1780,6 +1832,8 @@ def test__Guild__sync__0():
         'description': description,
         'features': [feature.value for feature in features],
         'hub_type': hub_type.value,
+        'incidents_data': incidents.to_data(include_internals = True),
+        'inventory_settings': inventory_settings.to_data(),
         'max_presences': max_presences,
         'max_stage_video_channel_users': max_stage_channel_video_users,
         'max_members': max_users,
@@ -1828,6 +1882,8 @@ def test__Guild__sync__0():
     vampytest.assert_eq(guild.features, tuple(features))
     vampytest.assert_is(guild.hub_type, hub_type)
     vampytest.assert_eq(guild.icon, icon)
+    vampytest.assert_eq(guild.incidents, incidents)
+    vampytest.assert_eq(guild.inventory_settings, inventory_settings)
     vampytest.assert_eq(guild.invite_splash, invite_splash)
     vampytest.assert_eq(guild.max_presences, max_presences)
     vampytest.assert_eq(guild.max_stage_channel_video_users, max_stage_channel_video_users)

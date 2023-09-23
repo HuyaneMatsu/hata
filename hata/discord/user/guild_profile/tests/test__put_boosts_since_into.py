@@ -7,16 +7,29 @@ from ....utils import datetime_to_timestamp
 from ..fields import put_boosts_since_into
 
 
-def test__put_boosts_since_into():
+def _iter_options():
+    until = DateTime(2016, 5, 14)
+    
+    yield None, False, {}
+    yield None, True, {'premium_since': None}
+    yield until, False, {'premium_since': datetime_to_timestamp(until)}
+    yield until, True, {'premium_since': datetime_to_timestamp(until)}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_boosts_since_into(input_value, defaults):
     """
     Tests whether ``put_boosts_since_into`` works as intended.
-    """
-    boosts_since = DateTime(2016, 5, 14)
     
-    for input_value, defaults, expected_output in (
-        (None, False, {}),
-        (None, True, {'premium_since': None}),
-        (boosts_since, False, {'premium_since': datetime_to_timestamp(boosts_since)}),
-    ):
-        output = put_boosts_since_into(input_value, {}, defaults)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `bool`
+        The value to serialise.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
+    """
+    return put_boosts_since_into(input_value, {}, defaults)

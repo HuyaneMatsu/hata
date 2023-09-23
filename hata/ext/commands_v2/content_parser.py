@@ -1688,20 +1688,21 @@ async def guild_converter(command_context, content_parser_parameter_detail, part
     if (parsed is None):
         return None
     
-    id_ = int(parsed.group(1))
+    guild_id = int(parsed.group(1))
     
     try:
-        guild = GUILDS[id_]
+        guild = GUILDS[guild_id]
     except KeyError:
         return None
     
     if content_parser_parameter_detail.flags & CONVERTER_FLAG_EVERYWHERE:
         return guild
     
-    if guild in command_context.client.guild_profiles:
+    if guild in command_context.client.guilds:
         return guild
     
     return None
+
 
 CONVERTER_GUILD = ConverterSetting(
     converter = guild_converter,

@@ -1,12 +1,15 @@
 __all__ = ()
 
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timedelta as TimeDelta
 
 from scarletio import include_with_callback, set_docs
 
 from .bases import maybe_snowflake
 from .preconverters import preconvert_int_options, preconvert_preinstanced_type, preconvert_snowflake, preconvert_str
 from .utils import is_url
+
+
+ZERO_TIMEDELTA = TimeDelta()
 
 
 def field_validator_factory(field_name):
@@ -49,7 +52,7 @@ def field_validator_factory(field_name):
             
             else:
                 raise TypeError(
-                    f'`field_name` can be any basic type, like `None`, `str`, `int`, `float`, got '
+                    f'`{field_name}` can be any basic type, like `None`, `str`, `int`, `float`, got '
                     f'{field_value.__class__.__name__}; {field_value!r}.'
                 )
             
@@ -689,7 +692,7 @@ def flag_validator_factory(field_name, flag_type, *, default_value = ...):
         
         Parameters
         ----------
-        integer : `None`, `int`, `instance<flag_type>`
+        flag : `None`, `int`, `instance<flag_type>`
             The flag to validate.
         
         Returns
@@ -750,7 +753,7 @@ def nullable_flag_validator_factory(field_name, flag_type):
         
         Parameters
         ----------
-        integer : `None`, `int`, `instance<flag_type>`
+        flag : `None`, `int`, `instance<flag_type>`
             The flag to validate.
         
         Returns
@@ -2006,5 +2009,59 @@ def nullable_entity_dictionary_validator_factory(field_name, entity_type):
                 validated[element.id] = element
         
         return validated
+    
+    return validator
+
+
+def duration_validator_factory(field_name):
+    """
+    Returns a duration validator.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    def validator(duration):
+        """
+        Duration validator returning when the duration ends.
+        
+        Parameters
+        ----------
+        duration : `TimeDelta`, `int`, `float`
+            Duration in seconds or as a time delta.
+        
+        Returns
+        -------
+        until : `None`, `DateTime`
+        """
+        nonlocal field_name
+        
+        if isinstance(duration, int):
+            if duration <= 0:
+                return None
+            
+            return DateTime.utcnow() + TimeDelta(seconds = duration)
+        
+        if isinstance(duration, TimeDelta):
+            if duration <= ZERO_TIMEDELTA:
+                return None
+            
+            return DateTime.utcnow() + duration
+        
+        if isinstance(duration, float):
+            if duration <= 0.0:
+                return None
+    
+            return DateTime.utcnow() + TimeDelta(seconds = duration)
+        
+        raise TypeError(
+            f'`{field_name}` can be `int`, `float`, `{TimeDelta.__name__}`, got '
+            f'{duration.__class__.__name__}; {duration!r}.'
+        )
     
     return validator

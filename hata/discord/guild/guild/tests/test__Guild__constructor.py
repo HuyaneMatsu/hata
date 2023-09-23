@@ -1,3 +1,5 @@
+from datetime import datetime as DateTime
+
 import vampytest
 from scarletio import WeakValueDictionary
 
@@ -14,6 +16,8 @@ from ....sticker import Sticker
 from ....user import User, VoiceState
 
 from ...embedded_activity_state import EmbeddedActivityState
+from ...guild_incidents import GuildIncidents
+from ...guild_inventory_settings import GuildInventorySettings
 
 from ..flags import SystemChannelFlag
 from ..guild import Guild
@@ -57,6 +61,8 @@ def _assert_fields_set(guild):
     vampytest.assert_instance(guild.icon_hash, int)
     vampytest.assert_instance(guild.icon_type, IconType)
     vampytest.assert_instance(guild.id, int)
+    vampytest.assert_instance(guild.incidents, GuildIncidents, nullable = True)
+    vampytest.assert_instance(guild.inventory_settings, GuildInventorySettings, nullable = True)
     vampytest.assert_instance(guild.invite_splash_hash, int)
     vampytest.assert_instance(guild.invite_splash_type, IconType)
     vampytest.assert_instance(guild.large, bool)
@@ -91,7 +97,7 @@ def _assert_fields_set(guild):
     vampytest.assert_instance(guild.widget_enabled, bool)
 
 
-def test__Guild__new__0():
+def test__Guild__new__no_fields():
     """
     Tests whether ``Guild.__new__`` works as intended.
     
@@ -101,7 +107,7 @@ def test__Guild__new__0():
     _assert_fields_set(guild)
 
 
-def test__Guild__new__1():
+def test__Guild__new__all_fields():
     """
     Tests whether ``Guild.__new__`` works as intended.
     
@@ -204,7 +210,7 @@ def test__Guild__create_empty():
     vampytest.assert_eq(guild.id, guild_id)
 
 
-def test__Guild__precreate__0():
+def test__Guild__precreate__no_fields():
     """
     Tests whether ``Guild.precreate`` works as intended.
     
@@ -218,7 +224,7 @@ def test__Guild__precreate__0():
     vampytest.assert_eq(guild.id, guild_id)
 
 
-def test__Guild__precreate__1():
+def test__Guild__precreate__caching():
     """
     Tests whether ``Guild.precreate`` works as intended.
     
@@ -232,7 +238,7 @@ def test__Guild__precreate__1():
     vampytest.assert_is(guild_0, guild_1)
 
 
-def test__Guild__precreate__2():
+def test__Guild__precreate__all_fields():
     """
     Tests whether ``Guild.precreate`` works as intended.
     
@@ -266,6 +272,8 @@ def test__Guild__precreate__2():
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
+    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     invite_splash = Icon(IconType.animated, 18)
     large = True
     max_presences = 420
@@ -341,6 +349,8 @@ def test__Guild__precreate__2():
         features = features,
         hub_type = hub_type,
         icon = icon,
+        incidents = incidents,
+        inventory_settings = inventory_settings,
         invite_splash = invite_splash,
         large = large,
         max_presences = max_presences,
@@ -392,6 +402,8 @@ def test__Guild__precreate__2():
     vampytest.assert_eq(guild.features, tuple(features))
     vampytest.assert_is(guild.hub_type, hub_type)
     vampytest.assert_eq(guild.icon, icon)
+    vampytest.assert_eq(guild.incidents, incidents)
+    vampytest.assert_eq(guild.inventory_settings, inventory_settings)
     vampytest.assert_eq(guild.invite_splash, invite_splash)
     vampytest.assert_eq(guild.large, large)
     vampytest.assert_eq(guild.max_presences, max_presences)

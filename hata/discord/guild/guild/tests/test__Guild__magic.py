@@ -9,8 +9,6 @@ from ..preinstanced import (
     ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel
 )
 
-from .test__Guild__constructor import _assert_fields_set
-
 
 def test__Guild__repr():
     """
@@ -172,7 +170,6 @@ def test__Guild__hash():
     """
     Tests whether ``Guild.__hash__`` works as intended.
     """
-
     guild_id = 202306220150
     
     afk_channel_id = 202306220151

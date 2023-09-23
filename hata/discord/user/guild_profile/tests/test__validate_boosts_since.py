@@ -5,30 +5,47 @@ import vampytest
 from ..fields import validate_boosts_since
 
 
-def test__validate_boosts_since__0():
+def _iter_options():
+    until = DateTime(2016, 5, 14)
+    
+    yield None, None
+    yield until, until
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_boosts_since__passing(input_value):
     """
     Tests whether ``validate_boosts_since`` works as intended.
     
     Case: passing.
-    """
-    boosts_since = DateTime(2016, 9, 9)
     
-    for input_parameter, expected_output in (
-        (None, None),
-        (boosts_since, boosts_since),
-    ):
-        output = validate_boosts_since(input_parameter)
-        vampytest.assert_is(output, expected_output)
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Returns
+    -------
+    output : `None | DateTime`
+    """
+    return validate_boosts_since(input_value)
 
 
-def test__validate_boosts_since__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_boosts_since__type_error(input_value):
     """
     Tests whether ``validate_boosts_since`` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_parameter in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_boosts_since(input_parameter)
+    validate_boosts_since(input_value)

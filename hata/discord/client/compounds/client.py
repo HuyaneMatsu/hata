@@ -1,78 +1,26 @@
 __all__ = ()
 
-import reprlib
-from datetime import datetime
+from datetime import datetime as DateTime
 
-from scarletio import Compound, Theory
+from scarletio import Compound
 
 from ...channel import Channel
-from ...color import Color
-from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES, VALID_ICON_MEDIA_TYPES_EXTENDED
+from ...http import DiscordHTTPClient
 from ...oauth2 import Connection
 from ...payload_building import add_payload_fields_from_keyword_parameters
-from ...user import PremiumType
 from ...user.guild_profile.utils import GUILD_PROFILE_SELF_FIELD_CONVERTERS
-from ...user.user.fields import validate_display_name
-from ...utils import datetime_to_timestamp, get_image_media_type, image_to_base64
+from ...user.user.utils import USER_SELF_FIELD_CONVERTERS
+from ...utils import datetime_to_timestamp
 
 from ..request_helpers import get_guild_id, get_channel_guild_id_and_id
 
 
-
-def _assert__guild_profile_edit__avatar(avatar, client):
-    """
-    Asserts the `avatar` parameter of ``Client.guild_profile_edit`` method.
-    
-    Parameters
-    ----------
-    avatar : `Ellipsis`, `None`, `bytes-like`
-        The client's new guild specific avatar.
-    client : ``Client``
-        The client to query additional client-specific limitations.
-    
-    Raises
-    ------
-    AssertionError
-        - If `avatar`'s type is incorrect.
-        - If `avatar`'s format is incorrect.
-    """
-    if (avatar is not ...) and (avatar is not None):
-        if not AssertionError(avatar, (bytes, bytearray, memoryview)):
-            raise TypeError(
-                f'`avatar` can be `None`, `bytes-like`, got {avatar.__class__.__name__}; '
-                f'{reprlib.repr(avatar)}.'
-            )
-        
-        media_type = get_image_media_type(avatar)
-        
-        if client.premium_type.value:
-            valid_icon_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
-        else:
-            valid_icon_media_types = VALID_ICON_MEDIA_TYPES
-        
-        if media_type not in valid_icon_media_types:
-            raise AssertionError(
-                f'Invalid `avatar` type for the client: {media_type}, got {reprlib.repr(avatar)}.'
-            )
-    
-    return True
-
-
 class ClientCompoundClientEndpoints(Compound):
     
-    guild_profiles : dict
     http : DiscordHTTPClient
-    bot : bool
-    premium_type : PremiumType
-    
-    @Theory
-    def _update_attributes(self, data): ...
     
     
-    async def edit(
-        self, *, avatar = ..., banner = ..., banner_color = ..., bio = ..., display_name = ..., name = ..., # Generic
-        password = ..., new_password = ..., email = ..., # User account only
-    ):
+    async def edit(self, **keyword_parameters):
         """
         Edits the client. Only the provided parameters will be changed. Every parameter what refers to a user
         account is not tested.
@@ -81,6 +29,11 @@ class ClientCompoundClientEndpoints(Compound):
         
         Parameters
         ----------
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters representing which field of the client should be edited.
+        
+        Other Parameters
+        ----------------
         avatar : `None`, `bytes-like`, Optional (Keyword only)
             An `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
             `'gif'` as well. By passing `None` you can remove the client's current avatar.
@@ -92,185 +45,33 @@ class ClientCompoundClientEndpoints(Compound):
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
             The new banner color of the client. By passing it as `None` you can remove the client's current one.
         
-        bio : `None`, `str`, Optional (Keyword only)
-            The new bio of the client. By passing it as `None`, you can remove the client's current one.
-        
         display_name : `None`, `str`, Optional (Keyword only)
             The client's non-unique display name.
         
         name : `str`, Optional (Keyword only)
             The client's new name.
         
-        password : `str`, Optional (Keyword only)
-            The actual password of the client.
-        
-        new_password : `str`, Optional (Keyword only)
-            The client's new password.
-        
-        email : `str`, Optional (Keyword only)
-            The client's new email.
-        
         Raises
         ------
         TypeError
-            - If `avatar` was not given as `None`, neither as `bytes-like`.
-            - If `banner` was not given as `None`, neither as `bytes-like`.
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `name` was given but not as `str`.
-            - If `name`'s length is out of range [2:32].
-            - If `avatar`'s type in unsettable for the client.
-            - If `password` was not given meanwhile the client is not bot.
-            - If `password` was not given as `str`.
-            - If `email` was given, but not as `str`.
-            - If `new_password` was given, but not as `str`.
-            - If `bio` is neither `None` nor `str`.
-            - If `bio`'s length is out of range [0:190].
-            - if `banner_color` is neither `None` nor `int`.
         
         Notes
         -----
         The method's endpoint has long rate limit reset, so consider using timeout and checking rate limits with
         ``RateLimitProxy``.
-        
-        The `password`, `new_password` and the `email` parameters are only for user accounts.
         """
-        assert _assert__guild_profile_edit__avatar(avatar, self)
-        
         data = {}
+        add_payload_fields_from_keyword_parameters(USER_SELF_FIELD_CONVERTERS, keyword_parameters, data, True)
         
-        
-        if (avatar is not ...):
-            if avatar is None:
-                avatar_data = None
-            else:
-                avatar_data = image_to_base64(avatar)
-            
-            data['avatar'] = avatar_data
-        
-        
-        if (banner is not ...):
-            if banner is None:
-                banner_data = None
-            else:
-                if not isinstance(banner, (bytes, bytearray, memoryview)):
-                    raise TypeError(
-                        f'`banner` can be `None`, `bytes-like`, got {banner.__class__.__name__}; '
-                        f'{reprlib.repr(banner)}.'
-                    )
-                
-                if __debug__:
-                    media_type = get_image_media_type(banner)
-                    
-                    if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
-                        raise AssertionError(
-                            f'Invalid `banner` type for the client: {media_type}; got {reprlib.repr(banner)}.'
-                        )
-                
-                banner_data = image_to_base64(banner)
-            
-            data['banner'] = banner_data
-        
-        
-        if (banner_color is not ...):
-            if __debug__:
-                if (banner_color is not None) and (not isinstance(banner_color, int)):
-                    raise AssertionError(
-                        f'`banner_color` can be `None`, `{Color.__name__}`, `int`, got '
-                        f'{banner_color.__name__}; {banner_color!r}.'
-                    )
-            
-            data['accent_color'] = banner_color
-        
-        
-        if (bio is not ...):
-            if bio is None:
-                bio = ''
-            else:
-                if __debug__:
-                    if not isinstance(bio, str):
-                        raise AssertionError(
-                            f'`bio` can be `None`, `str`, got {bio.__class__.__name__}; {bio!r}.'
-                        )
-                    
-                    bio_length = len(bio)
-                    if bio_length > 190:
-                        raise AssertionError(
-                            f'`bio` length can be in range [0:190], got {bio_length!r}; {bio!r}.'
-                        )
-            
-            data['bio'] = bio
-        
-        if (display_name is not ...):
-            data['global_name'] = validate_display_name(display_name)
-        
-        if (name is not ...):
-            if __debug__:
-                if not isinstance(name, str):
-                    raise AssertionError(
-                        f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                    )
-                
-                name_length = len(name)
-                if name_length < 2 or name_length > 32:
-                    raise AssertionError(
-                        f'The length of the name can be in range [2:32], got {name_length}; {name!r}.'
-                    )
-            
-            data['username'] = name
-        
-        
-        if not self.bot:
-            if __debug__:
-                if password is ...:
-                    raise AssertionError(
-                        f'`password` is must for non bots, got {password!r}.'
-                    )
-                
-                if not isinstance(password, str):
-                    raise AssertionError(
-                        f'`password` can be `str`, got {password.__class__.__name__}; {password!r}.'
-                    )
-            
-            data['password'] = password
-            
-            
-            if (email is not ...):
-                if __debug__:
-                    if not isinstance(email, str):
-                        raise AssertionError(
-                            f'`email` can be `str`, got {email.__class__.__name__}; {email!r}.'
-                        )
-                
-                data['email'] = email
-            
-            
-            if (new_password is not ...):
-                if __debug__:
-                    if not isinstance(new_password, str):
-                        raise AssertionError(
-                            f'`new_password` can be `str`, got {new_password.__class__.__name__}; '
-                            f'{new_password!r}.'
-                        )
-                
-                data['new_password'] = new_password
-        
-        
-        data = await self.http.client_edit(data)
-        self._update_attributes(data)
-        
-        
-        if not self.bot:
-            self.email = data['email']
-            try:
-                token = data['token']
-            except KeyError:
-                pass
-            else:
-                self.token = token
+        if data:
+            await self.http.client_edit(data)
     
     
     async def guild_profile_edit(self, guild, *, reason = None, **keyword_parameters):
@@ -397,7 +198,7 @@ class ClientCompoundClientEndpoints(Compound):
         guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_guild_stage)
         
         if request:
-            timestamp = datetime_to_timestamp(datetime.utcnow())
+            timestamp = datetime_to_timestamp(DateTime.utcnow())
         else:
             timestamp = None
         

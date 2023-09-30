@@ -1,10 +1,18 @@
 __all__ = ('ZEROUSER', 'create_partial_user_from_id', )
 
+from functools import partial as partial_func
+
 from scarletio import export
 
 from ...core import USERS
 
+from .fields import (
+    put_banner_color_into, put_display_name_into, put_name_into, validate_banner_color, validate_display_name,
+    validate_name
+)
+from .orin_user_base import USER_BANNER
 from .user import User
+from .user_base import USER_AVATAR
 
 
 @export
@@ -33,3 +41,18 @@ def create_partial_user_from_id(user_id):
 
 ZEROUSER = create_partial_user_from_id(0)
 export(ZEROUSER, 'ZEROUSER')
+
+
+USER_SELF_FIELD_CONVERTERS = {
+    'avatar': (
+        partial_func(USER_AVATAR.validate_icon, allow_data = True),
+        partial_func(USER_AVATAR.put_into, as_data = True),
+    ),
+    'banner': (
+        partial_func(USER_BANNER.validate_icon, allow_data = True),
+        partial_func(USER_BANNER.put_into, as_data = True),
+    ),
+    'banner_color': (validate_banner_color, put_banner_color_into),
+    'display_name': (validate_display_name, put_display_name_into),
+    'name': (validate_name, put_name_into),
+}

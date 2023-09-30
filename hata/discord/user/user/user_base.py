@@ -22,6 +22,9 @@ from .preinstanced import DefaultAvatar, PremiumType, Status
 ZEROUSER = include('ZEROUSER')
 
 
+USER_AVATAR = IconSlot('avatar', 'avatar', module_urls.user_avatar_url, module_urls.user_avatar_url_as)
+
+
 class UserBase(DiscordEntity, immortal = True):
     """
     Base class for user instances.
@@ -43,7 +46,7 @@ class UserBase(DiscordEntity, immortal = True):
     """
     __slots__ = ('name', )
     
-    avatar = IconSlot('avatar', 'avatar', module_urls.user_avatar_url, module_urls.user_avatar_url_as)
+    avatar = USER_AVATAR
     
     def __new__(
         cls,

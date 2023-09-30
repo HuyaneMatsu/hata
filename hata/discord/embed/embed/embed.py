@@ -4,7 +4,7 @@ import warnings
 
 from scarletio import RichAttributeErrorBaseType
 
-from ...utils import sanitize_mentions
+from ...utils import DATETIME_FORMAT_CODE, sanitize_mentions
 
 from ..embed_author import EmbedAuthor
 from ..embed_field import EmbedField
@@ -575,8 +575,170 @@ class Embed(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the representation of the embed."""
-        return f'<{self.__class__.__name__} length = {len(self)}>'
+        repr_parts = ['<', self.__class__.__name__]
+        
+        field_added = False
+        
+        # author
+        author = self.author
+        if (author is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' author = ')
+            repr_parts.append(repr(author))
+        
+        # color
+        color = self.color
+        if (color is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' color = ')
+            repr_parts.append(repr(color))
+        
+        # description
+        description = self.description
+        if (description is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' description = ')
+            repr_parts.append(repr(description))
+        
+        # fields
+        fields = self.fields
+        if (fields is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' fields = ')
+            repr_parts.append(repr(fields))
+        
+        # footer
+        footer = self.footer
+        if (footer is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' footer = ')
+            repr_parts.append(repr(footer))
+        
+        # image
+        image = self.image
+        if (image is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' image = ')
+            repr_parts.append(repr(image))
+        
+        # provider
+        provider = self.provider
+        if (provider is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' provider = ')
+            repr_parts.append(repr(provider))
+        
+        # thumbnail
+        thumbnail = self.thumbnail
+        if (thumbnail is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' thumbnail = ')
+            repr_parts.append(repr(thumbnail))
+        
+        # timestamp
+        timestamp = self.timestamp
+        if (timestamp is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' timestamp = ')
+            repr_parts.append(format(timestamp, DATETIME_FORMAT_CODE))
+        
+        # title
+        title = self.title
+        if (title is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' title = ')
+            repr_parts.append(repr(title))
+        
+        # type
+        embed_type = self.type
+            
+        if (embed_type is not EmbedType.rich):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' type = ')
+            repr_parts.append(embed_type.name)
+            repr_parts.append(' ~ ')
+            repr_parts.append(repr(embed_type.value))
+        
+        # url
+        url = self.url
+        if (url is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' url = ')
+            repr_parts.append(repr(url))
+        
+        # video
+        video = self.video
+        if (video is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' video = ')
+            repr_parts.append(repr(video))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
+    
+    def get_short_repr(self):
+        """
+        Returns the short representation of the embed.
+        
+        Returns
+        -------
+        representation : `str`
+        """
+        return f'<{self.__class__.__name__} length = {len(self)}>'
+        
     
     def __eq__(self, other):
         """Returns whether the two embeds are equal."""

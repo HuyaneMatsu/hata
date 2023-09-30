@@ -1,4 +1,4 @@
-## 1.3.40 *\[2023-09-??\]*
+## 1.3.40 *\[2023-09-30\]*
 
 ### Improvements
 
@@ -17,6 +17,9 @@
 - Add `timed_out_until` parameter to `Client.user_guild_profile_edit`.
     Now its purpose is different from the `duration` one.
 - Remove `timeout_duration` parameter of `Client.guild_profile_edit`. You could never actually edit it.
+- Remove `email` and `password` parameters of `Client.edit`. Also `bio` since it is not working.
+- Change `Embed.__repr__` to `.get_short_repr`. Add new detailed `.__repr__` instead.
+    (Its just hard to debug with short repr.)
 
 #### Bug fixes
 

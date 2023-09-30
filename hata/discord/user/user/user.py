@@ -16,13 +16,15 @@ from .fields import (
     validate_display_name, validate_flags, validate_id, validate_name, validate_status, validate_statuses
 )
 from .flags import UserFlag
+from .orin_user_base import USER_AVATAR_DECORATION, USER_BANNER
 from .preinstanced import Status
+from .user_base import USER_AVATAR
 
 
 PRECREATE_FIELDS = {
-    'avatar': ('avatar', ClientUserBase.avatar.validate_icon),
-    'avatar_decoration': ('avatar_decoration', ClientUserBase.avatar_decoration.validate_icon),
-    'banner': ('banner', ClientUserBase.banner.validate_icon),
+    'avatar': ('avatar', USER_AVATAR.validate_icon),
+    'avatar_decoration': ('avatar_decoration', USER_AVATAR_DECORATION.validate_icon),
+    'banner': ('banner', USER_BANNER.validate_icon),
     'banner_color': ('banner_color', validate_banner_color),
     'bot': ('bot', validate_bot),
     'discriminator': ('discriminator', validate_discriminator),

@@ -430,3 +430,40 @@ def test__Embed__iter_fields():
     ):
         embed = Embed(fields = input_value)
         vampytest.assert_eq([*embed.iter_fields()], expected_output)
+
+
+def test__Embed__get_short_repr():
+    """
+    Tests whether ``Embed.get_short_repr`` works as intended.
+    """
+    author = EmbedAuthor('author name')
+    color = Color(123)
+    description = 'embed description'
+    embed_type = EmbedType.video
+    fields = [EmbedField('komeiji', 'koishi'), EmbedField('komeiji', 'satori', inline = True)]
+    footer = EmbedFooter('footer text')
+    image = EmbedImage('attachment://image')
+    provider = EmbedProvider('provider name')
+    thumbnail = EmbedThumbnail('attachment://thumbnail')
+    timestamp = DateTime(2016, 5, 5)
+    title = 'embed title'
+    url = 'https://orindance.party/'
+    video = EmbedVideo('attachment://video')
+    
+    embed = Embed(
+        author = author,
+        color = color,
+        description = description,
+        embed_type = embed_type,
+        fields = fields,
+        footer = footer,
+        image = image,
+        provider = provider,
+        thumbnail = thumbnail,
+        timestamp = timestamp,
+        title = title,
+        url = url,
+        video = video
+    )
+    
+    vampytest.assert_instance(embed.get_short_repr(), str)

@@ -64,7 +64,7 @@ def frame_filter(file_name, name, line_number, line):
     elif file_name == PLUGIN_LOADER_SOURCE_LOADER_FILE_PATH:
         if name == 'exec_module':
             if line in (
-                'SourceFileLoader.exec_module(self, self._module)',
+                'exec(code, module.__dict__)',
                 'import_plugin(self.name)',
             ):
                 should_show_frame = False

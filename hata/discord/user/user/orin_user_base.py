@@ -13,6 +13,16 @@ from .flags import UserFlag
 from .user_base import UserBase
 
 
+USER_AVATAR_DECORATION = IconSlot(
+    'avatar_decoration',
+    'avatar_decoration',
+    module_urls.user_avatar_decoration_url,
+    module_urls.user_avatar_decoration_url_as,
+    animated_icon_type = ICON_TYPE_ANIMATED_APNG,
+)
+USER_BANNER = IconSlot('banner', 'banner', module_urls.user_banner_url, module_urls.user_banner_url_as)
+
+
 class OrinUserBase(UserBase):
     """
     Base class for actual user entities, like oauth2 user and normal users.
@@ -46,14 +56,8 @@ class OrinUserBase(UserBase):
     """
     __slots__ = ('banner_color', 'discriminator', 'display_name', 'flags')
     
-    banner = IconSlot('banner', 'banner', module_urls.user_banner_url, module_urls.user_banner_url_as)
-    avatar_decoration = IconSlot(
-        'avatar_decoration',
-        'avatar_decoration',
-        module_urls.user_avatar_decoration_url,
-        module_urls.user_avatar_decoration_url_as,
-        animated_icon_type = ICON_TYPE_ANIMATED_APNG,
-    )
+    avatar_decoration = USER_AVATAR_DECORATION
+    banner = USER_BANNER
     
     def __new__(
         cls,

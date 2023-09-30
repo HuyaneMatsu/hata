@@ -1,8 +1,10 @@
-## 1.3.40 *\[2023-10-??\]*
+## 1.3.41 *\[2023-10-??\]*
 
 ### Improvements
 
 - Enable setting `scheduled_event_id` of `Stage`.
+- Add InteractionResponseType.require_subscription`.
+- Add `Client.interaction_require_subscription`.
 
 ## 1.3.40 *\[2023-09-30\]*
 

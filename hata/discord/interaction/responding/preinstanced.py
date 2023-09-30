@@ -1,46 +1,3 @@
-__all__ = ()
-
-__doc__ = """
-Contains the interaction response type's, which are the following:
-
-+-------------------------------------------+-------+---------------+
-| Respective name                           | Value | Notes         |
-+===========================================+=======+===============+
-| none                                      | 0     | -             |
-+-------------------------------------------+-------+---------------+
-| pong                                      | 1     | -             |
-+-------------------------------------------+-------+---------------+
-| acknowledge                               | 2     | Deprecated.   |
-+-------------------------------------------+-------+---------------+
-| message                                   | 3     | Deprecated.   |
-+-------------------------------------------+-------+---------------+
-| message_and_source                        | 4     | -             |
-+-------------------------------------------+-------+---------------+
-| source                                    | 5     | -             |
-+-------------------------------------------+-------+---------------+
-| component                                 | 6     | -             |
-+-------------------------------------------+-------+---------------+
-| component_message_edit                    | 7     | -             |
-+-------------------------------------------+-------+---------------+
-| application_command_autocomplete_result   | 8     | -             |
-+-------------------------------------------+-------+---------------+
-| form                                      | 9     | -             |
-+-------------------------------------------+-------+---------------+
-"""
-
-none = 0
-pong = 1
-acknowledge = 2
-message = 3
-message_and_source = 4
-source = 5
-component = 6
-component_message_edit = 7
-application_command_autocomplete_result = 8
-form = 9
-
-
-
 __all__ = ('InteractionResponseType',)
 
 from scarletio import export
@@ -95,6 +52,8 @@ class InteractionResponseType(PreinstancedBase):
     +-------------------------------------------+-------------------------------------------+-------+-------------------------------+
     | form                                      | form                                      | 9     | -                             |
     +-------------------------------------------+-------------------------------------------+-------+-------------------------------+
+    | require_subscription                      | require subscription                      | 10    | Monetization must be enabled. |
+    +-------------------------------------------+-------------------------------------------+-------+-------------------------------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -112,3 +71,4 @@ class InteractionResponseType(PreinstancedBase):
     component_message_edit = P(7, 'component message edit')
     application_command_autocomplete_result = P(8, 'application command autocomplete result')
     form = P(9, 'form')
+    require_subscription = P(10, 'require subscription')

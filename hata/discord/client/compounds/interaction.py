@@ -1166,3 +1166,35 @@ class ClientCompoundInteractionEndpoints(Compound):
         )
         
         return Message.from_data(message_data)
+    
+    
+    async def interaction_require_subscription(self, interaction_event):
+        """
+        Requires the user to subscribe to the application.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction_event : ``InteractionEvent``
+            Interaction to respond to.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        _assert__interaction_event_type(interaction_event)
+        
+        application_id = self.application.id
+        assert _assert__application_id(application_id)
+        
+        data = {'type': InteractionResponseType.require_subscription.value}
+        
+        async with InteractionResponseContext(interaction_event, False, False):
+            # Uses the same endpoint as message create
+            await self.http.interaction_response_message_create(
+                interaction_event.id, interaction_event.token, data,
+            )

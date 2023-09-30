@@ -47,6 +47,12 @@ class ClientCompoundStageEndpoints(Compound):
         privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
             The new privacy level of the stage. Defaults to guild only.
         
+        scheduled_event : `int`, ``ScheduledEvent``, Optional (Keyword only)
+            Alternative for `scheduled_event_id`.
+        
+        scheduled_event_id : `int`, ``ScheduledEvent``, Optional (Keyword only)
+            The scheduled event's identifier that started the stage.
+        
         send_start_notification : `bool`, Optional (Keyword only)
             Whether @everyone should be notified when the stage is started.
             

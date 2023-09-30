@@ -25,7 +25,7 @@ def _assert_fields_set(stage):
     vampytest.assert_instance(stage.topic, str, nullable = True)
 
 
-def test__Stage__new__0():
+def test__Stage__new__no_fields():
     """
     Tests whether ``Stage.__new__`` works as intended.
     
@@ -35,22 +35,25 @@ def test__Stage__new__0():
     _assert_fields_set(stage)
 
 
-def test__Stage__new__1():
+def test__Stage__new__all_fields():
     """
     Tests whether ``Stage.__new__`` works as intended.
     
     Case: All fields given.
     """
     privacy_level = PrivacyLevel.public
+    scheduled_event_id = 202309300000
     topic = 'breaking me softly'
     
     stage = Stage(
         privacy_level = privacy_level,
+        scheduled_event_id = scheduled_event_id,
         topic = topic,
     )
     _assert_fields_set(stage)
     
     vampytest.assert_is(stage.privacy_level, privacy_level)
+    vampytest.assert_eq(stage.scheduled_event_id, scheduled_event_id)
     vampytest.assert_eq(stage.topic, topic)
 
 
@@ -66,7 +69,7 @@ def test__Stage__create_empty():
     vampytest.assert_eq(stage.id, stage_id)
 
 
-def test__Stage__precreate__0():
+def test__Stage__precreate__no_fields():
     """
     Tests whether ``Stage.precreate`` works as intended.
     
@@ -80,7 +83,7 @@ def test__Stage__precreate__0():
     vampytest.assert_eq(stage.id, stage_id)
 
 
-def test__Stage__precreate__1():
+def test__Stage__precreate__all_fields():
     """
     Tests whether ``Stage.precreate`` works as intended.
     

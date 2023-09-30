@@ -84,6 +84,7 @@ def test__Stage__eq():
     
     keyword_parameters = {
         'privacy_level': privacy_level,
+        'scheduled_event_id': scheduled_event_id,
         'topic': topic,
     }
     
@@ -94,7 +95,6 @@ def test__Stage__eq():
         discoverable = discoverable,
         guild_id = guild_id,
         invite_code = invite_code,
-        scheduled_event_id = scheduled_event_id,
     )
     vampytest.assert_eq(stage, stage)
     vampytest.assert_ne(stage, object())
@@ -105,8 +105,8 @@ def test__Stage__eq():
     
     for field_name, field_value in (
         ('privacy_level', PrivacyLevel.guild_only),
+        ('scheduled_event_id', 202309300001),
         ('topic', 'tipsy oni'),
-
     ):
         test_stage = Stage(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(stage, test_stage)

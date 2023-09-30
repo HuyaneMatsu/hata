@@ -15,10 +15,12 @@ def test__Stage__copy():
     Tests whether ``Stage.copy`` works as intended.
     """
     privacy_level = PrivacyLevel.public
+    scheduled_event_id = 202309300002
     topic = 'breaking me softly'
     
     stage = Stage(
         privacy_level = privacy_level,
+        scheduled_event_id = scheduled_event_id,
         topic = topic,
     )
     
@@ -36,10 +38,12 @@ def test__Stage__copy_with__0():
     Case: No fields given.
     """
     privacy_level = PrivacyLevel.public
+    scheduled_event_id = 202309300003
     topic = 'breaking me softly'
     
     stage = Stage(
         privacy_level = privacy_level,
+        scheduled_event_id = scheduled_event_id,
         topic = topic,
     )
     
@@ -57,24 +61,29 @@ def test__Stage__copy_with__1():
     Case: No fields given.
     """
     old_privacy_level = PrivacyLevel.public
+    old_scheduled_event_id = 202309300004
     old_topic = 'breaking me softly'
     
     new_privacy_level = PrivacyLevel.guild_only
+    new_scheduled_event_id = 202309300005
     new_topic = 'breaking me softly'
     
     stage = Stage(
         privacy_level = old_privacy_level,
+        scheduled_event_id = old_scheduled_event_id,
         topic = old_topic,
     )
     
     copy = stage.copy_with(
         privacy_level = new_privacy_level,
+        scheduled_event_id = new_scheduled_event_id,
         topic = new_topic,
     )
     _assert_fields_set(copy)
     vampytest.assert_is_not(copy, stage)
     
     vampytest.assert_is(copy.privacy_level, new_privacy_level)
+    vampytest.assert_eq(copy.scheduled_event_id, new_scheduled_event_id)
     vampytest.assert_eq(copy.topic, new_topic)
 
 

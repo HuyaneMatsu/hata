@@ -60,7 +60,7 @@ class Stage(DiscordEntity, immortal = True):
     )
     
     
-    def __new__(cls, *, privacy_level = ..., topic = ...):
+    def __new__(cls, *, privacy_level = ..., scheduled_event_id = ..., topic = ...):
         """
         Creates a partial stage with the given fields.
         
@@ -68,6 +68,10 @@ class Stage(DiscordEntity, immortal = True):
         ----------
         privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
             The privacy level of the stage.
+        
+        scheduled_event_id : `int`, ``ScheduledEvent``, Optional (Keyword only)
+            The scheduled event's identifier that started the stage.
+        
         topic : `None`, `str`, Optional (Keyword only)
             The topic of the stage. Can be empty string.
         
@@ -84,6 +88,12 @@ class Stage(DiscordEntity, immortal = True):
         else:
             privacy_level = validate_privacy_level(privacy_level)
         
+        # scheduled_event_id
+        if scheduled_event_id is ...:
+            scheduled_event_id = 0
+        else:
+            scheduled_event_id = validate_scheduled_event_id(scheduled_event_id)
+        
         # topic
         if topic is ...:
             topic = None
@@ -98,7 +108,7 @@ class Stage(DiscordEntity, immortal = True):
         self.id = 0
         self.invite_code = None
         self.privacy_level = privacy_level
-        self.scheduled_event_id = 0
+        self.scheduled_event_id = scheduled_event_id
         self.topic = topic
         return self
     
@@ -166,6 +176,7 @@ class Stage(DiscordEntity, immortal = True):
         """
         data = {}
         put_privacy_level_into(self.privacy_level, data, defaults)
+        put_scheduled_event_id_into(self.scheduled_event_id, data, defaults)
         put_topic_into(self.topic, data, defaults)
         
         if include_internals:
@@ -174,7 +185,6 @@ class Stage(DiscordEntity, immortal = True):
             put_guild_id_into(self.guild_id, data, defaults)
             put_id_into(self.id, data, defaults)
             put_invite_code_into(self.invite_code, data, defaults)
-            put_scheduled_event_id_into(self.scheduled_event_id, data, defaults)
         
         return data
     
@@ -243,7 +253,6 @@ class Stage(DiscordEntity, immortal = True):
         """
         old_attributes = {}
         
-        
         discoverable = parse_discoverable(data)
         if discoverable != self.discoverable:
             old_attributes['discoverable'] = self.discoverable
@@ -309,7 +318,8 @@ class Stage(DiscordEntity, immortal = True):
         # id | internal
         # invite_code | internal
         hash_value ^= hash(self.privacy_level)
-        # scheduled_event_id | internal
+        
+        hash_value ^= self.scheduled_event_id
         
         topic = self.topic
         if (topic is not None):
@@ -355,6 +365,10 @@ class Stage(DiscordEntity, immortal = True):
         
         # privacy_level
         if self.privacy_level is not other.privacy_level:
+            return False
+        
+        # scheduled_event_id
+        if self.scheduled_event_id != other.scheduled_event_id:
             return False
         
         # topic
@@ -476,12 +490,12 @@ class Stage(DiscordEntity, immortal = True):
         new.id = 0
         new.invite_code = None
         new.privacy_level = self.privacy_level
-        new.scheduled_event_id = 0
+        new.scheduled_event_id = self.scheduled_event_id
         new.topic = self.topic
         return new
     
     
-    def copy_with(self, *, privacy_level = ..., topic = ...):
+    def copy_with(self, *, privacy_level = ..., scheduled_event_id = ..., topic = ...):
         """
         Copies the stage with the given fields.
         
@@ -489,6 +503,10 @@ class Stage(DiscordEntity, immortal = True):
         ----------
         privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
             The privacy level of the stage.
+        
+        scheduled_event_id : `int`, ``ScheduledEvent``, Optional (Keyword only)
+            The scheduled event's identifier that started the stage.
+        
         topic : `None`, `str`, Optional (Keyword only)
             The topic of the stage. Can be empty string.
         
@@ -509,12 +527,19 @@ class Stage(DiscordEntity, immortal = True):
         else:
             privacy_level = validate_privacy_level(privacy_level)
         
+        # scheduled_event_id
+        if scheduled_event_id is ...:
+            scheduled_event_id = self.scheduled_event_id
+        else:
+            scheduled_event_id = validate_scheduled_event_id(scheduled_event_id)
+        
         # topic
         if topic is ...:
             topic = self.topic
         else:
             topic = validate_topic(topic)
         
+        # Construct
         new = object.__new__(type(self))
         new.channel_id = 0
         new.discoverable = True
@@ -522,7 +547,7 @@ class Stage(DiscordEntity, immortal = True):
         new.id = 0
         new.invite_code = None
         new.privacy_level = privacy_level
-        new.scheduled_event_id = 0
+        new.scheduled_event_id = scheduled_event_id
         new.topic = topic
         return new
     

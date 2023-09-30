@@ -5,6 +5,10 @@
 - Enable setting `scheduled_event_id` of `Stage`.
 - Add InteractionResponseType.require_subscription`.
 - Add `Client.interaction_require_subscription`.
+- Add `SKUType.guild_role`.
+- Add `SKUType.giftable`.
+- Add `SKUType.application_guild_subscription`.
+- Add `SKUType.application_user_subscription`.
 
 ## 1.3.40 *\[2023-09-30\]*
 

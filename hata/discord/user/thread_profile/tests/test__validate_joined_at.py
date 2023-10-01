@@ -5,30 +5,47 @@ import vampytest
 from ..fields import validate_joined_at
 
 
-def test__validate_joined_at__0():
+def _iter_options():
+    joined_at = DateTime(2016, 5, 14)
+    
+    yield None, None
+    yield joined_at, joined_at
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_joined_at__passing(input_value):
     """
     Tests whether ``validate_joined_at`` works as intended.
     
     Case: passing.
-    """
-    joined_at = DateTime(2016, 9, 9)
     
-    for input_parameter, expected_output in (
-        (None, None),
-        (joined_at, joined_at),
-    ):
-        output = validate_joined_at(input_parameter)
-        vampytest.assert_is(output, expected_output)
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Returns
+    -------
+    output : `None | DateTime`
+    """
+    return validate_joined_at(input_value)
 
 
-def test__validate_joined_at__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_joined_at__type_error(input_value):
     """
     Tests whether ``validate_joined_at`` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_parameter in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_joined_at(input_parameter)
+    validate_joined_at(input_value)

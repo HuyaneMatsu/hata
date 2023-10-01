@@ -1193,7 +1193,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         data = {'type': InteractionResponseType.require_subscription.value}
         
-        async with InteractionResponseContext(interaction_event, False, False):
+        async with InteractionResponseContext(interaction_event, False, True):
             # Uses the same endpoint as message create
             await self.http.interaction_response_message_create(
                 interaction_event.id, interaction_event.token, data,

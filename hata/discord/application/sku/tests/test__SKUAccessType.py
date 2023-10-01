@@ -1,6 +1,6 @@
 import vampytest
 
-from .. import SKUAccessType
+from ..preinstanced import SKUAccessType
 
 
 def test__SKUAccessType__name():

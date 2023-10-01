@@ -1,6 +1,6 @@
 __all__ = ('SKUFlag',)
 
-from ..bases import FlagBase
+from ...bases import FlagBase
 
 
 class SKUFlag(FlagBase):

@@ -86,7 +86,7 @@ class TeamMember(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `None`, `dict` of (`str`, `Any`) items
+        data : `dict<str, object>`
             Team member data received from Discord.
         """
         self = object.__new__(cls)

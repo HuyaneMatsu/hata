@@ -4,11 +4,11 @@ from ..fields import validate_id
 
 
 def _iter_options__passing():
-    application_id = 202211240043
+    application_entity_id = 202211240043
     
     yield 0, 0
-    yield application_id, application_id
-    yield str(application_id), application_id
+    yield application_entity_id, application_entity_id
+    yield str(application_entity_id), application_entity_id
 
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())

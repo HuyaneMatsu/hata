@@ -6,10 +6,10 @@ from ..fields import validate_joined_at
 
 
 def _iter_options():
-    until = DateTime(2016, 5, 14)
+    joined_at = DateTime(2016, 5, 14)
     
     yield None, None
-    yield until, until
+    yield joined_at, joined_at
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

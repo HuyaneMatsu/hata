@@ -1,9 +1,9 @@
-__all__ = ('EntitlementType', 'SKUAccessType', 'SKUFeatureType', 'SKUGenre', 'SKUType',)
+__all__ = ('SKUAccessType', 'SKUFeature', 'SKUGenre', 'SKUType',)
 
-from ..bases import Preinstance as P, PreinstancedBase
+from ...bases import Preinstance as P, PreinstancedBase
 
 
-class SKUFeatureType(PreinstancedBase):
+class SKUFeature(PreinstancedBase):
     """
     Represents an SKU's feature type.
     
@@ -16,7 +16,7 @@ class SKUFeatureType(PreinstancedBase):
         
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``SKUFeatureType``) items
+    INSTANCES : `dict` of (`int`, ``SKUFeature``) items
         Stores the created SKU feature type instances. This container is accessed when translating a Discord
         SKU feature type's value to it's representation.
     VALUE_TYPE : `type` = `int`
@@ -77,7 +77,6 @@ class SKUFeatureType(PreinstancedBase):
     cloud_saves = P(11, 'cloud saves')
     online_coop = P(12, 'online coop')
     secure_networking = P(13, 'secure networking')
-
 
 
 class SKUGenre(PreinstancedBase):
@@ -379,21 +378,23 @@ class SKUType(PreinstancedBase):
         The default name of the SKU types.
     
     Every predefined SKU type can be accessed as class attribute as well:
-    +-----------------------+-------------------+-------+
-    | Class attribute name  | Name              | Value |
-    +=======================+===================+=======+
-    | none                  | none              | 0     |
-    +-----------------------+-------------------+-------+
-    | durable_primary       | durable primary   | 1     |
-    +-----------------------+-------------------+-------+
-    | durable               | durable           | 2     |
-    +-----------------------+-------------------+-------+
-    | consumable            | consumable        | 3     |
-    +-----------------------+-------------------+-------+
-    | bundle                | bundle            | 4     |
-    +-----------------------+-------------------+-------+
-    | subscription          | subscription      | 5     |
-    +-----------------------+-------------------+-------+
+    +-----------------------+-----------------------+-------+
+    | Class attribute name  | Name                  | Value |
+    +=======================+=======================+=======+
+    | none                  | none                  | 0     |
+    +-----------------------+-----------------------+-------+
+    | durable_primary       | durable primary       | 1     |
+    +-----------------------+-----------------------+-------+
+    | durable               | durable               | 2     |
+    +-----------------------+-----------------------+-------+
+    | consumable            | consumable            | 3     |
+    +-----------------------+-----------------------+-------+
+    | bundle                | bundle                | 4     |
+    +-----------------------+-----------------------+-------+
+    | subscription          | subscription          | 5     |
+    +-----------------------+-----------------------+-------+
+    | subscription_group    | subscription group    | 6     |
+    +-----------------------+-----------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -407,64 +408,4 @@ class SKUType(PreinstancedBase):
     consumable = P(3, 'consumable')
     bundle = P(4, 'bundle')
     subscription = P(5, 'subscription')
-
-
-class EntitlementType(PreinstancedBase):
-    """
-    Represents an entitlement's type.
-    
-    Attributes
-    ----------
-    name : `str`
-        The name of state.
-    value : `int`
-        The Discord side identifier value of the entitlement type.
-        
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``EntitlementType``) items
-        Stores the created entitlement type instances. This container is accessed when translating a Discord
-        entitlement type's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The entitlement types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the entitlement types.
-    
-    Every predefined entitlement type can be accessed as class attribute as well:
-    +---------------------------+---------------------------+-------+
-    | Class attribute name      | Name                      | Value |
-    +===========================+===========================+=======+
-    | none                      | none                      | 0     |
-    +---------------------------+---------------------------+-------+
-    | purchase                  | purchase                  | 1     |
-    +---------------------------+---------------------------+-------+
-    | premium_subscription      | premium subscription      | 2     |
-    +---------------------------+---------------------------+-------+
-    | developer_gift            | developer gift            | 3     |
-    +---------------------------+---------------------------+-------+
-    | test_mode_purchase        | test mode purchase        | 4     |
-    +---------------------------+---------------------------+-------+
-    | free_purchase             | free purchase             | 5     |
-    +---------------------------+---------------------------+-------+
-    | user_gift                 | user gift                 | 6     |
-    +---------------------------+---------------------------+-------+
-    | premium_purchase          | premium purchase          | 7     |
-    +---------------------------+---------------------------+-------+
-    | application_subscription  | application subscription  | 8     |
-    +---------------------------+---------------------------+-------+
-    """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
-    __slots__ = ()
-    
-    # predefined
-    none = P(0, 'none')
-    purchase = P(1, 'purchase')
-    premium_subscription = P(2, 'premium subscription')
-    developer_gift = P(3, 'developer gift')
-    test_mode_purchase = P(4, 'test mode purchase')
-    free_purchase = P(5, 'free purchase')
-    user_gift = P(6, 'user gift')
-    premium_purchase = P(7, 'premium purchase')
-    application_subscription = P(8, 'application subscription')
+    subscription_group = P(6, 'subscription group')

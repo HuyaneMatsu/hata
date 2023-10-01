@@ -9,6 +9,19 @@
 - Add `SKUType.giftable`.
 - Add `SKUType.application_guild_subscription`.
 - Add `SKUType.application_user_subscription`.
+- Add `MessageType.guild_incidents_report_raid`.
+- Add `MessageType.guild_incidents_report_false_alarm`.
+- Add `MessageType.guild_chat_revive`.
+- Add `MessageType.custom_gift`.
+- Add `MessageType.guild_gaming_stats`.
+- Add `MessageType.poll`.
+- Add `SKUType.subscription_group`.
+- Move `EMBEDDED_ACTIVITY_NAME_TO_APPLICATION_ID` and related under `application/application/constants`.
+- Add `SKU`.
+
+#### Renames, Deprecations & Removals
+
+- Rename `SKUFeatureType` to `SKUFeature`.
 
 ## 1.3.40 *\[2023-09-30\]*
 

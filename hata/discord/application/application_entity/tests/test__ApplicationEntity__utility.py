@@ -64,15 +64,27 @@ def test__ApplicationEntity__copy_with__1():
     vampytest.assert_eq(copy.name, new_name)
 
 
-def test__ApplicationEntity__partial():
+def test__ApplicationEntity__partial__true():
     """
-    Tests whether ``ApplicationEntity.accepted`` works as intended.
+    Tests whether ``ApplicationEntity.partial`` works as intended.
+    
+    Case: true.
+    """
+    application_entity = ApplicationEntity()
+    output = application_entity.partial
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_true(output)
+
+
+def test__ApplicationEntity__partial__false():
+    """
+    Tests whether ``ApplicationEntity.partial`` works as intended.
+    
+    Case: false.
     """
     application_entity_id = 202211240052
     
-    application_entity = ApplicationEntity()
-    vampytest.assert_true(application_entity.partial)
-    
-    
     application_entity = ApplicationEntity.precreate(application_entity_id)
-    vampytest.assert_false(application_entity.partial)
+    output = application_entity.partial
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_false(output)

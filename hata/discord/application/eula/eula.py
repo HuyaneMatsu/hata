@@ -83,7 +83,7 @@ class EULA(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict<str, object>`
             Eula data.
         """
         eula_id = parse_id(data)
@@ -132,7 +132,7 @@ class EULA(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict<str, object>`
             Data received from Discord.
         """
         self.content = parse_content(data)

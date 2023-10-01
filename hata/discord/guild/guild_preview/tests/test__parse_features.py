@@ -5,15 +5,36 @@ from ...guild import GuildFeature
 from ..fields import parse_features
 
 
-def test__parse_features():
+def _iter_options():
+    yield ({}, None)
+    yield ({'features': None}, None)
+    yield ({'features': []}, None)
+    yield (
+        {
+            'features': [
+                GuildFeature.animated_banner.value,
+                GuildFeature.animated_icon.value,
+            ],
+        },
+        (
+            GuildFeature.animated_banner,
+            GuildFeature.animated_icon,
+        ),
+    )
+    
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_features(input_data):
     """
     Tests whether ``parse_features`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | tuple<GuildFeature>`
     """
-    for input_data, expected_output in (
-        ({}, None),
-        ({'features': None}, None),
-        ({'features': []}, None),
-        ({'features': [GuildFeature.banner.value]}, (GuildFeature.banner,)),
-    ):
-        output = parse_features(input_data)
-        vampytest.assert_eq(output, expected_output)
+    return parse_features(input_data)

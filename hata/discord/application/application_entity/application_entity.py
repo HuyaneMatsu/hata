@@ -1,8 +1,14 @@
 __all__ = ('ApplicationEntity',)
 
 from ...bases import DiscordEntity
+from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import parse_id, parse_name, put_id_into, put_name_into, validate_id, validate_name
+
+
+PRECREATE_FIELDS = {
+    'name': ('name', validate_name),
+}
 
 
 class ApplicationEntity(DiscordEntity):
@@ -54,7 +60,7 @@ class ApplicationEntity(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict<str, object>`
             Developers or Publisher data.
         
         Returns
@@ -144,31 +150,16 @@ class ApplicationEntity(DiscordEntity):
             - If a parameter's value is incorrect.
         """
         entity_id = validate_id(entity_id)
-
+        
         if keyword_parameters:
-            processable = []
-            
-            try:
-                name = keyword_parameters.pop('name')
-            except KeyError:
-                pass
-            else:
-                name = validate_name(name)
-                processable.append(('name', name))
-            
-            if keyword_parameters:
-                raise TypeError(
-                    f'Unused or unsettable keyword parameters: {keyword_parameters!r}.'
-                )
-        
+            processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
         else:
-            processable = None
-        
-        
+            processed = None
+                
         self = cls._create_empty(entity_id)
         
-        if (processable is not None):
-            for item in processable:
+        if (processed is not None):
+            for item in processed:
                 setattr(self, *item)
         
         return self

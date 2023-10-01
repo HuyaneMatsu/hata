@@ -400,6 +400,18 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | guild_incidents_disable                   | guild incidents disable                   | 37    | convert_guild_incidents_disable                   | false     |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | guild_incidents_report_raid               | guild incidents report raid               | 38    | MESSAGE_DEFAULT_CONVERTER                         | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | guild_incidents_report_false_alarm        | guild incidents report false alarm        | 39    | MESSAGE_DEFAULT_CONVERTER                         | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | guild_chat_revive                         | guild chat revive                         | 40    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | custom_gift                               | custom gift                               | 41    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | guild_gaming_stats                        | guild gaming stats                        | 42    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | poll                                      | poll                                      | 43    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -516,6 +528,12 @@ class MessageType(PreinstancedBase):
     premium_referral = P(35, 'premium referral', MESSAGE_DEFAULT_CONVERTER, True)
     guild_incidents_enable = P(36, 'guild incidents enable', convert_guild_incidents_enable, False)
     guild_incidents_disable = P(37, 'guild incidents disable', convert_guild_incidents_disable, False)
+    guild_incidents_report_raid = P(38, 'guild incidents report raid', MESSAGE_DEFAULT_CONVERTER, False)
+    guild_incidents_report_false_alarm = P(39, 'guild incidents report false alarm', MESSAGE_DEFAULT_CONVERTER, False)
+    guild_chat_revive = P(40, 'guild chat revive', MESSAGE_DEFAULT_CONVERTER, True)
+    custom_gift = P(41, 'custom gif', MESSAGE_DEFAULT_CONVERTER, True)
+    guild_gaming_stats = P(42, 'guild gaming stats', MESSAGE_DEFAULT_CONVERTER, True)
+    poll = P(43, 'poll', MESSAGE_DEFAULT_CONVERTER, True)
 
 
     @class_property

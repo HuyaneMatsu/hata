@@ -77,7 +77,7 @@ class ThirdPartySKU(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict<str, object>`
             Executable data.
         """
         self = object.__new__(cls)
@@ -98,7 +98,7 @@ class ThirdPartySKU(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_distributor_into(self.distributor, data, defaults)

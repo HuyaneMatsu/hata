@@ -90,7 +90,7 @@ class ApplicationExecutable(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict<str, object>`
             Executable data.
         """
         self = object.__new__(cls)
@@ -112,7 +112,7 @@ class ApplicationExecutable(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_launcher_into(self.launcher, data, defaults)

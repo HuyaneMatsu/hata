@@ -10,14 +10,14 @@ def _assert_fields_set(application_entity):
     Parameters
     ----------
     application_entity : ``ApplicationEntity``
-        The application_entity to check.
+        The application entity to check.
     """
     vampytest.assert_instance(application_entity, ApplicationEntity)
     vampytest.assert_instance(application_entity.id, int)
     vampytest.assert_instance(application_entity.name, str)
 
 
-def test__ApplicationEntity__new__0():
+def test__ApplicationEntity__new__no_fields():
     """
     Tests whether ``ApplicationEntity.__new__`` works as intended.
     
@@ -27,7 +27,7 @@ def test__ApplicationEntity__new__0():
     _assert_fields_set(application_entity)
 
 
-def test__ApplicationEntity__new__1():
+def test__ApplicationEntity__new__all_fields():
     """
     Tests whether ``ApplicationEntity.__new__`` works as intended.
     
@@ -56,7 +56,7 @@ def test__ApplicationEntity__create_empty():
     vampytest.assert_eq(application_entity.id, application_entity_id)
 
 
-def test__ApplicationEntity__precreate__0():
+def test__ApplicationEntity__precreate__no_fields():
     """
     Tests whether ``ApplicationEntity.precreate`` works as intended.
     
@@ -69,7 +69,7 @@ def test__ApplicationEntity__precreate__0():
     vampytest.assert_eq(application_entity.id, application_entity_id)
 
 
-def test__ApplicationEntity__precreate__1():
+def test__ApplicationEntity__precreate__all_fields():
     """
     Tests whether ``ApplicationEntity.precreate`` works as intended.
     

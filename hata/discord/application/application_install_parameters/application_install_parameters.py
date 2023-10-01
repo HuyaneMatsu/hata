@@ -64,7 +64,7 @@ class ApplicationInstallParameters(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict<str, object>`
             Application installation parameters data.
         
         Returns
@@ -88,7 +88,7 @@ class ApplicationInstallParameters(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_permissions_into(self.permissions, data, defaults)

@@ -1,0 +1,77 @@
+import vampytest
+
+from ...application import Application
+
+from ..fields import validate_application_id
+
+
+def _iter_options__passing():
+    application_id = 202310020009
+    
+    yield 0, 0
+    yield application_id, application_id
+    yield str(application_id), application_id
+    yield None, 0
+    yield Application.precreate(application_id), application_id
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+def test__validate_application_id__passing(input_value):
+    """
+    Tests whether `validate_application_id` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    return validate_application_id(input_value)
+
+
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_application_id__type_error(input_value):
+    """
+    Tests whether `validate_application_id` works as intended.
+    
+    Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
+    
+    Raises
+    ------
+    TypeError
+        The occurred exception.
+    """
+    validate_application_id(input_value)
+
+
+@vampytest.raising(ValueError)
+@vampytest.call_with('-1')
+@vampytest.call_with('1111111111111111111111')
+@vampytest.call_with(-1)
+@vampytest.call_with(1111111111111111111111)
+def test__validate_application_id__value_error(input_value):
+    """
+    Tests whether `validate_application_id` works as intended.
+    
+    Case: `ValueError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
+    
+    Raises
+    ------
+    ValueError
+        The occurred exception.
+    """
+    validate_application_id(input_value)

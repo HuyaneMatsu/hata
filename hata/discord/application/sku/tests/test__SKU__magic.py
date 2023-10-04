@@ -58,19 +58,27 @@ def test__SKU__hash():
     slug = 'https://orindance.party/'
     sku_type = SKUType.consumable
     
+    
+    keyword_parameters = {
+        'access_type': access_type,
+        'features': features,
+        'flags': flags,
+        'name': name,
+        'premium': premium,
+        'release_at': release_at,
+        'sku_type': sku_type,
+    }
+    
     sku = SKU.precreate(
         sku_id,
-        access_type = access_type,
         application_id = application_id,
-        features = features,
-        flags = flags,
-        name = name,
-        premium = premium,
-        release_at = release_at,
         slug = slug,
-        sku_type = sku_type,
+        **keyword_parameters
     )
-    
+    vampytest.assert_instance(hash(sku), int)
+
+
+    sku = SKU(**keyword_parameters)
     vampytest.assert_instance(hash(sku), int)
 
 

@@ -10,7 +10,7 @@ class OperationSystem(PreinstancedBase):
     Attributes
     ----------
     name : `str`
-        The name of state.
+        The name of the operation system.
     value : `int`
         The Discord side identifier value of the os.
     

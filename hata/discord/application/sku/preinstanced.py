@@ -317,7 +317,7 @@ class SKUAccessType(PreinstancedBase):
     Attributes
     ----------
     name : `str`
-        The name of state.
+        The name of the type.
     value : `int`
         The Discord side identifier value of the SKU access type.
         
@@ -363,7 +363,7 @@ class SKUType(PreinstancedBase):
     Attributes
     ----------
     name : `str`
-        The name of state.
+        The name of the type.
     value : `int`
         The Discord side identifier value of the SKU type.
         

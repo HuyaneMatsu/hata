@@ -51,7 +51,7 @@ validate_content = nullable_string_validator_factory('content', 0, 10000)
 
 parse_guild_id = entity_id_parser_factory('guild_id')
 put_guild_id_into = entity_id_optional_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', include = 'Guild')
+validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 # matched_content
 

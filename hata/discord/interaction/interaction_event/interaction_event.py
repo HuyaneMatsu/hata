@@ -131,7 +131,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     The interaction token can be used for 15 minutes, tho if it is not used within the first 3 seconds, it is
     invalidated immediately.
     
-    ˙˙InteractionEvent˙˙ instances are weakreferable.
+    Interaction event instances are weakreferable.
     """
     __slots__ = (
         '_async_task', '_cached_users', '_response_flag', 'application_id', 'application_permissions', 'channel',

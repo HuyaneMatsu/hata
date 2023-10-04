@@ -78,7 +78,11 @@ Weak Caches
 - `SCHEDULED_EVENTS` : ``WeakValueDictionary``
     
     Storage for ``ScheduledEvent``.
+
+- `SKUS` : ``WeakValueDictionary``
     
+    Storage for ``SKU``.
+
 - `SOUNDBOARD_SOUNDS` : ``WeakValueDictionary``
     
     Storage for ``SoundboardSound``.
@@ -149,9 +153,9 @@ Immortal Objects
 
 __all__ = (
     'APPLICATIONS', 'APPLICATION_COMMANDS', 'BUILTIN_EMOJIS', 'CHANNELS', 'CLIENTS', 'EMBEDDED_ACTIVITY_STATES',
-    'EMOJIS', 'EULAS', 'FORUM_TAGS', 'GUILDS', 'INTEGRATIONS', 'INVITES', 'KOKORO', 'MESSAGES', 'ROLES',
-    'SCHEDULED_EVENTS', 'SOUNDBOARD_SOUNDS', 'STAGES', 'STICKERS', 'STICKER_PACKS', 'TEAMS', 'UNICODE_TO_EMOJI',
-    'USERS'
+    'EMOJIS', 'ENTITLEMENTS', 'EULAS', 'FORUM_TAGS', 'GUILDS', 'INTEGRATIONS', 'INVITES', 'KOKORO', 'MESSAGES',
+    'ROLES', 'SCHEDULED_EVENTS', 'SKUS', 'SOUNDBOARD_SOUNDS', 'STAGES', 'STICKERS', 'STICKER_PACKS', 'TEAMS',
+    'UNICODE_TO_EMOJI', 'USERS'
 )
 
 from scarletio import WeakKeyDictionary, WeakValueDictionary, create_event_loop, get_event_loop
@@ -165,6 +169,7 @@ AUTO_MODERATION_RULES = WeakValueDictionary()
 CHANNELS = WeakValueDictionary()
 EMBEDDED_ACTIVITY_STATES = WeakValueDictionary()
 EMOJIS = WeakValueDictionary()
+ENTITLEMENTS = WeakValueDictionary()
 EULAS = WeakValueDictionary()
 FORUM_TAGS = WeakValueDictionary()
 GUILDS = WeakValueDictionary()
@@ -173,6 +178,7 @@ INVITES = WeakValueDictionary()
 MESSAGES = WeakValueDictionary()
 ROLES = WeakValueDictionary()
 SCHEDULED_EVENTS = WeakValueDictionary()
+SKUS = WeakValueDictionary()
 SOUNDBOARD_SOUNDS = WeakValueDictionary()
 STAGES = WeakValueDictionary()
 STICKERS = WeakValueDictionary()

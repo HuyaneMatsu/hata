@@ -10,7 +10,7 @@ class TeamMembershipState(PreinstancedBase):
     Attributes
     ----------
     name : `str`
-        The name of state.
+        The name of the state.
     value : `int`
         The Discord side identifier value of the team membership state.
         

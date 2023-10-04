@@ -1,6 +1,7 @@
 __all__ = ('SKU',)
 
 from ...bases import DiscordEntity
+from ...core import SKUS
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
@@ -28,7 +29,6 @@ PRECREATE_FIELDS = {
 }
 
 
-
 class SKU(DiscordEntity):
     """
     A stock keeping unit.
@@ -37,27 +37,43 @@ class SKU(DiscordEntity):
     ----------
     access_type : ``SKUAccessType``
         What kind of access the stock keeping unit provides for its content.
+    
     application_id : `int`
         The stock keeping unit's owner application identifier.
+    
     features : `None, tuple<SKUFeature>`
         The features of the stock keeping unit.
+    
     flags : ``SKUFlag``
         The flags of the stock keeping unit.
+    
     id : `int`
         The unique identifier number of the stock keeping unit.
+    
     name : `str`
         The name of the stock keeping unit.
+    
     premium : `bool`
         Whether the stock keeping unit is a premium one.
+    
     release_at : `None`, `DateTime`
         When the stock keeping unit has its release.
         Can be both in the past and in the future as well.
+    
     slug : `None`, `str`
         System generated url to the stock keeping unit generated based on its name.
+    
     type : ``SKUType``
         The stock keeping unit's type.
+    
+    Notes
+    -----
+    Stock keeping unit instances are weakreferable.
     """
-    __slots__ = ('access_type', 'application_id', 'features', 'flags', 'name', 'premium', 'release_at', 'slug', 'type')
+    __slots__ = (
+        '__weakref__', 'access_type', 'application_id', 'features', 'flags', 'name', 'premium', 'release_at', 'slug',
+        'type'
+    )
     
     def __new__(
         cls,
@@ -168,24 +184,43 @@ class SKU(DiscordEntity):
         Parameters
         ----------
         data : `dict<str, object>`
-            Developers or Publisher data.
+            Stock keeping unit data.
         
         Returns
         -------
         new : `instance<cls>`
         """
-        self = object.__new__(cls)
+        sku_id = parse_id(data)
+        try:
+            self = SKUS[sku_id]
+        except KeyError:
+            self = object.__new__(cls)
+            self.id = sku_id
+            self._set_attributes(data)
+            SKUS[sku_id] = self
+        else:
+            self._set_attributes(data)
+        
+        return self
+    
+    def _set_attributes(self, data):
+        """
+        Sets the stock keeping unit's attributes. (Except `.id`.)
+        
+        Parameters
+        ----------
+        data : `dict<str, object>`
+            Stock keeping unit data.
+        """
         self.access_type = parse_access_type(data)
         self.application_id = parse_application_id(data)
         self.features = parse_features(data)
         self.flags = parse_flags(data)
-        self.id = parse_id(data)
         self.name = parse_name(data)
         self.premium = parse_premium(data)
         self.release_at = parse_release_at(data)
         self.slug = parse_slug(data)
         self.type = parse_type(data)
-        return self
     
     
     def to_data(self, *, defaults = False, include_internals = False):
@@ -253,8 +288,7 @@ class SKU(DiscordEntity):
     @classmethod
     def precreate(cls, sku_id, **keyword_parameters):
         """
-        Creates an stock keeping unit instance. Since these objects are not cached, the only advantage of using
-        ``.precreate`` is that it allows setting ``.id``.
+        Creates an stock keeping unit instance.
         
         Parameters
         ----------
@@ -314,7 +348,11 @@ class SKU(DiscordEntity):
         else:
             processed = None
         
-        self = cls._create_empty(sku_id)
+        try:
+            self = SKUS[sku_id]
+        except KeyError:
+            self = cls._create_empty(sku_id)
+            SKUS[sku_id] = self
         
         if (processed is not None):
             for item in processed:
@@ -379,8 +417,7 @@ class SKU(DiscordEntity):
         if self.access_type is not other.access_type:
             return False
         
-        # application_id
-        # Ignore internal, already checked by `id` basically.
+        # application_id -> ignore, internal
         
         # features
         if self.features != other.features:
@@ -402,8 +439,7 @@ class SKU(DiscordEntity):
         if self.release_at != other.release_at:
             return False
         
-        # slug
-        # Ignore internal, already checked by `id` and `name`.
+        # slug -> ignore, internal
         
         # type
         if self.type is not other.type:
@@ -414,13 +450,29 @@ class SKU(DiscordEntity):
     
     def __hash__(self):
         """Returns the hash value of the stock keeping unit."""
+        sku_id = self.id
+        if sku_id:
+            return sku_id
+        
+        return self._get_hash_partial()
+    
+    
+    def _get_hash_partial(self):
+        """
+        Calculates the stock keeping unit's hash based on their fields.
+        
+        This method is called by ``.__hash__`` if the channel has no ``.id`` set.
+        
+        Returns
+        -------
+        hash_value : `int`
+        """
         hash_value = 0
         
         # access_type
         hash_value ^= self.access_type.value
         
-        # application_id -> hash since we are not caching.
-        hash_value ^= self.application_id
+        # application_id -> ignore, internal
         
         # features
         features = self.features
@@ -430,8 +482,7 @@ class SKU(DiscordEntity):
         # flags
         hash_value ^= self.flags << 4
         
-        # id -> hash since we are not caching.
-        hash_value ^= self.id
+        # id -> ignore internal
         
         # name
         hash_value ^= hash(self.name)
@@ -444,10 +495,7 @@ class SKU(DiscordEntity):
         if (release_at is not None):
             hash_value ^= hash(release_at)
         
-        # slug -> hash since we are not caching.
-        slug = self.slug
-        if (slug is not None):
-            hash_value ^= hash(slug)
+        # slug -> ignore, internal
         
         # type
         hash_value ^= self.type.value << 12
@@ -492,7 +540,7 @@ class SKU(DiscordEntity):
         sku_type = ...,
     ):
         """
-        Copies the stock keeping unit with the defined fields.
+        Copies the stock keeping unit with the given fields.
         
         Parameters
         ----------

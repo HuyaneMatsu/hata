@@ -138,3 +138,17 @@ def test__SKU__precreate__all_fields():
     vampytest.assert_eq(sku.release_at, release_at)
     vampytest.assert_eq(sku.slug, slug)
     vampytest.assert_is(sku.type, sku_type)
+
+
+def test__SKU__precreate__caching():
+    """
+    Tests whether ``SKU.precreate`` works as intended.
+    
+    Case: Caching.
+    """
+    sku_id = 202310040003
+    
+    sku = SKU.precreate(sku_id)
+    test_sku = SKU.precreate(sku_id)
+    
+    vampytest.assert_is(sku, test_sku)

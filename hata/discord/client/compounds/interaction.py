@@ -620,7 +620,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Notes
         -----
-        Cannot editing interaction messages, which were created with `show_for_invoking_user_only=True`:
+        Cannot editing interaction messages, which were created with `show_for_invoking_user_only = True`:
         
         ```
         DiscordException Not Found (404), code=10008: Unknown Message
@@ -1018,7 +1018,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Notes
         -----
-        Cannot editing interaction messages, which were created with `show_for_invoking_user_only=True`:
+        Cannot editing interaction messages, which were created with `show_for_invoking_user_only = True`:
         
         ```
         DiscordException Not Found (404), code=10008: Unknown Message

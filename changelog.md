@@ -18,6 +18,10 @@
 - Add `SKUType.subscription_group`.
 - Move `EMBEDDED_ACTIVITY_NAME_TO_APPLICATION_ID` and related under `application/application/constants`.
 - Add `SKU`.
+- Add `SKUS`.
+- Add `Entitlement`.
+- Add `ENTITLEMENTS`.
+- Add `EntitlementOwnerType`.
 
 #### Renames, Deprecations & Removals
 

@@ -24,13 +24,14 @@ from ..responding.constants import (
 
 from .constants import DEFAULT_INTERACTION_METADATA, INTERACTION_EVENT_EXPIRE_AFTER_ID_DIFFERENCE, USER_GUILD_CACHE
 from .fields import (
-    parse_application_id, parse_application_permissions, parse_channel, parse_guild_id, parse_guild_locale, parse_id,
-    parse_locale, parse_message, parse_token, parse_type, parse_user, parse_user_permissions, put_application_id_into,
-    put_application_permissions_into, put_channel_into, put_guild_id_into, put_guild_locale_into, put_id_into,
-    put_locale_into, put_message_into, put_token_into, put_type_into, put_user_into, put_user_permissions_into,
-    validate_application_id, validate_application_permissions, validate_channel, validate_guild_id,
-    validate_guild_locale, validate_id, validate_interaction, validate_locale, validate_message, validate_token,
-    validate_type, validate_user, validate_user_permissions
+    parse_application_id, parse_application_permissions, parse_channel, parse_entitlements, parse_guild_id,
+    parse_guild_locale, parse_id, parse_locale, parse_message, parse_token, parse_type, parse_user,
+    parse_user_permissions, put_application_id_into, put_application_permissions_into, put_channel_into,
+    put_entitlements_into, put_guild_id_into, put_guild_locale_into, put_id_into, put_locale_into, put_message_into,
+    put_token_into, put_type_into, put_user_into, put_user_permissions_into, validate_application_id,
+    validate_application_permissions, validate_channel, validate_entitlements, validate_guild_id, validate_guild_locale,
+    validate_id, validate_interaction, validate_locale, validate_message, validate_token, validate_type, validate_user,
+    validate_user_permissions
 )
 from .preinstanced import InteractionType
 
@@ -42,6 +43,7 @@ PRECREATE_FIELDS = {
     'application_id': ('application_id', validate_application_id),
     'application_permissions': ('application_permissions', validate_application_permissions),
     'channel': ('channel', validate_channel),
+    'entitlements': ('entitlements', validate_entitlements),
     'guild_id': ('guild_id', validate_guild_id),
     'guild_locale': ('guild_locale', validate_guild_locale),
     'locale': ('locale', validate_locale),
@@ -95,6 +97,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     application_permissions : ``Permission``
         The permissions granted to the application in the guild.
     
+    entitlements : `None`, `tuple` of ``Entitlement``
+        Related entitlements of the invoking user.
+    
     channel : ``Channel``
         The channel from where the interaction was called.
     
@@ -134,8 +139,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     Interaction event instances are weakreferable.
     """
     __slots__ = (
-        '_async_task', '_cached_users', '_response_flag', 'application_id', 'application_permissions', 'channel',
-        'guild_id', 'guild_locale', 'interaction', 'locale', 'message', 'token', 'type', 'user', 'user_permissions'
+        '_async_task', '_cached_users', '_response_flag', 'application_id', 'application_permissions', 'entitlements',
+        'channel', 'guild_id', 'guild_locale', 'interaction', 'locale', 'message', 'token', 'type', 'user',
+        'user_permissions'
     )
     
     def __new__(
@@ -145,6 +151,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         application_permissions = ...,
         channel = ...,
         channel_id = ...,
+        entitlements = ...,
         guild_id = ...,
         guild_locale = ...,
         interaction = ...,
@@ -173,6 +180,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         channel : ``Channel``, Optional (Keyword only)
             The channel from where the interaction was called.
+        
+        entitlements : `None`, `iterable` of ``Entitlement``, Optional (Keyword only)
+            Related entitlements of the invoking user.
         
         guild_id : `int`, `str`, ``Channel``, Optional (Keyword only)
             The guild's identifier from where the interaction was called from.
@@ -256,6 +266,12 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         else:
             channel = validate_channel(channel)
         
+        # entitlements
+        if entitlements is ...:
+            entitlements = None
+        else:
+            entitlements = validate_entitlements(entitlements)
+        
         # guild_id
         if guild_id is ...:
             guild_id = 0
@@ -320,6 +336,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         self.application_permissions = application_permissions
         self.type = interaction_type
         self.channel = channel
+        self.entitlements = entitlements
         self.guild_id = guild_id
         self.guild_locale = guild_locale
         self.interaction = interaction
@@ -354,6 +371,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         application_id = parse_application_id(data)
         application_permissions = parse_application_permissions(data)
         channel = parse_channel(data)
+        entitlements = parse_entitlements(data)
         guild_locale = parse_guild_locale(data)
         # interaction -> we will parse it later
         locale = parse_locale(data)
@@ -373,6 +391,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         self.application_permissions = application_permissions
         self.type = interaction_type
         self.channel = channel
+        self.entitlements = entitlements
         self.guild_id = guild_id
         self.guild_locale = guild_locale
         self.interaction = DEFAULT_INTERACTION_METADATA
@@ -425,7 +444,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         data = {}
         put_application_id_into(self.application_id, data, defaults)
         put_application_permissions_into(self.application_permissions, data, defaults)
-        put_channel_into(self.channel, data, defaults, include_internals = True)
+        put_channel_into(self.channel, data, defaults)
+        put_entitlements_into(self.entitlements, data, defaults)
         put_guild_id_into(self.guild_id, data, defaults)
         put_guild_locale_into(self.guild_locale, data, defaults)
         put_id_into(self.id, data, defaults)
@@ -462,6 +482,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         self.application_permissions = Permission()
         self.type = InteractionType.none
         self.channel = create_partial_channel_from_id(0, ChannelType.unknown, 0)
+        self.entitlements = None
         self.guild_id = 0
         self.guild_locale = LOCALE_DEFAULT
         self.interaction = DEFAULT_INTERACTION_METADATA
@@ -503,6 +524,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         channel : ``Channel``, Optional (Keyword only)
             The channel from where the interaction was called.
+        
+        entitlements : `None`, `iterable` of ``Entitlement``, Optional (Keyword only)
+            Related entitlements of the invoking user.
         
         guild_id : `int`, `str`, Optional (Keyword only)
             The guild's identifier from where the interaction was called from.
@@ -629,6 +653,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         new.application_permissions = self.application_permissions
         new.type = self.type
         new.channel = self.channel
+        entitlements = self.entitlements
+        if (entitlements is not None):
+            entitlements = (*entitlements,)
+        new.entitlements = entitlements
         new.guild_id = self.guild_id
         new.guild_locale = self.guild_locale
         new.interaction = self.interaction.copy()
@@ -647,6 +675,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         application_permissions = ...,
         channel = ...,
         channel_id = ...,
+        entitlements = ...,
         guild_id = ...,
         guild_locale = ...,
         interaction = ...,
@@ -674,6 +703,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         channel_id : `int`, `str`, ``Channel``, Optional (Keyword only)
             The channel's identifier from where the interaction was called.
+        
+        entitlements : `None`, `iterable` of ``Entitlement``, Optional (Keyword only)
+            Related entitlements of the invoking user.
         
         guild_id : `int`, `str`, Optional (Keyword only)
             The guild's identifier from where the interaction was called from.
@@ -757,6 +789,14 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         else:
             channel = validate_channel(channel)
         
+        # entitlements
+        if entitlements is ...:
+            entitlements = self.entitlements
+            if (entitlements is not None):
+                entitlements = (*entitlements,)
+        else:
+            entitlements = validate_entitlements(entitlements)
+        
         # guild_id
         if guild_id is ...:
             guild_id = self.guild_id
@@ -813,6 +853,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         else:
             user_permissions = validate_user_permissions(user_permissions)
         
+        # Construct
         new = object.__new__(type(self))
         new._async_task = None
         new._cached_users = None
@@ -822,6 +863,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         new.application_permissions = application_permissions
         new.type = interaction_type
         new.channel = channel
+        new.entitlements = entitlements
         new.guild_id = guild_id
         new.guild_locale = guild_locale
         new.interaction = interaction
@@ -969,9 +1011,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         repr_parts.append(' type = ')
         metadata_type = self.type
         repr_parts.append(metadata_type.name)
-        repr_parts.append(' (')
+        repr_parts.append(' ~ ')
         repr_parts.append(repr(metadata_type.value))
-        repr_parts.append(')')
         
         
         guild_id = self.guild_id
@@ -985,6 +1026,27 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         repr_parts.append(', channel = ')
         repr_parts.append(repr(self.channel))
+        
+        # entitlements
+        entitlements = self.entitlements
+        if (entitlements is not None):
+            length = len(entitlements)
+            index = 0
+            
+            repr_parts.append(', entitlements = [')
+            while True:
+                entitlement = entitlements[index]
+                index += 1
+                
+                repr_parts.append(repr(entitlement))
+                
+                if index == length:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(']' )
         
         
         message = self.message
@@ -1036,6 +1098,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         # channel
         if self.channel is not other.channel:
+            return False
+        
+        # entitlements
+        if self.entitlements != other.entitlements:
             return False
         
         # guild_id
@@ -1093,6 +1159,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         # channel
         hash_value ^= hash(self.channel)
+        
+        # entitlements
+        entitlements = self.entitlements
+        if (entitlements is not None):
+            hash_value ^= hash(entitlements)
         
         # guild_id
         hash_value ^= self.guild_id
@@ -1309,6 +1380,67 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         return voice_client
     
     
+    def has_entitlement(self, entitlement):
+        """
+        Returns whether the interaction event hast he given entitlement.
+        
+        Parameters
+        ----------
+        entitlement : ``Entitlement``
+            The entitlement to look for.
+        
+        Returns
+        -------
+        has_entitlement : `bool`
+        """
+        entitlements = self.entitlements
+        if entitlements is None:
+            return False
+        
+        return entitlement in entitlements
+    
+    
+    def iter_entitlements(self):
+        """
+        Iterates over the entitlements of the interaction event.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        entitlement : ``Entitlement``
+        """
+        entitlements = self.entitlements
+        if (entitlements is not None):
+            yield from entitlements
+    
+    
+    def has_sku(self, sku):
+        """
+        Returns whether any of the interaction event's entitlements grants access to the given stock keeping unit.
+        
+        Parameters
+        ----------
+        sku : ``SKU``
+            Stock keeping unit to look for.
+        
+        Returns
+        -------
+        has_sku : `bool`
+        """
+        entitlements = self.entitlements
+        if (entitlements is None):
+            return False
+        
+        sku_id = sku.id
+        
+        for entitlement in entitlements:
+            if entitlement.sku_id == sku_id:
+                return True
+        
+        return False
+    
+    
     def _add_cached_user(self, user):
         """
         Adds a user to the cached ones by the interaction.
@@ -1349,6 +1481,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
                 await async_task
             finally:
                 self._async_task = None
+    
     
     # Field Proxies
     

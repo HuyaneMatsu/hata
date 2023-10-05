@@ -5,10 +5,7 @@ from ...guild_widget_user import GuildWidgetUser
 from ..fields import parse_users
 
 
-def test__parse_users():
-    """
-    Tests whether ``parse_users`` works as intended.
-    """
+def _iter_options():
     user_id_0 = 10
     user_name_0 = 'Far'
     
@@ -25,27 +22,57 @@ def test__parse_users():
         name = user_name_1,
     )
     
-    for input_data, expected_output in (
-        ({}, None),
-        ({'members': None}, None),
-        ({'members': []}, None),
-        (
-            {
-                'members': [
-                    user_0.to_data(),
-                ],
-            },
-            (user_0,),
-        ),
-        (
-            {
-                'members': [
-                    user_0.to_data(),
-                    user_1.to_data(),
-                ],
-            },
-            (user_0, user_1),
-        ),
-    ):
-        output = parse_users(input_data)
-        vampytest.assert_eq(output, expected_output)
+    yield (
+        {},
+        None,
+    )
+    
+    yield (
+        {
+            'members': None,
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'members': [],
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'members': [
+                user_0.to_data(),
+            ],
+        },
+        (user_0,),
+    )
+    
+    yield (
+        {
+            'members': [
+                user_0.to_data(),
+                user_1.to_data(),
+            ],
+        },
+        (user_0, user_1),
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_users(input_data):
+    """
+    Tests whether ``parse_users`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | list<GuildWidgetUser>`
+    """
+    return parse_users(input_data)

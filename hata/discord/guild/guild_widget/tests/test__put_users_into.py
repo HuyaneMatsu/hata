@@ -5,10 +5,7 @@ from ...guild_widget_user import GuildWidgetUser
 from ..fields import put_users_into
 
 
-def test__put_users_into():
-    """
-    Tests whether ``put_users_into`` works as intended.
-    """
+def _iter_options():
     user_id_0 = 10
     user_name_0 = 'Far'
     
@@ -24,30 +21,60 @@ def test__put_users_into():
         user_id = user_id_1,
         name = user_name_1,
     )
+
+    yield (
+        None,
+        False,
+        {
+            'members': [],
+        },
+    )
     
-    for input_value, defaults, expected_output in (
-        (None, False, {'members': []}),
-        (None, True, {'members': []}),
-        (
-            (user_0, user_1),
-            False,
-            {
-                'members': [
-                    user_0.to_data(defaults = False),
-                    user_1.to_data(defaults = False),
-                ],
-            },
-        ),
-        (
-            (user_0, user_1),
-            True,
-            {
-                'members': [
-                    user_0.to_data(defaults = True),
-                    user_1.to_data(defaults = True),
-                ],
-            },
-        ),
-    ):
-        output = put_users_into(input_value, {}, defaults)
-        vampytest.assert_eq(output, expected_output)
+    yield (
+        None,
+        True,
+        {
+            'members': [],
+        },
+    )
+    
+    yield (
+        (user_0, user_1),
+        False,
+        {
+            'members': [
+                user_0.to_data(defaults = False),
+                user_1.to_data(defaults = False),
+            ],
+        },
+    )
+    
+    yield (
+        (user_0, user_1),
+        True,
+        {
+            'members': [
+                user_0.to_data(defaults = True),
+                user_1.to_data(defaults = True),
+            ],
+        },
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_users_into(input_value, defaults):
+    """
+    Tests whether ``put_users_into`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | tuple<GuildWidgetUser>`
+        Value to serialise.
+    defaults : `bool`
+        Whether default values should be serialised as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
+    """
+    return put_users_into(input_value, {}, defaults)

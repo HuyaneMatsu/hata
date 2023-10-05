@@ -7,10 +7,7 @@ from ...interaction_event import InteractionEvent
 from ..fields import put_users_into
 
 
-def test__put_users_into():
-    """
-    Tests whether ``put_users_into`` works as intended.
-    """
+def _iter_options():
     user_id = 202211050023
     guild_id = 202211050024
     user_name = 'Faker'
@@ -27,36 +24,100 @@ def test__put_users_into():
     interaction_event_instance = InteractionEvent(guild_id = guild_id)
     
     
-    for input_value, defaults, interaction_event, expected_output in (
-        (None, False, None, {}),
-        (None, True, None, {'users': {}, 'members': {}}),
-        (
-            {
-                user_id: user,
+    yield (
+        None,
+        False,
+        None,
+        {},
+    )
+    
+    yield (
+        None,
+        True,
+        None,
+        {
+            'users': {},
+            'members': {},
+        },
+    )
+    
+    yield (
+        {
+            user_id: user,
+        },
+            False,
+            None,
+        {
+            'users': {
+                str(user_id): user.to_data(defaults = False, include_internals = True),
             },
-                True,
-                None,
-            {
-                'users': {
-                    str(user_id): user.to_data(defaults = True, include_internals = True),
-                },
-                'members': {},
+            'members': {},
+        },
+    )
+    
+    yield (
+        {
+            user_id: user,
+        },
+            False,
+            interaction_event_instance,
+        {
+            'users': {
+                str(user_id): user.to_data(defaults = False, include_internals = True),
             },
-        ), (
-            {
-                user_id: user,
+            'members': {
+                str(user_id): guild_profile.to_data(defaults = False, include_internals = True),
             },
-                True,
-                interaction_event_instance,
-            {
-                'users': {
-                    str(user_id): user.to_data(defaults = True, include_internals = True),
-                },
-                'members': {
-                    str(user_id): guild_profile.to_data(defaults = True, include_internals = True),
-                },
+        },
+    )
+    
+    yield (
+        {
+            user_id: user,
+        },
+            True,
+            None,
+        {
+            'users': {
+                str(user_id): user.to_data(defaults = True, include_internals = True),
             },
-        )
-    ):
-        output = put_users_into(input_value, {}, defaults, interaction_event = interaction_event)
-        vampytest.assert_eq(output, expected_output)
+            'members': {},
+        },
+    )
+    
+    yield (
+        {
+            user_id: user,
+        },
+            True,
+            interaction_event_instance,
+        {
+            'users': {
+                str(user_id): user.to_data(defaults = True, include_internals = True),
+            },
+            'members': {
+                str(user_id): guild_profile.to_data(defaults = True, include_internals = True),
+            },
+        },
+    )
+    
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_users_into(input_value, defaults, interaction_event):
+    """
+    Tests whether ``put_users_into`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | dict<int, ClientUserBase>`
+        Value to serialise.
+    defaults : `bool`
+        Whether default values should be serialised as well.
+    interaction_event : `None | InteractionEvent`
+        The respective interaction event.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
+    """
+    return put_users_into(input_value, {}, defaults, interaction_event = interaction_event)

@@ -1275,7 +1275,7 @@ def entity_dictionary_putter_factory(
 
 
 def nullable_entity_array_optional_putter_factory(
-    field_key, entity_type, *, can_include_internals = ..., include = None
+    field_key, entity_type, *, can_include_internals = ..., force_include_internals = ..., include = None
 ):
     """
     Returns a nullable entity array putter.
@@ -1290,7 +1290,10 @@ def nullable_entity_array_optional_putter_factory(
     
     can_include_internals : `bool`, Optional (Keyword only)
         Whether the `field_type.to_data` implements the `include_internals` parameter.
-        
+    
+    force_include_internals : `bool`, Optional (Keyword only)
+        Whether `include_internals` should be passed as `True` always.
+    
     include : `None`, `str` = `None`, Optional (Keyword only)
         The object's name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
     
@@ -1298,7 +1301,42 @@ def nullable_entity_array_optional_putter_factory(
     -------
     putter : `FunctionType`
     """
-    if (
+    if (force_include_internals is not ...) and force_include_internals:
+        def putter(entity_array, data, defaults):
+            """
+            Puts the given entity array into the given `data` json serializable object.
+            
+            > This function is generated.
+            
+            Parameters
+            ----------
+            entity_array : `None`, `tuple` of `object`
+                Entity array.
+            data : `dict` of (`str`, `object`) items
+                Json serializable dictionary.
+            defaults : `bool`
+                Whether default values should be included as well.
+            
+            Returns
+            -------
+            data : `dict` of (`str`, `object`) items
+            """
+            nonlocal field_key
+            
+            if defaults or (entity_array is not None):
+                if entity_array is None:
+                    entity_data_array = []
+                else:
+                    entity_data_array = [
+                        entity.to_data(defaults = defaults, include_internals = True)
+                        for entity in entity_array
+                    ]
+                
+                data[field_key] = entity_data_array
+            
+            return data
+    
+    elif (
         ((can_include_internals is not ...) and can_include_internals) or
         ((entity_type is not NotImplemented) and _has_entity_include_internals_parameter(entity_type))
     ):

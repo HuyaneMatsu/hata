@@ -1,5 +1,6 @@
 import vampytest
 
+from ....application import Entitlement
 from ....channel import Channel
 from ....localization import Locale
 from ....permission import Permission
@@ -19,6 +20,7 @@ def test__InteractionEvent__repr():
     application_id = 202211070025
     application_permissions = Permission(123)
     channel = Channel.precreate(202211070026)
+    entitlements = [Entitlement.precreate(202310050018), Entitlement.precreate(202310050019)]
     guild_id = 202211070027
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -35,6 +37,7 @@ def test__InteractionEvent__repr():
         application_id = application_id,
         application_permissions = application_permissions,
         channel = channel,
+        entitlements = entitlements,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -56,6 +59,7 @@ def test__InteractionEvent__hash():
     application_id = 202211070031
     application_permissions = Permission(123)
     channel = Channel.precreate(202211070032)
+    entitlements = [Entitlement.precreate(202310050021), Entitlement.precreate(202310050022)]
     guild_id = 202211070033
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -72,6 +76,7 @@ def test__InteractionEvent__hash():
         application_id = application_id,
         application_permissions = application_permissions,
         channel = channel,
+        entitlements = entitlements,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -93,6 +98,7 @@ def test__InteractionEvent__eq():
     application_id = 202211070036
     application_permissions = Permission(123)
     channel = Channel.precreate(202211070037)
+    entitlements = [Entitlement.precreate(202310050023), Entitlement.precreate(202310050024)]
     guild_id = 202211070038
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -108,6 +114,7 @@ def test__InteractionEvent__eq():
         'application_id': application_id,
         'application_permissions': application_permissions,
         'channel': channel,
+        'entitlements': entitlements,
         'guild_id': guild_id,
         'guild_locale': guild_locale,
         'interaction': interaction,
@@ -140,6 +147,7 @@ def test__InteractionEvent__eq():
         ('application_id', 202211070042),
         ('application_permissions', Permission(456)),
         ('channel', Channel.precreate(202211070043)),
+        ('entitlements', None),
         ('guild_id', 202211070044),
         ('guild_locale', Locale.english_us),
         ('interaction', InteractionMetadataApplicationCommand(name = 'important')),

@@ -22,6 +22,10 @@
 - Add `Entitlement`.
 - Add `ENTITLEMENTS`.
 - Add `EntitlementOwnerType`.
+- Add `InteractionEvent.entitlements`.
+- Add `InteractionEvent.has_entitlement`.
+- Add `InteractionEvent.iter_entitlements`.
+- Add `InteractionEvent.has_sku`.
 
 #### Renames, Deprecations & Removals
 

@@ -2,6 +2,7 @@ import vampytest
 
 from scarletio import Task
 
+from ....application import Entitlement
 from ....channel import Channel
 from ....localization import Locale
 from ....permission import Permission
@@ -32,6 +33,7 @@ def _assert_attributes_set(interaction_event):
     vampytest.assert_instance(interaction_event.application_id, int)
     vampytest.assert_instance(interaction_event.application_permissions, Permission)
     vampytest.assert_instance(interaction_event.channel, Channel)
+    vampytest.assert_instance(interaction_event.entitlements, tuple, nullable = True)
     vampytest.assert_instance(interaction_event.guild_id, int)
     vampytest.assert_instance(interaction_event.guild_locale, Locale)
     vampytest.assert_instance(interaction_event.id, int)
@@ -44,7 +46,7 @@ def _assert_attributes_set(interaction_event):
     vampytest.assert_instance(interaction_event.user_permissions, Permission)
 
 
-def test__InteractionEvent__new__0():
+def test__InteractionEvent__new__no_fields():
     """
     Tests whether ``InteractionEvent.__new__`` works as intended.
     
@@ -55,7 +57,7 @@ def test__InteractionEvent__new__0():
     _assert_attributes_set(interaction_event)
 
 
-def test__InteractionEvent__new__1():
+def test__InteractionEvent__new__all_fields():
     """
     Tests whether ``InteractionEvent.__new__`` works as intended.
     
@@ -64,6 +66,7 @@ def test__InteractionEvent__new__1():
     application_id = 202211070000
     application_permissions = Permission(123)
     channel = Channel.precreate(202211070001)
+    entitlements = [Entitlement.precreate(202310050010), Entitlement.precreate(202310050011)]
     guild_id = 202211070002
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -78,6 +81,7 @@ def test__InteractionEvent__new__1():
         application_id = application_id,
         application_permissions = application_permissions,
         channel = channel,
+        entitlements = entitlements,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -94,6 +98,7 @@ def test__InteractionEvent__new__1():
     vampytest.assert_eq(interaction_event.application_id, application_id)
     vampytest.assert_eq(interaction_event.application_permissions, application_permissions)
     vampytest.assert_is(interaction_event.channel, channel)
+    vampytest.assert_eq(interaction_event.entitlements, tuple(entitlements))
     vampytest.assert_eq(interaction_event.guild_id, guild_id)
     vampytest.assert_is(interaction_event.guild_locale, guild_locale)
     vampytest.assert_eq(interaction_event.interaction, interaction)
@@ -120,7 +125,7 @@ def test__InteractionEvent__create_empty():
 
 
 
-def test__InteractionEvent__precreate__0():
+def test__InteractionEvent__precreate__no_fields():
     """
     Tests whether ``InteractionEvent.precreate`` works as intended.
     
@@ -134,7 +139,7 @@ def test__InteractionEvent__precreate__0():
     vampytest.assert_eq(interaction_event.id, interaction_id)
 
 
-def test__InteractionEvent__precreate__1():
+def test__InteractionEvent__precreate__all_fields():
     """
     Tests whether ``InteractionEvent.precreate`` works as intended.
     
@@ -143,6 +148,7 @@ def test__InteractionEvent__precreate__1():
     application_id = 202211070012
     application_permissions = Permission(123)
     channel = Channel.precreate(202211070013)
+    entitlements = [Entitlement.precreate(202310050012), Entitlement.precreate(202310050013)]
     guild_id = 202211070014
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -160,6 +166,7 @@ def test__InteractionEvent__precreate__1():
         application_id = application_id,
         application_permissions = application_permissions,
         channel = channel,
+        entitlements = entitlements,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -177,6 +184,7 @@ def test__InteractionEvent__precreate__1():
     vampytest.assert_eq(interaction_event.application_id, application_id)
     vampytest.assert_eq(interaction_event.application_permissions, application_permissions)
     vampytest.assert_is(interaction_event.channel, channel)
+    vampytest.assert_eq(interaction_event.entitlements, tuple(entitlements))
     vampytest.assert_eq(interaction_event.guild_id, guild_id)
     vampytest.assert_is(interaction_event.guild_locale, guild_locale)
     vampytest.assert_eq(interaction_event.interaction, interaction)

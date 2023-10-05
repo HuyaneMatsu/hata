@@ -5,35 +5,53 @@ from ...guild_widget_user import GuildWidgetUser
 from ..fields import validate_users
 
 
-def test__validate_users__0():
-    """
-    Validates whether ``validate_users`` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options():
     user_id_0 = 10
     user_id_1 = 11
     
     user_0 = GuildWidgetUser(user_id = user_id_0)
     user_1 = GuildWidgetUser(user_id = user_id_1)
+
+    yield (None, None)
+    yield ([], None)
+    yield ([user_0], (user_0,))
+    yield ([user_1, user_0], (user_0, user_1))
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_users__passing(input_value):
+    """
+    Validates whether ``validate_users`` works as intended.
     
-    for input_value, expected_output in (
-        ([], None),
-        ([user_0], (user_0,)),
-        ([user_1, user_0], (user_0, user_1)),
-    ):
-        output = validate_users(input_value)
-        vampytest.assert_eq(output, expected_output)
+    Case: passing.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Returns
+    -------
+    output : `None | tuple<GuildWidgetUser>`
+    """
+    return validate_users(input_value)
 
 
-def test__validate_users__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_users__type_error(input_value):
     """
     Validates whether ``validate_users`` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_users(input_value)
+    validate_users(input_value)

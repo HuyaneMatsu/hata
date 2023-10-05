@@ -1,18 +1,19 @@
 __all__ = ()
 
-from ...application import Application
+from ...application import Application, Entitlement
 from ...channel import Channel, ChannelType, create_partial_channel_from_id
 from ...field_parsers import (
     default_entity_parser_factory, entity_id_parser_factory, flag_parser_factory, force_string_parser_factory,
-    nullable_entity_parser_factory, preinstanced_parser_factory
+    nullable_entity_array_parser_factory, nullable_entity_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
     entity_id_optional_putter_factory, entity_id_putter_factory, entity_putter_factory, force_string_putter_factory,
-    preinstanced_putter_factory, string_flag_putter_factory
+    nullable_entity_array_optional_putter_factory, preinstanced_putter_factory, string_flag_putter_factory
 )
 from ...field_validators import (
     default_entity_validator_factory, entity_id_validator_factory, flag_validator_factory,
-    force_string_validator_factory, nullable_entity_validator_factory, preinstanced_validator_factory
+    force_string_validator_factory, nullable_entity_array_validator_factory, nullable_entity_validator_factory,
+    preinstanced_validator_factory
 )
 from ...guild import Guild
 from ...localization import Locale
@@ -43,10 +44,18 @@ validate_application_permissions = flag_validator_factory('application_permissio
 parse_channel = default_entity_parser_factory(
     'channel', Channel, default_factory = lambda : create_partial_channel_from_id(0, ChannelType.unknown, 0)
 )
-put_channel_into = entity_putter_factory('channel', Channel)
+put_channel_into = entity_putter_factory('channel', Channel, force_include_internals = True)
 validate_channel = default_entity_validator_factory(
     'channel', Channel, default_factory = lambda : create_partial_channel_from_id(0, ChannelType.unknown, 0)
 )
+
+# entitlements
+
+parse_entitlements = nullable_entity_array_parser_factory('entitlements', Entitlement)
+put_entitlements_into = nullable_entity_array_optional_putter_factory(
+    'entitlements', Entitlement, force_include_internals = True,
+)
+validate_entitlements = nullable_entity_array_validator_factory('entitlements', Entitlement)
 
 # guild_locale
 

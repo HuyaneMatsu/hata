@@ -1,5 +1,6 @@
 import vampytest
 
+from ....application import Entitlement, SKU
 from ....channel import Channel
 from ....localization import Locale
 from ....message import Message
@@ -114,6 +115,7 @@ def test__InteractionEvent__copy():
     application_id = 202211070052
     application_permissions = Permission(123)
     channel = Channel.precreate(202211070053)
+    entitlements = [Entitlement.precreate(202310050025), Entitlement.precreate(202310050026)]
     guild_id = 202211070054
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -131,6 +133,7 @@ def test__InteractionEvent__copy():
         application_id = application_id,
         application_permissions = application_permissions,
         channel = channel,
+        entitlements = entitlements,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -156,6 +159,7 @@ def test__InteractionEvent__copy__with__0():
     application_id = 202211070058
     application_permissions = Permission(123)
     channel = Channel.precreate(202211070059)
+    entitlements = [Entitlement.precreate(202310050027), Entitlement.precreate(202310050028)]
     guild_id = 202211070060
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -173,6 +177,7 @@ def test__InteractionEvent__copy__with__0():
         application_id = application_id,
         application_permissions = application_permissions,
         channel = channel,
+        entitlements = entitlements,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -196,36 +201,38 @@ def test__InteractionEvent__copy__with__1():
     Tests whether ``InteractionEvent.copy_with`` works as intended.
     """
     old_application_id = 202211070064
-    new_application_id = 202211070065
     old_application_permissions = Permission(123)
-    new_application_permissions = Permission(951)
     old_channel = Channel.precreate(202211070066)
-    new_channel = Channel.precreate(202211070067)
+    old_entitlements = [Entitlement.precreate(202310050028), Entitlement.precreate(202310050029)]
     old_guild_id = 202211070068
-    new_guild_id = 202211070069
     old_guild_locale = Locale.hindi
-    new_guild_locale = Locale.chinese_cn
     old_interaction = InteractionMetadataApplicationCommand(name = '3L')
-    new_interaction = InteractionMetadataMessageComponent(custom_id = 'Renna')
     old_interaction_type = InteractionType.application_command
-    new_interaction_type = InteractionType.message_component
     old_locale = Locale.thai
-    new_locale = Locale.finnish
     old_message = Message.precreate(202211070070, content = 'Rise')
-    new_message = Message.precreate(202211070071, content = 'Rise')
     old_token = 'Fall'
-    new_token = 'Fall'
     old_user = User.precreate(202211070072, name = 'masuta spark')
-    new_user = User.precreate(202211070073, name = 'Marisa')
     old_user_permissions = Permission(234)
-    new_user_permissions = Permission(654)
     
-    interaction_id = 202211070063
+    new_application_id = 202211070065
+    new_application_permissions = Permission(951)
+    new_channel = Channel.precreate(202211070067)
+    new_entitlements = [Entitlement.precreate(202310050030), Entitlement.precreate(202310050031)]
+    new_guild_id = 202211070069
+    new_guild_locale = Locale.chinese_cn
+    new_interaction = InteractionMetadataMessageComponent(custom_id = 'Renna')
+    new_interaction_type = InteractionType.message_component
+    new_locale = Locale.finnish
+    new_message = Message.precreate(202211070071, content = 'Rise')
+    new_token = 'Fall'
+    new_user = User.precreate(202211070073, name = 'Marisa')
+    new_user_permissions = Permission(654)
     
     interaction_event = InteractionEvent(
         application_id = old_application_id,
         application_permissions = old_application_permissions,
         channel = old_channel,
+        entitlements = old_entitlements,
         guild_id = old_guild_id,
         guild_locale = old_guild_locale,
         interaction = old_interaction,
@@ -241,6 +248,7 @@ def test__InteractionEvent__copy__with__1():
         application_id = new_application_id,
         application_permissions = new_application_permissions,
         channel = new_channel,
+        entitlements = new_entitlements,
         guild_id = new_guild_id,
         guild_locale = new_guild_locale,
         interaction = new_interaction,
@@ -257,6 +265,7 @@ def test__InteractionEvent__copy__with__1():
     vampytest.assert_eq(copy.application_id, new_application_id)
     vampytest.assert_eq(copy.application_permissions, new_application_permissions)
     vampytest.assert_is(copy.channel, new_channel)
+    vampytest.assert_eq(copy.entitlements, tuple(new_entitlements))
     vampytest.assert_eq(copy.guild_id, new_guild_id)
     vampytest.assert_is(copy.guild_locale, new_guild_locale)
     vampytest.assert_eq(copy.interaction, new_interaction)
@@ -266,3 +275,96 @@ def test__InteractionEvent__copy__with__1():
     vampytest.assert_is(copy.type, new_interaction_type)
     vampytest.assert_is(copy.user, new_user)
     vampytest.assert_eq(copy.user_permissions, new_user_permissions)
+
+
+def _iter_options__iter__has_entitlement():
+    entitlement_0 = Entitlement.precreate(202310050032)
+    entitlement_1 = Entitlement.precreate(202310050033)
+    
+    yield InteractionEvent(entitlements = None), entitlement_0, False
+    yield InteractionEvent(entitlements = [entitlement_0]), entitlement_0, True
+    yield InteractionEvent(entitlements = [entitlement_1]), entitlement_0, False
+    yield InteractionEvent(entitlements = [entitlement_0, entitlement_1]), entitlement_0, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter__has_entitlement()).returning_last())
+def test__InteractionEvent__has_entitlement(interaction_event, entitlement):
+    """
+    Tests whether ``InteractionEvent.has_entitlement`` works as intended.
+    
+    Parameters
+    ----------
+    interaction_event : ``InteractionEvent``
+        Interaction event to get check.
+    entitlement : ``Entitlement``
+        The entitlement to test for.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    output = interaction_event.has_entitlement(entitlement)
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__iter__iter_entitlement():
+    entitlement_0 = Entitlement.precreate(202310050034)
+    entitlement_1 = Entitlement.precreate(202310050035)
+    
+    yield InteractionEvent(entitlements = None), set()
+    yield InteractionEvent(entitlements = [entitlement_0]), {entitlement_0}
+    yield InteractionEvent(entitlements = [entitlement_0, entitlement_1]), {entitlement_0, entitlement_1}
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter__iter_entitlement()).returning_last())
+def test__InteractionEvent__has_entitlement(interaction_event):
+    """
+    Tests whether ``InteractionEvent.has_entitlement`` works as intended.
+    
+    Parameters
+    ----------
+    interaction_event : ``InteractionEvent``
+        Interaction event to get check.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    return {*interaction_event.iter_entitlements()}
+
+
+def _iter_options__iter__has_sku():
+    sku_id_0 = 202310050036
+    sku_id_1 = 202310050037
+    
+    sku_0 = SKU.precreate(sku_id_0)
+    
+    entitlement_0 = Entitlement.precreate(202310050038, sku_id = sku_id_0)
+    entitlement_1 = Entitlement.precreate(202310050039, sku_id = sku_id_1)
+    
+    yield InteractionEvent(entitlements = None), sku_0, False
+    yield InteractionEvent(entitlements = [entitlement_0]), sku_0, True
+    yield InteractionEvent(entitlements = [entitlement_1]), sku_0, False
+    yield InteractionEvent(entitlements = [entitlement_0, entitlement_1]), sku_0, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter__has_sku()).returning_last())
+def test__InteractionEvent__has_sku(interaction_event, sku):
+    """
+    Tests whether ``InteractionEvent.has_sku`` works as intended.
+    
+    Parameters
+    ----------
+    interaction_event : ``InteractionEvent``
+        Interaction event to get check.
+    sku : ``SKU``
+        The stock keeping unit to test for.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    output = interaction_event.has_sku(sku)
+    vampytest.assert_instance(output, bool)
+    return output

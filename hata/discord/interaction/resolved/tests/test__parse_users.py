@@ -7,56 +7,119 @@ from ...interaction_event import InteractionEvent
 from ..fields import parse_users
 
 
-def test__parse_users():
-    """
-    Tests whether ``parse_users`` works as intended.
-    """
-    user_id = 202211050025
-    guild_id = 202211050026
+def _iter_options():
+    user_id_0 = 202211050025
+    guild_id_0 = 202211050026
+    
+    user_id_1 = 202310050002
+    guild_id_1 = 202310050003
+    
     user_name = 'Faker'
     user_nick = 'COLORS'
     
-    user = User.precreate(
-        user_id,
+    user_0 = User.precreate(
+        user_id_0,
         name = user_name,
     )
     
+    user_1 = User.precreate(
+        user_id_1,
+        name = user_name,
+    )
+    
+    interaction_event_0 = InteractionEvent(guild_id = guild_id_0)
+    interaction_event_1 = InteractionEvent(guild_id = guild_id_1)
+    
     guild_profile = GuildProfile(nick = user_nick)
     
-    interaction_event = InteractionEvent(guild_id = guild_id)
+    yield (
+        {},
+        interaction_event_0,
+        None,
+    )
     
+    yield (
+        {
+            'users': {},
+        },
+        interaction_event_0,
+        None,
+    )
     
-    for input_value, expected_output in (
-        ({}, None),
-        ({'users': {}}, None),
-        ({'users': {}, 'members': {}}, None),
-        ({'members': {}}, None),
+    yield (
+        {
+            'users': {},
+            'members': {},
+        },
+        interaction_event_0,
+        None,
+    )
+    
+    yield (
+        {
+            'members': {},
+        },
+        interaction_event_0,
+        None,
+    )
+    
+    yield (
+        {
+            'users': {
+                str(user_id_0): user_0.to_data(defaults = True, include_internals = True),
+            }
+        },
+        interaction_event_0,
         (
             {
-                'users': {
-                    str(user_id): user.to_data(defaults = True, include_internals = True),
-                }
+                user_id_0: user_0,
             },
-            {
-                user_id: user,
-            }
+            [None],
         ),
+    )
+    
+    yield (
+        {
+            'users': {
+                str(user_id_1): user_1.to_data(defaults = True, include_internals = True),
+            },
+            'members': {
+                 str(user_id_1): guild_profile.to_data(defaults = True, include_internals = True),
+            },
+        },
+        interaction_event_1,
         (
             {
-                'users': {
-                    str(user_id): user.to_data(defaults = True, include_internals = True),
-                },
-                'members': {
-                     str(user_id): guild_profile.to_data(defaults = True, include_internals = True),
-                },
+                user_id_1: user_1,
             },
-            {
-                user_id: user,
-            }
+            [
+                guild_profile,
+            ],
+        ),
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_users(input_data, interaction_event):
+    """
+    Tests whether ``parse_users`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    interaction_event : ``InteractionEvent``
+        Respective interaction event received with the users.
+    
+    Returns
+    -------
+    output : `None | (dict<int, ClientUserBase>, list<GuildProfile>)`
+    """
+    output = parse_users(input_data, interaction_event)
+    if output is not None:
+        output = (
+            output,
+            [user.guild_profiles.get(interaction_event.guild_id) for user in output.values()],
         )
-    ):
-        output = parse_users(input_value, interaction_event)
-        vampytest.assert_eq(output, expected_output)
-        
-        if output and 'members' in input_value:
-            vampytest.assert_eq(output[user_id].guild_profiles.get(guild_id, None), guild_profile)
+    
+    return output

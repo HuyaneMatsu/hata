@@ -773,7 +773,7 @@ def put_users_into(users, data, defaults):
     -------
     data : `dict` of (`str`, `object`) items
     """
-    data['recipients'] = [user.to_data(defaults = True, include_internals = True) for user in users]
+    data['recipients'] = [user.to_data(defaults = defaults, include_internals = True) for user in users]
     
     return data
 

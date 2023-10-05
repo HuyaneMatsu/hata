@@ -1,5 +1,6 @@
 import vampytest
 
+from ....application import Entitlement
 from ....channel import Channel
 from ....localization import Locale
 from ....permission import Permission
@@ -21,6 +22,7 @@ def test__InteractionEvent__from_data():
     application_id = 202211070005
     application_permissions = Permission(123)
     channel = Channel.precreate(202211070006)
+    entitlements = [Entitlement.precreate(202310050014), Entitlement.precreate(202310050015)]
     guild_id = 202211070007
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -38,6 +40,7 @@ def test__InteractionEvent__from_data():
         'application_id': str(application_id),
         'app_permissions': format(application_permissions, 'd'),
         'channel': channel.to_data(include_internals = True),
+        'entitlements': [entitlement.to_data(include_internals = True) for entitlement in entitlements],
         'guild_id': str(guild_id),
         'guild_locale': guild_locale.value,
         'data': interaction.to_data(defaults = True),
@@ -60,6 +63,7 @@ def test__InteractionEvent__from_data():
     vampytest.assert_eq(interaction_event.application_id, application_id)
     vampytest.assert_eq(interaction_event.application_permissions, application_permissions)
     vampytest.assert_is(interaction_event.channel, channel)
+    vampytest.assert_eq(interaction_event.entitlements, tuple(entitlements))
     vampytest.assert_eq(interaction_event.guild_id, guild_id)
     vampytest.assert_is(interaction_event.guild_locale, guild_locale)
     vampytest.assert_eq(interaction_event.interaction, interaction)
@@ -83,6 +87,7 @@ def test__InteractionEvent__to_data():
     application_id = 202211070019
     application_permissions = Permission(123)
     channel = Channel.precreate(202211070020)
+    entitlements = [Entitlement.precreate(202310050016), Entitlement.precreate(202310050017)]
     guild_id = 202211070021
     guild_locale = Locale.hindi
     interaction = InteractionMetadataApplicationCommand(name = '3L')
@@ -102,6 +107,7 @@ def test__InteractionEvent__to_data():
         application_id = application_id,
         application_permissions = application_permissions,
         channel = channel,
+        entitlements = entitlements,
         guild_id = guild_id,
         guild_locale = guild_locale,
         interaction = interaction,
@@ -113,10 +119,13 @@ def test__InteractionEvent__to_data():
         user_permissions = user_permissions
     )
     
-    data = {
+    expected_output = {
         'application_id': str(application_id),
         'app_permissions': format(application_permissions, 'd'),
         'channel': channel.to_data(defaults = True, include_internals = True),
+        'entitlements': [
+            entitlement.to_data(defaults = True, include_internals = True) for entitlement in entitlements
+        ],
         'guild_id': str(guild_id),
         'guild_locale': guild_locale.value,
         'id': str(interaction_id),
@@ -137,5 +146,5 @@ def test__InteractionEvent__to_data():
         interaction_event.to_data(
             defaults = True,
         ),
-        data,
+        expected_output,
     )

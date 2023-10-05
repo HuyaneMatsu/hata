@@ -5,12 +5,7 @@ from ....user import User
 from ..fields import validate_users
 
 
-def test__validate_users__0():
-    """
-    Tests whether ``validate_users`` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options():
     user_id = 202211050022
     user_name = 'Faker'
     
@@ -19,27 +14,49 @@ def test__validate_users__0():
         name = user_name,
     )
     
-    for input_value, expected_output in (
-        (None, None),
-        ([], None),
-        ({}, None),
-        ([user], {user_id: user}),
-        ({user_id: user}, {user_id: user}),
-    ):
-        output = validate_users(input_value)
-        vampytest.assert_eq(output, expected_output)
+    yield (None, None)
+    yield ([], None)
+    yield ({}, None)
+    yield ([user], {user_id: user})
+    yield ({user_id: user}, {user_id: user})
 
 
-def test__validate_users__1():
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_users__passing(input_value):
     """
     Tests whether ``validate_users`` works as intended.
     
-    Case: raising.
+    Case: passing.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Returns
+    -------
+    output : `None | dict<int, ClientUserBase>`
     """
-    for input_value in (
-        12.6,
-        [12.6],
-        {12.6: 12.6},
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_users(input_value)
+    return validate_users(input_value)
+
+
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+@vampytest.call_with([12.6])
+@vampytest.call_with({12.6: 12.6})
+def test__validate_users__type_error(input_value):
+    """
+    Tests whether ``validate_users`` works as intended.
+    
+    Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Raises
+    ------
+    TypeError
+    """
+    validate_users(input_value)

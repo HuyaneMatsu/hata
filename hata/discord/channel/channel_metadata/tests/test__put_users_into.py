@@ -5,17 +5,62 @@ from ....user import User
 from ..fields import put_users_into
 
 
-def test__put_users_into():
+def _iter_options():
+    user_id_0 = 202209150004
+    
+    user_0 = User.precreate(user_id_0)
+    
+    yield (
+        [],
+        False,
+        {
+            'recipients': [],
+        },
+    )
+    
+    yield (
+        [],
+        True,
+        {
+            'recipients': [],
+        },
+    )
+    
+    yield (
+        [user_0],
+        False,
+        {
+            'recipients': [
+                user_0.to_data(defaults = False, include_internals = True),
+            ],
+        },
+    )
+    
+    yield (
+        [user_0],
+        True,
+        {
+            'recipients': [
+                user_0.to_data(defaults = True, include_internals = True),
+            ],
+        },
+    )
+    
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_users_into(input_value, defaults):
     """
     Tests whether ``put_users_into`` is working as intended.
+    
+    Parameters
+    ----------
+    input_value : `list<ClientUserBase>`
+        Value to serialise.
+    defaults : `bool`
+        Whether default values should be serialised as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
     """
-    user_id_1 = 202209150004
-    
-    user_1 = User.precreate(user_id_1)
-    
-    for input_, defaults, expected_output in (
-        ([], False, {'recipients': []}),
-        ([user_1], False, {'recipients': [user_1.to_data(defaults = True, include_internals = True)]}),
-    ):
-        data = put_users_into(input_, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    return put_users_into(input_value, {}, defaults)

@@ -67,7 +67,7 @@ async def yt(event,
         return 'There is no voice client at your guild.'
 
     try:
-        source = await YTAudio(url, stream=True)
+        source = await YTAudio(url, stream = True)
     except DownloadError:
         # Raised by `youtube_dl` if downloading failed.
         return 'Error meanwhile downloading'

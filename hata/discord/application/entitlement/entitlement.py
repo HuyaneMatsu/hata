@@ -168,6 +168,38 @@ class Entitlement(DiscordEntity):
         return self
     
     
+    @classmethod
+    def from_data_is_created(cls, data):
+        """
+        Creates a new entitlement 
+        
+        Parameters
+        ----------
+        data : `dict<str, object>`
+            Entitlement data.
+        
+        Returns
+        -------
+        new : `instance<cls>`
+        is_created : `bool`
+        """
+        entitlement_id = parse_id(data)
+        
+        try:
+            self = ENTITLEMENTS[entitlement_id]
+        except KeyError:
+            self = object.__new__(cls)
+            self.id = entitlement_id
+            self._set_attributes(data)
+            ENTITLEMENTS[entitlement_id] = self
+            is_created = True
+        else:
+            self._set_attributes(data)
+            is_created = False
+        
+        return self, is_created
+    
+    
     def _set_attributes(self, data):
         """
         Sets the entitlement's attributes from the given data. (Except `.id`.)

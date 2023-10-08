@@ -122,6 +122,8 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         """
         Requests the given global application command.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         application_command : ``ApplicationCommand``, `int`

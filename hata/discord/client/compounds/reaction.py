@@ -3,7 +3,7 @@ __all__ = ()
 from scarletio import Compound, Theory
 
 from ...core import MESSAGES
-from ...emoji import Emoji, ReactionType
+from ...emoji import Emoji
 from ...emoji.reaction_mapping.fields import validate_reaction
 from ...http import DiscordHTTPClient
 from ...user import ClientUserBase, User

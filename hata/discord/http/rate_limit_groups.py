@@ -118,14 +118,6 @@ Shared Groups
     - Limit : `5`
     - Resets after : `5.0`
 
-- GROUP_SOUNDBOARD_SOUND
-    - Used by : `soundboard_sound_create`, `soundboard_sound_delete`, `soundboard_sound_edit`,
-        `soundboard_sound_get_all_default`
-    - Limiter : `GLOBAL`
-    - Limit : `50`
-    - Resets after : `0.019`
-    - Notes : Seems like it is `0.019 / 1` and not `0.019 / 50`.
-
 Group Details
 -----------
 - oauth2_token
@@ -140,10 +132,9 @@ Group Details
     - Endpoint : `/applications/{application_id}`
     - Method : `GET`
     - Required auth : `UN`
-    - Limiter : `GLOBAL`
-    - Limit : `OPT`
-    - Resets after : `OPT`
-    - Notes : Untested.
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
 
 - achievement_get_all
     - Endpoint : `/applications/{application_id}/achievements`
@@ -233,6 +224,30 @@ Group Details
     - Limit : `5`
     - Resets after : `20.0`
 
+- entitlement_get_chunk
+    - Endpoint : `/applications/{application_id}/entitlements`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `UN`
+    - Resets after : `UN`
+
+- entitlement_create
+    - Endpoint : `/applications/{application_id}/entitlements`
+    - Method : `PUT`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `UN`
+    - Resets after : `UN`
+
+- entitlement_delete
+    - Endpoint : `/applications/{application_id}/entitlements/{entitlement_id}`
+    - Method : `DELETE`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `UN`
+    - Resets after : `UN`
+
 - application_command_guild_get_all
     - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands`
     - Method : `GET`
@@ -310,16 +325,24 @@ Group Details
     - Method : `GET`
     - Required auth : `bot`
     - Limiter : `GLOBAL`
-    - Limit : `UN`
-    - Resets after : `UN`
+    - Limit : `1`
+    - Resets after : `0.999`
 
 - application_role_connection_metadata_edit_all
     - Endpoint : `/applications/{application_id}/role-connections/metadata`
     - Method : `PUT`
     - Required auth : `bot`
     - Limiter : `GLOBAL`
-    - Limit : `UN`
-    - Resets after : `UN`
+    - Limit : `1`
+    - Resets after : `4.999`
+
+- sku_get_all
+    - Endpoint : `/applications/{application_id}/skus`
+    - Method : `PUT`
+    - Required auth : `bot`
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
 
 - application_get_all_detectable
     - Endpoint : `/applications/detectable`
@@ -377,10 +400,9 @@ Group Details
     - Endpoint : `/channels/{channel_id}/voice-status`
     - Method : `PUT`
     - Required auth : `bot`
-    - Limiter : `GLOBAL`
-    - Limit : `50`
-    - Resets after : `0.95`
-    - Notes : unknown.
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
 
 - channel_directory_counts
     - Endpoint : `/channels/{channel_id}/directory-entries/counts`
@@ -1083,7 +1105,7 @@ Group Details
     - Limiter : `guild_id`
     - Limit : `50`
     - Resets after : `3600.0`
-    - Notes : Discord do not returns rate limit information.
+    - Notes : Discord does not return rate limit information, still figured it out. :LeSanae:
 
 - emoji_delete
     - Endpoint : `/guilds/{guild_id}/emojis`
@@ -1113,9 +1135,9 @@ Group Details
     - Endpoint : `/guilds/{guild_id}/incident-actions`
     - Method : `PUT`
     - Required auth : `bot`
-    - Limiter : `GLOBAL`
-    - Limit : `50`
-    - Resets after : `0.95`
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
 
 - integration_get_all
     - Endpoint : `/guilds/{guild_id}/integrations`
@@ -1421,27 +1443,26 @@ Group Details
     - Endpoint : `/guilds/{guild_id}/soundboard-sounds`
     - Method : `POST`
     - Required auth : `user`
-    - Limiter : `GLOBAL`
-    - Limit : `50`
-    - Resets after : `0.95`
-    - Notes : `DiscordException Method Not Allowed (405): Method Not Allowed`
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
 
 - soundboard_sound_delete
     - Endpoint : `/guilds/{guild_id}/soundboard-sounds/{soundboard_sound_id}`
     - Method : `DELETE`
     - Required auth : `user`
-    - Limiter : `GLOBAL`
-    - Limit : `50`
-    - Resets after : `0.95`
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
     - Notes : `DiscordException Method Not Allowed (405): Method Not Allowed`
 
 - soundboard_sound_edit
     - Endpoint : `/guilds/{guild_id}/soundboard-sounds/{soundboard_sound_id}`
     - Method : `PATCH`
     - Required auth : `user`
-    - Limiter : `GLOBAL`
-    - Limit : `50`
-    - Resets after : `0.95`
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
     - Notes : `DiscordException Method Not Allowed (405): Method Not Allowed`
 
 - sticker_get_all_guild
@@ -1627,9 +1648,9 @@ Group Details
     - Endpoint : `/soundboard-default-sounds`
     - Method: `GET`
     - Required auth : `bot`
-    - Limiter : `GLOBAL`
-    - Limit : `50`
-    - Resets after : `0.95`
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
 
 - stage_get_all
     - Endpoint : `/stage-instances`
@@ -2054,10 +2075,9 @@ GROUP_APPLICATION_COMMAND_EDIT = RateLimitGroup()
 GROUP_PERMISSION_OVERWRITE_MODIFY = RateLimitGroup(LIMITER_CHANNEL)
 GROUP_THREAD_CREATE = RateLimitGroup()
 GROUP_THREAD_ACTION = RateLimitGroup()
-GROUP_SOUNDBOARD_SOUND = RateLimitGroup()
 
 oauth2_token = RateLimitGroup(optimistic = True)
-application_get = RateLimitGroup(optimistic = True) # untested
+application_get = RateLimitGroup().unlimited()
 achievement_get_all = RateLimitGroup()
 achievement_create = RateLimitGroup()
 achievement_delete = RateLimitGroup()
@@ -2069,6 +2089,9 @@ application_command_global_create = RateLimitGroup()
 application_command_global_update_multiple = RateLimitGroup()
 application_command_global_get = RateLimitGroup.unlimited()
 application_command_global_edit = RateLimitGroup()
+entitlement_get_chunk = RateLimitGroup.unlimited()
+entitlement_create = RateLimitGroup.unlimited()
+entitlement_delete = RateLimitGroup.unlimited()
 application_command_guild_get_all = RateLimitGroup.unlimited()
 application_command_guild_update_multiple = RateLimitGroup(LIMITER_GUILD)
 application_command_permission_get_all_guild = RateLimitGroup.unlimited()
@@ -2078,15 +2101,16 @@ application_command_guild_get = RateLimitGroup.unlimited()
 application_command_guild_edit = RateLimitGroup(LIMITER_GUILD)
 application_command_permission_get = RateLimitGroup.unlimited()
 application_command_permission_edit = RateLimitGroup()
-application_role_connection_metadata_get_all = RateLimitGroup() # untested
-application_role_connection_metadata_edit_all = RateLimitGroup() # untested
+application_role_connection_metadata_get_all = RateLimitGroup()
+application_role_connection_metadata_edit_all = RateLimitGroup()
+sku_get_all = RateLimitGroup.unlimited()
 application_get_all_detectable = RateLimitGroup(optimistic = True)
 client_logout = RateLimitGroup() # untested
 channel_delete = RateLimitGroup.unlimited()
 channel_group_leave = RateLimitGroup.unlimited() # untested; same as channel_delete?
 channel_edit = RateLimitGroup(LIMITER_CHANNEL)
 channel_group_edit = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?
-channel_edit_status = RateLimitGroup()
+channel_edit_status = RateLimitGroup.unlimited()
 channel_directory_counts = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?
 channel_directory_get_all = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?
 channel_directory_search = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?
@@ -2174,7 +2198,7 @@ emoji_create = RateLimitGroup(LIMITER_GUILD)
 emoji_delete = RateLimitGroup()
 emoji_get = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 emoji_edit = RateLimitGroup()
-guild_incidents_edit = RateLimitGroup()
+guild_incidents_edit = RateLimitGroup.unlimited()
 integration_get_all = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 integration_create = RateLimitGroup(optimistic = True) # untested
 integration_delete = RateLimitGroup(optimistic = True) # untested
@@ -2212,9 +2236,9 @@ scheduled_event_delete = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_get = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_edit = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_user_get_chunk = RateLimitGroup(LIMITER_GUILD)
-soundboard_sound_create = GROUP_SOUNDBOARD_SOUND
-soundboard_sound_delete = GROUP_SOUNDBOARD_SOUND
-soundboard_sound_edit = GROUP_SOUNDBOARD_SOUND
+soundboard_sound_create = RateLimitGroup.unlimited()
+soundboard_sound_delete = RateLimitGroup.unlimited()
+soundboard_sound_edit = RateLimitGroup.unlimited()
 sticker_get_all_guild = RateLimitGroup.unlimited()
 sticker_create = RateLimitGroup(LIMITER_GUILD)
 sticker_edit = RateLimitGroup()
@@ -2236,7 +2260,7 @@ invite_delete = RateLimitGroup.unlimited()
 invite_get = RateLimitGroup()
 application_get_own = RateLimitGroup(optimistic = True)
 bulk_ack = RateLimitGroup(optimistic = True) # untested
-soundboard_sound_get_all_default = GROUP_SOUNDBOARD_SOUND
+soundboard_sound_get_all_default = RateLimitGroup.unlimited()
 stage_get_all = RateLimitGroup.unlimited()
 stage_create = RateLimitGroup()
 stage_get = RateLimitGroup()

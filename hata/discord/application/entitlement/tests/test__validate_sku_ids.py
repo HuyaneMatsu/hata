@@ -6,8 +6,8 @@ from ..fields import validate_sku_ids
 
 
 def _iter_options():
-    sku_id_0 = 202303150009
-    sku_id_1 = 202303150010
+    sku_id_0 = 202310060000
+    sku_id_1 = 202310060001
     
     sku_0 = SKU.precreate(sku_id_0)
     sku_1 = SKU.precreate(sku_id_1)

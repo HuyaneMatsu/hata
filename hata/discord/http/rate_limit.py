@@ -9,7 +9,7 @@ from scarletio.web_common.headers import DATE
 from ..core import KOKORO
 from ..utils import parse_date_header_to_datetime
 
-from .headers import RATE_LIMIT_LIMIT, RATE_LIMIT_REMAINING, RATE_LIMIT_RESET, RATE_LIMIT_RESET_AFTER
+from .headers import RATE_LIMIT_HASH, RATE_LIMIT_LIMIT, RATE_LIMIT_REMAINING, RATE_LIMIT_RESET, RATE_LIMIT_RESET_AFTER
 
 
 GLOBALLY_LIMITED = 0x4000000000000000
@@ -17,6 +17,7 @@ RATE_LIMIT_DROP_ROUND = 0.20
 MAXIMAL_UNLIMITED_PARARELLITY = -50
 UNLIMITED_SIZE_VALUE = -10000
 NO_SPECIFIC_RATE_LIMITER = 0
+RATE_LIMIT_HASH_GLOBAL = 'f7ead6a7674e5a323d93786263b66cb1'
 
 LIMITER_CHANNEL = 'channel_id'
 LIMITER_GUILD = 'guild_id'
@@ -584,24 +585,8 @@ class RateLimitHandler:
         
         self.active -= 1
         
-        optimistic = False
-        while True:
-            if (headers is not None):
-                size = headers.get(RATE_LIMIT_LIMIT, None)
-                if size is None:
-                    if current_size < 0:
-                        optimistic = True
-                        # A not so special case when the endpoint is not rate limited yet.
-                        # If this happens, we increase the maximal size.
-                        size = current_size
-                        if size > MAXIMAL_UNLIMITED_PARARELLITY:
-                            size -= 1
-                        
-                        break
-                else:
-                    size = int(size)
-                    break
-            
+        # Return in case no rate limits were received or we received global rate limits.
+        if (headers is None) or (headers.get(RATE_LIMIT_HASH, None) == RATE_LIMIT_HASH_GLOBAL):
             wake_upper = self.wake_upper
             if (wake_upper is not None):
                 wake_upper.cancel()
@@ -609,6 +594,21 @@ class RateLimitHandler:
             
             self.wake_up()
             return
+        
+        
+        optimistic = False
+        size = headers.get(RATE_LIMIT_LIMIT, None)
+        if size is None:
+            if current_size < 0:
+                optimistic = True
+                # A not so special case when the endpoint is not rate limited yet.
+                # If this happens, we increase the maximal size.
+                size = current_size
+                if size > MAXIMAL_UNLIMITED_PARARELLITY:
+                    size -= 1
+                
+        else:
+            size = int(size)
         
         allocates = 1
         

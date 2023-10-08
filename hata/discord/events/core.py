@@ -280,6 +280,9 @@ add_event_handler('soundboard_sounds', 2, 'SOUNDBOARD_SOUNDS')
 add_event_handler('soundboard_sound_create', 2, ('GUILD_SOUNDBOARD_SOUND_CREATE', 'GUILD_SOUNDBOARD_SOUNDS_UPDATE'),)
 add_event_handler('soundboard_sound_delete', 2, ('GUILD_SOUNDBOARD_SOUND_DELETE', 'GUILD_SOUNDBOARD_SOUNDS_UPDATE'),)
 add_event_handler('soundboard_sound_update', 3, ('GUILD_SOUNDBOARD_SOUND_UPDATE', 'GUILD_SOUNDBOARD_SOUNDS_UPDATE'),)
+add_event_handler('entitlement_create', 2, 'ENTITLEMENT_CREATE',)
+add_event_handler('entitlement_update', 3, 'ENTITLEMENT_UPDATE',)
+add_event_handler('entitlement_delete', 2, 'ENTITLEMENT_DELETE',)
 
 
 class ParserSettingOption:

@@ -75,6 +75,81 @@ def test__Entitlement__from_data__caching():
     vampytest.assert_eq(entitlement, test_entitlement)
 
 
+def test__Entitlement__from_data_is_created():
+    """
+    Tests whether ``Entitlement.from_data_is_created`` works as intended.
+    
+    Case: Default.
+    """
+    entitlement_id = 202310070000
+    application_id = 202310070001
+    consumed = True
+    deleted = True
+    ends_at = DateTime(2016, 5, 14)
+    entitlement_type = EntitlementType.user_gift
+    guild_id = 202310070002
+    sku_id = 202310070003
+    starts_at = DateTime(2015, 5, 14)
+    subscription_id = 202310070004
+    user_id = 202310070005
+    
+    data = {
+        'id': str(entitlement_id),
+        'application_id': str(application_id),
+        'consumed': consumed,
+        'deleted': deleted,
+        'ends_at': datetime_to_timestamp(ends_at),
+        'type': entitlement_type.value,
+        'guild_id': str(guild_id),
+        'sku_id': str(sku_id),
+        'starts_at': datetime_to_timestamp(starts_at),
+        'subscription_id': str(subscription_id),
+        'user_id': str(user_id),
+    }
+    
+    entitlement, is_created = Entitlement.from_data_is_created(data)
+    _assert_fields_set(entitlement)
+    vampytest.assert_eq(entitlement.id, entitlement_id)
+    
+    vampytest.assert_instance(is_created, bool)
+    vampytest.assert_eq(is_created, True)
+    
+    vampytest.assert_eq(entitlement.application_id, application_id)
+    vampytest.assert_eq(entitlement.consumed, consumed)
+    vampytest.assert_eq(entitlement.deleted, deleted)
+    vampytest.assert_eq(entitlement.ends_at, ends_at)
+    vampytest.assert_is(entitlement.type, entitlement_type)
+    vampytest.assert_eq(entitlement.guild_id, guild_id)
+    vampytest.assert_eq(entitlement.sku_id, sku_id)
+    vampytest.assert_eq(entitlement.starts_at, starts_at)
+    vampytest.assert_eq(entitlement.subscription_id, subscription_id)
+    vampytest.assert_eq(entitlement.user_id, user_id)
+
+
+def test__Entitlement__from_data_is_created__caching():
+    """
+    Tests whether ``Entitlement.from_data_is_created`` works as intended.
+    
+    Case: Caching.
+    """
+    entitlement_id = 202310070006
+    
+    data = {
+        'id': str(entitlement_id),
+    }
+    
+    entitlement, is_created_0 = Entitlement.from_data_is_created(data)
+    test_entitlement, is_created_1 = Entitlement.from_data_is_created(data)
+    vampytest.assert_eq(entitlement, test_entitlement)
+
+    vampytest.assert_instance(is_created_0, bool)
+    vampytest.assert_eq(is_created_0, True)
+
+
+    vampytest.assert_instance(is_created_1, bool)
+    vampytest.assert_eq(is_created_1, False)
+
+
 def test__Entitlement__set_attributes():
     """
     Tests whether ``Entitlement._set_attributes`` works as intended.

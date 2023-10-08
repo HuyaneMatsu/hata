@@ -2425,3 +2425,39 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/guilds/{guild_id}/auto-moderation/rules/{auto_moderation_rule_id}',
             reason = reason,
         )
+    
+    # sku & entitlements
+    
+    async def sku_get_all(self, application_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.sku_get_all, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/applications/{application_id}/skus',
+        )
+    
+    
+    async def entitlement_get_chunk(self, application_id, query_parameters):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.entitlement_get_chunk, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/applications/{application_id}/entitlements',
+            params = query_parameters,
+        )
+    
+    
+    async def entitlement_create(self, application_id, data):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.entitlement_create, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_POST,
+            f'{API_ENDPOINT}/applications/{application_id}/entitlements',
+            data,
+        )
+        
+
+    async def entitlement_delete(self, application_id, entitlement_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.entitlement_delete, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_DELETE,
+            f'{API_ENDPOINT}/applications/{application_id}/entitlements/{entitlement_id}',
+        )
+        

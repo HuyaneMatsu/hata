@@ -8,8 +8,8 @@ from ...field_putters import (
     nullable_date_time_optional_putter_factory, preinstanced_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, entity_id_validator_factory, nullable_date_time_validator_factory,
-    preinstanced_validator_factory
+    bool_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory,
+    nullable_date_time_validator_factory, preinstanced_validator_factory
 )
 from ...guild import Guild
 from ...user import ClientUserBase
@@ -42,6 +42,10 @@ validate_deleted = bool_validator_factory('deleted', False)
 parse_ends_at = nullable_date_time_parser_factory('ends_at')
 put_ends_at_into = nullable_date_time_optional_putter_factory('ends_at')
 validate_ends_at = nullable_date_time_validator_factory('ends_at')
+
+# exclude_ended
+
+validate_exclude_ended = bool_validator_factory('deleted', False)
 
 # guild_id
 
@@ -137,6 +141,10 @@ validate_owner_type = preinstanced_validator_factory('owner_type', EntitlementOw
 parse_sku_id = entity_id_parser_factory('sku_id')
 put_sku_id_into = entity_id_putter_factory('sku_id')
 validate_sku_id = entity_id_validator_factory('sku_id', SKU)
+
+# sku_ids
+
+validate_sku_ids = entity_id_array_validator_factory('sku_ids', SKU)
 
 # starts_at
 

@@ -1,4 +1,5 @@
 from .achievement import *
+from .application import *
 from .application_command import *
 from .application_role_connection import *
 from .auto_moderation import *
@@ -29,6 +30,7 @@ from .webhook import *
 
 __all__ = (
     *achievement.__all__,
+    *application.__all__,
     *application_command.__all__,
     *application_role_connection.__all__,
     *auto_moderation.__all__,
@@ -59,6 +61,7 @@ __all__ = (
 
 
 from .achievement import ClientCompoundAchievementEndpoints
+from .application import ClientCompoundApplicationEndpoints
 from .application_command import ClientCompoundApplicationCommandEndpoints
 from .application_role_connection import ClientCompoundApplicationRoleConnectionEndpoints
 from .auto_moderation import ClientCompoundAutoModerationEndpoints
@@ -89,6 +92,7 @@ from .webhook import ClientCompoundWebhookEndpoints
 
 CLIENT_COMPOUNDS = (
     ClientCompoundAchievementEndpoints,
+    ClientCompoundApplicationEndpoints,
     ClientCompoundApplicationCommandEndpoints,
     ClientCompoundApplicationRoleConnectionEndpoints,
     ClientCompoundAutoModerationEndpoints,

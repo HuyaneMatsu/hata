@@ -6,13 +6,15 @@ from scarletio import Task, include
 
 from ...env import CACHE_PRESENCE, CACHE_USER
 
+from ..application import Entitlement
+from ..application.entitlement.fields import parse_id as parse_entitlement_id
 from ..application_command import ApplicationCommand, ApplicationCommandPermission
 from ..audit_logs import AuditLogEntry
 from ..auto_moderation import AutoModerationActionExecutionEvent, AutoModerationRule
 from ..channel import Channel, VoiceChannelEffect
 from ..core import (
-    APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, AUTO_MODERATION_RULES, CHANNELS, CLIENTS, GUILDS, KOKORO,
-    MESSAGES, ROLES, SCHEDULED_EVENTS, STAGES, USERS
+    APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, AUTO_MODERATION_RULES, CHANNELS, CLIENTS, ENTITLEMENTS, GUILDS,
+    KOKORO, MESSAGES, ROLES, SCHEDULED_EVENTS, STAGES, USERS
 )
 from ..emoji import Reaction, ReactionAddEvent, ReactionDeleteEvent
 from ..emoji.reaction_events.fields import (
@@ -4698,3 +4700,82 @@ del GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_SC, \
     GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_MC, \
     GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_SC, \
     GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_MC
+
+
+# Entitlements
+
+
+def ENTITLEMENT_CREATE__CAL(client, data):
+    entitlement = Entitlement.from_data(data)
+    Task(KOKORO, client.events.entitlement_create(client, entitlement))
+
+
+def ENTITLEMENT_CREATE__OPT(client, data):
+    pass
+
+
+add_parser(
+    'ENTITLEMENT_CREATE',
+    ENTITLEMENT_CREATE__CAL,
+    ENTITLEMENT_CREATE__CAL,
+    ENTITLEMENT_CREATE__OPT,
+    ENTITLEMENT_CREATE__OPT)
+del ENTITLEMENT_CREATE__CAL, \
+    ENTITLEMENT_CREATE__OPT
+
+
+def ENTITLEMENT_DELETE__CAL(client, data):
+    entitlement = Entitlement.from_data(data)
+    Task(KOKORO, client.events.entitlement_delete(client, entitlement))
+
+
+def ENTITLEMENT_DELETE__OPT(client, data):
+    entitlement_id = parse_entitlement_id(data)
+    try:
+        entitlement = ENTITLEMENTS[entitlement_id]
+    except KeyError:
+        return
+    
+    entitlement.deleted = True
+
+
+add_parser(
+    'ENTITLEMENT_DELETE',
+    ENTITLEMENT_DELETE__CAL,
+    ENTITLEMENT_DELETE__CAL,
+    ENTITLEMENT_DELETE__OPT,
+    ENTITLEMENT_DELETE__OPT)
+del ENTITLEMENT_DELETE__CAL, \
+    ENTITLEMENT_DELETE__OPT
+
+
+def ENTITLEMENT_UPDATE__CAL(client, data):
+    entitlement, is_created = Entitlement.from_data_is_created(data)
+    if is_created:
+        old_attributes = None
+    else:
+        old_attributes = entitlement._difference_update_attributes(data)
+        if not old_attributes:
+            return
+    
+    Task(KOKORO, client.events.entitlement_update(client, entitlement, old_attributes))
+
+
+def ENTITLEMENT_UPDATE__OPT(client, data):
+    entitlement_id = parse_entitlement_id(data)
+    try:
+        entitlement = ENTITLEMENTS[entitlement_id]
+    except KeyError:
+        pass
+    else:
+        entitlement._update_attributes(data)
+
+
+add_parser(
+    'ENTITLEMENT_UPDATE',
+    ENTITLEMENT_UPDATE__CAL,
+    ENTITLEMENT_UPDATE__CAL,
+    ENTITLEMENT_UPDATE__OPT,
+    ENTITLEMENT_UPDATE__OPT)
+del ENTITLEMENT_UPDATE__CAL, \
+    ENTITLEMENT_UPDATE__OPT

@@ -79,13 +79,13 @@ def setup_ext_solarlink(client):
     solar_client = SolarClient(client)
     client.solarlink = solar_client
     
-    client.events(handle_voice_client_join, name = 'voice_client_join', overwrite=True)
-    client.events(handle_voice_client_move, name = 'voice_client_move', overwrite=True)
-    client.events(handle_voice_client_update, name = 'voice_client_update', overwrite=True)
-    client.events(handle_voice_client_leave, name = 'voice_client_leave', overwrite=True)
-    client.events(handle_voice_server_update, name = 'voice_server_update', overwrite=True)
-    client.events(handle_voice_client_ghost, name = 'voice_client_ghost', overwrite=True)
-    client.events(handle_voice_client_shutdown, name = 'voice_client_shutdown', overwrite=True)
+    client.events(handle_voice_client_join, name = 'voice_client_join', overwrite = True)
+    client.events(handle_voice_client_move, name = 'voice_client_move', overwrite = True)
+    client.events(handle_voice_client_update, name = 'voice_client_update', overwrite = True)
+    client.events(handle_voice_client_leave, name = 'voice_client_leave', overwrite = True)
+    client.events(handle_voice_server_update, name = 'voice_server_update', overwrite = True)
+    client.events(handle_voice_client_ghost, name = 'voice_client_ghost', overwrite = True)
+    client.events(handle_voice_client_shutdown, name = 'voice_client_shutdown', overwrite = True)
     
     return solar_client
 

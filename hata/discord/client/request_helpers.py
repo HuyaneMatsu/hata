@@ -9,6 +9,7 @@ from scarletio.web_common import Formdata
 
 from ...env import API_VERSION
 
+from ..application import Entitlement
 from ..application_command import ApplicationCommand
 from ..auto_moderation import AutoModerationRule
 from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token_pair
@@ -2228,3 +2229,36 @@ def get_soundboard_sound_guild_id_and_id(soundboard_sound):
         f'`soundboard_sound` can be `{SoundboardSound.__name__}`, `tuple` (`int`, `int`), '
         f'got {soundboard_sound.__class__.__name__}; {soundboard_sound!r}.'
     )
+
+
+def get_entitlement_id(entitlement):
+    """
+    Gets the entitlement's identifier.
+    
+    Parameters
+    ----------
+    entitlement : ``Entitlement``, `int`
+        The entitlement or its identifier.
+    
+    Returns
+    -------
+    entitlement_id : `int`
+        The entitlement's identifier.
+    
+    Raises
+    ------
+    TypeError
+        - If `entitlement` type is incorrect.
+    """
+    if isinstance(entitlement, Entitlement):
+        entitlement_id = entitlement.id
+    
+    else:
+        entitlement_id = maybe_snowflake(entitlement)
+        if (entitlement_id is None):
+            raise TypeError(
+                f'`entitlement` can be `{Entitlement.__name__}, `int`, '
+                f'got {entitlement.__class__.__name__}; {entitlement!r}.'
+            )
+    
+    return entitlement_id

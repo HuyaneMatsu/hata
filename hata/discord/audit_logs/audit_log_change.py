@@ -9,11 +9,11 @@ class AuditLogChange(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    after : `Any`
+    after : `object`
         The changed attribute's new value. Defaults to `None`.
     attribute_name : `str`
         The name of the changed attribute.
-    before : `Any`
+    before : `object`
         The changed attribute's original value. Defaults to `None`.
     
     Notes
@@ -252,9 +252,9 @@ class AuditLogChange(RichAttributeErrorBaseType):
         ----------
         attribute_name : `str`
             The name of the changed attribute.
-        after : `Any`
+        after : `object`
             The changed attribute's new value.
-        before : `Any`
+        before : `object`
             The changed attribute's original value.
         """
         self.attribute_name = attribute_name

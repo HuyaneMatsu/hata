@@ -145,7 +145,7 @@ validate_start = nullable_date_time_validator_factory('start')
 
 parse_sku_ids = entity_id_array_parser_factory('sku_ids')
 put_sku_ids_into = optional_entity_id_array_optional_putter_factory('sku_ids')
-validate_sku_ids = entity_id_array_validator_factory('sku_ids')
+validate_sku_ids = entity_id_array_validator_factory('sku_ids', NotImplemented, include = 'SKU')
 
 # status
 

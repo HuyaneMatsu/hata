@@ -98,7 +98,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         The permissions granted to the application in the guild.
     
     entitlements : `None`, `tuple` of ``Entitlement``
-        Related entitlements of the invoking user.
+        The applicable entitlements for the event's context.
+        These can both target guild and user as well.
     
     channel : ``Channel``
         The channel from where the interaction was called.
@@ -182,7 +183,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             The channel from where the interaction was called.
         
         entitlements : `None`, `iterable` of ``Entitlement``, Optional (Keyword only)
-            Related entitlements of the invoking user.
+            The applicable entitlements for the event's context.
         
         guild_id : `int`, `str`, ``Channel``, Optional (Keyword only)
             The guild's identifier from where the interaction was called from.
@@ -526,7 +527,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             The channel from where the interaction was called.
         
         entitlements : `None`, `iterable` of ``Entitlement``, Optional (Keyword only)
-            Related entitlements of the invoking user.
+            The applicable entitlements for the event's context.
         
         guild_id : `int`, `str`, Optional (Keyword only)
             The guild's identifier from where the interaction was called from.
@@ -705,7 +706,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             The channel's identifier from where the interaction was called.
         
         entitlements : `None`, `iterable` of ``Entitlement``, Optional (Keyword only)
-            Related entitlements of the invoking user.
+            The applicable entitlements for the event's context.
         
         guild_id : `int`, `str`, Optional (Keyword only)
             The guild's identifier from where the interaction was called from.

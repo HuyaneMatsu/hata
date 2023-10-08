@@ -9,6 +9,7 @@ RATE_LIMIT_REMAINING = IgnoreCaseString('X-RateLimit-Remaining')
 RATE_LIMIT_RESET = IgnoreCaseString('X-RateLimit-Reset')
 RATE_LIMIT_RESET_AFTER = IgnoreCaseString('X-RateLimit-Reset-After')
 RATE_LIMIT_LIMIT = IgnoreCaseString('X-RateLimit-Limit')
+RATE_LIMIT_HASH = IgnoreCaseString('X-ratelimit-bucket')
 
 # to send
 RATE_LIMIT_PRECISION = IgnoreCaseString('X-RateLimit-Precision')

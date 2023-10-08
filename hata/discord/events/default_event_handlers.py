@@ -20,7 +20,7 @@ async def default_error_event_handler(client, name, err):
         The client who caught the error.
     name : `str`
         Identifier name of the place where the error occurred.
-    err : `Any`
+    err : `object`
         The caught exception. Can be given as non `BaseException` as well.
     """
     extracted = [
@@ -144,7 +144,7 @@ async def default_voice_client_leave_event_handler(client, voice_state, old_chan
     except KeyError:
         pass
     else:
-        await voice_client._disconnect(force=True, terminate=False)
+        await voice_client._disconnect(force = True, terminate = False)
 
 
 async def default_voice_client_update_event_handler(client, voice_state, old_attributes):
@@ -159,7 +159,7 @@ async def default_voice_client_update_event_handler(client, voice_state, old_att
         The client who received the event.
     voice_state : ``VoiceState``
         The client's voice state.
-    old_attributes : `dict` of `str`, `Any`
+    old_attributes : `dict` of `str`, `object`
         The modified attributes of the voice state.
         
         Every item in `old_attributes` is optional and they can be any of the following:

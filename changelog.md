@@ -26,6 +26,23 @@
 - Add `InteractionEvent.has_entitlement`.
 - Add `InteractionEvent.iter_entitlements`.
 - Add `InteractionEvent.has_sku`.
+- Update rate limit handlers to ignore rate limit headers they are not responsible to handle.
+- Add `RATE_LIMIT_GROUPS.entitlement_get_chunk`.
+- Add `RATE_LIMIT_GROUPS.sku_get_all`.
+- Add `RATE_LIMIT_GROUPS.entitlement_create`.
+- Add `RATE_LIMIT_GROUPS.entitlement_delete`.
+- Add `DiscordHTTPClient.sku_get_all`.
+- Add `DiscordHTTPClient.entitlement_get_chunk`.
+- Add `DiscordHTTPClient.entitlement_create`.
+- Add `DiscordHTTPClient.entitlement_delete`.
+- Add `Client.entitlement_create`
+- Add `Client.entitlement_delete`
+- Add `Client.entitlement_get_chunk`
+- Add `Client.entitlement_get_all`
+- Add `Client.sku_get_all`.
+- Add `Client.events.entitlement_create`.
+- Add `Client.events.entitlement_delete`.
+- Add `Client.events.entitlement_update`.
 
 #### Renames, Deprecations & Removals
 
@@ -38,12 +55,12 @@
 - Add `GuildInventorySettings`.
 - Add `Guild.inventory_settings`.
 - Add `RATE_LIMIT_GROUPS.guild_inventory_settings_edit`.
-- Add `DiscordHttpClient.guild_inventory_edit`.
+- Add `DiscordHTTPClient.guild_inventory_edit`.
 - Add `Client.guild_inventory_settings_edit`.
 - Add `GuildIncidents`.
 - Add `Guild.incidents`.
 - Add `RATE_LIMIT_GROUPS.guild_incidents_edit`.
-- Add `DiscordHttpClient.guild_inventory_edit`.
+- Add `DiscordHTTPClient.guild_inventory_edit`.
 - Add `Client.guild_incidents_edit`.
 - Add `MessageType.guild_incidents_enable`.
 - Add `MessageType.guild_incidents_disable`.

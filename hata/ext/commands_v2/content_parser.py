@@ -2721,7 +2721,7 @@ class CommandContentParser(RichAttributeErrorBaseType):
             should_instance = False
         
         elif analyzer.can_instance_to_async_callable() or analyzer.can_instance_to_async_generator():
-            real_analyzer = CallableAnalyzer(func.__call__, as_method=True)
+            real_analyzer = CallableAnalyzer(func.__call__, as_method = True)
             if (not real_analyzer.is_async()) and (not real_analyzer.is_async_generator()):
                 raise TypeError(
                     f'`func` is not `async-callable` and cannot be instanced to `async` either, got {func!r}.'

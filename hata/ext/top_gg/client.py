@@ -193,7 +193,7 @@ class TopGGClient:
         'client_reference', 'http', 'top_gg_token'
     )
     
-    def __new__(cls, client, top_gg_token, auto_post_bot_stats=True, raise_on_top_gg_global_rate_limit=False):
+    def __new__(cls, client, top_gg_token, auto_post_bot_stats = True, raise_on_top_gg_global_rate_limit = False):
         """
         Creates a new top.gg client instance.
         

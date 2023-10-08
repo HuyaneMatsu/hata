@@ -577,6 +577,7 @@ def log_time_converter(value):
         f'{value.__class__.__name__}; {value!r}.'
     )
 
+
 APPLICATION_COMMAND_NAME_RP = re_compile('[a-zA-Z0-9_\-]{1,32}')
 
 ID_RP = re_compile('(\d{7,21})')

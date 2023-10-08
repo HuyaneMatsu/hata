@@ -708,7 +708,7 @@ class GuildProfile(metaclass = Slotted):
         """
         role_ids = self.role_ids
         if (role_ids is not None):
-            for role in sorted((create_partial_role_from_id(role_id) for role_id in self.role_ids), reverse=True):
+            for role in sorted((create_partial_role_from_id(role_id) for role_id in self.role_ids), reverse = True):
                 color = role.color
                 if color:
                     return color

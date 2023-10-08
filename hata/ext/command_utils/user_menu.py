@@ -34,7 +34,7 @@ def validate_check(check):
     if check is None:
         return
     
-    analyzer = CallableAnalyzer(check, as_method=True)
+    analyzer = CallableAnalyzer(check, as_method = True)
     if analyzer.is_async():
         raise TypeError(
             f'`check` should have NOT be be `async` function, got {check!r}.'
@@ -75,7 +75,7 @@ def validate_invoke(invoke):
             f'`invoke` function cannot be `None`.'
         )
     
-    analyzer = CallableAnalyzer(invoke, as_method=True)
+    analyzer = CallableAnalyzer(invoke, as_method = True)
     if not analyzer.is_async():
         raise TypeError(
             f'`invoke` can be `CoroutineFunction`, got {invoke!r}.'
@@ -116,7 +116,7 @@ def validate_initial_invoke(initial_invoke):
             f'`initial_invoke` function cannot be `None`.'
         )
     
-    analyzer = CallableAnalyzer(initial_invoke, as_method=True)
+    analyzer = CallableAnalyzer(initial_invoke, as_method = True)
     if not analyzer.is_async():
         raise TypeError(
             f'`initial_invoke` should have be `async` function, got {initial_invoke!r}.'
@@ -157,7 +157,7 @@ def validate_close(close):
             f'`close` function cannot be `None`.'
         )
     
-    analyzer = CallableAnalyzer(close, as_method=True)
+    analyzer = CallableAnalyzer(close, as_method = True)
     if not analyzer.is_async():
         raise TypeError(
             f'`close` should have be `async` function, got {close!r}.'

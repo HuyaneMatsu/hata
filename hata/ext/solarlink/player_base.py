@@ -277,7 +277,7 @@ class SolarPlayerBase(RichAttributeErrorBaseType):
             await node._send(data)
     
     
-    async def _play(self, configured_track, replace=True):
+    async def _play(self, configured_track, replace = True):
         """
         Sends a play payload to the player's node.
         

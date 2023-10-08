@@ -102,7 +102,7 @@ class ClientCompoundStickerEndpoints(Compound):
         return sticker_pack
     
     
-    async def sticker_pack_get_all(self, *, force_update=False):
+    async def sticker_pack_get_all(self, *, force_update = False):
         """
         Gets the sticker packs. If the sticker-packs are already loaded, updates them.
         

@@ -541,7 +541,8 @@ class AllowedMentionProxy:
             else:
                 field_added = True
             
-            repr_parts.append(' allow_everyone=True')
+            repr_parts.append(' allow_everyone = ')
+            repr_parts.append(repr(allow_everyone))
         
         allow_users = self._allow_users
         if allow_users:
@@ -550,7 +551,8 @@ class AllowedMentionProxy:
             else:
                 field_added = True
             
-            repr_parts.append(' allow_users=True')
+            repr_parts.append(' allow_users = ')
+            repr_parts.append(repr(allow_users))
         
         
         allow_roles = self._allow_roles
@@ -560,7 +562,8 @@ class AllowedMentionProxy:
             else:
                 field_added = True
             
-            repr_parts.append(' allow_roles=True')
+            repr_parts.append(' allow_roles = ')
+            repr_parts.append(repr(allow_roles))
         
         
         allowed_users = self._allowed_users
@@ -570,7 +573,7 @@ class AllowedMentionProxy:
             else:
                 field_added = True
             
-            repr_parts.append(' allowed_users=[')
+            repr_parts.append(' allowed_users = [')
             
             limit = len(allowed_users)
             index = 0
@@ -593,7 +596,7 @@ class AllowedMentionProxy:
             if field_added:
                 repr_parts.append(',')
             
-            repr_parts.append(' allowed_roles=[')
+            repr_parts.append(' allowed_roles = [')
             
             limit = len(allowed_roles)
             index = 0

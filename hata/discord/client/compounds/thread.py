@@ -102,7 +102,7 @@ class ClientCompoundThreadEndpoints(Compound):
             > If given as a channel instance, will create a private thread, else a public one.
         
         channel_template : `None`, ``Channel`` = `None`, Optional
-            New (thread) channel to use as a template.
+            Channel to use as a template.
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters either to define the template, or to overwrite specific fields' values.

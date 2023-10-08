@@ -1,5 +1,7 @@
 __all__ = ('SKU',)
 
+from scarletio import export
+
 from ...bases import DiscordEntity
 from ...core import SKUS
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
@@ -29,6 +31,7 @@ PRECREATE_FIELDS = {
 }
 
 
+@export
 class SKU(DiscordEntity):
     """
     A stock keeping unit.

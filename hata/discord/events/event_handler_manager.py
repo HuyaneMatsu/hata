@@ -526,7 +526,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     channel_pin_update(client: ``Client``, channel: ``Channel``):
         Called when a channel's pins are updated.
     
-    client_update(client: ``Client``, old_attributes: `dict`):
+    client_update(client: ``Client``, old_attributes: `None | dict`):
         Called when the client is updated. The passed `old_attributes` parameter contains the client's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
@@ -588,7 +588,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Called when an embedded activity is deleted (all users left).
     
     embedded_activity_update(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``,
-            old_attributes: `dict`)
+            old_attributes: `None | dict`)
         Called when an embedded activity is updated. The passed `old_attributes` parameter contains the old states of
         the respective activity in `attribute-name` - `old-value` relation.
         
@@ -627,7 +627,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     embedded_activity_user_add(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``,
             user_id: `int`)
         Called when a user joins an embedded activity. It is not called for the person(s) creating the activity.
-        
+    
     embedded_activity_user_delete(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``,
             user_id: `int`)
         Called when a user leaves / is removed from an embedded activity.
@@ -640,7 +640,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         Deleted emoji's `.guild` attribute is set to `None`.
         
-    emoji_update(client : Client, emoji: ``Emoji``, old_attributes: `dict`):
+    emoji_update(client: ``Client``, emoji: ``Emoji``, old_attributes: `None | dict`):
         Called when an emoji is updated. The passed `old_attributes` parameter contains the emoji's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
@@ -661,6 +661,30 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------+-------------------------------+
         | role_ids          | `None`, `tuple` of `int`      |
         +-------------------+-------------------------------+
+    
+    entitlement_create(client : ``Client``, entitlement: ``Entitlement``):
+        Called when entitlement is created.
+    
+    entitlement_delete(client: ``Client``, entitlement: ``Entitlement``)
+        Called when an entitlement is deleted.
+    
+    entitlement_update(client: ``Client``, entitlement: ``Entitlement``, old_attributes: `None | dict`)
+        Called when an entitlement is updated. The passed `old_attributes` parameter contains the emoji's overwritten
+        attributes in `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +---------------------------+-----------------------------------------------+
+        | Key                       | Value                                         |
+        +===========================+===============================================+
+        | consumed                  | `bool`                                        |
+        +---------------------------+-----------------------------------------------+
+        | deleted                   | `bool`                                        |
+        +---------------------------+-----------------------------------------------+
+        | ends_at                   | `None`, `DateTime`                            |
+        +---------------------------+-----------------------------------------------+
+        | starts_at                 | `None`, `DateTime`                            |
+        +---------------------------+-----------------------------------------------+
     
     error(client: ``Client``, name: `str`, err: `object`):
         Called when an unexpected error happens. Mostly the user itself should define where it is called, because
@@ -688,7 +712,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Called when the guild is deleted or just the client left (kicked or banned as well) from it. The `profile`
         parameter is the client's respective guild profile for the guild.
     
-    guild_update(client: ``Client``, guild: ``Guild``, old_attributes: `dict`):
+    guild_update(client: ``Client``, guild: ``Guild``, old_attributes: `None | dict`):
         Called when a guild is updated. The passed `old_attributes` parameter contains the guild's overwritten attributes
         in `attribute-name` - `old-value` relation.
         
@@ -792,7 +816,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Called when a user left (kicked or banned counts as well) from a guild. The `profile` parameter is the user's
         respective guild profile for the guild.
     
-    guild_user_update(client : Client, guild: ``Guild``, user: ``ClientUserBase``, old_attributes: `dict`):
+    guild_user_update(client : Client, guild: ``Guild``, user: ``ClientUserBase``, old_attributes: `None | dict`):
         Called when a user's ``GuildProfile`` is updated. The passed `old_attributes` parameter contains the
         guild profile's overwritten attributes in `attribute-name` - `old-value` relation.
         
@@ -930,7 +954,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     role_delete(client: ``Client``, role: ``Role``):
         Called when a role is deleted from a guild.
     
-    role_update(client: ``Client``, role: ``Role``, old_attributes: `dict`):
+    role_update(client: ``Client``, role: ``Role``, old_attributes: `None | dict`):
         Called when a role is updated.
         
         Every item in `old_attributes` is optional and they can be any of the following:
@@ -1074,7 +1098,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     sticker_delete(client: ``Client``, sticker: ``Sticker``):
         Called when an sticker is deleted.
     
-    sticker_update(client : Client, sticker: ``Sticker``, old_attributes: `dict`):
+    sticker_update(client : Client, sticker: ``Sticker``, old_attributes: `None | dict`):
         Called when an sticker is updated. The passed `old_attributes` parameter contains the sticker's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
@@ -1102,7 +1126,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Called when a user is removed or left a thread channel.
     
     thread_user_update(client : ``Client``, thread_channel: ``Channel``, user: ``ClientUserBase``, \
-            old_attributes: `dict`):
+            old_attributes: `None | dict`):
         Called when a user's thread profile is updated. The passed `old_attributes` parameter contains the
         thread profile's overwritten attributes in `attribute-name` - `old-value` relation.
         
@@ -1124,7 +1148,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     unknown_dispatch_event(client: ``Client``, name: `str`, data: `object`):
         Called when an unknown dispatch event is received.
     
-    user_update(client: ``Client``, user: ``ClientUserBase``, old_attributes: `dict`):
+    user_update(client: ``Client``, user: ``ClientUserBase``, old_attributes: `None | dict`):
         Called when a user is updated This event not includes guild profile changes. The passed `old_attributes`
         parameter contains the user's overwritten attributes in `attribute-name` - `old-value` relation.
         
@@ -1160,7 +1184,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | premium_type          | ``PremiumType``       |
         +-----------------------+-----------------------+
     
-    user_presence_update(client: ``Client``, user: ``ClientUserBase``, old_attributes: `dict`):
+    user_presence_update(client: ``Client``, user: ``ClientUserBase``, old_attributes: `None | dict`):
         Called when a user's presence is updated.
         
         The passed `old_attributes` parameter contain the user's changed presence related attributes in
@@ -1186,7 +1210,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     user_voice_move(client: ``Client``, voice_state: ``VoiceState``, old_channel_id : `int`)
         Called when a user moves between two voice channels
     
-    user_voice_update(client: ``Client``, voice_state: ``VoiceState``, old_attributes: `dict`):
+    user_voice_update(client: ``Client``, voice_state: ``VoiceState``, old_attributes: `None | dict`):
         Called when a voice state of a user is updated.
         
         Every item in `old_attributes` is optional and they can be the following:

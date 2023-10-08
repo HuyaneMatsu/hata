@@ -127,14 +127,14 @@ class RTPPacket(PacketBase):
     __slots__ = ('_data', '_offset1', '_offset2', '_decrypted',)
     
     def __init__(self, data, voice_client):
-        self._data =data
+        self._data = data
         offset = 12
         cc = self.cc
         if cc:
             offset = offset + (cc << 2)
         self._offset1 = offset
         
-        nonce = data[:12]+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+        nonce = data[:12] + b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
         decrypted = voice_client._secret_box.decrypt(data[offset:], nonce)
         self._decrypted = decrypted
         
@@ -222,8 +222,10 @@ class RTPPacket(PacketBase):
         return memoryview(self._data)[:12]
 
     def __repr__(self):
-        return (f'<{self.__class__.__name__} timestamp={self.timestamp}, source={self.source}, sequence='
-            f'{self.sequence}, size={len(self.data)}>')
+        return (
+            f'<{self.__class__.__name__} timestamp = {self.timestamp}, source = {self.source}, sequence = '
+            f'{self.sequence}, size = {len(self.data)}>'
+        )
 
 #NOT USED
 
@@ -314,7 +316,7 @@ class RTPPacket(PacketBase):
 ##        self._offset1 = offset
 ##
 ##    def __repr__(self):
-##        return (f'<{self.__class__.__name__} timestamp={self.timestamp}, length={self.length}, reports='
+##        return (f'<{self.__class__.__name__} timestamp = {self.timestamp}, length={self.length}, reports = '
 ##            f'{self.report_count}>')
 ##
 ##    @property
@@ -395,7 +397,7 @@ class RTPPacket(PacketBase):
 ##        self._offset1 = offset
 ##
 ##    def __repr__(self):
-##        return (f'<{self.__class__.__name__} timestamp={self.timestamp}, length={self.length}, reports='
+##        return (f'<{self.__class__.__name__} timestamp = {self.timestamp}, length = {self.length}, reports = '
 ##            f'{self.report_count}>')
 ##
 ##    @property

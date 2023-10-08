@@ -190,13 +190,13 @@ class ComponentDescriptor:
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' identifier=', repr(self._identifier),
-            ', source_component=', repr(self._source_component),
+            ' identifier = ', repr(self._identifier),
+            ', source_component = ', repr(self._source_component),
         ]
         
         sub_component_descriptors = self._sub_component_descriptors
         if (sub_component_descriptors is not None):
-            repr_parts.append(' sub_component_descriptors=')
+            repr_parts.append(' sub_component_descriptors = ')
             repr_parts.append(repr(sub_component_descriptors))
         
         repr_parts.append('>')
@@ -624,7 +624,7 @@ class MenuStructure:
         else:
             field_added = True
             
-            repr_parts.append(' check=')
+            repr_parts.append(' check = ')
             repr_parts.append(repr(check))
         
         close = self.close
@@ -634,7 +634,7 @@ class MenuStructure:
             else:
                 field_added = True
             
-            repr_parts.append(' close=')
+            repr_parts.append(' close = ')
             repr_parts.append(repr(close))
         
         init = self.init
@@ -644,7 +644,7 @@ class MenuStructure:
             else:
                 field_added = True
             
-            repr_parts.append(' init=')
+            repr_parts.append(' init = ')
             repr_parts.append(repr(init))
         
         initial_invoke = self.initial_invoke
@@ -654,7 +654,7 @@ class MenuStructure:
             else:
                 field_added = True
             
-            repr_parts.append(' initial_invoke=')
+            repr_parts.append(' initial_invoke = ')
             repr_parts.append(repr(initial_invoke))
         
         invoke = self.invoke
@@ -664,7 +664,7 @@ class MenuStructure:
             else:
                 field_added = True
             
-            repr_parts.append(' invoke=')
+            repr_parts.append(' invoke = ')
             repr_parts.append(repr(invoke))
         
         get_timeout = self.get_timeout
@@ -672,7 +672,7 @@ class MenuStructure:
             if field_added:
                 repr_parts.append(', ')
             
-            repr_parts.append(' get_timeout=')
+            repr_parts.append(' get_timeout = ')
             repr_parts.append(repr(get_timeout))
         
         repr_parts.append('>')

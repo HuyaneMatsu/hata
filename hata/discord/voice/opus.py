@@ -307,18 +307,18 @@ class OpusEncoder:
         ----------
         signal_type : `int`
             Requested signal type.
-            
-            Possible values
-            ---------------
-            +-----------------------+-------+
-            | Respective name       | Value |
-            +=======================+=======+
-            | SIGNAL_TYPE_AUTO      | -1000 |
-            +-----------------------+-------+
-            | SIGNAL_TYPE_VOICE     | 3001  |
-            +-----------------------+-------+
-            | SIGNAL_TYPE_MUSIC     | 3002  |
-            +-----------------------+-------+
+        
+        Possible values
+        ---------------
+        +-----------------------+-------+
+        | Respective name       | Value |
+        +=======================+=======+
+        | SIGNAL_TYPE_AUTO      | -1000 |
+        +-----------------------+-------+
+        | SIGNAL_TYPE_VOICE     | 3001  |
+        +-----------------------+-------+
+        | SIGNAL_TYPE_MUSIC     | 3002  |
+        +-----------------------+-------+
         """
         opus.opus_encoder_control(self._encoder, SET_SIGNAL, signal_type)
     

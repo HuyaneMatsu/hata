@@ -111,7 +111,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     cake = 'cake'
     now = datetime.utcnow()
     
-    PLUGIN_LOADER.add_default_variables(cake=cake, now=now)
+    PLUGIN_LOADER.add_default_variables(cake = cake, now = now)
     PLUGIN_LOADER.register_and_load('plugin')
     ```
     
@@ -142,7 +142,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     Because now we have the interpreter, you can change the variables.
     
     ```py
-    >>> PLUGIN_LOADER.add_default_variables(cake='cakes taste good, and now is:')
+    >>> PLUGIN_LOADER.add_default_variables(cake = 'cakes taste good, and now is:')
     >>> PLUGIN_LOADER.reload_all()
     ```
     
@@ -156,7 +156,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     
     ```py
     cake = cake.split()
-    print(*cake, now, sep='\\n')
+    print(*cake, now, sep = '\\n')
     ```
     
     And reload the plugin:
@@ -251,7 +251,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     You can pass variables to plugins with the `.add_default_variables` method:
     
     ```py
-    PLUGIN_LOADER.add_default_variables(cake=cake, now=now)
+    PLUGIN_LOADER.add_default_variables(cake = cake, now = now)
     ```
     
     Adding or removing variables wont change the already loaded plugins' state, those needs to be reloaded to see
@@ -260,13 +260,13 @@ class PluginLoader(RichAttributeErrorBaseType):
     Or pass variables to just specific plugins:
     
     ```py
-    PLUGIN_LOADER.register('cute_commands', cake=cake, now=now)
+    PLUGIN_LOADER.register('cute_commands', cake = cake, now = now)
     ```
     
     You can specify if the plugin should use just it's own variables and ignore the default ones too:
     
     ```py
-    PLUGIN_LOADER.register('cute_commands', extend_default_variables=False, cake=cake, now=now)
+    PLUGIN_LOADER.register('cute_commands', extend_default_variables = False, cake = cake, now = now)
     ```
     
     Every variable added is stored in an optionally weak value dictionary, but you are able remove the added variables
@@ -310,7 +310,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     Or:
     
     ```py
-    PLUGIN_LOADER.register('cute_commands', exit_point='exit')
+    PLUGIN_LOADER.register('cute_commands', exit_point = 'exit')
     ```
     
     There are also methods for reloading: `.reload(name)` and `.reload_all()`

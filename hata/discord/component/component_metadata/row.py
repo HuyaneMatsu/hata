@@ -62,7 +62,7 @@ class ComponentMetadataRow(ComponentMetadataBase):
         # sub-component fields : components
         
         # components
-        repr_parts.append(' components=')
+        repr_parts.append(' components = ')
         components = self.components
         if (components is None):
             repr_parts.append('[]')

@@ -475,10 +475,10 @@ class TextTable:
         result = [
             '<',
             self.__class__.__name__,
-            ', size=',
+            ', size = ',
             repr(self._size),
-            ', table=[',
-                ]
+            ', table = [',
+        ]
         
         for line in self:
             result.append(repr(line))
@@ -818,7 +818,7 @@ class TextCodeBlock:
         
         language = self._language
         if language is None:
-            result.append(' language=')
+            result.append(' language = ')
             result.append(repr(language))
             
             add_comma = True
@@ -828,12 +828,13 @@ class TextCodeBlock:
         if add_comma:
             result.append(', ')
         
-        result.append(' lines=')
+        result.append(' lines = ')
         result.append(repr(self._lines))
         
         result.append('>')
         
         return ''.join(result)
+    
     
     def graved(self, path):
         """
@@ -1136,7 +1137,7 @@ class TextListingElement:
         if head is None:
             add_comma = False
         else:
-            repr_parts.append(' head=')
+            repr_parts.append(' head = ')
             repr_parts.append(repr(head))
             add_comma = True
         
@@ -1145,12 +1146,13 @@ class TextListingElement:
             if add_comma:
                 repr_parts.append(',')
             
-            repr_parts.append(' content=')
+            repr_parts.append(' content = ')
             repr_parts.append(repr(content))
         
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
     
     def graved(self, path):
         """

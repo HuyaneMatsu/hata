@@ -598,7 +598,7 @@ class CommandProcessor(EventWaitforBase):
                 f'There is already a category added with that name: {category_name!r}'
             )
         
-        category = Category(category_name, checks=checks, description = description)
+        category = Category(category_name, checks = checks, description = description)
         category.set_command_processor(self)
         
         return category

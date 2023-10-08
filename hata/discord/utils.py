@@ -856,7 +856,7 @@ def chunkify(lines, limit = 2000):
                     result.append('\n'.join(chunk))
                     chunk.clear()
                     chunk.append(line)
-                    chunk_length=ln
+                    chunk_length = ln
                     break
                 
                 position = line.rfind(' ', position - 250, position - 3)

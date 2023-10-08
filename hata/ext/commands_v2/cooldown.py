@@ -94,7 +94,7 @@ def _check_channel(cooldown_handler, command_context):
     expires_at : `int`
         When the cooldown for the given entity will expire.
     """
-    channel_id =command_context. message.channel.id
+    channel_id = command_context. message.channel.id
     
     cache = cooldown_handler.cache
     try:

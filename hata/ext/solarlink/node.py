@@ -517,26 +517,26 @@ class SolarNode(RichAttributeErrorBaseType):
         """Returns the node's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' client=')
+        repr_parts.append(' client = ')
         repr_parts.append(repr(self.client))
         
-        repr_parts.append(', host=')
+        repr_parts.append(', host = ')
         repr_parts.append(repr(self._host))
         
-        repr_parts.append(', port=')
+        repr_parts.append(', port = ')
         repr_parts.append(repr(self._port))
         
         region = self.region
         if (region is not None):
-            repr_parts.append(', region=')
+            repr_parts.append(', region = ')
             repr_parts.append(region.name)
         
         resume_key = self._resume_key
         if (resume_key is not None):
-            repr_parts.append(', resume_key=')
+            repr_parts.append(', resume_key = ')
             repr_parts.append(repr(resume_key))
         
-        repr_parts.append(', reconnect_attempts=')
+        repr_parts.append(', reconnect_attempts = ')
         repr_parts.append(repr(self.reconnect_attempts))
         
         repr_parts.append('>')

@@ -46,8 +46,19 @@ class CertifiedDevice:
         'type', 'vendor'
     )
     
-    def __new__(cls, type_, id_, vendor, model, related, *, echo_cancellation=False, noise_suppression=False,
-            automatic_gain_control=False, hardware_mute=False):
+    def __new__(
+        cls,
+        type_,
+        id_,
+        vendor,
+        model,
+        related,
+        *,
+        echo_cancellation = False,
+        noise_suppression = False,
+        automatic_gain_control = False,
+        hardware_mute = False,
+    ):
         """
         Creates a new certified device.
         

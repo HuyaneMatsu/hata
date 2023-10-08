@@ -78,7 +78,7 @@ class FormSubmitCommand(CommandBaseCustomId):
         target : `None`, `str` = `None`, Optional
             The form submit command's target.
         
-        Other parameters
+        Other Parameters
         ----------------
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy``, \
                 `list` of (`str`, ``UserBase``, ``Role`` ), Optional (Keyword only)

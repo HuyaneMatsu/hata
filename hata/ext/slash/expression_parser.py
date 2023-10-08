@@ -2158,9 +2158,9 @@ class HighlightGroup:
         """Returns the highlight group's representation."""
         repr_parts = [
             '<', self.__class__.__name__,
-            ' start=', repr(self.start),
-            ', end=', repr(self.end),
-            ', primary=', repr(self.primary),
+            ' start = ', repr(self.start),
+            ', end = ', repr(self.end),
+            ', primary = ', repr(self.primary),
         ]
         
         return ''.join(repr_parts)
@@ -2616,7 +2616,7 @@ class Token:
         """Returns the token's representation."""
         repr_parts = ['<', self.__class__.__name__, ' ']
         
-        repr_parts.append('start=')
+        repr_parts.append('start = ')
         repr_parts.append(repr(self.start))
         
         repr_parts.append(', ')

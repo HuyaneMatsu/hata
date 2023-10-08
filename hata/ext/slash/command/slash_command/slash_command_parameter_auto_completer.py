@@ -167,7 +167,7 @@ class SlashCommandParameterAutoCompleter(RichAttributeErrorBaseType):
         """Returns the parameter auto completer's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' name_pairs=')
+        repr_parts.append(' name_pairs = ')
         repr_parts.append(repr(self.name_pairs))
         
         repr_parts.append('>')

@@ -219,7 +219,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         If the interaction is already timed or out or was used, you will get:
         
         ```
-        DiscordException Not Found (404), code=10062: Unknown interaction
+        DiscordException Not Found (404), code = 10062: Unknown interaction
         ```
         """
         assert _assert__interaction_event_type(interaction_event)
@@ -270,7 +270,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         If the interaction is already timed or out or was used, you will get:
         
         ```
-        DiscordException Not Found (404), code=10062: Unknown interaction
+        DiscordException Not Found (404), code = 10062: Unknown interaction
         ```
         """
         assert _assert__interaction_event_type(interaction_event)
@@ -321,7 +321,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         If the interaction is already timed or out or was used, you will get:
         
         ```
-        DiscordException Not Found (404), code=10062: Unknown interaction
+        DiscordException Not Found (404), code = 10062: Unknown interaction
         ```
         """
         assert _assert__interaction_event_type(interaction_event)
@@ -445,7 +445,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         If the interaction is already timed or out or was used, you will get:
         
         ```
-        DiscordException Not Found (404), code=10062: Unknown interaction
+        DiscordException Not Found (404), code = 10062: Unknown interaction
         ```
         """
         assert _assert__interaction_event_type(interaction_event)
@@ -538,7 +538,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         If the interaction is already timed or out or was used, you will get:
         
         ```
-        DiscordException Not Found (404), code=10062: Unknown interaction
+        DiscordException Not Found (404), code = 10062: Unknown interaction
         ```
         """
         assert _assert__interaction_event_type(interaction_event)
@@ -623,7 +623,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         Cannot editing interaction messages, which were created with `show_for_invoking_user_only = True`:
         
         ```
-        DiscordException Not Found (404), code=10008: Unknown Message
+        DiscordException Not Found (404), code = 10008: Unknown Message
         ```
         """
         assert _assert__interaction_event_type(interaction_event)
@@ -1021,7 +1021,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         Cannot editing interaction messages, which were created with `show_for_invoking_user_only = True`:
         
         ```
-        DiscordException Not Found (404), code=10008: Unknown Message
+        DiscordException Not Found (404), code = 10008: Unknown Message
         ```
         """
         assert _assert__interaction_event_type(interaction_event)

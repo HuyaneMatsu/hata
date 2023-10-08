@@ -158,7 +158,7 @@ class RateLimitGroup:
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' size=',
+            ' size = ',
             repr(self.size),
             ', ',
         ]
@@ -828,7 +828,7 @@ class StaticRateLimitGroup:
     """
     __slots__ = ('group_id', 'limiter', 'size', 'timeout')
     
-    def __new__(cls, size, timeout, limiter=LIMITER_GLOBAL):
+    def __new__(cls, size, timeout, limiter = LIMITER_GLOBAL):
         """
         Creates a new rate limit group.
         
@@ -873,9 +873,9 @@ class StaticRateLimitGroup:
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' size=',
+            ' size = ',
             repr(self.size),
-            ', timeout=',
+            ', timeout = ',
             repr(self.timeout),
             ', ',
         ]

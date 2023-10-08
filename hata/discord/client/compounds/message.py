@@ -1772,7 +1772,7 @@ class ClientCompoundMessageEndpoints(Compound):
                 planned = 100
             
             if ln:
-                result = await self.message_get_chunk(channel, planned, before=messages[ln - 1].id + 1)
+                result = await self.message_get_chunk(channel, planned, before = messages[ln - 1].id + 1)
             else:
                 result = await self.message_get_chunk_from_zero(channel, planned)
             

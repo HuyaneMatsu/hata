@@ -137,7 +137,7 @@ class Event:
                 
                 if analyzer.can_instance_to_async_callable():
                     
-                    sub_analyzer = CallableAnalyzer(default_handler.__call__, as_method=True)
+                    sub_analyzer = CallableAnalyzer(default_handler.__call__, as_method = True)
                     if sub_analyzer.is_async():
                         min_, max_ = sub_analyzer.get_non_reserved_positional_parameter_range()
                         
@@ -365,7 +365,7 @@ class EventHandlerPluginType(type):
         return object_
 
 
-class EventHandlerPlugin(metaclass=EventHandlerPluginType):
+class EventHandlerPlugin(metaclass = EventHandlerPluginType):
     """
     Inherit event handler manager plugins from this class, like:
     

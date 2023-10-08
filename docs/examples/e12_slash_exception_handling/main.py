@@ -11,7 +11,7 @@ Sakuya = Client(TOKEN)
 # This is another way to setup the slash extension.
 # use_default_exception_handler allows us to disable the extension handler Hata comes with, and use our own.
 # But, Hata does allow multiple extension handlers, so if you want to keep the default, you can leave it as True.
-slash = setup_ext_slash(Sakuya, use_default_exception_handler=False)
+slash = setup_ext_slash(Sakuya, use_default_exception_handler = False)
 
 MY_GUILD = Guild.precreate(12345)
 

@@ -15,7 +15,7 @@ if not Sakuya.solarlink.add_node('127.0.0.1', 2333, 'youshallnotpass', None):
     raise RuntimeError('Connecting to node unsuccessful.')
 
 
-add_default_plugin_variables(Sakuya=Sakuya)
+add_default_plugin_variables(Sakuya = Sakuya)
 register_plugin('modules')
 load_all_plugin()
 

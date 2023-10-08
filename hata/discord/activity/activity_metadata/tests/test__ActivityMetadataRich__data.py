@@ -235,7 +235,7 @@ def test__ActivityMetadataRich__update_attributes():
     """
     application_id = 202209070010
     old_assets = ActivityAssets(image_large = 'senya')
-    new_assets = ActivityAssets(image_small='merami')
+    new_assets = ActivityAssets(image_small = 'merami')
     old_created_at = DateTime(2014, 9, 11)
     new_created_at = DateTime(2012, 9, 11)
     old_details = 'vocal'
@@ -313,7 +313,7 @@ def test__ActivityMetadataRich__difference_update_attributes():
     """
     application_id = 202209070012
     old_assets = ActivityAssets(image_large = 'senya')
-    new_assets = ActivityAssets(image_small='merami')
+    new_assets = ActivityAssets(image_small = 'merami')
     old_created_at = DateTime(2014, 9, 11)
     new_created_at = DateTime(2012, 9, 11)
     old_details = 'vocal'

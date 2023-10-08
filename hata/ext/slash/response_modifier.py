@@ -206,7 +206,7 @@ class ResponseModifier(RichAttributeErrorBaseType):
         allowed_mentions = self.allowed_mentions
         if (allowed_mentions is None):
             field_added = False
-            repr_parts.append(' allowed_mentions=')
+            repr_parts.append(' allowed_mentions = ')
             repr_parts.append(repr(allowed_mentions))
         
         else:
@@ -220,7 +220,7 @@ class ResponseModifier(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' show_for_invoking_user_only=')
+            repr_parts.append(' show_for_invoking_user_only = ')
             repr_parts.append(repr(show_for_invoking_user_only))
         
         
@@ -232,7 +232,7 @@ class ResponseModifier(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' wait_for_acknowledgement=')
+            repr_parts.append(' wait_for_acknowledgement = ')
             repr_parts.append(repr(wait_for_acknowledgement))
         
         

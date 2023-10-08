@@ -73,7 +73,7 @@ def create_relative_link(source, target):
         else:
             url = '../'*(len(source_parts) - 1) + '/'.join(target_parts)
     
-    return quote(url, safe=':@', protected='/')
+    return quote(url, safe = ':@', protected = '/')
 
 
 def graved_global_link(reference, object_, path, linker):
@@ -135,7 +135,7 @@ def graved_link(reference):
     """
     name, url = GRAVE_URL_MATCHER.fullmatch(reference).groups()
     name = html_escape(name)
-    url = quote(url, safe=':@#', protected='/')
+    url = quote(url, safe = ':@#', protected = '/')
     
     return (
         f'<a href="{url}">'

@@ -566,7 +566,7 @@ class SolarClient(RichAttributeErrorBaseType):
         return self.players.get(guild_id, None)
     
     
-    async def join_voice(self, channel, *, cls=SolarPlayer):
+    async def join_voice(self, channel, *, cls = SolarPlayer):
         """
         Joins a solar player to the channel. If there is an already existing solar player at the respective guild,
         moves it.
@@ -630,17 +630,17 @@ class SolarClient(RichAttributeErrorBaseType):
         
         node_count = len(self.nodes)
         if node_count:
-            repr_parts.append(' node count=')
+            repr_parts.append(' node count = ')
             repr_parts.append(repr(node_count))
         
         player_count = len(self.players)
         if player_count:
-            repr_parts.append(' player count=')
+            repr_parts.append(' player count = ')
             repr_parts.append(repr(player_count))
         
         player_queue = self._player_queue
         if (player_queue is not None):
-            repr_parts.append(' queued up players=')
+            repr_parts.append(' queued up players = ')
             repr_parts.append(len(player_queue))
         
         repr_parts.append('>')

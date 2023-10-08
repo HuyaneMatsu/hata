@@ -219,8 +219,8 @@ class ClientCompoundWebhookEndpoints(Compound):
             |               |                       | means their owner needs mfa.                                  |
             +---------------+-----------------------+---------------------------------------------------------------+
             
-            > Discord drops `Forbidden (403), code=50013: Missing Permissions` instead of
-            > `Forbidden (403), code=50001: Missing Access`.
+            > Discord drops `Forbidden (403), code = 50013: Missing Permissions` instead of
+            > `Forbidden (403), code = 50001: Missing Access`.
         
         AssertionError
             If `channel` was given as a channel's identifier but it detectably not refers to a ``Channel``.
@@ -834,8 +834,8 @@ class ClientCompoundWebhookEndpoints(Compound):
             - If `allowed_mentions` contains an element of invalid type.
             - If `embed` was not given neither as ``Embed`` nor as `list`, `tuple` of ``Embed``-s.
             - `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
-            - `message` was given as `None`. Make sure to use ``Client.webhook_message_create`` with `wait=True` and by
-                giving any content to it as well.
+            - `message` was given as `None`. Make sure to use ``Client.webhook_message_create`` with `wait = True` and
+                by giving any content to it as well.
             - `message` was not given neither as ``Message``, `int`.
             - If `components` type is incorrect.
         ValueError

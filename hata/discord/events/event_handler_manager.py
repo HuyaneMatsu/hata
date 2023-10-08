@@ -285,7 +285,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     directly.
     
     ```py
-    @client.events(overwrite=True)
+    @client.events(overwrite = True)
     async def message_create(client, message):
         ...
     
@@ -332,7 +332,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     `by_type` parameter.
     
     ```py
-    client.events.remove(MyEventHandlerType, by_type=True)
+    client.events.remove(MyEventHandlerType, by_type = True)
     ```
     
     Attributes
@@ -1243,42 +1243,48 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         > This event has a default handler defined, which is used by hata's ``VoiceClient``.
         >
-        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+        > When using 3rd party voice library, make sure to register your by passing `overwrite = True` parameter as
+        > well.
     
     voice_client_ghost(client : ``Client``, voice_state : ``VoiceState``)
         Called when the client has a voice state in a channel, when logging in.
         
         > This event has a default handler defined, which is used by hata's ``VoiceClient``.
         >
-        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+        > When using 3rd party voice library, make sure to register your by passing `overwrite = True` parameter as
+        > well.
     
     voice_client_leave(client : ``Client``, voice_state : ``VoiceState``, old_channel_id : `int`)
         Called when the client leaves / is removed fro ma voice channel.
         
         > This event has a default handler defined, which is used by hata's ``VoiceClient``.
         >
-        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+        > When using 3rd party voice library, make sure to register your by passing `overwrite = True` parameter as
+        > well.
     
     voice_client_move(client : ``Client``, voice_state : ``VoiceState``, old_channel_id : `int`)
         Called when the client moves / is moved between two channels.
         
         > This event has a default handler defined, which is used by hata's ``VoiceClient``.
         >
-        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+        > When using 3rd party voice library, make sure to register your by passing `overwrite = True` parameter as
+        > well.
     
     voice_client_shutdown(client : ``Client``)
         Called when the client disconnects. Should be used to disconnect the client's voice clients.
     
         > This event has a default handler defined, which is used by hata's ``VoiceClient``.
         >
-        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+        > When using 3rd party voice library, make sure to register your by passing `overwrite = True` parameter as
+        > well.
     
     voice_client_update(client : ``Client``, voice_state : ``VoiceState``, old_attributes : `dict`)
         Called when the client's state is updated.
         
         > This event has a default handler defined, which is used by hata's ``VoiceClient``.
         >
-        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+        > When using 3rd party voice library, make sure to register your by passing `overwrite = True` parameter as
+        > well.
         
         Every item in `old_attributes` is optional and they can be the following:
         
@@ -1304,7 +1310,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         > This event has a default handler defined, which is used by hata's ``VoiceClient``.
         >
-        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+        > When using 3rd party voice library, make sure to register your by passing `overwrite = True` parameter as
+        > well.
     
     voice_server_update(client: ``Client``, event: ``VoiceServerUpdateEvent``)
         Called initially when the client connects to a voice channels of a guild. Also called when a guild's voice
@@ -1312,7 +1319,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         > This event has a default handler defined, which is used by hata's ``VoiceClient``.
         >
-        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+        > When using 3rd party voice library, make sure to register your by passing `overwrite = True` parameter as
+        > well.
     
     webhook_update(client: ``Client``, event: ``WebhookUpdateEvent``):
         Called when a webhook of a channel is updated.

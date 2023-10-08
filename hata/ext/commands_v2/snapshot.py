@@ -70,26 +70,27 @@ class CommandsV2SnapshotType(BaseSnapshotType):
         
         added_categories = self.added_categories
         if (added_categories is not None):
-            repr_parts.append(', added_categories=')
+            repr_parts.append(', added_categories = ')
             repr_parts.append(repr(added_categories))
         
         removed_categories = self.removed_categories
         if (removed_categories is not None):
-            repr_parts.append(', removed_categories=')
+            repr_parts.append(', removed_categories = ')
             repr_parts.append(repr(removed_categories))
         
         added_commands = self.added_commands
         if (added_commands is not None):
-            repr_parts.append(', added_commands=')
+            repr_parts.append(', added_commands = ')
             repr_parts.append(repr(added_commands))
         
         removed_commands = self.removed_commands
         if (removed_commands is not None):
-            repr_parts.append(', removed_commands=')
+            repr_parts.append(', removed_commands = ')
             repr_parts.append(repr(removed_commands))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
     
     @copy_docs(BaseSnapshotType._extract)
     def _extract(self, other):

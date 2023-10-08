@@ -1320,7 +1320,7 @@ class Application(DiscordEntity, immortal = True):
         **keyword_parameters : Keyword parameters
             Additional parameters defining the attributes of the application.
         
-        Other parameters
+        Other Parameters
         ----------------
         aliases : `None`, `iterable` of `str`, Optional (Keyword only)
             Aliases of the application's name.
@@ -1457,7 +1457,7 @@ class Application(DiscordEntity, immortal = True):
         **keyword_parameters : Keyword parameters
             Additional parameters defining the attributes of the application.
         
-        Other parameters
+        Other Parameters
         ----------------
         aliases : `None`, `iterable` of `str`, Optional (Keyword only)
             Aliases of the application's name.
@@ -1604,7 +1604,7 @@ class Application(DiscordEntity, immortal = True):
         **keyword_parameters : Keyword parameters
             Additional parameters defining the attributes of the copy.
         
-        Other parameters
+        Other Parameters
         ----------------
         aliases : `None`, `iterable` of `str`, Optional (Keyword only)
             Aliases of the application's name.

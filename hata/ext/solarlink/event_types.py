@@ -53,10 +53,10 @@ class TrackStartEvent(EventBase):
         repr_parts.append('<')
         repr_parts.append(self.__class__.__name__)
         
-        repr_parts.append(' player=')
+        repr_parts.append(' player = ')
         repr_parts.append(repr(self.player))
         
-        repr_parts.append(', track=')
+        repr_parts.append(', track = ')
         repr_parts.append(repr(self.track))
         
         repr_parts.append('>')
@@ -137,15 +137,15 @@ class TrackEndEvent(EventBase):
         repr_parts.append('<')
         repr_parts.append(self.__class__.__name__)
         
-        repr_parts.append(' player=')
+        repr_parts.append(' player = ')
         repr_parts.append(repr(self.player))
         
-        repr_parts.append(', track=')
+        repr_parts.append(', track = ')
         repr_parts.append(repr(self.track))
         
         reason = self.reason
         if (reason is not None):
-            repr_parts.append(', reason=')
+            repr_parts.append(', reason = ')
             repr_parts.append(reprlib.repr(reason))
         
         repr_parts.append('>')
@@ -245,13 +245,13 @@ class TrackStuckEvent(EventBase):
         repr_parts.append('<')
         repr_parts.append(self.__class__.__name__)
         
-        repr_parts.append(' player=')
+        repr_parts.append(' player = ')
         repr_parts.append(repr(self.player))
         
-        repr_parts.append(', track=')
+        repr_parts.append(', track = ')
         repr_parts.append(repr(self.track))
         
-        repr_parts.append(', threshold=')
+        repr_parts.append(', threshold = ')
         repr_parts.append(self.threshold.__format__('.3f'))
         
         repr_parts.append('>')
@@ -360,18 +360,18 @@ class TrackExceptionEvent(EventBase):
         repr_parts.append('<')
         repr_parts.append(self.__class__.__name__)
         
-        repr_parts.append(' player=')
+        repr_parts.append(' player = ')
         repr_parts.append(repr(self.player))
         
-        repr_parts.append(', track=')
+        repr_parts.append(', track = ')
         repr_parts.append(repr(self.track))
         
         severity = self.severity
         if severity:
-            repr_parts.append(', severity=')
+            repr_parts.append(', severity = ')
             repr_parts.append(repr(severity))
         
-        repr_parts.append(', reason=')
+        repr_parts.append(', reason = ')
         repr_parts.append(reprlib.repr(self.reason))
         
         repr_parts.append('>')
@@ -482,20 +482,20 @@ class PlayerWebsocketClosedEvent(EventBase):
         repr_parts.append('<')
         repr_parts.append(self.__class__.__name__)
         
-        repr_parts.append(' player=')
+        repr_parts.append(' player = ')
         repr_parts.append(repr(self.player))
         
-        repr_parts.append(', code=')
+        repr_parts.append(', code = ')
         repr_parts.append(repr(self.code))
         
         reason = self.reason
         if (reason is not None):
-            repr_parts.append(', reason=')
+            repr_parts.append(', reason = ')
             repr_parts.append(reprlib.repr(reason))
         
         by_remote = self.by_remote
         if by_remote:
-            repr_parts.append(', by_remote=')
+            repr_parts.append(', by_remote = ')
             repr_parts.append(repr(by_remote))
         
         repr_parts.append('>')

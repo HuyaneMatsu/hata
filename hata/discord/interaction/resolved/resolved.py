@@ -265,7 +265,7 @@ class Resolved(RichAttributeErrorBaseType):
                 
                 repr_parts.append(' ')
                 repr_parts.append(field_name)
-                repr_parts.append('=')
+                repr_parts.append(' = ')
                 repr_parts.append(repr(field_value))
         
         repr_parts.append('>')

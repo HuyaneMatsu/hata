@@ -4,7 +4,7 @@ from hata import Client
 Sakuya: Client
 
 
-@Sakuya.commands(aliases='*')
-async def multiply(first:int, second:int):
+@Sakuya.commands(aliases = '*')
+async def multiply(first: int, second: int):
     """Multiplies the two numbers."""
     return first * second

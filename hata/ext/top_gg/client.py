@@ -364,7 +364,7 @@ class TopGGClient:
             await self._post_bot_stats(data)
     
     
-    async def get_weekend_status(self, *, force_update=False):
+    async def get_weekend_status(self, *, force_update = False):
         """
         Returns the weekend multiplier is on.
         
@@ -847,7 +847,7 @@ class TopGGClient:
                     async with RequestContextManager(
                         self.http._request(method, url, headers, data, query_parameters)
                     ) as response:
-                        response_data = await response.text(encoding='utf-8')
+                        response_data = await response.text(encoding = 'utf-8')
                 except OSError as err:
                     if not try_again:
                         raise ConnectionError('Invalid address or no connection with Top.gg.') from err

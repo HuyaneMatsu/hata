@@ -406,9 +406,9 @@ class Kokoro:
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' client=',
+            ' client = ',
             repr(self.gateway.client.full_name),
-            ' state=',
+            ' state = ',
         ]
         
         if self.task is None:

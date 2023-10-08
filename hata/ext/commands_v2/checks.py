@@ -18,7 +18,7 @@ Or as a `.commands` parameter:
 ```py
 from hata.ext.commands import checks
 
-@Momiji.commands(checks=checks.owner_only())
+@Momiji.commands(checks = checks.owner_only())
 async def knock_knock():
     return 'Awu!'
 ```
@@ -252,7 +252,7 @@ class CheckMeta(type):
 
 
 @export
-class CheckBase(metaclass=CheckMeta):
+class CheckBase(metaclass = CheckMeta):
     """
     Base class for checks.
     """
@@ -314,8 +314,8 @@ class CheckBase(metaclass=CheckMeta):
                     display_name = name
                 
                 repr_parts.append(display_name)
-                repr_parts.append('=')
-                attr = getattr(self,name)
+                repr_parts.append(' = ')
+                attr = getattr(self, name)
                 repr_parts.append(repr(attr))
                 
                 if index == limit:

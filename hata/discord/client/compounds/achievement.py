@@ -661,8 +661,8 @@ class ClientCompoundAchievementEndpoints(Compound):
         ``https://github.com/discordapp/discord-api-docs/issues/1230``.
         
         Only secure updates are supported, if they are even.
-        - When updating secure achievement: `DiscordException NOT FOUND (404), code=10029: Unknown Entitlement`
-        - When updating non secure: `DiscordException FORBIDDEN (403), code=40001: Unauthorized`
+        - When updating secure achievement: `DiscordException NOT FOUND (404), code = 10029: Unknown Entitlement`
+        - When updating non secure: `DiscordException FORBIDDEN (403), code = 40001: Unauthorized`
         """
         user_id = get_user_id(user)
         

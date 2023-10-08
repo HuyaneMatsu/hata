@@ -164,7 +164,7 @@ class ChannelOutputStream:
                         maybe_update_next = False
                     
                     if self._sanitize:
-                        data = sanitize_content(raw_data, guild=self._channel.guild)
+                        data = sanitize_content(raw_data, guild = self._channel.guild)
                     else:
                         data = raw_data
                     

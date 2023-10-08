@@ -626,7 +626,7 @@ class GravedCodeBlock:
         
         language = self.language
         if language is None:
-            result.append(' language=')
+            result.append(' language = ')
             result.append(repr(language))
             
             add_comma = True
@@ -636,7 +636,7 @@ class GravedCodeBlock:
         if add_comma:
             result.append(', ')
         
-        result.append(' lines=')
+        result.append(' lines = ')
         result.append(repr(self.lines))
         
         result.append('>')
@@ -830,14 +830,14 @@ class GravedListingElement:
         result = [
             '<',
             self.__class__.__name__,
-            ' head=',
+            ' head = ',
             repr(graved_to_source_text(self.head)),
         ]
         
         content = self.content
         if content is not None:
             content = repr(graved_to_source_text(content))
-            result.append(', content=')
+            result.append(', content = ')
             result.append(content)
         
         result.append('>')

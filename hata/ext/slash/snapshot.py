@@ -47,7 +47,7 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' added_application_commands=')
+            repr_parts.append(' added_application_commands = ')
             repr_parts.append(repr(added_application_commands))
         
         removed_application_commands = self.removed_application_commands
@@ -57,7 +57,7 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' removed_application_commands=')
+            repr_parts.append(' removed_application_commands = ')
             repr_parts.append(repr(removed_application_commands))
         
         repr_parts.append('>')
@@ -284,7 +284,7 @@ class PermissionOverwriteDifference(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' added_permission_overwrites=')
+            repr_parts.append(' added_permission_overwrites = ')
             repr_parts.append(repr(added_permission_overwrites))
         
         removed_permission_overwrites = self.removed_permission_overwrites
@@ -294,7 +294,7 @@ class PermissionOverwriteDifference(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' removed_permission_overwrites=')
+            repr_parts.append(' removed_permission_overwrites = ')
             repr_parts.append(repr(removed_permission_overwrites))
         
         repr_parts.append('>')

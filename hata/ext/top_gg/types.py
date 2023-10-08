@@ -32,7 +32,7 @@ from .constants import (
 )
 
 
-class BotInfo(metaclass=Slotted):
+class BotInfo(metaclass = Slotted):
     """
     Representing information about a bot.
     
@@ -253,7 +253,7 @@ class BotStats:
         return f'<{self.__class__.__name__}>'
 
 
-class UserInfo(metaclass=Slotted):
+class UserInfo(metaclass = Slotted):
     """
     Represents a user.
     
@@ -425,7 +425,7 @@ class UserConnections:
         return f'<{self.__class__.__name__}>'
 
 
-class BriefUserInfo(metaclass=Slotted):
+class BriefUserInfo(metaclass = Slotted):
     """
     Represents a user, containing only brief fields.
     

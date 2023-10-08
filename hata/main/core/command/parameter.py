@@ -218,7 +218,7 @@ class CommandParameter(RichAttributeErrorBaseType):
         repr_parts.append(' ')
         repr_parts.append(self.display_name)
         
-        repr_parts.append(', parameter=')
+        repr_parts.append(', parameter = ')
         repr_parts.append(repr(self.parameter))
         
         repr_parts.append('>')

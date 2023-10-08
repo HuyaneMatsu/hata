@@ -68,7 +68,7 @@ class KOKOROEngine:
         return AsyncConnection(connection, executor)
     
     
-    def begin(self, close_with_result=False):
+    def begin(self, close_with_result = False):
         executor = self._worker
         if executor is None:
             executor = current_thread().claim_executor()

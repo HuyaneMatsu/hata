@@ -3133,7 +3133,7 @@ if CACHE_PRESENCE:
 else:
     def TYPING_START__CAL(client, data):
         return
-    TYPING_START__OPT=TYPING_START__CAL
+    TYPING_START__OPT = TYPING_START__CAL
 
 add_parser(
     'TYPING_START',

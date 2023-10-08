@@ -110,7 +110,7 @@ def test__ActivityMetadataRich__copy_with__1():
     old_application_id = 202212300009
     new_application_id = 202212300010
     old_assets = ActivityAssets(image_large = 'senya')
-    new_assets = ActivityAssets(image_small='merami')
+    new_assets = ActivityAssets(image_small = 'merami')
     old_created_at = DateTime(2014, 9, 11)
     new_created_at = DateTime(2012, 9, 11)
     old_details = 'vocal'
@@ -243,7 +243,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
     old_application_id = 202304090004
     new_application_id = 202304090005
     old_assets = ActivityAssets(image_large = 'senya')
-    new_assets = ActivityAssets(image_small='merami')
+    new_assets = ActivityAssets(image_small = 'merami')
     old_created_at = DateTime(2014, 9, 11)
     new_created_at = DateTime(2012, 9, 11)
     old_details = 'vocal'

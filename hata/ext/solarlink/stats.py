@@ -144,43 +144,43 @@ class Stats(RichAttributeErrorBaseType):
         """Returns the stat's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(', cpu_cores=')
+        repr_parts.append(', cpu_cores = ')
         repr_parts.append(repr(self.cpu_cores))
         
-        repr_parts.append(', cpu_lavalink_load=')
+        repr_parts.append(', cpu_lavalink_load = ')
         repr_parts.append(repr(self.cpu_lavalink_load))
         
-        repr_parts.append(', cpu_system_load=')
+        repr_parts.append(', cpu_system_load = ')
         repr_parts.append(repr(self.cpu_system_load))
         
-        repr_parts.append(', frame_sent=')
+        repr_parts.append(', frame_sent = ')
         repr_parts.append(repr(self.frame_sent))
         
-        repr_parts.append(', frame_nulled=')
+        repr_parts.append(', frame_nulled = ' )
         repr_parts.append(repr(self.frame_nulled))
         
-        repr_parts.append(', frame_deficit=')
+        repr_parts.append(', frame_deficit = ')
         repr_parts.append(repr(self.frame_deficit))
         
-        repr_parts.append(', memory_allocated=')
+        repr_parts.append(', memory_allocated = ')
         repr_parts.append(repr(self.memory_allocated))
         
-        repr_parts.append(', memory_free=')
+        repr_parts.append(', memory_free = ')
         repr_parts.append(repr(self.memory_free))
         
-        repr_parts.append(', memory_reservable=')
+        repr_parts.append(', memory_reservable = ')
         repr_parts.append(repr(self.memory_reservable))
         
-        repr_parts.append(', memory_used=')
+        repr_parts.append(', memory_used = ')
         repr_parts.append(repr(self.memory_used))
         
-        repr_parts.append(', player_count=')
+        repr_parts.append(', player_count = ')
         repr_parts.append(repr(self.player_count))
         
-        repr_parts.append(', playing_player_count=')
+        repr_parts.append(', playing_player_count = ')
         repr_parts.append(repr(self.playing_player_count))
         
-        repr_parts.append(', uptime=')
+        repr_parts.append(', uptime = ')
         repr_parts.append(self.uptime.__format__('.3f'))
         repr_parts.append('s')
         

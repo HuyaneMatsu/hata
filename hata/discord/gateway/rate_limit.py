@@ -123,13 +123,13 @@ class GatewayRateLimiter:
         if resets_at <= LOOP_TIME():
             remaining = GATEWAY_RATE_LIMIT_LIMIT
         else:
-            repr_parts.append(' resets_at=')
+            repr_parts.append(' resets_at = ')
             repr_parts.append(repr(LOOP_TIME()))
             repr_parts.append(' (monotonic),')
             
             remaining = self.remaining
         
-        repr_parts.append(' remaining=')
+        repr_parts.append(' remaining = ')
         repr_parts.append(repr(remaining))
         repr_parts.append('>')
         

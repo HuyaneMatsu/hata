@@ -43,7 +43,7 @@ class EventHandlerDifference(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' added_event_handlers=')
+            repr_parts.append(' added_event_handlers = ')
             repr_parts.append(repr(added_event_handlers))
         
         removed_event_handlers = self.removed_event_handlers
@@ -53,7 +53,7 @@ class EventHandlerDifference(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(',4 removed_event_handlers=')
+            repr_parts.append(', removed_event_handlers = ')
             repr_parts.append(repr(removed_event_handlers))
         
         repr_parts.append('>')

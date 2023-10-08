@@ -203,7 +203,7 @@ class SlashCommand(CommandBaseApplicationCommand):
         **keyword_parameters : Keyword parameters
             Additional keyword parameters.
         
-        Other parameters
+        Other Parameters
         ----------------
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy``, \
                 `list` of (`str`, ``UserBase``, ``Role`` ), Optional (Keyword only)

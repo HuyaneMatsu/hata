@@ -114,7 +114,7 @@ class Track(RichAttributeErrorBaseType):
         
         # read flags
         
-        flags = int.from_bytes(data[0:4], 'big')
+        flags = int.from_bytes(data[0 : 4], 'big')
         flags = (flags & 0xC0000000) >> 30
         
         # read version
@@ -133,8 +133,8 @@ class Track(RichAttributeErrorBaseType):
         
         cursor_start = cursor_end
         cursor_end = cursor_start + title_length
-        title = data[cursor_start:cursor_end]
-        title = title.decode(errors='ignore')
+        title = data[cursor_start : cursor_end]
+        title = title.decode(errors = 'ignore')
         
         # read author
         
@@ -144,8 +144,8 @@ class Track(RichAttributeErrorBaseType):
         
         cursor_start = cursor_end
         cursor_end = cursor_start + author_length
-        author = data[cursor_start:cursor_end]
-        author = author.decode(errors='ignore')
+        author = data[cursor_start : cursor_end]
+        author = author.decode(errors = 'ignore')
         
         # read duration
         
@@ -158,11 +158,11 @@ class Track(RichAttributeErrorBaseType):
         
         cursor_start = cursor_end
         cursor_end = cursor_start + 2
-        identifier_length = int.from_bytes(data[cursor_start:cursor_end], 'big')
+        identifier_length = int.from_bytes(data[cursor_start : cursor_end], 'big')
         
         cursor_start = cursor_end
         cursor_end = cursor_start + identifier_length
-        identifier = data[cursor_start:cursor_end]
+        identifier = data[cursor_start : cursor_end]
         identifier = identifier.decode()
         
         # read is_stream
@@ -425,18 +425,18 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
         """Returns the configured track's representation."""
         repr_parts = [
             '<', self.__class__.__name__,
-            ' track=', repr(self.track),
+            ' track = ', repr(self.track),
         ]
         
         start_time = self.start_time
         if start_time:
-            repr_parts.append(', start_time=')
+            repr_parts.append(', start_time = ')
             repr_parts.append(start_time.__format__('.3f'))
             repr_parts.append('s')
         
         end_time = self.end_time
         if end_time:
-            repr_parts.append(', end_time=')
+            repr_parts.append(', end_time = ')
             repr_parts.append(end_time.__format__('.3f'))
             repr_parts.append('s')
         
@@ -445,7 +445,7 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
             for attribute_name, attribute_value in added_attributes.items():
                 repr_parts.append(', ')
                 repr_parts.append(attribute_name)
-                repr_parts.append('=')
+                repr_parts.append(' = ')
                 repr_parts.append(repr(attribute_value))
         
         repr_parts.append('>')

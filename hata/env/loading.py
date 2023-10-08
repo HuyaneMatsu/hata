@@ -59,7 +59,7 @@ def find_dot_env_file():
     """
     Tries to find dotenv location to load.
     
-    returns
+    Returns
     -------
     location : `None`, `str`
     """

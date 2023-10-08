@@ -312,7 +312,7 @@ def test__ApplicationCommand__difference_update_attributes():
         )
     ]
     old_required_permissions = Permission().update_by_keys(administrator = True)
-    new_required_permissions = Permission().update_by_keys(kick_users=True)
+    new_required_permissions = Permission().update_by_keys(kick_users = True)
     old_target_type = ApplicationCommandTargetType.chat
     new_target_type = ApplicationCommandTargetType.message
     

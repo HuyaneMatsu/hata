@@ -291,8 +291,8 @@ class BuilderContext:
     def __repr__(self):
         """Returns the builder context's representation."""
         return (
-            f'{self.__class__.__name__}(indent_size={self.indent_size!r}, max_line_length='
-            f'{self.max_line_length!r}, space_char={self.space_char!r}, word_converter={self.word_converter!r})'
+            f'{self.__class__.__name__}(indent_size = {self.indent_size!r}, max_line_length = '
+            f'{self.max_line_length!r}, space_char = {self.space_char!r}, word_converter = {self.word_converter!r})'
         )
 
 EMBED_SIZED_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_UNICODE, 79, graved_to_escaped_words)
@@ -501,7 +501,7 @@ class TableConverter:
                     
                     length = len(line) - 1
                     for word in part:
-                        length +=len(word)
+                        length += len(word)
                     
                     longest_lengths[index] += length
             
@@ -1176,7 +1176,7 @@ class DescriptionConverter:
         """
         length = 0
         for line in self.lines:
-            length +=len(line)
+            length += len(line)
         
         return length
     

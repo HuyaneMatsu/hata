@@ -76,7 +76,7 @@ class ContentParameterParserContextBase(RichAttributeErrorBaseType):
         """Returns the content parameter parser context's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' parsed=')
+        repr_parts.append(' parsed = ')
         repr_parts.append(repr(self._parsed))
         
         repr_parts.append('>')
@@ -886,7 +886,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' converter=',
+            ' converter = ',
             self.converter.__name__,
         ]
         
@@ -898,7 +898,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
                 repr_parts.append(repr(alternative_type_name))
         else:
             default_type_name = default_type.__name__
-            repr_parts.append(', default_type=')
+            repr_parts.append(', default_type = ')
             repr_parts.append(default_type_name)
             
             
@@ -954,12 +954,12 @@ class ConverterSetting(RichAttributeErrorBaseType):
         
         if self.uses_flags:
             default_flags = self.default_flags
-            repr_parts.append(', default_flags=')
+            repr_parts.append(', default_flags = ')
             repr_parts.append(int.__repr__(default_flags))
             
             all_flags = self.all_flags
             if default_flags != all_flags:
-                repr_parts.append(', all_flags=')
+                repr_parts.append(', all_flags = ')
                 repr_parts.append(int.__repr__(all_flags))
         
         repr_parts.append('>')
@@ -2056,23 +2056,23 @@ class ContentParserParameterDetail(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the ``ContentParserParameterDetail``'s representation."""
-        repr_parts = ['<', self.__class__.__name__, ' converter_setting=']
+        repr_parts = ['<', self.__class__.__name__, ' converter_setting = ']
         converter_setting = self.converter_setting
         repr_parts.append(repr(converter_setting))
         
         type_ = self.type
         if (type_ is not converter_setting.default_type):
-            repr_parts.append(', type=')
+            repr_parts.append(', type = ')
             repr_parts.append(repr(type_))
         
         type_checker = self.type_checker
         if (type_checker is not None):
-            repr_parts.append(', type_checker=')
+            repr_parts.append(', type_checker = ')
             repr_parts.append(repr(type_checker))
             
         flags = self.flags
         if (flags != converter_setting.default_flags):
-            repr_parts.append(', flags=')
+            repr_parts.append(', flags = ')
             repr_parts.append(repr(flags))
         
         repr_parts.append('>')
@@ -2760,10 +2760,10 @@ class CommandContentParser(RichAttributeErrorBaseType):
         """Returns the command content parser's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' content_parameter_parser=')
+        repr_parts.append(' content_parameter_parser = ')
         repr_parts.append(repr(self._content_parameter_parser))
         
-        repr_parts.append(', parameters=')
+        repr_parts.append(', parameters = ')
         repr_parts.append(repr(self._parameters))
         
         repr_parts.append('>')
@@ -3081,7 +3081,7 @@ class ParameterParsingStateBase:
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' content_parser_parameter=',
+            ' content_parser_parameter = ',
             repr(self.content_parser_parameter),
             '>',
         ]
@@ -3167,9 +3167,9 @@ class GenericParameterParsingState(ParameterParsingStateBase):
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' content_parser_parameter=',
+            ' content_parser_parameter = ',
             repr(self.content_parser_parameter),
-            ', parsed_values=',
+            ', parsed_values = ',
             repr(self.parsed_values),
             '>',
         ]
@@ -3226,9 +3226,9 @@ class KwargsParameterParsingState(ParameterParsingStateBase):
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' content_parser_parameter=',
+            ' content_parser_parameter = ',
             repr(self.content_parser_parameter),
-            ', parsed_items=',
+            ', parsed_items = ',
             repr(self.parsed_items),
             '>',
         ]

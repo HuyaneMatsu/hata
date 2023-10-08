@@ -541,7 +541,7 @@ class SolarPlayer(SolarPlayerBase):
         await self._seek(position)
     
     
-    async def join_speakers(self, *, request=False):
+    async def join_speakers(self, *, request = False):
         """
         Requests to speak at the voice client's voice channel. Only applicable for stage channels.
         

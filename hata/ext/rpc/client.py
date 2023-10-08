@@ -922,7 +922,7 @@ class RPCClient(RichAttributeErrorBaseType):
         return UserVoiceSettings.from_data(data)
     
     
-    async def channel_voice_select(self, channel, *, force=False):
+    async def channel_voice_select(self, channel, *, force = False):
         """
         Selects the given voice channel joining it.
         

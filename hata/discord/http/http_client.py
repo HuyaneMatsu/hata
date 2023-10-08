@@ -260,7 +260,7 @@ class DiscordHTTPClient(HTTPClient):
                 data = to_json(data)
             
             if (reason is not None):
-                headers[AUDIT_LOG_REASON] = quote(reason, safe='\ ')
+                headers[AUDIT_LOG_REASON] = quote(reason, safe = '\ ')
         else:
             # bearer or webhook request
             if (CONTENT_TYPE not in headers) and (not isinstance(data, NON_JSON_TYPES)):
@@ -283,7 +283,7 @@ class DiscordHTTPClient(HTTPClient):
             with handler.ctx() as lock:
                 try:
                     async with RequestContextManager(self._request(method, url, headers, data, params)) as response:
-                        response_data = await response.text(encoding='utf-8')
+                        response_data = await response.text(encoding = 'utf-8')
                 except OSError as err:
                     if causes is None:
                         causes = []
@@ -1887,7 +1887,7 @@ class DiscordHTTPClient(HTTPClient):
             params = params,
         )
     
-    # DiscordException Forbidden (403), code=20001: Bots cannot use this endpoint
+    # DiscordException Forbidden (403), code = 20001: Bots cannot use this endpoint
     # data structure: {'sticker_ids': [sticker_id_1, ...]}
     async def greet(self, channel_id, data):
         return await self.discord_request(
@@ -1922,7 +1922,7 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/guilds/{guild_id}/threads/active',
         )
     
-    # DiscordException Bad Request (400), code=50001: Missing Access
+    # DiscordException Bad Request (400), code = 50001: Missing Access
     async def thread_create(self, channel_id, data):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.thread_create, channel_id),
@@ -1990,7 +1990,7 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/channels/{channel_id}/thread-members/{user_id}',
         )
     
-    # DiscordException Forbidden (403), code=20001: Bots cannot use this endpoint
+    # DiscordException Forbidden (403), code = 20001: Bots cannot use this endpoint
     async def thread_self_settings_edit(self, channel_id):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.thread_self_settings_edit, channel_id),

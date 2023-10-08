@@ -114,7 +114,7 @@ class DiscordGatewayVoice:
     
     # connecting, message receive and processing
     
-    async def connect(self, resume=False):
+    async def connect(self, resume = False):
         """
         Connects the gateway to Discord. If the connecting was successful, will start it's `.kokoro` as well.
         

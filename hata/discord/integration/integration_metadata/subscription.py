@@ -228,7 +228,7 @@ class IntegrationMetadataSubscription(IntegrationMetadataBase):
             except KeyError:
                 pass
             else:
-                repr_parts.append(' role=')
+                repr_parts.append(' role = ')
                 repr_parts.append(repr(role))
         
         repr_parts.append('>')

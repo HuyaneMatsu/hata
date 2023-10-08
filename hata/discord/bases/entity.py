@@ -129,7 +129,7 @@ class DiscordEntityMeta(Slotted):
     Metaclass of Discord entities. Use ``DiscordEntity`` as superclass instead of using this class directly as a
     metaclass.
     """
-    def __new__(cls, class_name, class_parents, class_attributes, immortal=False):
+    def __new__(cls, class_name, class_parents, class_attributes, immortal = False):
         """
         Creates a Discord entity type. Subclass ``DiscordEntity`` instead of using this class directly as a metaclass.
         
@@ -174,7 +174,7 @@ class DiscordEntityMeta(Slotted):
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
 
-class DiscordEntity(RichAttributeErrorBaseType, metaclass=DiscordEntityMeta):
+class DiscordEntity(RichAttributeErrorBaseType, metaclass = DiscordEntityMeta):
     """
     Base class for Discord entities.
     

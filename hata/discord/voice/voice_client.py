@@ -608,7 +608,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         return True
     
     
-    async def join_speakers(self, *, request=False):
+    async def join_speakers(self, *, request = False):
         """
         Requests to speak at the voice client's voice channel. Only applicable for stage channels.
         
@@ -905,7 +905,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                         # user nor us, so reconnect.
                         if not self._maybe_change_voice_region():
                             self._reconnecting = False
-                            await self._disconnect(force=False)
+                            await self._disconnect(force = False)
                             return
                     
                     if not (isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_RECONNECT_CLOSE_CODE)):
@@ -943,7 +943,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                                  (not self._maybe_change_voice_region())
                             ):
                                 self._reconnecting = False
-                                await self._disconnect(force=False)
+                                await self._disconnect(force = False)
                                 return
                         
                         self.connected.clear()
@@ -958,7 +958,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                     
                     except:
                         self._reconnecting = False
-                        await self._disconnect(force=True)
+                        await self._disconnect(force = True)
                         raise
         finally:
             self._reconnecting = False
@@ -978,7 +978,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         await self._disconnect()
     
     
-    async def _disconnect(self, force=False, terminate=True):
+    async def _disconnect(self, force = False, terminate = True):
         """
         Disconnects the voice client.
         
@@ -1192,7 +1192,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         gateway = self.client.gateway_for(self.guild_id)
         
         try:
-            await gateway.change_voice_state(self.guild_id, 0, self_mute=True)
+            await gateway.change_voice_state(self.guild_id, 0, self_mute = True)
         except ConnectionClosed:
             pass
         
@@ -1235,7 +1235,9 @@ class VoiceClient(RichAttributeErrorBaseType):
         
         socket = module_socket.socket(module_socket.AF_INET, module_socket.SOCK_DGRAM)
         
-        protocol = await KOKORO.create_datagram_connection_with(partial_func(DatagramMergerReadProtocol, KOKORO), socket=socket)
+        protocol = await KOKORO.create_datagram_connection_with(
+            partial_func(DatagramMergerReadProtocol, KOKORO), socket = socket
+        )
         self._transport = protocol.get_transport()
         self._protocol = protocol
         self._socket = socket

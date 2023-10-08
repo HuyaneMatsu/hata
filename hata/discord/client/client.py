@@ -1174,7 +1174,7 @@ class Client(
         except BaseException as err:
             if isinstance(err, ConnectionError) and err.args[0] == 'Invalid address':
                 after = (
-                    'Connection failed, could not connect to Discord.\n Please check your internet connection / has '
+                    'Connection failed, could not connect to Discord.\nPlease check your internet connection / has '
                     'Python rights to use it?\n'
                 )
             else:
@@ -1186,7 +1186,7 @@ class Client(
                 '.connect\n',
             ]
             
-            await write_exception_async(err, before, after, loop=KOKORO)
+            await write_exception_async(err, before, after, loop = KOKORO)
             return False
         
         # Some Discord implementations send string response for some weird reason.
@@ -1276,7 +1276,7 @@ class Client(
                             f'The client will reshard itself and reconnect.\n'
                         )
                         
-                        await self.client_gateway_reshard(force=True)
+                        await self.client_gateway_reshard(force = True)
                         continue
                     
                     raise

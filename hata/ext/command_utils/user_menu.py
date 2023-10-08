@@ -361,7 +361,7 @@ class UserMenuFactory:
         self = object.__new__(cls)
         self.klass = klass
         self.check = check
-        self.close_emoji =close_emoji
+        self.close_emoji = close_emoji
         self.emojis = emojis
         self.initial_invoke = initial_invoke
         self.invoke = invoke
@@ -377,12 +377,12 @@ class UserMenuFactory:
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' klass=',
+            ' klass = ',
             self.klass.__name__,
         ]
         emojis = self.emojis
         if (emojis is not None):
-            repr_parts.append(', emojis=(')
+            repr_parts.append(', emojis = (')
             index = 0
             limit = len(emojis)
             while True:
@@ -398,17 +398,17 @@ class UserMenuFactory:
             
         close_emoji = self.close_emoji
         if (close_emoji is not None):
-            repr_parts.append(', close_emoji=')
+            repr_parts.append(', close_emoji = ')
             repr_parts.append(close_emoji.name)
         
         allow_third_party_emojis = self.allow_third_party_emojis
         if allow_third_party_emojis:
-            repr_parts.append(', allow_third_party_emojis=')
+            repr_parts.append(', allow_third_party_emojis = ')
             repr_parts.append(repr(allow_third_party_emojis))
         
         timeout = self.timeout
         if timeout > 0.0:
-            repr_parts.append(', timeout=')
+            repr_parts.append(', timeout = ')
             repr_parts.append(repr(timeout))
         
         repr_parts.append('>')
@@ -722,9 +722,9 @@ class UserMenuRunner(PaginationBase):
     def __repr__(self):
         repr_parts = [
             '<', self.__class__.__name__,
-            ' client=', repr(self.client),
+            ' client = ', repr(self.client),
             ', channel = ', repr(self.channel),
-            ', state='
+            ', state = '
         ]
         
         task_flag = self._task_flag
@@ -737,9 +737,9 @@ class UserMenuRunner(PaginationBase):
         repr_parts.append(')')
         
         # Third party things go here
-        repr_parts.append(', factory=')
+        repr_parts.append(', factory = ')
         repr_parts.append(repr(self._factory))
-        repr_parts.append(', instance=')
+        repr_parts.append(', instance = ')
         repr_parts.append(repr(self._instance))
         
         repr_parts.append('>')

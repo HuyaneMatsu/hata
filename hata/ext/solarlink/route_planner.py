@@ -39,7 +39,7 @@ class FailingAddress(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Failing address data.
         """
         self = object.__new__(cls)
@@ -78,17 +78,17 @@ def _route_planner_base_repr_generator(route_planner):
     """
     repr_parts = ['<', route_planner.__class__.__name__]
     
-    repr_parts.append(' ip_block_type=')
+    repr_parts.append(' ip_block_type = ')
     repr_parts.append(route_planner.ip_block_type)
     
-    repr_parts.append(', ip_block_size=')
+    repr_parts.append(', ip_block_size = ')
     repr_parts.append(repr(route_planner.ip_block_size))
     
     yield repr_parts
     
     failing_addresses = route_planner.failing_addresses
     if (failing_addresses is None):
-        repr_parts.append(', failing_addresses=[')
+        repr_parts.append(', failing_addresses = [')
         
         length = len(failing_addresses)
         index = 0
@@ -130,7 +130,7 @@ class RoutePlannerBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Route planner data.
         """
         self = object.__new__(cls)
@@ -190,13 +190,13 @@ class RoutePlannerRotatingIp(RoutePlannerBase):
     @copy_docs(RoutePlannerBase.__repr__)
     def __repr__(self):
         for repr_parts in _route_planner_base_repr_generator(self):
-            repr_parts.append(', rotate_index=')
+            repr_parts.append(', rotate_index = ')
             repr_parts.append(repr(self.rotate_index))
             
-            repr_parts.append(', ip_index=')
+            repr_parts.append(', ip_index = ')
             repr_parts.append(repr(self.ip_index))
             
-            repr_parts.append(', current_address=')
+            repr_parts.append(', current_address = ')
             repr_parts.append(repr(self.current_address))
         
         return ''.join(repr_parts)
@@ -226,10 +226,11 @@ class RoutePlannerNanoIP(RoutePlannerBase):
         self.current_address_index = int(data[LAVALINK_KEY_ROUTEPLANNER_OBJECT_CURRENT_ADDRESS_INDEX_STRING])
         return self
     
+    
     @copy_docs(RoutePlannerBase.__repr__)
     def __repr__(self):
         for repr_parts in _route_planner_base_repr_generator(self):
-            repr_parts.append(', current_address_index=')
+            repr_parts.append(', current_address_index = ')
             repr_parts.append(repr(self.current_address_index))
         
         return ''.join(repr_parts)
@@ -266,10 +267,10 @@ class RoutePlannerRotatingNanoIP(RoutePlannerNanoIP):
     @copy_docs(RoutePlannerBase.__repr__)
     def __repr__(self):
         for repr_parts in _route_planner_base_repr_generator(self):
-            repr_parts.append(', current_address_index=')
+            repr_parts.append(', current_address_index = ')
             repr_parts.append(repr(self.current_address_index))
             
-            repr_parts.append(', block_index=')
+            repr_parts.append(', block_index = ')
             repr_parts.append(repr(self.block_index))
             
         return ''.join(repr_parts)
@@ -286,7 +287,7 @@ def get_route_planner(data):
     
     Parameters
     ----------
-    data : `dict` Of (`str`, `Any`) items
+    data : `dict` Of (`str`, `object`) items
         Route planner data.
     
     Returns

@@ -101,11 +101,11 @@ class SolarLinkEventManager(EventHandlerPlugin):
     player_websocket_closed(client: ``Client``, event: ``PlayerWebsocketClosedEvent``)
         Called when a player's websocket is disconnected from a guild.
     """
-    track_end = Event(2, default_handler=default_track_end_event_handler)
-    track_exception = Event(2, default_handler=default_track_exception_event_handler)
+    track_end = Event(2, default_handler = default_track_end_event_handler)
+    track_exception = Event(2, default_handler = default_track_exception_event_handler)
     track_start = Event(2)
-    track_stuck = Event(2, default_handler=default_track_stuck_event_handler)
-    player_websocket_closed = Event(2, default_handler=default_player_websocket_closed_event_handler)
+    track_stuck = Event(2, default_handler = default_track_stuck_event_handler)
+    player_websocket_closed = Event(2, default_handler = default_player_websocket_closed_event_handler)
     
     def __repr__(self):
         """Returns the plugin's representation."""

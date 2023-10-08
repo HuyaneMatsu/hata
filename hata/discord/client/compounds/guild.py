@@ -354,7 +354,7 @@ class ClientCompoundGuildEndpoints(Compound):
         -------
         onboarding_screen : ``OnboardingScreen``
         
-        Other parameters
+        Other Parameters
         ----------------
         default_channel_ids : `None`, `iterable` of (`int`, ``Channel``), Optional (Keyword only)
             The channels' identifiers that new members get opted into automatically.

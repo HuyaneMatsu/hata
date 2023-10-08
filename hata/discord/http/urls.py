@@ -1316,7 +1316,7 @@ def sticker_url(sticker):
     return f'{CDN_ENDPOINT}/stickers/{sticker.id}.{format.extension}'
 
 
-def sticker_url_as(sticker, size = None, preview=False):
+def sticker_url_as(sticker, size = None, preview = False):
     """
     Returns the sticker's url.
     

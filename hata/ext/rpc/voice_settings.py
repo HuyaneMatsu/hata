@@ -628,7 +628,7 @@ class VoiceSettingsMode:
         else:
             field_added = True
             
-            repr_parts.append(' type=')
+            repr_parts.append(' type = ')
             repr_parts.append(type_.name)
             repr_parts.append(' (')
             repr_parts.append(repr(type_.value))
@@ -642,7 +642,7 @@ class VoiceSettingsMode:
             else:
                 field_added = True
             
-            repr_parts.append(' auto_threshold=')
+            repr_parts.append(' auto_threshold = ')
             repr_parts.append(repr(auto_threshold))
         
         
@@ -653,7 +653,7 @@ class VoiceSettingsMode:
             else:
                 field_added = True
             
-            repr_parts.append(' threshold=')
+            repr_parts.append(' threshold = ')
             repr_parts.append(repr(threshold))
         
         
@@ -664,7 +664,7 @@ class VoiceSettingsMode:
             else:
                 field_added = True
             
-            repr_parts.append(' delay=')
+            repr_parts.append(' delay = ')
             repr_parts.append(repr(delay))
         
         
@@ -672,7 +672,7 @@ class VoiceSettingsMode:
             if field_added:
                 repr_parts.append(',')
             
-            repr_parts.append(' shortcut_combination=')
+            repr_parts.append(' shortcut_combination = ')
             
             shortcut_combination = self.shortcut_combination
             if (shortcut_combination is None):
@@ -918,43 +918,43 @@ class VoiceSettings:
         repr_parts = ['<', self.__class__.__name__]
         
         
-        repr_parts.append(' automatic_gain_control=')
+        repr_parts.append(' automatic_gain_control = ')
         repr_parts.append(repr(self.automatic_gain_control))
         
         
-        repr_parts.append(', deaf=')
+        repr_parts.append(', deaf = ')
         repr_parts.append(repr(self.deaf))
         
         
-        repr_parts.append(', echo_cancellation=')
+        repr_parts.append(', echo_cancellation = ')
         repr_parts.append(repr(self.echo_cancellation))
         
         
-        repr_parts.append(', input=')
+        repr_parts.append(', input = ')
         repr_parts.append(repr(self.input))
         
         
-        repr_parts.append(', mode=')
+        repr_parts.append(', mode = ')
         repr_parts.append(repr(self.mode))
         
         
-        repr_parts.append(', mute=')
+        repr_parts.append(', mute = ')
         repr_parts.append(repr(self.mute))
         
         
-        repr_parts.append(', noise_suppression=')
+        repr_parts.append(', noise_suppression = ')
         repr_parts.append(repr(self.noise_suppression))
         
         
-        repr_parts.append(', output=')
+        repr_parts.append(', output = ')
         repr_parts.append(repr(self.output))
         
         
-        repr_parts.append(', quality_of_service=')
+        repr_parts.append(', quality_of_service = ')
         repr_parts.append(repr(self.quality_of_service))
         
         
-        repr_parts.append(', silence_warning=')
+        repr_parts.append(', silence_warning = ')
         repr_parts.append(repr(self.silence_warning))
         
         

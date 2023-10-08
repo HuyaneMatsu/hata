@@ -40,7 +40,7 @@ class Component(RichAttributeErrorBaseType):
         **keyword_parameters : Keyword parameters
             Keyword parameters defining the component's fields.
         
-        Other parameters
+        Other Parameters
         ----------------
         button_style : ``ButtonStyle``, Optional (Keyword only)
             The component's style. Applicable for button components.
@@ -249,7 +249,7 @@ class Component(RichAttributeErrorBaseType):
         **keyword_parameters : Keyword parameters
             Keyword parameters defining which fields should be changed.
         
-        Other parameters
+        Other Parameters
         ----------------
         button_style : ``ButtonStyle``, Optional (Keyword only)
             The component's style. Applicable for button components.

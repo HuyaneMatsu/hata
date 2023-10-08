@@ -193,7 +193,7 @@ class CommandState(RichAttributeErrorBaseType):
         
         active = self._active
         if (active is not None) and active:
-            result.append(' active=[')
+            result.append(' active = [')
             
             for command in active:
                 result.append(command.name)
@@ -212,7 +212,7 @@ class CommandState(RichAttributeErrorBaseType):
             else:
                 should_add_comma = True
             
-            result.append(' kept=[')
+            result.append(' kept = [')
             
             for command in kept:
                 result.append(command.name)
@@ -225,12 +225,13 @@ class CommandState(RichAttributeErrorBaseType):
             if should_add_comma:
                 result.append(',')
             
-            result.append(' changes=')
+            result.append(' changes = ')
             result.append(repr(changes))
         
         result.append('>')
         
         return ''.join(result)
+    
     
     def get_should_add_application_commands(self):
         """

@@ -188,7 +188,7 @@ def check_parameter_count_and_convert(
         analyzer.can_instance_to_async_callable() or
         (analyzer.can_instance_to_async_generator() if can_be_async_generator else False)
     ):
-        sub_analyzer = CallableAnalyzer(func.__call__, as_method=True)
+        sub_analyzer = CallableAnalyzer(func.__call__, as_method = True)
         if sub_analyzer.is_async():
             min_, max_ = sub_analyzer.get_non_reserved_positional_parameter_range()
             
@@ -1638,7 +1638,7 @@ class eventlist(list):
             index = 0
             
             while True:
-                element=list.__getitem__(self, index)
+                element = list.__getitem__(self, index)
                 repr_parts.append(repr(element))
                 index += 1
                 
@@ -1652,12 +1652,12 @@ class eventlist(list):
         
         type_ = self.type
         if (type_ is not None):
-            repr_parts.append(', type=')
+            repr_parts.append(', type = ')
             repr_parts.append(repr(type_))
         
         kwargs = self.kwargs
         if (kwargs is not None):
-            repr_parts.append(', kwargs=')
+            repr_parts.append(', kwargs = ')
             repr_parts.append(repr(kwargs))
         
         repr_parts.append(')')
@@ -2090,7 +2090,7 @@ class EventWaitforBase(EventHandlerBase, metaclass = EventWaitforMeta):
         
         self.waitfors[target] = container
     
-    def get_waiter(self, target, waiter, by_type=False, is_method=False):
+    def get_waiter(self, target, waiter, by_type = False, is_method = False):
         """
         Looks up whether any of the given `target` - `waiter` relation is stored inside of `.waiters` and if there is
         any, then returns the first find. If non, then returns `None`.
@@ -2155,7 +2155,7 @@ class EventWaitforBase(EventHandlerBase, metaclass = EventWaitforMeta):
                 else:
                     return None
 
-    def get_waiters(self, target, waiter, by_type=False, is_method=False):
+    def get_waiters(self, target, waiter, by_type = False, is_method = False):
         """
         Looks up the waiters of `target` - `waiter` relation stored inside of `.waiters` and returns all the matched
         one.

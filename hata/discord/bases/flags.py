@@ -764,7 +764,7 @@ class ReverseFlagBase(FlagBase, base_class = True):
         >>> flags = SystemChannelFlag()
         >>> list(flags)
         ['welcome', 'boost']
-        >>> flags = flags.update_by_keys(boost=False)
+        >>> flags = flags.update_by_keys(boost = False)
         >>> list(flags)
         ['welcome']
         ```

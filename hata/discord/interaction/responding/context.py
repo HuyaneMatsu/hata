@@ -60,7 +60,7 @@ class InteractionResponseContext:
         if self.ephemeral:
             repr_parts.append(' (ephemeral)')
         
-        repr_parts.append(' interaction_event=')
+        repr_parts.append(' interaction_event = ')
         repr_parts.append(repr(self.interaction_event))
         
         repr_parts.append('>')

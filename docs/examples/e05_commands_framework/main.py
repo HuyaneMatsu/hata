@@ -88,8 +88,8 @@ async def about_role_error_handler(ctx, exception):
 
 # We can set specific command name aside from the default function name (we can also pass list/tuples for aliases).
 # Here this function will be called with '!* int int'
-@Sakuya.commands(aliases='*')
-async def multiply(first:int, second:int):
+@Sakuya.commands(aliases = '*')
+async def multiply(first: int, second: int):
     """Multiplies the two numbers."""
     return first * second
 
@@ -107,7 +107,7 @@ EMOJI_CAT = BUILTIN_EMOJIS['cat']
 
 
 # Limit the command to administrators only
-@Sakuya.commands(aliases=['kitty', 'neko'])
+@Sakuya.commands(aliases = ['kitty', 'neko'])
 @checks.has_permissions(administrator = True)
 async def cat():
     """Returns a cat back."""
@@ -142,7 +142,7 @@ async def am_i_admin(ctx):
     return content
 
 
-@Sakuya.commands(aliases='slow_mode')
+@Sakuya.commands(aliases = 'slow_mode')
 async def slowmode(ctx, slowmode_rate: int = None):
     """Returns or sets channel slowmode."""
     if slowmode_rate is None:
@@ -152,7 +152,7 @@ async def slowmode(ctx, slowmode_rate: int = None):
         return f'Slowmode can be min 0 and max 21600, got `{slowmode_rate}` seconds..'
     
     try:
-        await ctx.client.channel_edit(ctx.channel, slowmode=slowmode_rate)
+        await ctx.client.channel_edit(ctx.channel, slowmode = slowmode_rate)
     except DiscordException as err:
         return f'Error setting channel\'s slowmode to `{slowmode_rate}` seconds:\n{err}'
     

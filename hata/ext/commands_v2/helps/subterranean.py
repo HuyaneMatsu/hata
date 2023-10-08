@@ -549,7 +549,7 @@ class SubterraneanHelpCommand:
     
     help_command = Orin.commands(
         SubterraneanHelpCommand(
-            embed_postprocessor=embed_postprocessor,
+            embed_postprocessor = embed_postprocessor,
         ),
         'help',
     )

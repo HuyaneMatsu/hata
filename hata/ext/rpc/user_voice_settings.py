@@ -118,7 +118,7 @@ class AudioBalance:
         
         left = self.left
         if (left is not None):
-            repr_parts.append(' left=')
+            repr_parts.append(' left = ')
             repr_parts.append(left.__format__('.02f'))
             
             field_added = True
@@ -130,7 +130,7 @@ class AudioBalance:
             if field_added:
                 repr_parts.append(',')
                 
-            repr_parts.append(' right=')
+            repr_parts.append(' right = ')
             repr_parts.append(right.__format__('.02f'))
         
         repr_parts.append('>')

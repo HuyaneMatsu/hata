@@ -99,7 +99,7 @@ def test__Guild__from_data__all_fields():
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306210044
-    preferred_locale = Locale.finnish
+    locale = Locale.finnish
     premium_tier = 1
     public_updates_channel_id = 202306210045
     roles = [
@@ -172,7 +172,7 @@ def test__Guild__from_data__all_fields():
         'name': name,
         'nsfw_level': nsfw_level.value,
         'owner_id': str(owner_id),
-        'preferred_locale': preferred_locale.value,
+        'preferred_locale': locale.value,
         'premium_tier': premium_tier,
         'public_updates_channel_id': str(public_updates_channel_id),
         'roles': [role.to_data(include_internals = True) for role in roles],
@@ -237,7 +237,7 @@ def test__Guild__from_data__all_fields():
     vampytest.assert_eq(guild.name, name)
     vampytest.assert_is(guild.nsfw_level, nsfw_level)
     vampytest.assert_eq(guild.owner_id, owner_id)
-    vampytest.assert_is(guild.preferred_locale, preferred_locale)
+    vampytest.assert_is(guild.locale, locale)
     vampytest.assert_eq(guild.premium_tier, premium_tier)
     vampytest.assert_eq(guild.public_updates_channel_id, public_updates_channel_id)
     vampytest.assert_eq(guild.roles, {role.id: role for role in roles})
@@ -354,7 +354,7 @@ def test__Guild__to_data():
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306220006
-    preferred_locale = Locale.finnish
+    locale = Locale.finnish
     premium_tier = 1
     public_updates_channel_id = 202306220007
     roles = [
@@ -420,6 +420,7 @@ def test__Guild__to_data():
         'incidents_data': incidents.to_data(defaults = True, include_internals = True),
         'inventory_settings': inventory_settings.to_data(defaults = True),
         'large': large,
+        'locale': locale.value,
         'max_presences': max_presences,
         'max_stage_video_channel_users': max_stage_channel_video_users,
         'max_members': max_users,
@@ -429,7 +430,7 @@ def test__Guild__to_data():
         'name': name,
         'nsfw_level': nsfw_level.value,
         'owner_id': str(owner_id),
-        'preferred_locale': preferred_locale.value,
+        'preferred_locale': locale.value,
         'premium_tier': premium_tier,
         'public_updates_channel_id': str(public_updates_channel_id),
         'roles': [role.to_data(defaults = True, include_internals = True) for role in roles],
@@ -494,7 +495,7 @@ def test__Guild__to_data():
         name = name,
         nsfw_level = nsfw_level,
         owner_id = owner_id,
-        preferred_locale = preferred_locale,
+        locale = locale,
         premium_tier = premium_tier,
         public_updates_channel_id = public_updates_channel_id,
         roles = roles,
@@ -569,7 +570,7 @@ def test__Guild__set_attributes__create():
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306220044
-    preferred_locale = Locale.finnish
+    locale = Locale.finnish
     premium_tier = 1
     public_updates_channel_id = 202306220045
     roles = [
@@ -642,7 +643,7 @@ def test__Guild__set_attributes__create():
         'name': name,
         'nsfw_level': nsfw_level.value,
         'owner_id': str(owner_id),
-        'preferred_locale': preferred_locale.value,
+        'preferred_locale': locale.value,
         'premium_tier': premium_tier,
         'public_updates_channel_id': str(public_updates_channel_id),
         'roles': [role.to_data(include_internals = True) for role in roles],
@@ -709,7 +710,7 @@ def test__Guild__set_attributes__create():
     vampytest.assert_eq(guild.name, name)
     vampytest.assert_is(guild.nsfw_level, nsfw_level)
     vampytest.assert_eq(guild.owner_id, owner_id)
-    vampytest.assert_is(guild.preferred_locale, preferred_locale)
+    vampytest.assert_is(guild.locale, locale)
     vampytest.assert_eq(guild.premium_tier, premium_tier)
     vampytest.assert_eq(guild.public_updates_channel_id, public_updates_channel_id)
     vampytest.assert_eq(guild.roles, {role.id: role for role in roles})
@@ -780,7 +781,7 @@ def test__Guild__set_attributes__existing():
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306220044
-    preferred_locale = Locale.finnish
+    locale = Locale.finnish
     premium_tier = 1
     public_updates_channel_id = 202306220076
     roles = [
@@ -853,7 +854,7 @@ def test__Guild__set_attributes__existing():
         'name': name,
         'nsfw_level': nsfw_level.value,
         'owner_id': str(owner_id),
-        'preferred_locale': preferred_locale.value,
+        'preferred_locale': locale.value,
         'premium_tier': premium_tier,
         'public_updates_channel_id': str(public_updates_channel_id),
         'roles': [role.to_data(include_internals = True) for role in roles],
@@ -919,7 +920,7 @@ def test__Guild__set_attributes__existing():
     vampytest.assert_eq(guild.name, name)
     vampytest.assert_is(guild.nsfw_level, nsfw_level)
     vampytest.assert_eq(guild.owner_id, owner_id)
-    vampytest.assert_is(guild.preferred_locale, preferred_locale)
+    vampytest.assert_is(guild.locale, locale)
     vampytest.assert_eq(guild.premium_tier, premium_tier)
     vampytest.assert_eq(guild.public_updates_channel_id, public_updates_channel_id)
     vampytest.assert_eq(guild.roles, {role.id: role for role in roles})
@@ -975,7 +976,7 @@ def test__Guild__update_attributes():
     old_name = 'Komeiji'
     old_nsfw_level = NsfwLevel.explicit
     old_owner_id = 202306220102
-    old_preferred_locale = Locale.finnish
+    old_locale = Locale.finnish
     old_premium_tier = 1
     old_public_updates_channel_id = 202306220103
     old_rules_channel_id = 202306220104
@@ -1013,7 +1014,7 @@ def test__Guild__update_attributes():
     new_name = 'Okuu'
     new_nsfw_level = NsfwLevel.safe
     new_owner_id = 202306220109
-    new_preferred_locale = Locale.dutch
+    new_locale = Locale.dutch
     new_premium_tier = 2
     new_public_updates_channel_id = 202306220110
     new_rules_channel_id = 202306220111
@@ -1054,7 +1055,7 @@ def test__Guild__update_attributes():
         name = old_name,
         nsfw_level = old_nsfw_level,
         owner_id = old_owner_id,
-        preferred_locale = old_preferred_locale,
+        locale = old_locale,
         premium_tier = old_premium_tier,
         public_updates_channel_id = old_public_updates_channel_id,
         rules_channel_id = old_rules_channel_id,
@@ -1090,7 +1091,7 @@ def test__Guild__update_attributes():
         'name': new_name,
         'nsfw_level': new_nsfw_level.value,
         'owner_id': str(new_owner_id),
-        'preferred_locale': new_preferred_locale.value,
+        'preferred_locale': new_locale.value,
         'premium_tier': new_premium_tier,
         'public_updates_channel_id': str(new_public_updates_channel_id),
         'rules_channel_id': str(new_rules_channel_id),
@@ -1135,7 +1136,7 @@ def test__Guild__update_attributes():
     vampytest.assert_eq(guild.name, new_name)
     vampytest.assert_is(guild.nsfw_level, new_nsfw_level)
     vampytest.assert_eq(guild.owner_id, new_owner_id)
-    vampytest.assert_is(guild.preferred_locale, new_preferred_locale)
+    vampytest.assert_is(guild.locale, new_locale)
     vampytest.assert_eq(guild.premium_tier, new_premium_tier)
     vampytest.assert_eq(guild.public_updates_channel_id, new_public_updates_channel_id)
     vampytest.assert_eq(guild.rules_channel_id, new_rules_channel_id)
@@ -1211,7 +1212,7 @@ def test__Guild__difference_update_attributes():
     old_name = 'Komeiji'
     old_nsfw_level = NsfwLevel.explicit
     old_owner_id = 202306220118
-    old_preferred_locale = Locale.finnish
+    old_locale = Locale.finnish
     old_premium_tier = 1
     old_public_updates_channel_id = 202306220119
     old_rules_channel_id = 202306220120
@@ -1249,7 +1250,7 @@ def test__Guild__difference_update_attributes():
     new_name = 'Okuu'
     new_nsfw_level = NsfwLevel.safe
     new_owner_id = 202306220125
-    new_preferred_locale = Locale.dutch
+    new_locale = Locale.dutch
     new_premium_tier = 2
     new_public_updates_channel_id = 202306220126
     new_rules_channel_id = 202306220127
@@ -1290,7 +1291,7 @@ def test__Guild__difference_update_attributes():
         name = old_name,
         nsfw_level = old_nsfw_level,
         owner_id = old_owner_id,
-        preferred_locale = old_preferred_locale,
+        locale = old_locale,
         premium_tier = old_premium_tier,
         public_updates_channel_id = old_public_updates_channel_id,
         rules_channel_id = old_rules_channel_id,
@@ -1326,7 +1327,7 @@ def test__Guild__difference_update_attributes():
         'name': new_name,
         'nsfw_level': new_nsfw_level.value,
         'owner_id': str(new_owner_id),
-        'preferred_locale': new_preferred_locale.value,
+        'preferred_locale': new_locale.value,
         'premium_tier': new_premium_tier,
         'public_updates_channel_id': str(new_public_updates_channel_id),
         'rules_channel_id': str(new_rules_channel_id),
@@ -1371,7 +1372,7 @@ def test__Guild__difference_update_attributes():
     vampytest.assert_eq(guild.name, new_name)
     vampytest.assert_is(guild.nsfw_level, new_nsfw_level)
     vampytest.assert_eq(guild.owner_id, new_owner_id)
-    vampytest.assert_is(guild.preferred_locale, new_preferred_locale)
+    vampytest.assert_is(guild.locale, new_locale)
     vampytest.assert_eq(guild.premium_tier, new_premium_tier)
     vampytest.assert_eq(guild.public_updates_channel_id, new_public_updates_channel_id)
     vampytest.assert_eq(guild.rules_channel_id, new_rules_channel_id)
@@ -1412,7 +1413,7 @@ def test__Guild__difference_update_attributes():
             'name': old_name,
             'nsfw_level': old_nsfw_level,
             'owner_id': old_owner_id,
-            'preferred_locale': old_preferred_locale,
+            'locale': old_locale,
             'premium_tier': old_premium_tier,
             'public_updates_channel_id': old_public_updates_channel_id,
             'rules_channel_id': old_rules_channel_id,
@@ -1795,7 +1796,7 @@ def test__Guild__sync__default():
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306230083
-    preferred_locale = Locale.finnish
+    locale = Locale.finnish
     premium_tier = 1
     public_updates_channel_id = 202306230084
     rules_channel_id = 202306230085
@@ -1843,7 +1844,7 @@ def test__Guild__sync__default():
         'name': name,
         'nsfw_level': nsfw_level.value,
         'owner_id': str(owner_id),
-        'preferred_locale': preferred_locale.value,
+        'preferred_locale': locale.value,
         'premium_tier': premium_tier,
         'public_updates_channel_id': str(public_updates_channel_id),
         'rules_channel_id': str(rules_channel_id),
@@ -1894,7 +1895,7 @@ def test__Guild__sync__default():
     vampytest.assert_eq(guild.name, name)
     vampytest.assert_is(guild.nsfw_level, nsfw_level)
     vampytest.assert_eq(guild.owner_id, owner_id)
-    vampytest.assert_is(guild.preferred_locale, preferred_locale)
+    vampytest.assert_is(guild.locale, locale)
     vampytest.assert_eq(guild.premium_tier, premium_tier)
     vampytest.assert_eq(guild.public_updates_channel_id, public_updates_channel_id)
     vampytest.assert_eq(guild.roles, {role.id: role for role in roles})

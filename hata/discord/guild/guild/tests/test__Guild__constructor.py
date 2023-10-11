@@ -75,7 +75,7 @@ def _assert_fields_set(guild):
     vampytest.assert_instance(guild.name, str)
     vampytest.assert_instance(guild.nsfw_level, NsfwLevel)
     vampytest.assert_instance(guild.owner_id, int)
-    vampytest.assert_instance(guild.preferred_locale, Locale)
+    vampytest.assert_instance(guild.locale, Locale)
     vampytest.assert_instance(guild.premium_tier, int)
     vampytest.assert_instance(guild.public_updates_channel_id, int)
     vampytest.assert_instance(guild.safety_alerts_channel_id, int)
@@ -129,7 +129,7 @@ def test__Guild__new__all_fields():
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306210001
-    preferred_locale = Locale.finnish
+    locale = Locale.finnish
     public_updates_channel_id = 202306210002
     rules_channel_id = 202306210004
     safety_alerts_channel_id = 202306210003
@@ -157,7 +157,7 @@ def test__Guild__new__all_fields():
         name = name,
         nsfw_level = nsfw_level,
         owner_id = owner_id,
-        preferred_locale = preferred_locale,
+        locale = locale,
         public_updates_channel_id = public_updates_channel_id,
         rules_channel_id = rules_channel_id,
         safety_alerts_channel_id = safety_alerts_channel_id,
@@ -186,7 +186,7 @@ def test__Guild__new__all_fields():
     vampytest.assert_eq(guild.name, name)
     vampytest.assert_is(guild.nsfw_level, nsfw_level)
     vampytest.assert_eq(guild.owner_id, owner_id)
-    vampytest.assert_is(guild.preferred_locale, preferred_locale)
+    vampytest.assert_is(guild.locale, locale)
     vampytest.assert_eq(guild.public_updates_channel_id, public_updates_channel_id)
     vampytest.assert_eq(guild.rules_channel_id, rules_channel_id)
     vampytest.assert_eq(guild.safety_alerts_channel_id, safety_alerts_channel_id)
@@ -285,7 +285,7 @@ def test__Guild__precreate__all_fields():
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306210016
-    preferred_locale = Locale.finnish
+    locale = Locale.finnish
     premium_tier = 1
     public_updates_channel_id = 202306210017
     roles = [
@@ -362,7 +362,7 @@ def test__Guild__precreate__all_fields():
         name = name,
         nsfw_level = nsfw_level,
         owner_id = owner_id,
-        preferred_locale = preferred_locale,
+        locale = locale,
         premium_tier = premium_tier,
         public_updates_channel_id = public_updates_channel_id,
         roles = roles,
@@ -415,7 +415,7 @@ def test__Guild__precreate__all_fields():
     vampytest.assert_eq(guild.name, name)
     vampytest.assert_is(guild.nsfw_level, nsfw_level)
     vampytest.assert_eq(guild.owner_id, owner_id)
-    vampytest.assert_is(guild.preferred_locale, preferred_locale)
+    vampytest.assert_is(guild.locale, locale)
     vampytest.assert_eq(guild.premium_tier, premium_tier)
     vampytest.assert_eq(guild.public_updates_channel_id, public_updates_channel_id)
     vampytest.assert_eq(guild.roles, {role.id: role for role in roles})

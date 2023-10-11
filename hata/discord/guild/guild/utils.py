@@ -1,4 +1,7 @@
-__all__ = ('create_partial_guild_data', 'create_partial_guild_from_data', 'create_partial_guild_from_id')
+__all__ = (
+    'create_interaction_guild_data', 'create_partial_guild_data', 'create_partial_guild_from_data',
+    'create_partial_guild_from_id', 'create_partial_guild_from_interaction_guild_data'
+)
 
 from functools import partial as partial_func
 
@@ -7,17 +10,17 @@ from scarletio import export
 from ...core import GUILDS
 
 from .fields import (
-    parse_available, parse_description, parse_features, parse_id, parse_name, parse_nsfw_level,
+    parse_available, parse_description, parse_features, parse_id, parse_locale, parse_name, parse_nsfw_level,
     parse_verification_level, put_afk_channel_id_into, put_afk_timeout_into, put_available_into,
     put_boost_progress_bar_enabled_into, put_channels_and_channel_datas_into, put_content_filter_into,
-    put_description_into, put_features_into, put_hub_type_into, put_id_into, put_message_notification_into,
-    put_mfa_into, put_name_into, put_nsfw_level_into, put_owner_id_into, put_preferred_locale_into,
+    put_description_into, put_features_into, put_hub_type_into, put_id_into, put_locale_into,
+    put_message_notification_into, put_mfa_into, put_name_into, put_nsfw_level_into, put_owner_id_into,
     put_public_updates_channel_id_into, put_roles_and_role_datas_into, put_rules_channel_id_into,
     put_safety_alerts_channel_id_into, put_system_channel_flags_into, put_system_channel_id_into, put_vanity_code_into,
     put_verification_level_into, put_widget_channel_id_into, put_widget_enabled_into, validate_afk_channel_id,
     validate_afk_timeout, validate_boost_progress_bar_enabled, validate_channels_and_channel_datas,
-    validate_content_filter, validate_description, validate_features, validate_hub_type, validate_message_notification,
-    validate_mfa, validate_name, validate_nsfw_level, validate_owner_id, validate_preferred_locale,
+    validate_content_filter, validate_description, validate_features, validate_hub_type, validate_locale,
+    validate_message_notification, validate_mfa, validate_name, validate_nsfw_level, validate_owner_id,
     validate_public_updates_channel_id, validate_roles_and_role_datas, validate_rules_channel_id,
     validate_safety_alerts_channel_id, validate_system_channel_flags, validate_system_channel_id, validate_vanity_code,
     validate_verification_level, validate_widget_channel_id, validate_widget_enabled
@@ -51,12 +54,12 @@ GUILD_FIELD_CONVERTERS = {
         partial_func(GUILD_INVITE_SPLASH.validate_icon, allow_data = True),
         partial_func(GUILD_INVITE_SPLASH.put_into, as_data = True),
     ),
+    'locale': (validate_locale, put_locale_into),
     'message_notification': (validate_message_notification, put_message_notification_into),
     'mfa': (validate_mfa, put_mfa_into),
     'name': (validate_name, put_name_into),
     'nsfw_level': (validate_nsfw_level, put_nsfw_level_into),
     'owner_id': (validate_owner_id, put_owner_id_into),
-    'preferred_locale': (validate_preferred_locale, put_preferred_locale_into),
     'public_updates_channel_id': (validate_public_updates_channel_id, put_public_updates_channel_id_into),
     'rules_channel_id': (validate_rules_channel_id, put_rules_channel_id_into),
     'safety_alerts_channel_id': (validate_safety_alerts_channel_id, put_safety_alerts_channel_id_into),
@@ -312,4 +315,52 @@ def create_new_guild_data(
     put_system_channel_id_into(system_channel_id, data, defaults = True)
     put_system_channel_flags_into(system_channel_flags, data, defaults = True)
     put_verification_level_into(verification_level, data, defaults = True)
+    return data
+
+
+def create_partial_guild_from_interaction_guild_data(data):
+    """
+    Creates a partial guild from the guild data received through an interaction.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Interaction guild data.
+    
+    Returns
+    -------
+    guild : ``Guild``
+    """
+    guild_id = parse_id(data)
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild = Guild._create_empty(guild_id)
+        GUILDS[guild_id] = guild
+    
+    guild.locale = parse_locale(data)
+    guild.features = parse_features(data)
+    
+    return guild
+
+
+def create_interaction_guild_data(guild):
+    """
+    Creates interaction guild data.
+    
+    Parameters
+    ----------
+    guild : ``Guild``
+        The guild to serialise.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    data = {}
+    
+    put_id_into(guild.id, data, True)
+    put_locale_into(guild.locale, data, True)
+    put_features_into(guild.features, data, True)
+    
     return data

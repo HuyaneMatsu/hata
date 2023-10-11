@@ -7,6 +7,7 @@ from ....component import Component, ComponentType
 from ....core import BUILTIN_EMOJIS
 from ....embed import Embed
 from ....emoji import ReactionMapping
+from ....interaction import Resolved
 from ....sticker import Sticker, create_partial_sticker_data
 from ....user import User
 from ....utils import datetime_to_timestamp
@@ -25,7 +26,7 @@ from ..preinstanced import MessageType
 from .test__Message__contructor import _assert_fields_set
 
 
-def test__Message__from_data__0():
+def test__Message__from_data__all_fields():
     """
     Tests whether ``from_data`` works as intended.
     
@@ -69,6 +70,7 @@ def test__Message__from_data__0():
         BUILTIN_EMOJIS['x']: [None, None],
     })
     referenced_message = Message.precreate(202305030051, content = 'Patchouli')
+    resolved = Resolved(attachments = [Attachment.precreate(202310110008)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
     stickers = [
         Sticker.precreate(202305030052, name = 'Kirisame'),
@@ -102,6 +104,7 @@ def test__Message__from_data__0():
         'reactions': reactions.to_data(),
         'referenced_message': referenced_message.to_data(include_internals = True, recursive = False),
         'message_reference': referenced_message.to_message_reference_data(),
+        'resolved': resolved.to_data(),
         'role_subscription_data': role_subscription.to_data(),
         'sticker_items': [create_partial_sticker_data(sticker) for sticker in stickers],
         'thread': thread.to_data(include_internals = True),
@@ -138,6 +141,7 @@ def test__Message__from_data__0():
     vampytest.assert_eq(message.pinned, pinned)
     vampytest.assert_eq(message.reactions, reactions)
     vampytest.assert_eq(message.referenced_message, referenced_message)
+    vampytest.assert_eq(message.resolved, resolved)
     vampytest.assert_eq(message.role_subscription, role_subscription)
     vampytest.assert_eq(message.stickers, tuple(stickers))
     vampytest.assert_eq(message.thread, thread)
@@ -149,7 +153,7 @@ def test__Message__from_data__0():
     vampytest.assert_eq(message.guild_id, guild_id)
 
 
-def test__Message__from_data__1():
+def test__Message__from_data__caching():
     """
     Tests whether ``from_data`` works as intended.
     
@@ -167,7 +171,7 @@ def test__Message__from_data__1():
     vampytest.assert_is(message, test_message)
 
 
-def test__Message__from_data__2():
+def test__Message__from_data__should_not_update_if_updated():
     """
     Tests whether ``from_data`` works as intended.
     
@@ -191,7 +195,7 @@ def test__Message__from_data__2():
     vampytest.assert_is(message.call, None)
 
 
-def test__Message__from_data__3():
+def test__Message__from_data__should_update_if_precreate():
     """
     Tests whether ``from_data`` works as intended.
     
@@ -212,7 +216,139 @@ def test__Message__from_data__3():
     vampytest.assert_eq(message.call, call)
 
 
-def test__Message__create_message_was_up_to_date__0():
+def test__Message__to_data():
+    """
+    Tests whether ``to_data`` works as intended.
+    
+    Case: All fields given.
+    """
+    activity = MessageActivity(party_id = 'Remilia')
+    application = MessageApplication.precreate(202310110010, name = 'Flandre')
+    application_id = 202310110011
+    attachments = [
+        Attachment.precreate(202310110012, name = 'Koishi'),
+        Attachment.precreate(202310110013, name = 'Komeiji'),
+    ]
+    author = User.precreate(202310110014, name = 'Orin')
+    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    components = [
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Okuu')]),
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Parsee')]),
+    ]
+    content = 'Satori'
+    edited_at = DateTime(2016, 5, 14)
+    embeds = [
+        Embed('Yakumo'),
+        Embed('Yukari'),
+    ]
+    flags = MessageFlag(15)
+    interaction = MessageInteraction.precreate(202310110015, name = 'Ran')
+    mentioned_channels_cross_guild = [
+        Channel.precreate(202310110016, channel_type = ChannelType.guild_text, name = 'Chen'),
+        Channel.precreate(202310110017, channel_type = ChannelType.guild_text, name = 'Yuugi'),
+    ]
+    mentioned_everyone = True
+    mentioned_role_ids = [202310110018, 202310110019]
+    mentioned_users = [
+        User.precreate(202310110020, name = 'Scarlet'),
+        User.precreate(202310110021, name = 'Izaoyi'),
+    ]
+    message_type = MessageType.inline_reply
+    nonce = 'Sakuya'
+    pinned = True
+    reactions = ReactionMapping({
+        BUILTIN_EMOJIS['x']: [None, None],
+    })
+    referenced_message = Message.precreate(202310110022, content = 'Patchouli')
+    resolved = Resolved(attachments = [Attachment.precreate(202310110023)])
+    role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    stickers = [
+        Sticker.precreate(202310110024, name = 'Kirisame'),
+        Sticker.precreate(202310110025, name = 'Marisa'),
+    ]
+    thread = Channel.precreate(202310110026, channel_type = ChannelType.guild_thread_private, name = 'Yuyuko')
+    tts = True
+    
+    message_id = 202310110027
+    channel_id = 202310110028
+    guild_id = 202310110029
+    
+    expected_output = {
+        'guild_id': str(guild_id),
+        'id': str(message_id),
+        
+        'activity': activity.to_data(defaults = True),
+        'attachments': [attachment.to_data(defaults = True, include_internals = True) for attachment in attachments],
+        'application': application.to_data(defaults = True, include_internals = True),
+        'application_id': str(application_id),
+        'webhook_id': str(application_id),
+        'author': author.to_data(defaults = True, include_internals = True),
+        'call': call.to_data(defaults = True),
+        'channel_id': str(channel_id),
+        'edited_timestamp': datetime_to_timestamp(edited_at),
+        'interaction': interaction.to_data(defaults = True, include_internals = True),
+        'mention_channels': [create_partial_channel_data(channel) for channel in mentioned_channels_cross_guild],
+        'mention_everyone': mentioned_everyone,
+        'mention_roles': [str(role_id) for role_id in mentioned_role_ids],
+        'mentions': [user.to_data(defaults = True, include_internals = True) for user in mentioned_users],
+        'pinned': pinned,
+        'reactions': reactions.to_data(),
+        'referenced_message': referenced_message.to_data(defaults = True, include_internals = True, recursive = False),
+        'message_reference': referenced_message.to_message_reference_data(),
+        'resolved': resolved.to_data(defaults = True),
+        'role_subscription_data': role_subscription.to_data(defaults = True),
+        'sticker_items': [create_partial_sticker_data(sticker) for sticker in stickers],
+        'thread': thread.to_data(defaults = True, include_internals = True),
+        'type': message_type.value,
+        
+        'components': [component.to_data(defaults = True) for component in components],
+        'content': content,
+        'embeds': [embed.to_data(defaults = True, include_internals = True) for embed in embeds],
+        'flags': int(flags),
+        'nonce': nonce,
+        'tts': tts,
+    }
+    
+    message = Message.precreate(
+        message_id,
+        channel_id = channel_id,
+        guild_id = guild_id,
+        
+        activity = activity,
+        application = application,
+        application_id = application_id,
+        attachments = attachments,
+        author = author,
+        call = call,
+        components = components,
+        content = content,
+        edited_at = edited_at,
+        embeds = embeds,
+        flags = flags,
+        interaction = interaction,
+        mentioned_channels_cross_guild = mentioned_channels_cross_guild,
+        mentioned_everyone = mentioned_everyone,
+        mentioned_role_ids = mentioned_role_ids,
+        mentioned_users = mentioned_users,
+        message_type = message_type,
+        nonce = nonce,
+        pinned = pinned,
+        reactions = reactions,
+        referenced_message = referenced_message,
+        resolved = resolved,
+        role_subscription = role_subscription,
+        stickers = stickers,
+        thread = thread,
+        tts = tts,
+    )
+    
+    vampytest.assert_eq(
+        message.to_data(defaults = True, include_internals = True, recursive = True),
+        expected_output,
+    )
+
+
+def test__Message__create_message_was_up_to_date__new():
     """
     Tests whether ``Message._create_message_was_up_to_date`` works as intended.
     
@@ -234,7 +370,7 @@ def test__Message__create_message_was_up_to_date__0():
     vampytest.assert_false(was_up_to_date)
 
 
-def test__Message__create_message_was_up_to_date__1():
+def test__Message__create_message_was_up_to_date__in_cache_require_update():
     """
     Tests whether ``Message._create_message_was_up_to_date`` works as intended.
     
@@ -258,7 +394,7 @@ def test__Message__create_message_was_up_to_date__1():
     vampytest.assert_false(was_up_to_date)
 
 
-def test__Message__create_message_was_up_to_date__2():
+def test__Message__create_message_was_up_to_date__in_cache_up_to_date():
     """
     Tests whether ``Message._create_message_was_up_to_date`` works as intended.
     
@@ -286,7 +422,7 @@ def test__Message__create_message_was_up_to_date__2():
     vampytest.assert_true(was_up_to_date)
 
 
-def test__Message__create_from_partial_data__0():
+def test__Message__create_from_partial_data__with_message_id_key():
     """
     Tests whether ``Message._create_from_partial_data`` works as intended.
     
@@ -313,7 +449,7 @@ def test__Message__create_from_partial_data__0():
     vampytest.assert_is(message, test_message)
 
 
-def test__Message__create_from_partial_data__1():
+def test__Message__create_from_partial_data__with_id_key():
     """
     Tests whether ``Message._create_from_partial_data`` works as intended.
     
@@ -340,7 +476,7 @@ def test__Message__create_from_partial_data__1():
     vampytest.assert_is(message, test_message)
 
 
-def test__Message__create_from_partial_data__2():
+def test__Message__create_from_partial_data__without_id_key():
     """
     Tests whether ``Message._create_from_partial_data`` works as intended.
     
@@ -432,7 +568,7 @@ def test__Message__set_attributes__caching():
     vampytest.assert_ne(old_mentioned_channels, new_mentioned_channels)
 
 
-def test__message__late_init__0():
+def test__message__late_init__loading():
     """
     Tests whether ``Message._late_init`` works as intended.
     
@@ -453,11 +589,11 @@ def test__message__late_init__0():
     vampytest.assert_eq(message.call, call)
 
 
-def test__message__late_init__1():
+def test__message__late_init__not_loading_but_receiving_interaction():
     """
     Tests whether ``Message._late_init`` works as intended.
     
-    Case: flags -> not Loading & interaction received..
+    Case: flags -> not Loading & interaction received.
     """
     interaction = MessageInteraction.precreate(202305030081, name = 'Koishi')
     call = MessageCall(ended_at = DateTime(2045, 3, 4))

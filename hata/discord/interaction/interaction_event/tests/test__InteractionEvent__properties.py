@@ -2,7 +2,8 @@ import vampytest
 
 from ....channel import Channel
 from ....client import Client
-from ....guild import Guild
+from ....guild import Guild, create_partial_guild_from_id
+from ....localization import Locale
 from ....user import User
 
 from ..interaction_event import InteractionEvent
@@ -36,31 +37,57 @@ def test__InteractionEvent__user_id():
     vampytest.assert_eq(output, user_id)
 
 
-def test__InteractionEvent__guild_0():
-    """
-    Tests whether ``InteractionEvent.guild`` works as intended.
-    
-    Case: Has guild.
-    """
+def _iter_options__guild_id():
     guild_id = 202211070050
-    interaction_event = InteractionEvent(guild_id = guild_id)
     
-    guild = interaction_event.guild
-    vampytest.assert_instance(guild, Guild)
-    vampytest.assert_eq(guild.id, guild_id)
+    yield InteractionEvent(), 0
+    yield InteractionEvent(guild = create_partial_guild_from_id(guild_id)), guild_id
+    
 
-
-def test__InteractionEvent__guild_id__1():
+@vampytest._(vampytest.call_from(_iter_options__guild_id()).returning_last())
+def test__InteractionEvent__guild_id(interaction_event):
     """
     Tests whether ``InteractionEvent.guild_id`` works as intended.
     
-    Case: No guild.
-    """
-    guild_id = 0
-    interaction_event = InteractionEvent(guild_id = guild_id)
+    Parameters
+    ----------
+    interaction_event : ``InteractionEvent``
+        Interaction event to validate with.
     
-    guild = interaction_event.guild
-    vampytest.assert_is(guild, None)
+    Returns
+    -------
+    output : `int`
+    """
+    output = interaction_event.guild_id
+    vampytest.assert_instance(output, int)
+    return output
+
+
+def _iter_options__guild_locale():
+    guild_id = 202310100007
+    guild_locale = Locale.dutch
+    
+    yield InteractionEvent(), Locale.english_us
+    yield InteractionEvent(guild = Guild.precreate(guild_id, locale = guild_locale)), guild_locale
+    
+
+@vampytest._(vampytest.call_from(_iter_options__guild_locale()).returning_last())
+def test__InteractionEvent__guild_locale(interaction_event):
+    """
+    Tests whether ``InteractionEvent.guild_locale`` works as intended.
+    
+    Parameters
+    ----------
+    interaction_event : ``InteractionEvent``
+        Interaction event to validate with.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    output = interaction_event.guild_locale
+    vampytest.assert_instance(output, Locale)
+    return output
 
 
 def test__InteractionEvent__client_0():

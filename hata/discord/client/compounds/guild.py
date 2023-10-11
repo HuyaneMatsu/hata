@@ -1,6 +1,6 @@
 __all__ = ()
 
-import warnings
+from warnings import warn
 
 from scarletio import Compound
 
@@ -800,6 +800,7 @@ class ClientCompoundGuildEndpoints(Compound):
         *,
         add_feature = ...,
         remove_feature = ...,
+        preferred_locale = ...,
         reason = None,
         **keyword_parameters,
     ):
@@ -857,6 +858,9 @@ class ClientCompoundGuildEndpoints(Compound):
         invite_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The guild's invite splash.
         
+        locale : ``Locale``, `int`, Optional (Keyword only)
+            The preferred language of the guild.
+        
         message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
             The message notification level of the guild.
         
@@ -871,9 +875,6 @@ class ClientCompoundGuildEndpoints(Compound):
         
         owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
             The guild's owner or their id.
-        
-        preferred_locale : ``Locale``, `int`, Optional (Keyword only)
-            The preferred language of the guild.
         
         public_updates_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel's identifier where the guild's public updates should go.
@@ -915,10 +916,23 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         guild, guild_id = get_guild_and_id(guild)
         
+        # Deprecations
+        if preferred_locale is not ...:
+            warn(
+                (
+                    f'`{type(self).__name__}.guild_edit`\'s `preferred_locale` parameter is deprecated and will be '
+                    f'removed in 2024 February. Please use `locale` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            keyword_parameters['locale'] = preferred_locale
+        
         data = build_edit_payload(guild, guild_template, GUILD_FIELD_CONVERTERS, keyword_parameters)
         
+        # Deprecations
         if (add_feature is not ...) or (remove_feature is not ...):
-            warnings.warn(
+            warn(
                 (
                     f'`add_feature` and `remove_feature` parameters are deprecated of '
                     f'`{self.__class__.__name__}.guild_edit` and they will be removed in 2023 December. '

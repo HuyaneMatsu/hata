@@ -2,14 +2,14 @@ from datetime import datetime as DateTime
 
 import vampytest
 
-from ....channel import Channel, ChannelType, create_partial_channel_data
+from ....channel import Channel, ChannelType
 from ....component import Component, ComponentType
 from ....core import BUILTIN_EMOJIS
 from ....embed import Embed
 from ....emoji import ReactionMapping
+from ....interaction import Resolved
 from ....sticker import Sticker
 from ....user import User
-from ....utils import datetime_to_timestamp
 
 from ...attachment import Attachment
 from ...message_activity import MessageActivity
@@ -21,8 +21,6 @@ from ...message_role_subscription import MessageRoleSubscription
 from ..flags import MessageFlag
 from ..message import Message
 from ..preinstanced import MessageType
-
-from .test__Message__contructor import _assert_fields_set
 
 
 def test__Message__repr():
@@ -67,6 +65,7 @@ def test__Message__repr():
         BUILTIN_EMOJIS['x']: [None, None],
     })
     referenced_message = Message.precreate(202305040032, content = 'Patchouli')
+    resolved = Resolved(attachments = [Attachment.precreate(202310110030)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
     stickers = [
         Sticker.precreate(202305040033, name = 'Kirisame'),
@@ -97,6 +96,7 @@ def test__Message__repr():
         'pinned': pinned,
         'reactions': reactions,
         'referenced_message': referenced_message,
+        'resolved': resolved,
         'role_subscription': role_subscription,
         'stickers': stickers,
         'thread': thread,
@@ -165,6 +165,7 @@ def test__Message__hash():
         BUILTIN_EMOJIS['x']: [None, None],
     })
     referenced_message = Message.precreate(202305040050, content = 'Patchouli')
+    resolved = Resolved(attachments = [Attachment.precreate(202310110031)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
     stickers = [
         Sticker.precreate(202305040051, name = 'Kirisame'),
@@ -195,6 +196,7 @@ def test__Message__hash():
         'pinned': pinned,
         'reactions': reactions,
         'referenced_message': referenced_message,
+        'resolved': resolved,
         'role_subscription': role_subscription,
         'stickers': stickers,
         'thread': thread,
@@ -285,6 +287,7 @@ def test__Message__eq():
         BUILTIN_EMOJIS['x']: [None, None],
     })
     old_referenced_message = Message.precreate(202305040072, content = 'Patchouli')
+    old_resolved = Resolved(attachments = [Attachment.precreate(202310110032)])
     old_role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
     old_stickers = [
         Sticker.precreate(202305040073, name = 'Kirisame'),
@@ -331,6 +334,7 @@ def test__Message__eq():
         BUILTIN_EMOJIS['heart']: [None],
     })
     new_referenced_message = Message.precreate(202305040088, content = 'Book')
+    new_resolved = Resolved(attachments = [Attachment.precreate(202310110033)])
     new_role_subscription = MessageRoleSubscription(tier_name = 'Big brain')
     new_stickers = [
         Sticker.precreate(202305040089, name = 'Magic'),
@@ -361,6 +365,7 @@ def test__Message__eq():
         'pinned': old_pinned,
         'reactions': old_reactions,
         'referenced_message': old_referenced_message,
+        'resolved': old_resolved,
         'role_subscription': old_role_subscription,
         'stickers': old_stickers,
         'thread': old_thread,
@@ -389,6 +394,7 @@ def test__Message__eq():
         ('pinned', new_pinned),
         ('reactions', new_reactions),
         ('referenced_message', new_referenced_message),
+        ('resolved', new_resolved),
         ('role_subscription', new_role_subscription),
         ('stickers', new_stickers),
         ('thread', new_thread),

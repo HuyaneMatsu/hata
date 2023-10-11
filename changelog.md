@@ -1,4 +1,24 @@
-## 1.3.41 *\[2023-10-??\]*
+## 1.3.42 *\[2023-10-??\]*
+
+### Improvements
+
+- Add `create_partial_guild_from_interaction_guild_data`.
+- `InteractionEvent.guild` is now an attribute using recently added `guild` field in the payload.
+    This makes `.guild_id` and `.guild_locale` properties.
+- Add `Message.resolved`.
+
+#### Bug fixes
+
+- `ScheduledEvent.guild` could return non-None if a guild with id of `0` was cached.
+
+#### Renames, Deprecations & Removals
+
+- `Guild.preferred_locale` is now `.locale`.
+- Deprecate `Guild.preferred_locale`.
+- Rename `InteractionEvent.locale` to `.user_locale`.
+- Deprecate `InteractionEvent.locale`.
+
+## 1.3.41 *\[2023-10-08\]*
 
 ### Improvements
 

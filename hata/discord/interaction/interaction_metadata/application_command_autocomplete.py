@@ -82,7 +82,7 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
     
     @classmethod
     @copy_docs(InteractionMetadataBase.from_data)
-    def from_data(cls, data, interaction_event):
+    def from_data(cls, data, guild_id = 0):
         self = object.__new__(cls)
         self.id = parse_id(data)
         self.name = parse_name(data)
@@ -91,7 +91,7 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
     
     
     @copy_docs(InteractionMetadataBase.to_data)
-    def to_data(self, *, defaults = False, interaction_event = None):
+    def to_data(self, *, defaults = False, guild_id = 0):
         data = {}
         put_id_into(self.id, data, defaults)
         put_name_into(self.name, data, defaults)

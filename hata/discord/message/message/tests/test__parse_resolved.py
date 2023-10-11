@@ -1,15 +1,15 @@
 import vampytest
 
-from ....message import Attachment
+from ....interaction import Resolved
 
-from ...resolved import Resolved
+from ...attachment import Attachment
 
 from ..fields import parse_resolved
 
 
 def _iter_options():
-    entity_id = 202211050039
-    guild_id = 202211050040
+    entity_id = 202310110000
+    guild_id = 202310110001
     resolved = Resolved(attachments = [Attachment.precreate(entity_id)])
     
     yield (

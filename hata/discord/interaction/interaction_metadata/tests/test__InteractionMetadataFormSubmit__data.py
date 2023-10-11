@@ -1,6 +1,5 @@
 import vampytest
 
-from ...interaction_event import InteractionEvent
 from ...interaction_component import InteractionComponent
 
 from ..form_submit import InteractionMetadataFormSubmit
@@ -12,6 +11,7 @@ def test__InteractionMetadataFormSubmit__from_data():
     """
     Tests whether ``InteractionMetadataFormSubmit.from_data`` works as intended.
     """
+    guild_id = 0
     custom_id = 'Inaba'
     components = [InteractionComponent(custom_id = 'Rem')]
     
@@ -20,8 +20,7 @@ def test__InteractionMetadataFormSubmit__from_data():
         'components': [component.to_data(defaults = True) for component in components],
     }
     
-    interaction_event = InteractionEvent()
-    interaction_metadata = InteractionMetadataFormSubmit.from_data(data, interaction_event)
+    interaction_metadata = InteractionMetadataFormSubmit.from_data(data, guild_id)
     _check_is_all_field_set(interaction_metadata)
 
     vampytest.assert_eq(interaction_metadata.custom_id, custom_id)
@@ -33,8 +32,6 @@ def test__InteractionMetadataFormSubmit__to_data():
     Tests whether ``InteractionMetadataFormSubmit.to_data`` works as intended.
     """
     guild_id = 202211060003
-    interaction_event = InteractionEvent(guild_id = guild_id)
-    
     custom_id = 'Inaba'
     components = [InteractionComponent(custom_id = 'Rem')]
     
@@ -46,7 +43,7 @@ def test__InteractionMetadataFormSubmit__to_data():
     vampytest.assert_eq(
         interaction_metadata.to_data(
             defaults = True,
-            interaction_event = interaction_event,
+            guild_id = guild_id,
         ),
         {
             'custom_id': custom_id,

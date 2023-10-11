@@ -27,14 +27,11 @@ def _iter_options():
         name = user_name,
     )
     
-    interaction_event_0 = InteractionEvent(guild_id = guild_id_0)
-    interaction_event_1 = InteractionEvent(guild_id = guild_id_1)
-    
     guild_profile = GuildProfile(nick = user_nick)
     
     yield (
         {},
-        interaction_event_0,
+        guild_id_0,
         None,
     )
     
@@ -42,7 +39,7 @@ def _iter_options():
         {
             'users': {},
         },
-        interaction_event_0,
+        guild_id_0,
         None,
     )
     
@@ -51,7 +48,7 @@ def _iter_options():
             'users': {},
             'members': {},
         },
-        interaction_event_0,
+        guild_id_0,
         None,
     )
     
@@ -59,7 +56,7 @@ def _iter_options():
         {
             'members': {},
         },
-        interaction_event_0,
+        guild_id_0,
         None,
     )
     
@@ -69,7 +66,7 @@ def _iter_options():
                 str(user_id_0): user_0.to_data(defaults = True, include_internals = True),
             }
         },
-        interaction_event_0,
+        guild_id_0,
         (
             {
                 user_id_0: user_0,
@@ -87,7 +84,7 @@ def _iter_options():
                  str(user_id_1): guild_profile.to_data(defaults = True, include_internals = True),
             },
         },
-        interaction_event_1,
+        guild_id_1,
         (
             {
                 user_id_1: user_1,
@@ -100,7 +97,7 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__parse_users(input_data, interaction_event):
+def test__parse_users(input_data, guild_id):
     """
     Tests whether ``parse_users`` works as intended.
     
@@ -108,18 +105,18 @@ def test__parse_users(input_data, interaction_event):
     ----------
     input_data : `dict<str, object>`
         Data to parse from.
-    interaction_event : ``InteractionEvent``
-        Respective interaction event received with the users.
+    guild_id : `int`
+        The respective guild's identifier.
     
     Returns
     -------
     output : `None | (dict<int, ClientUserBase>, list<GuildProfile>)`
     """
-    output = parse_users(input_data, interaction_event)
+    output = parse_users(input_data, guild_id)
     if output is not None:
         output = (
             output,
-            [user.guild_profiles.get(interaction_event.guild_id) for user in output.values()],
+            [user.guild_profiles.get(guild_id) for user in output.values()],
         )
     
     return output

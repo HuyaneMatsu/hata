@@ -80,19 +80,19 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
     
     @classmethod
     @copy_docs(InteractionMetadataApplicationCommandAutocomplete.from_data)
-    def from_data(cls, data, interaction_event):
-        self = super(InteractionMetadataApplicationCommand, cls).from_data(data, interaction_event)
-        self.resolved = parse_resolved(data, interaction_event)
+    def from_data(cls, data, guild_id = 0):
+        self = super(InteractionMetadataApplicationCommand, cls).from_data(data, guild_id)
+        self.resolved = parse_resolved(data, guild_id)
         self.target_id = parse_target_id(data)
         return self
     
     
     @copy_docs(InteractionMetadataApplicationCommandAutocomplete.to_data)
-    def to_data(self, *, defaults = False, interaction_event = None):
+    def to_data(self, *, defaults = False, guild_id = 0):
         data = InteractionMetadataApplicationCommandAutocomplete.to_data(
-            self, defaults = defaults, interaction_event = interaction_event
+            self, defaults = defaults, guild_id = guild_id
         )
-        put_resolved_into(self.resolved, data, defaults, interaction_event = interaction_event)
+        put_resolved_into(self.resolved, data, defaults, guild_id = guild_id)
         put_target_id_into(self.target_id, data, defaults)
         return data
     

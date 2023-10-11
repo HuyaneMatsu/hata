@@ -15,7 +15,9 @@ from ...field_validators import (
     force_string_validator_factory, nullable_entity_array_validator_factory, nullable_entity_validator_factory,
     preinstanced_validator_factory
 )
-from ...guild import Guild
+from ...guild import (
+    Guild, create_interaction_guild_data, create_partial_guild_from_id, create_partial_guild_from_interaction_guild_data
+)
 from ...localization import Locale
 from ...localization.utils import LOCALE_DEFAULT
 from ...message import Message
@@ -56,6 +58,68 @@ put_entitlements_into = nullable_entity_array_optional_putter_factory(
     'entitlements', Entitlement, force_include_internals = True,
 )
 validate_entitlements = nullable_entity_array_validator_factory('entitlements', Entitlement)
+
+# guild
+
+def parse_guild(data):
+    """
+    Parses out the interaction's guild from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    guild : `None | Guild`
+    """
+    guild_data = data.get('guild', None)
+    if (guild_data is not None):
+        return create_partial_guild_from_interaction_guild_data(guild_data)
+    
+    guild_id = data.get('guild_id', None)
+    if (guild_id is not None):
+        return create_partial_guild_from_id(int(guild_id))
+    
+    return None
+
+
+def put_guild_into(guild, data, defaults):
+    """
+    Puts the given `guild''s data into the given interaction data.
+    
+    Parameters
+    ----------
+    guild : `None | Guild`
+        The guild to serialize.
+    data : `dict` of (`str`, `object`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default fields should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `object`) items
+    """
+    if (guild is not None) or defaults:
+        if guild is None:
+            guild_data = None
+            guild_id = None
+            guild_locale = None
+        else:
+            guild_data = create_interaction_guild_data(guild)
+            guild_id = str(guild.id)
+            guild_locale = guild.locale.value
+        
+        data['guild'] = guild_data
+        data['guild_id'] = guild_id
+        data['guild_locale'] = guild_locale
+    
+    return data
+
+
+validate_guild = nullable_entity_validator_factory('guild', Guild)
 
 # guild_locale
 
@@ -116,12 +180,6 @@ def validate_interaction(interaction, interaction_type):
         )
     
     return interaction
-
-# locale
-
-parse_locale = preinstanced_parser_factory('locale', Locale, LOCALE_DEFAULT)
-put_locale_into = preinstanced_putter_factory('locale')
-validate_locale = preinstanced_validator_factory('locale', Locale)
 
 # message
 
@@ -238,6 +296,12 @@ def put_user_into(user, data, defaults, *, guild_id = 0):
 
 
 validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)
+
+# user_locale
+
+parse_user_locale = preinstanced_parser_factory('locale', Locale, LOCALE_DEFAULT)
+put_user_locale_into = preinstanced_putter_factory('locale')
+validate_user_locale = preinstanced_validator_factory('user_locale', Locale)
 
 # user_permissions
 

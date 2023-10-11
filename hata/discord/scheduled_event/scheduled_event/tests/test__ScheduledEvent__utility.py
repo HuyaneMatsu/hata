@@ -261,20 +261,33 @@ def test__ScheduledEvent__channel():
         vampytest.assert_is(scheduled_event.channel, expected_output)
 
 
-def test__ScheduledEvent__guild():
-    """
-    Tests whether ``ScheduledEvent.guild`` works as intended.
-    """
+def _iter_options__guild():
     guild_id_0 = 202303160085
     guild_id_1 = 202303160086
     
-    for scheduled_event_id, input_value, expected_output in (
-        (202303160087, 0, None),
-        (202303160088, guild_id_0, None),
-        (202303160089, guild_id_1, Guild.precreate(guild_id_1)),
-    ):
-        scheduled_event = ScheduledEvent.precreate(scheduled_event_id, guild_id = input_value)
-        vampytest.assert_is(scheduled_event.guild, expected_output)
+    yield (202303160087, 0, None)
+    yield (202303160088, guild_id_0, None)
+    yield (202303160089, guild_id_1, Guild.precreate(guild_id_1))
+    
+
+@vampytest._(vampytest.call_from(_iter_options__guild()).returning_last())
+def test__ScheduledEvent__guild(scheduled_event_id, guild_id):
+    """
+    Tests whether ``ScheduledEvent.guild`` works as intended.
+    
+    Parameters
+    ----------
+    scheduled_event_id : `int`
+        Identifier of teh scheduled event to create.
+    guild_id : `int`
+        The guild's identifier.
+    
+    Returns
+    -------
+    output : `None | Guild`
+    """
+    scheduled_event = ScheduledEvent.precreate(scheduled_event_id, guild_id = guild_id)
+    return scheduled_event.guild
 
 
 def test__ScheduledEvent__creator_id():

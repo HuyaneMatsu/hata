@@ -66,17 +66,17 @@ validate_options = nullable_object_array_validator_factory('options', Interactio
 
 # resolved
 
-def parse_resolved(data, interaction_event):
+def parse_resolved(data, guild_id = 0):
     """
     Parsers out a resolved object from the given data.
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Interaction metadata data.
     
-    interaction_event : ``InteractionEvent``
-        Parent interaction event instance.
+    guild_id : `int` = `0`, Optional
+        The respective guild's identifier.
     
     Returns
     -------
@@ -84,16 +84,17 @@ def parse_resolved(data, interaction_event):
     """
     resolved_data = data.get('resolved', None)
     if (resolved_data is not None) and resolved_data:
-        return Resolved.from_data(resolved_data, interaction_event)
+        return Resolved.from_data(resolved_data, guild_id)
 
 
-def put_resolved_into(resolved, data, defaults, *, interaction_event = None):
+def put_resolved_into(resolved, data, defaults, *, guild_id = 0):
     """
     Puts the given `resolved` into the given interaction metadata data.
     
     Parameters
     ----------
     resolved  : `None`, ``Resolved``
+        The instance to serialise.
         
     data : `dict` of (`str`, `object`) items
         Interaction metadata data.
@@ -101,7 +102,7 @@ def put_resolved_into(resolved, data, defaults, *, interaction_event = None):
     defaults : `bool`
         Whether default field values should be included as well.
     
-    interaction_event : ``InteractionEvent`` = `None`, Optional (Keyword only)
+    guild_id : `int` = `None`, Optional (Keyword only)
         The respective guild's identifier to use for handing user guild profiles.
     
     Returns
@@ -118,7 +119,7 @@ def put_resolved_into(resolved, data, defaults, *, interaction_event = None):
             resolved_data = {}
         
         else:
-            resolved_data = resolved.to_data(defaults = defaults, interaction_event = interaction_event)
+            resolved_data = resolved.to_data(defaults = defaults, guild_id = guild_id)
         
         data['resolved'] = resolved_data
         break

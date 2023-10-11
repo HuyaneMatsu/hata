@@ -67,7 +67,7 @@ class InteractionMetadataFormSubmit(InteractionMetadataBase):
     
     @classmethod
     @copy_docs(InteractionMetadataBase.from_data)
-    def from_data(cls, data, interaction_event):
+    def from_data(cls, data, guild_id = 0):
         self = object.__new__(cls)
         self.components = parse_components(data)
         self.custom_id = parse_custom_id(data)
@@ -75,7 +75,7 @@ class InteractionMetadataFormSubmit(InteractionMetadataBase):
     
     
     @copy_docs(InteractionMetadataBase.to_data)
-    def to_data(self, *, defaults = False, interaction_event = None):
+    def to_data(self, *, defaults = False, guild_id = 0):
         data = {}
         put_components_into(self.components, data, defaults)
         put_custom_id_into(self.custom_id, data, defaults)

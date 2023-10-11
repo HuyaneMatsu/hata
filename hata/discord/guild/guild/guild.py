@@ -1,8 +1,8 @@
 __all__ = ('Guild',)
 
-import warnings
 from datetime import datetime as DateTime
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape
+from warnings import warn
 
 from scarletio import WeakValueDictionary, export, include
 
@@ -60,33 +60,33 @@ from .fields import (
     parse_afk_channel_id, parse_afk_timeout, parse_approximate_online_count, parse_approximate_user_count,
     parse_available, parse_boost_count, parse_boost_progress_bar_enabled, parse_channels, parse_client_guild_profile,
     parse_content_filter, parse_description, parse_embedded_activity_states, parse_emojis, parse_features,
-    parse_hub_type, parse_id, parse_incidents, parse_inventory_settings, parse_large, parse_max_presences,
-    parse_max_stage_channel_video_users, parse_max_users, parse_max_voice_channel_video_users,
-    parse_message_notification, parse_mfa, parse_name, parse_nsfw_level, parse_owner_id, parse_preferred_locale,
-    parse_premium_tier, parse_public_updates_channel_id, parse_roles, parse_rules_channel_id,
-    parse_safety_alerts_channel_id, parse_scheduled_events, parse_stages, parse_stickers, parse_system_channel_flags,
-    parse_system_channel_id, parse_threads, parse_user_count, parse_users, parse_vanity_code, parse_verification_level,
-    parse_voice_states, parse_widget_channel_id, parse_widget_enabled, put_afk_channel_id_into, put_afk_timeout_into,
+    parse_hub_type, parse_id, parse_incidents, parse_inventory_settings, parse_large, parse_locale,
+    parse_max_presences, parse_max_stage_channel_video_users, parse_max_users, parse_max_voice_channel_video_users,
+    parse_message_notification, parse_mfa, parse_name, parse_nsfw_level, parse_owner_id, parse_premium_tier,
+    parse_public_updates_channel_id, parse_roles, parse_rules_channel_id, parse_safety_alerts_channel_id,
+    parse_scheduled_events, parse_stages, parse_stickers, parse_system_channel_flags, parse_system_channel_id,
+    parse_threads, parse_user_count, parse_users, parse_vanity_code, parse_verification_level, parse_voice_states,
+    parse_widget_channel_id, parse_widget_enabled, put_afk_channel_id_into, put_afk_timeout_into,
     put_approximate_online_count_into, put_approximate_user_count_into, put_available_into, put_boost_count_into,
     put_boost_progress_bar_enabled_into, put_channels_into, put_content_filter_into, put_description_into,
     put_embedded_activity_states_into, put_emojis_into, put_features_into, put_hub_type_into, put_id_into,
-    put_incidents_into, put_inventory_settings_into, put_large_into, put_max_presences_into,
+    put_incidents_into, put_inventory_settings_into, put_large_into, put_locale_into, put_max_presences_into,
     put_max_stage_channel_video_users_into, put_max_users_into, put_max_voice_channel_video_users_into,
     put_message_notification_into, put_mfa_into, put_name_into, put_nsfw_level_into, put_owner_id_into,
-    put_preferred_locale_into, put_premium_tier_into, put_public_updates_channel_id_into, put_roles_into,
-    put_rules_channel_id_into, put_safety_alerts_channel_id_into, put_scheduled_events_into, put_stages_into,
-    put_stickers_into, put_system_channel_flags_into, put_system_channel_id_into, put_threads_into, put_user_count_into,
-    put_users_into, put_vanity_code_into, put_verification_level_into, put_voice_states_into,
-    put_widget_channel_id_into, put_widget_enabled_into, validate_afk_channel_id, validate_afk_timeout,
-    validate_approximate_online_count, validate_approximate_user_count, validate_available, validate_boost_count,
-    validate_boost_progress_bar_enabled, validate_channels, validate_content_filter, validate_description,
-    validate_embedded_activity_states, validate_emojis, validate_features, validate_hub_type, validate_id,
-    validate_incidents, validate_inventory_settings, validate_large, validate_max_presences,
+    put_premium_tier_into, put_public_updates_channel_id_into, put_roles_into, put_rules_channel_id_into,
+    put_safety_alerts_channel_id_into, put_scheduled_events_into, put_stages_into, put_stickers_into,
+    put_system_channel_flags_into, put_system_channel_id_into, put_threads_into, put_user_count_into, put_users_into,
+    put_vanity_code_into, put_verification_level_into, put_voice_states_into, put_widget_channel_id_into,
+    put_widget_enabled_into, validate_afk_channel_id, validate_afk_timeout, validate_approximate_online_count,
+    validate_approximate_user_count, validate_available, validate_boost_count, validate_boost_progress_bar_enabled,
+    validate_channels, validate_content_filter, validate_description, validate_embedded_activity_states,
+    validate_emojis, validate_features, validate_hub_type, validate_id, validate_incidents,
+    validate_inventory_settings, validate_large, validate_locale, validate_max_presences,
     validate_max_stage_channel_video_users, validate_max_users, validate_max_voice_channel_video_users,
     validate_message_notification, validate_mfa, validate_name, validate_nsfw_level, validate_owner_id,
-    validate_preferred_locale, validate_premium_tier, validate_public_updates_channel_id, validate_roles,
-    validate_rules_channel_id, validate_safety_alerts_channel_id, validate_scheduled_events, validate_soundboard_sounds,
-    validate_stages, validate_stickers, validate_system_channel_flags, validate_system_channel_id, validate_threads,
+    validate_premium_tier, validate_public_updates_channel_id, validate_roles, validate_rules_channel_id,
+    validate_safety_alerts_channel_id, validate_scheduled_events, validate_soundboard_sounds, validate_stages,
+    validate_stickers, validate_system_channel_flags, validate_system_channel_id, validate_threads,
     validate_user_count, validate_users, validate_vanity_code, validate_verification_level, validate_voice_states,
     validate_widget_channel_id, validate_widget_enabled
 )
@@ -139,6 +139,7 @@ GUILD_INVITE_SPLASH = IconSlot(
     module_urls.guild_invite_splash_url_as,
 )
 
+
 PRECREATE_FIELDS = {
     'afk_channel': ('afk_channel_id', validate_afk_channel_id),
     'afk_channel_id': ('afk_channel_id', validate_afk_channel_id),
@@ -172,7 +173,7 @@ PRECREATE_FIELDS = {
     'nsfw_level': ('nsfw_level', validate_nsfw_level),
     'owner': ('owner_id', validate_owner_id),
     'owner_id': ('owner_id', validate_owner_id),
-    'preferred_locale': ('preferred_locale', validate_preferred_locale),
+    'locale': ('locale', validate_locale),
     'premium_tier': ('premium_tier', validate_premium_tier),
     'public_updates_channel': ('public_updates_channel_id', validate_public_updates_channel_id),
     'public_updates_channel_id': ('public_updates_channel_id', validate_public_updates_channel_id),
@@ -310,6 +311,11 @@ class Guild(DiscordEntity, immortal = True):
     large : `bool`
         Whether the guild is considered as a large one.
     
+    locale : ``Locale``
+        The preferred language of the guild.
+        
+        The guild must be a Community guild, defaults to `'en-US'`.
+    
     max_presences : `int`
         The maximal amount of presences for the guild.
         
@@ -346,11 +352,6 @@ class Guild(DiscordEntity, immortal = True):
         The guild's owner's id.
         
         Defaults to `0`.
-    
-    preferred_locale : ``Locale``
-        The preferred language of the guild.
-        
-        The guild must be a Community guild, defaults to `'en-US'`.
     
     premium_tier : `int`
         The premium tier of the guild. More boosters = higher tier.
@@ -441,12 +442,12 @@ class Guild(DiscordEntity, immortal = True):
         '_cache_boosters', '_cache_permission', '_state', 'afk_channel_id', 'afk_timeout', 'approximate_online_count',
         'approximate_user_count', 'available', 'boost_count', 'boost_progress_bar_enabled', 'channels', 'clients',
         'content_filter', 'description', 'embedded_activity_states', 'emojis', 'features', 'hub_type', 'incidents',
-        'inventory_settings', 'large', 'max_presences', 'max_stage_channel_video_users', 'max_users',
+        'inventory_settings', 'large', 'locale', 'max_presences', 'max_stage_channel_video_users', 'max_users',
         'max_voice_channel_video_users', 'message_notification', 'mfa', 'name', 'nsfw_level', 'owner_id',
-        'preferred_locale', 'premium_tier', 'public_updates_channel_id', 'roles', 'rules_channel_id',
-        'safety_alerts_channel_id', 'scheduled_events', 'soundboard_sounds', 'stages', 'stickers',
-        'system_channel_flags', 'system_channel_id', 'threads', 'user_count', 'users', 'vanity_code',
-        'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled'
+        'premium_tier', 'public_updates_channel_id', 'roles', 'rules_channel_id', 'safety_alerts_channel_id',
+        'scheduled_events', 'soundboard_sounds', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id',
+        'threads', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id',
+        'widget_enabled'
     )
     
     banner = GUILD_BANNER
@@ -468,6 +469,7 @@ class Guild(DiscordEntity, immortal = True):
         hub_type = ...,
         icon = ...,
         invite_splash = ...,
+        locale = ...,
         message_notification = ...,
         mfa = ...,
         name = ...,
@@ -522,6 +524,9 @@ class Guild(DiscordEntity, immortal = True):
         invite_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The guild's invite splash.
         
+        locale : ``Locale``, `int`, Optional (Keyword only)
+            The preferred language of the guild.
+        
         message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
             The message notification level of the guild.
         
@@ -536,9 +541,6 @@ class Guild(DiscordEntity, immortal = True):
         
         owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
             The guild's owner or their id.
-        
-        preferred_locale : ``Locale``, `int`, Optional (Keyword only)
-            The preferred language of the guild.
         
         public_updates_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel's identifier where the guild's public updates should go.
@@ -644,6 +646,24 @@ class Guild(DiscordEntity, immortal = True):
         else:
             invite_splash = cls.invite_splash.validate_icon(invite_splash, allow_data = True)
         
+        # preferred_locale
+        if preferred_locale is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `preferred_locale` parameter is deprecated and will be '
+                    f'removed in 2024 February. Please use `locale` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            locale = preferred_locale
+        
+        # locale
+        if locale is ...:
+            locale = LOCALE_DEFAULT
+        else:
+            locale = validate_locale(locale)
+        
         # message_notification
         if message_notification is ...:
             message_notification = MessageNotificationLevel.all_messages
@@ -673,13 +693,6 @@ class Guild(DiscordEntity, immortal = True):
             owner_id = 0
         else:
             owner_id = validate_owner_id(owner_id)
-        
-        # preferred_locale
-        if preferred_locale is ...:
-            preferred_locale = LOCALE_DEFAULT
-        else:
-            preferred_locale = validate_preferred_locale(preferred_locale)
-        
         # public_updates_channel_id
         if public_updates_channel_id is ...:
             public_updates_channel_id = 0
@@ -762,6 +775,7 @@ class Guild(DiscordEntity, immortal = True):
         self.inventory_settings = None
         self.invite_splash = invite_splash
         self.large = False
+        self.locale = locale
         self.max_presences = MAX_PRESENCES_DEFAULT
         self.max_stage_channel_video_users = MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
         self.max_users = MAX_USERS_DEFAULT
@@ -771,7 +785,6 @@ class Guild(DiscordEntity, immortal = True):
         self.name = name
         self.nsfw_level = nsfw_level
         self.owner_id = owner_id
-        self.preferred_locale = preferred_locale
         self.premium_tier = 0
         self.public_updates_channel_id = public_updates_channel_id
         self.safety_alerts_channel_id = safety_alerts_channel_id
@@ -796,7 +809,7 @@ class Guild(DiscordEntity, immortal = True):
     
     
     @classmethod
-    def precreate(cls, guild_id, **keyword_parameters):
+    def precreate(cls, guild_id, *, preferred_locale = ..., **keyword_parameters):
         """
         Precreates the guild with the given parameters. Precreated guilds are picked up when a guild's data is received
         with the same id.
@@ -879,6 +892,9 @@ class Guild(DiscordEntity, immortal = True):
         large : `bool`, Optional (Keyword only)
             Whether the guild is considered as a large one.
         
+        locale : ``Locale``, `int`, Optional (Keyword only)
+            The preferred language of the guild.
+        
         max_presences : `int`, Optional (Keyword only)
             The maximal amount of presences for the guild.
         
@@ -908,9 +924,6 @@ class Guild(DiscordEntity, immortal = True):
         
         owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
             The guild's owner or their id.
-        
-        preferred_locale : ``Locale``, `int`, Optional (Keyword only)
-            The preferred language of the guild.
         
         premium_tier : `int`, Optional (Keyword only)
             The premium tier of the guild.
@@ -1004,6 +1017,19 @@ class Guild(DiscordEntity, immortal = True):
         """
         guild_id = validate_id(guild_id)
         
+        # Deprecations
+        if preferred_locale is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.precreate`\'s `preferred_locale` parameter is deprecated and will be removed in '
+                    f'2024 February. Please use `locale` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            keyword_parameters['locale'] = preferred_locale
+            
+        
         if keyword_parameters:
             processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
         else:
@@ -1070,6 +1096,7 @@ class Guild(DiscordEntity, immortal = True):
         self.invite_splash_hash = 0
         self.invite_splash_type = ICON_TYPE_NONE
         self.large = False
+        self.locale = LOCALE_DEFAULT
         self.max_presences = MAX_PRESENCES_DEFAULT
         self.max_stage_channel_video_users = MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
         self.max_users = MAX_USERS_DEFAULT
@@ -1079,7 +1106,6 @@ class Guild(DiscordEntity, immortal = True):
         self.name = ''
         self.nsfw_level = NsfwLevel.none
         self.owner_id = 0
-        self.preferred_locale = LOCALE_DEFAULT
         self.premium_tier = 0
         self.public_updates_channel_id = 0
         self.safety_alerts_channel_id = 0
@@ -1182,7 +1208,7 @@ class Guild(DiscordEntity, immortal = True):
         put_name_into(self.name, data, defaults)
         put_nsfw_level_into(self.nsfw_level, data, defaults)
         put_owner_id_into(self.owner_id, data, defaults)
-        put_preferred_locale_into(self.preferred_locale, data, defaults)
+        put_locale_into(self.locale, data, defaults)
         put_public_updates_channel_id_into(self.public_updates_channel_id, data, defaults)
         put_rules_channel_id_into(self.rules_channel_id, data, defaults)
         put_safety_alerts_channel_id_into(self.safety_alerts_channel_id, data, defaults)
@@ -1330,7 +1356,7 @@ class Guild(DiscordEntity, immortal = True):
         self.name = parse_name(data)
         self.nsfw_level = parse_nsfw_level(data)
         self.owner_id = parse_owner_id(data)
-        self.preferred_locale = parse_preferred_locale(data)
+        self.locale = parse_locale(data)
         self.premium_tier = parse_premium_tier(data)
         self.public_updates_channel_id = parse_public_updates_channel_id(data)
         self.rules_channel_id = parse_rules_channel_id(data)
@@ -1431,7 +1457,7 @@ class Guild(DiscordEntity, immortal = True):
         +-------------------------------+---------------------------------------+
         | owner_id                      | `int`                                 |
         +-------------------------------+---------------------------------------+
-        | preferred_locale              | ``Locale``                            |
+        | locale                        | ``Locale``                            |
         +-------------------------------+---------------------------------------+
         | premium_tier                  | `int`                                 |
         +-------------------------------+---------------------------------------+
@@ -1591,11 +1617,11 @@ class Guild(DiscordEntity, immortal = True):
             old_attributes['owner_id'] = self.owner_id
             self.owner_id = owner_id
         
-        # preferred_locale
-        preferred_locale = parse_preferred_locale(data)
-        if self.preferred_locale is not preferred_locale:
-            old_attributes['preferred_locale'] = self.preferred_locale
-            self.preferred_locale = preferred_locale
+        # locale
+        locale = parse_locale(data)
+        if self.locale is not locale:
+            old_attributes['locale'] = self.locale
+            self.locale = locale
         
         # premium_tier
         premium_tier = parse_premium_tier(data)
@@ -1847,8 +1873,8 @@ class Guild(DiscordEntity, immortal = True):
         if self.owner_id != other.owner_id:
             return False
         
-        # preferred_locale
-        if self.preferred_locale is not other.preferred_locale:
+        # locale
+        if self.locale is not other.locale:
             return False
         
         # public_updates_channel_id
@@ -1983,8 +2009,8 @@ class Guild(DiscordEntity, immortal = True):
             hash_value ^= 1 << 6
             hash_value ^= owner_id
         
-        # preferred_locale
-        hash_value ^= hash(self.preferred_locale)
+        # locale
+        hash_value ^= hash(self.locale)
         
         # public_updates_channel_id
         public_updates_channel_id = self.public_updates_channel_id
@@ -2080,7 +2106,7 @@ class Guild(DiscordEntity, immortal = True):
         new.name = self.name
         new.nsfw_level = self.nsfw_level
         new.owner_id = self.owner_id
-        new.preferred_locale = self.preferred_locale
+        new.locale = self.locale
         new.premium_tier = 0
         new.public_updates_channel_id = self.public_updates_channel_id
         new.safety_alerts_channel_id = self.safety_alerts_channel_id
@@ -2117,6 +2143,7 @@ class Guild(DiscordEntity, immortal = True):
         hub_type = ...,
         icon = ...,
         invite_splash = ...,
+        locale = ...,
         message_notification = ...,
         mfa = ...,
         name = ...,
@@ -2171,6 +2198,9 @@ class Guild(DiscordEntity, immortal = True):
         invite_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The guild's invite splash.
         
+        locale : ``Locale``, `int`, Optional (Keyword only)
+            The preferred language of the guild.
+        
         message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
             The message notification level of the guild.
         
@@ -2185,9 +2215,6 @@ class Guild(DiscordEntity, immortal = True):
         
         owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
             The guild's owner or their id.
-        
-        preferred_locale : ``Locale``, `int`, Optional (Keyword only)
-            The preferred language of the guild.
         
         public_updates_channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel's identifier where the guild's public updates should go.
@@ -2295,6 +2322,24 @@ class Guild(DiscordEntity, immortal = True):
         else:
             invite_splash = type(self).invite_splash.validate_icon(invite_splash, allow_data = True)
         
+        # preferred_locale
+        if preferred_locale is not ...:
+            warn(
+                (
+                    f'`{type(self).__name__}.precreate`\'s `preferred_locale` parameter is deprecated and will be '
+                    f'removed in 2024 February. Please use `locale` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            locale = preferred_locale
+        
+        # locale
+        if locale is ...:
+            locale = self.locale
+        else:
+            locale = validate_locale(locale)
+        
         # message_notification
         if message_notification is ...:
             message_notification = self.message_notification
@@ -2324,12 +2369,6 @@ class Guild(DiscordEntity, immortal = True):
             owner_id = self.owner_id
         else:
             owner_id = validate_owner_id(owner_id)
-        
-        # preferred_locale
-        if preferred_locale is ...:
-            preferred_locale = self.preferred_locale
-        else:
-            preferred_locale = validate_preferred_locale(preferred_locale)
         
         # public_updates_channel_id
         if public_updates_channel_id is ...:
@@ -2413,6 +2452,7 @@ class Guild(DiscordEntity, immortal = True):
         new.inventory_settings = None
         new.invite_splash = invite_splash
         new.large = False
+        new.locale = locale
         new.max_presences = MAX_PRESENCES_DEFAULT
         new.max_stage_channel_video_users = MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
         new.max_users = MAX_USERS_DEFAULT
@@ -2422,7 +2462,6 @@ class Guild(DiscordEntity, immortal = True):
         new.name = name
         new.nsfw_level = nsfw_level
         new.owner_id = owner_id
-        new.preferred_locale = preferred_locale
         new.premium_tier = 0
         new.public_updates_channel_id = public_updates_channel_id
         new.safety_alerts_channel_id = safety_alerts_channel_id
@@ -3389,7 +3428,7 @@ class Guild(DiscordEntity, immortal = True):
         channel : ``Channel``, `default`
         """
         if isinstance(type_checker, type):
-            warnings.warn(
+            warn(
                 f'`type_checker` cannot be `type`, but should be a function. Got {type_checker!r}.',
                 FutureWarning,
                 stacklevel = 2,
@@ -3438,7 +3477,7 @@ class Guild(DiscordEntity, immortal = True):
         channel : ``Channel``, `default`
         """
         if isinstance(type_checker, type):
-            warnings.warn(
+            warn(
                 f'`type_checker` cannot be `type`, but should be a function. Got {type_checker!r}.',
                 FutureWarning,
                 stacklevel = 2,
@@ -3498,7 +3537,7 @@ class Guild(DiscordEntity, immortal = True):
         channels : `list` of ``Channel``
         """
         if isinstance(type_checker, type):
-            warnings.warn(
+            warn(
                 f'`type_checker` cannot be `type`, but should be a function. Got {type_checker!r}.',
                 FutureWarning,
                 stacklevel = 2,
@@ -4714,7 +4753,7 @@ class Guild(DiscordEntity, immortal = True):
         `.max_video_channel_users` is deprecated and will be removed in 2023 August.
         Please use `.max_voice_channel_video_users` instead.
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.max_video_channel_users` is deprecated and will be removed in 2023 August. '
                 f'Please use `.max_voice_channel_video_users` instead.'
@@ -4731,7 +4770,7 @@ class Guild(DiscordEntity, immortal = True):
         """
         Deprecated and will be removed in 2023 December. Please use `.large` instead.
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.is_large` is deprecated and will be removed in 2023 December. '
                 'Please use `.large` instead.'
@@ -4752,7 +4791,7 @@ class Guild(DiscordEntity, immortal = True):
         -------
         channels : `list` of ``Channel``
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.thread_channels` is deprecated and will be removed in 2023 December. '
             ),
@@ -4768,7 +4807,7 @@ class Guild(DiscordEntity, immortal = True):
         """
         `.sticker_count` is deprecated and will be removed in 2023 August. Please use `.sticker_counts` instead.
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.sticker_count` is deprecated and will be removed in 2023 August. '
                 f'Please use `.sticker_counts` instead.'
@@ -4789,7 +4828,7 @@ class Guild(DiscordEntity, immortal = True):
         -------
         channels : `list` of ``Channel``
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.text_channels` is deprecated and will be removed in 2023 December. '
                 f'Please use `[*Guild.iter_channels(Channel.is_guild_text)]` instead.'
@@ -4810,7 +4849,7 @@ class Guild(DiscordEntity, immortal = True):
         -------
         channels : `list` of ``Channel``
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.voice_channels` is deprecated and will be removed in 2023 December. '
                 f'Please use `[*Guild.iter_channels(Channel.is_guild_voice)]` instead.'
@@ -4831,7 +4870,7 @@ class Guild(DiscordEntity, immortal = True):
         -------
         channels : `list` of ``Channel``
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.category_channels` is deprecated and will be removed in 2023 December. '
                 f'Please use `[*Guild.iter_channels(Channel.is_guild_category)]` instead.'
@@ -4852,7 +4891,7 @@ class Guild(DiscordEntity, immortal = True):
         -------
         channels : `list` of ``Channel``
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.announcement_channels` is deprecated and will be removed in 2023 December. '
                 f'Please use `[*Guild.iter_channels(Channel.is_guild_announcements)]` instead.'
@@ -4873,7 +4912,7 @@ class Guild(DiscordEntity, immortal = True):
         -------
         channels : `list` of ``Channel``
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.store_channels` is deprecated and will be removed in 2023 December. '
                 f'Please use `[*Guild.iter_channels(Channel.is_guild_store)]` instead.'
@@ -4894,7 +4933,7 @@ class Guild(DiscordEntity, immortal = True):
         -------
         channels : `list` of ``Channel``
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.stage_channels` is deprecated and will be removed in 2023 December. '
                 f'Please use `[*Guild.iter_channels(Channel.is_guild_stage)]` instead.'
@@ -4915,7 +4954,7 @@ class Guild(DiscordEntity, immortal = True):
         -------
         channels : `list` of ``Channel``
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.forum_channels` is deprecated and will be removed in 2023 December. '
                 f'Please use `[*Guild.iter_channels(Channel.is_guild_forum)]` instead.'
@@ -4936,7 +4975,7 @@ class Guild(DiscordEntity, immortal = True):
         -------
         channels : `list` of ``Channel``
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.messageable_channels` is deprecated and will be removed in 2023 December. '
                 f'Please use `[*Guild.iter_channels(Channel.is_in_group_guild_textual)]` instead.'
@@ -4957,7 +4996,7 @@ class Guild(DiscordEntity, immortal = True):
         -------
         channels : `list` of ``Channel``
         """
-        warnings.warn(
+        warn(
             (
                 f'`{self.__class__.__name__}.connectable_channels` is deprecated and will be removed in 2023 December. '
                 f'Please use `[*Guild.iter_channels(Channel.is_in_group_guild_connectable)]` instead.'
@@ -4967,3 +5006,21 @@ class Guild(DiscordEntity, immortal = True):
         )
         
         return [channel for channel in self.channels.values() if channel.is_in_group_guild_connectable()]
+    
+    
+    @property
+    def preferred_locale(self):
+        """
+        Returns the guild's preferred language.
+        
+        Deprecated and will be removed in 2024 February. Please use ``.locale`` instead.
+        """
+        warn(
+            (
+                f'`{self.__class__.__name__}.preferred_locale` is deprecated and will be removed in 2024 February.'
+                f'Please use `locale` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.locale

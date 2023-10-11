@@ -1,6 +1,6 @@
 __all__ = ('InteractionEvent',)
 
-import warnings
+from warnings import warn
 
 from scarletio import Future, copy_docs, export, include, shield
 
@@ -22,16 +22,15 @@ from ..responding.constants import (
     RESPONSE_FLAG_EPHEMERAL, RESPONSE_FLAG_NONE, RESPONSE_FLAG_RESPONDED, RESPONSE_FLAG_RESPONDING
 )
 
-from .constants import DEFAULT_INTERACTION_METADATA, INTERACTION_EVENT_EXPIRE_AFTER_ID_DIFFERENCE, USER_GUILD_CACHE
+from .constants import DEFAULT_INTERACTION_METADATA, INTERACTION_EVENT_EXPIRE_AFTER_ID_DIFFERENCE
 from .fields import (
-    parse_application_id, parse_application_permissions, parse_channel, parse_entitlements, parse_guild_id,
-    parse_guild_locale, parse_id, parse_locale, parse_message, parse_token, parse_type, parse_user,
-    parse_user_permissions, put_application_id_into, put_application_permissions_into, put_channel_into,
-    put_entitlements_into, put_guild_id_into, put_guild_locale_into, put_id_into, put_locale_into, put_message_into,
-    put_token_into, put_type_into, put_user_into, put_user_permissions_into, validate_application_id,
-    validate_application_permissions, validate_channel, validate_entitlements, validate_guild_id, validate_guild_locale,
-    validate_id, validate_interaction, validate_locale, validate_message, validate_token, validate_type, validate_user,
-    validate_user_permissions
+    parse_application_id, parse_application_permissions, parse_channel, parse_entitlements, parse_guild, parse_id,
+    parse_message, parse_token, parse_type, parse_user, parse_user_locale, parse_user_permissions,
+    put_application_id_into, put_application_permissions_into, put_channel_into, put_entitlements_into, put_guild_into,
+    put_id_into, put_message_into, put_token_into, put_type_into, put_user_into, put_user_locale_into,
+    put_user_permissions_into, validate_application_id, validate_application_permissions, validate_channel,
+    validate_entitlements, validate_guild, validate_guild_id, validate_id, validate_interaction, validate_message,
+    validate_token, validate_type, validate_user, validate_user_locale, validate_user_permissions
 )
 from .preinstanced import InteractionType
 
@@ -39,14 +38,14 @@ from .preinstanced import InteractionType
 create_partial_guild_from_id = include('create_partial_guild_from_id')
 
 
+
 PRECREATE_FIELDS = {
     'application_id': ('application_id', validate_application_id),
     'application_permissions': ('application_permissions', validate_application_permissions),
     'channel': ('channel', validate_channel),
     'entitlements': ('entitlements', validate_entitlements),
-    'guild_id': ('guild_id', validate_guild_id),
-    'guild_locale': ('guild_locale', validate_guild_locale),
-    'locale': ('locale', validate_locale),
+    'guild': ('guild', validate_guild),
+    'user_locale': ('user_locale', validate_user_locale),
     'message': ('message', validate_message),
     'token': ('token', validate_token),
     'user': ('user', validate_user),
@@ -66,9 +65,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     
     _async_task : `None`, ``Task``
         Task set if interaction event is acknowledged asynchronously.
-    
-    _cached_users : `None`, `list` of ``ClientUserBase``
-        A list of users, which are temporary cached.
     
     _response_flag : `int`
         The response order state of ``InteractionEvent``
@@ -104,18 +100,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     channel : ``Channel``
         The channel from where the interaction was called.
     
-    guild_id : `int`
-        The guild's identifier from where the interaction was called from. Might be `0` if the interaction was called
-        from a private channel.
-    
-    guild_locale : ``Locale``
-        The guild's preferred locale if invoked from guild.
+    guild : `None`, ``Guild``
+        The guild from where the interaction was called from.
     
     interaction : ``InteractionMetadataBase``
         Contain additional details of the interaction.
-    
-    locale : ``Locale``
-        The selected language of the invoking user.
     
     message : `None`, ``Message``
         The message from where the interaction was received. Applicable for message components.
@@ -129,6 +118,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     user : ``ClientUserBase``
         The user who called the interaction.
     
+    user_locale : ``Locale``
+        The selected language of the invoking user.
+    
     user_permissions : ``Permission``
         The user's permissions in the respective channel.
     
@@ -140,9 +132,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     Interaction event instances are weakreferable.
     """
     __slots__ = (
-        '_async_task', '_cached_users', '_response_flag', 'application_id', 'application_permissions', 'entitlements',
-        'channel', 'guild_id', 'guild_locale', 'interaction', 'locale', 'message', 'token', 'type', 'user',
-        'user_permissions'
+        '_async_task', '_response_flag', 'application_id', 'application_permissions', 'entitlements', 'channel',
+        'guild', 'interaction', 'message', 'token', 'type', 'user', 'user_locale', 'user_permissions'
     )
     
     def __new__(
@@ -153,6 +144,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         channel = ...,
         channel_id = ...,
         entitlements = ...,
+        guild = ...,
         guild_id = ...,
         guild_locale = ...,
         interaction = ...,
@@ -161,6 +153,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         message = ...,
         token = ..., 
         user = ...,
+        user_locale = ...,
         user_permissions = ...,
     ):
         """
@@ -185,17 +178,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         entitlements : `None`, `iterable` of ``Entitlement``, Optional (Keyword only)
             The applicable entitlements for the event's context.
         
-        guild_id : `int`, `str`, ``Channel``, Optional (Keyword only)
-            The guild's identifier from where the interaction was called from.
-        
-        guild_locale : ``Locale``, `str`, Optional (Keyword only)
-            The guild's preferred locale if invoked from guild.
+        guild : `None`, ``Guild``, Optional (Keyword only)
+            The guild from where the interaction was called from.
         
         interaction : ``InteractionMetadataBase``, Optional (Keyword only)
             Contain additional details of the interaction.
-        
-        locale : ``Locale``, `str`, Optional (Keyword only)
-            The selected language of the invoking user.
         
         message : `None`, ``Message``, Optional (Keyword only)
             The message from where the interaction was received.
@@ -208,6 +195,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         user : ``ClientUserBase``, Optional (Keyword only)
             The user who called the interaction.
+        
+        user_locale : ``Locale``, `str`, Optional (Keyword only)
+            The selected language of the invoking user.
         
         user_permissions : ``Permission``, `int`, Optional (Keyword only)
             The user's permissions in the respective channel.
@@ -237,7 +227,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
 
         # channel_id
         if channel_id is not ...:
-            warnings.warn(
+            warn(
                 (
                     f'`{cls.__name__}.__new__`\'s `channel_id` parameter is deprecated and will be removed in '
                     f'2023 November. Please use `channel` instead.'
@@ -274,16 +264,38 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             entitlements = validate_entitlements(entitlements)
         
         # guild_id
-        if guild_id is ...:
-            guild_id = 0
-        else:
+        if guild_id is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `guild_id` parameter is deprecated and will be removed in 2024 '
+                    f'February. Please use `guild` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
             guild_id = validate_guild_id(guild_id)
+            if guild_id:
+                guild = create_partial_guild_from_id(guild_id)
+            else:
+                guild = None
         
         # guild_locale
-        if guild_locale is ...:
-            guild_locale = LOCALE_DEFAULT
+        if guild_locale is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `guild_locale` parameter is deprecated and will be removed in 2024 '
+                    f'February.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+        
+        # guild
+        if guild is ...:
+            guild = None
         else:
-            guild_locale = validate_guild_locale(guild_locale)
+            guild = validate_guild(guild)
         
         # interaction & interaction_type
         if interaction_type is ...:
@@ -295,12 +307,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             interaction = interaction_type.metadata_type()
         else:
             interaction = validate_interaction(interaction, interaction_type)
-        
-        # locale
-        if locale is ...:
-            locale = LOCALE_DEFAULT
-        else:
-            locale = validate_locale(locale)
         
         # message
         if message is ...:
@@ -320,6 +326,24 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         else:
             user = validate_user(user)
         
+        # locale
+        if locale is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `locale` parameter is deprecated and will be removed in 2024 '
+                    f'February. Please use `user_locale` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            user_locale = locale
+        
+        # user_locale
+        if user_locale is ...:
+            user_locale = LOCALE_DEFAULT
+        else:
+            user_locale = validate_user_locale(user_locale)
+        
         # user_permissions
         if user_permissions is ...:
             user_permissions = Permission()
@@ -330,22 +354,20 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         self = object.__new__(cls)
         self._async_task = None
-        self._cached_users = None
         self._response_flag = RESPONSE_FLAG_NONE
         self.id = 0
         self.application_id = application_id
         self.application_permissions = application_permissions
-        self.type = interaction_type
         self.channel = channel
         self.entitlements = entitlements
-        self.guild_id = guild_id
-        self.guild_locale = guild_locale
+        self.guild = guild
         self.interaction = interaction
-        self.locale = locale
-        self.token = token
-        self.user = user
-        self.user_permissions = user_permissions
         self.message = message
+        self.token = token
+        self.type = interaction_type
+        self.user = user
+        self.user_locale = user_locale
+        self.user_permissions = user_permissions
         return self
     
     
@@ -358,14 +380,13 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         ----------
         data : `dict` of (`str`, `object`) items
             `INTERACTION_CREATE` dispatch event data.
+        
+        Returns
+        -------
+        self : `instance<cls>`
         """
         # Need guild_id early, so we can create a guild if required.
-        guild_id = parse_guild_id(data)
-        
-        if guild_id:
-            guild = create_partial_guild_from_id(guild_id)
-        else:
-            guild = None
+        guild = parse_guild(data)
         
         # interaction_id
         interaction_id = parse_id(data)
@@ -373,55 +394,30 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         application_permissions = parse_application_permissions(data)
         channel = parse_channel(data)
         entitlements = parse_entitlements(data)
-        guild_locale = parse_guild_locale(data)
-        # interaction -> we will parse it later
-        locale = parse_locale(data)
+        interaction_type = parse_type(data)
+        interaction = interaction_type.metadata_type.from_data(data['data'], 0 if guild is None else guild.id)
+        user_locale = parse_user_locale(data)
         message = parse_message(data)
         token = parse_token(data)
-        interaction_type = parse_type(data)
-        user = parse_user(data, guild_id)
+        user = parse_user(data, 0 if guild is None else guild.id)
         user_permissions = parse_user_permissions(data)
-        
         
         self = object.__new__(cls)
         self._async_task = None
-        self._cached_users = None
         self._response_flag = RESPONSE_FLAG_NONE
-        self.id = interaction_id
         self.application_id = application_id
         self.application_permissions = application_permissions
-        self.type = interaction_type
         self.channel = channel
         self.entitlements = entitlements
-        self.guild_id = guild_id
-        self.guild_locale = guild_locale
-        self.interaction = DEFAULT_INTERACTION_METADATA
-        self.locale = locale
-        self.token = token
-        self.user = user
-        self.user_permissions = user_permissions
+        self.guild = guild
+        self.interaction = interaction
+        self.id = interaction_id
         self.message = message
-        
-        # Cache our user if called from guild. This is required to kill references to the user in the guild.
-        if (guild is not None):
-            self._add_cached_user(user)
-        
-        # All field is set -> we can now create our own child
-        self.interaction = interaction_type.metadata_type.from_data(data['data'], self)
-        
-        # Bind cached users to the guild for un-caching on object unallocation.
-        cached_users = self._cached_users
-        if (cached_users is not None):
-            for user in cached_users:
-                key = (user, guild)
-                try:
-                    reference_count = USER_GUILD_CACHE[key]
-                except KeyError:
-                    reference_count = 1
-                else:
-                    reference_count += 1
-                
-                USER_GUILD_CACHE[key] = reference_count
+        self.token = token
+        self.type = interaction_type
+        self.user = user
+        self.user_locale = user_locale
+        self.user_permissions = user_permissions
         
         if message is None:
             self._add_response_waiter()
@@ -447,16 +443,15 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         put_application_permissions_into(self.application_permissions, data, defaults)
         put_channel_into(self.channel, data, defaults)
         put_entitlements_into(self.entitlements, data, defaults)
-        put_guild_id_into(self.guild_id, data, defaults)
-        put_guild_locale_into(self.guild_locale, data, defaults)
+        put_guild_into(self.guild, data, defaults)
         put_id_into(self.id, data, defaults)
-        put_locale_into(self.locale, data, defaults)
         put_message_into(self.message, data, defaults)
         put_token_into(self.token, data, defaults)
         put_type_into(self.type, data, defaults)
         put_user_into(self.user, data, defaults, guild_id = self.guild_id)
+        put_user_locale_into(self.user_locale, data, defaults)
         put_user_permissions_into(self.user_permissions, data, defaults)
-        data['data'] = self.interaction.to_data(defaults = defaults, interaction_event = self)
+        data['data'] = self.interaction.to_data(defaults = defaults, guild_id = self.guild_id)
         return data
     
     
@@ -476,27 +471,34 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         """
         self = object.__new__(cls)
         self._async_task = None
-        self._cached_users = None
         self._response_flag = RESPONSE_FLAG_NONE
-        self.id = interaction_id
         self.application_id = 0
         self.application_permissions = Permission()
-        self.type = InteractionType.none
         self.channel = create_partial_channel_from_id(0, ChannelType.unknown, 0)
         self.entitlements = None
-        self.guild_id = 0
-        self.guild_locale = LOCALE_DEFAULT
+        self.guild = None
+        self.id = interaction_id
         self.interaction = DEFAULT_INTERACTION_METADATA
-        self.locale = LOCALE_DEFAULT
         self.token = ''
+        self.type = InteractionType.none
         self.user = ZEROUSER
+        self.user_locale = LOCALE_DEFAULT
         self.user_permissions = Permission()
         self.message = None
         return self
     
     
     @classmethod
-    def precreate(cls, interaction_id, *, channel_id = ..., **keyword_parameters):
+    def precreate(
+        cls,
+        interaction_id,
+        *,
+        channel_id = ...,
+        guild_id = ...,
+        guild_locale = ...,
+        locale = ...,
+        **keyword_parameters,
+    ):
         """
         Creates an interaction event. Not like ``.__new__``, ``.precreate`` allows setting ``.id`` as well.
         
@@ -529,17 +531,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         entitlements : `None`, `iterable` of ``Entitlement``, Optional (Keyword only)
             The applicable entitlements for the event's context.
         
-        guild_id : `int`, `str`, Optional (Keyword only)
-            The guild's identifier from where the interaction was called from.
-        
-        guild_locale : ``Locale``, `str`, Optional (Keyword only)
-            The guild's preferred locale if invoked from guild.
+        guild : `None`, ``Guild``, Optional (Keyword only)
+            The guild from where the interaction was called from.
         
         interaction : ``InteractionMetadataBase``, Optional (Keyword only)
             Contain additional details of the interaction.
-        
-        locale : ``Locale``, `str`, Optional (Keyword only)
-            The selected language of the invoking user.
         
         message : `None`, ``Message``, Optional (Keyword only)
             The message from where the interaction was received.
@@ -552,6 +548,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         user : ``ClientUserBase``, Optional (Keyword only)
             The user who called the interaction.
+        
+        user_locale : ``Locale``, `str`, Optional (Keyword only)
+            The selected language of the invoking user.
         
         user_permissions : ``Permission``, `int`, Optional (Keyword only)
             The user's permissions in the respective channel.
@@ -571,7 +570,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         # Deprecations
         if channel_id is not ...:
-            warnings.warn(
+            warn(
                 (
                     f'`{cls.__name__}.precreate`\'s `channel_id` parameter is deprecated and will be removed in '
                     f'2023 November. Please use `channel` instead.'
@@ -596,6 +595,44 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
                 )
             
             keyword_parameters['channel'] = channel
+        
+        if guild_id is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.precreate`\'s `guild_id` parameter is deprecated and will be removed in '
+                    f'2024 February.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            guild_id = validate_guild_id(guild_id)
+            if guild_id is None:
+                guild = None
+            else:
+                guild = create_partial_guild_from_id(guild_id)
+            keyword_parameters['guild'] = guild
+
+        if guild_locale is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.precreate`\'s `guild_locale` parameter is deprecated and will be removed in '
+                    f'2024 February.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+        
+        if locale is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.precreate`\'s `locale` parameter is deprecated and will be removed in '
+                    f'2024 February. Please use `user_locale` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            keyword_parameters['user_locale'] = locale
         
         
         if keyword_parameters:
@@ -647,7 +684,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         """
         new = object.__new__(type(self))
         new._async_task = None
-        new._cached_users = None
         new._response_flag = RESPONSE_FLAG_NONE
         new.id = 0
         new.application_id = self.application_id
@@ -658,12 +694,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         if (entitlements is not None):
             entitlements = (*entitlements,)
         new.entitlements = entitlements
-        new.guild_id = self.guild_id
-        new.guild_locale = self.guild_locale
+        new.guild = self.guild
         new.interaction = self.interaction.copy()
-        new.locale = self.locale
         new.token = self.token
         new.user = self.user
+        new.user_locale = self.user_locale
         new.user_permissions = self.user_permissions
         new.message = self.message
         return new
@@ -677,6 +712,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         channel = ...,
         channel_id = ...,
         entitlements = ...,
+        guild = ...,
         guild_id = ...,
         guild_locale = ...,
         interaction = ...,
@@ -685,6 +721,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         message = ...,
         token = ..., 
         user = ...,
+        user_locale = ...,
         user_permissions = ...,
     ):
         """
@@ -708,17 +745,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         entitlements : `None`, `iterable` of ``Entitlement``, Optional (Keyword only)
             The applicable entitlements for the event's context.
         
-        guild_id : `int`, `str`, Optional (Keyword only)
-            The guild's identifier from where the interaction was called from.
-        
-        guild_locale : ``Locale``, `str`, Optional (Keyword only)
-            The guild's preferred locale if invoked from guild.
+        guild : `None`, ``Guild```, Optional (Keyword only)
+            The guild from where the interaction was called from.
         
         interaction : ``InteractionMetadataBase``, Optional (Keyword only)
             Contain additional details of the interaction.
-        
-        locale : ``Locale``, `str`, Optional (Keyword only)
-            The selected language of the invoking user.
         
         message : `None`, ``Message``, Optional (Keyword only)
             The message from where the interaction was received.
@@ -731,6 +762,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         user : ``ClientUserBase``, Optional (Keyword only)
             The user who called the interaction.
+        
+        user_locale : ``Locale``, `str`, Optional (Keyword only)
+            The selected language of the invoking user.
         
         user_permissions : ``Permission``, `int`, Optional (Keyword only)
             The user's permissions in the respective channel.
@@ -758,9 +792,41 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         else:
             application_permissions = validate_application_permissions(application_permissions)
         
+        if guild_id is not ...:
+            warn(
+                (
+                    f'`{type(self).__name__}.copy_with`\'s `guild_id` parameter is deprecated and will be removed in '
+                    f'2024 February.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            guild_id = validate_guild_id(guild_id)
+            if guild_id is None:
+                guild = None
+            else:
+                guild = create_partial_guild_from_id(guild_id)
+
+        if guild_locale is not ...:
+            warn(
+                (
+                    f'`{type(self).__name__}.copy_with`\'s `guild_locale` parameter is deprecated and will be removed '
+                    f'in 2024 February.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+        
+        # guild
+        if guild is ...:
+            guild = self.guild
+        else:
+            guild = validate_guild(guild)
+        
         # channel_id
         if channel_id is not ...:
-            warnings.warn(
+            warn(
                 (
                     f'`{self.__class__.__name__}.copy_with`\'s `channel_id` parameter is deprecated and will be '
                     f'removed in 2023 November. Please use `channel` instead.'
@@ -770,10 +836,14 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             )
             
             if isinstance(channel_id, int):
-                channel = create_partial_channel_from_id(channel_id, ChannelType.unknown, guild_id)
+                channel = create_partial_channel_from_id(
+                    channel_id, ChannelType.unknown, 0 if guild is None else guild.id
+                )
             
             elif isinstance(channel_id, str) and channel_id.isdecimal():
-                channel = create_partial_channel_from_id(int(channel_id), ChannelType.unknown, guild_id)
+                channel = create_partial_channel_from_id(
+                    int(channel_id), ChannelType.unknown, 0 if guild is None else guild.id
+                )
             
             elif isinstance(channel_id, Channel):
                 channel = channel_id
@@ -798,18 +868,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         else:
             entitlements = validate_entitlements(entitlements)
         
-        # guild_id
-        if guild_id is ...:
-            guild_id = self.guild_id
-        else:
-            guild_id = validate_guild_id(guild_id)
-        
-        # guild_locale
-        if guild_locale is ...:
-            guild_locale = self.guild_locale
-        else:
-            guild_locale = validate_guild_locale(guild_locale)
-        
         # interaction & interaction_type
         if interaction_type is ...:
             interaction_type = self.type
@@ -823,12 +881,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
                 interaction = interaction_type.metadata_type()
         else:
             interaction = validate_interaction(interaction, interaction_type)
-        
-        # locale
-        if locale is ...:
-            locale = self.locale
-        else:
-            locale = validate_locale(locale)
         
         # message
         if message is ...:
@@ -848,6 +900,23 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         else:
             user = validate_user(user)
         
+        if locale is not ...:
+            warn(
+                (
+                    f'`{type(self).__name__}.copy_with`\'s `locale` parameter is deprecated and will be removed '
+                    f'in 2024 February. Please use `user_locale` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            user_locale = locale
+        
+        # user_locale
+        if user_locale is ...:
+            user_locale = self.user_locale
+        else:
+            user_locale = validate_user_locale(user_locale)
+        
         # user_permissions
         if user_permissions is ...:
             user_permissions = self.user_permissions
@@ -857,7 +926,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         # Construct
         new = object.__new__(type(self))
         new._async_task = None
-        new._cached_users = None
         new._response_flag = RESPONSE_FLAG_NONE
         new.id = 0
         new.application_id = application_id
@@ -865,12 +933,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         new.type = interaction_type
         new.channel = channel
         new.entitlements = entitlements
-        new.guild_id = guild_id
-        new.guild_locale = guild_locale
+        new.guild = guild
         new.interaction = interaction
-        new.locale = locale
         new.token = token
         new.user = user
+        new.user_locale = user_locale
         new.user_permissions = user_permissions
         new.message = message
         
@@ -915,47 +982,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         await waiter
         return self.message
-    
-    
-    def __del__(self):
-        """
-        Unregisters the user-guild pair from the interaction cache.
-        """
-        cached_users = self._cached_users
-        if cached_users is None:
-            return
-        
-        guild = self.guild
-        if (guild is None):
-            return
-        
-        for user in cached_users:
-            key = (user, guild)
-            
-            # A client meanwhile joined the guild?
-            if not guild.partial:
-                try:
-                    del USER_GUILD_CACHE[key]
-                except KeyError:
-                    pass
-                return
-            
-            try:
-                reference_count = USER_GUILD_CACHE[key]
-            except KeyError:
-                reference_count = 0
-            else:
-                if reference_count == 1:
-                    del USER_GUILD_CACHE[key]
-                    reference_count = 0
-                else:
-                    reference_count -= 1
-            
-            if reference_count == 0:
-                try:
-                    del user.guild_profiles[guild.id]
-                except KeyError:
-                    pass
     
     
     def __repr__(self):
@@ -1016,10 +1042,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         repr_parts.append(repr(metadata_type.value))
         
         
-        guild_id = self.guild_id
-        if guild_id:
+        guild = self.guild
+        if guild is not None:
             repr_parts.append(', guild_id = ')
-            repr_parts.append(repr(guild_id))
+            repr_parts.append(repr(guild.id))
             
             repr_parts.append(', application_permissions = ')
             repr_parts.append(format(self.application_permissions, 'd'))
@@ -1059,12 +1085,12 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         repr_parts.append(', user = ')
         repr_parts.append(repr(self.user))
         
-        repr_parts.append(', guild_locale = ')
-        repr_parts.append(repr(self.guild_locale.name))
+        repr_parts.append(', user_locale = ')
+        repr_parts.append(repr(self.user_locale.name))
         
-        if guild_id:
-            repr_parts.append(', locale = ')
-            repr_parts.append(repr(self.locale.name))
+        if guild is not None:
+            repr_parts.append(', guild_locale = ')
+            repr_parts.append(repr(guild.locale.name))
         
         repr_parts.append(', interaction = ')
         repr_parts.append(repr(self.interaction))
@@ -1105,20 +1131,12 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         if self.entitlements != other.entitlements:
             return False
         
-        # guild_id
-        if self.guild_id != other.guild_id:
-            return False
-        
-        # guild_locale
-        if self.guild_locale is not other.guild_locale:
+        # guild
+        if self.guild is not other.guild:
             return False
         
         # interaction
         if self.interaction != other.interaction:
-            return False
-        
-        # locale
-        if self.locale is not other.locale:
             return False
         
         # message
@@ -1135,6 +1153,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         # user
         if self.user is not other.user:
+            return False
+        
+        # user_locale
+        if self.user_locale is not other.user_locale:
             return False
         
         # user_permissions
@@ -1166,17 +1188,13 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         if (entitlements is not None):
             hash_value ^= hash(entitlements)
         
-        # guild_id
-        hash_value ^= self.guild_id
-        
-        # guild_locale
-        hash_value ^= hash(self.guild_locale)
+        # guild
+        guild = self.guild
+        if (guild is not None):
+            hash_value ^= hash(guild)
         
         # interaction
         hash_value ^= hash(self.interaction)
-        
-        # locale
-        hash_value ^= hash(self.locale)
         
         # message
         message = self.message
@@ -1191,6 +1209,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         # user
         hash_value ^= hash(self.user)
+        
+        # user_locale
+        hash_value ^= hash(self.user_locale)
         
         # user_permissions
         hash_value ^= self.user_permissions
@@ -1323,17 +1344,39 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     
     
     @property
-    def guild(self):
+    def guild_id(self):
         """
-        Returns the interaction's guild.
+        Returns the interaction's guild's identifier.
         
         Returns
         -------
-        guild : ``Guild``, `None`
+        guild_id : ``int`
         """
-        guild_id = self.guild_id
-        if guild_id:
-            return create_partial_guild_from_id(guild_id)
+        guild = self.guild
+        if guild is None:
+            guild_id = 0
+        else:
+            guild_id = guild.id
+        
+        return guild_id
+    
+    
+    @property
+    def guild_locale(self):
+        """
+        Returns the interaction's guild's locale.
+        
+        Returns
+        -------
+        guild_locale : ``Locale``
+        """
+        guild = self.guild
+        if guild is None:
+            guild_locale = LOCALE_DEFAULT
+        else:
+            guild_locale = guild.locale
+        
+        return guild_locale
     
     
     @property
@@ -1372,13 +1415,28 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         except KeyError:
             voice_client = None
         else:
-            guild_id = self.guild_id
-            if guild_id:
-                voice_client = client.voice_clients.get(guild_id, None)
-            else:
+            guild = self.guild
+            if guild is None:
                 voice_client = None
+            else:
+                voice_client = client.voice_clients.get(guild.id, None)
         
         return voice_client
+    
+    @property
+    def locale(self):
+        """
+        Deprecated and will be removed in 2024 February. Please use `.user_locale` instead.
+        """
+        warn(
+            (
+                f'`{type(self).__name__}.local` is deprecated and will be removed n 2024 February. Please use '
+                f'`.user_locale` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.user_locale
     
     
     def has_entitlement(self, entitlement):
@@ -1440,25 +1498,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
                 return True
         
         return False
-    
-    
-    def _add_cached_user(self, user):
-        """
-        Adds a user to the cached ones by the interaction.
-        
-        This function might be called inside of ``InteractionEvent.__new__`` when initializing it's interaction.
-        
-        Parameters
-        ----------
-        user : ``ClientUserBase``
-            The user to add to cache.
-        """
-        cached_users = self._cached_users
-        if cached_users is None:
-            self._cached_users = [user]
-        else:
-            if (user not in cached_users):
-                cached_users.append(user)
     
     
     def _add_response_waiter(self):

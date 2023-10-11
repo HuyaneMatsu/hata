@@ -1,6 +1,6 @@
 __all__ = ('Resolved',)
 
-from scarletio import RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType, export
 
 from .fields import (
     parse_attachments, parse_channels, parse_messages, parse_roles, parse_users, put_attachments_into,
@@ -9,6 +9,7 @@ from .fields import (
 )
 
 
+@export
 class Resolved(RichAttributeErrorBaseType):
     """
     Contains the resolved entities by an interaction.
@@ -77,17 +78,17 @@ class Resolved(RichAttributeErrorBaseType):
     
     
     @classmethod
-    def from_data(cls, data, interaction_event):
+    def from_data(cls, data, guild_id = 0):
         """
         Creates a new resolved instance from the given data.
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Resolved data.
         
-        interaction_event : ``InteractionEvent``
-            The parent interaction event.
+        guild_id : `int` = `0`, Optional (Keyword only)
+            The respective guild's identifier.
         
         Returns
         -------
@@ -95,14 +96,14 @@ class Resolved(RichAttributeErrorBaseType):
         """
         self = object.__new__(cls)
         self.attachments = parse_attachments(data)
-        self.channels = parse_channels(data, interaction_event)
-        self.roles = parse_roles(data, interaction_event)
+        self.channels = parse_channels(data, guild_id)
+        self.roles = parse_roles(data, guild_id)
         self.messages = parse_messages(data)
-        self.users = parse_users(data, interaction_event)
+        self.users = parse_users(data, guild_id)
         return self
     
     
-    def to_data(self, *, defaults = False, interaction_event = None):
+    def to_data(self, *, defaults = False, guild_id = 0):
         """
         Converts the resolved instance into a json serializable object.
         
@@ -111,7 +112,7 @@ class Resolved(RichAttributeErrorBaseType):
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether default field values should be included as well.
         
-        interaction_event : ``InteractionEvent`` = `None`, Optional (Keyword only)
+        guild_id : `int` = `0`, Optional (Keyword only)
             The respective guild's identifier to use for handing user guild profiles.
         
         Returns
@@ -123,7 +124,7 @@ class Resolved(RichAttributeErrorBaseType):
         put_channels_into(self.channels, data, defaults)
         put_roles_into(self.roles, data, defaults)
         put_messages_into(self.messages, data, defaults)
-        put_users_into(self.users, data, defaults, interaction_event = interaction_event)
+        put_users_into(self.users, data, defaults, guild_id = guild_id)
         return data
     
     

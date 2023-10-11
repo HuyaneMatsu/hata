@@ -87,7 +87,7 @@ def test__Guild__eq():
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306220135
-    preferred_locale = Locale.finnish
+    locale = Locale.finnish
     public_updates_channel_id = 202306220136
     rules_channel_id = 202306220137
     safety_alerts_channel_id = 202306220139
@@ -115,7 +115,7 @@ def test__Guild__eq():
         'name': name,
         'nsfw_level': nsfw_level,
         'owner_id': owner_id,
-        'preferred_locale': preferred_locale,
+        'locale': locale,
         'public_updates_channel_id': public_updates_channel_id,
         'rules_channel_id': rules_channel_id,
         'safety_alerts_channel_id': safety_alerts_channel_id,
@@ -151,7 +151,7 @@ def test__Guild__eq():
         ('name', 'Okuu'),
         ('nsfw_level', NsfwLevel.safe),
         ('owner_id', 202306220144),
-        ('preferred_locale', Locale.dutch),
+        ('locale', Locale.dutch),
         ('public_updates_channel_id', 202306220145),
         ('rules_channel_id', 202306220146),
         ('safety_alerts_channel_id', 202306220147),
@@ -188,7 +188,7 @@ def test__Guild__hash():
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306220152
-    preferred_locale = Locale.finnish
+    locale = Locale.finnish
     public_updates_channel_id = 202306220153
     rules_channel_id = 202306220154
     safety_alerts_channel_id = 202306220155
@@ -216,7 +216,7 @@ def test__Guild__hash():
         'name': name,
         'nsfw_level': nsfw_level,
         'owner_id': owner_id,
-        'preferred_locale': preferred_locale,
+        'locale': locale,
         'public_updates_channel_id': public_updates_channel_id,
         'rules_channel_id': rules_channel_id,
         'safety_alerts_channel_id': safety_alerts_channel_id,

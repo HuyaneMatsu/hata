@@ -8,6 +8,7 @@ from ....core import BUILTIN_EMOJIS
 from ....embed import EmbedAuthor, Embed, EmbedField, EmbedFooter, EmbedProvider, EmbedType
 from ....emoji import Reaction, ReactionMapping, ReactionType
 from ....guild import Guild
+from ....interaction import Resolved
 from ....role import Role
 from ....sticker import Sticker
 from ....user import User
@@ -226,6 +227,7 @@ def test__Message__copy():
         BUILTIN_EMOJIS['x']: [None, None],
     })
     referenced_message = Message.precreate(202305040107, content = 'Patchouli')
+    resolved = Resolved(attachments = [Attachment.precreate(202310110034)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
     stickers = [
         Sticker.precreate(202305040118, name = 'Kirisame'),
@@ -257,6 +259,7 @@ def test__Message__copy():
         pinned = pinned,
         reactions = reactions,
         referenced_message = referenced_message,
+        resolved = resolved,
         role_subscription = role_subscription,
         stickers = stickers,
         thread = thread,
@@ -270,7 +273,7 @@ def test__Message__copy():
     vampytest.assert_eq(message, copy)
 
 
-def test__Message__copy_with__0():
+def test__Message__copy_with__no_fields():
     """
     Tests whether ``Message.copy_with`` works as intended.
     
@@ -314,6 +317,7 @@ def test__Message__copy_with__0():
         BUILTIN_EMOJIS['x']: [None, None],
     })
     referenced_message = Message.precreate(202305040133, content = 'Patchouli')
+    resolved = Resolved(attachments = [Attachment.precreate(202310110035)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
     stickers = [
         Sticker.precreate(202305040134, name = 'Kirisame'),
@@ -345,6 +349,7 @@ def test__Message__copy_with__0():
         pinned = pinned,
         reactions = reactions,
         referenced_message = referenced_message,
+        resolved = resolved,
         role_subscription = role_subscription,
         stickers = stickers,
         thread = thread,
@@ -358,7 +363,7 @@ def test__Message__copy_with__0():
     vampytest.assert_eq(message, copy)
 
 
-def test__Message__copy_with__1():
+def test__Message__copy_with__all_fields():
     """
     Tests whether ``Message.copy_with`` works as intended.
     
@@ -402,6 +407,7 @@ def test__Message__copy_with__1():
         BUILTIN_EMOJIS['x']: [None, None],
     })
     old_referenced_message = Message.precreate(202305040149, content = 'Patchouli')
+    old_resolved = Resolved(attachments = [Attachment.precreate(202310110036)])
     old_role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
     old_stickers = [
         Sticker.precreate(202305040150, name = 'Kirisame'),
@@ -448,6 +454,7 @@ def test__Message__copy_with__1():
         BUILTIN_EMOJIS['heart']: [None],
     })
     new_referenced_message = Message.precreate(202305040164, content = 'Book')
+    new_resolved = Resolved(attachments = [Attachment.precreate(202310110036)])
     new_role_subscription = MessageRoleSubscription(tier_name = 'Big brain')
     new_stickers = [
         Sticker.precreate(202305040165, name = 'Magic'),
@@ -478,6 +485,7 @@ def test__Message__copy_with__1():
         pinned = old_pinned,
         reactions = old_reactions,
         referenced_message = old_referenced_message,
+        resolved = old_resolved,
         role_subscription = old_role_subscription,
         stickers = old_stickers,
         thread = old_thread,
@@ -506,6 +514,7 @@ def test__Message__copy_with__1():
         pinned = new_pinned,
         reactions = new_reactions,
         referenced_message = new_referenced_message,
+        resolved = new_resolved,
         role_subscription = new_role_subscription,
         stickers = new_stickers,
         thread = new_thread,
@@ -536,6 +545,7 @@ def test__Message__copy_with__1():
     vampytest.assert_eq(copy.pinned, new_pinned)
     vampytest.assert_eq(copy.reactions, new_reactions)
     vampytest.assert_eq(copy.referenced_message, new_referenced_message)
+    vampytest.assert_eq(copy.resolved, new_resolved)
     vampytest.assert_eq(copy.role_subscription, new_role_subscription)
     vampytest.assert_eq(copy.stickers, tuple(new_stickers))
     vampytest.assert_eq(copy.thread, new_thread)

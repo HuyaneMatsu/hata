@@ -5,8 +5,6 @@ from ....message import Attachment, Message
 from ....role import Role
 from ....user import User
 
-from ...interaction_event import InteractionEvent
-
 from ..resolved import Resolved
 
 from .test__Resolved__constructor import _assert_is_all_field_set
@@ -18,7 +16,6 @@ def test__Resolved__from_data():
     """
     guild_id = 202211050028
     entity_id = 202211050029
-    interaction_event = InteractionEvent(guild_id = guild_id)
     
     attachment = Attachment.precreate(entity_id)
     channel = Channel.precreate(entity_id)
@@ -34,7 +31,7 @@ def test__Resolved__from_data():
         'users': {str(user.id): user.to_data(defaults = True, include_internals = True)},
     }
     
-    resolved = Resolved.from_data(data, interaction_event)
+    resolved = Resolved.from_data(data, guild_id)
     _assert_is_all_field_set(resolved)
     
     vampytest.assert_eq(resolved.attachments, {attachment.id: attachment})
@@ -52,7 +49,6 @@ def test__Resolved__to_data():
     """
     guild_id = 202211050030
     entity_id = 202211050031
-    interaction_event = InteractionEvent(guild_id = guild_id)
     
     attachment = Attachment.precreate(entity_id)
     channel = Channel.precreate(entity_id)
@@ -80,7 +76,7 @@ def test__Resolved__to_data():
     vampytest.assert_eq(
         resolved.to_data(
             defaults = True,
-            interaction_event = interaction_event,
+            guild_id = guild_id,
         ),
         data,
     )

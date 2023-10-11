@@ -2,7 +2,7 @@ import vampytest
 
 from ....localization import Locale
 
-from ..fields import put_guild_locale_into
+from ..fields import put_locale_into
 
 
 def _iter_options():
@@ -10,7 +10,8 @@ def _iter_options():
         Locale.czech,
         False,
         {
-            'guild_locale': Locale.czech.value,
+            'locale': Locale.czech.value,
+            'preferred_locale': Locale.czech.value,
         },
     )
     
@@ -18,15 +19,16 @@ def _iter_options():
         Locale.czech,
         True,
         {
-            'guild_locale': Locale.czech.value,
+            'locale': Locale.czech.value,
+            'preferred_locale': Locale.czech.value,
         },
     )
     
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_guild_locale_into(input_value, defaults):
+def test__put_locale_into(input_value, defaults):
     """
-    Tests whether ``put_guild_locale_into`` is working as intended.
+    Tests whether ``put_locale_into`` is working as intended.
     
     Parameters
     ----------
@@ -39,4 +41,4 @@ def test__put_guild_locale_into(input_value, defaults):
     -------
     output : `dict<str, object>`
     """
-    return put_guild_locale_into(input_value, {}, defaults)
+    return put_locale_into(input_value, {}, defaults)

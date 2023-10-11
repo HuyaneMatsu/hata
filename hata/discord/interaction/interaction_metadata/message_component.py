@@ -101,21 +101,21 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
     
     @classmethod
     @copy_docs(InteractionMetadataBase.from_data)
-    def from_data(cls, data, interaction_event):
+    def from_data(cls, data, guild_id = 0):
         self = object.__new__(cls)
         self.component_type = parse_component_type(data)
         self.custom_id = parse_custom_id(data)
-        self.resolved = parse_resolved(data, interaction_event)
+        self.resolved = parse_resolved(data, guild_id)
         self.values = parse_values(data)
         return self
     
     
     @copy_docs(InteractionMetadataBase.to_data)
-    def to_data(self, *, defaults = False, interaction_event = None):
+    def to_data(self, *, defaults = False, guild_id = 0):
         data = {}
         put_component_type_into(self.component_type, data, defaults)
         put_custom_id_into(self.custom_id, data, defaults)
-        put_resolved_into(self.resolved, data, defaults, interaction_event = interaction_event)
+        put_resolved_into(self.resolved, data, defaults, guild_id = guild_id)
         put_values_into(self.values, data, defaults)
         return data
     

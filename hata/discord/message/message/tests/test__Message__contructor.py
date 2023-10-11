@@ -7,6 +7,7 @@ from ....component import Component, ComponentType
 from ....core import BUILTIN_EMOJIS
 from ....embed import Embed
 from ....emoji import ReactionMapping
+from ....interaction import Resolved
 from ....sticker import Sticker
 from ....user import User, UserBase
 
@@ -57,6 +58,7 @@ def _assert_fields_set(message):
     vampytest.assert_instance(message.nonce, str, nullable = True)
     vampytest.assert_instance(message.reactions, ReactionMapping, nullable = True)
     vampytest.assert_instance(message.referenced_message, Message, nullable = True)
+    vampytest.assert_instance(message.resolved, Resolved, nullable = True)
     vampytest.assert_instance(message.role_subscription, MessageRoleSubscription, nullable = True)
     vampytest.assert_instance(message.pinned, bool)
     vampytest.assert_instance(message.stickers, tuple, nullable = True)
@@ -65,7 +67,7 @@ def _assert_fields_set(message):
     vampytest.assert_instance(message.type, MessageType)
 
 
-def test__Message__new__0():
+def test__Message__new__no_fields():
     """
     Tests whether ``Message.__new__`` works as intended.
     
@@ -75,7 +77,7 @@ def test__Message__new__0():
     _assert_fields_set(message)
 
 
-def test__Message__new__1():
+def test__Message__new__all_fields():
     """
     Tests whether ``Message.__new__`` works as intended.
     
@@ -119,6 +121,7 @@ def test__Message__new__1():
         BUILTIN_EMOJIS['x']: [None, None],
     })
     referenced_message = Message.precreate(202305030012, content = 'Patchouli')
+    resolved = Resolved(attachments = [Attachment.precreate(202310110006)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
     stickers = [
         Sticker.precreate(202305030013, name = 'Kirisame'),
@@ -150,6 +153,7 @@ def test__Message__new__1():
         pinned = pinned,
         reactions = reactions,
         referenced_message = referenced_message,
+        resolved = resolved,
         role_subscription = role_subscription,
         stickers = stickers,
         thread = thread,
@@ -178,6 +182,7 @@ def test__Message__new__1():
     vampytest.assert_eq(message.pinned, pinned)
     vampytest.assert_eq(message.reactions, reactions)
     vampytest.assert_eq(message.referenced_message, referenced_message)
+    vampytest.assert_eq(message.resolved, resolved)
     vampytest.assert_eq(message.role_subscription, role_subscription)
     vampytest.assert_eq(message.stickers, tuple(stickers))
     vampytest.assert_eq(message.thread, thread)
@@ -201,7 +206,7 @@ def test__Message__create_empty():
     vampytest.assert_eq(message.guild_id, guild_id)
 
 
-def test__Message__precreate__0():
+def test__Message__precreate__no_fields():
     """
     Tests whether ``Message.precreate`` works as intended.
     
@@ -217,7 +222,7 @@ def test__Message__precreate__0():
     vampytest.assert_is(message, test_message)
     
 
-def test__Message__precreate__1():
+def test__Message__precreate__all_fields():
     """
     Tests whether ``Message.precreate`` works as intended.
     
@@ -261,6 +266,7 @@ def test__Message__precreate__1():
         BUILTIN_EMOJIS['x']: [None, None],
     })
     referenced_message = Message.precreate(202305030032, content = 'Patchouli')
+    resolved = Resolved(attachments = [Attachment.precreate(202310110007)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
     stickers = [
         Sticker.precreate(202305030033, name = 'Kirisame'),
@@ -299,6 +305,7 @@ def test__Message__precreate__1():
         pinned = pinned,
         reactions = reactions,
         referenced_message = referenced_message,
+        resolved = resolved,
         role_subscription = role_subscription,
         stickers = stickers,
         thread = thread,
@@ -327,6 +334,7 @@ def test__Message__precreate__1():
     vampytest.assert_eq(message.pinned, pinned)
     vampytest.assert_eq(message.reactions, reactions)
     vampytest.assert_eq(message.referenced_message, referenced_message)
+    vampytest.assert_eq(message.resolved, resolved)
     vampytest.assert_eq(message.role_subscription, role_subscription)
     vampytest.assert_eq(message.stickers, tuple(stickers))
     vampytest.assert_eq(message.thread, thread)

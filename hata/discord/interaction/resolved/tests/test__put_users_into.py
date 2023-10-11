@@ -21,20 +21,18 @@ def _iter_options():
     guild_profile = GuildProfile(nick = user_nick)
     user.guild_profiles[guild_id] = guild_profile
     
-    interaction_event_instance = InteractionEvent(guild_id = guild_id)
-    
     
     yield (
         None,
         False,
-        None,
+        0,
         {},
     )
     
     yield (
         None,
         True,
-        None,
+        0,
         {
             'users': {},
             'members': {},
@@ -46,7 +44,7 @@ def _iter_options():
             user_id: user,
         },
             False,
-            None,
+            0,
         {
             'users': {
                 str(user_id): user.to_data(defaults = False, include_internals = True),
@@ -60,7 +58,7 @@ def _iter_options():
             user_id: user,
         },
             False,
-            interaction_event_instance,
+            guild_id,
         {
             'users': {
                 str(user_id): user.to_data(defaults = False, include_internals = True),
@@ -76,7 +74,7 @@ def _iter_options():
             user_id: user,
         },
             True,
-            None,
+            0,
         {
             'users': {
                 str(user_id): user.to_data(defaults = True, include_internals = True),
@@ -90,7 +88,7 @@ def _iter_options():
             user_id: user,
         },
             True,
-            interaction_event_instance,
+            guild_id,
         {
             'users': {
                 str(user_id): user.to_data(defaults = True, include_internals = True),
@@ -100,10 +98,10 @@ def _iter_options():
             },
         },
     )
-    
+
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_users_into(input_value, defaults, interaction_event):
+def test__put_users_into(input_value, defaults, guild_id):
     """
     Tests whether ``put_users_into`` works as intended.
     
@@ -113,11 +111,11 @@ def test__put_users_into(input_value, defaults, interaction_event):
         Value to serialise.
     defaults : `bool`
         Whether default values should be serialised as well.
-    interaction_event : `None | InteractionEvent`
-        The respective interaction event.
+    guild_id : `int`
+        The respective guild's identifier.
     
     Returns
     -------
     output : `dict<str, object>`
     """
-    return put_users_into(input_value, {}, defaults, interaction_event = interaction_event)
+    return put_users_into(input_value, {}, defaults, guild_id = guild_id)

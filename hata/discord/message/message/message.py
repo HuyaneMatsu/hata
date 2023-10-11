@@ -24,19 +24,19 @@ from .fields import (
     parse_channel_id, parse_components, parse_content, parse_edited_at, parse_embeds, parse_flags, parse_guild_id,
     parse_id, parse_interaction, parse_mentioned_channels_cross_guild, parse_mentioned_everyone,
     parse_mentioned_role_ids, parse_mentioned_users, parse_message_id, parse_nonce, parse_pinned, parse_reactions,
-    parse_referenced_message, parse_role_subscription, parse_stickers, parse_thread, parse_tts, parse_type,
-    put_activity_into, put_application_id_into, put_application_into, put_attachments_into, put_author_into,
+    parse_referenced_message, parse_resolved, parse_role_subscription, parse_stickers, parse_thread, parse_tts,
+    parse_type, put_activity_into, put_application_id_into, put_application_into, put_attachments_into, put_author_into,
     put_call_into, put_channel_id_into, put_components_into, put_content_into, put_edited_at_into, put_embeds_into,
     put_flags_into, put_guild_id_into, put_id_into, put_interaction_into, put_mentioned_channels_cross_guild_into,
     put_mentioned_everyone_into, put_mentioned_role_ids_into, put_mentioned_users_into, put_message_id_into,
-    put_nonce_into, put_pinned_into, put_reactions_into, put_referenced_message_into, put_role_subscription_into,
-    put_stickers_into, put_thread_into, put_tts_into, put_type_into, validate_activity, validate_application,
-    validate_application_id, validate_attachments, validate_author, validate_call, validate_channel_id,
-    validate_components, validate_content, validate_edited_at, validate_embeds, validate_flags, validate_guild_id,
-    validate_id, validate_interaction, validate_mentioned_channels_cross_guild, validate_mentioned_everyone,
-    validate_mentioned_role_ids, validate_mentioned_users, validate_nonce, validate_pinned, validate_reactions,
-    validate_referenced_message, validate_role_subscription, validate_stickers, validate_thread, validate_tts,
-    validate_type
+    put_nonce_into, put_pinned_into, put_reactions_into, put_referenced_message_into, put_resolved_into,
+    put_role_subscription_into, put_stickers_into, put_thread_into, put_tts_into, put_type_into, validate_activity,
+    validate_application, validate_application_id, validate_attachments, validate_author, validate_call,
+    validate_channel_id, validate_components, validate_content, validate_edited_at, validate_embeds, validate_flags,
+    validate_guild_id, validate_id, validate_interaction, validate_mentioned_channels_cross_guild,
+    validate_mentioned_everyone, validate_mentioned_role_ids, validate_mentioned_users, validate_nonce, validate_pinned,
+    validate_reactions, validate_referenced_message, validate_resolved, validate_role_subscription, validate_stickers,
+    validate_thread, validate_tts, validate_type
 )
 from .flags import MessageFlag
 from .preinstanced import MESSAGE_DEFAULT_CONVERTER, MessageType
@@ -116,6 +116,7 @@ PRECREATE_FIELDS = {
     'nonce': ('nonce', validate_nonce),
     'reactions': ('reactions', validate_reactions),
     'referenced_message': ('referenced_message', validate_referenced_message),
+    'resolved': ('resolved', validate_resolved),
     'role_subscription': ('role_subscription', validate_role_subscription),
     'pinned': ('pinned', validate_pinned),
     'stickers': ('stickers', validate_stickers),
@@ -253,6 +254,11 @@ class Message(DiscordEntity, immortal = True):
         
         Defaults to `None`.
     
+    resolved : `None`, ``Resolved``
+        Resolved entities of selected options.
+        
+        Defaults to `None`.
+    
     role_subscription : `None`, ``MessageRoleSubscription``
         Additional role subscription information attached to the message. Defaults to `None`.
     
@@ -281,7 +287,8 @@ class Message(DiscordEntity, immortal = True):
         '_cache_mentioned_channels', '_state', 'activity', 'application', 'application_id', 'attachments', 'author',
         'call', 'channel_id', 'components', 'content', 'edited_at', 'embeds', 'flags', 'guild_id', 'interaction',
         'mentioned_channels_cross_guild', 'mentioned_everyone', 'mentioned_role_ids', 'mentioned_users', 'nonce',
-        'pinned', 'reactions', 'referenced_message', 'role_subscription', 'stickers', 'thread', 'tts', 'type'
+        'pinned', 'reactions', 'referenced_message', 'resolved', 'role_subscription', 'stickers', 'thread', 'tts',
+        'type'
     )
     
     
@@ -309,6 +316,7 @@ class Message(DiscordEntity, immortal = True):
         pinned = ...,
         reactions = ...,
         referenced_message = ...,
+        resolved = ...,
         role_subscription = ...,
         stickers = ...,
         thread = ...,
@@ -379,6 +387,9 @@ class Message(DiscordEntity, immortal = True):
         
         referenced_message : `None`, ``Message``, Optional (Keyword only)
             The referenced message.
+        
+        resolved : `None`, ``Resolved``, Optional (Keyword only)
+            Resolved entities of selected options.
         
         role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
@@ -516,6 +527,12 @@ class Message(DiscordEntity, immortal = True):
         else:
             referenced_message = validate_referenced_message(referenced_message)
         
+        # resolved
+        if resolved is ...:
+            resolved = None
+        else:
+            resolved = validate_resolved(resolved)
+        
         # role_subscription
         if role_subscription is ...:
             role_subscription = None
@@ -579,6 +596,7 @@ class Message(DiscordEntity, immortal = True):
         self.nonce = nonce
         self.reactions = reactions
         self.referenced_message = referenced_message
+        self.resolved = resolved
         self.role_subscription = role_subscription
         self.pinned = pinned
         self.stickers = stickers
@@ -808,6 +826,7 @@ class Message(DiscordEntity, immortal = True):
         self.pinned = parse_pinned(data)
         self.reactions = parse_reactions(data, (None if creation else self.reactions))
         self.referenced_message = parse_referenced_message(data)
+        self.resolved = parse_resolved(data, guild_id = guild_id)
         self.role_subscription = parse_role_subscription(data)
         self.stickers = parse_stickers(data)
         self.thread = parse_thread(data, guild_id)
@@ -1054,6 +1073,10 @@ class Message(DiscordEntity, immortal = True):
         if self.referenced_message != other.referenced_message:
             return False
         
+        # resolved
+        if self.resolved != other.resolved:
+            return False
+        
         # role_subscription
         if self.role_subscription != other.role_subscription:
             return False
@@ -1203,6 +1226,11 @@ class Message(DiscordEntity, immortal = True):
         referenced_message = self.referenced_message
         if (referenced_message is not None):
             hash_value ^= hash(referenced_message)
+        
+        # resolved
+        resolved = self.resolved
+        if (resolved is not None):
+            hash_value ^= hash(resolved)
         
         # role_subscription
         role_subscription = self.role_subscription
@@ -1644,6 +1672,7 @@ class Message(DiscordEntity, immortal = True):
             put_referenced_message_into(
                 self.referenced_message, data, defaults, recursive = recursive, message_type = self.type
             )
+            put_resolved_into(self.resolved, data, defaults, guild_id = self.guild_id)
             put_role_subscription_into(self.role_subscription, data, defaults)
             put_stickers_into(self.stickers, data, defaults)
             put_thread_into(self.thread, data, defaults)
@@ -1651,7 +1680,7 @@ class Message(DiscordEntity, immortal = True):
         put_attachments_into(self.attachments, data, defaults, include_internals = include_internals)
         put_components_into(self.components, data, defaults)
         put_content_into(self.content, data, defaults)
-        put_embeds_into(self.embeds, data, defaults)
+        put_embeds_into(self.embeds, data, defaults, include_internals = include_internals)
         put_flags_into(self.flags, data, defaults)
         put_nonce_into(self.nonce, data, defaults)
         put_tts_into(self.tts, data, defaults)
@@ -1717,6 +1746,7 @@ class Message(DiscordEntity, immortal = True):
         self.nonce = None
         self.reactions = None
         self.referenced_message = None
+        self.resolved = None
         self.role_subscription = None
         self.pinned = False
         self.stickers = None
@@ -1821,6 +1851,9 @@ class Message(DiscordEntity, immortal = True):
         
         referenced_message : `None`, ``Message``, Optional (Keyword only)
             The referenced message.
+        
+        resolved : `None`, ``Resolved``, Optional (Keyword only)
+            Resolved entities of selected options.
         
         role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
@@ -1971,6 +2004,11 @@ class Message(DiscordEntity, immortal = True):
         
         new.referenced_message = self.referenced_message
         
+        resolved = self.resolved
+        if (resolved is not None):
+            resolved = resolved.copy()
+        new.resolved = resolved
+        
         role_subscription = self.role_subscription
         if (role_subscription is not None):
             role_subscription = role_subscription.copy()
@@ -2014,6 +2052,7 @@ class Message(DiscordEntity, immortal = True):
         pinned = ...,
         reactions = ...,
         referenced_message = ...,
+        resolved = ...,
         role_subscription = ...,
         stickers = ...,
         thread = ...,
@@ -2084,6 +2123,9 @@ class Message(DiscordEntity, immortal = True):
         
         referenced_message : `None`, ``Message``, Optional (Keyword only)
             The referenced message.
+        
+        resolved : `None`, ``Resolved``, Optional (Keyword only)
+            Resolved entities of selected options.
         
         role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
@@ -2247,6 +2289,14 @@ class Message(DiscordEntity, immortal = True):
         else:
             referenced_message = validate_referenced_message(referenced_message)
         
+        # resolved
+        if resolved is ...:
+            resolved = self.resolved
+            if (resolved is not None):
+                resolved = resolved.copy()
+        else:
+            resolved = validate_resolved(resolved)
+        
         # role_subscription
         if role_subscription is ...:
             role_subscription = self.role_subscription
@@ -2314,6 +2364,7 @@ class Message(DiscordEntity, immortal = True):
         new.nonce = nonce
         new.reactions = reactions
         new.referenced_message = referenced_message
+        new.resolved = resolved
         new.role_subscription = role_subscription
         new.pinned = pinned
         new.stickers = stickers
@@ -3011,6 +3062,17 @@ class Message(DiscordEntity, immortal = True):
         has_referenced_message : `bool`
         """
         return self.referenced_message is not None
+    
+    
+    def hash_resolved(self):
+        """
+        Returns whether the message has ``.resolved`` set as its non-default value.
+        
+        Returns
+        -------
+        has_resolved : `bool`
+        """
+        return self.resolved is not None
     
     
     def has_role_subscription(self):

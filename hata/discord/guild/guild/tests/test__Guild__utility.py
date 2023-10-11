@@ -54,7 +54,7 @@ def test__Guild__copy():
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306230001
-    preferred_locale = Locale.finnish
+    locale = Locale.finnish
     public_updates_channel_id = 202306230002
     rules_channel_id = 202306230004
     safety_alerts_channel_id = 202306230003
@@ -82,7 +82,7 @@ def test__Guild__copy():
         name = name,
         nsfw_level = nsfw_level,
         owner_id = owner_id,
-        preferred_locale = preferred_locale,
+        locale = locale,
         public_updates_channel_id = public_updates_channel_id,
         rules_channel_id = rules_channel_id,
         safety_alerts_channel_id = safety_alerts_channel_id,
@@ -122,7 +122,7 @@ def test__Guild__copy_with__0():
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306230008
-    preferred_locale = Locale.finnish
+    locale = Locale.finnish
     public_updates_channel_id = 202306230009
     rules_channel_id = 202306230010
     safety_alerts_channel_id = 202306230011
@@ -150,7 +150,7 @@ def test__Guild__copy_with__0():
         name = name,
         nsfw_level = nsfw_level,
         owner_id = owner_id,
-        preferred_locale = preferred_locale,
+        locale = locale,
         public_updates_channel_id = public_updates_channel_id,
         rules_channel_id = rules_channel_id,
         safety_alerts_channel_id = safety_alerts_channel_id,
@@ -190,7 +190,7 @@ def test__Guild__copy_with__1():
     old_name = 'Komeiji'
     old_nsfw_level = NsfwLevel.explicit
     old_owner_id = 202306230015
-    old_preferred_locale = Locale.finnish
+    old_locale = Locale.finnish
     old_public_updates_channel_id = 202306230016
     old_rules_channel_id = 202306230017
     old_safety_alerts_channel_id = 202306230018
@@ -217,7 +217,7 @@ def test__Guild__copy_with__1():
     new_name = 'Orin'
     new_nsfw_level = NsfwLevel.safe
     new_owner_id = 202306230021
-    new_preferred_locale = Locale.dutch
+    new_locale = Locale.dutch
     new_public_updates_channel_id = 202306230022
     new_rules_channel_id = 202306230023
     new_safety_alerts_channel_id = 202306230024
@@ -245,7 +245,7 @@ def test__Guild__copy_with__1():
         name = old_name,
         nsfw_level = old_nsfw_level,
         owner_id = old_owner_id,
-        preferred_locale = old_preferred_locale,
+        locale = old_locale,
         public_updates_channel_id = old_public_updates_channel_id,
         rules_channel_id = old_rules_channel_id,
         safety_alerts_channel_id = old_safety_alerts_channel_id,
@@ -274,7 +274,7 @@ def test__Guild__copy_with__1():
         name = new_name,
         nsfw_level = new_nsfw_level,
         owner_id = new_owner_id,
-        preferred_locale = new_preferred_locale,
+        locale = new_locale,
         public_updates_channel_id = new_public_updates_channel_id,
         rules_channel_id = new_rules_channel_id,
         safety_alerts_channel_id = new_safety_alerts_channel_id,
@@ -307,7 +307,7 @@ def test__Guild__copy_with__1():
     vampytest.assert_eq(copy.name, new_name)
     vampytest.assert_is(copy.nsfw_level, new_nsfw_level)
     vampytest.assert_eq(copy.owner_id, new_owner_id)
-    vampytest.assert_is(copy.preferred_locale, new_preferred_locale)
+    vampytest.assert_is(copy.locale, new_locale)
     vampytest.assert_eq(copy.public_updates_channel_id, new_public_updates_channel_id)
     vampytest.assert_eq(copy.rules_channel_id, new_rules_channel_id)
     vampytest.assert_eq(copy.safety_alerts_channel_id, new_safety_alerts_channel_id)

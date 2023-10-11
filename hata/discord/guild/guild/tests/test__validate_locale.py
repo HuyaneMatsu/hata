@@ -2,7 +2,7 @@ import vampytest
 
 from ....localization import Locale
 
-from ..fields import validate_guild_locale
+from ..fields import validate_locale
 
 
 def _iter_options():
@@ -12,9 +12,9 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_guild_locale__passing(input_value):
+def test__validate_locale__passing(input_value):
     """
-    Validates whether ``validate_guild_locale`` works as intended.
+    Validates whether ``validate_locale`` works as intended.
     
     Case: passing.
     
@@ -27,16 +27,16 @@ def test__validate_guild_locale__passing(input_value):
     ------
     output : ``Locale``
     """
-    output = validate_guild_locale(input_value)
+    output = validate_locale(input_value)
     vampytest.assert_instance(output, Locale)
     return output
 
 
 @vampytest.raising(TypeError)
 @vampytest.call_with(12.6)
-def test__validate_guild_locale__type_error(input_value):
+def test__validate_locale__type_error(input_value):
     """
-    Validates whether ``validate_guild_locale`` works as intended.
+    Validates whether ``validate_locale`` works as intended.
     
     Case: `TypeError`.
     
@@ -49,4 +49,4 @@ def test__validate_guild_locale__type_error(input_value):
     ------
     TypeError
     """
-    validate_guild_locale(input_value)
+    validate_locale(input_value)

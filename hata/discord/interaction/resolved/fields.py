@@ -71,7 +71,7 @@ validate_attachments = nullable_entity_dictionary_validator_factory('attachments
 
 # channels
 
-def parse_channels(data, interaction_event):
+def parse_channels(data, guild_id = 0):
     """
     Parsers out the resolved channels from the given data.
     
@@ -80,8 +80,8 @@ def parse_channels(data, interaction_event):
     data : `dict` of (`str`, `object`) items
         Resolved data.
     
-    interaction_event : ``InteractionEvent``
-        The received interaction event.
+    guild_id : `int`, Optional (Keyword only)
+        The respective guild's identifier.
     
     Returns
     -------
@@ -94,7 +94,7 @@ def parse_channels(data, interaction_event):
     resolved_channels = {}
     
     for channel_data in resolved_channel_datas.values():
-        channel = create_partial_channel_from_data(channel_data, interaction_event.guild_id)
+        channel = create_partial_channel_from_data(channel_data, guild_id)
         if (channel is not None):
             resolved_channels[channel.id] = channel
     
@@ -138,7 +138,7 @@ validate_channels = nullable_entity_dictionary_validator_factory('channels', Cha
 
 # roles
 
-def parse_roles(data, interaction_event):
+def parse_roles(data, guild_id = 0):
     """
     Parsers out the resolved roles from the given data.
     
@@ -147,8 +147,8 @@ def parse_roles(data, interaction_event):
     data : `dict` of (`str`, `object`) items
         Resolved data.
     
-    interaction_event : ``InteractionEvent``
-        The received interaction event.
+    guild_id : `int`, Optional (Keyword only)
+        The respective guild's identifier.
     
     Returns
     -------
@@ -161,7 +161,7 @@ def parse_roles(data, interaction_event):
     resolved_roles = {}
     
     for role_data in resolved_role_datas.values():
-        role = Role.from_data(role_data, interaction_event.guild_id)
+        role = Role.from_data(role_data, guild_id)
         resolved_roles[role.id] = role
     
     return resolved_roles
@@ -267,7 +267,7 @@ validate_messages = nullable_entity_dictionary_validator_factory('messages', Mes
 
 # users
 
-def parse_users(data, interaction_event):
+def parse_users(data, guild_id = 0):
     """
     Parsers out the resolved users from the given data.
     
@@ -276,12 +276,12 @@ def parse_users(data, interaction_event):
     data : `dict` of (`str`, `object`) items
         Resolved data.
     
-    interaction_event : ``InteractionEvent``
-        The received interaction event.
+    guild_id : `int` = `0`, Optional
+        The received interaction's guild's identifier.
     
     Returns
     -------
-    messages : `None`, `dict` of (`int`, ``Message``) items
+    messages : `None`, `dict` of (`int`, ``ClientUserBase``) items
     """
     resolved_user_datas = data.get('users', None)
     if (resolved_user_datas is None) or (not resolved_user_datas):
@@ -298,16 +298,13 @@ def parse_users(data, interaction_event):
         else:
             guild_profile_data = resolved_guild_profile_datas.get(user_id, None)
         
-        user = User.from_data(user_data, guild_profile_data, interaction_event.guild_id)
+        user = User.from_data(user_data, guild_profile_data, guild_id)
         resolved_users[user.id] = user
-        
-        if (guild_profile_data is not None):
-            interaction_event._add_cached_user(user)
-
+    
     return resolved_users
 
 
-def put_users_into(users, data, defaults, *, interaction_event = None):
+def put_users_into(users, data, defaults, *, guild_id = 0):
     """
     Puts the given `users` into the given `data` json serializable object.
     
@@ -322,7 +319,7 @@ def put_users_into(users, data, defaults, *, interaction_event = None):
     defaults : `bool`
         Whether default fields values should be included as well.
     
-    interaction_event : ``InteractionEvent`` = `None`, Optional (Keyword only)
+    guild_id : `int` = `0`, Optional (Keyword only)
         The respective guild's identifier to use for handing user guild profiles.
     
     Returns
@@ -334,11 +331,6 @@ def put_users_into(users, data, defaults, *, interaction_event = None):
         resolved_guild_profile_datas = {}
         
         if (users is not None):
-            if interaction_event is None:
-                guild_id = 0
-            else:
-                guild_id = interaction_event.guild_id
-            
             for user in users.values():
                 resolved_user_datas[str(user.id)] = user.to_data(
                     defaults = defaults, include_internals = True

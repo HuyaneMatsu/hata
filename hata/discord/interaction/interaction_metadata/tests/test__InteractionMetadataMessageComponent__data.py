@@ -3,7 +3,6 @@ import vampytest
 from ....component import ComponentType
 from ....message import Attachment
 
-from ...interaction_event import InteractionEvent
 from ...resolved import Resolved
 
 from ..message_component import InteractionMetadataMessageComponent
@@ -15,21 +14,20 @@ def test__InteractionMetadataMessageComponent__from_data():
     """
     Tests whether ``InteractionMetadataMessageComponent.from_data`` works as intended.
     """
+    guild_id = 0
     component_type = ComponentType.button
     custom_id = 'Inaba'
     resolved = Resolved(attachments = [Attachment.precreate(202211060048)])
     values = ['black', 'rock', 'shooter']
     
-    interaction_event = InteractionEvent()
-    
     data = {
         'component_type': component_type.value,
         'custom_id': custom_id,
-        'resolved': resolved.to_data(defaults = True, interaction_event = interaction_event),
+        'resolved': resolved.to_data(defaults = True, guild_id = guild_id),
         'values': values,
     }
     
-    interaction_metadata = InteractionMetadataMessageComponent.from_data(data, interaction_event)
+    interaction_metadata = InteractionMetadataMessageComponent.from_data(data, guild_id)
     _check_is_all_field_set(interaction_metadata)
 
     vampytest.assert_eq(interaction_metadata.component_type, component_type)
@@ -43,7 +41,6 @@ def test__InteractionMetadataMessageComponent__to_data():
     Tests whether ``InteractionMetadataMessageComponent.to_data`` works as intended.
     """
     guild_id = 202211060046
-    interaction_event = InteractionEvent(guild_id = guild_id)
     
     component_type = ComponentType.button
     custom_id = 'Inaba'
@@ -60,12 +57,12 @@ def test__InteractionMetadataMessageComponent__to_data():
     vampytest.assert_eq(
         interaction_metadata.to_data(
             defaults = True,
-            interaction_event = interaction_event,
+            guild_id = guild_id,
         ),
         {
             'component_type': component_type.value,
             'custom_id': custom_id,
-            'resolved': resolved.to_data(defaults = True, interaction_event = interaction_event),
+            'resolved': resolved.to_data(defaults = True, guild_id = guild_id),
             'values': values,
         },
     )

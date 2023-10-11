@@ -424,11 +424,58 @@ parse_owner_id = entity_id_parser_factory('owner_id')
 put_owner_id_into = entity_id_putter_factory('owner_id')
 validate_owner_id = entity_id_validator_factory('owner_id', ClientUserBase)
 
-# preferred_locale
+# locale
 
-parse_preferred_locale = preinstanced_parser_factory('preferred_locale', Locale, LOCALE_DEFAULT)
-put_preferred_locale_into = preinstanced_putter_factory('preferred_locale')
-validate_preferred_locale = preinstanced_validator_factory('preferred_locale', Locale)
+
+def parse_locale(data):
+    """
+    Parses out the guild's locale from the given value.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    locale : ``Locale``
+    """
+    # When receiving interaction
+    locale = data.get('locale', None)
+    if (locale is not None):
+        return Locale.get(locale)
+    
+    # When receiving guild itself
+    locale = data.get('preferred_locale', None)
+    if (locale is not None):
+        return Locale.get(locale)
+    
+    return LOCALE_DEFAULT
+
+
+def put_locale_into(locale, data, defaults):
+    """
+    Puts the given `locale` into the given `data` json serializable object.
+    
+    Parameters
+    ----------
+    locale : ``Locale``
+        Locale to serialise.
+    data : `dict<str, object>`
+        Interaction resolved data.
+    defaults : `bool`
+        Whether default fields values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    data['preferred_locale'] = locale.value
+    data['locale'] = locale.value
+    return data
+
+
+validate_locale = preinstanced_validator_factory('locale', Locale)
 
 # premium_tier
 

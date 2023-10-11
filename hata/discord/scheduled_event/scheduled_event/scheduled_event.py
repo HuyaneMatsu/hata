@@ -1150,7 +1150,9 @@ class ScheduledEvent(DiscordEntity):
         -------
         guild : `None`, ``Guild``
         """
-        return GUILDS.get(self.guild_id, None)
+        guild_id = self.guild_id
+        if guild_id:
+            return GUILDS.get(self.guild_id, None)
     
     
     @property

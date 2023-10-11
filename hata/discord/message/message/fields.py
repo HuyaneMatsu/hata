@@ -45,6 +45,8 @@ from .preinstanced import MessageType
 
 Channel = include('Channel')
 Message = include('Message')
+Resolved = include('Resolved')
+
 
 # activity
 
@@ -55,7 +57,9 @@ validate_activity = nullable_entity_validator_factory('activity', MessageActivit
 # application
 
 parse_application = nullable_entity_parser_factory('application', MessageApplication)
-put_application_into = nullable_entity_optional_putter_factory('application', MessageApplication)
+put_application_into = nullable_entity_optional_putter_factory(
+    'application', MessageApplication, force_include_internals = True
+)
 validate_application = nullable_entity_validator_factory('application', MessageApplication)
 
 # application_id
@@ -209,7 +213,7 @@ validate_content = nullable_string_validator_factory('content', 0, CONTENT_LENGT
 # embed
 
 parse_embeds = nullable_object_array_parser_factory('embeds', Embed)
-put_embeds_into = nullable_object_array_optional_putter_factory('embeds')
+put_embeds_into = nullable_object_array_optional_putter_factory('embeds', Embed)
 validate_embeds = nullable_object_array_validator_factory('embeds', Embed)
 
 # edited_at
@@ -586,6 +590,70 @@ def put_referenced_message_into(
 validate_referenced_message = nullable_entity_validator_factory(
     'referenced_message', NotImplemented, include = 'Message'
 )
+
+# resolved
+
+def parse_resolved(data, guild_id = 0):
+    """
+    Parsers out a resolved object from the given data.
+    
+    Parameters
+    ----------
+    data : `dict` of (`str`, `object`) items
+        Interaction metadata data.
+    
+    guild_id : `int` = `0`, Optional
+        The respective guild's identifier.
+    
+    Returns
+    -------
+    resolved : `None`, ``Resolved``
+    """
+    resolved_data = data.get('resolved', None)
+    if (resolved_data is not None) and resolved_data:
+        return Resolved.from_data(resolved_data, guild_id)
+
+
+def put_resolved_into(resolved, data, defaults, *, guild_id = 0):
+    """
+    Puts the given `resolved` into the given interaction metadata data.
+    
+    Parameters
+    ----------
+    resolved  : `None`, ``Resolved``
+        The instance to serialise.
+        
+    data : `dict` of (`str`, `object`) items
+        Interaction metadata data.
+    
+    defaults : `bool`
+        Whether default field values should be included as well.
+    
+    guild_id : `int` = `None`, Optional (Keyword only)
+        The respective guild's identifier to use for handing user guild profiles.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `object`) items
+    """
+    while True:
+        if (resolved is None):
+            if not defaults:
+                break
+            
+            resolved_data = {}
+        
+        else:
+            resolved_data = resolved.to_data(defaults = defaults, guild_id = guild_id)
+        
+        data['resolved'] = resolved_data
+        break
+    
+    return data
+
+
+validate_resolved = nullable_entity_validator_factory('resolved', NotImplemented, include = 'Resolved')
+
 
 # role_subscription
 

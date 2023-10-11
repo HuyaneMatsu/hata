@@ -175,17 +175,17 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
     
     
     @classmethod
-    def from_data(cls, data, interaction_event):
+    def from_data(cls, data, guild_id = 0):
         """
         Creates a new interaction from the received data.
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             The received interaction field data.
         
-        interaction_event : ``InteractionEvent``
-            The parent interaction event.
+        guild_id : `int` = `0`, Optional
+            The respective guild's identifier.
         
         Returns
         -------
@@ -194,7 +194,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         return object.__new__(cls)
     
     
-    def to_data(cls, *, defaults = False, interaction_event = None):
+    def to_data(self, *, defaults = False, guild_id = 0):
         """
         Converts the interaction into a json serailzable object.
         
@@ -203,12 +203,12 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether default field values should be included as well.
         
-        interaction_event : ``InteractionEvent`` = `None`, Optional (Keyword only)
-            The respective guild's identifier to use for handing user guild profiles.
+        guild_id : `int` = `0`, Optional (Keyword only)
+            The respective guild's identifier.
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         return {}
     
@@ -646,7 +646,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        match : `None`, `Any`
+        match : `None`, `object`
             The returned value by the ``matcher``
         value : `None`, `str`
             The matched `custom_id`'s value.
@@ -682,7 +682,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         
         Yields
         -------
-        match : `None`, `Any`
+        match : `None`, `object`
             The returned value by the ``matcher``
         value : `None`, `str`
             The matched `custom_id`'s value.

@@ -2,6 +2,7 @@ import vampytest
 
 from ....application import Entitlement
 from ....channel import Channel
+from ....guild import create_partial_guild_from_id
 from ....localization import Locale
 from ....permission import Permission
 from ....message import Message
@@ -21,14 +22,13 @@ def test__InteractionEvent__repr():
     application_permissions = Permission(123)
     channel = Channel.precreate(202211070026)
     entitlements = [Entitlement.precreate(202310050018), Entitlement.precreate(202310050019)]
-    guild_id = 202211070027
-    guild_locale = Locale.hindi
+    guild = create_partial_guild_from_id(202211070027)
     interaction = InteractionMetadataApplicationCommand(name = '3L')
     interaction_type = InteractionType.application_command
-    locale = Locale.thai
     message = Message.precreate(202211070028, content = 'Rise')
     token = 'Fall'
     user = User.precreate(202211070029, name = 'masuta spark')
+    user_locale = Locale.thai
     user_permissions = Permission(234)
     interaction_id = 202211070030
     
@@ -38,11 +38,10 @@ def test__InteractionEvent__repr():
         application_permissions = application_permissions,
         channel = channel,
         entitlements = entitlements,
-        guild_id = guild_id,
-        guild_locale = guild_locale,
+        guild = guild,
         interaction = interaction,
         interaction_type = interaction_type,
-        locale = locale,
+        user_locale = user_locale,
         message = message,
         token = token,
         user = user,
@@ -60,14 +59,13 @@ def test__InteractionEvent__hash():
     application_permissions = Permission(123)
     channel = Channel.precreate(202211070032)
     entitlements = [Entitlement.precreate(202310050021), Entitlement.precreate(202310050022)]
-    guild_id = 202211070033
-    guild_locale = Locale.hindi
+    guild = create_partial_guild_from_id(202211070033)
     interaction = InteractionMetadataApplicationCommand(name = '3L')
     interaction_type = InteractionType.application_command
-    locale = Locale.thai
     message = Message.precreate(202211070034, content = 'Rise')
     token = 'Fall'
     user = User.precreate(202211070009, name = 'masuta spark')
+    user_locale = Locale.thai
     user_permissions = Permission(234)
     interaction_id = 202211070035
     
@@ -77,14 +75,13 @@ def test__InteractionEvent__hash():
         application_permissions = application_permissions,
         channel = channel,
         entitlements = entitlements,
-        guild_id = guild_id,
-        guild_locale = guild_locale,
+        guild = guild,
         interaction = interaction,
         interaction_type = interaction_type,
-        locale = locale,
         message = message,
         token = token,
         user = user,
+        user_locale = user_locale,
         user_permissions = user_permissions
     )
     
@@ -99,14 +96,13 @@ def test__InteractionEvent__eq():
     application_permissions = Permission(123)
     channel = Channel.precreate(202211070037)
     entitlements = [Entitlement.precreate(202310050023), Entitlement.precreate(202310050024)]
-    guild_id = 202211070038
-    guild_locale = Locale.hindi
+    guild = create_partial_guild_from_id(202211070038)
     interaction = InteractionMetadataApplicationCommand(name = '3L')
     interaction_type = InteractionType.application_command
-    locale = Locale.thai
     message = Message.precreate(202211070039, content = 'Rise')
     token = 'Fall'
     user = User.precreate(202211070040, name = 'masuta spark')
+    user_locale = Locale.thai
     user_permissions = Permission(234)
     interaction_id = 202211070041
     
@@ -115,11 +111,10 @@ def test__InteractionEvent__eq():
         'application_permissions': application_permissions,
         'channel': channel,
         'entitlements': entitlements,
-        'guild_id': guild_id,
-        'guild_locale': guild_locale,
+        'guild': guild,
         'interaction': interaction,
         'interaction_type': interaction_type,
-        'locale': locale,
+        'user_locale': user_locale,
         'message': message,
         'token': token,
         'user': user,
@@ -148,12 +143,11 @@ def test__InteractionEvent__eq():
         ('application_permissions', Permission(456)),
         ('channel', Channel.precreate(202211070043)),
         ('entitlements', None),
-        ('guild_id', 202211070044),
-        ('guild_locale', Locale.english_us),
+        ('guild', create_partial_guild_from_id(202211070044)),
         ('interaction', InteractionMetadataApplicationCommand(name = 'important')),
          # interaction & interaction_type must match, so we skip this
         # ('interaction_type', InteractionType.application_command),
-        ('locale', Locale.english_gb),
+        ('user_locale', Locale.english_gb),
         ('message', Message.precreate(202211070045, content = 'Rise')),
         ('token', 'Resolution'),
         ('user', User.precreate(202211070046, name = 'princess')),

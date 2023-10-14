@@ -33,7 +33,7 @@ class StringSelectOption(RichAttributeErrorBaseType):
     value : `str`
         Identifier value of the option.
     """
-    def __new__(cls, value, label = None, emoji = None, *, default = False, description = None):
+    def __new__(cls, value, label = ..., emoji = ..., *, default = ..., description = ...):
         """
         Creates a new component option with the given parameters.
         
@@ -42,18 +42,18 @@ class StringSelectOption(RichAttributeErrorBaseType):
         value : `str`
             The option's value.
         
-        label : `str` = `None`, Optional
+        label : `None | str`, Optional
             Label of the component option.
             
-            Defaults to the `value` parameter if not given.
+            Defaults to the `value` parameter if not given or if given as `None`.
         
-        emoji : `None`, ``Emoji`` = `None`, Optional
+        emoji : `None`, ``Emoji``, Optional
             Emoji of the option if applicable.
         
-        default : `bool` = `False`, Optional (Keyword only)
+        default : `bool`, Optional (Keyword only)
             Whether this the the default option. Defaults to `False`.
         
-        description : `None`, `str` = `None`, Optional (Keyword only)
+        description : `None`, `str`, Optional (Keyword only)
             Description of the component option.
         
         Raises
@@ -63,15 +63,37 @@ class StringSelectOption(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        default = validate_default(default)
-        description = validate_description(description)
-        emoji = validate_emoji(emoji)
-        label = validate_label(label)
         value = validate_value(value)
         
+        # default
+        if default is ...:
+            default = False
+        else:
+            default = validate_default(default)
+        
+        # description
+        if description is ...:
+            description = None
+        else:
+            description = validate_description(description)
+        
+        # emoji
+        if emoji is ...:
+            emoji = None
+        else:
+            emoji = validate_emoji(emoji)
+        
+        # label
+        if label is ...:
+            label = None
+        else:
+            label = validate_label(label)
+        
+        # Post validation
         if label is None:
             label = value
         
+        # Construct
         self = object.__new__(cls)
         self.default = default
         self.description = description
@@ -88,7 +110,7 @@ class StringSelectOption(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             String select option data.
         
         Returns
@@ -110,13 +132,14 @@ class StringSelectOption(RichAttributeErrorBaseType):
         """
         Converts the string select option to a json serializable object.
         
-        Returns
-        -------
-        data : `dict` of (`str`, `Any`) items
-        
         Parameters
         ----------
         defaults : `bool` = `False`, Optional (Keyword only)
+            Whether fields with their default value should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         
@@ -245,16 +268,20 @@ class StringSelectOption(RichAttributeErrorBaseType):
         return new
     
     
-    def copy_with(self, **keyword_parameters):
+    def copy_with(
+        self,
+        default = ...,
+        description = ...,
+        emoji = ...,
+        label = ...,
+        value = ...,
+    ):
         """
         Copes the string select with modifying it's defined attributes.
         
-        **keyword_parameters : Keyword parameters
-            Keyword parameters defining which attribute should be overwritten.
-        
-        Other Parameters
-        ----------------
-        default : `bool`
+        Parameters
+        ----------
+        default : `bool`, Optional (Keyword only)
             Whether this the the default option. Defaults to `False`.
         
         description : `None`, `str`, Optional (Keyword only)
@@ -277,59 +304,45 @@ class StringSelectOption(RichAttributeErrorBaseType):
         ------
         TypeError
             - If a parameter's type is incorrect.
-            - Extra or unused parameters.
         ValueError
             - If a parameter's value is incorrect.
         """
         # default
-        try:
-            default = keyword_parameters.pop('default')
-        except KeyError:
+        if default is ...:
             default = self.default
         else:
             default = validate_default(default)
         
         # description
-        try:
-            description = keyword_parameters.pop('description')
-        except KeyError:
+        if description is ...:
             description = self.description
         else:
             description = validate_description(description)
         
         # emoji
-        try:
-            emoji = keyword_parameters.pop('emoji')
-        except KeyError:
+        if emoji is ...:
             emoji = self.emoji
         else:
            emoji = validate_emoji(emoji)
         
         
         # label
-        try:
-            label = keyword_parameters.pop('label')
-        except KeyError:
+        if label is ...:
             label = self.label
         else:
             label = validate_label(label)
         
         # value
-        try:
-            value = keyword_parameters.pop('value')
-        except KeyError:
+        if value is ...:
             value = self.value
         else:
             value = validate_value(value)
         
-        if keyword_parameters:
-            raise TypeError(
-                f'Extra or unused parameters: {keyword_parameters!r}.'
-            )
-        
+        # Post validation
         if label is None:
             label = value
         
+        # Construct
         new = object.__new__(type(self))
         new.default = default
         new.description = description

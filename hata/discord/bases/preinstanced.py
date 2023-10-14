@@ -9,7 +9,7 @@ class Preinstance:
         The instance's name.
     value : `str`, `int`
         The instance's value.
-    args : `tuple` of `Any`
+    args : `tuple` of `object`
         Additional parameters to preinstance with.
     """
     __slots__ = ('name', 'value', 'args')
@@ -64,7 +64,7 @@ class PreinstancedMeta(type):
             The created class's name.
         class_parents : `tuple` of `type`
             The superclasses of the creates type.
-        class_attributes : `dict` of (`str`, `Any`) items
+        class_attributes : `dict` of (`str`, `object`) items
             The class attributes of the created type.
         
         Returns

@@ -1,9 +1,9 @@
 __all__ = ('ComponentMetadataRoleSelect', )
 
-from .select_base import ComponentMetadataSelectBase
+from .entity_select_base import ComponentMetadataEntitySelectBase
 
 
-class ComponentMetadataRoleSelect(ComponentMetadataSelectBase):
+class ComponentMetadataRoleSelect(ComponentMetadataEntitySelectBase):
     """
     Role select component metadata.
     
@@ -11,6 +11,9 @@ class ComponentMetadataRoleSelect(ComponentMetadataSelectBase):
     ----------
     custom_id : `None`, `str`
         Custom identifier to detect which component was used by the user.
+    
+    default_values : `None`, `tuple` of ``EntitySelectDefaultValue``
+        Entities presented in the select by default.
     
     enabled : `bool`
         Whether the component is enabled.

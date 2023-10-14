@@ -42,7 +42,7 @@ def test__parse_channel__with_guild_id():
     channel_id = 202307290001
     guild_id = 202307290002
     
-    data =  {'channel': {'id': str(channel_id)}}
+    data = {'channel': {'id': str(channel_id)}}
     
     channel = parse_channel(data, guild_id)
     

@@ -72,7 +72,7 @@ class InteractionForm(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Interaction form data.
         
         Returns
@@ -97,7 +97,7 @@ class InteractionForm(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`)
+        data : `dict` of (`str`, `object`)
         """
         data = {}
         

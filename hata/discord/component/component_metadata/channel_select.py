@@ -2,11 +2,11 @@ __all__ = ('ComponentMetadataChannelSelect', )
 
 from scarletio import copy_docs
 
+from .entity_select_base import ComponentMetadataEntitySelectBase
 from .fields import parse_channel_types, put_channel_types_into, validate_channel_types
-from .select_base import ComponentMetadataSelectBase
 
 
-class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
+class ComponentMetadataChannelSelect(ComponentMetadataEntitySelectBase):
     """
     Channel select component metadata.
     
@@ -17,6 +17,9 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
     
     custom_id : `None`, `str`
         Custom identifier to detect which component was used by the user.
+    
+    default_values : `None`, `tuple` of ``EntitySelectDefaultValue``
+        Entities presented in the select by default.
     
     enabled : `bool`
         Whether the component is enabled.
@@ -38,6 +41,7 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
         *,
         channel_types = ...,
         custom_id = ...,
+        default_values = ...,
         enabled = ...,
         max_values = ...,
         min_values = ...,
@@ -53,6 +57,10 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
         
         custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which component was used by the user.
+        
+        default_values : `None | iterable<Channel | Role | ClientUserBase | EntitySelectDefaultValue | tuple>` \
+                , Optional (Keyword only)
+            Entities presented in the select by default.
         
         enabled : `bool`, Optional (Keyword only)
             Whether the component is enabled.
@@ -80,9 +88,10 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
             channel_types = validate_channel_types(channel_types)
         
         # Construct
-        self = ComponentMetadataSelectBase.__new__(
+        self = ComponentMetadataEntitySelectBase.__new__(
             cls,
             custom_id = custom_id,
+            default_values = default_values,
             enabled = enabled,
             max_values = max_values,
             min_values = min_values,
@@ -94,11 +103,12 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
     
     
     @classmethod
-    @copy_docs(ComponentMetadataSelectBase.from_keyword_parameters)
+    @copy_docs(ComponentMetadataEntitySelectBase.from_keyword_parameters)
     def from_keyword_parameters(cls, keyword_parameters):
         return cls(
             channel_types = keyword_parameters.pop('channel_types', ...),
             custom_id = keyword_parameters.pop('custom_id', ...),
+            default_values = keyword_parameters.pop('default_values', ...),
             enabled = keyword_parameters.pop('enabled', ...),
             max_values = keyword_parameters.pop('max_values', ...),
             min_values = keyword_parameters.pop('min_values', ...),
@@ -106,7 +116,7 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
         )
     
     
-    @copy_docs(ComponentMetadataSelectBase._add_type_specific_repr_fields_into)
+    @copy_docs(ComponentMetadataEntitySelectBase._add_type_specific_repr_fields_into)
     def _add_type_specific_repr_fields_into(self, repr_parts):
         # channel_types
         repr_parts.append(', channel_types = ')
@@ -134,9 +144,9 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
             repr_parts.append(']')
     
     
-    @copy_docs(ComponentMetadataSelectBase.__hash__)
+    @copy_docs(ComponentMetadataEntitySelectBase.__hash__)
     def __hash__(self):
-        hash_value = ComponentMetadataSelectBase.__hash__(self)
+        hash_value = ComponentMetadataEntitySelectBase.__hash__(self)
         
         # channel_types
         channel_types = self.channel_types
@@ -148,9 +158,9 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
         return hash_value
     
     
-    @copy_docs(ComponentMetadataSelectBase._is_equal_same_type)
+    @copy_docs(ComponentMetadataEntitySelectBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
-        if not ComponentMetadataSelectBase._is_equal_same_type(self, other):
+        if not ComponentMetadataEntitySelectBase._is_equal_same_type(self, other):
             return False
         
         # channel_types
@@ -161,30 +171,30 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
     
     
     @classmethod
-    @copy_docs(ComponentMetadataSelectBase.from_data)
+    @copy_docs(ComponentMetadataEntitySelectBase.from_data)
     def from_data(cls, data):
         self = super(ComponentMetadataChannelSelect, cls).from_data(data)
         self.channel_types = parse_channel_types(data)
         return self
     
     
-    @copy_docs(ComponentMetadataSelectBase.to_data)
+    @copy_docs(ComponentMetadataEntitySelectBase.to_data)
     def to_data(self, *, defaults = False):
-        data =  ComponentMetadataSelectBase.to_data(self)
+        data = ComponentMetadataEntitySelectBase.to_data(self)
         
         put_channel_types_into(self.channel_types, data, defaults)
         
         return data
     
     
-    @copy_docs(ComponentMetadataSelectBase.copy)
+    @copy_docs(ComponentMetadataEntitySelectBase.copy)
     def copy(self):
-        new = ComponentMetadataSelectBase.copy(self)
+        new = ComponentMetadataEntitySelectBase.copy(self)
         
         # channel_types
         channel_types = self.channel_types
         if (channel_types is not None):
-            channel_types = tuple(channel_types)
+            channel_types = (*channel_types,)
         new.channel_types = channel_types
         
         return new
@@ -195,6 +205,7 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
         *,
         channel_types = ...,
         custom_id = ...,
+        default_values = ...,
         enabled = ...,
         max_values = ...,
         min_values = ...,
@@ -210,6 +221,10 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
         
         custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which component was used by the user.
+        
+        default_values : `None | iterable<Channel | Role | ClientUserBase | EntitySelectDefaultValue | tuple>` \
+                , Optional (Keyword only)
+            Entities presented in the select by default.
         
         enabled : `bool`, Optional (Keyword only)
             Whether the component is enabled.
@@ -238,15 +253,16 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
         if channel_types is ...:
             channel_types = self.channel_types
             if (channel_types is not None):
-                channel_types = tuple(channel_types)
+                channel_types = (*channel_types,)
         else:
             channel_types = validate_channel_types(channel_types)
         
         # Construct
         
-        new = ComponentMetadataSelectBase.copy_with(
+        new = ComponentMetadataEntitySelectBase.copy_with(
             self,
             custom_id = custom_id,
+            default_values = default_values,
             enabled = enabled,
             max_values = max_values,
             min_values = min_values,
@@ -256,11 +272,12 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
         return new
     
     
-    @copy_docs(ComponentMetadataSelectBase.copy_with_keyword_parameters)
+    @copy_docs(ComponentMetadataEntitySelectBase.copy_with_keyword_parameters)
     def copy_with_keyword_parameters(self, keyword_parameters):
         return self.copy_with(
             channel_types = keyword_parameters.pop('channel_types', ...),
             custom_id = keyword_parameters.pop('custom_id', ...),
+            default_values = keyword_parameters.pop('default_values', ...),
             enabled = keyword_parameters.pop('enabled', ...),
             max_values = keyword_parameters.pop('max_values', ...),
             min_values = keyword_parameters.pop('min_values', ...),

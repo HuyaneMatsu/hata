@@ -1,35 +1,55 @@
 import vampytest
 
 from ...string_select_option import StringSelectOption
+
 from ..fields import validate_options
 
 
-def test__validate_options__0():
+def _iter_options():
+    option_0 = StringSelectOption('hello')
+    option_1 = StringSelectOption('hi')
+    
+    yield None, None
+    yield [], None
+    yield [option_0], (option_0,)
+    yield [option_0, option_1], (option_0, option_1,)
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_options__passing(input_value):
     """
     Tests whether ``validate_options`` works as intended.
     
     Case: passing.
-    """
-    option = StringSelectOption('hello')
     
-    for input_value, expected_output in (
-        (None, None),
-        ([], None),
-        ([option], (option, )),
-    ):
-        output = validate_options(input_value)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Returns
+    -------
+    output : `None | tuple<StringSelectOption>`
+    """
+    return validate_options(input_value)
 
 
-def test__validate_options__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+@vampytest.call_with([13.6])
+def test__validate_options__type_error(input_value):
     """
     Tests whether ``validate_options`` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-        [12.6],
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_options(input_value)
+    validate_options(input_value)

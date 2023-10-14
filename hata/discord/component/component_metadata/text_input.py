@@ -361,7 +361,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
     
     @copy_docs(ComponentMetadataBase.to_data)
     def to_data(self, *, defaults = False):
-        data =  {}
+        data = {}
         
         put_custom_id_into(self.custom_id, data, defaults)
         put_label_into(self.label, data, defaults)

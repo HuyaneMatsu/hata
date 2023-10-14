@@ -56,7 +56,7 @@ def test__ChannelMetadataGuildCategory__new__1():
 
 
 
-def test__ChannelMetadataGuildCategory__from_keyword_parameters__0():
+def test__ChannelMetadataGuildCategory__from_keyword_parameters__no_fields():
     """
     Tests whether ``ChannelMetadataGuildCategory.from_keyword_parameters`` works as intended.
     

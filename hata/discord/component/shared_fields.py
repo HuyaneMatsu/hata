@@ -19,7 +19,7 @@ def parse_components(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Components data.
     
     Returns
@@ -39,14 +39,14 @@ def put_components_into(components, data, defaults):
     ----------
     components : `None`, `tuple` of ``Component``
         The components to serialize.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default fields should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if (components is None):
         component_datas = []

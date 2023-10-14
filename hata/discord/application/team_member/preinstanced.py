@@ -61,7 +61,7 @@ class TeamMemberPermission(PreinstancedBase):
         
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``TeamMemberPermission``) items
+    INSTANCES : `dict` of (`str`, ``TeamMemberPermission``) items
         Stores the created team member permission instances. This container is accessed when translating a Discord
         team member permission's value to it's representation.
     VALUE_TYPE : `type` = `str`
@@ -101,7 +101,7 @@ class TeamMemberRole(PreinstancedBase):
         
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``TeamMemberRole``) items
+    INSTANCES : `dict` of (`str`, ``TeamMemberRole``) items
         Stores the created team member role instances. This container is accessed when translating a Discord
         team member role's value to it's representation.
     VALUE_TYPE : `type` = `str`

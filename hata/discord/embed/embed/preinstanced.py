@@ -9,6 +9,8 @@ class EmbedType(PreinstancedBase):
     
     Attributes
     ----------
+    name : `str`
+        The embed type's name.
     value : `str`
         The discord side identifier value of the embed type.
     

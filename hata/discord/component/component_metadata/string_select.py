@@ -170,7 +170,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
     
     @copy_docs(ComponentMetadataSelectBase.to_data)
     def to_data(self, *, defaults = False):
-        data =  ComponentMetadataSelectBase.to_data(self)
+        data = ComponentMetadataSelectBase.to_data(self)
         
         put_options_into(self.options, data, defaults)
         

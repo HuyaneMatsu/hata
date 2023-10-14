@@ -4,9 +4,9 @@ from scarletio import RichAttributeErrorBaseType, copy_docs, export
 
 from ..component_metadata import ComponentMetadataBase
 from ..component_metadata.fields import (
-    validate_button_style, validate_channel_types, validate_enabled, validate_label, validate_max_length,
-    validate_max_values, validate_min_length, validate_min_values, validate_options, validate_placeholder,
-    validate_required, validate_text_input_style, validate_url, validate_value
+    validate_button_style, validate_channel_types, validate_default_values, validate_enabled, validate_label,
+    validate_max_length, validate_max_values, validate_min_length, validate_min_values, validate_options,
+    validate_placeholder, validate_required, validate_text_input_style, validate_url, validate_value
 )
 from ..shared_fields import validate_components, validate_custom_id, validate_emoji
 
@@ -53,6 +53,10 @@ class Component(RichAttributeErrorBaseType):
         
         custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which component was clicked (or used) by the user.
+        
+        default_values : `None | iterable<Channel | Role | ClientUserBase | EntitySelectDefaultValue | tuple>` \
+                , Optional (Keyword only)
+            Entities presented in the select by default.
         
         emoji : `None` ``Emoji``, Optional (Keyword only)
             Emoji of the component if applicable.
@@ -263,6 +267,10 @@ class Component(RichAttributeErrorBaseType):
         custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which component was clicked (or used) by the user.
         
+        default_values : `None | iterable<Channel | Role | ClientUserBase | EntitySelectDefaultValue | tuple>` \
+                , Optional (Keyword only)
+            Entities presented in the select by default.
+        
         emoji : `None` ``Emoji``, Optional (Keyword only)
             Emoji of the component if applicable.
         
@@ -378,6 +386,16 @@ class Component(RichAttributeErrorBaseType):
     @custom_id.setter
     def custom_id(self, custom_id):
         self.metadata.custom_id = validate_custom_id(custom_id)
+    
+    
+    @property
+    @copy_docs(ComponentMetadataBase.default_values)
+    def default_values(self):
+        return self.metadata.default_values
+    
+    @default_values.setter
+    def default_values(self, default_values):
+        self.metadata.default_values = validate_default_values(default_values)
     
     
     @property
@@ -570,3 +588,18 @@ class Component(RichAttributeErrorBaseType):
         options = self.options
         if (options is not None):
             yield from options
+
+    
+    def iter_default_values(self):
+        """
+        Iterates over the default options of the component.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        default_value : ``EntitySelectDefaultValue``
+        """
+        default_values = self.default_values
+        if (default_values is not None):
+            yield from default_values

@@ -16,7 +16,7 @@ class IntegrationType(PreinstancedBase):
     ----------
     name : `str`
         The name of the integration type.
-    value : `int`
+    value : `str`
         The Discord side identifier value of the integration type.
     
     Class Attributes

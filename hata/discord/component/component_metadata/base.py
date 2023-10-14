@@ -225,6 +225,18 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
     )
     
     
+    default_values = PlaceHolder(
+        None,
+        """
+        Entities suggested by default in an entity select.
+        
+        Returns
+        -------
+        default_values : `None`, `tuple` of ``EntitySelectDefaultValue``
+        """
+    )
+    
+    
     emoji = PlaceHolder(
         None,
         """

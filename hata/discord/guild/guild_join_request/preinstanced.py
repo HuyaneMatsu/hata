@@ -16,7 +16,7 @@ class GuildJoinRequestStatus(PreinstancedBase):
     
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``GuildJoinRequestStatus``) items
+    INSTANCES : `dict` of (`str`, ``GuildJoinRequestStatus``) items
         Stores the predefined ``GuildJoinRequestStatus``-s.
     VALUE_TYPE : `type` = `str`
         The guild join request statuses' values' type.

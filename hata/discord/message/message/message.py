@@ -1295,9 +1295,7 @@ class Message(DiscordEntity, immortal = True):
         +-----------------------------------+-----------------------------------------------------------------------+
         | embeds                            | `None`, `tuple` of ``Embed``                                          |
         +-----------------------------------+-----------------------------------------------------------------------+
-        | flags                             | `UserFlag`                                                            |
-        +-----------------------------------+-----------------------------------------------------------------------+
-        | pinned                            | `bool`                                                                |
+        | flags                             | ``MessageFlag``                                                       |
         +-----------------------------------+-----------------------------------------------------------------------+
         | mentioned_channels_cross_guild    | `None`, `tuple` of ``Channel``                                        |
         +-----------------------------------+-----------------------------------------------------------------------+
@@ -1306,6 +1304,10 @@ class Message(DiscordEntity, immortal = True):
         | mentioned_role_ids                | `None`, `tuple` of `int`                                              |
         +-----------------------------------+-----------------------------------------------------------------------+
         | mentioned_users                   | `None`, `tuple` of ``ClientUserBase``                                 |
+        +-----------------------------------+-----------------------------------------------------------------------+
+        | pinned                            | `bool`                                                                |
+        +-----------------------------------+-----------------------------------------------------------------------+
+        | resolved                          | `None`, ``Resolved``                                                  |
         +-----------------------------------+-----------------------------------------------------------------------+
         """
         self._clear_cache()
@@ -1372,6 +1374,11 @@ class Message(DiscordEntity, immortal = True):
             old_attributes['pinned'] = self.pinned
             self.pinned = pinned
         
+        resolved = parse_resolved(data)
+        if self.resolved != resolved:
+            old_attributes['resolved'] = self.resolved
+            self.resolved = resolved    
+        
         return old_attributes
     
     
@@ -1392,6 +1399,7 @@ class Message(DiscordEntity, immortal = True):
         self.mentioned_role_ids = parse_mentioned_role_ids(data)
         self.mentioned_users = parse_mentioned_users(data)
         self.pinned = parse_pinned(data)
+        self.resolved = parse_resolved(data, guild_id = self.guild_id)
         
         self._update_content_fields(data)
     

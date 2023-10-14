@@ -518,7 +518,7 @@ def test__Message__create_from_partial_fields():
     vampytest.assert_is(message, test_message)
 
 
-def test__message__set_attributes__guild_id():
+def test__Message__set_attributes__guild_id():
     """
     Checks whether ``Message._set_attributes`` sets `.guild_id` from its channel's if not present in the data.
     """
@@ -646,6 +646,7 @@ def test__Message__difference_update_attributes():
         User.precreate(202305030088, name = 'Izaoyi'),
     ]
     old_pinned = True
+    old_resolved = Resolved(attachments = [Attachment.precreate(202310140050)])
     
     new_attachments = [
         Attachment.precreate(202305030089, name = 'Yuuka'),
@@ -674,6 +675,7 @@ def test__Message__difference_update_attributes():
         User.precreate(202305030096, name = 'Lapislazuli'),
     ]
     new_pinned = False
+    new_resolved = Resolved(attachments = [Attachment.precreate(202310140051)])
     
     
     message_id = 202305030097
@@ -692,6 +694,7 @@ def test__Message__difference_update_attributes():
         mentioned_role_ids = old_mentioned_role_ids,
         mentioned_users = old_mentioned_users,
         pinned = old_pinned,
+        resolved = old_resolved,
     )
     
     input_data = {
@@ -707,6 +710,7 @@ def test__Message__difference_update_attributes():
         'mention_everyone': new_mentioned_everyone,
         'mention_roles': [str(role_id) for role_id in new_mentioned_role_ids],
         'mentions': [user.to_data(include_internals = True) for user in new_mentioned_users],
+        'resolved': new_resolved.to_data(),
     }
     
     old_attributes = message._difference_update_attributes(input_data)
@@ -723,6 +727,7 @@ def test__Message__difference_update_attributes():
     vampytest.assert_eq(message.mentioned_role_ids, tuple(new_mentioned_role_ids))
     vampytest.assert_eq(message.mentioned_users, tuple(new_mentioned_users))
     vampytest.assert_eq(message.pinned, new_pinned)
+    vampytest.assert_eq(message.resolved, new_resolved)
     
     expected_output = {
         'attachments': tuple(old_attachments),
@@ -737,6 +742,7 @@ def test__Message__difference_update_attributes():
         'mentioned_role_ids': tuple(old_mentioned_role_ids),
         'mentioned_users': tuple(old_mentioned_users),
         'pinned': old_pinned,
+        'resolved': old_resolved,
     }
     
     vampytest.assert_eq(old_attributes, expected_output)
@@ -803,6 +809,7 @@ def test__Message__update_attributes():
         User.precreate(202305030105, name = 'Izaoyi'),
     ]
     old_pinned = True
+    old_resolved = Resolved(attachments = [Attachment.precreate(202310140052)])
     
     new_attachments = [
         Attachment.precreate(202305030106, name = 'Yuuka'),
@@ -831,6 +838,7 @@ def test__Message__update_attributes():
         User.precreate(202305030113, name = 'Lapislazuli'),
     ]
     new_pinned = False
+    new_resolved = Resolved(attachments = [Attachment.precreate(202310140053)])
     
     
     message_id = 202305030114
@@ -849,6 +857,7 @@ def test__Message__update_attributes():
         mentioned_role_ids = old_mentioned_role_ids,
         mentioned_users = old_mentioned_users,
         pinned = old_pinned,
+        resolved = old_resolved,
     )
     
     input_data = {
@@ -864,6 +873,7 @@ def test__Message__update_attributes():
         'mention_everyone': new_mentioned_everyone,
         'mention_roles': [str(role_id) for role_id in new_mentioned_role_ids],
         'mentions': [user.to_data(include_internals = True) for user in new_mentioned_users],
+        'resolved': new_resolved.to_data(),
     }
     
     message._update_attributes(input_data)
@@ -880,6 +890,7 @@ def test__Message__update_attributes():
     vampytest.assert_eq(message.mentioned_role_ids, tuple(new_mentioned_role_ids))
     vampytest.assert_eq(message.mentioned_users, tuple(new_mentioned_users))
     vampytest.assert_eq(message.pinned, new_pinned)
+    vampytest.assert_eq(message.resolved, new_resolved)
     
 
 def test__Message__update_attributes__caching():

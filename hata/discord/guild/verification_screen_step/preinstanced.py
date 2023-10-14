@@ -16,7 +16,7 @@ class VerificationScreenStepType(PreinstancedBase):
     
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``VerificationScreenStepType``) items
+    INSTANCES : `dict` of (`str`, ``VerificationScreenStepType``) items
         Stores the predefined ``VerificationScreenStepType``-s.
     VALUE_TYPE : `type` = `str`
         The verification screen steps' values' type.

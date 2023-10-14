@@ -1,5 +1,6 @@
 from .component import *
 from .component_metadata import *
+from .entity_select_default_value import *
 from .interaction_form import *
 from .string_select_option import *
 
@@ -12,6 +13,7 @@ from .utils import *
 __all__ = (
     *component.__all__,
     *component_metadata.__all__,
+    *entity_select_default_value.__all__,
     *interaction_form.__all__,
     *string_select_option.__all__,
     

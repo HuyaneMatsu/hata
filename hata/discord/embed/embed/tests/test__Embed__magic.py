@@ -16,9 +16,6 @@ from ...embed_video import EmbedVideo
 from ..embed import Embed
 from ..preinstanced import EmbedType
 
-from .test__Embed__constructor import _assert_fields_set
-
-
 
 def test__Embed__len():
     """

@@ -251,7 +251,7 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
     
     @copy_docs(ComponentMetadataBase.to_data)
     def to_data(self, *, defaults = False):
-        data =  {}
+        data = {}
         
         put_custom_id_into(self.custom_id, data, defaults)
         put_enabled_into(self.enabled, data, defaults)

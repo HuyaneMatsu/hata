@@ -16,7 +16,7 @@ class DeviceType(PreinstancedBase):
     
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``DeviceType``) items
+    INSTANCES : `dict` of (`str`, ``DeviceType``) items
         Stores the predefined ``DeviceType``-s. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `str`
@@ -108,7 +108,7 @@ class VoiceSettingsModeType(PreinstancedBase):
     
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``VoiceSettingsModeType``) items
+    INSTANCES : `dict` of (`str`, ``VoiceSettingsModeType``) items
         Stores the predefined ``VoiceSettingsModeType``-s. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `str`
@@ -149,7 +149,7 @@ class VoiceConnectionState(PreinstancedBase):
     
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``VoiceSettingsModeType``) items
+    INSTANCES : `dict` of (`str`, ``VoiceSettingsModeType``) items
         Stores the predefined ``VoiceSettingsModeType``-s. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `str`

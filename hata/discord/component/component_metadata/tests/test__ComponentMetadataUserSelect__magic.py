@@ -1,5 +1,7 @@
 import vampytest
 
+from ...entity_select_default_value import EntitySelectDefaultValue, EntitySelectDefaultValueType
+
 from ..user_select import ComponentMetadataUserSelect
 
 
@@ -12,6 +14,7 @@ def test__ComponentMetadataUserSelect__repr():
     max_values = 10
     min_values = 9
     placeholder = 'swing'
+    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202310140020)]
     
     component_metadata = ComponentMetadataUserSelect(
         custom_id = custom_id,
@@ -19,6 +22,7 @@ def test__ComponentMetadataUserSelect__repr():
         max_values = max_values,
         min_values = min_values,
         placeholder = placeholder,
+        default_values = default_values,
     )
     
     vampytest.assert_instance(repr(component_metadata), str)
@@ -33,6 +37,7 @@ def test__ComponentMetadataUserSelect__hash():
     max_values = 10
     min_values = 9
     placeholder = 'swing'
+    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202310140018)]
     
     component_metadata = ComponentMetadataUserSelect(
         custom_id = custom_id,
@@ -40,6 +45,7 @@ def test__ComponentMetadataUserSelect__hash():
         max_values = max_values,
         min_values = min_values,
         placeholder = placeholder,
+        default_values = default_values,
     )
     
     vampytest.assert_instance(hash(component_metadata), int)
@@ -54,6 +60,7 @@ def test__ComponentMetadataUserSelect__eq():
     max_values = 10
     min_values = 9
     placeholder = 'swing'
+    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202310140019)]
     
     keyword_parameters = {
         'custom_id': custom_id,
@@ -61,6 +68,7 @@ def test__ComponentMetadataUserSelect__eq():
         'max_values': max_values,
         'min_values': min_values,
         'placeholder': placeholder,
+        'default_values': default_values,
     }
     
     component_metadata = ComponentMetadataUserSelect(**keyword_parameters)
@@ -74,6 +82,7 @@ def test__ComponentMetadataUserSelect__eq():
         ('max_values', 11),
         ('min_values', 8),
         ('placeholder', 'kokoro'),
+        ('default_values', None),
     ):
         test_component_metadata = ComponentMetadataUserSelect(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(component_metadata, test_component_metadata)

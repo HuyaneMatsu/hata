@@ -111,6 +111,8 @@ class GuildFeature(PreinstancedBase):
     
     Attributes
     ----------
+    name : `str`
+        The guild feature's name.
     value : `str`
         The Discord side identifier value of the guild feature.
     
@@ -633,7 +635,7 @@ class VerificationFieldPlatform(PreinstancedBase):
 
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``VerificationFieldPlatform``) items
+    INSTANCES : `dict` of (`str`, ``VerificationFieldPlatform``) items
         Stores the predefined ``VerificationFieldPlatform``-s.
     VALUE_TYPE : `type` = `str`
         The verification field platforms' values' type.

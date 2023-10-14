@@ -217,6 +217,7 @@ def create_text_input(
 def create_user_select(
     custom_id = None,
     *,
+    default_values = None,
     enabled = True,
     placeholder = None,
     max_values = MAX_VALUES_DEFAULT,
@@ -229,6 +230,10 @@ def create_user_select(
     ----------
     custom_id : `None`, `str` = `None`, Optional
         Custom identifier to detect which component was used by the user.
+    
+    default_values : `None | iterable<ClientUserBase | EntitySelectDefaultValue | tuple>` = `none` \
+            , Optional (Keyword only)
+        Entities presented in the select by default.
     
     enabled : `bool` = `True`, Optional (Keyword only)
         Whether the button is enabled.
@@ -256,6 +261,7 @@ def create_user_select(
     return Component(
         ComponentType.user_select,
         custom_id = custom_id,
+        default_values = default_values,
         enabled = enabled,
         max_values = max_values,
         min_values = min_values,
@@ -266,6 +272,7 @@ def create_user_select(
 def create_role_select(
     custom_id = None,
     *,
+    default_values = None,
     enabled = True,
     placeholder = None,
     max_values = MAX_VALUES_DEFAULT,
@@ -278,6 +285,10 @@ def create_role_select(
     ----------
     custom_id : `None`, `str` = `None`, Optional
         Custom identifier to detect which component was used by the user.
+    
+    default_values : `None | iterable<Role | EntitySelectDefaultValue | tuple>` = `none` \
+            , Optional (Keyword only)
+        Entities presented in the select by default.
     
     enabled : `bool` = `True`, Optional (Keyword only)
         Whether the button is enabled.
@@ -305,6 +316,7 @@ def create_role_select(
     return Component(
         ComponentType.role_select,
         custom_id = custom_id,
+        default_values = default_values,
         enabled = enabled,
         max_values = max_values,
         min_values = min_values,
@@ -315,6 +327,7 @@ def create_role_select(
 def create_mentionable_select(
     custom_id = None,
     *,
+    default_values = None,
     enabled = True,
     placeholder = None,
     max_values = MAX_VALUES_DEFAULT,
@@ -327,6 +340,10 @@ def create_mentionable_select(
     ----------
     custom_id : `None`, `str` = `None`, Optional
         Custom identifier to detect which component was used by the user.
+    
+    default_values : `None | iterable<ClientUserBase | Role | EntitySelectDefaultValue | tuple>` = `none` \
+            , Optional (Keyword only)
+        Entities presented in the select by default.
     
     enabled : `bool` = `True`, Optional (Keyword only)
         Whether the button is enabled.
@@ -354,6 +371,7 @@ def create_mentionable_select(
     return Component(
         ComponentType.mentionable_select,
         custom_id = custom_id,
+        default_values = default_values,
         enabled = enabled,
         max_values = max_values,
         min_values = min_values,
@@ -365,6 +383,7 @@ def create_channel_select(
     custom_id = None,
     *,
     channel_types = None,
+    default_values = None,
     enabled = True,
     placeholder = None,
     max_values = MAX_VALUES_DEFAULT,
@@ -380,6 +399,10 @@ def create_channel_select(
     
     channel_types : `None`, `tuple` of (``ChannelType``, `int`), Optional (Keyword only)
         The allowed channel types by the select.
+    
+    default_values : `None | iterable<ClientUserBase | Channel | EntitySelectDefaultValue | tuple>` = `none` \
+            , Optional (Keyword only)
+        Entities presented in the select by default.
     
     enabled : `bool` = `True`, Optional (Keyword only)
         Whether the button is enabled.
@@ -408,6 +431,7 @@ def create_channel_select(
         ComponentType.channel_select,
         channel_types = channel_types,
         custom_id = custom_id,
+        default_values = default_values,
         enabled = enabled,
         max_values = max_values,
         min_values = min_values,

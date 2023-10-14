@@ -125,7 +125,7 @@ class ComponentMetadataRow(ComponentMetadataBase):
     
     @copy_docs(ComponentMetadataBase.to_data)
     def to_data(self, *, defaults = False):
-        data =  {}
+        data = {}
         
         put_components_into(self.components, data, defaults)
         

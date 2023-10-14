@@ -5,6 +5,7 @@ from ....core import BUILTIN_EMOJIS
 from ....emoji import Emoji
 
 from ...component_metadata import ButtonStyle, TextInputStyle
+from ...entity_select_default_value import EntitySelectDefaultValue, EntitySelectDefaultValueType
 from ...string_select_option import StringSelectOption
 
 from ..component import Component
@@ -23,6 +24,7 @@ def test__Component__proxies__0():
     vampytest.assert_instance(component.channel_types, tuple, nullable = True)
     vampytest.assert_instance(component.components, tuple, nullable = True)
     vampytest.assert_instance(component.custom_id, str, nullable = True)
+    vampytest.assert_instance(component.default_values, tuple, nullable = True)
     vampytest.assert_instance(component.emoji, Emoji, nullable = True)
     vampytest.assert_instance(component.enabled, bool)
     vampytest.assert_instance(component.label, str, nullable = True)
@@ -38,7 +40,7 @@ def test__Component__proxies__0():
     vampytest.assert_instance(component.value, str, nullable = True)
 
 
-def test__Component__proxies__1():
+def test__Component__proxies__read_button():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -63,7 +65,7 @@ def test__Component__proxies__1():
     vampytest.assert_eq(component.url, url)
 
 
-def test__Component__proxies__2():
+def test__Component__proxies__read_channel_select():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -74,11 +76,13 @@ def test__Component__proxies__2():
     max_values = 10
     min_values = 9
     placeholder = 'gear'
+    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.channel, 202310130050)]
     
     component = Component(
         ComponentType.channel_select,
         channel_types = channel_types,
         custom_id = custom_id,
+        default_values = default_values,
         max_values = max_values,
         min_values = min_values,
         placeholder = placeholder,
@@ -86,12 +90,13 @@ def test__Component__proxies__2():
     
     vampytest.assert_eq(component.channel_types, tuple(channel_types))
     vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.default_values, tuple(default_values))
     vampytest.assert_eq(component.max_values, max_values)
     vampytest.assert_eq(component.min_values, min_values)
     vampytest.assert_eq(component.placeholder, placeholder)
 
 
-def test__Component__proxies__3():
+def test__Component__proxies__read_row():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -107,7 +112,7 @@ def test__Component__proxies__3():
     vampytest.assert_eq(component.components, tuple(components))
 
 
-def test__Component__proxies__4():
+def test__Component__proxies__read_text_input():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -132,7 +137,7 @@ def test__Component__proxies__4():
     vampytest.assert_eq(component.value, value)
 
 
-def test__Component__proxies__5():
+def test__Component__proxies__read_string_select():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -148,7 +153,7 @@ def test__Component__proxies__5():
     vampytest.assert_eq(component.options, tuple(options))
 
 
-def test__Component__proxies__6():
+def test__Component__proxies__read_button_style():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -164,9 +169,7 @@ def test__Component__proxies__6():
     vampytest.assert_is(component.button_style, button_style)
 
 
-
-
-def test__Component__proxies__7():
+def test__Component__proxies__write_button():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -190,7 +193,7 @@ def test__Component__proxies__7():
     vampytest.assert_eq(component.url, url)
 
 
-def test__Component__proxies__8():
+def test__Component__proxies__write_channel_select():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -201,6 +204,7 @@ def test__Component__proxies__8():
     max_values = 10
     min_values = 9
     placeholder = 'gear'
+    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.channel, 202310130050)]
     
     component = Component(ComponentType.channel_select)
     
@@ -209,15 +213,17 @@ def test__Component__proxies__8():
     component.max_values = max_values
     component.min_values = min_values
     component.placeholder = placeholder
+    component.default_values = default_values
     
     vampytest.assert_eq(component.channel_types, tuple(channel_types))
     vampytest.assert_eq(component.custom_id, custom_id)
+    vampytest.assert_eq(component.default_values, tuple(default_values))
     vampytest.assert_eq(component.max_values, max_values)
     vampytest.assert_eq(component.min_values, min_values)
     vampytest.assert_eq(component.placeholder, placeholder)
 
 
-def test__Component__proxies__9():
+def test__Component__proxies__write_row():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -232,7 +238,7 @@ def test__Component__proxies__9():
     vampytest.assert_eq(component.components, tuple(components))
 
 
-def test__Component__proxies__10():
+def test__Component__proxies__write_text_input():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -256,7 +262,7 @@ def test__Component__proxies__10():
     vampytest.assert_eq(component.value, value)
 
 
-def test__Component__proxies__11():
+def test__Component__proxies__write_string_select():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -271,7 +277,7 @@ def test__Component__proxies__11():
     vampytest.assert_eq(component.options, tuple(options))
 
 
-def test__Component__proxies__12():
+def test__Component__proxies__write_button_style():
     """
     Tests whether ``Component`` field proxies work as intended.
     

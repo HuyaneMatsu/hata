@@ -16,6 +16,7 @@ def test__ComponentMetadataBase__placeholders():
     vampytest.assert_instance(component_metadata.channel_types, tuple, nullable = True)
     vampytest.assert_instance(component_metadata.components, tuple, nullable = True)
     vampytest.assert_instance(component_metadata.custom_id, str, nullable = True)
+    vampytest.assert_instance(component_metadata.default_values, tuple, nullable = True)
     vampytest.assert_instance(component_metadata.emoji, Emoji, nullable = True)
     vampytest.assert_instance(component_metadata.enabled, bool)
     vampytest.assert_instance(component_metadata.label, str, nullable = True)

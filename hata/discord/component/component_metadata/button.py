@@ -310,7 +310,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
     
     @copy_docs(ComponentMetadataBase.to_data)
     def to_data(self, *, defaults = False):
-        data =  {}
+        data = {}
         
         put_button_style_into(self.button_style, data, defaults)
         put_custom_id_into(self.custom_id, data, defaults)

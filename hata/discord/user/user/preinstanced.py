@@ -193,6 +193,8 @@ class Status(PreinstancedBase):
     
     Attributes
     ----------
+    name : `str`
+        The status's name.
     position : `int`
         Internal position of the status for sorting purposes.
     value : `str`
@@ -645,6 +647,8 @@ class Theme(PreinstancedBase):
     
     Attributes
     ----------
+    name : `str`
+        the theme's name.
     value : `str`
         The discord side identifier value of the theme.
     

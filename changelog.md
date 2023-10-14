@@ -6,6 +6,12 @@
 - `InteractionEvent.guild` is now an attribute using recently added `guild` field in the payload.
     This makes `.guild_id` and `.guild_locale` properties.
 - Add `Message.resolved`.
+- Add `EntitySelectDefaultValueType`.
+- Add `EntitySelectDefaultValue`.
+- Add `ComponentMetadataEntitySelectBase`.
+- Add `ComponentMetadataBase.default_values`.
+- Add `Component.default_values`.
+- Add `Component.iter_default_values`.
 
 #### Bug fixes
 

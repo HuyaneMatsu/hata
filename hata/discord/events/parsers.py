@@ -2261,7 +2261,6 @@ def GUILD_UPDATE__OPT_SC(client, data):
     guild._update_attributes(data)
 
 def GUILD_UPDATE__OPT_MC(client, data):
-    print(data)
     guild_id = int(data['guild_id'])
     try:
         guild = GUILDS[guild_id]

@@ -11,13 +11,13 @@ def test__InteractionComponent__repr():
     """
     custom_id = 'Worldly'
     components = [InteractionComponent(custom_id = 'flower')]
-    type_ = ComponentType.row
+    component_type = ComponentType.row
     value = 'flower land'
     
     interaction_component = InteractionComponent(
         custom_id = custom_id,
         components = components,
-        type_ = type_,
+        component_type = component_type,
         value = value,
     )
     
@@ -30,13 +30,13 @@ def test__InteractionComponent__hash():
     """
     custom_id = 'Worldly'
     components = [InteractionComponent(custom_id = 'flower')]
-    type_ = ComponentType.row
+    component_type = ComponentType.row
     value = 'flower land'
     
     interaction_component = InteractionComponent(
         custom_id = custom_id,
         components = components,
-        type_ = type_,
+        component_type = component_type,
         value = value,
     )
     
@@ -49,13 +49,13 @@ def test__InteractionComponent__eq():
     """
     custom_id = 'Worldly'
     components = [InteractionComponent(custom_id = 'flower')]
-    type_ = ComponentType.row
+    component_type = ComponentType.row
     value = 'flower land'
     
     keyword_parameters = {
         'custom_id': custom_id,
         'components': components,
-        'type_': type_,
+        'component_type': component_type,
         'value': value,
     }
     
@@ -67,7 +67,7 @@ def test__InteractionComponent__eq():
     for field_custom_id, field_value in (
         ('custom_id', 'Night'),
         ('components', None),
-        ('type_', ComponentType.button),
+        ('component_type', ComponentType.button),
         ('value', 'Blooms'),
     ):
         test_interaction_component = InteractionComponent(**{**keyword_parameters, field_custom_id: field_value})

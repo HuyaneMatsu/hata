@@ -1,6 +1,7 @@
 __all__ = ('InteractionComponent',)
 
 from reprlib import repr as short_repr
+from warnings import warn
 
 from scarletio import RichAttributeErrorBaseType, export
 
@@ -37,24 +38,19 @@ class InteractionComponent(RichAttributeErrorBaseType):
     __slots__ = ('components', 'custom_id', 'type', 'value')
     
     
-    def __new__(cls, **keyword_parameters):
+    def __new__(cls, *, component_type = ..., components = ..., custom_id = ..., value = ..., type_ = ...):
         """
         Creates a new interaction component from the given keyword parameters.
         
         Parameters
         ----------
-        **keyword_parameters : Keyword parameters
-            Keyword parameters defining which fields and how should be set.
-        
-        Other Parameters
-        ----------------
-        components : `None`, `tuple` of ``InteractionComponent``, Optional (Keyword only)
-            Nested components.
-        
         custom_id : `None`, `str`, Optional (Keyword only)
             The `.custom_id` of the represented component.
         
-        type_ : ``ComponentType``, Optional (Keyword only)
+        components : `None`, `tuple` of ``InteractionComponent``, Optional (Keyword only)
+            Nested components.
+        
+        component_type : ``ComponentType``, Optional (Keyword only)
             The represented component's type.
         
         value : `None`, `str`, Optional (Keyword only)
@@ -64,12 +60,50 @@ class InteractionComponent(RichAttributeErrorBaseType):
         ------
         TypeError
             - If a field's type is incorrect.
-            - Extra or unused fields given.
         ValueError
             - If a field's value is incorrect.
         """
-        self = cls._create_empty()
-        self._populate_from_keyword_parameters(keyword_parameters)
+        if type_ is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\s `type_` parameter is deprecated and will be removed in '
+                    f'2024 February. Please use `component_type` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            component_type = type_
+        
+        # component_type
+        if component_type is ...:
+            component_type = ComponentType.none
+        else:
+            component_type = validate_type(component_type)
+        
+        # components
+        if components is ...:
+            components = None
+        else:
+            components = validate_components(components)
+        
+        # custom_id
+        if custom_id is ...:
+            custom_id = None
+        else:
+            custom_id = validate_custom_id(custom_id)
+        
+        # value
+        if value is ...:
+            value = None
+        else:
+            value = validate_value(value)
+        
+        # Construct
+        self = object.__new__(cls)
+        self.custom_id = custom_id
+        self.components = components
+        self.type = component_type
+        self.value = value
         return self
     
     
@@ -83,8 +117,8 @@ class InteractionComponent(RichAttributeErrorBaseType):
         self : `instance<cls>`
         """
         self = object.__new__(cls)
-        self.custom_id = None
         self.components = None
+        self.custom_id = None
         self.type = ComponentType.none
         self.value = None
         return self
@@ -101,7 +135,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
         new = object.__new__(type(self))
         components = self.components
         if (components is not None):
-            components = tuple(component.copy() for component in components)
+            components = (*(component.copy() for component in components),)
         new.components = components
         new.custom_id = self.custom_id
         new.type = self.type
@@ -109,28 +143,23 @@ class InteractionComponent(RichAttributeErrorBaseType):
         return new
     
     
-    def copy_with(self, **keyword_parameters):
+    def copy_with(self, component_type = ..., components = ..., custom_id = ..., value = ..., type_ = ...):
         """
         Copies the interaction component with replacing the defined fields.
         
         Parameters
         ----------
-        **keyword_parameters : Keyword parameters
-            Keyword parameters defining which fields and how should be set.
+        custom_id : `None`, `str`, Optional (Keyword only)
+            The `.custom_id` of the represented component.
         
-        Other Parameters
-        ----------------
         components : `None`, `tuple` of ``InteractionComponent``, Optional (Keyword only)
             Nested components.
         
-        custom_id : `str`, Optional (Keyword only)
-            The `.custom_id` of the represented component.
-        
-        type_ : ``ComponentType``, Optional (Keyword only)
+        component_type : ``ComponentType``, Optional (Keyword only)
             The represented component's type.
         
         value : `None`, `str`, Optional (Keyword only)
-            The components value defined by the user.
+            The component's value defined by the user.
         
         Returns
         -------
@@ -144,68 +173,50 @@ class InteractionComponent(RichAttributeErrorBaseType):
         ValueError
             - If a field's value is incorrect.
         """
-        self = self.copy()
-        self._populate_from_keyword_parameters(keyword_parameters)
-        return self
-    
-    
-    def _populate_from_keyword_parameters(self, keyword_parameters):
-        """
-        Sets the interaction component's attributes from the given keyword parameters.
+        if type_ is not ...:
+            warn(
+                (
+                    f'`{type(self).__name__}.copy_with`\s `type_` parameter is deprecated and will be removed in '
+                    f'2024 February. Please use `component_type` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            component_type = type_
         
-        Parameters
-        ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
-            A dictionary of keyword parameters defining which fields and how should be set.
-        
-        Raises
-        ------
-        TypeError
-            - If a field's type is incorrect.
-            - Extra or unused fields given.
-        ValueError
-            - If a field's value is incorrect.
-        """
-        if not keyword_parameters:
-            return
+        # component_type
+        if component_type is ...:
+            component_type = self.type
+        else:
+            component_type = validate_type(component_type)
         
         # components
-        try:
-            components = keyword_parameters.pop('components')
-        except KeyError:
-            pass
+        if components is ...:
+            components = self.components
+            if (components is not None):
+                components = (*(component.copy() for component in components),)
         else:
-            self.components = validate_components(components)
+            components = validate_components(components)
         
         # custom_id
-        try:
-            custom_id = keyword_parameters.pop('custom_id')
-        except KeyError:
-            pass
+        if custom_id is ...:
+            custom_id = self.custom_id
         else:
-            self.custom_id = validate_custom_id(custom_id)
-        
-        # type
-        try:
-            type_ = keyword_parameters.pop('type_')
-        except KeyError:
-            pass
-        else:
-            self.type = validate_type(type_)
+            custom_id = validate_custom_id(custom_id)
         
         # value
-        try:
-            value = keyword_parameters.pop('value')
-        except KeyError:
-            pass
+        if value is ...:
+            value = self.value
         else:
-            self.value = validate_value(value)
+            value = validate_value(value)
         
-        
-        if keyword_parameters:
-            raise TypeError(
-                f'Extra or unused keyword parameters: {keyword_parameters!r}.'
-            )
+        # Construct
+        self = object.__new__(type(self))
+        self.custom_id = custom_id
+        self.components = components
+        self.type = component_type
+        self.value = value
+        return self
     
     
     @classmethod
@@ -215,7 +226,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`)
+        data : `dict` of (`str`, `object`)
             Interaction component data.
         """
         self = object.__new__(cls)
@@ -237,7 +248,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         put_components_into(self.components, data, defaults)
@@ -254,12 +265,12 @@ class InteractionComponent(RichAttributeErrorBaseType):
         # Descriptive fields : type
         
         # type
-        type_ = self.type
-        if type_ is not ComponentType.none:
+        component_type = self.type
+        if component_type is not ComponentType.none:
             repr_parts.append(' type = ')
-            repr_parts.append(type_.name)
+            repr_parts.append(component_type.name)
             repr_parts.append(' ~ ')
-            repr_parts.append(repr(type_.value))
+            repr_parts.append(repr(component_type.value))
             
             field_added = True
         

@@ -38,20 +38,20 @@ def test__InteractionComponent__new__1():
     """
     custom_id = 'Worldly'
     components = [InteractionComponent(custom_id = 'flower')]
-    type_ = ComponentType.row
+    component_type = ComponentType.row
     value = 'flower land'
     
     interaction_component = InteractionComponent(
         custom_id = custom_id,
         components = components,
-        type_ = type_,
+        component_type = component_type,
         value = value,
     )
     _assert_fields_set(interaction_component)
     
     vampytest.assert_eq(interaction_component.custom_id, custom_id)
     vampytest.assert_eq(interaction_component.components, tuple(components))
-    vampytest.assert_is(interaction_component.type, type_)
+    vampytest.assert_is(interaction_component.type, component_type)
     vampytest.assert_eq(interaction_component.value, value)
 
 

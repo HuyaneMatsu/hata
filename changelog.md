@@ -12,6 +12,7 @@
 - Add `ComponentMetadataBase.default_values`.
 - Add `Component.default_values`.
 - Add `Component.iter_default_values`.
+- Component constructor functions now omit default values, to validation later.
 
 #### Bug fixes
 
@@ -23,6 +24,7 @@
 - Deprecate `Guild.preferred_locale`.
 - Rename `InteractionEvent.locale` to `.user_locale`.
 - Deprecate `InteractionEvent.locale`.
+- `InteractionComponent`'s `type_` parameters renamed to `component_type`.
 
 ## 1.3.41 *\[2023-10-08\]*
 

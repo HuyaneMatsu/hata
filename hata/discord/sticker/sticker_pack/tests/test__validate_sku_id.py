@@ -1,46 +1,77 @@
 import vampytest
 
+from ....application import SKU
+
 from ..fields import validate_sku_id
 
 
-def test__validate_sku_id__0():
-    """
-    Tests whether `validate_sku_id` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options__passing():
     sku_id = 202301040013
     
-    for input_value, expected_output in (
-        (sku_id, sku_id),
-        (str(sku_id), sku_id),
-    ):
-        output = validate_sku_id(input_value)
-        vampytest.assert_eq(output, expected_output)
+    yield 0, 0
+    yield sku_id, sku_id
+    yield str(sku_id), sku_id
+    yield None, 0
+    yield SKU.precreate(sku_id), sku_id
 
 
-def test__validate_sku_id__1():
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+def test__validate_sku_id__passing(input_value):
     """
     Tests whether `validate_sku_id` works as intended.
     
-    Case: `ValueError`.
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
+    
+    Returns
+    -------
+    output : `int`
     """
-    for input_value in (
-        '-1',
-        -1,
-    ):
-        with vampytest.assert_raises(AssertionError, ValueError):
-            validate_sku_id(input_value)
+    return validate_sku_id(input_value)
 
 
-def test__validate_sku_id__2():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_sku_id__type_error(input_value):
     """
     Tests whether `validate_sku_id` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
+    
+    Raises
+    ------
+    TypeError
+        The occurred exception.
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_sku_id(input_value)
+    validate_sku_id(input_value)
+
+
+@vampytest.raising(ValueError)
+@vampytest.call_with('-1')
+@vampytest.call_with('1111111111111111111111')
+@vampytest.call_with(-1)
+@vampytest.call_with(1111111111111111111111)
+def test__validate_sku_id__value_error(input_value):
+    """
+    Tests whether `validate_sku_id` works as intended.
+    
+    Case: `ValueError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to validate.
+    
+    Raises
+    ------
+    ValueError
+        The occurred exception.
+    """
+    validate_sku_id(input_value)

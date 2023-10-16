@@ -101,7 +101,7 @@ class Closer(PaginationBase):
             If given as ``InteractionEvent``, then will acknowledge it and create a new message with it as well.
             Although will not acknowledge it if `message` is given.
         
-        content : ``Any`
+        content : ``object`
             The displayed content.
         timeout : `float` = `240.0`, Optional (Keyword Only)
             The timeout of the ``Closer`` in seconds.

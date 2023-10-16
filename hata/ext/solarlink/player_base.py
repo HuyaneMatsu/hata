@@ -27,7 +27,7 @@ class SolarPlayerBase(RichAttributeErrorBaseType):
     ----------
     _filters : `dict` of (`int`, ``Filter``) items
         The applied filters to the player if any.
-    _forward_data : `None`, `dict` of (`str`, `Any`) items
+    _forward_data : `None`, `dict` of (`str`, `object`) items
         Json to forward to the player's node as necessary.
     _position : `float`
         The position of the current track.
@@ -403,7 +403,7 @@ class SolarPlayerBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             State data given.
         """
         try:

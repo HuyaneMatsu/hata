@@ -1587,7 +1587,7 @@ def listing_converter(listing, indent_level, optimal_fit, builder_context):
     
     Yields
     -----------
-    element : `Any`
+    element : `object`
     """
     for listing_element in listing.elements:
         yield from ListingHeadConverter(listing_element.head, indent_level, optimal_fit, builder_context)
@@ -1658,7 +1658,7 @@ def sub_section_converter(sub_section, indent_level, optimal_fit, builder_contex
     
     Parameters
     ----------
-    sub_section : `list` of `Any`
+    sub_section : `list` of `object`
         The source sub-section..
     indent_level : `int`
         The number of how far is the sub-section indented.
@@ -1669,7 +1669,7 @@ def sub_section_converter(sub_section, indent_level, optimal_fit, builder_contex
     
     Yields
     -----------
-    element : `Any`
+    element : `object`
     """
     for element in sub_section:
         # If the converter is a sub section converter, indent it
@@ -1733,9 +1733,9 @@ def should_insert_linebreak(part_1, part_2):
     
     Parameters
     ----------
-    part_1 : `Any`
+    part_1 : `object`
         The last converter.
-    part_2 : `Any`
+    part_2 : `object`
         The next converter.
     
     Returns
@@ -1797,7 +1797,7 @@ class SectionConverter:
     
     Attributes
     ----------
-    parts : `list` of `Any`
+    parts : `list` of `object`
         The parts of the section to render.
     """
     __slots__ = ('parts', )
@@ -1808,7 +1808,7 @@ class SectionConverter:
         
         Parameters
         ----------
-        section : `tuple` ((`None`, `str`), `list` of `Any`)
+        section : `tuple` ((`None`, `str`), `list` of `object`)
             The section to represent.
         builder_context : ``BuilderContext``
             Context to define some building details.

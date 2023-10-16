@@ -4,6 +4,7 @@ from ....bases import Icon, IconType
 from ....client import Client
 from ....color import Color
 
+from ...avatar_decoration import AvatarDecoration
 from ...guild_profile import GuildProfile
 from ...thread_profile import ThreadProfile
 
@@ -22,7 +23,7 @@ def _assert_fields_set(user):
     """
     vampytest.assert_instance(user, ClientUserBase)
     vampytest.assert_instance(user.avatar, Icon)
-    vampytest.assert_instance(user.avatar_decoration, Icon)
+    vampytest.assert_instance(user.avatar_decoration, AvatarDecoration, nullable = True)
     vampytest.assert_instance(user.banner, Icon)
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
     vampytest.assert_instance(user.discriminator, int)
@@ -52,7 +53,7 @@ def test__ClientUserBase__new__1():
     Case: All fields given.
     """
     avatar = Icon(IconType.static, 32)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160025)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -96,14 +97,14 @@ def test__ClientUserBase__create_empty():
     vampytest.assert_eq(user.id, user_id)
 
 
-def test__ClientUserBase___from_client__0():
+def test__ClientUserBase___from_client__include_internals():
     """
     Tests whether ``ClientUserBase._from_client`` works as intended.
     
-    Case: include internals.
+    Case: Include internals.
     """
     avatar = Icon(IconType.static, 32)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160026)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -158,14 +159,14 @@ def test__ClientUserBase___from_client__0():
         client = None
 
 
-def test__ClientUserBase___from_client__1():
+def test__ClientUserBase___from_client__not_include_internals():
     """
     Tests whether ``ClientUserBase._from_client`` works as intended.
     
     Case: not include internals.
     """
     avatar = Icon(IconType.static, 32)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160027)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222

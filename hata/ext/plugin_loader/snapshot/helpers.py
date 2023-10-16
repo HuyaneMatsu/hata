@@ -8,14 +8,14 @@ def _merge_list_groups(group_1, group_2):
     
     Parameters
     ----------
-    group_1 : `None`, `list` of `Any`
+    group_1 : `None`, `list` of `object`
         The first group to merge.
-    group_2 : `None`, `list` of `Any`
+    group_2 : `None`, `list` of `object`
         The second group to merge.
     
     Returns
     -------
-    merged_group : `None`, `list` of `Any`
+    merged_group : `None`, `list` of `object`
         The merged groups.
     """
     if group_1 is None:
@@ -40,14 +40,14 @@ def _merge_set_groups(group_1, group_2):
     
     Parameters
     ----------
-    group_1 : `None`, `set` of `Any`
+    group_1 : `None`, `set` of `object`
         The first group to merge.
-    group_2 : `None`, `set` of `Any`
+    group_2 : `None`, `set` of `object`
         The second group to merge.
     
     Returns
     -------
-    merged_group : `None`, `set` of `Any`
+    merged_group : `None`, `set` of `object`
         The merged groups.
     """
     if group_1 is None:
@@ -67,16 +67,16 @@ def _get_list_difference(group_1, group_2):
     
     Parameters
     ----------
-    group_1 : `None`, `list` of `Any`
+    group_1 : `None`, `list` of `object`
         The first group.
-    group_2 : `None`, `list` of `Any`
+    group_2 : `None`, `list` of `object`
         The second group.
     
     Returns
     -------
-    group_1 : `None`, `list` of `Any`
+    group_1 : `None`, `list` of `object`
         The first group.
-    group_2 : `None`, `list` of `Any`
+    group_2 : `None`, `list` of `object`
         The second group.
     """
     not_null = 0
@@ -116,16 +116,16 @@ def _get_set_difference(group_1, group_2):
     
     Parameters
     ----------
-    group_1 : `None`, `set` of `Any`
+    group_1 : `None`, `set` of `object`
         The first group.
-    group_2 : `None`, `set` of `Any`
+    group_2 : `None`, `set` of `object`
         The second group.
     
     Returns
     -------
-    new_group_1 : `None`, `set` of `Any`
+    new_group_1 : `None`, `set` of `object`
         The first group.
-    new_group_2 : `None`, `set` of `Any`
+    new_group_2 : `None`, `set` of `object`
         The second group.
     """
     if (group_1 is None) or (group_2 is None):

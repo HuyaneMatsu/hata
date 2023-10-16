@@ -257,14 +257,14 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        instance : `Any`
+        instance : `object`
             The instance itself.
         type_ : `type`
             The instance's type.
         
         Returns
         -------
-        value : `self` / `Any`
+        value : `self` / `object`
             Returns itself if called from class.
         """
         if (instance is None):
@@ -277,9 +277,9 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        instance : `Any`
+        instance : `object`
             The parent instance to set the value to.
-        value : `Any`
+        value : `object`
             The value to set.
         
         Raises
@@ -296,7 +296,7 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        instance : `Any`
+        instance : `object`
             The parent instance to delete the attribute of.
         
         Raises
@@ -385,7 +385,7 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
         
         Yields
         ------
-        key : `Any`
+        key : `object`
             Objects to bound to.
         value : ``.type``
             The bound object.
@@ -405,7 +405,7 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        states : `list` of `tuple` (`Any`, `Any`)
+        states : `list` of `tuple` (`object`, `object`)
         """
         states = []
         if self.supports_state_transfer:
@@ -427,7 +427,7 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        states : `list` of `tuple` (`Any`, `Any`)
+        states : `list` of `tuple` (`object`, `object`)
         """
         if self.supports_state_transfer:
             type_ = self.type
@@ -471,11 +471,11 @@ class DescriptorObjectBinder(ObjectBinderBase):
         The field's name.
     type : `type`
         The binded class.
-    fdel : `None`, `Any`
+    fdel : `None`, `object`
         Deleter function if applicable.
-    fget : `None`, `Any`
+    fget : `None`, `object`
         Getter function if applicable.
-    fset : `None`, `Any`
+    fset : `None`, `object`
         Setter function if applicable.
     
     Class Attributes
@@ -549,7 +549,7 @@ def _cache_bind(cache, cache_size, bind_object):
         Cache if applicable.
     cache_size : `int`
         The maximal size of the cache.
-    bind_object : `Any`
+    bind_object : `object`
         The bind object to cache.
     """
     if (cache is not None):
@@ -641,11 +641,11 @@ class DescriptorObjectWeakBinder(DescriptorObjectBinder):
         The field's name.
     type : `type`
         The binded class.
-    fdel : `None`, `Any`
+    fdel : `None`, `object`
         Deleter function if applicable.
-    fget : `None`, `Any`
+    fget : `None`, `object`
         Getter function if applicable.
-    fset : `None`, `Any`
+    fset : `None`, `object`
         Setter function if applicable.
     
     cache : `None`, ``OrderedDict``

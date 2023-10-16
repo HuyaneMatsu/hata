@@ -711,7 +711,7 @@ def merge_2_tokens(token_1, token_2, value):
         The first token.
     token_2 : ``Token``
         The second token.
-    value : `Any`
+    value : `object`
         The value to add to the created token.
     
     Returns
@@ -2576,7 +2576,7 @@ class Token:
         The token's end index inside of the array.
     start : `int`
         The token's start index inside of the array.
-    value : `None`, `Any`
+    value : `None`, `object`
         The evaluated value.
     sub_tokens : `None`, `list` of ``Token``
         Sub tokens of the tokens if applicable.
@@ -2599,7 +2599,7 @@ class Token:
             The token's end index inside of the array.
         sub_tokens : `None`, `list` of ``Token``
             Sub tokens of the tokens if applicable.
-        value : `None`, `Any`
+        value : `None`, `object`
             The evaluated value.
         """
         self = object.__new__(cls)

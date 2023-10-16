@@ -648,7 +648,7 @@ def build_indent(lines, start, end):
     
     Returns
     -------
-    section : `None`, `list` of `Any`
+    section : `None`, `list` of `object`
         Instead of returning an empty section, returns `None`.
     """
     lines = lines[start:end]
@@ -912,7 +912,7 @@ def parse_section(lines):
     
     Returns
     -------
-    built : `None`, `list` of `Any`
+    built : `None`, `list` of `object`
         The built up elements of the sections. If would return an empty list, returns `None` instead.
     """
     index = 0
@@ -1047,7 +1047,7 @@ class TextListingElement:
     
     Attributes
     ----------
-    _content : `None`, `list` of `Any`
+    _content : `None`, `list` of `object`
         The content stored inside of a listing element. If would be set as empty `list`, is set as `None` instead.
     _head : `None`, `str`
         The head content of the listing. If would be set as empty string, is set as `None` instead.
@@ -1448,7 +1448,7 @@ def parse_docstring(text, path):
     
     Returns
     -------
-    built_sections : `None`, `list` of (`tuple` ((`None`, `str`), `Any`))
+    built_sections : `None`, `list` of (`tuple` ((`None`, `str`), `object`))
     """
     if text is None:
         return None
@@ -1506,7 +1506,7 @@ def get_attribute_docs_from(sections):
     
     Parameters
     ----------
-    sections : `list` of `tuple` ((`None`, `str`), (`list` of `Any`))
+    sections : `list` of `tuple` ((`None`, `str`), (`list` of `object`))
         The sections of the docstring.
     
     Returns
@@ -1592,7 +1592,7 @@ class DocString:
     ----------
     _attribute_sections : `None`, `dict` of (`str`, ``DocString``) items
         A dict containing the attribute sections of the docstring. Set only when an attribute's docstring is requested.
-    sections : `list` of `tuple` ((`None`, `str`), (`list` of `Any`))
+    sections : `list` of `tuple` ((`None`, `str`), (`list` of `object`))
         The sections of the docstring.
     """
     __slots__ = ('_attribute_sections', 'sections')
@@ -1641,7 +1641,7 @@ class DocString:
             Separator used between the attribute's name and it's type description.
         attr_head : `None`, `str`
             The attribute description following the attribute's name.
-        attr_body : `None`, `list` of `Any`
+        attr_body : `None`, `list` of `object`
             Extra content after the attribute's head.
         
         Returns
@@ -1667,7 +1667,7 @@ class DocString:
         
         Parameters
         ----------
-        attr_body : `None`, `list` of `Any`
+        attr_body : `None`, `list` of `object`
             The extra content.
         
         Returns

@@ -1542,17 +1542,18 @@ def user_avatar_decoration_url(user):
     -------
     url : `None`, `str`
     """
-    icon_type = user.avatar_decoration_type
+    avatar_decoration = user.avatar_decoration
+    if avatar_decoration is None:
+        return None
+
+    icon_type = avatar_decoration.asset_type
     if not icon_type.can_create_url():
         return None
     
     prefix = icon_type.prefix
     ext = icon_type.default_postfix
     
-    if prefix.startswith('v2'):
-        return f'{CDN_ENDPOINT}/avatar-decoration-presets/{prefix}{user.avatar_decoration_hash:0>32x}.{ext}'
-    
-    return f'{CDN_ENDPOINT}/avatar-decorations/{user.id}/{prefix}{user.avatar_decoration_hash:0>32x}.{ext}'
+    return f'{CDN_ENDPOINT}/avatar-decoration-presets/{prefix}{avatar_decoration.asset_hash:0>32x}.{ext}'
 
 
 def user_avatar_decoration_url_as(user, ext = None, size = None):
@@ -1577,7 +1578,11 @@ def user_avatar_decoration_url_as(user, ext = None, size = None):
     ValueError
         If `ext`, `size` was not passed as any of the expected values.
     """
-    icon_type = user.avatar_decoration_type
+    avatar_decoration = user.avatar_decoration
+    if avatar_decoration is None:
+        return None
+    
+    icon_type = avatar_decoration.asset_type
     if not icon_type.can_create_url():
         return None
     
@@ -1585,10 +1590,8 @@ def user_avatar_decoration_url_as(user, ext = None, size = None):
     ext = _validate_extension(icon_type, ext)
     end = _build_end(size)
     
-    if prefix.startswith('v'):
-        return f'{CDN_ENDPOINT}/avatar-decoration-presets/{prefix}{user.avatar_decoration_hash:0>32x}.{ext}{end}'
+    return f'{CDN_ENDPOINT}/avatar-decoration-presets/{prefix}{avatar_decoration.asset_hash:0>32x}.{ext}{end}'
     
-    return f'{CDN_ENDPOINT}/avatar-decorations/{user.id}/{prefix}{user.avatar_decoration_hash:0>32x}.{ext}{end}'
 
 
 def soundboard_sound_url(sound):

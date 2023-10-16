@@ -30,9 +30,10 @@ from ..user import (
     create_partial_user_from_id
 )
 from ..user.user.fields import (
-    parse_email, parse_email_verified, parse_locale, parse_mfa, parse_premium_type, validate_banner_color, validate_bot,
-    validate_discriminator, validate_display_name, validate_email, validate_email_verified, validate_flags,
-    validate_locale, validate_mfa, validate_name, validate_premium_type, validate_status
+    parse_email, parse_email_verified, parse_locale, parse_mfa, parse_premium_type, validate_avatar_decoration,
+    validate_banner_color, validate_bot, validate_discriminator, validate_display_name, validate_email,
+    validate_email_verified, validate_flags, validate_locale, validate_mfa, validate_name, validate_premium_type,
+    validate_status
 )
 
 from .compounds import CLIENT_COMPOUNDS
@@ -107,11 +108,8 @@ class Client(
     avatar_type : ``IconType``
         The client's avatar's type.
     
-    avatar_decoration_hash : `int`
-        The client's avatar decoration's hash in `uint128`.
-    
-    avatar_decoration_type : ``IconType``
-        The client's avatar decoration's type.
+    avatar_decoration : `None`, ``AvatarDecoration``
+        The client's avatar decorations.
     
     banner_color : `None`, ``Color``
         The user's banner color if has any.
@@ -307,8 +305,8 @@ class Client(
         avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
             The client's avatar.
         
-        avatar_decoration : `None`, ``Icon``, `str`, Optional (Keyword only)
-            The client's avatar_decoration.
+        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+            The client's avatar decoration.
         
         banner : `None`, ``Icon``, `str`, Optional (Keyword only)
             The client's banner.
@@ -432,7 +430,7 @@ class Client(
         if avatar_decoration is ...:
             avatar_decoration = None
         else:
-            avatar_decoration = cls.avatar_decoration.validate_icon(avatar_decoration)
+            avatar_decoration = validate_avatar_decoration(avatar_decoration)
         
         # banner
         if banner is ...:

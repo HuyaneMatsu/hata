@@ -11,7 +11,7 @@ class multievent:
     
     Attributes
     ----------
-    events : `tuple` of `Any`
+    events : `tuple` of `object`
         A `tuple` of the contained event handlers.
     """
     __slots__ = ('events',)
@@ -22,7 +22,7 @@ class multievent:
         
         Parameters
         ----------
-        *events : `Any`
+        *events : `object`
             The event handlers to hold together.
         """
         self.events = events
@@ -63,7 +63,7 @@ class Timeouter:
     handle : `None`, ``TimerHandle``
         Handle to wake_up the timeouter with it's `._step` function.
         Set to `None`, when the respective timeout is over or if the timeout is cancelled.
-    owner : `Any`
+    owner : `object`
         The object what uses the timeouter.
         Set to `None`, when the respective timeout is over or if the timeout is cancelled.
     timeout : `float`
@@ -77,7 +77,7 @@ class Timeouter:
         
         Parameters
         ----------
-        owner : `Any`
+        owner : `object`
             The object what uses the timeouter.
         timeout : `float`
             The time with what the timeout will be expired when it's current waiting cycle is over.

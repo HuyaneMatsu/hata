@@ -31,7 +31,7 @@ class GuildProfile(metaclass = Slotted):
     avatar_hash : `int`
         The respective user's avatar hash at the guild in `uint128`.
     
-    avatar_type : `bool`
+    avatar_type : ``IconType``
         The respective user's avatar type at the guild.
     
     boosts_since : `None`, `datetime`
@@ -80,19 +80,7 @@ class GuildProfile(metaclass = Slotted):
         Parameters
         ----------
         avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
-            The channel's avatar.
-            
-            > Mutually exclusive with `avatar_type` and `avatar_hash` parameters.
-        
-        avatar_type : ``IconType``, Optional (Keyword only)
-            The channel's avatar's type.
-            
-            > Mutually exclusive with the `avatar` parameter.
-        
-        avatar_hash : `int`, Optional (Keyword only)
-            The channel's avatar's hash.
-            
-            > Mutually exclusive with the `avatar` parameter.
+            The guild profile's avatar.
         
         boosts_since : `None`, `datetime`, Optional (Keyword only)
             Since when the user uses it's Nitro to boost the respective guild.
@@ -119,7 +107,6 @@ class GuildProfile(metaclass = Slotted):
         ------
         TypeError
             - If a parameter's type is incorrect.
-            - Extra or unused parameters.
         ValueError
             - If a parameter's value is incorrect.
         """
@@ -279,7 +266,7 @@ class GuildProfile(metaclass = Slotted):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received guild profile data.
         
         Returns
@@ -306,7 +293,7 @@ class GuildProfile(metaclass = Slotted):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         
@@ -330,7 +317,7 @@ class GuildProfile(metaclass = Slotted):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received guild profile data.
         """
         if self.joined_at is None:
@@ -343,7 +330,7 @@ class GuildProfile(metaclass = Slotted):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received guild profile data.
         """
         self._set_avatar(data)
@@ -362,12 +349,12 @@ class GuildProfile(metaclass = Slotted):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `object`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -476,20 +463,8 @@ class GuildProfile(metaclass = Slotted):
         Parameters
         ----------
         avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
-            The channel's avatar.
-            
-            > Mutually exclusive with `avatar_type` and `avatar_hash` parameters.
+            The guild profile's avatar.
         
-        avatar_type : ``IconType``, Optional (Keyword only)
-            The channel's avatar's type.
-            
-            > Mutually exclusive with the `avatar` parameter.
-        
-        avatar_hash : `int`, Optional (Keyword only)
-            The channel's avatar's hash.
-            
-            > Mutually exclusive with the `avatar` parameter.
-            
         boosts_since : `None`, `datetime`, Optional (Keyword only)
             Since when the user uses it's Nitro to boost the respective guild.
         
@@ -519,7 +494,6 @@ class GuildProfile(metaclass = Slotted):
         ------
         TypeError
             - If a parameter's type is incorrect.
-            - Extra or unused parameters.
         ValueError
             - If a parameter's value is incorrect.
         """
@@ -614,7 +588,7 @@ class GuildProfile(metaclass = Slotted):
         
         Parameters
         ----------
-        default : `Any` = `None`, Optional
+        default : `object` = `None`, Optional
             Default value to return if the respective user has no roles at the respective guild. Defaults to `None`.
         
         Returns

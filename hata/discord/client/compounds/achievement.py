@@ -301,7 +301,7 @@ class ClientCompoundAchievementEndpoints(Compound):
             The achievement's icon. Can have `'jpg'`, `'png'`, `'webp'`, `'gif'` format.
         description_localizations : `None`, `dict` of (`str`, `str`) items = `None`, Optional (Keyword only)
             Localized descriptions of the achievement.
-        name_localizations : `None`, `dict` of (`str`, `Any`) items = `None`, Optional (Keyword only)
+        name_localizations : `None`, `dict` of (`str`, `object`) items = `None`, Optional (Keyword only)
             Localized names of the achievement.
         secret : `bool` = `False`, Optional (Keyword only)
             Secret achievements will *not* be shown to the user until they've unlocked them.

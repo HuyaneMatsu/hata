@@ -54,7 +54,7 @@ def _forum_tag_data_array_sort_key(forum_tag_data):
     
     Parameters
     ----------
-    forum_tag_data : `dict` of (`str`, `Any`) items
+    forum_tag_data : `dict` of (`str`, `object`) items
         Forum tag data.
     
     Returns

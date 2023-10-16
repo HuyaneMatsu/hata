@@ -21,7 +21,7 @@ class Timeouter:
     _handle : `None`, ``TimerHandle``
         Handle to wake_up the timeouter with it's `._step` function.
         Set to `None`, when the respective timeout is over or if the timeout is cancelled.
-    _owner : `Any`
+    _owner : `object`
         The object what uses the timeouter.
         Set to `None`, when the respective timeout is over or if the timeout is cancelled.
     _timeout : `float`
@@ -36,7 +36,7 @@ class Timeouter:
         
         Parameters
         ----------
-        owner : `Any`
+        owner : `object`
             The object what uses the timeouter.
         timeout : `float`
             The time with what the timeout will be expired when it's current waiting cycle is over.
@@ -357,7 +357,7 @@ class ComponentInteractionIterator:
         
         Parameters
         ----------
-        result : `Any`
+        result : `object`
             The result to feed.
         """
         future = self._future

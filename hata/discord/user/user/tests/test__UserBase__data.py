@@ -33,7 +33,7 @@ def test__UserBase__to_data():
     
     expected_output = {
         'avatar': avatar.as_base_16_hash,
-        'avatar_decoration': None,
+        'avatar_decoration_data': None,
         'accent_color': None,
         'discriminator': '0000',
         'global_name': None,

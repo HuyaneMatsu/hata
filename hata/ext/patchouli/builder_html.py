@@ -523,7 +523,7 @@ def section_serializer(section, object_):
     
     Parameters
     ----------
-    section : `tuple` ((`None`, `str`), `list` of `Any`)
+    section : `tuple` ((`None`, `str`), `list` of `object`)
         The title to serialize.
     object_ : ``UnitBase``
         The respective unit.
@@ -545,7 +545,7 @@ def sub_section_serializer(sub_section, object_, path, linker):
     
     Parameters
     ----------
-    sub_section : `list` of `Any`
+    sub_section : `list` of `object`
         The source sub-section..
     object_ : ``UnitBase``
         The respective unit.

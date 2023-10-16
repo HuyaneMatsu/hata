@@ -161,7 +161,7 @@ class VoiceSettingsInput:
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         
@@ -190,7 +190,7 @@ class VoiceSettingsInput:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Voice settings input data.
         
         Returns
@@ -268,7 +268,7 @@ class AvailableDevice:
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         return {
             'id_': self.id_,
@@ -283,7 +283,7 @@ class AvailableDevice:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Available device data.
         
         Returns
@@ -450,7 +450,7 @@ class VoiceSettingsOutput:
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         
@@ -479,7 +479,7 @@ class VoiceSettingsOutput:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Voice settings output data.
         
         Returns
@@ -707,7 +707,7 @@ class VoiceSettingsMode:
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         
@@ -746,7 +746,7 @@ class VoiceSettingsMode:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Voice settings mode data.
         
         Returns
@@ -848,7 +848,7 @@ class ShortcutKey:
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         return {
             'type': self.type.value,
@@ -864,7 +864,7 @@ class ShortcutKey:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Shortcut key data.
         
         Returns
@@ -969,7 +969,7 @@ class VoiceSettings:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Voice settings data.
         
         Returns

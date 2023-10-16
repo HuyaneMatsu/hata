@@ -823,7 +823,7 @@ class Slasher(EventHandlerBase):
     _auto_completers : `None`, `list` of ``SlashCommandParameterAutoCompleter``
         Auto completer functions.
     
-    _call_later : `None`, `list` of `tuple` (`bool`, `Any`)
+    _call_later : `None`, `list` of `tuple` (`bool`, `object`)
         Slash command changes to apply later if syncing is in progress.
     
     _client_reference : ``WeakReferer`` to ``Client``
@@ -1390,7 +1390,7 @@ class Slasher(EventHandlerBase):
         name : `None`, `str`, `tuple` of (`str`, `Ellipsis`, `None`)
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
             instead.
-        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+        description : `None`, `object`, `tuple` of (`None`, `Ellipsis`, `object`), Optional
             Description to use instead of the function's docstring.
         is_global : `None`, `bool`, `tuple` of (`bool`, `Ellipsis`), Optional
             Whether the application command command is global. Defaults to `False`.

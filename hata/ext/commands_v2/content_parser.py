@@ -50,7 +50,7 @@ class ContentParameterParserContextBase(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    _cache : `dict` of (`str`, `Any`)
+    _cache : `dict` of (`str`, `object`)
         Cache used by cached properties.
     _parsed : `re.Match`
         The parsed regex.
@@ -165,7 +165,7 @@ class ContentParameterParserContextSeparator(ContentParameterParserContextBase):
     
     Attributes
     ----------
-    _cache : `dict` of (`str`, `Any`)
+    _cache : `dict` of (`str`, `object`)
         Cache used by cached properties.
     _parsed : `re.Match`
         The parsed regex.
@@ -196,7 +196,7 @@ class ContentParameterParserContextEncapsulator(ContentParameterParserContextBas
     
     Attributes
     ----------
-    _cache : `dict` of (`str`, `Any`)
+    _cache : `dict` of (`str`, `object`)
         Cache used by cached properties.
     _parsed : `re.Match`
         The parsed regex.
@@ -2128,7 +2128,7 @@ class ContentParserParameter(RichAttributeErrorBaseType):
     
     Parameters
     ----------
-    default : `None`, `Any`
+    default : `None`, `object`
         The default object to return if the parser fails.
     description : `None`, `str`
         The description of the parameter if any.
@@ -2485,7 +2485,7 @@ class ContentParserParameter(RichAttributeErrorBaseType):
         
         Returns
         -------
-        parsed : `None`, `Any`
+        parsed : `None`, `object`
             The parsed object if any.
         """
         detail = self.detail
@@ -3038,7 +3038,7 @@ class ParameterParsingStateBase:
         
         Parameters
         ----------
-        parsed_value : `Any`
+        parsed_value : `object`
             The parsed value.
         keyword : `None`, `str`
             The keyword used to reference the value.
@@ -3099,7 +3099,7 @@ class GenericParameterParsingState(ParameterParsingStateBase):
         The respective parameter.
     satisfied : `bool`
         Whether the parser is satisfied.
-    parsed_values : `None`, `list` of `Any`
+    parsed_values : `None`, `list` of `object`
         The parsed values for the respective ``ContentParserParameter``.
     """
     __slots__ = ('satisfied', 'parsed_values', )
@@ -3185,7 +3185,7 @@ class KwargsParameterParsingState(ParameterParsingStateBase):
     ----------
     content_parser_parameter : ``ContentParserParameter``
         The respective parameter.
-    parsed_items : `None`, `list` of `tuple` (`str`, `Any`)
+    parsed_items : `None`, `list` of `tuple` (`str`, `object`)
         The parsed values for the respective ``ContentParserParameter``.
     """
     __slots__ = ('parsed_items', )
@@ -3297,12 +3297,12 @@ def get_first_non_none_parsed_value(parsed_values):
     
     Parameters
     ----------
-    parsed_values : `None`, `list` of `Any`
+    parsed_values : `None`, `list` of `object`
         The parsed value.
 
     Returns
     -------
-    value : `None`, `Any`
+    value : `None`, `object`
         The parsed value if any.
     """
     if (parsed_values is not None):
@@ -3319,12 +3319,12 @@ def get_all_non_none_parsed_value(parsed_values):
     
     Parameters
     ----------
-    parsed_values : `None`, `list` of `Any`
+    parsed_values : `None`, `list` of `object`
         The parsed value.
 
     Returns
     -------
-    values : `None`, `Any`
+    values : `None`, `object`
         The parsed value if any.
     """
     values = []

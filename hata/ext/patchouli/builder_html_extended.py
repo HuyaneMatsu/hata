@@ -219,7 +219,7 @@ def get_attribute_section_mentioned_names(section_content):
     
     Parameters
     ----------
-    section_content : `list` of `Any`
+    section_content : `list` of `object`
     
     Returns
     -------
@@ -398,7 +398,7 @@ class SimpleSection:
     
     Attributes
     ----------
-    content : `list` of `Any`
+    content : `list` of `object`
         Contained section part.
     object : ``UnitBase``
         The owner unit.
@@ -417,7 +417,7 @@ class SimpleSection:
         ----------
         title : `None`, `str`
             The title of the represented section.
-        content : `list` of `Any`
+        content : `list` of `object`
             Contained section part.
         object_ : ``TypeUnit``
             The owner type-unit.
@@ -497,7 +497,7 @@ class FunctionOrPropertySerializer:
     
     Attributes
     ----------
-    content : `list` of `Any`
+    content : `list` of `object`
         Contained section part.
     object : ``PropertyUnit``, ``FunctionUnit``
         The owner type-unit.
@@ -793,7 +793,7 @@ class AttributeSection:
     
     Attributes
     ----------
-    extra : `None`, `list` of `Any`
+    extra : `None`, `list` of `object`
         Extra content after the attribute section.
     relations : `dict` of (`str`, `DocString`) items
         Attribute name, DocString relation.
@@ -1244,7 +1244,7 @@ class ParameterSection:
         
         Parameters
         ----------
-        section_content : `list` of `Any`
+        section_content : `list` of `object`
             Contained section parts.
         object_ : ``TypeUnit``
             The owner type-unit.
@@ -1265,7 +1265,7 @@ class ParameterSection:
         
         Parameters
         ----------
-        section_content : `list` of `Any`
+        section_content : `list` of `object`
             Contained section parts.
         """
         header = None

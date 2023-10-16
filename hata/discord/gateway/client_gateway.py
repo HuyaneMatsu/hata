@@ -396,7 +396,7 @@ class DiscordGateway:
         ----------
         operation : `int`
             The gateway operation's code what the function will handle.
-        data : `None`, `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `object`) items
             Deserialized json data.
         
         Returns
@@ -518,7 +518,7 @@ class DiscordGateway:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items or `list` of `Any`
+        data : `dict` of (`str`, `object`) items or `list` of `object`
         """
         websocket = self.websocket
         if websocket is None:
@@ -862,7 +862,7 @@ class DiscordGatewaySharder:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items or `list` of `Any`
+        data : `dict` of (`str`, `object`) items or `list` of `object`
         """
         data = to_json(data)
         
@@ -897,4 +897,4 @@ class DiscordGatewaySharder:
     
     def __repr__(self):
         """Returns the representation of the gateway sharder."""
-        return f'<{self.__class__.__name__} client={self.client.full_name}, shard_count={self.client.shard_count}>'
+        return f'<{self.__class__.__name__} client = {self.client.full_name}, shard_count = {self.client.shard_count}>'

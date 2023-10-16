@@ -3,7 +3,7 @@ import vampytest
 from ....bases import Icon, IconType
 from ....color import Color
 from ....localization import Locale
-from ....user import PremiumType, UserFlag
+from ....user import AvatarDecoration, PremiumType, UserFlag
 
 from ..oauth2_user import Oauth2User
 
@@ -14,7 +14,7 @@ def test__Oauth2User__repr():
     """
     user_id = 202302040024
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160043)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -54,7 +54,7 @@ def test__Oauth2User__hash():
     """
     user_id = 202302040025
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160044)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -95,7 +95,7 @@ def test__Oauth2User__eq():
     user_id = 202302040026
     
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160045)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -158,7 +158,7 @@ def test__Oauth2User__format():
     Case: Shallow.
     """
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160046)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222

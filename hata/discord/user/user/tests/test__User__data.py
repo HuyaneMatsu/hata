@@ -5,6 +5,7 @@ from ....guild import Guild
 from ....bases import Icon, IconType
 from ....color import Color
 
+from ...avatar_decoration import AvatarDecoration
 from ...guild_profile import GuildProfile
 
 from ..flags import UserFlag
@@ -21,7 +22,7 @@ def test__User__from_data__0():
     """
     user_id = 202302080011
     avatar = Icon(IconType.static, 24)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160076)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -32,7 +33,7 @@ def test__User__from_data__0():
     
     user_data = {
         'avatar': avatar.as_base_16_hash,
-        'avatar_decoration': avatar_decoration.as_base_16_hash,
+        'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
@@ -138,7 +139,7 @@ def test__User__difference_update_profile__0():
     """
     user_id = 202302080016
     avatar = Icon(IconType.static, 24)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160077)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -151,7 +152,7 @@ def test__User__difference_update_profile__0():
     
     user_data = {
         'avatar': avatar.as_base_16_hash,
-        'avatar_decoration': avatar_decoration.as_base_16_hash,
+        'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
@@ -283,7 +284,7 @@ def test__User__update_profile__0():
     user_id = 202302080024
     guild_id = 202302080025
     avatar = Icon(IconType.static, 24)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160078)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -298,7 +299,7 @@ def test__User__update_profile__0():
     
     user_data = {
         'avatar': avatar.as_base_16_hash,
-        'avatar_decoration': avatar_decoration.as_base_16_hash,
+        'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,

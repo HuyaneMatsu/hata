@@ -210,7 +210,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Auto moderation execution event data.
         
         Returns

@@ -28,7 +28,7 @@ def _iter_configured_track_attributes(configured_track):
     Yields
     ------
     key : `str`
-    value : `Any`
+    value : `object`
     """
     yield LAVALINK_KEY_TRACK, configured_track.track.base64
     
@@ -74,7 +74,7 @@ class Track(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Track data.
         """
         self = object.__new__(cls)
@@ -295,7 +295,7 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    _added_attributes : `None`, `dict` of (`str`, `Any`) items
+    _added_attributes : `None`, `dict` of (`str`, `object`) items
         Additionally passed attributes when registering a track.
     
     end_time : `float`
@@ -325,7 +325,7 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
             Where the track will start in seconds.
         end_time : `float`
             Where the track will start in seconds.
-        added_attributes : `dict` of (`str`, `Any`)
+        added_attributes : `dict` of (`str`, `object`)
             Additional user defined attributes.
         
         Raises
@@ -658,7 +658,7 @@ class GetTracksResult(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Response data.
         """
         playlist_data = data[LAVALINK_KEY_PLAYLIST]

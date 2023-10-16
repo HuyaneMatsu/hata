@@ -198,7 +198,7 @@ class UserGuildPermission:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`)
+        data : `dict` of (`str`, `object`)
             Guild permission data.
         """
         self.owner = data['owner']
@@ -447,7 +447,7 @@ class ClientWrapper:
         ----------
         parent : ``ClientWrapper``
             The owner event descriptor.
-        parameters: `tuple` of `Any`
+        parameters: `tuple` of `object`
             Additional keyword parameters (in order) passed when the wrapper was created.
         """
         __slots__ = ('parent', 'parameters',)
@@ -460,7 +460,7 @@ class ClientWrapper:
             ----------
             parent : ``EventHandlerManager``
                 The owner event descriptor.
-            parameters: `tuple` of `Any`
+            parameters: `tuple` of `object`
                 Additional keyword parameters (in order) passed when the wrapper was created.
             """
             self.parent = parent

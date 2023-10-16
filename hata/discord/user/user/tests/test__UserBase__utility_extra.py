@@ -10,6 +10,8 @@ from ....message import Message
 from ....role import Role
 from ....utils import is_url
 
+from ...avatar_decoration import AvatarDecoration
+
 from ..flags import UserFlag
 from ..preinstanced import DefaultAvatar, PremiumType, Status
 from ..user_base import UserBase
@@ -21,9 +23,7 @@ def test__UserBase__placeholders():
     """
     user = UserBase()
     vampytest.assert_instance(user.activities, list, nullable = True)
-    vampytest.assert_instance(user.avatar_decoration, Icon)
-    vampytest.assert_instance(user.avatar_decoration_hash, int)
-    vampytest.assert_instance(user.avatar_decoration_type, IconType)
+    vampytest.assert_instance(user.avatar_decoration, AvatarDecoration, nullable = True)
     vampytest.assert_instance(user.banner, Icon)
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
     vampytest.assert_instance(user.banner_hash, int)

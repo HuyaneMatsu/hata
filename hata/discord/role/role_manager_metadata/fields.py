@@ -45,14 +45,14 @@ def put_purchasable_into(purchasable, data, defaults):
     ----------
     purchasable : `bool`
         Whether the role is available for purchase.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if purchasable:
         data[PURCHASABLE_KEY] = None

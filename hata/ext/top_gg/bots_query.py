@@ -253,7 +253,7 @@ def create_bots_query_search_value(query):
     
     Parameters
     ----------
-    query : `None`, `dict` of (`str`, `Any`)
+    query : `None`, `dict` of (`str`, `object`)
         Search parameters.
     
     Returns

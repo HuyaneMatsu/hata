@@ -330,7 +330,7 @@ def preconvert_preinstanced_type(value, name, type_):
     
     Parameters
     ----------
-    value : `Any`
+    value : `object`
         The value to convert.
     name : `str`
         The name of the value.
@@ -382,7 +382,7 @@ def _pre_validate_int(value, name):
 
     Parameters
     ----------
-    value : `Any`
+    value : `object`
         The value to convert.
     name : `str`
         The name of the value.
@@ -414,7 +414,7 @@ def preconvert_int(value, name, lower_limit, upper_limit):
     
     Parameters
     ----------
-    value : `Any`
+    value : `object`
         The value to convert.
     name : `str`
         The name of the value.
@@ -450,7 +450,7 @@ def preconvert_int_options(value, name, options):
     
     Parameters
     ----------
-    value : `Any`
+    value : `object`
         The value to convert.
     name : `str`
         The name of the value.
@@ -484,7 +484,7 @@ def preconvert_float(value, name, lower_limit, upper_limit):
     
     Parameters
     ----------
-    value : `Any`
+    value : `object`
         The value to convert.
     name : `str`
         The name of the value.

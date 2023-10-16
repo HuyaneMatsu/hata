@@ -425,7 +425,7 @@ class RPCClient(RichAttributeErrorBaseType):
         ----------
         event : `str`
             The event's name.
-        key : `Any`
+        key : `object`
             The key used to detect whether the client is subscribed.
         
         Returns
@@ -454,7 +454,7 @@ class RPCClient(RichAttributeErrorBaseType):
         ----------
         event : `str`
             The event's name.
-        key : `Any`
+        key : `object`
             The key used to detect whether the client is subscribed.
         """
         try:
@@ -484,7 +484,7 @@ class RPCClient(RichAttributeErrorBaseType):
         ----------
         event : `str`
             The event's name.
-        key : `Any`
+        key : `object`
             The key used to detect whether the client is subscribed.
         """
         try:
@@ -1285,7 +1285,7 @@ class RPCClient(RichAttributeErrorBaseType):
         ---------
         event : `str`
             The event to subscribe to.
-        key : `Any`
+        key : `object`
             The key used to detect whether the client is subscribed.
         
         Raises
@@ -1324,7 +1324,7 @@ class RPCClient(RichAttributeErrorBaseType):
         ---------
         event : `str`
             The event to unsubscribe to.
-        key : `Any`
+        key : `object`
             The key used to detect whether the client is subscribed.
         
         Raises

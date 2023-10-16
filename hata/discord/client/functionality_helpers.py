@@ -220,7 +220,7 @@ class DiscoveryCategoryRequestCacher:
         The last time when the cache was updated
     _waiter : ``Future``, `None`
         Waiter to avoid concurrent calls.
-    cached : `Any`
+    cached : `object`
         Last result.
     func : `callable`
         Async callable, what's yields are cached.
@@ -239,7 +239,7 @@ class DiscoveryCategoryRequestCacher:
             The time after new request should be executed.
         func : `callable`
             Async callable, what's yields would be cached.
-        cached : `Any`, Optional
+        cached : `object`, Optional
             Whether there should be an available cache by default.
         """
         self.func = func
@@ -273,7 +273,7 @@ class DiscoveryCategoryRequestCacher:
         
         Returns
         -------
-        result : `Any`
+        result : `object`
         
         Raises
         ------
@@ -458,7 +458,7 @@ class DiscoveryTermRequestCacher:
         
         Returns
         -------
-        result : `Any`
+        result : `object`
         
         Raises
         ------
@@ -946,7 +946,7 @@ class ForceUpdateCache:
     ----------
     synced : `bool`
         Whether the cache was synced already.
-    value : `Any`
+    value : `object`
         The cached value.
     """
     __slots__ = ('synced', 'value')
@@ -977,7 +977,7 @@ class ForceUpdateCache:
         
         Parameters
         ----------
-        value : `Any`
+        value : `object`
             The cached value.
         """
         self.value = value

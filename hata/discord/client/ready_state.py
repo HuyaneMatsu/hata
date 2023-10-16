@@ -276,7 +276,7 @@ class ReadyState:
         
         Parameters
         ----------
-        guild_datas : `list` of `Any`
+        guild_datas : `list` of `object`
             Received guild datas.
         shard_id : `int`
             The shard's identifier.

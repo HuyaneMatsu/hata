@@ -3,7 +3,7 @@ import vampytest
 from ...bases import IconType, Icon
 from ...color import Color
 from ...localization import Locale
-from ...user import PremiumType, UserFlag
+from ...user import AvatarDecoration, PremiumType, UserFlag
 
 from ..client import Client
 
@@ -16,7 +16,7 @@ def test__Client__to_data():
     """
     client_id = 202302080030
     avatar = Icon(IconType.static, 24)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160016)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -27,7 +27,7 @@ def test__Client__to_data():
     
     expected_output = {
         'avatar': avatar.as_base_16_hash,
-        'avatar_decoration': avatar_decoration.as_base_16_hash,
+        'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
@@ -69,7 +69,7 @@ def test__Client__update_attributes():
     Tests whether ``Client._update_attributes` works as intended.
     """
     avatar = Icon(IconType.static, 24)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160017)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -84,7 +84,7 @@ def test__Client__update_attributes():
     
     data = {
         'avatar': avatar.as_base_16_hash,
-        'avatar_decoration': avatar_decoration.as_base_16_hash,
+        'avatar_decoration_data': avatar_decoration.to_data(),
         'banner': banner.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
@@ -130,7 +130,7 @@ def test__Client__difference_update_attributes():
     Tests whether ``Client._difference_update_attributes` works as intended.
     """
     old_avatar = Icon(IconType.static, 24)
-    old_avatar_decoration = Icon(IconType.animated_apng, 25)
+    old_avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160018)
     old_banner = Icon(IconType.animated, 12)
     old_banner_color = Color(1236)
     old_discriminator = 2222
@@ -144,7 +144,7 @@ def test__Client__difference_update_attributes():
     old_premium_type = PremiumType.nitro
     
     new_avatar = Icon(IconType.animated, 13)
-    new_avatar_decoration = Icon(IconType.static, 10)
+    new_avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160019)
     new_banner = Icon(IconType.animated, 14)
     new_banner_color = Color(12)
     new_discriminator = 11
@@ -159,7 +159,7 @@ def test__Client__difference_update_attributes():
     
     data = {
         'avatar': new_avatar.as_base_16_hash,
-        'avatar_decoration': new_avatar_decoration.as_base_16_hash,
+        'avatar_decoration_data': new_avatar_decoration.to_data(),
         'banner': new_banner.as_base_16_hash,
         'accent_color': int(new_banner_color),
         'discriminator': str(new_discriminator).rjust(4, '0'),

@@ -90,7 +90,7 @@ class EmbedFieldBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Embed field data.
         
         Returns

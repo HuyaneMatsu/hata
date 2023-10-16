@@ -3,6 +3,8 @@ import vampytest
 from ....bases import IconType, Icon
 from ....color import Color
 
+from ...avatar_decoration import AvatarDecoration
+
 from ..flags import UserFlag
 from ..orin_user_base import OrinUserBase
 
@@ -25,7 +27,7 @@ def test__OrinUserBase__to_data():
     """
     user_id = 202302040015
     avatar = Icon(IconType.static, 24)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160067)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -47,7 +49,7 @@ def test__OrinUserBase__to_data():
     
     expected_output = {
         'avatar': avatar.as_base_16_hash,
-        'avatar_decoration': avatar_decoration.as_base_16_hash,
+        'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
@@ -69,7 +71,7 @@ def test__OrinUserBase__update_attributes():
     Tests whether ``OrinUserBase._update_attributes` works as intended.
     """
     avatar = Icon(IconType.static, 24)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160069)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -81,7 +83,7 @@ def test__OrinUserBase__update_attributes():
     
     data = {
         'avatar': avatar.as_base_16_hash,
-        'avatar_decoration': avatar_decoration.as_base_16_hash,
+        'avatar_decoration_data': avatar_decoration.to_data(),
         'banner': banner.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
@@ -107,7 +109,7 @@ def test__OrinUserBase__difference_update_attributes():
     Tests whether ``OrinUserBase._difference_update_attributes` works as intended.
     """
     old_avatar = Icon(IconType.static, 24)
-    old_avatar_decoration = Icon(IconType.animated_apng, 25)
+    old_avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160070)
     old_banner = Icon(IconType.animated, 12)
     old_banner_color = Color(1236)
     old_discriminator = 2222
@@ -116,7 +118,7 @@ def test__OrinUserBase__difference_update_attributes():
     old_name = 'suika'
     
     new_avatar = Icon(IconType.animated, 13)
-    new_avatar_decoration = Icon(IconType.static, 10)
+    new_avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160091)
     new_banner = Icon(IconType.animated, 14)
     new_banner_color = Color(12)
     new_discriminator = 11
@@ -137,7 +139,7 @@ def test__OrinUserBase__difference_update_attributes():
     
     data = {
         'avatar': new_avatar.as_base_16_hash,
-        'avatar_decoration': new_avatar_decoration.as_base_16_hash,
+        'avatar_decoration_data': new_avatar_decoration.to_data(),
         'banner': new_banner.as_base_16_hash,
         'accent_color': int(new_banner_color),
         'discriminator': str(new_discriminator).rjust(4, '0'),

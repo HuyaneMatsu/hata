@@ -11,7 +11,7 @@ from ...events.event_handler_manager import EventHandlerManager
 from ...gateway.client_gateway import DiscordGateway, DiscordGatewaySharder
 from ...http import DiscordHTTPClient
 from ...localization import Locale
-from ...user import PremiumType, Status, UserFlag
+from ...user import AvatarDecoration, PremiumType, Status, UserFlag
 
 from ..client import Client
 from ..ready_state import ReadyState
@@ -39,7 +39,7 @@ def _assert_fields_set(client):
     vampytest.assert_instance(client.activities, list, nullable = True)
     vampytest.assert_instance(client.application, Application)
     vampytest.assert_instance(client.avatar, Icon)
-    vampytest.assert_instance(client.avatar_decoration, Icon)
+    vampytest.assert_instance(client.avatar_decoration, AvatarDecoration, nullable = True)
     vampytest.assert_instance(client.banner_color, int, nullable = True)
     vampytest.assert_instance(client.banner, Icon)
     vampytest.assert_instance(client.bot, bool)
@@ -106,7 +106,7 @@ def test__ClientUserBase__new__1():
     Case: All fields given.
     """
     avatar = Icon(IconType.static, 32)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160015)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222

@@ -27,7 +27,7 @@ class CommandWrapper(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    _wrapped : `Any`
+    _wrapped : `object`
         The wrapped object.
     """
     __slots__ = ('_wrapped',)
@@ -53,7 +53,7 @@ class CommandWrapper(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        wrapped : `Any`
+        wrapped : `object`
             The command or other wrapper to wrap.
         
         Raises
@@ -98,7 +98,7 @@ class CommandWrapper(RichAttributeErrorBaseType):
         
         Returns
         -------
-        function : `Any`
+        function : `object`
             The wrapped function.
         wrappers : `list` of ``CommandWrapper``
             The fetched back wrappers.
@@ -123,7 +123,7 @@ class ApplicationCommandPermissionOverwriteWrapper(CommandWrapper):
     
     Attributes
     ----------
-    _wrapped : `Any`
+    _wrapped : `object`
         The wrapped object.
     _guild_id : `int`
         The guild id where the overwrites should be applied to.
@@ -287,7 +287,7 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
     
     Attributes
     ----------
-    _wrapped : `Any`
+    _wrapped : `object`
         The command or other wrapper to wrap.
     _autocomplete : `None`, `CoroutineFunction`
         Auto complete function for the parameter.

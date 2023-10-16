@@ -3,6 +3,8 @@ import vampytest
 from ....bases import Icon, IconType
 from ....utils import is_url
 
+from ...avatar_decoration import AvatarDecoration
+
 from ..orin_user_base import OrinUserBase
 
 
@@ -43,7 +45,7 @@ def test__OrinUserBase__avatar_decoration_url():
     """
     Tests whether ``OrinUserBase.avatar_decoration_url`` work as intended.
     """
-    avatar_decoration = Icon(IconType.static, 23)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160097)
     
     user = OrinUserBase(
         avatar_decoration = avatar_decoration,
@@ -59,7 +61,7 @@ def test__OrinUserBase__avatar_decoration_url_as():
     """
     Tests whether ``OrinUserBase.avatar_decoration_url_as`` work as intended.
     """
-    avatar_decoration = Icon(IconType.static, 23)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160098)
     
     user = OrinUserBase(
         avatar_decoration = avatar_decoration,

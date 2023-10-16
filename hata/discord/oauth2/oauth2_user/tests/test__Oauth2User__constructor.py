@@ -3,7 +3,7 @@ import vampytest
 from ....bases import Icon, IconType
 from ....color import Color
 from ....localization import Locale
-from ....user import PremiumType, UserFlag
+from ....user import AvatarDecoration, PremiumType, UserFlag
 
 from ...oauth2_access import Oauth2Access
 
@@ -22,7 +22,7 @@ def _assert_fields_set(user):
     vampytest.assert_instance(user, Oauth2User)
     vampytest.assert_instance(user.access, Oauth2Access)
     vampytest.assert_instance(user.avatar, Icon)
-    vampytest.assert_instance(user.avatar_decoration, Icon)
+    vampytest.assert_instance(user.avatar_decoration, AvatarDecoration, nullable = True)
     vampytest.assert_instance(user.banner, Icon)
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
     vampytest.assert_instance(user.discriminator, int)
@@ -54,7 +54,7 @@ def test__Oauth2User__new__1():
     Case: All fields given.
     """
     avatar = Icon(IconType.static, 32)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160038)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222

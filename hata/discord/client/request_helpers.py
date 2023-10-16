@@ -48,7 +48,7 @@ def get_components_data(components, is_edit):
     
     Returns
     -------
-    component_datas : `None`, `list` of (`dict` of (`str`, `Any`) items)
+    component_datas : `None`, `list` of (`dict` of (`str`, `object`) items)
         The generated data if any.
     
     Raises
@@ -166,14 +166,14 @@ if API_VERSION >= 9:
         
         Parameters
         ----------
-        files : `None`, `list` of `tuple` (`str`, `Any`, (`None`, `str`))
+        files : `None`, `list` of `tuple` (`str`, `object`, (`None`, `str`))
             The collected files to send.
-        tuple_ : `tuple` (?(`None`, `str`), ?`Any`, ?(`None`, `str`))
+        tuple_ : `tuple` (?(`None`, `str`), ?`object`, ?(`None`, `str`))
             A tuple containing the name, io and the description.
         
         Returns
         -------
-        files : `None`, `list` of `tuple` (`str`, `Any`, (`None`, `str`))
+        files : `None`, `list` of `tuple` (`str`, `object`, (`None`, `str`))
             The collected files to send.
         
         Raises
@@ -232,7 +232,7 @@ if API_VERSION >= 9:
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`)
+        data : `dict` of (`str`, `object`)
         """
         data = {'id': attachment_id}
         
@@ -249,7 +249,7 @@ if API_VERSION >= 9:
         
         Parameters
         ----------
-        data : `dict` of `Any`
+        data : `dict` of `object`
             The data created by the ``.message_create`` method.
         file : `dict` of (`file-name`, `io`) items, `list` of (``Attachment``, `tuple` (`file-name`, `io`)) elements,
                 `tuple` (`file-name`, `io`, ), `io`, ``Attachment``
@@ -390,7 +390,7 @@ if API_VERSION >= 9:
         
         Parameters
         ----------
-        message_data : `dict` of (`str`, `Any`) items
+        message_data : `dict` of (`str`, `object`) items
             The message's payload to send.
         file : `None`, `dict` of (`file-name`, `io`) items, `list` of (`file-name`, `io`) elements, \
                 tuple (`file-name`, `io`), `io`
@@ -432,7 +432,7 @@ else:
         
         Parameters
         ----------
-        data : `dict` of `Any`
+        data : `dict` of `object`
             The data created by the ``.message_create`` method.
         file : `dict` of (`file-name`, `io`) items, `list` of (`file-name`, `io`) elements, tuple (`file-name`, `io`),
                 `io`
@@ -550,7 +550,7 @@ else:
         
         Parameters
         ----------
-        message_data : `dict` of (`str`, `Any`) items
+        message_data : `dict` of (`str`, `object`) items
             The message's payload to send.
         file : `None`, `dict` of (`file-name`, `io`) items, `list` of (`file-name`, `io`) elements, \
                 tuple (`file-name`, `io`), `io`
@@ -590,7 +590,7 @@ def validate_content_and_embed(content, embed, is_edit):
     
     Parameters
     ----------
-    content : `str`, ``Embed``, `Any`, Optional
+    content : `str`, ``Embed``, `object`, Optional
         The content of the message.
         
         

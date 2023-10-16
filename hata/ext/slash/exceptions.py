@@ -46,7 +46,7 @@ class SlashCommandParameterConversionError(SlasherCommandError):
         The parameter's received value.
     excepted_type : `None`, `str`
         The parameter's expected type's name.
-    expected_values : `None`, `list` of `Any`
+    expected_values : `None`, `list` of `object`
         Expected values.
     """
     def __init__(self, parameter_name, received_value, excepted_type, expected_values):
@@ -61,7 +61,7 @@ class SlashCommandParameterConversionError(SlasherCommandError):
             The parameter's received value.
         excepted_type : `None`, `str`
             The parameter's expected type's name.
-        expected_values : `None`, `list` of `Any`
+        expected_values : `None`, `list` of `object`
             Expected values.
         """
         self.parameter_name = parameter_name

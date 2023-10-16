@@ -42,7 +42,7 @@ def test__GuildProfile__new__1():
     """
     Tests whether ``GuildProfile.__new__`` works as intended.
     
-    Case: include internals & defaults.
+    Case: all fields.
     """
     avatar = Icon(IconType.static, 12)
     boosts_since = DateTime(2016, 5, 14)

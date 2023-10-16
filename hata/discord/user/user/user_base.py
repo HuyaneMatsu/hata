@@ -12,8 +12,8 @@ from ...localization.utils import LOCALE_DEFAULT
 from ...utils import DATETIME_FORMAT_CODE
 
 from .fields import (
-    parse_name, put_banner_color_into, put_bot_into, put_discriminator_into, put_display_name_into, put_flags_into,
-    put_id_into, put_name_into, validate_name
+    parse_name, put_avatar_decoration_into, put_banner_color_into, put_bot_into, put_discriminator_into,
+    put_display_name_into, put_flags_into, put_id_into, put_name_into, validate_name
 )
 from .flags import UserFlag
 from .preinstanced import DefaultAvatar, PremiumType, Status
@@ -23,6 +23,7 @@ ZEROUSER = include('ZEROUSER')
 
 
 USER_AVATAR = IconSlot('avatar', 'avatar', module_urls.user_avatar_url, module_urls.user_avatar_url_as)
+USER_BANNER = IconSlot('banner', 'banner', module_urls.user_banner_url, module_urls.user_banner_url_as)
 
 
 class UserBase(DiscordEntity, immortal = True):
@@ -122,37 +123,37 @@ class UserBase(DiscordEntity, immortal = True):
         Returned Data Structure
         -----------------------
         
-        +-----------------------+-----------------------+-----------------------+
-        | Keys                  | Values                | Applicable for        |
-        +=======================+=======================+=======================+
-        | avatar                | ``Icon``              | all                   |
-        +-----------------------+-----------------------+-----------------------+
-        | avatar_decoration     | ``Icon``              | ``Client``, ``User``  |
-        +-----------------------+-----------------------+-----------------------+
-        | banner                | ``Icon``              | ``Client``, ``User``  |
-        +-----------------------+-----------------------+-----------------------+
-        | banner_color          | `None`, ``Color``     | ``Client``, ``User``  |
-        +-----------------------+-----------------------+-----------------------+
-        | channel_id            | `int`                 | ``Webhook``           |
-        +-----------------------+-----------------------+-----------------------+
-        | discriminator         | `int`                 | ``Client``, ``User``  |
-        +-----------------------+-----------------------+-----------------------+
-        | display_name          | `None`, `str`         | ``Client``, ``User``  |
-        +-----------------------+-----------------------+-----------------------+
-        | email                 | `None`, `str`         | ``Client``            |
-        +-----------------------+-----------------------+-----------------------+
-        | email_verified        | `bool`                | ``Client``            |
-        +-----------------------+-----------------------+-----------------------+
-        | flags                 | ``UserFlag``          | ``Client``, ``User``  |
-        +-----------------------+-----------------------+-----------------------+
-        | locale                | ``Locale``            | ``Client``            |
-        +-----------------------+-----------------------+-----------------------+
-        | mfa                   | `bool`                | ``Client``            |
-        +-----------------------+-----------------------+-----------------------+
-        | name                  | `str`                 | all                   |
-        +-----------------------+-----------------------+-----------------------+
-        | premium_type          | ``PremiumType``       | ``Client``            |
-        +-----------------------+-----------------------+-----------------------+
+        +-----------------------+-------------------------------+-----------------------+
+        | Keys                  | Values                        | Applicable for        |
+        +=======================+===============================+=======================+
+        | avatar                | ``Icon``                      | all                   |
+        +-----------------------+-------------------------------+-----------------------+
+        | avatar_decoration     | `None`, ``AvatarDecoration``  | ``Client``, ``User``  |
+        +-----------------------+-------------------------------+-----------------------+
+        | banner                | ``Icon``                      | ``Client``, ``User``  |
+        +-----------------------+-------------------------------+-----------------------+
+        | banner_color          | `None`, ``Color``             | ``Client``, ``User``  |
+        +-----------------------+-------------------------------+-----------------------+
+        | channel_id            | `int`                         | ``Webhook``           |
+        +-----------------------+-------------------------------+-----------------------+
+        | discriminator         | `int`                         | ``Client``, ``User``  |
+        +-----------------------+-------------------------------+-----------------------+
+        | display_name          | `None`, `str`                 | ``Client``, ``User``  |
+        +-----------------------+-------------------------------+-----------------------+
+        | email                 | `None`, `str`                 | ``Client``            |
+        +-----------------------+-------------------------------+-----------------------+
+        | email_verified        | `bool`                        | ``Client``            |
+        +-----------------------+-------------------------------+-----------------------+
+        | flags                 | ``UserFlag``                  | ``Client``, ``User``  |
+        +-----------------------+-------------------------------+-----------------------+
+        | locale                | ``Locale``                    | ``Client``            |
+        +-----------------------+-------------------------------+-----------------------+
+        | mfa                   | `bool`                        | ``Client``            |
+        +-----------------------+-------------------------------+-----------------------+
+        | name                  | `str`                         | all                   |
+        +-----------------------+-------------------------------+-----------------------+
+        | premium_type          | ``PremiumType``               | ``Client``            |
+        +-----------------------+-------------------------------+-----------------------+
         """
         old_attributes = {}
         
@@ -232,22 +233,9 @@ class UserBase(DiscordEntity, immortal = True):
         """
         data = {}
         
-        type(self).avatar.put_into(self.avatar, data, defaults, as_data = not include_internals)
-        
-        banner_slot = type(self).banner
-        if isinstance(banner_slot, IconSlot):
-            banner_slot.put_into(self.banner, data, defaults, as_data = not include_internals)
-        else:
-            if defaults:
-                data['banner'] = None
-        
-        avatar_decoration_slot = type(self).avatar_decoration
-        if isinstance(avatar_decoration_slot, IconSlot):
-            avatar_decoration_slot.put_into(self.avatar_decoration, data, defaults, as_data = not include_internals)
-        else:
-            if defaults:
-                data['avatar_decoration'] = None
-        
+        USER_AVATAR.put_into(self.avatar, data, defaults, as_data = not include_internals)
+        USER_BANNER.put_into(self.banner, data, defaults, as_data = not include_internals)
+        put_avatar_decoration_into(self.avatar_decoration, data, defaults)
         put_banner_color_into(self.banner_color, data, defaults)
         put_discriminator_into(self.discriminator, data, defaults)
         put_display_name_into(self.display_name, data, defaults)
@@ -531,12 +519,8 @@ class UserBase(DiscordEntity, immortal = True):
         if (self.avatar_type != other.avatar_type):
             return False
         
-        # avatar_decoration_hash
-        if (self.avatar_decoration_hash != other.avatar_decoration_hash):
-            return False
-        
-        # avatar_decoration_type
-        if (self.avatar_decoration_type != other.avatar_decoration_type):
+        # avatar_decoration
+        if (self.avatar_decoration != other.avatar_decoration):
             return False
         
         # banner_color
@@ -618,39 +602,15 @@ class UserBase(DiscordEntity, immortal = True):
     )
     
     
-    avatar_decoration = PlaceHolderFunctional(
-        (lambda : Icon(IconType.none, 0)),
+    avatar_decoration = PlaceHolder(
+        None,
         """
         Returns the user's avatar decoration.
         
         Returns
         -------
-        avatar_decoration : ``Icon``
+        avatar_decoration : `None`, ``AvatarDecoration``
         """
-    )
-    
-    
-    avatar_decoration_hash = PlaceHolder(
-        0,
-        """
-        Returns the user's avatar decoration's hash.
-        
-        Returns
-        -------
-        avatar_decoration_hash : `int`
-        """,
-    )
-    
-    
-    avatar_decoration_type = PlaceHolder(
-        IconType.none,
-        """
-        Returns the user's avatar decoration's type.
-        
-        Returns
-        -------
-        avatar_decoration_type : ``IconType``
-        """,
     )
     
     
@@ -702,26 +662,11 @@ class UserBase(DiscordEntity, immortal = True):
     )
     
     
-    @property
-    @copy_docs(module_urls.user_banner_url)
-    def banner_url(self):
-        return None
-    
-    
-    @copy_docs(module_urls.user_banner_url_as)
-    def banner_url_as(self, ext = None, size = None):
-        return None
-    
-    
-    @property
-    @copy_docs(module_urls.user_avatar_decoration_url)
-    def avatar_decoration_url(self):
-        return None
-    
-    
-    @copy_docs(module_urls.user_avatar_decoration_url_as)
-    def avatar_decoration_url_as(self, ext = None, size = None):
-        return None
+    banner_url = property(module_urls.user_banner_url)
+    banner_url_as = module_urls.user_banner_url_as
+
+    avatar_decoration_url = property(module_urls.user_avatar_decoration_url)
+    avatar_decoration_url_as = module_urls.user_avatar_decoration_url_as
     
     
     bot = PlaceHolder(

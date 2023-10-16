@@ -49,7 +49,7 @@ def _generate_description_from(command, name, description):
         The command's function.
     name : `None`, `str`
         The command's name, if name defaulting should be applied.
-    description : `Any`
+    description : `object`
         The command's description.
     
     Returns

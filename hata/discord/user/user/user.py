@@ -12,18 +12,19 @@ from ..guild_profile import GuildProfile
 from .client_user_base import ClientUserBase
 from .client_user_presence_base import ClientUserPBase
 from .fields import (
-    parse_bot, parse_id, validate_activities, validate_banner_color, validate_bot, validate_discriminator,
-    validate_display_name, validate_flags, validate_id, validate_name, validate_status, validate_statuses
+    parse_bot, parse_id, validate_activities, validate_avatar_decoration, validate_banner_color, validate_bot,
+    validate_discriminator, validate_display_name, validate_flags, validate_id, validate_name, validate_status,
+    validate_statuses
 )
 from .flags import UserFlag
-from .orin_user_base import USER_AVATAR_DECORATION, USER_BANNER
+from .orin_user_base import USER_BANNER
 from .preinstanced import Status
 from .user_base import USER_AVATAR
 
 
 PRECREATE_FIELDS = {
     'avatar': ('avatar', USER_AVATAR.validate_icon),
-    'avatar_decoration': ('avatar_decoration', USER_AVATAR_DECORATION.validate_icon),
+    'avatar_decoration': ('avatar_decoration', validate_avatar_decoration),
     'banner': ('banner', USER_BANNER.validate_icon),
     'banner_color': ('banner_color', validate_banner_color),
     'bot': ('bot', validate_bot),
@@ -64,11 +65,8 @@ class User(USER_BASE_TYPE):
     avatar_type : ``IconType``
         The user's avatar's type.
     
-    avatar_decoration_hash : `int`
-        The user's avatar decoration's hash in `uint128`.
-    
-    avatar_decoration_type : ``IconType``
-        The user's avatar decoration's type.
+    avatar_decoration : `None`, ``AvatarDecoration``
+        The user's avatar decorations.
     
     banner_color : `None`, ``Color``
         The user's banner color if has any.
@@ -259,7 +257,7 @@ class User(USER_BASE_TYPE):
         avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
             The user's avatar.
         
-        avatar_decoration : `None`, ``Icon``, `str`, Optional (Keyword only)
+        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         
         banner : `None`, ``Icon``, `str`, Optional (Keyword only)

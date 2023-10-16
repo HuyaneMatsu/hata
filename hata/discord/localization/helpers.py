@@ -130,7 +130,7 @@ def localized_dictionary_builder(dictionary, parameter_name):
     
     Returns
     -------
-    validated_dictionary : `None`, `dict` of (``Locale``, `Any`) items
+    validated_dictionary : `None`, `dict` of (``Locale``, `object`) items
     
     Raises
     ------
@@ -157,7 +157,7 @@ def serializable_localized_dictionary_builder(dictionary, parameter_name):
     
     Returns
     -------
-    validated_dictionary : `None`, `dict` of (`str`, `Any`) items
+    validated_dictionary : `None`, `dict` of (`str`, `object`) items
     
     Raises
     ------
@@ -185,7 +185,7 @@ def _dictionary_builder(dictionary, parameter_name, item_validator):
     
     Returns
     -------
-    validated_dictionary : `None`, `dict` of (`str`, `Any`) items
+    validated_dictionary : `None`, `dict` of (`str`, `object`) items
     
     Raises
     ------

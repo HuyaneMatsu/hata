@@ -24,12 +24,12 @@ def normalize_description(description):
     
     Parameters
     ----------
-    description : `str`, `Any`
+    description : `str`, `object`
         The docstring to clear.
     
     Returns
     -------
-    cleared : `str`, `Any`
+    cleared : `str`, `object`
         The cleared docstring. If `docstring` was given as `None` or is detected as empty, will return `None`.
     """
     if (description is None) or (not isinstance(description, str)):

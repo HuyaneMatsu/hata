@@ -461,7 +461,7 @@ class ClientCompoundClientGateway(Compound):
         
         Returns
         -------
-        result : `Any`
+        result : `object`
             Parameters passed to the `check` and the value returned by the `check` if it's type is not `bool`.
         
         Raised

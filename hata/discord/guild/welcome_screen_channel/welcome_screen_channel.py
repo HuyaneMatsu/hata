@@ -78,7 +78,7 @@ class WelcomeScreenChannel(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Welcome channel data.
         
         Returns

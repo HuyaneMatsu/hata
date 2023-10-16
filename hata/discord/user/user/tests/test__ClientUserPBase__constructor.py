@@ -5,6 +5,8 @@ from ....bases import Icon, IconType
 from ....client import Client
 from ....color import Color
 
+from ...avatar_decoration import AvatarDecoration
+
 from ...guild_profile import GuildProfile
 from ...thread_profile import ThreadProfile
 
@@ -24,7 +26,7 @@ def _assert_fields_set(user):
     """
     vampytest.assert_instance(user, ClientUserPBase)
     vampytest.assert_instance(user.avatar, Icon)
-    vampytest.assert_instance(user.avatar_decoration, Icon)
+    vampytest.assert_instance(user.avatar_decoration, AvatarDecoration, nullable = True)
     vampytest.assert_instance(user.banner, Icon)
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
     vampytest.assert_instance(user.discriminator, int)
@@ -57,7 +59,7 @@ def test__ClientUserPBase__new__1():
     Case: All fields given.
     """
     avatar = Icon(IconType.static, 32)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160055)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -117,7 +119,7 @@ def test_ClientUserPBase___from_client__0():
     Case: include internals.
     """
     avatar = Icon(IconType.static, 32)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160056)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -192,7 +194,7 @@ def test_ClientUserPBase___from_client__1():
     Case: not include internals.
     """
     avatar = Icon(IconType.static, 32)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160057)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222

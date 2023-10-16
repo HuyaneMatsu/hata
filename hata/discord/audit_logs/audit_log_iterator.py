@@ -42,7 +42,7 @@ class AuditLogIterator(AuditLog):
         A dictionary that contains the mentioned webhook by the audit log's entries. The keys are the `id`-s of the
         webhooks, meanwhile the values are the values themselves.
     
-    _data : `dict` of (`str`, `Any`) items
+    _data : `dict` of (`str`, `object`) items
         Data to be sent to Discord when requesting an another audit log chunk. Contains some information, which are not
         stored by any attributes of the audit log iterator, these are the filtering `user` and `event` options.
     _index : `int`

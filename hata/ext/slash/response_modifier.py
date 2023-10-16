@@ -101,7 +101,7 @@ class ResponseModifier(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        kwargs : `dict` of (`str`, `Any`) items
+        kwargs : `dict` of (`str`, `object`) items
             Additional keyword parameters.
         
         Returns
@@ -162,7 +162,7 @@ class ResponseModifier(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        parameters : `dict` of (`str`, `Any`) items
+        parameters : `dict` of (`str`, `object`) items
             Request parameters.
         """
         self._apply_to_shared(parameters)
@@ -178,7 +178,7 @@ class ResponseModifier(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        parameters : `dict` of (`str`, `Any`) items
+        parameters : `dict` of (`str`, `object`) items
             Request parameters.
         """
         self._apply_to_shared(parameters)
@@ -190,7 +190,7 @@ class ResponseModifier(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        parameters : `dict` of (`str`, `Any`) items
+        parameters : `dict` of (`str`, `object`) items
             Request parameters.
         """
         allowed_mentions = self.allowed_mentions
@@ -306,7 +306,7 @@ def get_show_for_invoking_user_only_from(parameters, response_modifier):
     
     Parameters
     ----------
-    parameters : `dict` of (`str`, `Any` items
+    parameters : `dict` of (`str`, `object` items
         Request parameters.
     response_modifier : `None`, ``ResponseModifier``
         The respective response modifier if any,

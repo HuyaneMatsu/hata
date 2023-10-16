@@ -231,7 +231,7 @@ class InteractionOption(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`)
+        data : `dict` of (`str`, `object`)
             Interaction option data.
         """
         self = object.__new__(cls)
@@ -254,7 +254,7 @@ class InteractionOption(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         put_focused_into(self.focused, data, defaults)

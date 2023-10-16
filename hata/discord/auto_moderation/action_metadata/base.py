@@ -31,7 +31,7 @@ class AutoModerationActionMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
            Auto moderation action metadata payload.
         
         Returns
@@ -52,7 +52,7 @@ class AutoModerationActionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         return {}
     

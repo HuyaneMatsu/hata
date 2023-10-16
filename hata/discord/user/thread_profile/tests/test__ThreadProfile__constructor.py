@@ -34,7 +34,7 @@ def test__ThreadProfile__new__1():
     """
     Tests whether ``ThreadProfile.__new__`` works as intended.
     
-    Case: include internals & defaults.
+    Case: all fields.
     """
     flags = ThreadProfileFlag(24)
     joined_at = DateTime(2016, 5, 15)

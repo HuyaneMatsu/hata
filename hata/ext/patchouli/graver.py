@@ -348,14 +348,14 @@ def build_graves_on_subsection(sub_section, path):
     
     Parameters
     ----------
-    sub_section : `list` of `Any`
+    sub_section : `list` of `object`
         The subsection to grave.
     path : ``QualPath``
         The path of the respective docstring.
     
     Returns
     -------
-    result : `None`, `list` of `Any`
+    result : `None`, `list` of `object`
         If would have return an empty list, returns `None` instead.
     """
     result = []

@@ -17,7 +17,7 @@ def _get_direct_parents_and_merge_slots(class_name, class_parents, class_attribu
         The created class's name.
     class_parents : `tuple` of `type`
         The superclasses of the creates type.
-    class_attributes : `dict` of (`str`, `Any`) items
+    class_attributes : `dict` of (`str`, `object`) items
         The class attributes of the created type.
     
     Returns
@@ -72,7 +72,7 @@ def _process_set_slot(class_attributes, final_slots):
     
     Parameters
     ----------
-    class_attributes : `dict` of (`str`, `Any`) items
+    class_attributes : `dict` of (`str`, `object`) items
         The class attributes of the created type.
     final_slots : `set` of `str`
         Slots for the created type.
@@ -114,7 +114,7 @@ class Slotted(type):
             The created class's name.
         class_parents : `tuple` of `type`
             The superclasses of the creates type.
-        class_attributes : `dict` of (`str`, `Any`) items
+        class_attributes : `dict` of (`str`, `object`) items
             The class attributes of the created type.
         """
         direct_parent, final_slots = _get_direct_parents_and_merge_slots(class_name, class_parents, class_attributes)
@@ -139,7 +139,7 @@ class DiscordEntityMeta(Slotted):
             The created class's name.
         class_parents : `tuple` of `type`
             The superclasses of the creates type.
-        class_attributes : `dict` of (`str`, `Any`) items
+        class_attributes : `dict` of (`str`, `object`) items
             The class attributes of the created type.
         immortal : `bool` = `False`, Optional
             Whether the created type's instances should support weakreferencing. If the inherited type supports

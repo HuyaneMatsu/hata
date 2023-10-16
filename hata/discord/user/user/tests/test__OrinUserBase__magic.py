@@ -3,6 +3,8 @@ import vampytest
 from ....bases import Icon, IconType
 from ....color import Color
 
+from ...avatar_decoration import AvatarDecoration
+
 from ..flags import UserFlag
 from ..orin_user_base import OrinUserBase
 
@@ -13,7 +15,7 @@ def test__OrinUserBase__repr():
     """
     user_id = 202302040016
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160034)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -43,7 +45,7 @@ def test__OrinUserBase__hash():
     """
     user_id = 202302040017
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160035)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -74,7 +76,7 @@ def test__OrinUserBase__eq():
     user_id = 202302040018
     
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160036)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -122,7 +124,7 @@ def test__OrinUserBase__format():
     Case: Shallow.
     """
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160037)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222

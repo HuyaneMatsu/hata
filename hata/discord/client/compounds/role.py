@@ -302,7 +302,7 @@ class ClientCompoundRoleEndpoints(Compound):
         
         Parameters
         ----------
-        item : `tuple` (``Role`` or (`tuple` (`int, `int`), `int`) items or `Any`
+        item : `tuple` (``Role`` or (`tuple` (`int, `int`), `int`) items or `object`
             A `dict`, `list`, `set`, `tuple`, which contains role-position items.
         
         Returns

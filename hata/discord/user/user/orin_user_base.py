@@ -2,25 +2,14 @@ __all__ = ('OrinUserBase',)
 
 from scarletio import copy_docs
 
-from ...bases import ICON_TYPE_ANIMATED_APNG, ICON_TYPE_NONE, IconSlot
-from ...http import urls as module_urls
+from ...bases import ICON_TYPE_NONE
 
 from .fields import (
-    parse_banner_color, parse_discriminator, parse_display_name, parse_flags, validate_banner_color,
-    validate_discriminator, validate_display_name, validate_flags
+    parse_avatar_decoration, parse_banner_color, parse_discriminator, parse_display_name, parse_flags,
+    validate_avatar_decoration, validate_banner_color, validate_discriminator, validate_display_name, validate_flags
 )
 from .flags import UserFlag
-from .user_base import UserBase
-
-
-USER_AVATAR_DECORATION = IconSlot(
-    'avatar_decoration',
-    'avatar_decoration',
-    module_urls.user_avatar_decoration_url,
-    module_urls.user_avatar_decoration_url_as,
-    animated_icon_type = ICON_TYPE_ANIMATED_APNG,
-)
-USER_BANNER = IconSlot('banner', 'banner', module_urls.user_banner_url, module_urls.user_banner_url_as)
+from .user_base import USER_BANNER, UserBase 
 
 
 class OrinUserBase(UserBase):
@@ -33,10 +22,8 @@ class OrinUserBase(UserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
-    avatar_decoration_hash : `int`
-        The user's avatar decoration's hash in `uint128`.
-    avatar_decoration_type : ``IconType``
-        The user's avatar decoration's type.
+    avatar_decoration : `None`, ``AvatarDecoration``
+        The user's avatar decorations.
     banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
@@ -54,9 +41,8 @@ class OrinUserBase(UserBase):
     name : str
         The client's username.
     """
-    __slots__ = ('banner_color', 'discriminator', 'display_name', 'flags')
+    __slots__ = ('avatar_decoration', 'banner_color', 'discriminator', 'display_name', 'flags')
     
-    avatar_decoration = USER_AVATAR_DECORATION
     banner = USER_BANNER
     
     def __new__(
@@ -78,7 +64,7 @@ class OrinUserBase(UserBase):
         ----------
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
-        avatar_decoration : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.
@@ -104,7 +90,7 @@ class OrinUserBase(UserBase):
         if avatar_decoration is ...:
             avatar_decoration = None
         else:
-            avatar_decoration = cls.avatar_decoration.validate_icon(avatar_decoration, allow_data = True)
+            avatar_decoration = validate_avatar_decoration(avatar_decoration)
         
         # banner
         if banner is ...:
@@ -155,7 +141,7 @@ class OrinUserBase(UserBase):
     def _update_attributes(self, data):
         UserBase._update_attributes(self, data)
         
-        self._set_avatar_decoration(data)
+        self.avatar_decoration = parse_avatar_decoration(data)
         self._set_banner(data)
         self.banner_color = parse_banner_color(data)
         self.discriminator = parse_discriminator(data)
@@ -168,7 +154,10 @@ class OrinUserBase(UserBase):
         old_attributes = UserBase._difference_update_attributes(self, data)
         
         # avatar_decoration
-        self._update_avatar_decoration(data, old_attributes)
+        avatar_decoration = parse_avatar_decoration(data)
+        if self.avatar_decoration != avatar_decoration:
+            old_attributes['avatar_decoration'] = self.avatar_decoration
+            self.avatar_decoration = avatar_decoration
         
         # banner
         self._update_banner(data, old_attributes)
@@ -203,8 +192,7 @@ class OrinUserBase(UserBase):
     @copy_docs(UserBase._set_default_attributes)
     def _set_default_attributes(self):
         UserBase._set_default_attributes(self)
-        self.avatar_decoration_hash = 0
-        self.avatar_decoration_type = ICON_TYPE_NONE
+        self.avatar_decoration = None
         self.banner_color = None
         self.banner_hash = 0
         self.banner_type = ICON_TYPE_NONE
@@ -216,7 +204,12 @@ class OrinUserBase(UserBase):
     @copy_docs(UserBase.copy)
     def copy(self):
         new = UserBase.copy(self)
-        new.avatar_decoration = self.avatar_decoration
+        
+        avatar_decoration = self.avatar_decoration
+        if (avatar_decoration is not None):
+            avatar_decoration = avatar_decoration.copy()
+        new.avatar_decoration = avatar_decoration
+        
         new.banner = self.banner
         new.banner_color = self.banner_color
         new.discriminator = self.discriminator
@@ -244,7 +237,7 @@ class OrinUserBase(UserBase):
         ----------
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
-        avatar_decoration : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.
@@ -273,8 +266,10 @@ class OrinUserBase(UserBase):
         # avatar_decoration
         if avatar_decoration is ...:
             avatar_decoration = self.avatar_decoration
+            if (avatar_decoration is not None):
+                avatar_decoration = avatar_decoration.copy()
         else:
-            avatar_decoration = type(self).avatar_decoration.validate_icon(avatar_decoration, allow_data = True)
+            avatar_decoration = validate_avatar_decoration(avatar_decoration)
         
         # banner
         if banner is ...:
@@ -326,7 +321,9 @@ class OrinUserBase(UserBase):
         hash_value = UserBase._get_hash_partial(self)
         
         # avatar_decoration
-        hash_value ^= hash(self.avatar_decoration)
+        avatar_decoration = self.avatar_decoration
+        if (avatar_decoration is not None):
+            hash_value ^= hash(avatar_decoration)
         
         # banner
         hash_value ^= hash(self.banner)

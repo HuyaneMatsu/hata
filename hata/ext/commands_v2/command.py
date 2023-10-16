@@ -289,7 +289,7 @@ def _generate_description_from(command, description):
     ----------
     command : `str`
         The command's function.
-    description : `Any`
+    description : `object`
         The command's description.
     
     Returns
@@ -444,7 +444,7 @@ class Command:
         Name aliases of the command if any. They are always lower case.
     command_category_name_to_command_category : `None`, `dict` of (`str`, ``CommandCategory``) items
         Sub-command categories by name.
-    description : `Any`
+    description : `object`
         The command's description if any.
     display_name : `str`
         The command's display name.
@@ -555,7 +555,7 @@ class Command:
         
         Yields
         ------
-        wrappers : `Any`
+        wrappers : `object`
         """
         wrappers = self._wrappers
         if (wrappers is not None):
@@ -781,7 +781,7 @@ class Command:
             The async callable added as the command itself.
         name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`) = `None`, Optional
             The name to be used instead of the passed `command`'s.
-        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`) = `None`, Optional
+        description : `None`, `object`, `tuple` of (`None`, `Ellipsis`, `object`) = `None`, Optional
             Description added to the command. If no description is provided, then it will check the commands'
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
@@ -1283,7 +1283,7 @@ class CommandFunction:
     ----------
     _command_category_reference : `None`, ``WeakReferer`` to (``Command``, ``CommandCategory``)
         Reference to the command function's parent.
-    _function : `Any`
+    _function : `object`
         The command's function to call.
     _content_parser : ``CommandContentParser``
         Content parser for the command.
@@ -1296,7 +1296,7 @@ class CommandFunction:
         
         Parameters
         ----------
-        function : `Any`
+        function : `object`
             Content parser for the command.
         content_parser : ``CommandContentParser``
             The command's function to call.
@@ -1349,7 +1349,7 @@ class CommandFunction:
         
         Yields
         ------
-        wrapper : `Any`
+        wrapper : `object`
         """
         command_category_reference = self._command_category_reference
         if (command_category_reference is not None):
@@ -1395,9 +1395,9 @@ class CommandCategory:
         Additional wrappers, which run before the command is executed.
     aliases : `None`, `tuple` of `str`
         Name aliases of the command category.
-    command_category_name_to_command_category : `None` of `dict` of (`str`, `Any`) items
+    command_category_name_to_command_category : `None` of `dict` of (`str`, `object`) items
         Command categories by name.
-    description : `Any`
+    description : `object`
         The command's description if any.
     display_name : `str`
         The command's display name.
@@ -1642,7 +1642,7 @@ class CommandCategory:
         
         Yields
         ------
-        wrapper : `Any`
+        wrapper : `object`
         """
         wrappers = self._wrappers
         if (wrappers is not None):

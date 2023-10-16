@@ -168,6 +168,7 @@ setup(
         'hata.discord.user',
         'hata.discord.user.activity_change',
         'hata.discord.user.activity_update',
+        'hata.discord.user.avatar_decoration',
         'hata.discord.user.guild_profile',
         'hata.discord.user.thread_profile',
         'hata.discord.user.user',

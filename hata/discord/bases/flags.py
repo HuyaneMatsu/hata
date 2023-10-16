@@ -325,7 +325,7 @@ class FlagMeta(type):
             The created class's name.
         class_parents : `tuple` of `type`
             The superclasses of the creates type.
-        class_attributes : `dict` of (`str`, `Any`) items
+        class_attributes : `dict` of (`str`, `object`) items
             The class attributes of the created type.
         access_keyword : `str`, Optional
             The string what will go before the descriptor's name, which allow accessing their respective value. If not

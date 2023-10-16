@@ -75,7 +75,7 @@ def check_for_error(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Data received from Discord.
     
     Raises

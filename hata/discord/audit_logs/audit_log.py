@@ -58,7 +58,7 @@ class AuditLog(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `None`, `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `object`) items
             Data received from Discord.
         guild_id : `int`
             The respective guild's identifier of the audit logs.
@@ -87,7 +87,7 @@ class AuditLog(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` (`str`, `Any`) items
+        data : `dict` (`str`, `object`) items
             Audit log data.
         
         Returns

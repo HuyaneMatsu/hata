@@ -229,9 +229,9 @@ class DiscordHTTPClient(HTTPClient):
             The method of the request.
         url : `str`
             The url to request.
-        data : `None`, `Any` = `None`, Optional
+        data : `None`, `object` = `None`, Optional
             Payload to request with.
-        params : `None`, `Any` = `None`, Optional
+        params : `None`, `object` = `None`, Optional
             Query parameters.
         headers : `None`, ``IgnoreCaseMultiValueDictionary`` = `None`, Optional
             Headers to do the request with. If passed then the session's own headers wont be used.
@@ -240,7 +240,7 @@ class DiscordHTTPClient(HTTPClient):
         
         Returns
         -------
-        response_data : `Any`
+        response_data : `object`
         
         Raises
         ------

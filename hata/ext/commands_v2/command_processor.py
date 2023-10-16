@@ -577,7 +577,7 @@ class CommandProcessor(EventWaitforBase):
             The name of the category.
         checks : `None`, ``CheckBase``, `list` of ``CheckBase`` = `None`, Optional (Keyword only)
             Checks to define in which circumstances a command should be called.
-        description : `Any` = `None`, Optional (Keyword only)
+        description : `object` = `None`, Optional (Keyword only)
             Optional description for the category. Defaults to `None`.
         
         Returns
@@ -918,8 +918,8 @@ class CommandProcessor(EventWaitforBase):
             Async callable to add as a command.
         name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`) = `None`, Optional
             The name to be used instead of the passed `command`'s.
-        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`) = `None`, Optional
-            Description added to the command. If no description is provided, then it will check the commands's
+        description : `None`, `object`, `tuple` of (`None`, `Ellipsis`, `object`) = `None`, Optional
+            Description added to the command. If no description is provided, then it will check the commands'
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.

@@ -24,7 +24,7 @@ def get_function_name(function, name):
     
     Parameters
     ----------
-    function : `Any`
+    function : `object`
         The function to get it's name.
     name : `None`, `str`
         Alternative name to use if given.
@@ -126,7 +126,7 @@ def get_function_description(function, description):
     
     Parameters
     ----------
-    function : `Any`
+    function : `object`
         The function to get it's description.
     description : `None`, `str`
         Alternative description to use if given.

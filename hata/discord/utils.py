@@ -1106,7 +1106,7 @@ class Relationship:
         ----------
         client : ``Client``
             The client, who's relationship is created.
-        data : `dict` of (`str`, `Any`)
+        data : `dict` of (`str`, `object`)
             Relationship data.
         user_id : `int`
             The relationship's target user's id.
@@ -1276,7 +1276,7 @@ class Gift:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Gift data received from Discord.
         """
         self.uses = data['uses']

@@ -234,7 +234,7 @@ class CertifiedDevice:
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {
             'id': str(self.id),
@@ -269,7 +269,7 @@ class CertifiedDevice:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Device data.
         
         Returns
@@ -359,7 +359,7 @@ class Vendor:
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         return {
             'name': self.name,
@@ -374,7 +374,7 @@ class Vendor:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Vendor data.
         
         Returns
@@ -448,7 +448,7 @@ class Model:
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         return {
             'name': self.name,
@@ -463,7 +463,7 @@ class Model:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Model data.
         
         Returns

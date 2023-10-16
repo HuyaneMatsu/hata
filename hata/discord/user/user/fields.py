@@ -3,19 +3,22 @@ __all__ = ()
 from ...activity import Activity
 from ...color import Color
 from ...field_parsers import (
-    bool_parser_factory, entity_id_parser_factory, flag_parser_factory, nullable_string_parser_factory,
-    preinstanced_parser_factory
+    bool_parser_factory, entity_id_parser_factory, flag_parser_factory, nullable_entity_parser_factory,
+    nullable_string_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
     bool_optional_putter_factory, entity_id_putter_factory, flag_putter_factory, force_bool_putter_factory,
-    force_string_putter_factory, preinstanced_putter_factory, url_optional_putter_factory
+    force_string_putter_factory, nullable_entity_optional_putter_factory, preinstanced_putter_factory,
+    url_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, flag_validator_factory, force_string_validator_factory,
-    nullable_string_validator_factory, preinstanced_validator_factory
+    nullable_entity_validator_factory, nullable_string_validator_factory, preinstanced_validator_factory
 )
 from ...localization import Locale
 from ...localization.utils import LOCALE_DEFAULT
+
+from ..avatar_decoration import AvatarDecoration
 
 from .constants import (
     DISCRIMINATOR_VALUE_MAX, DISCRIMINATOR_VALUE_MIN, DISPLAY_NAME_LENGTH_MAX, NAME_LENGTH_MAX, NAME_LENGTH_MIN,
@@ -117,6 +120,12 @@ def validate_activities(activities):
         activities_validated.append(entity)
     
     return activities_validated
+
+# avatar_decoration
+
+parse_avatar_decoration = nullable_entity_parser_factory('avatar_decoration_data', AvatarDecoration)
+put_avatar_decoration_into = nullable_entity_optional_putter_factory('avatar_decoration_data', AvatarDecoration)
+validate_avatar_decoration = nullable_entity_validator_factory('avatar_decoration', AvatarDecoration)
 
 # banner_color
 

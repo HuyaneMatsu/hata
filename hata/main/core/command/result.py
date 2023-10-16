@@ -393,9 +393,9 @@ def command_result_processor_call(command_function, positional_parameters, keywo
     ----------
     command_function : ``CommandFunction``
         Command function to call it's function of.
-    positional_parameters : `list` of `Any`
+    positional_parameters : `list` of `object`
         Positional parameters to call the respective function with.
-    keyword_parameters : `dict` of (`str`, `Any`) items
+    keyword_parameters : `dict` of (`str`, `object`) items
         Keyword parameters to call the respective function with.
 
     Returns

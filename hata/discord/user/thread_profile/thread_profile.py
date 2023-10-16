@@ -105,7 +105,7 @@ class ThreadProfile(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received thread profile data.
         
         Returns
@@ -132,7 +132,7 @@ class ThreadProfile(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         
@@ -151,7 +151,7 @@ class ThreadProfile(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received thread profile data.
         """
         self.flags = parse_flags(data)
@@ -164,12 +164,12 @@ class ThreadProfile(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `object`) items
             All item in the returned dict is optional.
         
         Returned Data Structure

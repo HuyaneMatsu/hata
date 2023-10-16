@@ -190,7 +190,7 @@ class IntegrationApplication(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Application data included within integration payload.
         
         Returns
@@ -219,7 +219,7 @@ class IntegrationApplication(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         

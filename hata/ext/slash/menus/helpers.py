@@ -48,7 +48,7 @@ def get_auto_check(event):
     
     Parameters
     ----------
-    event : ``InteractionEvent``, ``Message``, `Any`
+    event : ``InteractionEvent``, ``Message``, `object`
         Event passed to the constructor.
     
     Returns

@@ -53,7 +53,7 @@ class RichVoiceState:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Rich voice state data.
         
         Returns

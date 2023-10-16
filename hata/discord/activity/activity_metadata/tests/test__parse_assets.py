@@ -5,16 +5,27 @@ from ...activity_assets import ActivityAssets
 from ..fields import parse_assets
 
 
-def test__parse_assets():
-    """
-    Tests whether ``parse_assets`` works as intended.
-    """
+def _iter_options():
     assets = ActivityAssets(image_large = 'hell')
     
-    for input_data, expected_output in (
-        ({}, None),
-        ({'assets': None}, None),
-        ({'assets': assets.to_data()}, assets),
-    ):
-        output = parse_assets(input_data)
-        vampytest.assert_eq(output, expected_output)
+    yield ({}, None)
+    yield ({'assets': None}, None)
+    yield ({'assets': assets.to_data()}, assets)
+    
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_assets(input_data):
+    """
+    Tests whether ``parse_assets`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | ActivityAssets`
+    """
+    return parse_assets(input_data)

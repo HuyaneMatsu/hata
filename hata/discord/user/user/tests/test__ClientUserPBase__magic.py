@@ -4,6 +4,8 @@ from ....activity import Activity, ActivityType
 from ....bases import Icon, IconType
 from ....color import Color
 
+from ...avatar_decoration import AvatarDecoration
+
 from ..flags import UserFlag
 from ..client_user_presence_base import ClientUserPBase
 from ..preinstanced import Status
@@ -15,7 +17,7 @@ def test__ClientUserPBase__repr():
     """
     user_id = 202302060001
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160058)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -53,7 +55,7 @@ def test__ClientUserPBase__hash():
     """
     user_id = 202302060002
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160059)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -92,7 +94,7 @@ def test__ClientUserPBase__eq():
     user_id = 202302060003
     
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160060)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -152,7 +154,7 @@ def test__ClientUserPBase__format():
     Case: Shallow.
     """
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160061)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222

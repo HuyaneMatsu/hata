@@ -62,9 +62,9 @@ class RateLimitProxy:
             +-----------------------+-----------------------------------------------------------------------+
             | LIMITER_INTERACTION   | ``InteractionEvent``                                                  |
             +-----------------------+-----------------------------------------------------------------------+
-            | LIMITER_GLOBAL        | `Any`                                                                 |
+            | LIMITER_GLOBAL        | `object`                                                                 |
             +-----------------------+-----------------------------------------------------------------------+
-            | LIMITER_UNLIMITED     | `Any`                                                                 |
+            | LIMITER_UNLIMITED     | `object`                                                                 |
             +-----------------------+-----------------------------------------------------------------------+
             
             Note that at the case of `LIMITER_GUILD` partial objects will yield `.guild` as `None` so `ValueError`

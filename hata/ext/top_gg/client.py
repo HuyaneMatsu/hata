@@ -464,7 +464,7 @@ class TopGGClient:
             Query offset
         sort_by : `None`, `str` = `None`, Optional (Keyword only)
             Which field to sort by the bots.
-        search : `None`, `dict` of (`str`, `Any`) items = `None`, Optional (Keyword only)
+        search : `None`, `dict` of (`str`, `object`) items = `None`, Optional (Keyword only)
             Fields an expected values to search for.
         
         Returns
@@ -594,12 +594,12 @@ class TopGGClient:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Bot stats.
         
         Returns
         -------
-        response_data : `Any`
+        response_data : `object`
         
         Raises
         ------
@@ -627,7 +627,7 @@ class TopGGClient:
         
         Returns
         -------
-        response_data : `Any`
+        response_data : `object`
         
         Raises
         ------
@@ -654,7 +654,7 @@ class TopGGClient:
         
         Returns
         -------
-        response_data : `Any`
+        response_data : `object`
         
         Raises
         ------
@@ -681,7 +681,7 @@ class TopGGClient:
         
         Returns
         -------
-        response_data : `Any`
+        response_data : `object`
         
         Raises
         ------
@@ -708,12 +708,12 @@ class TopGGClient:
         
         Parameters
         ----------
-        query_parameters : `dict` of (`str`, `Any`) items
+        query_parameters : `dict` of (`str`, `object`) items
             Query parameters.
             
         Returns
         -------
-        response_data : `Any`
+        response_data : `object`
         
         Raises
         ------
@@ -746,7 +746,7 @@ class TopGGClient:
             
         Returns
         -------
-        response_data : `Any`
+        response_data : `object`
         
         Raises
         ------
@@ -772,12 +772,12 @@ class TopGGClient:
         
         Parameters
         ----------
-        query_parameters : `dict` of (`str`, `Any`) items
+        query_parameters : `dict` of (`str`, `object`) items
             Query parameters.
         
         Returns
         -------
-        response_data : `Any`
+        response_data : `object`
         
         Raises
         ------
@@ -810,9 +810,9 @@ class TopGGClient:
             Endpoint to do request towards.
         rate_limit_handler : ``RateLimitHandlerBase`
             Rate limit handle to handle rate limit as.
-        data : `None`, `Any` = `None`, Optional
+        data : `None`, `object` = `None`, Optional
             Json serializable data.
-        query_parameters : `None`, `Any` = `None`, Optional
+        query_parameters : `None`, `object` = `None`, Optional
             Query parameters.
         
         Raises

@@ -357,9 +357,9 @@ def parse_parameters_into(parameter_values, start_index, command_parameters, pos
         The index of the first parameter trying to process.
     command_parameters : `list` of ``CommandParameter``
         Parameters of the respective command.
-    positional_parameters : `list` of `Any`
+    positional_parameters : `list` of `object`
         Positional parameters to call the respective function with.
-    keyword_parameters : `dict` of (`str`, `Any`) items
+    keyword_parameters : `dict` of (`str`, `object`) items
         Keyword parameters to call the respective function with.
     
     Returns

@@ -193,7 +193,7 @@ class DiscoveryCategory(PreinstancedBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Discovery category data.
         
         Returns

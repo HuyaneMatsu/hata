@@ -26,10 +26,8 @@ class Oauth2User(OrinUserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
-    avatar_decoration_hash : `int`
-        The user's avatar decoration's hash in `uint128`.
-    avatar_decoration_type : ``IconType``
-        The user's avatar decoration's type.
+    avatar_decoration : `None`, ``AvatarDecoration``
+        The user's avatar decorations.
     banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
@@ -83,7 +81,7 @@ class Oauth2User(OrinUserBase):
         ----------
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
-        avatar_decoration : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.
@@ -292,7 +290,7 @@ class Oauth2User(OrinUserBase):
         ----------
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
-        avatar_decoration : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.

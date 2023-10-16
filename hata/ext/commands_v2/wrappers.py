@@ -12,7 +12,7 @@ class CommandWrapper:
     
     Attributes
     ----------
-    _wrapped : `Any`
+    _wrapped : `object`
         The wrapped object.
     """
     __slots__ = ('_wrapped',)
@@ -33,7 +33,7 @@ class CommandWrapper:
         
         Parameters
         ----------
-        wrapped : `Any`
+        wrapped : `object`
             The slash command or other wrapper to wrap.
         
         Returns
@@ -71,7 +71,7 @@ class CommandWrapper:
         
         Returns
         -------
-        function : `Any`
+        function : `object`
             The wrapped function.
         wrappers : `list` of ``CommandWrapper``
             The fetched back wrappers.
@@ -96,7 +96,7 @@ class CommandConverterConfigurerWrapper(CommandWrapper):
     
     Attributes
     ----------
-    _wrapped : `Any`
+    _wrapped : `object`
         The wrapped object.
     _detail : ``ContentParserParameterDetail``
         Parsing detail example to match and modify of the source command.
@@ -193,7 +193,7 @@ class CommandCheckWrapper(CommandWrapper):
     
     Attributes
     ----------
-    _wrapped : `Any`
+    _wrapped : `object`
         The wrapped object.
     _check : ``CheckBase``
         Check to add to the respective command.
@@ -262,7 +262,7 @@ class CommandCooldownWrapper(CommandWrapper):
     
     Attributes
     ----------
-    _wrapped : `Any`
+    _wrapped : `object`
         The wrapped object.
     _cooldown_handler : ``CooldownHandler``
         Cooldown to add to the respective command.

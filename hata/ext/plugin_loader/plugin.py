@@ -32,7 +32,7 @@ class Plugin(RichAttributeErrorBaseType):
         A list of the added variables' names to the module.
     _child_plugins : `None`, ``WeakSet`` of ``Plugin``
         Child plugins.
-    _default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
+    _default_variables : `None`, `HybridValueDictionary` of (`str`, `object`) items
         An optionally weak value dictionary to store objects for assigning them to modules before loading them.
         If it would be set as empty, then it is set as `None` instead.
     _entry_point : `None`, `str`, `callable`
@@ -100,7 +100,7 @@ class Plugin(RichAttributeErrorBaseType):
         take_snapshot_difference: `bool`
             Whether snapshots should be taken before and after loading a plugin, and when the plugin is unloaded,
             the snapshot difference should be reverted.
-        default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
+        default_variables : `None`, `HybridValueDictionary` of (`str`, `object`) items
             An optionally weak value dictionary to store objects for assigning them to modules before loading them.
             If would be empty, is set as `None` instead.
         

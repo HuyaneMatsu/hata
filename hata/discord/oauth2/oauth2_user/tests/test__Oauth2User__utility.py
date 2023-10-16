@@ -3,7 +3,7 @@ import vampytest
 from ....bases import Icon, IconType
 from ....color import Color
 from ....localization import Locale
-from ....user import PremiumType, UserFlag
+from ....user import AvatarDecoration, PremiumType, UserFlag
 
 from ..oauth2_user import Oauth2User
 
@@ -15,7 +15,7 @@ def test__Oauth2User__copy():
     Tests whether ``Oauth2User.copy`` works as intended.
     """
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160047)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -58,7 +58,7 @@ def test__Oauth2User__copy_with__0():
     Case: No fields given.
     """
     avatar = Icon(IconType.static, 14)
-    avatar_decoration = Icon(IconType.animated_apng, 25)
+    avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160048)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -101,7 +101,7 @@ def test__Oauth2User__copy_with__1():
     Case: All fields given.
     """
     old_avatar = Icon(IconType.static, 14)
-    old_avatar_decoration = Icon(IconType.animated_apng, 25)
+    old_avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160049)
     old_banner = Icon(IconType.static, 15)
     old_banner_color = Color(1236)
     old_discriminator = 2222
@@ -115,7 +115,7 @@ def test__Oauth2User__copy_with__1():
     old_premium_type = PremiumType.nitro
     
     new_avatar = Icon(IconType.animated, 23)
-    new_avatar_decoration = Icon(IconType.static, 11)
+    new_avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160093)
     new_banner = Icon(IconType.static, 10)
     new_banner_color = Color(1236)
     new_discriminator = 1

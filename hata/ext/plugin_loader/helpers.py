@@ -116,7 +116,7 @@ def validate_plugin_parameters(
         Whether the given plugin(s) should not be affected by `.{}_all` methods.
     take_snapshot_difference : `bool`
         Whether snapshot feature should be used.
-    default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
+    default_variables : `None`, `HybridValueDictionary` of (`str`, `object`) items
         An optionally weak value dictionary to store objects for assigning them to modules before loading them.
         If would be empty, is set as `None` instead.
     """

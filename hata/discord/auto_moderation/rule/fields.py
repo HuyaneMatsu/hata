@@ -94,7 +94,7 @@ def parse_trigger_metadata(data, rule_trigger_type):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Auto moderation rule data.
     
     rule_trigger_type : ``AutoModerationRuleTriggerType``
@@ -123,14 +123,14 @@ def put_trigger_metadata_into(trigger_metadata, data, defaults):
     ----------
     trigger_metadata : ``AutoModerationRuleTriggerMetadataBase``
         Rule trigger metadata.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if defaults or (type(trigger_metadata) is not AutoModerationRuleTriggerMetadataBase):
         data['trigger_metadata'] = trigger_metadata.to_data(defaults = defaults)

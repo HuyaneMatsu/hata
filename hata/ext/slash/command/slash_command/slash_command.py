@@ -173,7 +173,7 @@ class SlashCommand(CommandBaseApplicationCommand):
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
             instead.
         
-        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`) = `None`, Optional
+        description : `None`, `object`, `tuple` of (`None`, `Ellipsis`, `object`) = `None`, Optional
             Description to use instead of the function's docstring.
         
         is_global : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional

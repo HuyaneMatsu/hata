@@ -33,7 +33,7 @@ class VoiceConnectionStatus:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Voice connections status data.
         
         Returns

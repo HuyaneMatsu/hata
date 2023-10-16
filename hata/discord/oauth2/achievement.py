@@ -48,7 +48,7 @@ class Achievement(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received achievement data.
         """
         self.application_id = int(data['application_id'])
@@ -83,12 +83,12 @@ class Achievement(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Achievement data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `object`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -179,7 +179,7 @@ class Achievement(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Achievement data received from Discord.
         """
         if API_VERSION >= 10:

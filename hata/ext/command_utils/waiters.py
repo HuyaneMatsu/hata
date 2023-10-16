@@ -123,7 +123,7 @@ class WaitAndContinue:
         ----------
         client : ``Client``
             The client who received the respective event.
-        *args : `Any`
+        *args : `object`
             Received parameters given by the respective event handler.
         """
         try:

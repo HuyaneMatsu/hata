@@ -104,6 +104,10 @@ parse_scopes = preinstanced_array_parser_factory('scopes', Oauth2Scope)
 put_scopes_into = preinstanced_array_putter_factory('scopes')
 validate_scopes = preinstanced_array_validator_factory('scopes', Oauth2Scope)
 
+# validate_emojis_enabled
+
+validate_emojis_enabled = bool_validator_factory('emojis_enabled', True)
+
 # expire_behavior
 
 parse_expire_behavior = preinstanced_parser_factory(

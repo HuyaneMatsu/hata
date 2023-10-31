@@ -3,15 +3,25 @@ import vampytest
 from ..fields import parse_description
 
 
-def test__parse_description():
+def _iter_options():
+    yield {}, None
+    yield {'description': None}, None
+    yield {'description': ''}, None
+    yield {'description': 'a'}, 'a'
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_description(input_data):
     """
     Tests whether ``parse_description`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | str`
     """
-    for input_data, expected_output in (
-        ({}, None),
-        ({'description': None}, None),
-        ({'description': ''}, None),
-        ({'description': 'a'}, 'a'),
-    ):
-        output = parse_description(input_data)
-        vampytest.assert_eq(output, expected_output)
+    return parse_description(input_data)

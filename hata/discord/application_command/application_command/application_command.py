@@ -5,6 +5,7 @@ from ...core import APPLICATION_COMMANDS, GUILDS
 from ...localization.helpers import get_localized_length
 from ...localization.utils import hash_locale_dictionary
 from ...permission import Permission
+from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...utils import DATETIME_FORMAT_CODE, id_to_datetime
 
 from ..helpers import with_translation
@@ -15,10 +16,29 @@ from .fields import (
     parse_target_type, parse_version, put_allow_in_dm_into, put_application_id_into, put_description_into,
     put_description_localizations_into, put_guild_id_into, put_id_into, put_name_into, put_name_localizations_into,
     put_nsfw_into, put_options_into, put_required_permissions_into, put_target_type_into, put_version_into,
-    validate_allow_in_dm, validate_description, validate_description_localizations, validate_name,
-    validate_name_localizations, validate_nsfw, validate_options, validate_required_permissions, validate_target_type
+    validate_allow_in_dm, validate_application_id, validate_description, validate_description_localizations,
+    validate_guild_id, validate_id, validate_name, validate_name_localizations, validate_nsfw, validate_options,
+    validate_required_permissions, validate_target_type, validate_version
 )
 from .preinstanced import APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommandTargetType
+
+
+PRECREATE_FIELDS = {
+    'allow_in_dm': ('allow_in_dm', validate_allow_in_dm),
+    'application': ('application_id', validate_application_id),
+    'application_id': ('application_id', validate_application_id),
+    'description': ('description', validate_description),
+    'description_localizations': ('description_localizations', validate_description_localizations),
+    'guild': ('guild_id', validate_guild_id),
+    'guild_id': ('guild_id', validate_guild_id),
+    'name': ('name', validate_name),
+    'name_localizations': ('name_localizations', validate_name_localizations),
+    'nsfw': ('nsfw', validate_nsfw),
+    'options': ('options', validate_options),
+    'required_permissions': ('required_permissions', validate_required_permissions),
+    'target_type': ('target_type', validate_target_type),
+    'version': ('version', validate_version),
+}
 
 
 class ApplicationCommand(DiscordEntity, immortal = True):
@@ -220,6 +240,98 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         self.version = 0
         return self
     
+    
+    @classmethod
+    def precreate(cls, application_command_id, **keyword_parameters):
+        """
+        Creates a new application command. If it already exists pick that up.
+        
+        Parameters
+        ----------
+        application_command_id : `int`
+            The application command's identifier.
+        
+        **keyword_parameters : Keyword parameters
+            Additional parameter to set the application command's fields with.
+        
+        Other Parameters
+        ----------------
+        allow_in_dm : `None`, `bool`, Optional (Keyword only)
+            Whether the command can be used in private channels (dm).
+            
+            Defaults to `True`
+        
+        application : `int`, ``Application``, Optional (Keyword only)
+            Alternative for `application_id`.
+        
+        application_id : `int`, ``Application``, Optional (Keyword only)
+            The application command's application's id.
+        
+        description : `None`, `str` = `None`, Optional
+            The command's description. It's length can be in range [2:100].
+        
+        description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
+                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+            Localized descriptions of the application command.
+        
+        guild : `int`, ``Guild``, Optional (Keyword only)
+            Alternative for `guild_id`.
+        
+        guild_id : `int`, ``Guild``, Optional (Keyword only)
+            The guild's identifier to which the command is bound to.
+        
+        name : `str`
+            The name of the command. It's length can be in range [1:32].
+        
+        name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
+                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
+            Localized names of the application command.
+        
+        nsfw : `None`, `bool`, Optional (Keyword only)
+            Whether the application command is allowed in nsfw channels.
+        
+        options : `None`, `iterable` of ``ApplicationCommandOption``, Optional (Keyword only)
+            The parameters of the command. It's length can be in range [0:25].
+        
+        required_permissions : `None`, ``Permission``, `int`, Optional (Keyword only)
+            The required permissions to use the application command inside of a guild.
+        
+        target_type : `None`, `int`, ``ApplicationCommandTargetType``, Optional (Keyword only)
+            The application command's target type.
+        
+        version : `int`, Optional (Keyword only)
+            The time when the command was last edited in snowflake.
+        
+        Returns
+        -------
+        self : `instance<cls>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+    
+        application_command_id = validate_id(application_command_id)
+        
+        if keyword_parameters:
+            processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
+        else:
+            processed = None
+        
+        try:
+            self = APPLICATION_COMMANDS[application_command_id]
+        except KeyError:
+            self = cls._create_empty(application_command_id, 0)
+            APPLICATION_COMMANDS[application_command_id] = self
+        
+        if (processed is not None):
+            for item in processed:
+                setattr(self, *item)
+        
+        return self
     
     @classmethod
     def _create_empty(cls, application_command_id, application_id):

@@ -3,28 +3,46 @@ import vampytest
 from ..fields import validate_revoked
 
 
-def test__validate_revoked__0():
+def _iter_options():
+    yield True, True
+    yield False, False
+    yield None, False
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_revoked__passing(input_value):
     """
     Tests whether `validate_revoked` works as intended.
     
     Case: passing.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Returns
+    -------
+    validates
     """
-    for input_value, expected_output in (
-        (True, True),
-        (False, False)
-    ):
-        output = validate_revoked(input_value)
-        vampytest.assert_eq(output, expected_output)
+    return validate_revoked(input_value)
 
 
-def test__validate_revoked__1():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_revoked__type_error(input_value):
     """
     Tests whether `validate_revoked` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_revoked(input_value)
+    validate_revoked(input_value)

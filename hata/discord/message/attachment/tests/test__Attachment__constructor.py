@@ -103,7 +103,7 @@ def test__Attachment__precreate__1():
     """
     Tests whether ``Attachment.precreate`` works as intended.
     
-    Case: No fields given.
+    Case: All fields given.
     """
     attachment_id = 202211010001
     

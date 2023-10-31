@@ -4,7 +4,7 @@ from warnings import warn
 
 from scarletio import Compound
 
-from ...audit_logs import AuditLog, AuditLogEvent, AuditLogIterator
+from ...audit_logs import AuditLog, AuditLogEntryType, AuditLogIterator
 from ...bases import maybe_snowflake
 from ...channel import VoiceRegion
 from ...guild import (
@@ -1219,7 +1219,17 @@ class ClientCompoundGuildEndpoints(Compound):
         return voice_regions
     
     
-    async def audit_log_get_chunk(self, guild, limit = 100, *, before = None, after = None, user = None, event = None):
+    async def audit_log_get_chunk(
+        self,
+        guild,
+        limit = 100,
+        *,
+        before = None,
+        after = None,
+        user = None,
+        event = ...,
+        entry_type = None,
+    ):
         """
         Request a batch of audit logs of the guild and returns them. The `after`, `around` and the `before` parameters
         are mutually exclusive and they can be `int`, or as a ``DiscordEntity`` or as a `datetime`
@@ -1239,7 +1249,7 @@ class ClientCompoundGuildEndpoints(Compound):
             The timestamp after the audit log entries wer created.
         user : `None`, ``ClientUserBase``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only to those, which were created by the given user.
-        event : `None`, ``AuditLogEvent``, `int` = `None`, Optional (Keyword only)
+        entry_type : `None`, ``AuditLogEntryType``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only on the given event.
         
         Returns
@@ -1253,7 +1263,7 @@ class ClientCompoundGuildEndpoints(Compound):
             - If `guild` was not given neither as ``Guild``, nor as `int`.
             - If `after`, `before` was passed with an unexpected type.
             - If `user` is neither `None`, ``ClientUserBase``, `int`.
-            - If `event` is neither `None`, ``AuditLogEvent``, `int`.
+            - If `entry_type` is neither `None`, ``AuditLogEntryType``, `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1262,6 +1272,19 @@ class ClientCompoundGuildEndpoints(Compound):
             - If `limit` was not given as `int`.
             - If `limit` is out of the expected range [1:100].
         """
+        if event is not ...:
+            warn(
+                (
+                    f'`{type(self).__name__}.audit_log_get_chunk`\'s `event` parameter is deprecated and will be '
+                    f'removed in 2024 March. Please use `.entry_type` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            entry_type = event
+        
+        
         guild, guild_id = get_guild_and_id(guild)
         
         if __debug__:
@@ -1296,24 +1319,24 @@ class ClientCompoundGuildEndpoints(Compound):
             
             data['user_id'] = user_id
         
-        if (event is not None):
-            if isinstance(event, AuditLogEvent):
-                event_value = event.value
-            elif isinstance(event, int):
-                event_value = event
+        if (entry_type is not None):
+            if isinstance(entry_type, AuditLogEntryType):
+                entry_type_value = entry_type.value
+            elif isinstance(entry_type, int):
+                entry_type_value = entry_type
             else:
                 raise TypeError(
-                    f'`event` can be `None`, `{AuditLogEvent.__name__}`, `int`, got '
-                    f'{event.__class__.__name__}; {event!r}.'
+                    f'`entry_type` can be `None`, `{AuditLogEntryType.__name__}`, `int`, got '
+                    f'{entry_type.__class__.__name__}; {entry_type!r}.'
                 )
             
-            data['action_type'] = event_value
+            data['action_type'] = entry_type_value
         
         data = await self.http.audit_log_get_chunk(guild_id, data)
         return AuditLog(data, guild_id)
     
     
-    async def audit_log_iterator(self, guild, *, user = None, event = None):
+    async def audit_log_iterator(self, guild, *, user = None, entry_type = None, event = ...):
         """
         Returns an audit log iterator for the given guild.
         
@@ -1325,14 +1348,14 @@ class ClientCompoundGuildEndpoints(Compound):
             The guild, what's audit logs will be requested.
         user : `None`, ``ClientUserBase``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only to those, which were created by the given user.
-        event : `None`, ``AuditLogEvent``, `int` = `None`, Optional (Keyword only)
+        entry_type : `None`, ``AuditLogEntryType``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only on the given event.
         
         Returns
         -------
         audit_log_iterator : ``AuditLogIterator``
         """
-        return AuditLogIterator(self, guild, user = user, event = event)
+        return AuditLogIterator(self, guild, user = user, entry_type = entry_type, event = event)
     
     
     async def guild_incidents_edit(

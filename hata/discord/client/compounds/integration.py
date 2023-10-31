@@ -1,5 +1,7 @@
 __all__ = ()
 
+from warnings import warn
+
 from scarletio import Compound
 
 from ....env import API_VERSION
@@ -134,7 +136,13 @@ class ClientCompoundIntegrationEndpoints(Compound):
     
     
     async def integration_edit(
-        self, integration, *, expire_behavior = ..., expire_grace_period = ..., enable_emojis = ...
+        self,
+        integration,
+        *,
+        expire_behavior = ...,
+        expire_grace_period = ...,
+        emojis_enabled = ...,
+        enable_emojis = ...,
     ):
         """
         Edits the given integration.
@@ -149,7 +157,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
             Can be `0` for kick or `1` for role  remove.
         expire_grace_period : `int`, Optional (Keyword only)
             The time in days, after the subscription will be ignored. Can be any of `(1, 3, 7, 14, 30)`.
-        enable_emojis : `bool`, Optional (Keyword only)
+        emojis_enabled : `bool`, Optional (Keyword only)
             Whether the users can use the integration's emojis in Discord.
         
         Raises
@@ -157,7 +165,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
         TypeError
             - If `expire_behavior` was not passed as `int`.
             - If `expire_grace_period` was not passed as `int`.
-            - If `enable_emojis` was not passed as `bool`.
+            - If `emojis_enabled` was not passed as `bool`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -168,7 +176,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
             - If `expire_grace_period` was not given neither as `None` nor as `int`.
             - If `expire_behavior` is not any of: `(0, 1)`.
             - If `expire_grace_period` is not any of `(1, 3, 7, 14, 30)`.
-            - If `enable_emojis` is neither `None`, `bool`.
+            - If `emojis_enabled` is neither `None`, `bool`.
         """
         if __debug__:
             if not isinstance(integration, Integration):
@@ -191,7 +199,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
             if __debug__:
                 if not isinstance(expire_behavior, int):
                     raise AssertionError(
-                        f'`expire_behavior` can be `None`, `int`, got '
+                        f'`expire_behavior` can be `int`, got '
                         f'{expire_behavior.__class__.__name__}; {expire_behavior!r}.'
                     )
                 
@@ -206,7 +214,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
             if __debug__:
                 if not isinstance(expire_grace_period, int):
                     raise AssertionError(
-                        f'`expire_grace_period` can be `None`, `int`, got '
+                        f'`expire_grace_period` can be `int`, got '
                         f'{expire_grace_period.__class__.__name__}.'
                     )
                 
@@ -216,17 +224,27 @@ class ClientCompoundIntegrationEndpoints(Compound):
                     )
                 
             data['expire_grace_period'] = expire_grace_period
-   
         
-        if (enable_emojis is not ...):
+        if (enable_emojis is not None):
+            warn(
+                (
+                    f'`{self.__class__.__name__}.integration_edit`\'s `enable_emojis` parameter is deprecated '
+                    f'and will be removed in 2024 Marc. Please use `emojis_enabled` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            emojis_enabled = enable_emojis
+        
+        if (emojis_enabled is not ...):
             if __debug__:
-                if not isinstance(enable_emojis, bool):
+                if not isinstance(emojis_enabled, bool):
                     raise AssertionError(
-                        f'`enable_emojis` can be `None`, `bool`, got '
-                        f'{enable_emojis.__class__.__name__}; {enable_emojis!r}.'
+                        f'`emojis_enabled` can be `bool`, got '
+                        f'{emojis_enabled.__class__.__name__}; {emojis_enabled!r}.'
                     )
             
-            data['enable_emoticons'] = enable_emojis
+            data['enable_emoticons'] = emojis_enabled
         
         await self.http.integration_edit(role.guild_id, integration.id, data)
     

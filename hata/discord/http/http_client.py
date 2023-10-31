@@ -2008,27 +2008,30 @@ class DiscordHTTPClient(HTTPClient):
         )
     
     
-    async def channel_thread_get_chunk_archived_private(self, channel_id):
+    async def channel_thread_get_chunk_archived_private(self, channel_id, query_parameters):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.channel_thread_get_chunk_archived_private, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/threads/archived/private',
+            params = query_parameters,
         )
     
     
-    async def channel_thread_get_chunk_archived_public(self, channel_id):
+    async def channel_thread_get_chunk_archived_public(self, channel_id, query_parameters):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.channel_thread_get_chunk_archived_public, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/threads/archived/public',
+            params = query_parameters,
         )
     
     
-    async def channel_thread_get_chunk_self_archived(self, channel_id):
+    async def channel_thread_get_chunk_self_archived(self, channel_id, query_parameters):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.channel_thread_get_chunk_self_archived, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/users/@me/threads/archived/private',
+            params = query_parameters,
         )
     
     # application command & interaction

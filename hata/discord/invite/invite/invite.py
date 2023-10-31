@@ -886,7 +886,7 @@ class Invite(DiscordEntity, immortal = True):
         """
         Returns whether the invite is partial.
         
-        Since it is not possible to check whether teh invite is up to date, it will always return `True` for
+        Since it is not possible to check whether the invite is up to date, it will always return `True` for
         non-template invites.
         
         Returns

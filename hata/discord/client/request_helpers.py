@@ -791,7 +791,7 @@ def get_channel_guild_id_and_id(channel, type_checker):
             return snowflake_pair
     
     raise TypeError(
-        f'`channel` can be `{Channel.__name__}`, `int`,  passing the `{type_checker.__name__}` check, '
+        f'`channel` can be `{Channel.__name__}`, `tuple` (`int`, `int`),  passing the `{type_checker.__name__}` check, '
         f'got {channel.__class__.__name__}; {channel!r}.'
     )
 

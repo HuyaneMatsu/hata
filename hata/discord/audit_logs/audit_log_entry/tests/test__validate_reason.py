@@ -1,0 +1,69 @@
+import vampytest
+
+from ..constants import REASON_LENGTH_MAX
+from ..fields import validate_reason
+
+
+def _iter_options():
+    yield None, None
+    yield '', None
+    yield 'a', 'a'
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_reason__passing(input_value):
+    """
+    Tests whether `validate_reason` works as intended.
+    
+    Case: passing.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Returns
+    -------
+    output : `None | str`
+    """
+    return validate_reason(input_value)
+
+
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_reason__type_error(input_value):
+    """
+    Tests whether `validate_reason` works as intended.
+    
+    Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Raises
+    ------
+    TypeError
+    """
+    validate_reason(input_value)
+
+
+@vampytest.raising(ValueError)
+@vampytest.call_with('a' * (REASON_LENGTH_MAX + 1))
+def test__validate_reason__value_error(input_value):
+    """
+    Tests whether `validate_reason` works as intended.
+    
+    Case: `ValueError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Raises
+    ------
+    ValueError
+    """
+    validate_reason(input_value)

@@ -585,7 +585,7 @@ class Webhook(WebhookBase):
                 if name is None:
                     name = ''
                 
-                avatar_type, avatar_hash = Icon.from_base16_hash(data.get('avatar', None))
+                avatar_type, avatar_hash = Icon.from_base_16_hash(data.get('avatar', None))
             
             source_guild = parse_source_guild(data)
         

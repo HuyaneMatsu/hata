@@ -40,6 +40,7 @@ create_partial_guild_from_id = include('create_partial_guild_from_id')
 
 
 PRECREATE_FIELDS = {
+    'application': ('application_id', validate_application_id),
     'application_id': ('application_id', validate_application_id),
     'application_permissions': ('application_permissions', validate_application_permissions),
     'channel': ('channel', validate_channel),
@@ -519,7 +520,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         Other Parameters
         ----------
-        application_id : `int`, `str`, Optional (Keyword only)
+        application : `int`, `str`, ``Application``, Optional (Keyword only)
+            Alternative for `application_id`.
+        
+        application_id : `int`, `str`, ``Application``, Optional (Keyword only)
             The interaction's application's identifier.
         
         application_permissions : ``Permission``, `int`, Optional (Keyword only)

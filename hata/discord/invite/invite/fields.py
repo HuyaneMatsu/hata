@@ -113,6 +113,7 @@ validate_channel = nullable_entity_validator_factory('channel', Channel)
 # channel_id
 
 put_channel_id_into = entity_id_putter_factory('channel_id')
+validate_channel_id = entity_id_validator_factory('channel_id', Channel)
 
 # code
 

@@ -902,10 +902,10 @@ async def request_channel_thread_channels(client, guild_id, channel_id, request_
     """
     thread_channels = []
     
-    data = None
+    query_parameters = None
     
     while True:
-        data = await request_function(client.http, channel_id, data)
+        data = await request_function(client.http, channel_id, query_parameters)
         thread_channel_datas = data['threads']
         
         for thread_channel_data in thread_channel_datas:
@@ -933,7 +933,7 @@ async def request_channel_thread_channels(client, guild_id, channel_id, request_
         else:
             before = datetime.utcnow()
         
-        data = {'before': before}
+        query_parameters = {'before': before}
     
     return thread_channels
 

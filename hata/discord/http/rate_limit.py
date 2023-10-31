@@ -606,7 +606,8 @@ class RateLimitHandler:
                 size = current_size
                 if size > MAXIMAL_UNLIMITED_PARARELLITY:
                     size -= 1
-                
+            else:
+                size = current_size
         else:
             size = int(size)
         

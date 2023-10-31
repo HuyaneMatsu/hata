@@ -1,3 +1,77 @@
+## 1.3.44 *\[2023-10-??\]*
+
+### Improvements
+
+- Add `AvatarDecoration`. The old `.avatar_decoration` attributes are updated.
+- Add `AuditLogEvent.none`.
+- Add missing `integration_type` converter for audit log details.
+- Add `AuditLogTargetType.detail_conversions`.
+- Add `AuditLogTargetType.message`.
+- Add `AuditLogChange.flags`.
+- Add `AuditLogChange.__eq__`.
+- Add `AuditLogChange.__hash__`.
+- Add `AuditLogChange.has_before`.
+- Add `AuditLogChange.has_after`.
+- Add `AuditLogChange.is_modification`.
+- Add `AuditLogChange.is_addition`.
+- Add `AuditLogChange.is_removal`.
+- Add `AuditLogEntryDetailConversion`.
+- Add `AuditLogEntryDetailConversionGroup`.
+- Add `AuditLogChange.from_fields`.
+- Add `AuditLogEntryChangeConversion`.
+- Add `AuditLogEntryChangeConversionGroup`.
+- Add `mention_limit` audit log converter.
+- Add `raid_protection` audit log converter.
+- Add `flags` audit log converter (for user conversions).
+- Add `AuditLogChange.create_clean`.
+- Add `AuditLogEntry.created_at`.
+- Add `AuditLogEntry.__eq__`.
+- Add `AuditLogEntry.__hash__`.
+- Add `AuditLogEntry.get_change`.
+- Add `AuditLogEntry.iter_changes`.
+- Add `AuditLogEntry.get_detail`.
+- Add `AuditLogEntry.iter_details`.
+- Add `AuditLogEntry.__new__`.
+- Add `AuditLogEntry.to_data`.
+- Add `AuditLogEntry.precreate`.
+- Add `AuditLogEntry.copy`.
+- Add `AuditLogEntry.copy_with`.
+- Add `ApplicationCommand.precreate`.
+- Add `SoundboardSound` target conversion to audit logs.
+- Add `AuditLogEntryTargetType.soundboard_sound`.
+- Add soundboard sound conversion for audit log changes.
+
+#### ext.slash
+- Add `InteractionAbortedError.__eq__`.
+- Add `InteractionAbortedError.__hash__`.
+- Add `InteractionResponse.__hash__`.
+- Add `InteractionResponse.set_abort`.
+- `InteractionAbortedError` is now directly importable.
+
+### Bug fixes
+
+- Fix `TypeError` in `Client.channel_thread_get_all_archived_private`.
+- Fix `TypeError` in `Client.channel_thread_get_all_archived_public`.
+- Fix `TypeError` in `Client.channel_thread_get_all_self_archived`.
+
+### Renames, Deprecations & Removals
+
+- Rename `AuditLogEvent.member_kick` to `.user_kick`. Deprecate `.member_kick`.
+- Rename `AuditLogEvent.member_prune` to `.user_prune`. Deprecate `.member_prune`.
+- Rename `AuditLogEvent.member_ban_add` to `.user_ban_add`. Deprecate `.member_ban_add`.
+- Rename `AuditLogEvent.member_ban_remove` to `.user_ban_remove`. Deprecate `.member_ban_remove`.
+- Rename `AuditLogEvent.member_update` to `.user_update`. Deprecate `.member_update`.
+- Rename `AuditLogEvent.member_role_update` to `.user_role_update`. Deprecate `.member_role_update`.
+- Rename `AuditLogEvent.member_move` to `.user_move`. Deprecate `.member_move`.
+- Rename `AuditLogEvent.member_disconnect` to `.user_disconnect`. Deprecate `.member_disconnect`.
+- Rename `Icon.from_base16_hash` to `.from_base_16_hash`. Deprecate `.from_base16_hash`.
+- Rename `Client.integration_edit`'s `enable_emojis` parameter to `emojis_enabled`.
+- Rename `AuditLogEntry.__new__` to `.from_data`.
+- Rename `AuditLogTargetType` to `AuditLogEntryTargetType`
+- Rename `AuditLogEvent` to `AuditLogEntryType`.
+- Rename `event` parameters representing `AuditLogEvent` to `entry_type`. 
+- Remove `AuditLogEntryTargetType.thread`. Now it would be same as `.channel`.
+
 ## 1.3.43 *\[2023-10-15\]*
 
 ### Improvements
@@ -14,11 +88,11 @@
 - Add `Component.iter_default_values`.
 - Component constructor functions now omit default values, to validation later.
 
-#### Bug fixes
+### Bug fixes
 
 - `ScheduledEvent.guild` could return non-None if a guild with id of `0` was cached.
 
-#### Renames, Deprecations & Removals
+### Renames, Deprecations & Removals
 
 - `Guild.preferred_locale` is now `.locale`.
 - Deprecate `Guild.preferred_locale`.
@@ -72,7 +146,7 @@
 - Add `Client.events.entitlement_delete`.
 - Add `Client.events.entitlement_update`.
 
-#### Renames, Deprecations & Removals
+### Renames, Deprecations & Removals
 
 - Rename `SKUFeatureType` to `SKUFeature`.
 
@@ -99,7 +173,7 @@
 - Change `Embed.__repr__` to `.get_short_repr`. Add new detailed `.__repr__` instead.
     (Its just hard to debug with short repr.)
 
-#### Bug fixes
+### Bug fixes
 
 - `Client.edit` raised `AttributeError`.
 
@@ -158,11 +232,11 @@
 - Add `AuditLogRole.copy_with`.
 - Add `Reaction`. (Will be used only in the next update.)
 
-#### Bug fixes
+### Bug fixes
 
 - `AuditLogRole.__repr__` raised `AttributeError`.
 
-#### Renames, Deprecations & Removals
+### Renames, Deprecations & Removals
 
 - Deprecate `TeamMemberPermission`.
 - Deprecate `TeamMember.permissions`.
@@ -178,7 +252,7 @@
 - Add `ReactionType`.
 - Add `reaction_type` parameter to `Client.reaction_add`.
 
-#### Bug fixes
+### Bug fixes
 
 - `Client.permission_overwrite_create` was not inserting the `id` key detected from the `target` parameter.
     Could cause `RuntimeError`.
@@ -187,7 +261,7 @@
 - `PermissionOverwrite.from_data` did not handle missing keys.
     Could cause `KeyError` at `Client.permission_overwrite_create`.
 
-#### Renames, Deprecations & Removals
+### Renames, Deprecations & Removals
 
 - Deprecate `Client.stream_invite_create`. Please use `.invite_create` instead.
 - Deprecate `Client.application_invite_create`. Please use `.invite_create` instead.
@@ -252,7 +326,7 @@
 - Add `Invite.copy_with`.
 - `EMBEDDED_ACTIVITY_NAME_TO_APPLICATION_ID` and related variables moved under `.discord.application.constants`.
 
-#### Bug fixes
+### Bug fixes
 
 - `InteractionEvent.value` was bound to auto complete instead of message component. This was not intended.
 - `get_bool_env` returned incorrect value if variable was any of: `0`, `1`.
@@ -260,7 +334,7 @@
 - `ApplicationType` was not importable directly. :KoishiFail:
 - `ActivitySecrets` was not importable directly. :KoishiFail:
 
-#### Renames, Deprecations & Removals
+### Renames, Deprecations & Removals
 
 - Deprecate `ConnectionType.unknown` (use `.none` instead).
 - Rename `GuildFeature.onboarding` to `.onboarding_enabled`.
@@ -444,7 +518,7 @@
 - Add `Guild.get_soundboard_sound_like`.
 - Add `Guild.get_soundboard_sounds_like`.
 
-#### Bug fixes
+### Bug fixes
 
 ##### ext.slash
 - `file` parameter was not propagated when responding on not acknowledged component interactions.
@@ -522,7 +596,7 @@
 - Add `DiscordHTTPClient.soundboard_sound_delete`.
 - Add `DiscordHTTPClient.soundboard_sound_edit`.
 
-#### Bug fixes
+### Bug fixes
 
 - `run` command now stops the event loop if interrupted during connection.
 - `run --console` command was not writing "interrupted" (when interrupted obviously) as expected.
@@ -592,7 +666,7 @@
 - Add `stage_topic_change` message content converter.
 - Add `auto_moderation_action` message content converter.
 
-#### Bug fixes
+### Bug fixes
 
 - `call` message content converter no longer raises `AttributeError`.
 
@@ -670,7 +744,7 @@
 - `PluginLoader` now handles deleted files after unload / before load.
 - Registered plugins by absolute path now get name correctly if they under a plugin root directory.
 
-#### Bug fixes
+### Bug fixes
 
 - `Message.clean_embeds` raised `AttributeError`. (from 1.3.26)
 
@@ -1367,7 +1441,7 @@
 - Add `ERROR_CODES.cannot_convert_emoji_between_premium_and_non_premium`.
 - Add `ERROR_CODES.cannot_mix_subscription_and_non_subscription_roles_for_an_emoji`.
 
-#### Bug fixes
+### Bug fixes
 
 - Fix an `AttributeError` in `Client._delete`.
 - `thread_user_difference_update` was always returning `None`.
@@ -1423,7 +1497,7 @@
 - Add `DiscordHTTPClient.application_role_connection_metadata_edit_all`.
 - Add `RATE_LIMIT_GROUPS.application_role_connection_metadata_edit_all`.
 
-#### Bug fixes
+### Bug fixes
 
 - Webhook message author name length was limited to 32 (can be up to 80 long).
 - When a forum channel was deleted discord is not dropping thread deletes. Now this is handled.
@@ -1521,7 +1595,7 @@
 - Add a way to deprecate flags.
 - Add `UserBase.is_boosting`.
 
-#### Bug fixes
+### Bug fixes
 
 - Fix infinite loop in ``ApplicationInstallParameters.__repr__``.
 - `Application.max_participants` now correctly defaults to `0`.
@@ -1585,7 +1659,7 @@
     sources, including outer main files.
 - Add `Attachment` example.
 
-#### Bug fixes
+### Bug fixes
 
 - `Client.audit_log_get_chunk` did not populate the returned audit log :derp:.
 - Fix `ValueError` when Discord says our rate limit resets at year 584556072.
@@ -1896,7 +1970,7 @@
 - Add missing `ReactionMapping.__eq__`.
 - Overwrite `ReactionMappingLine.remove`.
 
-#### Bug fixes
+### Bug fixes
 
 - `AttributeError` in `Client.channel_edit`.
 - `create_emoji_from_exclusive_data` overwrote emoji name & animated.
@@ -1990,7 +2064,7 @@
 - `==` works on fully-partial channels correctly.
 - `Channel.parent` will not be `None` if the channel has parent, but not cached.
 
-#### Bug fixes
+### Bug fixes
 
 - `Activity` timestamps are now correctly converted.
 - `eventlist.__init__` failed on `pypy3.8`.
@@ -2038,7 +2112,7 @@
 ##### ext.slash
 - Add `nsfw` parameter to `Client.interactions`.
 
-#### Bug fixes
+### Bug fixes
 
 - `ApplicationCommandOption.__eq__` could return incorrect value depending on constructor used and on `.max_length`'s
     value.
@@ -2329,7 +2403,7 @@ Extra features are planned in future updates
 
 - Raise `ModuleNotFoundError` instead of `ImportError` if the module is just not found. So simple.
 
-#### Bug fixes
+### Bug fixes
 
 - `Client.sticker_guild_get_all` raised `TypeError`.
 - `Client.application_command_permission_edit` raised `NameError`.
@@ -2892,7 +2966,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - Plugged in cli commands are now supported.
 - Add `Locale.native_name`.
 
-#### Bug fixes
+### Bug fixes
 
 - Use `create_event_loop` instead of `EventThread`, so `get_event_loop` wont fail in the main thread initially.
 
@@ -2947,7 +3021,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - Add `required_permissions` parameter to slasher application commands.
 - Add `SlasherSyncError` to improve sync exceptions' readability. (experimental)
 
-#### Bug fixes
+### Bug fixes
 
 - `Achievement.description_localizations` not correctly defaulted to `None`.
 - `Achievement.name_localizations` not correctly defaulted to `None`.
@@ -2972,7 +3046,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 #### ext.slash
 - `int` fields with applied max or min values are translated to `number` ones.
 
-#### Bug fixes
+### Bug fixes
 - `Sticker.user` was not updated when expected.
 - Update message content fields correctly when polling from cache.
 
@@ -2993,7 +3067,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - Add `GuildUserChunkEvent.guild` property.
 - Add `WebhookUpdateEvent`.
 
-#### Bug fixes
+### Bug fixes
 
 - `_delete_reaction_with_task` ignored `GeneratorExit`.
 - `Client.connect` ignored `GeneratorExit`.
@@ -3056,7 +3130,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 
 - Add `DiscordException.debug_options`.
 
-#### Bug fixes
+### Bug fixes
 
 - `Sticker.description` now correctly defaults to `None`.
 
@@ -3201,7 +3275,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 #### ext.slash
 - `get_request_coroutines` now wont acknowledge the interaction event if it returns `None`.
 
-#### Bug fixes
+### Bug fixes
 - `AllowedMentionProxy.update` could set `._allow_replied_user` incorrectly.
 
 #### ext.slash
@@ -3212,7 +3286,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 #### Improvements
 - Move `ext.asyncio` to `scarletio`.
 
-#### Bug fixes
+### Bug fixes
 
 - `_debug_component_text_input_value` checked for bad type. (Gilgamesh#8939)
 - `AttributeError` in `Guild._difference_update_attributes`.
@@ -3233,7 +3307,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 ##### ex.top_gg
 - Add missing `TopGGClient.__repr__`.
 
-#### Bug fixes
+### Bug fixes
 
 - `Client.channel_follow` raised `NameError`.
 
@@ -3604,14 +3678,14 @@ Rework audit logs once again.
 ##### ext.slash
 - Add missing `ComponentDescriptorState.__dir__`.
 
-#### Bug fixes
+### Bug fixes
 
 ##### ext.asyncio
 - A removed value was imported.
 
 ## 1.1.125 *\[2021-12-05\]*
 
-#### Bug fixes
+### Bug fixes
 
 - Connecting to voice failed (new typo).
 - `VoiceState.__new__` was not setting an attribute correctly.
@@ -3633,7 +3707,7 @@ around the board.
 - `Task` instances returned by `current_task()` now support dynamic attributes (They are not tasks anymore.)
     (winwinwinwin#0001)
 
-#### Bug fixes
+### Bug fixes
 
 ##### ext.asyncio
 - `gather` could never finish. (winwinwinwin#0001)
@@ -3650,7 +3724,7 @@ around the board.
 - Add `.subprocess.STDOUT`. (winwinwinwin#0001)
 - `ReadProtocolBase` now implements `readexactly`. (winwinwinwin#0001)
 
-#### Bug fixes
+### Bug fixes
 
 - `EventThread.create_server` could raise `TypeError` (typo). (Forest#2913)
 
@@ -3916,7 +3990,7 @@ Update file uploading system.
 - Add `max_value` parameter to `SlasherApplicationCommandParameterConfigurerWrapper`.
 - Add `SlashParameter` type.
 
-#### Bug fixes
+### Bug fixes
 
 - `Embed.__bool__` could return incorrect value.
 

@@ -23,7 +23,7 @@ def try_get_auto_moderation_trigger_metadata_type_from_data(data):
         metadata_type = AutoModerationRuleTriggerMetadataKeyword
     elif ('presets' in data):
         metadata_type = AutoModerationRuleTriggerMetadataKeywordPreset
-    elif ('mention_limit' in data):
+    elif ('mention_total_limit' in data) or ('mention_raid_protection_enabled' in data):
         metadata_type = AutoModerationRuleTriggerMetadataMentionSpam
     else:
         metadata_type = AutoModerationRuleTriggerMetadataBase

@@ -33,11 +33,11 @@ def test__validate_flags__passing(input_value):
 
 @vampytest.raising(TypeError)
 @vampytest.call_with('a')
-def test__validate_flags__value_error(input_value):
+def test__validate_flags__type_error(input_value):
     """
     Tests whether `validate_flags` works as intended.
     
-    Case: type error
+    Case: type error.
     
     Parameters
     ----------

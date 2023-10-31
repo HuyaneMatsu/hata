@@ -159,7 +159,7 @@ def create_text_input(
     """
     Creates a new text input.
     
-    Attributes
+    Parameters
     ----------
     label : `None`, `str`, Optional
         Label of the component.

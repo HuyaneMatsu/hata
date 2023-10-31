@@ -119,7 +119,7 @@ def put_tags_into(tags, data, defaults):
     if tags is None:
         raw_tags = ''
     else:
-        raw_tags = ', '.join(tags)
+        raw_tags = ', '.join(sorted(tags))
     data['tags'] = raw_tags
     return data
 
@@ -165,9 +165,8 @@ def validate_tags(tags):
             )
         
         if validated_tags is None:
-            validated_tags = set()
-        
-        validated_tags.add(tag)
+            validated_tags = []
+        validated_tags.append(tag)
     
     if (validated_tags is not None):
         return frozenset(tags)

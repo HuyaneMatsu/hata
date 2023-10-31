@@ -5,17 +5,51 @@ from ...action import AutoModerationAction
 from ..fields import validate_actions
 
 
-def test__validate_action():
+def _iter_options():
+    action_0 = AutoModerationAction(duration = 69)
+    action_1 = AutoModerationAction(channel_id = 202211170023)
+    
+    yield (None, None)
+    yield ([], None)
+    yield ([action_0, action_1], (action_0, action_1))
+    
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__validate_action__passing(input_value):
     """
     Tests whether ``validate_actions`` works as intended.
-    """
-    action_1 = AutoModerationAction(duration = 69)
-    action_2 = AutoModerationAction(channel_id = 202211170023)
     
-    for input_value, expected_output in (
-        (None, None),
-        ([], None),
-        ([action_1, action_2], (action_1, action_2)),
-    ):
-        output = validate_actions(input_value)
-        vampytest.assert_eq(output, expected_output)
+    Case: Passing.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Returns
+    -------
+    output : `None | tuple<AutoModerationAction>`
+    """
+    return validate_actions(input_value)
+
+
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+@vampytest.call_with([12.6])
+def test__validate_action__type_error(input_value):
+    """
+    Tests whether ``validate_actions`` works as intended.
+    
+    Case: type error.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Raises
+    ------
+    TypeError
+    """
+    validate_actions(input_value)

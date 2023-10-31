@@ -1,0 +1,62 @@
+import vampytest
+
+from ...audit_log_change import AuditLogChange
+from ...audit_log_change.flags import FLAG_IS_ADDITION, FLAG_IS_MODIFICATION, FLAG_IS_REMOVAL
+from ...audit_log_role import AuditLogRole
+
+from ..fields import parse_changes
+from ..preinstanced import AuditLogEntryType
+
+
+def _iter_options():
+    yield {}, None
+    yield {'changes': None}, None
+    yield {'changes': []}, None
+    
+    role_0 = AuditLogRole(role_id = 202310290000)
+    role_1 = AuditLogRole(role_id = 202310290001)
+    
+    yield (
+        {
+            'changes': [
+                {
+                    'key': '$add',
+                    'new_value': [role_0.to_data()],
+                },
+                {
+                    'key': '$remove',
+                    'new_value': [role_1.to_data()],
+                },
+                {
+                    'key': 'mute',
+                    'old_value': False,
+                },
+                {
+                    'key': 'deaf',
+                    'new_value': False,
+                },
+            ],
+        },
+        {
+            'roles': AuditLogChange('roles', FLAG_IS_REMOVAL | FLAG_IS_ADDITION, before = (role_1,), after = (role_0,)),
+            'mute': AuditLogChange('mute', FLAG_IS_MODIFICATION, before = False),
+            'deaf': AuditLogChange('deaf', FLAG_IS_MODIFICATION, after = False),
+        }
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test_parse_changes(input_data):
+    """
+    Tests whether ``parse_changes`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | dict<str, AuditLogChange>`
+    """
+    return parse_changes(input_data, AuditLogEntryType.user_kick)

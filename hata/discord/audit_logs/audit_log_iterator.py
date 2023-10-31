@@ -1,13 +1,14 @@
 __all__ = ('AuditLogIterator', )
 
+from warnings import warn
+
 from ..bases import maybe_snowflake
 from ..guild import Guild
 from ..user import ClientUserBase
 from ..utils import now_as_id
 
 from .audit_log import AuditLog
-from .audit_log_entry import AuditLogEntry
-from .preinstanced import AuditLogEvent
+from .audit_log_entry import AuditLogEntryType
 
 
 class AuditLogIterator(AuditLog):
@@ -52,7 +53,7 @@ class AuditLogIterator(AuditLog):
     """
     __slots__ = ('_data', '_index', 'client',)
     
-    def __new__(cls, client, guild_id, user = None, event = None):
+    def __new__(cls, client, guild_id, user = None, entry_type = None, *, event = ...):
         """
         Creates an audit log iterator with the given parameters.
         
@@ -66,7 +67,7 @@ class AuditLogIterator(AuditLog):
             The guild what's audit logs will be requested.
         user : `None`, ``ClientUserBase``, `int` = `None`, Optional
             Whether the audit logs should be filtered only to those, which were created by the given user.
-        event : `None`, ``AuditLogEvent``, `int` = `None`, Optional
+        entry_type : `None`, ``AuditLogEntryType``, `int` = `None`, Optional
             Whether the audit logs should be filtered only on the given event.
         
         Raises
@@ -74,12 +75,25 @@ class AuditLogIterator(AuditLog):
         TypeError
             - If `guild` was not given neither as ``Guild``, nor as `int`.
             - If `user` was not given neither as `None`, ``ClientUserBase`` nor as `int`.
-            - If `event` as not not given neither as `None`, ``AuditLogEvent`` nor as `int`.
+            - If `entry_type` as not not given neither as `None`, ``AuditLogEntryType`` nor as `int`.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
+        if event is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `event` parameter is deprecated and will be removed in 2024 March. '
+                    f'Please use `.entry_type` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            entry_type = event
+        
+        
         data = {
             'limit': 100,
             'before': now_as_id(),
@@ -109,18 +123,18 @@ class AuditLogIterator(AuditLog):
             
             data['user_id'] = user_id
         
-        if (event is not None):
-            if isinstance(event, AuditLogEvent):
-                event_value = event.value
-            elif isinstance(event, int):
-                event_value = event
+        if (entry_type is not None):
+            if isinstance(entry_type, AuditLogEntryType):
+                entry_type_value = entry_type.value
+            elif isinstance(entry_type, int):
+                entry_type_value = entry_type
             else:
                 raise TypeError(
-                    f'`event` can be `None`, `{AuditLogEvent.__name__}`, `int`, got '
-                    f'{event.__class__.__name__}; {event!r}.'
+                    f'`entry_type` can be `None`, `{AuditLogEntryType.__name__}`, `int`, got '
+                    f'{entry_type.__class__.__name__}; {entry_type!r}.'
                 )
             
-            data['action_type'] = event_value
+            data['action_type'] = entry_type_value
         
         self = AuditLog.__new__(cls, None, validated_guild_id)
         self._data = data

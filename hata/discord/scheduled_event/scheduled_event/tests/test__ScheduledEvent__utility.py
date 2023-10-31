@@ -278,7 +278,7 @@ def test__ScheduledEvent__guild(scheduled_event_id, guild_id):
     Parameters
     ----------
     scheduled_event_id : `int`
-        Identifier of teh scheduled event to create.
+        Identifier of the scheduled event to create.
     guild_id : `int`
         The guild's identifier.
     

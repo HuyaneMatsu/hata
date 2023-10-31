@@ -1,6 +1,6 @@
 __all__ = ('AuditLog', )
 
-from scarletio import RichAttributeErrorBaseType, WeakReferer
+from scarletio import RichAttributeErrorBaseType, WeakReferer, export
 
 from ..application_command import ApplicationCommand
 from ..auto_moderation import AutoModerationRule
@@ -14,6 +14,7 @@ from ..webhook import Webhook
 from .audit_log_entry import AuditLogEntry
 
 
+@export
 class AuditLog(RichAttributeErrorBaseType):
     """
     Whenever an admin action is performed on the API, an audit log entry is added to the respective guild's audit
@@ -52,7 +53,7 @@ class AuditLog(RichAttributeErrorBaseType):
         'integrations', 'scheduled_events', 'threads', 'users', 'webhooks'
     )
     
-    def __new__(cls, data, guild_id):
+    def __new__(cls, data, guild_id = 0):
         """
         Creates an ``AuditLog`` from the data received from Discord.
         
@@ -60,7 +61,7 @@ class AuditLog(RichAttributeErrorBaseType):
         ----------
         data : `None`, `dict` of (`str`, `object`) items
             Data received from Discord.
-        guild_id : `int`
+        guild_id : `int` = `0`, Optional
             The respective guild's identifier of the audit logs.
         """
         self = object.__new__(cls)
@@ -190,7 +191,7 @@ class AuditLog(RichAttributeErrorBaseType):
         
         entries = self.entries
         for entry_data in entry_datas:
-            entry = AuditLogEntry(entry_data, self)
+            entry = AuditLogEntry.from_data(entry_data, self)
             if (entry is not None):
                 entries.append(entry)
         

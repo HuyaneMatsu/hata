@@ -1,4 +1,4 @@
-__all__ = ('abort', 'InteractionResponse',)
+__all__ = ('abort', 'InteractionAbortedError', 'InteractionResponse',)
 
 from scarletio import is_coroutine_generator, skip_ready_cycle
 
@@ -518,6 +518,18 @@ class InteractionResponse:
             parameters['tts'] = tts
     
     
+    def set_abort(self):
+        """
+        Marks the interaction response as an abortion.
+        
+        Returns
+        -------
+        self : `instance<type<self>>`
+        """
+        self._abort = True
+        return self
+    
+    
     def _get_response_parameters(self, allowed_parameters):
         """
         Gets response parameters to pass to a ``Client`` method.
@@ -789,6 +801,51 @@ class InteractionResponse:
             return False
         
         return True
+    
+    
+    def __hash__(self):
+        """Returns the interaction response's hash value."""
+        hash_value = 0
+        
+        # _abort
+        hash_value ^= self._abort
+        
+        # _event
+        event = self._event
+        if (event is not None):
+            hash_value ^= hash(event)
+        
+        # _message
+        message = self._message
+        if (message is not None):
+            hash_value ^= hash(message)
+        
+        # _parameters
+        to_dos = [*self._parameters]
+        seed = 0
+        
+        while to_dos:
+            seed += 1
+            
+            to_do = to_dos.pop()
+            try:
+                to_do_hash_value = hash(to_do)
+            except TypeError:
+                if isinstance(to_do, dict):
+                    for item in to_do.items():
+                        to_dos.extend(item)
+                    continue
+                
+                if getattr(type(to_do), '__iter__', None) is not None:
+                    to_dos.extend(to_do)
+                    continue
+                
+                to_do_hash_value = object.__hash__(to_do)
+            
+            hash_value ^= to_do_hash_value & (seed * seed)
+            continue
+        
+        return hash_value
 
 
 def abort(
@@ -862,22 +919,21 @@ def abort(
     InteractionAbortedError
         The exception which aborts the interaction, then yields the response.
     """
-    response = InteractionResponse(
-        content,
-        allowed_mentions = allowed_mentions,
-        components = components,
-        embed = embed,
-        event = event,
-        file = file,
-        message = message,
-        show_for_invoking_user_only = show_for_invoking_user_only,
-        silent = silent,
-        suppress_embeds = suppress_embeds,
-        tts = tts,
+    raise InteractionAbortedError(
+        InteractionResponse(
+            content,
+            allowed_mentions = allowed_mentions,
+            components = components,
+            embed = embed,
+            event = event,
+            file = file,
+            message = message,
+            show_for_invoking_user_only = show_for_invoking_user_only,
+            silent = silent,
+            suppress_embeds = suppress_embeds,
+            tts = tts,
+        ).set_abort(),
     )
-    
-    response._abort = True
-    raise InteractionAbortedError(response)
 
 
 class InteractionAbortedError(BaseException):
@@ -890,7 +946,12 @@ class InteractionAbortedError(BaseException):
     response : ``InteractionResponse``
         The response to send.
     """
-    def __init__(self, response):
+    __slots__ = ('response',)
+    
+    # This is to support keyword parameters
+    __init__ = object.__init__
+    
+    def __new__(cls, response):
         """
         Creates a new ``InteractionAbortedError`` with the given response.
         
@@ -899,9 +960,27 @@ class InteractionAbortedError(BaseException):
         response : ``InteractionResponse``
             The response to send.
         """
+        self = BaseException.__new__(cls, response)
         self.response = response
-        BaseException.__init__(self, response)
+        return self
+    
     
     def __repr__(self):
         """Returns the exception's representation."""
         return f'{self.__class__.__name__}({self.response!r})'
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two abortions are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.response != other.response:
+            return False
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the abortion exception hash value"""
+        return hash(self.response)

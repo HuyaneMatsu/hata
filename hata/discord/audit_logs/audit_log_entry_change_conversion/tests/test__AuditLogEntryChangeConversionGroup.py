@@ -1,6 +1,6 @@
 import vampytest
 
-from ...audit_log_change.flags import FLAG_IS_ADDITION, FLAG_IS_REMOVAL
+from ...audit_log_change.flags import FLAG_IS_ADDITION, FLAG_IS_IGNORED, FLAG_IS_REMOVAL
 
 from ..audit_log_entry_change_conversion import AuditLogEntryChangeConversion
 from ..audit_log_entry_change_conversion_group import AuditLogEntryChangeConversionGroup
@@ -33,8 +33,9 @@ def test__AuditLogEntryChangeConversionGroup__new():
     conversion_0 = AuditLogEntryChangeConversion('komeiji', 'koishi', FLAG_IS_ADDITION, validator = _test_function_0)
     conversion_1 = AuditLogEntryChangeConversion('kkhta', 'koishi', FLAG_IS_REMOVAL, get_converter = _test_function_0)
     conversion_2 = AuditLogEntryChangeConversion('kaenbyou', 'rin', FLAG_IS_ADDITION, put_converter = _test_function_0)
+    conversion_3 = AuditLogEntryChangeConversion('aya', '', FLAG_IS_IGNORED, get_converter = _test_function_0)
     
-    conversions = [conversion_0, conversion_1, conversion_2]
+    conversions = [conversion_0, conversion_1, conversion_2, conversion_3]
     
     group = AuditLogEntryChangeConversionGroup(*conversions)
     _assert_fields_set(group)
@@ -46,6 +47,7 @@ def test__AuditLogEntryChangeConversionGroup__new():
             conversion_0.field_key: (conversion_0.field_name, conversion_0.flags, conversion_0.get_converter),
             conversion_1.field_key: (conversion_1.field_name, conversion_1.flags, conversion_1.get_converter),
             conversion_2.field_key: (conversion_2.field_name, conversion_2.flags, conversion_2.get_converter),
+            conversion_3.field_key: (conversion_3.field_name, conversion_3.flags, conversion_3.get_converter),
         },
     )
     vampytest.assert_eq(

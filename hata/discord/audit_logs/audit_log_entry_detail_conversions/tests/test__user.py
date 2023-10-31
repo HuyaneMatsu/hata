@@ -2,7 +2,7 @@ import vampytest
 
 from ....integration import IntegrationType
 
-from ..user import COUNT_CONVERSION, INTEGRATION_TYPE_CONVERSION, USER_CONVERSIONS
+from ..user import COUNT_CONVERSION, DELETE_MESSAGE_DURATION_CONVERSION, INTEGRATION_TYPE_CONVERSION, USER_CONVERSIONS
 
 
 def test__USER_CONVERSIONS():
@@ -11,7 +11,7 @@ def test__USER_CONVERSIONS():
     """
     vampytest.assert_eq(
         {*USER_CONVERSIONS.get_converters.keys()},
-        {'count', 'integration_type'}
+        {'delete_message_seconds', 'delete_message_days', 'count', 'integration_type'},
     )
 
 
@@ -21,6 +21,7 @@ def _iter_options__count__get_converter():
     count = 123
     yield 0, 0
     yield count, count
+    yield None, 0
 
 
 @vampytest._(vampytest.call_from(_iter_options__count__get_converter()).returning_last())
@@ -99,6 +100,93 @@ def test__COUNT_CONVERSION__validator(input_value):
     ValueError
     """
     return COUNT_CONVERSION.validator(input_value)
+
+
+# ---- delete_message_duration ----
+
+def _iter_options__delete_message_duration__get_converter():
+    delete_message_duration = 123
+    yield 0, 0
+    yield delete_message_duration, delete_message_duration
+    yield None, 0
+
+
+@vampytest._(vampytest.call_from(_iter_options__delete_message_duration__get_converter()).returning_last())
+def test__DELETE_MESSAGE_DURATION_CONVERSION__get_converter(input_value):
+    """
+    Tests whether `DELETE_MESSAGE_DURATION_CONVERSION.get_converter` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `int`
+        Raw value.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    return DELETE_MESSAGE_DURATION_CONVERSION.get_converter(input_value)
+
+
+def _iter_options__delete_message_duration__put_converter():
+    delete_message_duration = 123
+    yield 0, 0
+    yield delete_message_duration, delete_message_duration
+
+
+@vampytest._(vampytest.call_from(_iter_options__delete_message_duration__put_converter()).returning_last())
+def test__DELETE_MESSAGE_DURATION_CONVERSION__put_converter(input_value):
+    """
+    Tests whether `DELETE_MESSAGE_DURATION_CONVERSION.put_converter` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `int`
+        Processed value.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    return DELETE_MESSAGE_DURATION_CONVERSION.put_converter(input_value)
+
+
+def _iter_options__delete_message_duration__validator__passing():
+    delete_message_duration = 1123
+    yield 0, 0
+    yield delete_message_duration, delete_message_duration
+
+
+def _iter_options__delete_message_duration__validator__type_error():
+    yield 12.6
+
+
+def _iter_options__delete_message_duration__validator__value_error():
+    yield -12
+
+
+@vampytest._(vampytest.call_from(_iter_options__delete_message_duration__validator__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__delete_message_duration__validator__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__delete_message_duration__validator__value_error()).raising(ValueError))
+def test__DELETE_MESSAGE_DURATION_CONVERSION__validator(input_value):
+    """
+    Tests whether `DELETE_MESSAGE_DURATION_CONVERSION.validator` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Returns
+    -------
+    output : `int`
+    
+    Raises
+    ------
+    TypeError
+    ValueError
+    """
+    return DELETE_MESSAGE_DURATION_CONVERSION.validator(input_value)
 
 
 # ---- integration_type ----

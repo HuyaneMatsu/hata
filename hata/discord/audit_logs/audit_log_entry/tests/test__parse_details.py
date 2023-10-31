@@ -12,12 +12,12 @@ def _iter_options():
     yield (
         {
             'options': {
-                'delete_message_seconds': 60,
+                'delete_member_days': 60,
                 'members_removed': 5
             }
         },
         {
-            'delete_message_duration': 60,
+            'days': 60,
             'users_removed': 5
         }
     )

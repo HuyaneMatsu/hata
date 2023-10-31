@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...emoji import create_emoji_from_exclusive_data, put_exclusive_emoji_data_into
+from ...emoji import create_partial_emoji_data, create_partial_emoji_from_data
 from ...soundboard.soundboard_sound.fields import validate_available, validate_emoji, validate_name, validate_volume
 
 from ..audit_log_change.flags import FLAG_IS_MODIFICATION
@@ -38,7 +38,7 @@ EMOJI_CONVERSION = AuditLogEntryChangeConversion(
 @EMOJI_CONVERSION.set_get_converter
 def emoji_get_converter(value):
     if (value is not None):
-        value = create_emoji_from_exclusive_data(value)
+        value = create_partial_emoji_from_data(value)
     
     return value
 
@@ -46,7 +46,7 @@ def emoji_get_converter(value):
 @EMOJI_CONVERSION.set_put_converter
 def emoji_put_converter(value):
     if value is not None:
-        value = put_exclusive_emoji_data_into(value, {})
+        value = create_partial_emoji_data(value)
     
     return value
 

@@ -13,6 +13,13 @@ COUNT_CONVERSION = AuditLogEntryDetailConversion(
     'count',
 )
 
+@COUNT_CONVERSION.set_get_converter
+def count_get_converter(value):
+    if value is None:
+        value = 0
+    return value
+
+
 @COUNT_CONVERSION.set_validator
 def validate_count(value):
     if not isinstance(value, int):
@@ -22,6 +29,46 @@ def validate_count(value):
         raise ValueError(f'`count` cannot be negative, got {value!r}.')
     
     return value
+
+
+
+# ---- delete_message_duration ----
+
+DELETE_MESSAGE_DURATION_CONVERSION = AuditLogEntryDetailConversion(
+    'delete_message_seconds',
+    'delete_message_duration',
+)
+
+
+@DELETE_MESSAGE_DURATION_CONVERSION.set_get_converter
+def delete_message_duration_get_converter(value):
+    if value is None:
+        value = 0
+    return value
+
+
+@DELETE_MESSAGE_DURATION_CONVERSION.set_validator
+def validate_delete_message_duration(value):
+    if not isinstance(value, int):
+        raise TypeError(f'`delete_message_duration` can be `int`, got {value.__class__.__name__}; {value!r}.')
+    
+    if value < 0:
+        raise ValueError(f'`delete_message_duration` cannot be negative, got {value!r}.')
+    
+    return value
+
+
+# ---- delete_message_duration | deprecated version ----
+
+DELETE_MESSAGE_DURATION_DEPRECATED_DAYS_CONVERSION = AuditLogEntryDetailConversion(
+    'delete_message_days',
+    'delete_message_duration',
+)
+
+
+@DELETE_MESSAGE_DURATION_DEPRECATED_DAYS_CONVERSION.set_get_converter
+def delete_message_days_get_converter(value):
+    return value * 24 * 60 * 60
 
 
 # ---- integration_type ----
@@ -45,5 +92,9 @@ def integration_type_put_converter(value):
 
 USER_CONVERSIONS = AuditLogEntryDetailConversionGroup(
     COUNT_CONVERSION,
+    DELETE_MESSAGE_DURATION_CONVERSION,
     INTEGRATION_TYPE_CONVERSION,
+    
+    # Deprecations
+    DELETE_MESSAGE_DURATION_DEPRECATED_DAYS_CONVERSION,
 )

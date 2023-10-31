@@ -34,9 +34,12 @@ class AuditLogEntryDetailConversionGroup(RichAttributeErrorBaseType):
         validators = {}
         
         for conversion in conversions:
-            get_converters.setdefault(conversion.field_key, (conversion.field_name, conversion.get_converter))
-            put_converters.setdefault(conversion.field_name, (conversion.field_key, conversion.put_converter))
-            validators.setdefault(conversion.field_name, conversion.validator)
+            field_key = conversion.field_key
+            field_name = conversion.field_name
+            
+            get_converters.setdefault(field_key, (field_name, conversion.get_converter))
+            put_converters.setdefault(field_name, (field_key, conversion.put_converter))
+            validators.setdefault(field_name, conversion.validator)
         
         # Construct
         self = object.__new__(cls)

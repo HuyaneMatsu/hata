@@ -5,45 +5,73 @@ from ....channel import Channel
 from ..fields import validate_channel_id
 
 
-def test__validate_channel_id__0():
-    """
-    Tests whether `validate_channel_id` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options__passing():
     channel_id = 202304260005
     
-    for input_value, expected_output in (
-        (channel_id, channel_id),
-        (str(channel_id), channel_id),
-        (Channel.precreate(channel_id), channel_id)
-    ):
-        output = validate_channel_id(input_value)
-        vampytest.assert_eq(output, expected_output)
+    yield None, 0
+    yield 0, 0
+    yield channel_id, channel_id
+    yield Channel.precreate(channel_id), channel_id
+    yield str(channel_id), channel_id
 
 
-def test__validate_channel_id__1():
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+def test__validate_channel_id__passing(input_value):
     """
     Tests whether `validate_channel_id` works as intended.
     
-    Case: `ValueError`.
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to get `channel_id` of.
+    
+    Returns
+    -------
+    output : `int`
     """
-    for input_value in (
-        '-1',
-        -1,
-    ):
-        with vampytest.assert_raises(AssertionError, ValueError):
-            validate_channel_id(input_value)
+    return validate_channel_id(input_value)
 
 
-def test__validate_channel_id__2():
+@vampytest.raising(TypeError)
+@vampytest.call_with(12.6)
+def test__validate_channel_id__type_error(input_value):
     """
     Tests whether `validate_channel_id` works as intended.
     
     Case: `TypeError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to get `channel_id` of.
+    
+    Raises
+    ------
+    TypeError
+        The occurred exception.
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_channel_id(input_value)
+    validate_channel_id(input_value)
+
+
+@vampytest.raising(ValueError)
+@vampytest.call_with('-1')
+@vampytest.call_with('1111111111111111111111')
+@vampytest.call_with(-1)
+@vampytest.call_with(1111111111111111111111)
+def test__validate_channel_id__value_error(input_value):
+    """
+    Tests whether `validate_channel_id` works as intended.
+    
+    Case: `ValueError`.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to get `channel_id` of.
+    
+    Raises
+    ------
+    ValueError
+        The occurred exception.
+    """
+    validate_channel_id(input_value)

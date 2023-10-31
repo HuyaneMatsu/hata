@@ -17,7 +17,8 @@ from ...user import ClientUserBase
 
 from ..audit_log_change import AuditLogChange
 from ..audit_log_change.flags import (
-    FLAG_HAS_AFTER, FLAG_HAS_BEFORE, FLAG_IS_ADDITION, FLAG_IS_MODIFICATION, FLAG_IS_REMOVAL, get_flags_name
+    FLAG_HAS_AFTER, FLAG_HAS_BEFORE, FLAG_IS_ADDITION, FLAG_IS_IGNORED, FLAG_IS_MODIFICATION, FLAG_IS_REMOVAL,
+    get_flags_name
 )
 
 from .constants import REASON_LENGTH_MAX, REASON_LENGTH_MIN
@@ -115,6 +116,9 @@ def parse_changes(data, entry_type = AuditLogEntryType.none):
             else:
                 after = get_converter(after)
                 flags |= FLAG_HAS_AFTER
+        
+        elif flags & FLAG_IS_IGNORED:
+            continue
         
         else:
             # Should not happen

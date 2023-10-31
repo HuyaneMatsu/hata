@@ -16,7 +16,7 @@ from ....channel.channel_metadata.fields import (
     validate_region, validate_slowmode, validate_topic, validate_user_limit, validate_video_quality_mode
 )
 from ....core import BUILTIN_EMOJIS
-from ....emoji import put_exclusive_emoji_data_into
+from ....emoji import create_partial_emoji_data
 
 from ...conversion_helpers.converters import (
     get_converter_description, get_converter_id, get_converter_ids, get_converter_name, put_converter_description,
@@ -44,7 +44,7 @@ def test__CHANNEL_CONVERSIONS():
             'default_auto_archive_duration', 'default_forum_layout', 'default_sort_order', 'default_reaction_emoji',
             'default_thread_rate_limit_per_user', 'flags', 'invitable', 'name', 'nsfw', 'locked', 'parent_id',
             'permission_overwrites', 'rate_limit_per_user', 'rtc_region', 'rate_limit_per_user', 'topic', 'type',
-            'video_quality_mode', 'user_limit', 'position'
+            'video_quality_mode', 'user_limit', 'position', 'icon_emoji'
         },
     )
 
@@ -483,7 +483,7 @@ def test__DEFAULT_THREAD_REACTION_CONVERSION__generic():
 def _iter_options__default_thread_reaction__get_converter():
     emoji = BUILTIN_EMOJIS['x']
     yield None, None
-    yield put_exclusive_emoji_data_into(emoji, {}), emoji
+    yield create_partial_emoji_data(emoji), emoji
 
 
 @vampytest._(vampytest.call_from(_iter_options__default_thread_reaction__get_converter()).returning_last())
@@ -506,7 +506,7 @@ def test__DEFAULT_THREAD_REACTION_CONVERSION__get_converter(input_value):
 def _iter_options__default_thread_reaction__put_converter():
     emoji = BUILTIN_EMOJIS['x']
     yield None, None
-    yield emoji, put_exclusive_emoji_data_into(emoji, {})
+    yield emoji, create_partial_emoji_data(emoji)
 
 
 @vampytest._(vampytest.call_from(_iter_options__default_thread_reaction__put_converter()).returning_last())

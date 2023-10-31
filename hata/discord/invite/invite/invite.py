@@ -864,6 +864,18 @@ class Invite(DiscordEntity, immortal = True):
     
     
     @property
+    def inviter_id(self):
+        """
+        Returns the invite's creator's identifier.
+        
+        Returns
+        -------
+        user_id : `int`
+        """
+        return self.inviter.id
+    
+    
+    @property
     def target_user_id(self):
         """
         Returns the invite's target user's identifier.

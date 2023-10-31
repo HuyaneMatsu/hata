@@ -1,5 +1,6 @@
 __all__ = ()
 
+from ...channel import Channel
 from ...field_parsers import bool_parser_factory, entity_id_parser_factory, preinstanced_parser_factory
 from ...field_putters import entity_id_putter_factory, force_bool_putter_factory, preinstanced_putter_factory
 from ...field_validators import bool_validator_factory, entity_id_validator_factory, preinstanced_validator_factory
@@ -12,6 +13,10 @@ from .preinstanced import ApplicationCommandPermissionOverwriteTargetType
 parse_allow = bool_parser_factory('permission', True)
 put_allow_into = force_bool_putter_factory('permission')
 validate_allow = bool_validator_factory('allow', True)
+
+# channel_id | extra for audit logs
+
+validate_channel_id = entity_id_validator_factory('channel_id', Channel)
 
 # target_id
 

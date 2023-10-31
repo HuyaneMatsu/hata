@@ -14,9 +14,9 @@ from ...channel.channel_metadata.fields import (
     validate_name, validate_nsfw, validate_open, validate_parent_id, validate_permission_overwrites, validate_position,
     validate_region, validate_slowmode, validate_topic, validate_user_limit, validate_video_quality_mode
 )
-from ...emoji import create_emoji_from_exclusive_data, put_exclusive_emoji_data_into
+from ...emoji import create_partial_emoji_data, create_partial_emoji_from_data
 
-from ..audit_log_change.flags import FLAG_IS_MODIFICATION
+from ..audit_log_change.flags import FLAG_IS_IGNORED, FLAG_IS_MODIFICATION
 from ..audit_log_entry_change_conversion import AuditLogEntryChangeConversion, AuditLogEntryChangeConversionGroup
 from ..conversion_helpers.converters import (
     get_converter_description, get_converter_id, get_converter_ids, get_converter_name, put_converter_description,
@@ -202,7 +202,7 @@ DEFAULT_THREAD_REACTION_CONVERSION = AuditLogEntryChangeConversion(
 @DEFAULT_THREAD_REACTION_CONVERSION.set_get_converter
 def default_thread_reaction_get_converter(value):
     if (value is not None):
-        value = create_emoji_from_exclusive_data(value)
+        value = create_partial_emoji_from_data(value)
     
     return value
 
@@ -210,7 +210,7 @@ def default_thread_reaction_get_converter(value):
 @DEFAULT_THREAD_REACTION_CONVERSION.set_put_converter
 def default_thread_reaction_put_converter(value):
     if value is not None:
-        value = put_exclusive_emoji_data_into(value, {})
+        value = create_partial_emoji_data(value)
     
     return value
 
@@ -254,6 +254,15 @@ def flags_get_converter(value):
 @FLAGS_CONVERSION.set_put_converter
 def flags_put_converter(value):
     return int(value)
+
+
+# ---- icon_emoji  ----
+
+ICON_EMOJI_CONVERSION = AuditLogEntryChangeConversion(
+    'icon_emoji',
+    '',
+    FLAG_IS_IGNORED,
+)
 
 
 # ---- invitable ----
@@ -509,6 +518,7 @@ CHANNEL_CONVERSIONS = AuditLogEntryChangeConversionGroup(
     DEFAULT_THREAD_REACTION_CONVERSION,
     DEFAULT_THREAD_SLOWMODE_CONVERSION,
     FLAGS_CONVERSION,
+    ICON_EMOJI_CONVERSION,
     INVITABLE_CONVERSION,
     NAME_CONVERSION,
     NSFW_CONVERSION,

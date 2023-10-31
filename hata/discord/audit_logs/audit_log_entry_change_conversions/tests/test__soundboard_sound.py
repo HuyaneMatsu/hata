@@ -1,7 +1,7 @@
 import vampytest
 
 from ....core import BUILTIN_EMOJIS
-from ....emoji import put_exclusive_emoji_data_into
+from ....emoji import create_partial_emoji_data
 from ....soundboard.soundboard_sound.fields import validate_available, validate_emoji, validate_name, validate_volume
 
 from ...conversion_helpers.converters import get_converter_name, put_converter_name
@@ -91,7 +91,7 @@ def test__EMOJI_CONVERSION__generic():
 def _iter_options__emoji__get_converter():
     emoji = BUILTIN_EMOJIS['x']
     yield None, None
-    yield put_exclusive_emoji_data_into(emoji, {}), emoji
+    yield create_partial_emoji_data(emoji), emoji
 
 
 @vampytest._(vampytest.call_from(_iter_options__emoji__get_converter()).returning_last())
@@ -114,7 +114,7 @@ def test__EMOJI_CONVERSION__get_converter(input_value):
 def _iter_options__emoji__put_converter():
     emoji = BUILTIN_EMOJIS['x']
     yield None, None
-    yield emoji, put_exclusive_emoji_data_into(emoji, {})
+    yield emoji, create_partial_emoji_data(emoji)
 
 
 @vampytest._(vampytest.call_from(_iter_options__emoji__put_converter()).returning_last())

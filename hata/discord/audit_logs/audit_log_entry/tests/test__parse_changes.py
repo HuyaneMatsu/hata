@@ -9,9 +9,9 @@ from ..preinstanced import AuditLogEntryType
 
 
 def _iter_options():
-    yield {}, None
-    yield {'changes': None}, None
-    yield {'changes': []}, None
+    yield {}, AuditLogEntryType.user_kick, None
+    yield {'changes': None}, AuditLogEntryType.user_kick, None
+    yield {'changes': []}, AuditLogEntryType.user_kick, None
     
     role_0 = AuditLogRole(role_id = 202310290000)
     role_1 = AuditLogRole(role_id = 202310290001)
@@ -37,16 +37,31 @@ def _iter_options():
                 },
             ],
         },
+        AuditLogEntryType.user_kick,
         {
             'roles': AuditLogChange('roles', FLAG_IS_REMOVAL | FLAG_IS_ADDITION, before = (role_1,), after = (role_0,)),
             'mute': AuditLogChange('mute', FLAG_IS_MODIFICATION, before = False),
             'deaf': AuditLogChange('deaf', FLAG_IS_MODIFICATION, after = False),
-        }
+        },
+    )
+    
+    yield (
+        {
+            'changes': [
+                {
+                    'key': 'asset',
+                    'old_value': '',
+                    'new_value': '',
+                },
+            ],
+        },
+        AuditLogEntryType.sticker_create,
+        None,
     )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test_parse_changes(input_data):
+def test_parse_changes(input_data, entry_type):
     """
     Tests whether ``parse_changes`` works as intended.
     
@@ -54,9 +69,11 @@ def test_parse_changes(input_data):
     ----------
     input_data : `dict<str, object>`
         Data to parse from.
+    entry_type : ``AuditLogEntryType``
+        The entry type to parse as.
     
     Returns
     -------
     output : `None | dict<str, AuditLogChange>`
     """
-    return parse_changes(input_data, AuditLogEntryType.user_kick)
+    return parse_changes(input_data, entry_type)

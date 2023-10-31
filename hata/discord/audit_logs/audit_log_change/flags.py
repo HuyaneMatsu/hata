@@ -6,6 +6,7 @@ FLAG_HAS_AFTER = 1 << 1
 FLAG_IS_MODIFICATION = 1 << 2
 FLAG_IS_REMOVAL = 1 << 3
 FLAG_IS_ADDITION = 1 << 4
+FLAG_IS_IGNORED = 1 << 5
 
 
 FLAG_NAMES = (
@@ -14,6 +15,7 @@ FLAG_NAMES = (
     (FLAG_IS_MODIFICATION, 'is_modification'),
     (FLAG_IS_REMOVAL, 'is_removal'),
     (FLAG_IS_ADDITION, 'is_addition'),
+    (FLAG_IS_IGNORED, 'is_ignored'),
 )
 
 

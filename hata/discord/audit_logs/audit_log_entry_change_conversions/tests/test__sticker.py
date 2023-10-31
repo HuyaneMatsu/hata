@@ -1,17 +1,20 @@
 import vampytest
 
+from ....sticker import StickerFormat, StickerType
 from ....sticker.sticker.constants import SORT_VALUE_MIN
 from ....sticker.sticker.fields import (
-    validate_available, validate_description, validate_name, validate_sort_value, validate_tags
+    validate_available, validate_description, validate_format, validate_guild_id, validate_id, validate_name,
+    validate_sort_value, validate_tags, validate_type
 )
 
 from ...conversion_helpers.converters import (
-    get_converter_description, get_converter_name, put_converter_description, put_converter_name
+    get_converter_description, get_converter_id, get_converter_name, put_converter_description, put_converter_id,
+    put_converter_name
 )
 
 from ..sticker import (
-    AVAILABLE_CONVERSION, DESCRIPTION_CONVERSION, NAME_CONVERSION, SORT_VALUE_CONVERSION, STICKER_CONVERSIONS,
-    TAGS_CONVERSION
+    AVAILABLE_CONVERSION, DESCRIPTION_CONVERSION, FORMAT_CONVERSION, GUILD_ID_CONVERSION, ID_CONVERSION,
+    NAME_CONVERSION, SORT_VALUE_CONVERSION, STICKER_CONVERSIONS, TAGS_CONVERSION, TYPE_CONVERSION
 )
 
 
@@ -21,7 +24,7 @@ def test__STICKER_CONVERSIONS():
     """
     vampytest.assert_eq(
         {*STICKER_CONVERSIONS.get_converters.keys()},
-        {'available', 'description', 'name', 'sort_value', 'tags'},
+        {'available', 'description', 'name', 'sort_value', 'tags', 'id', 'format_type', 'guild_id', 'asset', 'type'},
     )
 
 # ---- available ----
@@ -89,6 +92,83 @@ def test__DESCRIPTION_CONVERSION__generic():
     vampytest.assert_is(DESCRIPTION_CONVERSION.get_converter, get_converter_description)
     vampytest.assert_is(DESCRIPTION_CONVERSION.put_converter, put_converter_description)
     vampytest.assert_is(DESCRIPTION_CONVERSION.validator, validate_description)
+
+
+# ---- format ----
+
+def test__FORMAT_CONVERSION__generic():
+    """
+    Tests whether ``FORMAT_CONVERSION`` works as intended.
+    """
+    # vampytest.assert_is(FORMAT_CONVERSION.get_converter, )
+    # vampytest.assert_is(FORMAT_CONVERSION.put_converter, )
+    vampytest.assert_is(FORMAT_CONVERSION.validator, validate_format)
+
+
+def _iter_options__format__get_converter():
+    yield None, StickerFormat.none
+    yield StickerFormat.png.value, StickerFormat.png
+
+
+@vampytest._(vampytest.call_from(_iter_options__format__get_converter()).returning_last())
+def test__FORMAT_CONVERSION__get_converter(input_value):
+    """
+    Tests whether `FORMAT_CONVERSION.get_converter` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Raw value.
+    
+    Returns
+    -------
+    output : ``StickerFormat``
+    """
+    return FORMAT_CONVERSION.get_converter(input_value)
+
+
+def _iter_options__format__put_converter():
+    yield StickerFormat.none, StickerFormat.none.value
+    yield StickerFormat.png, StickerFormat.png.value
+
+
+@vampytest._(vampytest.call_from(_iter_options__format__put_converter()).returning_last())
+def test__FORMAT_CONVERSION__put_converter(input_value):
+    """
+    Tests whether `FORMAT_CONVERSION.put_converter` works as intended.
+    
+    Parameters
+    ----------
+    input_value : ``StickerFormat``
+        Processed value.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    return FORMAT_CONVERSION.put_converter(input_value)
+
+
+# ---- guild_id ----
+
+def test__GUILD_ID_CONVERSION__generic():
+    """
+    Tests whether ``GUILD_ID_CONVERSION`` works as intended.
+    """
+    vampytest.assert_is(GUILD_ID_CONVERSION.get_converter, get_converter_id)
+    vampytest.assert_is(GUILD_ID_CONVERSION.put_converter, put_converter_id)
+    vampytest.assert_is(GUILD_ID_CONVERSION.validator, validate_guild_id)
+
+
+# ---- id ----
+
+def test__ID_CONVERSION__generic():
+    """
+    Tests whether ``ID_CONVERSION`` works as intended.
+    """
+    vampytest.assert_is(ID_CONVERSION.get_converter, get_converter_id)
+    vampytest.assert_is(ID_CONVERSION.put_converter, put_converter_id)
+    vampytest.assert_is(ID_CONVERSION.validator, validate_id)
 
 
 # ---- name ----
@@ -212,3 +292,59 @@ def test__TAGS_CONVERSION__put_converter(input_value):
     output : `str`
     """
     return TAGS_CONVERSION.put_converter(input_value)
+
+
+# ---- type ----
+
+def test__TYPE_CONVERSION__generic():
+    """
+    Tests whether ``TYPE_CONVERSION`` works as intended.
+    """
+    # vampytest.assert_is(TYPE_CONVERSION.get_converter, )
+    # vampytest.assert_is(TYPE_CONVERSION.put_converter, )
+    vampytest.assert_is(TYPE_CONVERSION.validator, validate_type)
+
+
+def _iter_options__type__get_converter():
+    yield None, StickerType.none
+    yield StickerType.standard.value, StickerType.standard
+
+
+@vampytest._(vampytest.call_from(_iter_options__type__get_converter()).returning_last())
+def test__TYPE_CONVERSION__get_converter(input_value):
+    """
+    Tests whether `TYPE_CONVERSION.get_converter` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Raw value.
+    
+    Returns
+    -------
+    output : ``StickerType``
+    """
+    return TYPE_CONVERSION.get_converter(input_value)
+
+
+def _iter_options__type__put_converter():
+    yield StickerType.none, StickerType.none.value
+    yield StickerType.standard, StickerType.standard.value
+
+
+@vampytest._(vampytest.call_from(_iter_options__type__put_converter()).returning_last())
+def test__TYPE_CONVERSION__put_converter(input_value):
+    """
+    Tests whether `TYPE_CONVERSION.put_converter` works as intended.
+    
+    Parameters
+    ----------
+    input_value : ``StickerType``
+        Processed value.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    return TYPE_CONVERSION.put_converter(input_value)
+

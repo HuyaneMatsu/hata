@@ -11,8 +11,7 @@ from ...field_parsers import (
 from ...field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
     force_string_putter_factory, nullable_entity_array_optional_putter_factory,
-    nullable_functional_optional_putter_factory, nullable_string_putter_factory, preinstanced_putter_factory,
-    string_flag_putter_factory
+    nullable_functional_optional_putter_factory, nullable_string_putter_factory, preinstanced_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, flag_validator_factory,

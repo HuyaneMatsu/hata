@@ -311,7 +311,7 @@ def test_AuditLogEntry__iter_changes(audit_log_entry):
 def _iter_options__get_detail():
     yield AuditLogEntry(), 'users_removed', None
     
-    detail_0 = ('delete_message_duration', 60)
+    detail_0 = ('days', 60)
     detail_1 = ('users_removed', 2)
     
     yield (
@@ -355,7 +355,7 @@ def test_AuditLogEntry__get_detail(audit_log_entry, name):
 def _iter_options__iter_details():
     yield AuditLogEntry(), set()
     
-    detail_0 = ('delete_message_duration', 60)
+    detail_0 = ('days', 60)
     detail_1 = ('users_removed', 2)
     
     yield (

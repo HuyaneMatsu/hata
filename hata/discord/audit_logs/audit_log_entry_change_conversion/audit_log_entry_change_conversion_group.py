@@ -2,6 +2,8 @@ __all__ = ('AuditLogEntryChangeConversionGroup', )
 
 from scarletio import RichAttributeErrorBaseType
 
+from ..audit_log_change.flags import FLAG_IS_IGNORED
+
 
 class AuditLogEntryChangeConversionGroup(RichAttributeErrorBaseType):
     """
@@ -34,16 +36,23 @@ class AuditLogEntryChangeConversionGroup(RichAttributeErrorBaseType):
         validators = {}
         
         for conversion in conversions:
+            field_key = conversion.field_key
+            field_name = conversion.field_name
+            flags = conversion.flags
+            
             get_converters.setdefault(
-                conversion.field_key,
-                (conversion.field_name, conversion.flags, conversion.get_converter),
+                field_key,
+                (field_name, flags, conversion.get_converter),
             )
+            if flags & FLAG_IS_IGNORED:
+                continue
+            
             put_converters.setdefault(
-                (conversion.field_name, conversion.flags),
-                (conversion.field_key, conversion.put_converter),
+                (field_name, flags),
+                (field_key, conversion.put_converter),
             )
             validators.setdefault(
-                (conversion.field_name, conversion.flags),
+                (field_name, flags),
                 conversion.validator,
             )
         

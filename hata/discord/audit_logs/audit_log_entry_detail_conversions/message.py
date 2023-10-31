@@ -24,6 +24,13 @@ COUNT_CONVERSION = AuditLogEntryDetailConversion(
     'count',
 )
 
+@COUNT_CONVERSION.set_get_converter
+def count_get_converter(value):
+    if value is None:
+        value = 0
+    return value
+
+
 @COUNT_CONVERSION.set_validator
 def validate_count(value):
     if not isinstance(value, int):

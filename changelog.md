@@ -40,6 +40,12 @@
 - Add `SoundboardSound` target conversion to audit logs.
 - Add `AuditLogEntryTargetType.soundboard_sound`.
 - Add soundboard sound conversion for audit log changes.
+- Add `Inviter.inviter_id`.
+- Add `GuildProfileFlag` audit log change converter.
+- Add `InviteFlag` audit log change converter.
+- Add `channel_id` audit log detail conversion for application command related entries.
+- Add `StickerType` audit log change converter.
+- Add `id` audit log detail conversion for channel related entries.
 
 #### ext.slash
 - Add `InteractionAbortedError.__eq__`.

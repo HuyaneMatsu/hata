@@ -202,6 +202,10 @@ parse_inviter = default_entity_parser_factory('inviter', User, default = ZEROUSE
 put_inviter_into = default_entity_putter_factory('inviter', ClientUserBase, ZEROUSER, force_include_internals = True)
 validate_inviter = default_entity_validator_factory('inviter', ClientUserBase, default = ZEROUSER)
 
+# inviter_id | extra for audit logs
+
+validate_inviter_id = entity_id_validator_factory('inviter_id', ClientUserBase)
+
 # max_age
 
 parse_max_age = nullable_int_parser_factory('max_age')

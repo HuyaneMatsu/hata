@@ -10,13 +10,13 @@ def _iter_options():
     
     data = {
         'options': {
-            'delete_message_seconds': 60,
+            'delete_member_days': 60,
             'members_removed': 5
         }
     }
     
     details = {
-        'delete_message_duration': 60,
+        'days': 60,
         'users_removed': 5
     }
     

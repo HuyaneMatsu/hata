@@ -603,10 +603,10 @@ class AuditLogEntryType(PreinstancedBase):
         143, 'auto moderation block message', AuditLogEntryTargetType.auto_moderation_action_execution
     )
     auto_moderation_alert_message = P(
-        143, 'auto moderation alert message', AuditLogEntryTargetType.auto_moderation_action_execution
+        144, 'auto moderation alert message', AuditLogEntryTargetType.auto_moderation_action_execution
     )
     auto_moderation_user_timeout = P(
-        143, 'auto moderation user timeout', AuditLogEntryTargetType.auto_moderation_action_execution
+        145, 'auto moderation user timeout', AuditLogEntryTargetType.auto_moderation_action_execution
     )
     
     creator_monetization_request_created = P(150, 'creator monetization request created', AuditLogEntryTargetType.none)
@@ -663,7 +663,7 @@ class AuditLogEntryType(PreinstancedBase):
             The created audit log event.
         """
         self = super(AuditLogEntryType, cls)._from_value(value)
-        self.target_type = AuditLogEntryTargetType.all
+        self.target_type = AuditLogEntryTargetType.none
         return self
     
     

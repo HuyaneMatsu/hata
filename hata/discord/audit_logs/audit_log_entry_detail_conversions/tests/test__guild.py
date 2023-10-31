@@ -1,6 +1,6 @@
 import vampytest
 
-from ..guild import DELETE_MESSAGE_DURATION_CONVERSION, GUILD_CONVERSIONS, USERS_REMOVED_CONVERSION
+from ..guild import DAYS_CONVERSION, GUILD_CONVERSIONS, USERS_REMOVED_CONVERSION
 
 
 def test__GUILD_CONVERSIONS():
@@ -9,22 +9,23 @@ def test__GUILD_CONVERSIONS():
     """
     vampytest.assert_eq(
         {*GUILD_CONVERSIONS.get_converters.keys()},
-        {'delete_message_seconds', 'delete_message_days', 'members_removed'}
+        {'members_removed', 'delete_member_days'},
     )
 
 
-# ---- delete_message_duration ----
+# ---- days ----
 
-def _iter_options__delete_message_duration__get_converter():
-    delete_message_duration = 123
+def _iter_options__days__get_converter():
+    days = 123
     yield 0, 0
-    yield delete_message_duration, delete_message_duration
+    yield days, days
+    yield None, 0
 
 
-@vampytest._(vampytest.call_from(_iter_options__delete_message_duration__get_converter()).returning_last())
-def test__DELETE_MESSAGE_DURATION_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__days__get_converter()).returning_last())
+def test__DAYS_CONVERSION__get_converter(input_value):
     """
-    Tests whether `DELETE_MESSAGE_DURATION_CONVERSION.get_converter` works as intended.
+    Tests whether `DAYS_CONVERSION.get_converter` works as intended.
     
     Parameters
     ----------
@@ -35,19 +36,19 @@ def test__DELETE_MESSAGE_DURATION_CONVERSION__get_converter(input_value):
     -------
     output : `int`
     """
-    return DELETE_MESSAGE_DURATION_CONVERSION.get_converter(input_value)
+    return DAYS_CONVERSION.get_converter(input_value)
 
 
-def _iter_options__delete_message_duration__put_converter():
-    delete_message_duration = 123
+def _iter_options__days__put_converter():
+    days = 123
     yield 0, 0
-    yield delete_message_duration, delete_message_duration
+    yield days, days
 
 
-@vampytest._(vampytest.call_from(_iter_options__delete_message_duration__put_converter()).returning_last())
-def test__DELETE_MESSAGE_DURATION_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__days__put_converter()).returning_last())
+def test__DAYS_CONVERSION__put_converter(input_value):
     """
-    Tests whether `DELETE_MESSAGE_DURATION_CONVERSION.put_converter` works as intended.
+    Tests whether `DAYS_CONVERSION.put_converter` works as intended.
     
     Parameters
     ----------
@@ -58,29 +59,29 @@ def test__DELETE_MESSAGE_DURATION_CONVERSION__put_converter(input_value):
     -------
     output : `int`
     """
-    return DELETE_MESSAGE_DURATION_CONVERSION.put_converter(input_value)
+    return DAYS_CONVERSION.put_converter(input_value)
 
 
-def _iter_options__delete_message_duration__validator__passing():
-    delete_message_duration = 1123
+def _iter_options__days__validator__passing():
+    days = 1123
     yield 0, 0
-    yield delete_message_duration, delete_message_duration
+    yield days, days
 
 
-def _iter_options__delete_message_duration__validator__type_error():
+def _iter_options__days__validator__type_error():
     yield 12.6
 
 
-def _iter_options__delete_message_duration__validator__value_error():
+def _iter_options__days__validator__value_error():
     yield -12
 
 
-@vampytest._(vampytest.call_from(_iter_options__delete_message_duration__validator__passing()).returning_last())
-@vampytest._(vampytest.call_from(_iter_options__delete_message_duration__validator__type_error()).raising(TypeError))
-@vampytest._(vampytest.call_from(_iter_options__delete_message_duration__validator__value_error()).raising(ValueError))
-def test__DELETE_MESSAGE_DURATION_CONVERSION__validator(input_value):
+@vampytest._(vampytest.call_from(_iter_options__days__validator__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__days__validator__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__days__validator__value_error()).raising(ValueError))
+def test__DAYS_CONVERSION__validator(input_value):
     """
-    Tests whether `DELETE_MESSAGE_DURATION_CONVERSION.validator` works as intended.
+    Tests whether `DAYS_CONVERSION.validator` works as intended.
     
     Parameters
     ----------
@@ -96,7 +97,7 @@ def test__DELETE_MESSAGE_DURATION_CONVERSION__validator(input_value):
     TypeError
     ValueError
     """
-    return DELETE_MESSAGE_DURATION_CONVERSION.validator(input_value)
+    return DAYS_CONVERSION.validator(input_value)
 
 
 # ---- users_removed ----
@@ -105,6 +106,7 @@ def _iter_options__users_removed__get_converter():
     users_removed = 123
     yield 0, 0
     yield users_removed, users_removed
+    yield None, 0
 
 
 @vampytest._(vampytest.call_from(_iter_options__users_removed__get_converter()).returning_last())

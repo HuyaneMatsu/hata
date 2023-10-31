@@ -134,6 +134,8 @@ def _iter_options__channel_id():
 @vampytest._(vampytest.call_from(_iter_options__channel_id()).returning_last())
 def test__test__Invite__channel_id(code, channel):
     """
+    Tests whether ``Inviter.channel_id`` works as intended.
+    
     Parameters
     ----------
     code : `str`
@@ -158,12 +160,14 @@ def _iter_options__guild_id():
 @vampytest._(vampytest.call_from(_iter_options__guild_id()).returning_last())
 def test__test__Invite__guild_id(code, guild):
     """
+    Tests whether ``Inviter.guild_id`` works as intended.
+    
     Parameters
     ----------
     code : `str`
         Invite code.
     guild : `None`, ``Guild``
-        Channel to create the invite with.
+        Guild to create the invite with.
     
     Returns
     -------
@@ -208,12 +212,14 @@ def _iter_options__target_application_id():
 @vampytest._(vampytest.call_from(_iter_options__target_application_id()).returning_last())
 def test__test__Invite__target_application_id(code, target_application):
     """
+    Tests whether ``Inviter.application_id`` works as intended.
+    
     Parameters
     ----------
     code : `str`
         Invite code.
     target_application : `None`, ``Application``
-        Channel to create the invite with.
+        Application to create the invite with.
     
     Returns
     -------
@@ -232,12 +238,14 @@ def _iter_options__target_user_id():
 @vampytest._(vampytest.call_from(_iter_options__target_user_id()).returning_last())
 def test__test__Invite__target_user_id(code, target_user):
     """
+    Tests whether ``Inviter.target_user_id`` works as intended.
+    
     Parameters
     ----------
     code : `str`
         Invite code.
     target_user : `None`, ``ClientUserBase``
-        Channel to create the invite with.
+        User to create the invite with.
     
     Returns
     -------
@@ -254,6 +262,8 @@ def _iter_options__partial():
 @vampytest._(vampytest.call_from(_iter_options__partial()).returning_last())
 def test__test__Invite__partial(code):
     """
+    Tests whether ``Inviter.partial`` works as intended.
+    
     Parameters
     ----------
     code : `str`
@@ -269,3 +279,29 @@ def test__test__Invite__partial(code):
         invite = Invite()
     
     return invite.partial
+
+
+def _iter_options__inviter_id():
+    inviter_id = 202308060010
+    
+    yield '202310310001', None, 0
+    yield '202310310002', User.precreate(inviter_id), inviter_id
+
+
+@vampytest._(vampytest.call_from(_iter_options__inviter_id()).returning_last())
+def test__test__Invite__inviter_id(code, inviter):
+    """
+    Tests whether ``Inviter.inviter_id`` works as intended.
+    
+    Parameters
+    ----------
+    code : `str`
+        Invite code.
+    inviter : `None`, ``ClientUserBase``
+        User to create the invite with.
+    
+    Returns
+    -------
+    inviter_id : `int`
+    """
+    return Invite.precreate(code, inviter = inviter).inviter_id

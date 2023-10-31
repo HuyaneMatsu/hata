@@ -34,6 +34,7 @@ def _iter_options__count__get_converter():
     count = 123
     yield 0, 0
     yield count, count
+    yield None, 0
 
 
 @vampytest._(vampytest.call_from(_iter_options__count__get_converter()).returning_last())

@@ -35,8 +35,8 @@ def test__SCHEDULED_EVENT_CONVERSIONS():
     vampytest.assert_eq(
         {*SCHEDULED_EVENT_CONVERSIONS.get_converters.keys()},
         {
-            'channel_id', 'description', 'entity_id', 'entity_metadata', 'entity_type', 'image', 'location', 'name',
-            'privacy_level', 'scheduled_end_time', 'scheduled_start_time', 'sku_ids', 'status',
+            'channel_id', 'description', 'entity_id', 'entity_metadata', 'entity_type', 'image_hash', 'location',
+            'name', 'privacy_level', 'scheduled_end_time', 'scheduled_start_time', 'sku_ids', 'status',
         },
     )
 

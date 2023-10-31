@@ -4,7 +4,8 @@ import vampytest
 
 from ....bases import Icon
 from ....user import GuildProfileFlag
-from ....user.guild_profile.fields import validate_flags, validate_nick, validate_pending, validate_timed_out_until
+from ....user.guild_profile.fields import validate_flags, validate_nick, validate_pending, validate_timed_out_until, \
+    validate_bypasses_verification
 from ....user.guild_profile.guild_profile import GUILD_PROFILE_AVATAR
 from ....user.voice_state.fields import validate_deaf, validate_mute
 from ....utils import datetime_to_timestamp
@@ -14,7 +15,8 @@ from ...conversion_helpers.converters import get_converter_description, put_conv
 
 from ..user import (
     AVATAR_CONVERSION, DEAF_CONVERSION, FLAGS_CONVERSION, MUTE_CONVERSION, NICK_CONVERSION, PENDING_CONVERSION,
-    ROLES_CONVERSION__ADDITION, ROLES_CONVERSION__REMOVAL, TIMED_OUT_UNTIL_CONVERSION, USER_CONVERSIONS
+    ROLES_CONVERSION__ADDITION, ROLES_CONVERSION__REMOVAL, TIMED_OUT_UNTIL_CONVERSION, USER_CONVERSIONS,
+    BYPASSES_VERIFICATION_CONVERSION
 )
 
 
@@ -24,7 +26,10 @@ def test__USER_CONVERSIONS():
     """
     vampytest.assert_eq(
         {*USER_CONVERSIONS.get_converters.keys()},
-        {'$add', '$remove', 'avatar_hash', 'communication_disabled_until', 'deaf', 'mute', 'nick', 'pending', 'flags'},
+        {
+            '$add', '$remove', 'avatar_hash', 'communication_disabled_until', 'deaf', 'mute', 'nick', 'pending',
+            'flags', 'bypasses_verification'
+        },
     )
 
 
@@ -38,6 +43,61 @@ def test__AVATAR_CONVERSION__generic():
     vampytest.assert_eq(AVATAR_CONVERSION.put_converter, Icon.as_base_16_hash)
     vampytest.assert_eq(AVATAR_CONVERSION.validator, GUILD_PROFILE_AVATAR.validate_icon)
 
+
+# ---- bypasses_verification ----
+
+def test__BYPASSES_VERIFICATION_CONVERSION__generic():
+    """
+    Tests whether ``BYPASSES_VERIFICATION_CONVERSION`` works as intended.
+    """
+    # vampytest.assert_is(BYPASSES_VERIFICATION_CONVERSION.get_converter, )
+    # vampytest.assert_is(BYPASSES_VERIFICATION_CONVERSION.put_converter, )
+    vampytest.assert_is(BYPASSES_VERIFICATION_CONVERSION.validator, validate_bypasses_verification)
+
+
+def _iter_options__bypasses_verification__get_converter():
+    yield True, True
+    yield False, False
+    yield None, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__bypasses_verification__get_converter()).returning_last())
+def test__BYPASSES_VERIFICATION_CONVERSION__get_converter(input_value):
+    """
+    Tests whether `BYPASSES_VERIFICATION_CONVERSION.get_converter` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Raw value.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    return BYPASSES_VERIFICATION_CONVERSION.get_converter(input_value)
+
+
+def _iter_options__bypasses_verification__put_converter():
+    yield True, True
+    yield False, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__bypasses_verification__put_converter()).returning_last())
+def test__BYPASSES_VERIFICATION_CONVERSION__put_converter(input_value):
+    """
+    Tests whether `BYPASSES_VERIFICATION_CONVERSION.put_converter` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `bool`
+        Processed value.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    return BYPASSES_VERIFICATION_CONVERSION.put_converter(input_value)
 
 # ---- deaf ----
 

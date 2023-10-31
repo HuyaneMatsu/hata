@@ -1,6 +1,6 @@
 import vampytest
 
-from ..fields import validate_nsfw
+from ..fields import validate_bypasses_verification
 
 
 def _iter_options():
@@ -10,9 +10,9 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_nsfw__passing(input_value):
+def test__validate_bypasses_verification__passing(input_value):
     """
-    Tests whether `validate_nsfw` works as intended.
+    Tests whether `validate_bypasses_verification` works as intended.
     
     Case: passing.
     
@@ -25,14 +25,14 @@ def test__validate_nsfw__passing(input_value):
     -------
     output : `bool`
     """
-    return validate_nsfw(input_value)
+    return validate_bypasses_verification(input_value)
 
 
 @vampytest.raising(TypeError)
 @vampytest.call_with(12.6)
-def test__validate_nsfw__type_error(input_value):
+def test__validate_bypasses_verification__type_error(input_value):
     """
-    Tests whether `validate_nsfw` works as intended.
+    Tests whether `validate_bypasses_verification` works as intended.
     
     Case: `TypeError`.
     
@@ -45,4 +45,4 @@ def test__validate_nsfw__type_error(input_value):
     ------
     TypeError
     """
-    validate_nsfw(input_value)
+    validate_bypasses_verification(input_value)

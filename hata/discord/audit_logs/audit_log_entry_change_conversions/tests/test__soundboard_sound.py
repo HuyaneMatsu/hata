@@ -1,13 +1,14 @@
 import vampytest
 
-from ....core import BUILTIN_EMOJIS
-from ....emoji import create_partial_emoji_data
-from ....soundboard.soundboard_sound.fields import validate_available, validate_emoji, validate_name, validate_volume
+from ....soundboard.soundboard_sound.fields import (
+    validate_available, validate_id, validate_name, validate_user_id, validate_volume
+)
 
-from ...conversion_helpers.converters import get_converter_name, put_converter_name
+from ...conversion_helpers.converters import get_converter_id, get_converter_name, put_converter_id, put_converter_name
 
 from ..soundboard_sound import (
-    AVAILABLE_CONVERSION, EMOJI_CONVERSION, NAME_CONVERSION, SOUNDBOARD_SOUND_CONVERSIONS, VOLUME_CONVERSION
+    AVAILABLE_CONVERSION, ID_CONVERSION, NAME_CONVERSION, SOUNDBOARD_SOUND_CONVERSIONS, USER_ID_CONVERSION,
+    VOLUME_CONVERSION
 )
 
 
@@ -17,7 +18,7 @@ def test__SOUNDBOARD_SOUND_CONVERSIONS():
     """
     vampytest.assert_eq(
         {*SOUNDBOARD_SOUND_CONVERSIONS.get_converters.keys()},
-        {'available', 'emoji', 'name', 'volume'},
+        {'available', 'user_id', 'name', 'volume', 'id', 'sound_id'},
     )
 
 
@@ -77,61 +78,15 @@ def test__AVAILABLE_CONVERSION__put_converter(input_value):
     return AVAILABLE_CONVERSION.put_converter(input_value)
 
 
-# ---- emoji ----
+# ---- id ----
 
-def test__EMOJI_CONVERSION__generic():
+def test__ID_CONVERSION__generic():
     """
-    Tests whether ``EMOJI_CONVERSION`` works as intended.
+    Tests whether ``ID_CONVERSION`` works as intended.
     """
-    # vampytest.assert_is(EMOJI_CONVERSION.get_converter, )
-    # vampytest.assert_is(EMOJI_CONVERSION.put_converter, )
-    vampytest.assert_is(EMOJI_CONVERSION.validator, validate_emoji)
-
-
-def _iter_options__emoji__get_converter():
-    emoji = BUILTIN_EMOJIS['x']
-    yield None, None
-    yield create_partial_emoji_data(emoji), emoji
-
-
-@vampytest._(vampytest.call_from(_iter_options__emoji__get_converter()).returning_last())
-def test__EMOJI_CONVERSION__get_converter(input_value):
-    """
-    Tests whether `EMOJI_CONVERSION.get_converter` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Raw value.
-    
-    Returns
-    -------
-    output : `None | Emoji`
-    """
-    return EMOJI_CONVERSION.get_converter(input_value)
-
-
-def _iter_options__emoji__put_converter():
-    emoji = BUILTIN_EMOJIS['x']
-    yield None, None
-    yield emoji, create_partial_emoji_data(emoji)
-
-
-@vampytest._(vampytest.call_from(_iter_options__emoji__put_converter()).returning_last())
-def test__EMOJI_CONVERSION__put_converter(input_value):
-    """
-    Tests whether `EMOJI_CONVERSION.put_converter` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `None | Emoji`
-        Processed value.
-    
-    Returns
-    -------
-    output : `None | dict<str, object>`
-    """
-    return EMOJI_CONVERSION.put_converter(input_value)
+    vampytest.assert_is(ID_CONVERSION.get_converter, get_converter_id)
+    vampytest.assert_is(ID_CONVERSION.put_converter, put_converter_id)
+    vampytest.assert_is(ID_CONVERSION.validator, validate_id)
 
 
 # ---- name ----
@@ -199,3 +154,15 @@ def test__VOLUME_CONVERSION__put_converter(input_value):
     output : `float`
     """
     return VOLUME_CONVERSION.put_converter(input_value)
+
+
+# ---- user_id ----
+
+def test__USER_ID_CONVERSION__generic():
+    """
+    Tests whether ``USER_ID_CONVERSION`` works as intended.
+    """
+    vampytest.assert_is(USER_ID_CONVERSION.get_converter, get_converter_id)
+    vampytest.assert_is(USER_ID_CONVERSION.put_converter, put_converter_id)
+    vampytest.assert_is(USER_ID_CONVERSION.validator, validate_user_id)
+

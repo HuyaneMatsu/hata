@@ -22,6 +22,10 @@ parse_boosts_since = nullable_date_time_parser_factory('premium_since')
 put_boosts_since_into = nullable_date_time_optional_putter_factory('premium_since')
 validate_boosts_since = nullable_date_time_validator_factory('boosts_since')
 
+# bypasses_verification | required for audit logs
+
+validate_bypasses_verification = bool_validator_factory('bypasses_verification', False)
+
 # flags
 
 parse_flags = flag_parser_factory('flags', GuildProfileFlag)

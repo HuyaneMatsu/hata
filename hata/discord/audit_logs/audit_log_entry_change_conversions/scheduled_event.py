@@ -118,7 +118,7 @@ def entity_type_put_converter(value):
 # ---- image ----
 
 IMAGE_CONVERSION = AuditLogEntryChangeConversion(
-    'image',
+    'image_hash',
     'image',
     FLAG_IS_MODIFICATION,
     get_converter = Icon.from_base_16_hash,

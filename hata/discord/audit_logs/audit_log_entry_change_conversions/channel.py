@@ -258,7 +258,7 @@ def flags_put_converter(value):
 
 # ---- icon_emoji  ----
 
-ICON_EMOJI_CONVERSION = AuditLogEntryChangeConversion(
+ICON_EMOJI_CONVERSION_IGNORED = AuditLogEntryChangeConversion(
     'icon_emoji',
     '',
     FLAG_IS_IGNORED,
@@ -436,6 +436,24 @@ def slowmode_get_converter(value):
     return value
 
 
+# ---- template  ----
+
+TEMPLATE_CONVERSION_IGNORED = AuditLogEntryChangeConversion(
+    'template',
+    '',
+    FLAG_IS_IGNORED,
+)
+
+
+# ---- theme_color  ----
+
+THEME_COLOR_CONVERSION_IGNORED = AuditLogEntryChangeConversion(
+    'theme_color',
+    '',
+    FLAG_IS_IGNORED,
+)
+
+
 # ---- topic ----
 
 TOPIC_CONVERSION = AuditLogEntryChangeConversion(
@@ -518,7 +536,7 @@ CHANNEL_CONVERSIONS = AuditLogEntryChangeConversionGroup(
     DEFAULT_THREAD_REACTION_CONVERSION,
     DEFAULT_THREAD_SLOWMODE_CONVERSION,
     FLAGS_CONVERSION,
-    ICON_EMOJI_CONVERSION,
+    ICON_EMOJI_CONVERSION_IGNORED,
     INVITABLE_CONVERSION,
     NAME_CONVERSION,
     NSFW_CONVERSION,
@@ -528,6 +546,8 @@ CHANNEL_CONVERSIONS = AuditLogEntryChangeConversionGroup(
     POSITION_CONVERSION,
     REGION_CONVERSION,
     SLOWMODE_CONVERSION,
+    TEMPLATE_CONVERSION_IGNORED,
+    THEME_COLOR_CONVERSION_IGNORED,
     TOPIC_CONVERSION,
     TYPE_CONVERSION,
     VIDEO_QUALITY_MODE_CONVERSION,

@@ -44,7 +44,7 @@ def test__CHANNEL_CONVERSIONS():
             'default_auto_archive_duration', 'default_forum_layout', 'default_sort_order', 'default_reaction_emoji',
             'default_thread_rate_limit_per_user', 'flags', 'invitable', 'name', 'nsfw', 'locked', 'parent_id',
             'permission_overwrites', 'rate_limit_per_user', 'rtc_region', 'rate_limit_per_user', 'topic', 'type',
-            'video_quality_mode', 'user_limit', 'position', 'icon_emoji'
+            'video_quality_mode', 'user_limit', 'position', 'icon_emoji', 'theme_color', 'template'
         },
     )
 

@@ -1,8 +1,14 @@
 import vampytest
 
 from ....integration import IntegrationType
+from ....user.voice_state.fields import validate_channel_id
 
-from ..user import COUNT_CONVERSION, DELETE_MESSAGE_DURATION_CONVERSION, INTEGRATION_TYPE_CONVERSION, USER_CONVERSIONS
+from ...conversion_helpers.converters import get_converter_id, put_converter_id
+
+from ..user import (
+    CHANNEL_ID_CONVERSION, COUNT_CONVERSION, DELETE_MESSAGE_DURATION_CONVERSION, INTEGRATION_TYPE_CONVERSION,
+    USER_CONVERSIONS
+)
 
 
 def test__USER_CONVERSIONS():
@@ -11,8 +17,19 @@ def test__USER_CONVERSIONS():
     """
     vampytest.assert_eq(
         {*USER_CONVERSIONS.get_converters.keys()},
-        {'delete_message_seconds', 'delete_message_days', 'count', 'integration_type'},
+        {'delete_message_seconds', 'delete_message_days', 'count', 'integration_type', 'channel_id'},
     )
+
+
+# ---- channel_id ----
+
+def test__CHANNEL_ID_CONVERSION__generic():
+    """
+    Tests whether ``CHANNEL_ID_CONVERSION`` works as intended.
+    """
+    vampytest.assert_is(CHANNEL_ID_CONVERSION.get_converter, get_converter_id)
+    vampytest.assert_is(CHANNEL_ID_CONVERSION.put_converter, put_converter_id)
+    vampytest.assert_is(CHANNEL_ID_CONVERSION.validator, validate_channel_id)
 
 
 # ---- count ----

@@ -1,14 +1,19 @@
 import vampytest
 
-from ....integration import IntegrationExpireBehavior
+from ....integration import IntegrationExpireBehavior, IntegrationType
+from ....integration.integration.fields import validate_name, validate_type
 from ....integration.integration_metadata.constants import EXPIRE_GRACE_PERIOD_DEFAULT
 from ....integration.integration_metadata.fields import (
     validate_emojis_enabled, validate_expire_behavior, validate_expire_grace_period
 )
 
+from ...conversion_helpers.converters import get_converter_name, put_converter_name
+
 from ..integration import (
-    EMOJIS_ENABLED_CONVERSION, EXPIRE_BEHAVIOR_CONVERSION, EXPIRE_GRACE_PERIOD_CONVERSION, INTEGRATION_CONVERSIONS
+    EMOJIS_ENABLED_CONVERSION, EXPIRE_BEHAVIOR_CONVERSION, EXPIRE_GRACE_PERIOD_CONVERSION, INTEGRATION_CONVERSIONS,
+    NAME_CONVERSION, TYPE_CONVERSION
 )
+
 
 def test__INTEGRATION_CONVERSIONS():
     """
@@ -16,7 +21,7 @@ def test__INTEGRATION_CONVERSIONS():
     """
     vampytest.assert_eq(
         {*INTEGRATION_CONVERSIONS.get_converters.keys()},
-        {'enable_emoticons', 'expire_behavior', 'expire_grace_period'},
+        {'enable_emoticons', 'expire_behavior', 'expire_grace_period', 'name', 'type'},
     )
 
 
@@ -185,3 +190,69 @@ def test__EXPIRE_GRACE_PERIOD_CONVERSION__put_converter(input_value):
     output : `int`
     """
     return EXPIRE_GRACE_PERIOD_CONVERSION.put_converter(input_value)
+
+
+# ---- name ----
+
+def test__NAME_CONVERSION__generic():
+    """
+    Tests whether ``NAME_CONVERSION`` works as intended.
+    """
+    vampytest.assert_is(NAME_CONVERSION.get_converter, get_converter_name)
+    vampytest.assert_is(NAME_CONVERSION.put_converter, put_converter_name)
+    vampytest.assert_is(NAME_CONVERSION.validator, validate_name)
+
+
+# ---- type ----
+
+def test__TYPE_CONVERSION__generic():
+    """
+    Tests whether ``TYPE_CONVERSION`` works as intended.
+    """
+    # vampytest.assert_is(TYPE_CONVERSION.get_converter, )
+    # vampytest.assert_is(TYPE_CONVERSION.put_converter, )
+    vampytest.assert_is(TYPE_CONVERSION.validator, validate_type)
+
+
+def _iter_options__type__get_converter():
+    yield None, IntegrationType.none
+    yield IntegrationType.discord.value, IntegrationType.discord
+
+
+@vampytest._(vampytest.call_from(_iter_options__type__get_converter()).returning_last())
+def test__TYPE_CONVERSION__get_converter(input_value):
+    """
+    Tests whether `TYPE_CONVERSION.get_converter` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Raw value.
+    
+    Returns
+    -------
+    output : ``IntegrationType``
+    """
+    return TYPE_CONVERSION.get_converter(input_value)
+
+
+def _iter_options__type__put_converter():
+    yield IntegrationType.none, IntegrationType.none.value
+    yield IntegrationType.discord, IntegrationType.discord.value
+
+
+@vampytest._(vampytest.call_from(_iter_options__type__put_converter()).returning_last())
+def test__TYPE_CONVERSION__put_converter(input_value):
+    """
+    Tests whether `TYPE_CONVERSION.put_converter` works as intended.
+    
+    Parameters
+    ----------
+    input_value : ``IntegrationType``
+        Processed value.
+    
+    Returns
+    -------
+    output : `str`
+    """
+    return TYPE_CONVERSION.put_converter(input_value)

@@ -2,7 +2,9 @@ __all__ = ()
 
 from ...bases import Icon
 from ...user import GuildProfileFlag
-from ...user.guild_profile.fields import validate_flags, validate_nick, validate_pending, validate_timed_out_until
+from ...user.guild_profile.fields import (
+    validate_bypasses_verification, validate_flags, validate_nick, validate_pending, validate_timed_out_until
+)
 from ...user.guild_profile.guild_profile import GUILD_PROFILE_AVATAR
 from ...user.voice_state.fields import validate_deaf, validate_mute
 from ...utils import datetime_to_timestamp, timestamp_to_datetime
@@ -23,6 +25,24 @@ AVATAR_CONVERSION = AuditLogEntryChangeConversion(
     put_converter = Icon.as_base_16_hash,
     validator = GUILD_PROFILE_AVATAR.validate_icon,
 )
+
+
+# ---- bypasses_verification ----
+
+BYPASSES_VERIFICATION_CONVERSION = AuditLogEntryChangeConversion(
+    'bypasses_verification',
+    'bypasses_verification',
+    FLAG_IS_MODIFICATION,
+    validator = validate_bypasses_verification,
+)
+
+
+@BYPASSES_VERIFICATION_CONVERSION.set_get_converter
+def bypasses_verification_get_converter(value):
+    if value is None:
+        value = False
+
+    return value
 
 
 # ---- deaf ----
@@ -212,6 +232,7 @@ def timed_out_until_converter_put(value):
 
 USER_CONVERSIONS = AuditLogEntryChangeConversionGroup(
     AVATAR_CONVERSION,
+    BYPASSES_VERIFICATION_CONVERSION,
     DEAF_CONVERSION,
     FLAGS_CONVERSION,
     MUTE_CONVERSION,

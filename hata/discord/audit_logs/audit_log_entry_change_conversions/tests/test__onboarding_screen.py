@@ -1,12 +1,15 @@
 import vampytest
 
-from ....onboarding import OnboardingPrompt
-from ....onboarding.onboarding_screen.fields import validate_default_channel_ids, validate_enabled, validate_prompts
+from ....onboarding import OnboardingMode, OnboardingPrompt
+from ....onboarding.onboarding_screen.fields import (
+    validate_default_channel_ids, validate_enabled, validate_mode, validate_prompts
+)
 
 from ...conversion_helpers.converters import get_converter_ids, put_converter_ids
 
 from ..onboarding_screen import (
-    DEFAULT_CHANNEL_IDS_CONVERSION, ENABLED_CONVERSION, ONBOARDING_SCREEN_CONVERSIONS, PROMPTS_CONVERSION
+    DEFAULT_CHANNEL_IDS_CONVERSION, ENABLED_CONVERSION, MODE_CONVERSION, ONBOARDING_SCREEN_CONVERSIONS,
+    PROMPTS_CONVERSION
 )
 
 
@@ -16,7 +19,7 @@ def test__ONBOARDING_SCREEN_CONVERSIONS():
     """
     vampytest.assert_eq(
         {*ONBOARDING_SCREEN_CONVERSIONS.get_converters.keys()},
-        {'default_channel_ids', 'enabled', 'prompts'},
+        {'default_channel_ids', 'enabled', 'prompts', 'below_requirements', 'mode'},
     )
 
 
@@ -85,6 +88,61 @@ def test__ENABLED_CONVERSION__put_converter(input_value):
     output : `bool`
     """
     return ENABLED_CONVERSION.put_converter(input_value)
+
+
+# ---- mode ----
+
+def test__MODE_CONVERSION__generic():
+    """
+    Tests whether ``MODE_CONVERSION`` works as intended.
+    """
+    # vampytest.assert_is(MODE_CONVERSION.get_converter, )
+    # vampytest.assert_is(MODE_CONVERSION.put_converter, )
+    vampytest.assert_is(MODE_CONVERSION.validator, validate_mode)
+
+
+def _iter_options__mode__get_converter():
+    yield None, OnboardingMode.default
+    yield OnboardingMode.advanced.value, OnboardingMode.advanced
+
+
+@vampytest._(vampytest.call_from(_iter_options__mode__get_converter()).returning_last())
+def test__MODE_CONVERSION__get_converter(input_value):
+    """
+    Tests whether `MODE_CONVERSION.get_converter` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `object`
+        Raw value.
+    
+    Returns
+    -------
+    output : ``OnboardingMode``
+    """
+    return MODE_CONVERSION.get_converter(input_value)
+
+
+def _iter_options__mode__put_converter():
+    yield OnboardingMode.default, OnboardingMode.default.value
+    yield OnboardingMode.advanced, OnboardingMode.advanced.value
+
+
+@vampytest._(vampytest.call_from(_iter_options__mode__put_converter()).returning_last())
+def test__MODE_CONVERSION__put_converter(input_value):
+    """
+    Tests whether `MODE_CONVERSION.put_converter` works as intended.
+    
+    Parameters
+    ----------
+    input_value : ``OnboardingMode``
+        Processed value.
+    
+    Returns
+    -------
+    output : `str`
+    """
+    return MODE_CONVERSION.put_converter(input_value)
 
 
 # ---- prompts ----

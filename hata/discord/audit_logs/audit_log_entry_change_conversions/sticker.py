@@ -16,7 +16,7 @@ from ..conversion_helpers.converters import (
 
 # ---- asset ----
 
-ASSET_CONVERSION = AuditLogEntryChangeConversion(
+ASSET_CONVERSION_IGNORED = AuditLogEntryChangeConversion(
     'asset',
     '',
     FLAG_IS_IGNORED,
@@ -180,7 +180,7 @@ def type_put_converter(value):
 # ---- Construct ----
 
 STICKER_CONVERSIONS = AuditLogEntryChangeConversionGroup(
-    ASSET_CONVERSION,
+    ASSET_CONVERSION_IGNORED,
     AVAILABLE_CONVERSION,
     DESCRIPTION_CONVERSION,
     FORMAT_CONVERSION,

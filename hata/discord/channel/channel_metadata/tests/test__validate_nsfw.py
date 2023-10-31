@@ -6,6 +6,7 @@ from ..fields import validate_nsfw
 def _iter_options():
     yield True, True
     yield False, False
+    yield None, False
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

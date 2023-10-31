@@ -1,4 +1,4 @@
-## 1.3.44 *\[2023-10-??\]*
+## 1.3.44 *\[2023-10-31\]*
 
 ### Improvements
 
@@ -46,6 +46,10 @@
 - Add `channel_id` audit log detail conversion for application command related entries.
 - Add `StickerType` audit log change converter.
 - Add `id` audit log detail conversion for channel related entries.
+- Add `bypasses_verification` audit log change converter for user related entries.
+- Add `IntegrationType` audit log change converter.
+- Add `guild_id` audit log detail conversion for application command related entries.
+- Add `OnboardingMode` audit log change converter.
 
 #### ext.slash
 - Add `InteractionAbortedError.__eq__`.

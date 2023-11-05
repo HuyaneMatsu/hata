@@ -72,7 +72,7 @@ class AuditLogEntryTargetType(PreinstancedBase):
         Detail conversions.
     name : `str`
         The name of audit log target type.
-    target_converter : `None | FunctionType`
+    target_converter : `None | FunctionType | MethodType`
         Audit log target converter.
     value : `int`
         The identifier value of the audit log target type. Only used for hashing.
@@ -296,7 +296,7 @@ class AuditLogEntryTargetType(PreinstancedBase):
             The identifier value of the audit log target type.
         name : `str`
             The name of the audit log target type.
-        target_converter : `None | FunctionType`
+        target_converter : `None | FunctionType | MethodType`
             Audit log target converter.
         change_conversions :  `None | AuditLogEntryChangeConversionGroup`
             Change conversions.

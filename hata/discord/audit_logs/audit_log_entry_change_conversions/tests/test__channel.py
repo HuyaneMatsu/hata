@@ -18,6 +18,12 @@ from ....channel.channel_metadata.fields import (
 from ....core import BUILTIN_EMOJIS
 from ....emoji import create_partial_emoji_data
 
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversion import (
+    _assert_fields_set as _assert_conversion_fields_set
+)
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversionGroup import (
+    _assert_fields_set as _assert_conversion_group_fields_set
+)
 from ...conversion_helpers.converters import (
     get_converter_description, get_converter_id, get_converter_ids, get_converter_name, put_converter_description,
     put_converter_id, put_converter_ids, put_converter_name
@@ -37,6 +43,7 @@ def test__CHANNEL_CONVERSIONS():
     """
     Tests whether `CHANNEL_CONVERSIONS` contains conversion for every expected key.
     """
+    _assert_conversion_group_fields_set(CHANNEL_CONVERSIONS)
     vampytest.assert_eq(
         {*CHANNEL_CONVERSIONS.get_converters.keys()},
         {
@@ -54,6 +61,7 @@ def test__APPLIED_TAG_IDS_CONVERSION__generic():
     """
     Tests whether ``APPLIED_TAG_IDS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(APPLIED_TAG_IDS_CONVERSION)
     vampytest.assert_is(APPLIED_TAG_IDS_CONVERSION.get_converter, get_converter_ids)
     vampytest.assert_is(APPLIED_TAG_IDS_CONVERSION.put_converter, put_converter_ids)
     vampytest.assert_is(APPLIED_TAG_IDS_CONVERSION.validator, validate_applied_tag_ids)
@@ -65,6 +73,7 @@ def test__ARCHIVED_CONVERSION__generic():
     """
     Tests whether ``ARCHIVED_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(ARCHIVED_CONVERSION)
     # vampytest.assert_is(ARCHIVED_CONVERSION.get_converter, )
     # vampytest.assert_is(ARCHIVED_CONVERSION.put_converter, )
     vampytest.assert_is(ARCHIVED_CONVERSION.validator, validate_archived)
@@ -121,6 +130,7 @@ def test__AUTO_ARCHIVE_AFTER_CONVERSION__generic():
     """
     Tests whether ``AUTO_ARCHIVE_AFTER_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(AUTO_ARCHIVE_AFTER_CONVERSION)
     # vampytest.assert_is(AUTO_ARCHIVE_AFTER_CONVERSION.get_converter, )
     # vampytest.assert_is(AUTO_ARCHIVE_AFTER_CONVERSION.put_converter, )
     vampytest.assert_is(AUTO_ARCHIVE_AFTER_CONVERSION.validator, validate_auto_archive_after)
@@ -177,6 +187,7 @@ def test__AVAILABLE_TAGS_CONVERSION__generic():
     """
     Tests whether ``AVAILABLE_TAGS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(AVAILABLE_TAGS_CONVERSION)
     # vampytest.assert_is(AVAILABLE_TAGS_CONVERSION.get_converter, )
     # vampytest.assert_is(AVAILABLE_TAGS_CONVERSION.put_converter, )
     vampytest.assert_is(AVAILABLE_TAGS_CONVERSION.validator, validate_available_tags)
@@ -251,6 +262,7 @@ def test__BITRATE_CONVERSION__generic():
     """
     Tests whether ``BITRATE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(BITRATE_CONVERSION)
     # vampytest.assert_is(BITRATE_CONVERSION.get_converter, )
     # vampytest.assert_is(BITRATE_CONVERSION.put_converter, )
     vampytest.assert_is(BITRATE_CONVERSION.validator, validate_bitrate)
@@ -307,6 +319,7 @@ def test__DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION__generic():
     """
     Tests whether ``DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION)
     # vampytest.assert_is(DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.get_converter, )
     # vampytest.assert_is(DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.put_converter, )
     vampytest.assert_is(
@@ -365,6 +378,7 @@ def test__DEFAULT_FORUM_LAYOUT_CONVERSION__generic():
     """
     Tests whether ``DEFAULT_FORUM_LAYOUT_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(DEFAULT_FORUM_LAYOUT_CONVERSION)
     # vampytest.assert_is(DEFAULT_FORUM_LAYOUT_CONVERSION.get_converter, )
     # vampytest.assert_is(DEFAULT_FORUM_LAYOUT_CONVERSION.put_converter, )
     vampytest.assert_is(DEFAULT_FORUM_LAYOUT_CONVERSION.validator, validate_default_forum_layout)
@@ -420,6 +434,7 @@ def test__DEFAULT_SORT_ORDER_CONVERSION__generic():
     """
     Tests whether ``DEFAULT_SORT_ORDER_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(DEFAULT_SORT_ORDER_CONVERSION)
     # vampytest.assert_is(DEFAULT_SORT_ORDER_CONVERSION.get_converter, )
     # vampytest.assert_is(DEFAULT_SORT_ORDER_CONVERSION.put_converter, )
     vampytest.assert_is(DEFAULT_SORT_ORDER_CONVERSION.validator, validate_default_sort_order)
@@ -475,6 +490,7 @@ def test__DEFAULT_THREAD_REACTION_CONVERSION__generic():
     """
     Tests whether ``DEFAULT_THREAD_REACTION_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(DEFAULT_THREAD_REACTION_CONVERSION)
     # vampytest.assert_is(DEFAULT_THREAD_REACTION_CONVERSION.get_converter, )
     # vampytest.assert_is(DEFAULT_THREAD_REACTION_CONVERSION.put_converter, )
     vampytest.assert_is(DEFAULT_THREAD_REACTION_CONVERSION.validator, validate_default_thread_reaction)
@@ -532,6 +548,7 @@ def test__DEFAULT_THREAD_SLOWMODE_CONVERSION__generic():
     """
     Tests whether ``DEFAULT_THREAD_SLOWMODE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(DEFAULT_THREAD_SLOWMODE_CONVERSION)
     # vampytest.assert_is(DEFAULT_THREAD_SLOWMODE_CONVERSION.get_converter, )
     # vampytest.assert_is(DEFAULT_THREAD_SLOWMODE_CONVERSION.put_converter, )
     vampytest.assert_is(DEFAULT_THREAD_SLOWMODE_CONVERSION.validator, validate_default_thread_slowmode)
@@ -588,6 +605,7 @@ def test__FLAGS_CONVERSION__generic():
     """
     Tests whether ``FLAGS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(FLAGS_CONVERSION)
     # vampytest.assert_is(FLAGS_CONVERSION.get_converter, )
     # vampytest.assert_is(FLAGS_CONVERSION.put_converter, )
     vampytest.assert_is(FLAGS_CONVERSION.validator, validate_flags)
@@ -648,6 +666,7 @@ def test__INVITABLE_CONVERSION__generic():
     """
     Tests whether ``INVITABLE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(INVITABLE_CONVERSION)
     # vampytest.assert_is(INVITABLE_CONVERSION.get_converter, )
     # vampytest.assert_is(INVITABLE_CONVERSION.put_converter, )
     vampytest.assert_is(INVITABLE_CONVERSION.validator, validate_invitable)
@@ -704,6 +723,7 @@ def test__NAME_CONVERSION__generic():
     """
     Tests whether ``NAME_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(NAME_CONVERSION)
     vampytest.assert_is(NAME_CONVERSION.get_converter, get_converter_name)
     vampytest.assert_is(NAME_CONVERSION.put_converter, put_converter_name)
     vampytest.assert_is(NAME_CONVERSION.validator, validate_name)
@@ -715,6 +735,7 @@ def test__NSFW_CONVERSION__generic():
     """
     Tests whether ``NSFW_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(NSFW_CONVERSION)
     # vampytest.assert_is(NSFW_CONVERSION.get_converter, )
     # vampytest.assert_is(NSFW_CONVERSION.put_converter, )
     vampytest.assert_is(NSFW_CONVERSION.validator, validate_nsfw)
@@ -771,6 +792,7 @@ def test__OPEN_CONVERSION__generic():
     """
     Tests whether ``OPEN_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(OPEN_CONVERSION)
     # vampytest.assert_is(OPEN_CONVERSION.get_converter, )
     # vampytest.assert_is(OPEN_CONVERSION.put_converter, )
     vampytest.assert_is(OPEN_CONVERSION.validator, validate_open)
@@ -827,6 +849,7 @@ def test__PARENT_ID_CONVERSION__generic():
     """
     Tests whether ``PARENT_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(PARENT_ID_CONVERSION)
     vampytest.assert_is(PARENT_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(PARENT_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(PARENT_ID_CONVERSION.validator, validate_parent_id)
@@ -838,6 +861,7 @@ def test__PERMISSION_OVERWRITES_CONVERSION__generic():
     """
     Tests whether ``PERMISSION_OVERWRITES_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(PERMISSION_OVERWRITES_CONVERSION)
     # vampytest.assert_is(PERMISSION_OVERWRITES_CONVERSION.get_converter, )
     # vampytest.assert_is(PERMISSION_OVERWRITES_CONVERSION.put_converter, )
     vampytest.assert_is(PERMISSION_OVERWRITES_CONVERSION.validator, validate_permission_overwrites)
@@ -918,6 +942,7 @@ def test__POSITION_CONVERSION__generic():
     """
     Tests whether ``POSITION_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(POSITION_CONVERSION)
     # vampytest.assert_is(POSITION_CONVERSION.get_converter, )
     # vampytest.assert_is(POSITION_CONVERSION.put_converter, )
     vampytest.assert_is(POSITION_CONVERSION.validator, validate_position)
@@ -974,6 +999,7 @@ def test__REGION_CONVERSION__generic():
     """
     Tests whether ``REGION_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(REGION_CONVERSION)
     # vampytest.assert_is(REGION_CONVERSION.get_converter, )
     # vampytest.assert_is(REGION_CONVERSION.put_converter, )
     vampytest.assert_is(REGION_CONVERSION.validator, validate_region)
@@ -1029,6 +1055,7 @@ def test__SLOWMODE_CONVERSION__generic():
     """
     Tests whether ``SLOWMODE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(SLOWMODE_CONVERSION)
     # vampytest.assert_is(SLOWMODE_CONVERSION.get_converter, )
     # vampytest.assert_is(SLOWMODE_CONVERSION.put_converter, )
     vampytest.assert_is(SLOWMODE_CONVERSION.validator, validate_slowmode)
@@ -1085,6 +1112,7 @@ def test__TOPIC_CONVERSION__generic():
     """
     Tests whether ``TOPIC_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(TOPIC_CONVERSION)
     vampytest.assert_is(TOPIC_CONVERSION.get_converter, get_converter_description)
     vampytest.assert_is(TOPIC_CONVERSION.put_converter, put_converter_description)
     vampytest.assert_is(TOPIC_CONVERSION.validator, validate_topic)
@@ -1096,6 +1124,7 @@ def test__TYPE_CONVERSION__generic():
     """
     Tests whether ``TYPE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(TYPE_CONVERSION)
     # vampytest.assert_is(TYPE_CONVERSION.get_converter, )
     # vampytest.assert_is(TYPE_CONVERSION.put_converter, )
     vampytest.assert_is(TYPE_CONVERSION.validator, validate_type)
@@ -1151,6 +1180,7 @@ def test__VIDEO_QUALITY_MODE_CONVERSION__generic():
     """
     Tests whether ``VIDEO_QUALITY_MODE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(VIDEO_QUALITY_MODE_CONVERSION)
     # vampytest.assert_is(VIDEO_QUALITY_MODE_CONVERSION.get_converter, )
     # vampytest.assert_is(VIDEO_QUALITY_MODE_CONVERSION.put_converter, )
     vampytest.assert_is(VIDEO_QUALITY_MODE_CONVERSION.validator, validate_video_quality_mode)
@@ -1206,6 +1236,7 @@ def test__USER_LIMIT_CONVERSION__generic():
     """
     Tests whether ``USER_LIMIT_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(USER_LIMIT_CONVERSION)
     # vampytest.assert_is(USER_LIMIT_CONVERSION.get_converter, )
     # vampytest.assert_is(USER_LIMIT_CONVERSION.put_converter, )
     vampytest.assert_is(USER_LIMIT_CONVERSION.validator, validate_user_limit)

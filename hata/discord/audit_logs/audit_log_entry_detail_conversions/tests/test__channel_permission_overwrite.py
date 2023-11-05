@@ -4,6 +4,12 @@ from ....channel import PermissionOverwriteTargetType
 from ....channel.permission_overwrite.fields import validate_target_id, validate_target_type
 from ....role.role.fields import validate_name
 
+from ...audit_log_entry_detail_conversion.tests.test__AuditLogEntryDetailConversion import (
+    _assert_fields_set as _assert_conversion_fields_set
+)
+from ...audit_log_entry_detail_conversion.tests.test__AuditLogEntryDetailConversionGroup import (
+    _assert_fields_set as _assert_conversion_group_fields_set
+)
 from ...conversion_helpers.converters import get_converter_id, get_converter_name, put_converter_id, put_converter_name
 
 from ..channel_permission_overwrite import (
@@ -15,6 +21,7 @@ def test__APPLICATION_COMMAND_CONVERSIONS():
     """
     Tests whether `CHANNEL_PERMISSION_OVERWRITE_CONVERSIONS` contains conversion for every expected key.
     """
+    _assert_conversion_group_fields_set(CHANNEL_PERMISSION_OVERWRITE_CONVERSIONS)
     vampytest.assert_eq(
         {*CHANNEL_PERMISSION_OVERWRITE_CONVERSIONS.get_converters.keys()},
         {'id', 'role_name', 'type'},
@@ -27,6 +34,7 @@ def test__ROLE_NAME_CONVERSION__generic():
     """
     Tests whether ``ROLE_NAME_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(ROLE_NAME_CONVERSION)
     vampytest.assert_is(ROLE_NAME_CONVERSION.get_converter, get_converter_name)
     vampytest.assert_is(ROLE_NAME_CONVERSION.put_converter, put_converter_name)
     vampytest.assert_is(ROLE_NAME_CONVERSION.validator, validate_name)
@@ -38,6 +46,7 @@ def test__TARGET_ID_CONVERSION__generic():
     """
     Tests whether ``TARGET_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(TARGET_ID_CONVERSION)
     vampytest.assert_is(TARGET_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(TARGET_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(TARGET_ID_CONVERSION.validator, validate_target_id)
@@ -49,6 +58,7 @@ def test__TARGET_TYPE_CONVERSION__generic():
     """
     Tests whether ``TARGET_TYPE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(TARGET_TYPE_CONVERSION)
     # vampytest.assert_is(TARGET_TYPE_CONVERSION.get_converter, )
     # vampytest.assert_is(TARGET_TYPE_CONVERSION.put_converter, )
     vampytest.assert_is(TARGET_TYPE_CONVERSION.validator, validate_target_type)

@@ -7,6 +7,12 @@ from ....invite.invite.fields import (
 )
 
 from ...audit_log_entry_change_conversion import AuditLogEntryChangeConversion
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversion import (
+    _assert_fields_set as _assert_conversion_fields_set
+)
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversionGroup import (
+    _assert_fields_set as _assert_conversion_group_fields_set
+)
 from ...conversion_helpers.converters import get_converter_id, get_converter_name, put_converter_id, put_converter_name
 
 from ..invite import (
@@ -19,6 +25,7 @@ def test__INVITE_CONVERSIONS():
     """
     Tests whether `INVITE_CONVERSIONS` contains conversion for every expected key.
     """
+    _assert_conversion_group_fields_set(INVITE_CONVERSIONS)
     vampytest.assert_eq(
         {*INVITE_CONVERSIONS.get_converters.keys()},
         {'uses', 'inviter_id', 'channel_id', 'flags', 'code', 'max_age', 'max_uses', 'temporary'},
@@ -31,6 +38,7 @@ def test__CHANNEL_ID_CONVERSION__generic():
     """
     Tests whether ``CHANNEL_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(CHANNEL_ID_CONVERSION)
     vampytest.assert_is(CHANNEL_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(CHANNEL_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(CHANNEL_ID_CONVERSION.validator, validate_channel_id)
@@ -42,6 +50,7 @@ def test__CODE_CONVERSION__generic():
     """
     Tests whether ``CODE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(CODE_CONVERSION)
     vampytest.assert_is(CODE_CONVERSION.get_converter, get_converter_name)
     vampytest.assert_is(CODE_CONVERSION.put_converter, put_converter_name)
     vampytest.assert_is(CODE_CONVERSION.validator, validate_code)
@@ -53,6 +62,7 @@ def test__FLAGS_CONVERSION__generic():
     """
     Tests whether ``FLAGS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(FLAGS_CONVERSION)
     # vampytest.assert_is(FLAGS_CONVERSION.get_converter, )
     # vampytest.assert_is(FLAGS_CONVERSION.put_converter, )
     vampytest.assert_is(FLAGS_CONVERSION.validator, validate_flags)
@@ -113,6 +123,7 @@ def test__INVITER_ID_CONVERSION__generic():
     """
     Tests whether ``INVITER_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(INVITER_ID_CONVERSION)
     vampytest.assert_is(INVITER_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(INVITER_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(INVITER_ID_CONVERSION.validator, validate_inviter_id)
@@ -124,6 +135,7 @@ def test__MAX_AGE_CONVERSION__generic():
     """
     Tests whether ``MAX_AGE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(MAX_AGE_CONVERSION)
     # vampytest.assert_is(MAX_AGE_CONVERSION.get_converter, )
     # vampytest.assert_is(MAX_AGE_CONVERSION.put_converter, )
     vampytest.assert_is(MAX_AGE_CONVERSION.validator, validate_max_age)
@@ -135,6 +147,7 @@ def test__MAX_USES_CONVERSION__generic():
     """
     Tests whether ``MAX_USES_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(MAX_USES_CONVERSION)
     # vampytest.assert_is(MAX_USES_CONVERSION.get_converter, )
     # vampytest.assert_is(MAX_USES_CONVERSION.put_converter, )
     vampytest.assert_is(MAX_USES_CONVERSION.validator, validate_max_uses)
@@ -146,6 +159,7 @@ def test__USES_CONVERSION__generic():
     """
     Tests whether ``USES_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(USES_CONVERSION)
     # vampytest.assert_is(USES_CONVERSION.get_converter, )
     # vampytest.assert_is(USES_CONVERSION.put_converter, )
     vampytest.assert_is(USES_CONVERSION.validator, validate_uses)
@@ -218,6 +232,7 @@ def test__TEMPORARY_CONVERSION__generic():
     """
     Tests whether ``TEMPORARY_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(TEMPORARY_CONVERSION)
     # vampytest.assert_is(TEMPORARY_CONVERSION.get_converter, )
     # vampytest.assert_is(TEMPORARY_CONVERSION.put_converter, )
     vampytest.assert_is(TEMPORARY_CONVERSION.validator, validate_temporary)

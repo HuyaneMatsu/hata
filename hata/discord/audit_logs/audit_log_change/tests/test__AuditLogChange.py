@@ -171,7 +171,7 @@ def test__AuditLogChange__checks(change, check):
     ----------
     change : ``AuditLogChange``
         Change to test with.
-    check : `FunctionType`
+    check : `FunctionType | MethodType`
         Check to run.
     
     Returns

@@ -1,4 +1,4 @@
-from types import FunctionType
+from types import FunctionType, MethodType
 
 import vampytest
 
@@ -36,9 +36,9 @@ def _assert_fields_set(conversion):
     vampytest.assert_instance(conversion.field_key, str)
     vampytest.assert_instance(conversion.field_name, str)
     vampytest.assert_instance(conversion.flags, int)
-    vampytest.assert_instance(conversion.get_converter, FunctionType)
-    vampytest.assert_instance(conversion.put_converter, FunctionType)
-    vampytest.assert_instance(conversion.validator, FunctionType)
+    vampytest.assert_instance(conversion.get_converter, FunctionType, MethodType)
+    vampytest.assert_instance(conversion.put_converter, FunctionType, MethodType)
+    vampytest.assert_instance(conversion.validator, FunctionType, MethodType)
 
 
 def test__AuditLogEntryChangeConversion__new__minimal_fields():

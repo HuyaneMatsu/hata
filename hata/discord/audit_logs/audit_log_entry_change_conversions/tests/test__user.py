@@ -10,6 +10,12 @@ from ....user.guild_profile.guild_profile import GUILD_PROFILE_AVATAR
 from ....user.voice_state.fields import validate_deaf, validate_mute
 from ....utils import datetime_to_timestamp
 
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversion import (
+    _assert_fields_set as _assert_conversion_fields_set
+)
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversionGroup import (
+    _assert_fields_set as _assert_conversion_group_fields_set
+)
 from ...audit_log_role import AuditLogRole
 from ...conversion_helpers.converters import get_converter_description, put_converter_description
 
@@ -24,6 +30,7 @@ def test__USER_CONVERSIONS():
     """
     Tests whether `USER_CONVERSIONS` contains conversion for every expected key.
     """
+    _assert_conversion_group_fields_set(USER_CONVERSIONS)
     vampytest.assert_eq(
         {*USER_CONVERSIONS.get_converters.keys()},
         {
@@ -39,8 +46,9 @@ def test__AVATAR_CONVERSION__generic():
     """
     Tests whether ``AVATAR_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(AVATAR_CONVERSION)
     vampytest.assert_eq(AVATAR_CONVERSION.get_converter, Icon.from_base_16_hash)
-    vampytest.assert_eq(AVATAR_CONVERSION.put_converter, Icon.as_base_16_hash)
+    vampytest.assert_eq(AVATAR_CONVERSION.put_converter, Icon.as_base_16_hash.fget)
     vampytest.assert_eq(AVATAR_CONVERSION.validator, GUILD_PROFILE_AVATAR.validate_icon)
 
 
@@ -50,6 +58,7 @@ def test__BYPASSES_VERIFICATION_CONVERSION__generic():
     """
     Tests whether ``BYPASSES_VERIFICATION_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(BYPASSES_VERIFICATION_CONVERSION)
     # vampytest.assert_is(BYPASSES_VERIFICATION_CONVERSION.get_converter, )
     # vampytest.assert_is(BYPASSES_VERIFICATION_CONVERSION.put_converter, )
     vampytest.assert_is(BYPASSES_VERIFICATION_CONVERSION.validator, validate_bypasses_verification)
@@ -99,12 +108,14 @@ def test__BYPASSES_VERIFICATION_CONVERSION__put_converter(input_value):
     """
     return BYPASSES_VERIFICATION_CONVERSION.put_converter(input_value)
 
+
 # ---- deaf ----
 
 def test__DEAF_CONVERSION__generic():
     """
     Tests whether ``DEAF_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(DEAF_CONVERSION)
     # vampytest.assert_is(DEAF_CONVERSION.get_converter, )
     # vampytest.assert_is(DEAF_CONVERSION.put_converter, )
     vampytest.assert_is(DEAF_CONVERSION.validator, validate_deaf)
@@ -161,6 +172,7 @@ def test__PENDING_CONVERSION__generic():
     """
     Tests whether ``PENDING_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(PENDING_CONVERSION)
     # vampytest.assert_is(PENDING_CONVERSION.get_converter, )
     # vampytest.assert_is(PENDING_CONVERSION.put_converter, )
     vampytest.assert_is(PENDING_CONVERSION.validator, validate_pending)
@@ -217,6 +229,7 @@ def test__MUTE_CONVERSION__generic():
     """
     Tests whether ``MUTE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(MUTE_CONVERSION)
     # vampytest.assert_is(MUTE_CONVERSION.get_converter, )
     # vampytest.assert_is(MUTE_CONVERSION.put_converter, )
     vampytest.assert_is(MUTE_CONVERSION.validator, validate_mute)
@@ -273,6 +286,7 @@ def test__NICK_CONVERSION__generic():
     """
     Tests whether ``NICK_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(NICK_CONVERSION)
     vampytest.assert_is(NICK_CONVERSION.get_converter, get_converter_description)
     vampytest.assert_is(NICK_CONVERSION.put_converter, put_converter_description)
     vampytest.assert_is(NICK_CONVERSION.validator, validate_nick)
@@ -284,6 +298,7 @@ def test__FLAGS_CONVERSION__generic():
     """
     Tests whether ``FLAGS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(FLAGS_CONVERSION)
     # vampytest.assert_is(FLAGS_CONVERSION.get_converter, )
     # vampytest.assert_is(FLAGS_CONVERSION.put_converter, )
     vampytest.assert_is(FLAGS_CONVERSION.validator, validate_flags)
@@ -339,6 +354,26 @@ def test__FLAGS_CONVERSION__put_converter(input_value):
 
 
 # ---- roles ----
+
+def test__ROLES_CONVERSION_ADDITION__generic():
+    """
+    Tests whether ``ROLES_CONVERSION__ADDITION`` works as intended.
+    """
+    _assert_conversion_fields_set(ROLES_CONVERSION__ADDITION)
+    # vampytest.assert_is(ROLES_CONVERSION__ADDITION.get_converter, )
+    # vampytest.assert_is(ROLES_CONVERSION__ADDITION.put_converter, )
+    # vampytest.assert_is(ROLES_CONVERSION__ADDITION.validator, validate_flags)
+
+
+def test__ROLES_CONVERSION_REMOVAL__generic():
+    """
+    Tests whether ``ROLES_CONVERSION__REMOVAL`` works as intended.
+    """
+    _assert_conversion_fields_set(ROLES_CONVERSION__REMOVAL)
+    # vampytest.assert_is(ROLES_CONVERSION__REMOVAL.get_converter, )
+    # vampytest.assert_is(ROLES_CONVERSION__REMOVAL.put_converter, )
+    # vampytest.assert_is(ROLES_CONVERSION__REMOVAL.validator, validate_flags)
+
 
 def _iter_options__roles__get_converter():
     audit_log_role_0 = AuditLogRole(role_id = 202310280000)
@@ -414,8 +449,6 @@ def test__ROLES_CONVERSION__set_converter(conversion, value):
     return conversion.put_converter(value)
 
 
-
-
 def _iter_options__roles__validator__passing():
     audit_log_role_0 = AuditLogRole(role_id = 202310280004)
     audit_log_role_1 = AuditLogRole(role_id = 202310280005)
@@ -462,6 +495,7 @@ def test__TIMED_OUT_UNTIL_CONVERSION__generic():
     """
     Tests whether ``TIMED_OUT_UNTIL_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(TIMED_OUT_UNTIL_CONVERSION)
     # vampytest.assert_is(TIMED_OUT_UNTIL_CONVERSION.get_converter, )
     # vampytest.assert_is(TIMED_OUT_UNTIL_CONVERSION.put_converter, )
     vampytest.assert_is(TIMED_OUT_UNTIL_CONVERSION.validator, validate_timed_out_until)

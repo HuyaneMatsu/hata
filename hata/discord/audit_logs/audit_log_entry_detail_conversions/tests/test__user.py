@@ -1,8 +1,15 @@
 import vampytest
 
 from ....integration import IntegrationType
+from ....integration.integration.fields import validate_type as validate_integration_type
 from ....user.voice_state.fields import validate_channel_id
 
+from ...audit_log_entry_detail_conversion.tests.test__AuditLogEntryDetailConversion import (
+    _assert_fields_set as _assert_conversion_fields_set
+)
+from ...audit_log_entry_detail_conversion.tests.test__AuditLogEntryDetailConversionGroup import (
+    _assert_fields_set as _assert_conversion_group_fields_set
+)
 from ...conversion_helpers.converters import get_converter_id, put_converter_id
 
 from ..user import (
@@ -15,6 +22,7 @@ def test__USER_CONVERSIONS():
     """
     Tests whether `USER_CONVERSIONS` contains conversion for every expected key.
     """
+    _assert_conversion_group_fields_set(USER_CONVERSIONS)
     vampytest.assert_eq(
         {*USER_CONVERSIONS.get_converters.keys()},
         {'delete_message_seconds', 'delete_message_days', 'count', 'integration_type', 'channel_id'},
@@ -27,12 +35,23 @@ def test__CHANNEL_ID_CONVERSION__generic():
     """
     Tests whether ``CHANNEL_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(CHANNEL_ID_CONVERSION)
     vampytest.assert_is(CHANNEL_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(CHANNEL_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(CHANNEL_ID_CONVERSION.validator, validate_channel_id)
 
 
 # ---- count ----
+
+def test__COUNT_CONVERSION__generic():
+    """
+    Tests whether ``COUNT_CONVERSION`` works as intended.
+    """
+    _assert_conversion_fields_set(COUNT_CONVERSION)
+    # vampytest.assert_is(COUNT_CONVERSION.get_converter, )
+    # vampytest.assert_is(COUNT_CONVERSION.put_converter, )
+    # vampytest.assert_is(COUNT_CONVERSION.validator, )
+
 
 def _iter_options__count__get_converter():
     count = 123
@@ -121,6 +140,16 @@ def test__COUNT_CONVERSION__validator(input_value):
 
 # ---- delete_message_duration ----
 
+def test__DELETE_MESSAGE_DURATION_CONVERSION__generic():
+    """
+    Tests whether ``DELETE_MESSAGE_DURATION_CONVERSION`` works as intended.
+    """
+    _assert_conversion_fields_set(DELETE_MESSAGE_DURATION_CONVERSION)
+    # vampytest.assert_is(DELETE_MESSAGE_DURATION_CONVERSION.get_converter, )
+    # vampytest.assert_is(DELETE_MESSAGE_DURATION_CONVERSION.put_converter, )
+    # vampytest.assert_is(DELETE_MESSAGE_DURATION_CONVERSION.validator, )
+
+
 def _iter_options__delete_message_duration__get_converter():
     delete_message_duration = 123
     yield 0, 0
@@ -208,6 +237,16 @@ def test__DELETE_MESSAGE_DURATION_CONVERSION__validator(input_value):
 
 # ---- integration_type ----
 
+def test__INTEGRATION_TYPE_CONVERSION__generic():
+    """
+    Tests whether ``INTEGRATION_TYPE_CONVERSION`` works as intended.
+    """
+    _assert_conversion_fields_set(INTEGRATION_TYPE_CONVERSION)
+    # vampytest.assert_is(INTEGRATION_TYPE_CONVERSION.get_converter, )
+    # vampytest.assert_is(INTEGRATION_TYPE_CONVERSION.put_converter, )
+    vampytest.assert_is(INTEGRATION_TYPE_CONVERSION.validator, validate_integration_type)
+
+
 def _iter_options__integration_type__get_converter():
     yield None, IntegrationType.none
     yield IntegrationType.discord.value, IntegrationType.discord
@@ -250,41 +289,3 @@ def test__INTEGRATION_TYPE_CONVERSION__put_converter(input_value):
     output : `str`
     """
     return INTEGRATION_TYPE_CONVERSION.put_converter(input_value)
-
-
-def _iter_options__integration_type__validator__passing():
-    yield IntegrationType.discord, IntegrationType.discord
-    yield IntegrationType.discord.value, IntegrationType.discord
-
-
-def _iter_options__integration_type__validator__type_error():
-    yield 12.6
-    yield 12
-
-
-def _iter_options__integration_type__validator__value_error():
-    yield 'pudding'
-
-
-@vampytest._(vampytest.call_from(_iter_options__integration_type__validator__passing()).returning_last())
-@vampytest._(vampytest.call_from(_iter_options__integration_type__validator__type_error()).raising(TypeError))
-@vampytest._(vampytest.call_from(_iter_options__integration_type__validator__value_error()).raising(ValueError))
-def test__INTEGRATION_TYPE_CONVERSION__validator(input_value):
-    """
-    Tests whether `INTEGRATION_TYPE_CONVERSION.validator` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Value to validate.
-    
-    Returns
-    -------
-    output : ``IntegrationType``
-    
-    Raises
-    ------
-    TypeError
-    ValueError
-    """
-    return INTEGRATION_TYPE_CONVERSION.validator(input_value)

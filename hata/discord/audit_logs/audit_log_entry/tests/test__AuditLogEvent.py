@@ -1,4 +1,4 @@
-from types import FunctionType
+from types import FunctionType, MethodType
 
 import vampytest
 
@@ -28,4 +28,4 @@ def test__AuditLogEntryTargetType():
         vampytest.assert_instance(instance.value, AuditLogEntryTargetType.VALUE_TYPE)
         vampytest.assert_instance(instance.change_conversions, AuditLogEntryChangeConversionGroup, nullable = True)
         vampytest.assert_instance(instance.detail_conversions, AuditLogEntryDetailConversionGroup, nullable = True)
-        vampytest.assert_instance(instance.target_converter, FunctionType, nullable = True)
+        vampytest.assert_instance(instance.target_converter, FunctionType, MethodType, nullable = True)

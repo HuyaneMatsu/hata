@@ -15,11 +15,11 @@ class AuditLogEntryDetailConversion(RichAttributeErrorBaseType):
         The serialised name of the field.
     field_name : `str`
         The field's name.
-    get_converter : `FunctionType`
+    get_converter : `FunctionType | MethodType`
         Raw to processed value converter.
-    put_converter : `FunctionType`
+    put_converter : `FunctionType | MethodType`
         Processed to raw value converter.
-    validator : `FunctionType`
+    validator : `FunctionType | MethodType`
         Detail validator.
     """
     __slots__ = ('field_key', 'field_name', 'get_converter', 'put_converter', 'validator')
@@ -34,11 +34,11 @@ class AuditLogEntryDetailConversion(RichAttributeErrorBaseType):
             The serialised name of the field.
         field_name : `str`
             The field's name.
-        get_converter : `FunctionType`, Optional (Keyword only)
+        get_converter : `FunctionType | MethodType`, Optional (Keyword only)
             Raw to processed value converter.
-        put_converter : `FunctionType`, Optional (Keyword only)
+        put_converter : `FunctionType | MethodType`, Optional (Keyword only)
             Processed to raw value converter.
-        validator : `FunctionType`, Optional (Keyword only)
+        validator : `FunctionType | MethodType`, Optional (Keyword only)
             Detail validator.
         """
         if get_converter is ...:
@@ -163,7 +163,7 @@ class AuditLogEntryDetailConversion(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        get_converter : `FunctionType`
+        get_converter : `FunctionType | MethodType`
             Converter to put.
         
         Returns
@@ -180,7 +180,7 @@ class AuditLogEntryDetailConversion(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        put_converter : `FunctionType`
+        put_converter : `FunctionType | MethodType`
             Converter to put.
         
         Returns
@@ -197,7 +197,7 @@ class AuditLogEntryDetailConversion(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        validator : `FunctionType`
+        validator : `FunctionType | MethodType`
             Converter to put.
         
         Returns

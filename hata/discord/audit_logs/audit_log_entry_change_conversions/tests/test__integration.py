@@ -7,6 +7,12 @@ from ....integration.integration_metadata.fields import (
     validate_emojis_enabled, validate_expire_behavior, validate_expire_grace_period
 )
 
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversion import (
+    _assert_fields_set as _assert_conversion_fields_set
+)
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversionGroup import (
+    _assert_fields_set as _assert_conversion_group_fields_set
+)
 from ...conversion_helpers.converters import get_converter_name, put_converter_name
 
 from ..integration import (
@@ -19,6 +25,7 @@ def test__INTEGRATION_CONVERSIONS():
     """
     Tests whether `INTEGRATION_CONVERSIONS` contains conversion for every expected key.
     """
+    _assert_conversion_group_fields_set(INTEGRATION_CONVERSIONS)
     vampytest.assert_eq(
         {*INTEGRATION_CONVERSIONS.get_converters.keys()},
         {'enable_emoticons', 'expire_behavior', 'expire_grace_period', 'name', 'type'},
@@ -31,6 +38,7 @@ def test__EMOJIS_ENABLED_CONVERSION__generic():
     """
     Tests whether ``EMOJIS_ENABLED_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(EMOJIS_ENABLED_CONVERSION)
     # vampytest.assert_is(EMOJIS_ENABLED_CONVERSION.get_converter, )
     # vampytest.assert_is(EMOJIS_ENABLED_CONVERSION.put_converter, )
     vampytest.assert_is(EMOJIS_ENABLED_CONVERSION.validator, validate_emojis_enabled)
@@ -87,6 +95,7 @@ def test__EXPIRE_BEHAVIOR_CONVERSION__generic():
     """
     Tests whether ``EXPIRE_BEHAVIOR_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(EXPIRE_BEHAVIOR_CONVERSION)
     # vampytest.assert_is(EXPIRE_BEHAVIOR_CONVERSION.get_converter, )
     # vampytest.assert_is(EXPIRE_BEHAVIOR_CONVERSION.put_converter, )
     vampytest.assert_is(EXPIRE_BEHAVIOR_CONVERSION.validator, validate_expire_behavior)
@@ -142,6 +151,7 @@ def test__EXPIRE_GRACE_PERIOD_CONVERSION__generic():
     """
     Tests whether ``EXPIRE_GRACE_PERIOD_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(EXPIRE_GRACE_PERIOD_CONVERSION)
     # vampytest.assert_is(EXPIRE_GRACE_PERIOD_CONVERSION.get_converter, )
     # vampytest.assert_is(EXPIRE_GRACE_PERIOD_CONVERSION.put_converter, )
     vampytest.assert_is(EXPIRE_GRACE_PERIOD_CONVERSION.validator, validate_expire_grace_period)
@@ -198,6 +208,7 @@ def test__NAME_CONVERSION__generic():
     """
     Tests whether ``NAME_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(NAME_CONVERSION)
     vampytest.assert_is(NAME_CONVERSION.get_converter, get_converter_name)
     vampytest.assert_is(NAME_CONVERSION.put_converter, put_converter_name)
     vampytest.assert_is(NAME_CONVERSION.validator, validate_name)
@@ -209,6 +220,7 @@ def test__TYPE_CONVERSION__generic():
     """
     Tests whether ``TYPE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(TYPE_CONVERSION)
     # vampytest.assert_is(TYPE_CONVERSION.get_converter, )
     # vampytest.assert_is(TYPE_CONVERSION.put_converter, )
     vampytest.assert_is(TYPE_CONVERSION.validator, validate_type)

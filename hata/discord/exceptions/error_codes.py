@@ -285,6 +285,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | invites_disabled                                                  | 40069     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| entitlement_already_granted                                       | 40074     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | missing_access                                                    | 50001     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | invalid_account_type                                              | 50002     | -         |
@@ -368,6 +370,8 @@ Error Codes
 | cannot_self_redeem_this_gift                                      | 50054     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | invalid_guild                                                     | 50055     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| invalid_sku                                                       | 50057     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | invalid_request_origin                                            | 50067     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -711,6 +715,7 @@ no_tags_available_for_non_moderators = 40066
 tag_required = 40067
 user_quarantined = 40068
 invites_disabled = 40069
+entitlement_already_granted = 40074
 
 missing_access = 50001
 invalid_account_type = 50002
@@ -754,6 +759,7 @@ invalid_application_name = 50050
 invalid_gift_redemption_owned = 50051
 cannot_self_redeem_this_gift = 50054
 invalid_guild = 50055
+invalid_sku = 50057
 invalid_request_origin = 50067
 invalid_message_type = 50068
 payment_source_required_to_redeem_gift = 50070

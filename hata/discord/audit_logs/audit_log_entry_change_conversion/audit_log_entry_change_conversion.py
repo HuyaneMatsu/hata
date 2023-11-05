@@ -18,11 +18,11 @@ class AuditLogEntryChangeConversion(RichAttributeErrorBaseType):
         The field's name.
     flags : `int`
         Bitwise flags representing the type of the conversion.
-    get_converter : `FunctionType`
+    get_converter : `FunctionType | MethodType`
         Raw to processed value converter.
-    put_converter : `FunctionType`
+    put_converter : `FunctionType | MethodType`
         Processed to raw value converter.
-    validator : `FunctionType`
+    validator : `FunctionType | MethodType`
         Change validator.
     """
     __slots__ = ('field_key', 'field_name', 'flags', 'get_converter', 'put_converter', 'validator')
@@ -39,11 +39,11 @@ class AuditLogEntryChangeConversion(RichAttributeErrorBaseType):
             The field's name.
         flags : `int`
             Bitwise flags representing the type of the conversion.
-        get_converter : `FunctionType`, Optional (Keyword only)
+        get_converter : `FunctionType | MethodType`, Optional (Keyword only)
             Raw to processed value converter.
-        put_converter : `FunctionType`, Optional (Keyword only)
+        put_converter : `FunctionType | MethodType`, Optional (Keyword only)
             Processed to raw value converter.
-        validator : `FunctionType`, Optional (Keyword only)
+        validator : `FunctionType | MethodType`, Optional (Keyword only)
             Change validator.
         """
         if get_converter is ...:
@@ -180,7 +180,7 @@ class AuditLogEntryChangeConversion(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        get_converter : `FunctionType`
+        get_converter : `FunctionType | MethodType`
             Converter to put.
         
         Returns
@@ -197,7 +197,7 @@ class AuditLogEntryChangeConversion(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        put_converter : `FunctionType`
+        put_converter : `FunctionType | MethodType`
             Converter to put.
         
         Returns
@@ -214,7 +214,7 @@ class AuditLogEntryChangeConversion(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        validator : `FunctionType`
+        validator : `FunctionType | MethodType`
             Converter to put.
         
         Returns

@@ -29,9 +29,9 @@ def test__eq_functions(function_0, function_1):
     
     Parameters
     ----------
-    function_0 : `FunctionType`
+    function_0 : `FunctionType | MethodType`
         Function to equal with.
-    function_1 : `FunctionType`
+    function_1 : `FunctionType | MethodType`
         Function to equal with.
     
     Returns

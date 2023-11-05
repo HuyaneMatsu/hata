@@ -498,7 +498,7 @@ def timedelta_to_id_difference(time_delta):
     -------
     id_difference : `int`
     """
-    return seconds_to_id_difference(time_delta.seconds)
+    return seconds_to_id_difference(time_delta.total_seconds())
 
 
 def id_difference_to_seconds(id_difference):

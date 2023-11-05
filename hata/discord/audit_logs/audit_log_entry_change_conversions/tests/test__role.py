@@ -12,6 +12,12 @@ from ....role.role.fields import (
 )
 from ....role.role.role import ROLE_ICON
 
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversion import (
+    _assert_fields_set as _assert_conversion_fields_set
+)
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversionGroup import (
+    _assert_fields_set as _assert_conversion_group_fields_set
+)
 from ...conversion_helpers.converters import get_converter_name, put_converter_name
 
 from ..role import (
@@ -24,6 +30,7 @@ def test__ROLE_CONVERSIONS():
     """
     Tests whether `ROLE_CONVERSIONS` contains conversion for every expected key.
     """
+    _assert_conversion_group_fields_set(ROLE_CONVERSIONS)
     vampytest.assert_eq(
         {*ROLE_CONVERSIONS.get_converters.keys()},
         {'color', 'flags', 'icon_hash', 'mentionable', 'name', PERMISSION_KEY, 'position', 'hoist', 'unicode_emoji'},
@@ -36,6 +43,7 @@ def test__COLOR_CONVERSION__generic():
     """
     Tests whether ``COLOR_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(COLOR_CONVERSION)
     # vampytest.assert_is(COLOR_CONVERSION.get_converter, )
     # vampytest.assert_is(COLOR_CONVERSION.put_converter, )
     vampytest.assert_is(COLOR_CONVERSION.validator, validate_color)
@@ -96,6 +104,7 @@ def test__FLAGS_CONVERSION__generic():
     """
     Tests whether ``FLAGS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(FLAGS_CONVERSION)
     # vampytest.assert_is(FLAGS_CONVERSION.get_converter, )
     # vampytest.assert_is(FLAGS_CONVERSION.put_converter, )
     vampytest.assert_is(FLAGS_CONVERSION.validator, validate_flags)
@@ -156,8 +165,9 @@ def test__ICON_CONVERSION__generic():
     """
     Tests whether ``ICON_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(ICON_CONVERSION)
     vampytest.assert_eq(ICON_CONVERSION.get_converter, Icon.from_base_16_hash)
-    vampytest.assert_eq(ICON_CONVERSION.put_converter, Icon.as_base_16_hash)
+    vampytest.assert_eq(ICON_CONVERSION.put_converter, Icon.as_base_16_hash.fget)
     vampytest.assert_eq(ICON_CONVERSION.validator, ROLE_ICON.validate_icon)
 
 
@@ -167,6 +177,7 @@ def test__MENTIONABLE_CONVERSION__generic():
     """
     Tests whether ``MENTIONABLE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(MENTIONABLE_CONVERSION)
     # vampytest.assert_is(MENTIONABLE_CONVERSION.get_converter, )
     # vampytest.assert_is(MENTIONABLE_CONVERSION.put_converter, )
     vampytest.assert_is(MENTIONABLE_CONVERSION.validator, validate_mentionable)
@@ -223,6 +234,7 @@ def test__NAME_CONVERSION__generic():
     """
     Tests whether ``NAME_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(NAME_CONVERSION)
     vampytest.assert_is(NAME_CONVERSION.get_converter, get_converter_name)
     vampytest.assert_is(NAME_CONVERSION.put_converter, put_converter_name)
     vampytest.assert_is(NAME_CONVERSION.validator, validate_name)
@@ -234,6 +246,7 @@ def test__PERMISSIONS_CONVERSION__generic():
     """
     Tests whether ``PERMISSIONS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(PERMISSIONS_CONVERSION)
     # vampytest.assert_is(PERMISSIONS_CONVERSION.get_converter, )
     # vampytest.assert_is(PERMISSIONS_CONVERSION.put_converter, )
     vampytest.assert_is(PERMISSIONS_CONVERSION.validator, validate_permissions)
@@ -293,6 +306,7 @@ def test__POSITION_CONVERSION__generic():
     """
     Tests whether ``POSITION_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(POSITION_CONVERSION)
     # vampytest.assert_is(POSITION_CONVERSION.get_converter, )
     # vampytest.assert_is(POSITION_CONVERSION.put_converter, )
     vampytest.assert_is(POSITION_CONVERSION.validator, validate_position)
@@ -349,6 +363,7 @@ def test__SEPARATED_CONVERSION__generic():
     """
     Tests whether ``SEPARATED_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(SEPARATED_CONVERSION)
     # vampytest.assert_is(SEPARATED_CONVERSION.get_converter, )
     # vampytest.assert_is(SEPARATED_CONVERSION.put_converter, )
     vampytest.assert_is(SEPARATED_CONVERSION.validator, validate_separated)
@@ -405,6 +420,7 @@ def test__UNICODE_EMOJI_CONVERSION__generic():
     """
     Tests whether ``UNICODE_EMOJI_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(UNICODE_EMOJI_CONVERSION)
     # vampytest.assert_is(UNICODE_EMOJI_CONVERSION.get_converter, )
     # vampytest.assert_is(UNICODE_EMOJI_CONVERSION.put_converter, )
     vampytest.assert_is(UNICODE_EMOJI_CONVERSION.validator, validate_unicode_emoji)
@@ -454,4 +470,3 @@ def test__UNICODE_EMOJI_CONVERSION__put_converter(input_value):
     output : `None | str`
     """
     return UNICODE_EMOJI_CONVERSION.put_converter(input_value)
-

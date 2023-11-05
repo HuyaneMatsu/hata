@@ -3,6 +3,12 @@ import vampytest
 from ....scheduled_event import PrivacyLevel
 from ....stage.stage.fields import validate_privacy_level, validate_topic
 
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversion import (
+    _assert_fields_set as _assert_conversion_fields_set
+)
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversionGroup import (
+    _assert_fields_set as _assert_conversion_group_fields_set
+)
 from ...conversion_helpers.converters import get_converter_description, put_converter_description
 
 from ..stage import PRIVACY_LEVEL_CONVERSION, STAGE_CONVERSIONS, TOPIC_CONVERSION
@@ -12,6 +18,7 @@ def test__STAGE_CONVERSIONS():
     """
     Tests whether `STAGE_CONVERSIONS` contains conversion for every expected key.
     """
+    _assert_conversion_group_fields_set(STAGE_CONVERSIONS)
     vampytest.assert_eq(
         {*STAGE_CONVERSIONS.get_converters.keys()},
         {'privacy_level', 'topic'},
@@ -24,6 +31,7 @@ def test__PRIVACY_LEVEL_CONVERSION__generic():
     """
     Tests whether ``PRIVACY_LEVEL_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(PRIVACY_LEVEL_CONVERSION)
     # vampytest.assert_is(PRIVACY_LEVEL_CONVERSION.get_converter, )
     # vampytest.assert_is(PRIVACY_LEVEL_CONVERSION.put_converter, )
     vampytest.assert_is(PRIVACY_LEVEL_CONVERSION.validator, validate_privacy_level)
@@ -79,6 +87,7 @@ def test__TOPIC_CONVERSION__generic():
     """
     Tests whether ``TOPIC_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(TOPIC_CONVERSION)
     vampytest.assert_is(TOPIC_CONVERSION.get_converter, get_converter_description)
     vampytest.assert_is(TOPIC_CONVERSION.put_converter, put_converter_description)
     vampytest.assert_is(TOPIC_CONVERSION.validator, validate_topic)

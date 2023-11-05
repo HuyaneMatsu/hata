@@ -22,7 +22,7 @@ AVATAR_CONVERSION = AuditLogEntryChangeConversion(
     'avatar',
     FLAG_IS_MODIFICATION,
     get_converter = Icon.from_base_16_hash,
-    put_converter = Icon.as_base_16_hash,
+    put_converter = Icon.as_base_16_hash.fget,
     validator = GUILD_PROFILE_AVATAR.validate_icon,
 )
 

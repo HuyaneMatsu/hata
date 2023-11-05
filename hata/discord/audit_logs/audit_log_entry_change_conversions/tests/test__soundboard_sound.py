@@ -4,6 +4,12 @@ from ....soundboard.soundboard_sound.fields import (
     validate_available, validate_id, validate_name, validate_user_id, validate_volume
 )
 
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversion import (
+    _assert_fields_set as _assert_conversion_fields_set
+)
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversionGroup import (
+    _assert_fields_set as _assert_conversion_group_fields_set
+)
 from ...conversion_helpers.converters import get_converter_id, get_converter_name, put_converter_id, put_converter_name
 
 from ..soundboard_sound import (
@@ -16,6 +22,7 @@ def test__SOUNDBOARD_SOUND_CONVERSIONS():
     """
     Tests whether `SOUNDBOARD_SOUND_CONVERSIONS` contains conversion for every expected key.
     """
+    _assert_conversion_group_fields_set(SOUNDBOARD_SOUND_CONVERSIONS)
     vampytest.assert_eq(
         {*SOUNDBOARD_SOUND_CONVERSIONS.get_converters.keys()},
         {'available', 'user_id', 'name', 'volume', 'id', 'sound_id'},
@@ -28,6 +35,7 @@ def test__AVAILABLE_CONVERSION__generic():
     """
     Tests whether ``AVAILABLE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(AVAILABLE_CONVERSION)
     # vampytest.assert_is(AVAILABLE_CONVERSION.get_converter, )
     # vampytest.assert_is(AVAILABLE_CONVERSION.put_converter, )
     vampytest.assert_is(AVAILABLE_CONVERSION.validator, validate_available)
@@ -84,6 +92,7 @@ def test__ID_CONVERSION__generic():
     """
     Tests whether ``ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(ID_CONVERSION)
     vampytest.assert_is(ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(ID_CONVERSION.validator, validate_id)
@@ -95,6 +104,7 @@ def test__NAME_CONVERSION__generic():
     """
     Tests whether ``NAME_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(NAME_CONVERSION)
     vampytest.assert_is(NAME_CONVERSION.get_converter, get_converter_name)
     vampytest.assert_is(NAME_CONVERSION.put_converter, put_converter_name)
     vampytest.assert_is(NAME_CONVERSION.validator, validate_name)
@@ -106,6 +116,7 @@ def test__VOLUME_CONVERSION__generic():
     """
     Tests whether ``VOLUME_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(VOLUME_CONVERSION)
     # vampytest.assert_is(VOLUME_CONVERSION.get_converter, )
     # vampytest.assert_is(VOLUME_CONVERSION.put_converter, )
     vampytest.assert_is(VOLUME_CONVERSION.validator, validate_volume)
@@ -162,6 +173,7 @@ def test__USER_ID_CONVERSION__generic():
     """
     Tests whether ``USER_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(USER_ID_CONVERSION)
     vampytest.assert_is(USER_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(USER_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(USER_ID_CONVERSION.validator, validate_user_id)

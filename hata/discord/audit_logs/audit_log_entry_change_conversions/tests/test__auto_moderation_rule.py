@@ -14,6 +14,12 @@ from ....auto_moderation.trigger_metadata.fields import (
     validate_regex_patterns
 )
 
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversion import (
+    _assert_fields_set as _assert_conversion_fields_set
+)
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversionGroup import (
+    _assert_fields_set as _assert_conversion_group_fields_set
+)
 from ...conversion_helpers.converters import (
     get_converter_id, get_converter_ids, get_converter_name, get_converter_string_array, put_converter_id,
     put_converter_ids, put_converter_name, put_converter_string_array
@@ -33,6 +39,7 @@ def test__AUTO_MODERATION_RULE_CONVERSIONS():
     """
     Tests whether `AUTO_MODERATION_RULE_CONVERSIONS` contains conversion for every expected key.
     """
+    _assert_conversion_group_fields_set(AUTO_MODERATION_RULE_CONVERSIONS)
     vampytest.assert_eq(
         {*AUTO_MODERATION_RULE_CONVERSIONS.get_converters.keys()},
         {
@@ -50,6 +57,7 @@ def test__ACTIONS_CONVERSION__generic():
     """
     Tests whether ``ACTIONS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(ACTIONS_CONVERSION)
     # vampytest.assert_is(ACTIONS_CONVERSION.get_converter, )
     # vampytest.assert_is(ACTIONS_CONVERSION.put_converter, )
     vampytest.assert_is(ACTIONS_CONVERSION.validator, validate_actions)
@@ -112,6 +120,7 @@ def test__CREATOR_ID_CONVERSION__generic():
     """
     Tests whether ``CREATOR_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(CREATOR_ID_CONVERSION)
     vampytest.assert_is(CREATOR_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(CREATOR_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(CREATOR_ID_CONVERSION.validator, validate_creator_id)
@@ -123,6 +132,7 @@ def test__ENABLED_CONVERSION__generic():
     """
     Tests whether ``ENABLED_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(ENABLED_CONVERSION)
     # vampytest.assert_is(ENABLED_CONVERSION.get_converter, )
     # vampytest.assert_is(ENABLED_CONVERSION.put_converter, )
     vampytest.assert_is(ENABLED_CONVERSION.validator, validate_enabled)
@@ -179,6 +189,7 @@ def test__EXCLUDED_KEYWORDS_CONVERSION__ADDITION__generic():
     """
     Tests whether ``EXCLUDED_KEYWORDS_CONVERSION__ADDITION`` works as intended.
     """
+    _assert_conversion_fields_set(EXCLUDED_KEYWORDS_CONVERSION__ADDITION)
     vampytest.assert_is(EXCLUDED_KEYWORDS_CONVERSION__ADDITION.get_converter, get_converter_string_array)
     vampytest.assert_is(EXCLUDED_KEYWORDS_CONVERSION__ADDITION.put_converter, put_converter_string_array)
     vampytest.assert_is(EXCLUDED_KEYWORDS_CONVERSION__ADDITION.validator, validate_excluded_keywords)
@@ -188,6 +199,7 @@ def test__EXCLUDED_KEYWORDS_CONVERSION__REMOVAL__generic():
     """
     Tests whether ``EXCLUDED_KEYWORDS_CONVERSION__REMOVAL`` works as intended.
     """
+    _assert_conversion_fields_set(EXCLUDED_KEYWORDS_CONVERSION__REMOVAL)
     vampytest.assert_is(EXCLUDED_KEYWORDS_CONVERSION__REMOVAL.get_converter, get_converter_string_array)
     vampytest.assert_is(EXCLUDED_KEYWORDS_CONVERSION__REMOVAL.put_converter, put_converter_string_array)
     vampytest.assert_is(EXCLUDED_KEYWORDS_CONVERSION__REMOVAL.validator, validate_excluded_keywords)
@@ -199,6 +211,7 @@ def test__EVENT_TYPE_CONVERSION__generic():
     """
     Tests whether ``EVENT_TYPE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(EVENT_TYPE_CONVERSION)
     # vampytest.assert_is(EVENT_TYPE_CONVERSION.get_converter, )
     # vampytest.assert_is(EVENT_TYPE_CONVERSION.put_converter, )
     vampytest.assert_is(EVENT_TYPE_CONVERSION.validator, validate_event_type)
@@ -254,6 +267,7 @@ def test__EXCLUDED_CHANNEL_IDS_CONVERSION__generic():
     """
     Tests whether ``EXCLUDED_CHANNEL_IDS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(EXCLUDED_CHANNEL_IDS_CONVERSION)
     vampytest.assert_is(EXCLUDED_CHANNEL_IDS_CONVERSION.get_converter, get_converter_ids)
     vampytest.assert_is(EXCLUDED_CHANNEL_IDS_CONVERSION.put_converter, put_converter_ids)
     vampytest.assert_is(EXCLUDED_CHANNEL_IDS_CONVERSION.validator, validate_excluded_channel_ids)
@@ -265,6 +279,7 @@ def test__EXCLUDED_ROLE_IDS_CONVERSION__generic():
     """
     Tests whether ``EXCLUDED_ROLE_IDS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(EXCLUDED_ROLE_IDS_CONVERSION)
     vampytest.assert_is(EXCLUDED_ROLE_IDS_CONVERSION.get_converter, get_converter_ids)
     vampytest.assert_is(EXCLUDED_ROLE_IDS_CONVERSION.put_converter, put_converter_ids)
     vampytest.assert_is(EXCLUDED_ROLE_IDS_CONVERSION.validator, validate_excluded_role_ids)
@@ -276,6 +291,7 @@ def test__KEYWORDS_CONVERSION__ADDITION__generic():
     """
     Tests whether ``KEYWORDS_CONVERSION__ADDITION`` works as intended.
     """
+    _assert_conversion_fields_set(KEYWORDS_CONVERSION__ADDITION)
     vampytest.assert_is(KEYWORDS_CONVERSION__ADDITION.get_converter, get_converter_string_array)
     vampytest.assert_is(KEYWORDS_CONVERSION__ADDITION.put_converter, put_converter_string_array)
     vampytest.assert_is(KEYWORDS_CONVERSION__ADDITION.validator, validate_keywords)
@@ -285,6 +301,7 @@ def test__KEYWORDS_CONVERSION__REMOVAL__generic():
     """
     Tests whether ``KEYWORDS_CONVERSION__REMOVAL`` works as intended.
     """
+    _assert_conversion_fields_set(KEYWORDS_CONVERSION__REMOVAL)
     vampytest.assert_is(KEYWORDS_CONVERSION__REMOVAL.get_converter, get_converter_string_array)
     vampytest.assert_is(KEYWORDS_CONVERSION__REMOVAL.put_converter, put_converter_string_array)
     vampytest.assert_is(KEYWORDS_CONVERSION__REMOVAL.validator, validate_keywords)
@@ -296,6 +313,7 @@ def test__MENTION_LIMIT_CONVERSION__generic():
     """
     Tests whether ``MENTION_LIMIT_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(MENTION_LIMIT_CONVERSION)
     # vampytest.assert_is(MENTION_LIMIT_CONVERSION.get_converter, get_converter_name)
     # vampytest.assert_is(MENTION_LIMIT_CONVERSION.put_converter, put_converter_name)
     vampytest.assert_is(MENTION_LIMIT_CONVERSION.validator, validate_mention_limit)
@@ -351,6 +369,7 @@ def test__NAME_CONVERSION__generic():
     """
     Tests whether ``NAME_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(NAME_CONVERSION)
     vampytest.assert_is(NAME_CONVERSION.get_converter, get_converter_name)
     vampytest.assert_is(NAME_CONVERSION.put_converter, put_converter_name)
     vampytest.assert_is(NAME_CONVERSION.validator, validate_name)
@@ -362,6 +381,7 @@ def test__RAID_PROTECTION_CONVERSION__generic():
     """
     Tests whether ``RAID_PROTECTION_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(RAID_PROTECTION_CONVERSION)
     # vampytest.assert_is(RAID_PROTECTION_CONVERSION.get_converter, )
     # vampytest.assert_is(RAID_PROTECTION_CONVERSION.put_converter, )
     vampytest.assert_is(RAID_PROTECTION_CONVERSION.validator, validate_raid_protection)
@@ -418,6 +438,7 @@ def test__REGEX_PATTERNS_CONVERSION__ADDITION__generic():
     """
     Tests whether ``REGEX_PATTERNS_CONVERSION__ADDITION`` works as intended.
     """
+    _assert_conversion_fields_set(REGEX_PATTERNS_CONVERSION__ADDITION)
     vampytest.assert_is(REGEX_PATTERNS_CONVERSION__ADDITION.get_converter, get_converter_string_array)
     vampytest.assert_is(REGEX_PATTERNS_CONVERSION__ADDITION.put_converter, put_converter_string_array)
     vampytest.assert_is(REGEX_PATTERNS_CONVERSION__ADDITION.validator, validate_regex_patterns)
@@ -427,12 +448,23 @@ def test__REGEX_PATTERNS_CONVERSION__REMOVAL__generic():
     """
     Tests whether ``REGEX_PATTERNS_CONVERSION__REMOVAL`` works as intended.
     """
+    _assert_conversion_fields_set(REGEX_PATTERNS_CONVERSION__REMOVAL)
     vampytest.assert_is(REGEX_PATTERNS_CONVERSION__REMOVAL.get_converter, get_converter_string_array)
     vampytest.assert_is(REGEX_PATTERNS_CONVERSION__REMOVAL.put_converter, put_converter_string_array)
     vampytest.assert_is(REGEX_PATTERNS_CONVERSION__REMOVAL.validator, validate_regex_patterns)
 
 
 # ---- trigger_metadata ----
+
+def test__TRIGGER_METADATA_CONVERSION__generic():
+    """
+    Tests whether ``TRIGGER_METADATA_CONVERSION`` works as intended.
+    """
+    _assert_conversion_fields_set(TRIGGER_METADATA_CONVERSION)
+    # vampytest.assert_is(TRIGGER_METADATA_CONVERSION.get_converter, )
+    # vampytest.assert_is(TRIGGER_METADATA_CONVERSION.put_converter, )
+    # vampytest.assert_is(TRIGGER_METADATA_CONVERSION.validator, )
+
 
 def _iter_options__trigger_metadata__get_converter():
     yield None, None
@@ -520,6 +552,7 @@ def test__TRIGGER_TYPE_CONVERSION__generic():
     """
     Tests whether ``TRIGGER_TYPE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(TRIGGER_TYPE_CONVERSION)
     # vampytest.assert_is(TRIGGER_TYPE_CONVERSION.get_converter, )
     # vampytest.assert_is(TRIGGER_TYPE_CONVERSION.put_converter, )
     vampytest.assert_is(TRIGGER_TYPE_CONVERSION.validator, validate_trigger_type)

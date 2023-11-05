@@ -1,3 +1,6 @@
+import vampytest
+
+from ....bases import Icon
 from ....guild import (
     ContentFilterLevel, HubType, MFA, MessageNotificationLevel, NsfwLevel, SystemChannelFlag, VerificationLevel
 )
@@ -15,43 +18,27 @@ from ....guild.guild.fields import (
 from ....guild.guild.guild import GUILD_BANNER, GUILD_DISCOVERY_SPLASH, GUILD_ICON, GUILD_INVITE_SPLASH
 from ....localization import Locale
 from ....localization.utils import LOCALE_DEFAULT
-from ....bases import Icon
-from ...audit_log_change.flags import FLAG_IS_MODIFICATION
-from ...audit_log_entry_change_conversion import AuditLogEntryChangeConversion, AuditLogEntryChangeConversionGroup
+
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversion import (
+    _assert_fields_set as _assert_conversion_fields_set
+)
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversionGroup import (
+    _assert_fields_set as _assert_conversion_group_fields_set
+)
 from ...conversion_helpers.converters import (
     get_converter_description, get_converter_id, get_converter_name, put_converter_description, put_converter_id,
     put_converter_name
 )
-import vampytest
+
 from ..guild import (
-    GUILD_CONVERSIONS,
-    AFK_CHANNEL_ID_CONVERSION,
-    AFK_TIMEOUT_CONVERSION,
-    BANNER_CONVERSION,
-    BOOST_PROGRESS_BAR_ENABLED_CONVERSION,
-    CONTENT_FILTER_CONVERSION,
-    DESCRIPTION_CONVERSION,
-    DISCOVERY_SPLASH_CONVERSION,
-    HUB_TYPE_CONVERSION,
-    ICON_CONVERSION,
-    LOCALE_CONVERSION,
-    MAX_STAGE_CHANNEL_VIDEO_USERS_CONVERSION,
-    MAX_VOICE_CHANNEL_VIDEO_USERS_CONVERSION,
-    MFA_CONVERSION,
-    MESSAGE_NOTIFICATION_CONVERSION,
-    NAME_CONVERSION,
-    NSFW_LEVEL_CONVERSION,
-    OWNER_ID_CONVERSION,
-    PUBLIC_UPDATES_CHANNEL_ID_CONVERSION,
-    RULES_CHANNEL_ID_CONVERSION,
-    SAFETY_ALERTS_CHANNEL_ID_CONVERSION,
-    INVITE_SPLASH_CONVERSION,
-    SYSTEM_CHANNEL_ID_CONVERSION,
-    SYSTEM_CHANNEL_FLAGS_CONVERSION,
-    VANITY_CODE_CONVERSION,
-    VERIFICATION_LEVEL_CONVERSION,
-    WIDGET_CHANNEL_ID_CONVERSION,
-    WIDGET_ENABLED_CONVERSION,
+    AFK_CHANNEL_ID_CONVERSION, AFK_TIMEOUT_CONVERSION, BANNER_CONVERSION, BOOST_PROGRESS_BAR_ENABLED_CONVERSION,
+    CONTENT_FILTER_CONVERSION, DESCRIPTION_CONVERSION, DISCOVERY_SPLASH_CONVERSION, GUILD_CONVERSIONS,
+    HUB_TYPE_CONVERSION, ICON_CONVERSION, INVITE_SPLASH_CONVERSION, LOCALE_CONVERSION,
+    MAX_STAGE_CHANNEL_VIDEO_USERS_CONVERSION, MAX_VOICE_CHANNEL_VIDEO_USERS_CONVERSION, MESSAGE_NOTIFICATION_CONVERSION,
+    MFA_CONVERSION, NAME_CONVERSION, NSFW_LEVEL_CONVERSION, OWNER_ID_CONVERSION, PUBLIC_UPDATES_CHANNEL_ID_CONVERSION,
+    RULES_CHANNEL_ID_CONVERSION, SAFETY_ALERTS_CHANNEL_ID_CONVERSION, SYSTEM_CHANNEL_FLAGS_CONVERSION,
+    SYSTEM_CHANNEL_ID_CONVERSION, VANITY_CODE_CONVERSION, VERIFICATION_LEVEL_CONVERSION, WIDGET_CHANNEL_ID_CONVERSION,
+    WIDGET_ENABLED_CONVERSION
 )
 
 
@@ -60,6 +47,7 @@ def test__GUILD_CONVERSIONS():
     """
     Tests whether `GUILD_CONVERSIONS` contains conversion for every expected key.
     """
+    _assert_conversion_group_fields_set(GUILD_CONVERSIONS)
     vampytest.assert_eq(
         {*GUILD_CONVERSIONS.get_converters.keys()},
         {
@@ -78,6 +66,7 @@ def test__AFK_CHANNEL_ID_CONVERSION__generic():
     """
     Tests whether ``AFK_CHANNEL_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(AFK_CHANNEL_ID_CONVERSION)
     vampytest.assert_is(AFK_CHANNEL_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(AFK_CHANNEL_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(AFK_CHANNEL_ID_CONVERSION.validator, validate_afk_channel_id)
@@ -89,6 +78,7 @@ def test__AFK_TIMEOUT_CONVERSION__generic():
     """
     Tests whether ``AFK_TIMEOUT_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(AFK_TIMEOUT_CONVERSION)
     # vampytest.assert_is(AFK_TIMEOUT_CONVERSION.get_converter, )
     # vampytest.assert_is(AFK_TIMEOUT_CONVERSION.put_converter, )
     vampytest.assert_is(AFK_TIMEOUT_CONVERSION.validator, validate_afk_timeout)
@@ -145,8 +135,9 @@ def test__BANNER_CONVERSION__generic():
     """
     Tests whether ``BANNER_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(BANNER_CONVERSION)
     vampytest.assert_eq(BANNER_CONVERSION.get_converter, Icon.from_base_16_hash)
-    vampytest.assert_eq(BANNER_CONVERSION.put_converter, Icon.as_base_16_hash)
+    vampytest.assert_eq(BANNER_CONVERSION.put_converter, Icon.as_base_16_hash.fget)
     vampytest.assert_eq(BANNER_CONVERSION.validator, GUILD_BANNER.validate_icon)
 
 
@@ -156,6 +147,7 @@ def test__BOOST_PROGRESS_BAR_ENABLED_CONVERSION__generic():
     """
     Tests whether ``BOOST_PROGRESS_BAR_ENABLED_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(BOOST_PROGRESS_BAR_ENABLED_CONVERSION)
     # vampytest.assert_is(BOOST_PROGRESS_BAR_ENABLED_CONVERSION.get_converter, )
     # vampytest.assert_is(BOOST_PROGRESS_BAR_ENABLED_CONVERSION.put_converter, )
     vampytest.assert_is(BOOST_PROGRESS_BAR_ENABLED_CONVERSION.validator, validate_boost_progress_bar_enabled)
@@ -212,6 +204,7 @@ def test__CONTENT_FILTER_CONVERSION__generic():
     """
     Tests whether ``CONTENT_FILTER_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(CONTENT_FILTER_CONVERSION)
     # vampytest.assert_is(CONTENT_FILTER_CONVERSION.get_converter, )
     # vampytest.assert_is(CONTENT_FILTER_CONVERSION.put_converter, )
     vampytest.assert_is(CONTENT_FILTER_CONVERSION.validator, validate_content_filter)
@@ -267,6 +260,7 @@ def test__DESCRIPTION_CONVERSION__generic():
     """
     Tests whether ``DESCRIPTION_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(DESCRIPTION_CONVERSION)
     vampytest.assert_is(DESCRIPTION_CONVERSION.get_converter, get_converter_description)
     vampytest.assert_is(DESCRIPTION_CONVERSION.put_converter, put_converter_description)
     vampytest.assert_is(DESCRIPTION_CONVERSION.validator, validate_description)
@@ -278,8 +272,9 @@ def test__DISCOVERY_SPLASH_CONVERSION__generic():
     """
     Tests whether ``DISCOVERY_SPLASH_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(DISCOVERY_SPLASH_CONVERSION)
     vampytest.assert_eq(DISCOVERY_SPLASH_CONVERSION.get_converter, Icon.from_base_16_hash)
-    vampytest.assert_eq(DISCOVERY_SPLASH_CONVERSION.put_converter, Icon.as_base_16_hash)
+    vampytest.assert_eq(DISCOVERY_SPLASH_CONVERSION.put_converter, Icon.as_base_16_hash.fget)
     vampytest.assert_eq(DISCOVERY_SPLASH_CONVERSION.validator, GUILD_DISCOVERY_SPLASH.validate_icon)
 
 
@@ -289,6 +284,7 @@ def test__HUB_TYPE_CONVERSION__generic():
     """
     Tests whether ``HUB_TYPE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(HUB_TYPE_CONVERSION)
     # vampytest.assert_is(HUB_TYPE_CONVERSION.get_converter, )
     # vampytest.assert_is(HUB_TYPE_CONVERSION.put_converter, )
     vampytest.assert_is(HUB_TYPE_CONVERSION.validator, validate_hub_type)
@@ -344,8 +340,9 @@ def test__ICON_CONVERSION__generic():
     """
     Tests whether ``ICON_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(ICON_CONVERSION)
     vampytest.assert_eq(ICON_CONVERSION.get_converter, Icon.from_base_16_hash)
-    vampytest.assert_eq(ICON_CONVERSION.put_converter, Icon.as_base_16_hash)
+    vampytest.assert_eq(ICON_CONVERSION.put_converter, Icon.as_base_16_hash.fget)
     vampytest.assert_eq(ICON_CONVERSION.validator, GUILD_ICON.validate_icon)
 
 
@@ -355,8 +352,9 @@ def test__INVITE_SPLASH_CONVERSION__generic():
     """
     Tests whether ``INVITE_SPLASH_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(INVITE_SPLASH_CONVERSION)
     vampytest.assert_eq(INVITE_SPLASH_CONVERSION.get_converter, Icon.from_base_16_hash)
-    vampytest.assert_eq(INVITE_SPLASH_CONVERSION.put_converter, Icon.as_base_16_hash)
+    vampytest.assert_eq(INVITE_SPLASH_CONVERSION.put_converter, Icon.as_base_16_hash.fget)
     vampytest.assert_eq(INVITE_SPLASH_CONVERSION.validator, GUILD_INVITE_SPLASH.validate_icon)
 
 
@@ -366,6 +364,7 @@ def test__LOCALE_CONVERSION__generic():
     """
     Tests whether ``LOCALE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(LOCALE_CONVERSION)
     # vampytest.assert_is(LOCALE_CONVERSION.get_converter, )
     # vampytest.assert_is(LOCALE_CONVERSION.put_converter, )
     vampytest.assert_is(LOCALE_CONVERSION.validator, validate_locale)
@@ -421,6 +420,7 @@ def test__MAX_STAGE_CHANNEL_VIDEO_USERS_CONVERSION__generic():
     """
     Tests whether ``MAX_STAGE_CHANNEL_VIDEO_USERS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(MAX_STAGE_CHANNEL_VIDEO_USERS_CONVERSION)
     # vampytest.assert_is(MAX_STAGE_CHANNEL_VIDEO_USERS_CONVERSION.get_converter, )
     # vampytest.assert_is(MAX_STAGE_CHANNEL_VIDEO_USERS_CONVERSION.put_converter, )
     vampytest.assert_is(MAX_STAGE_CHANNEL_VIDEO_USERS_CONVERSION.validator, validate_max_stage_channel_video_users)
@@ -477,6 +477,7 @@ def test__MAX_VOICE_CHANNEL_VIDEO_USERS_CONVERSION__generic():
     """
     Tests whether ``MAX_VOICE_CHANNEL_VIDEO_USERS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(MAX_VOICE_CHANNEL_VIDEO_USERS_CONVERSION)
     # vampytest.assert_is(MAX_VOICE_CHANNEL_VIDEO_USERS_CONVERSION.get_converter, )
     # vampytest.assert_is(MAX_VOICE_CHANNEL_VIDEO_USERS_CONVERSION.put_converter, )
     vampytest.assert_is(MAX_VOICE_CHANNEL_VIDEO_USERS_CONVERSION.validator, validate_max_voice_channel_video_users)
@@ -533,6 +534,7 @@ def test__MFA_CONVERSION__generic():
     """
     Tests whether ``MFA_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(MFA_CONVERSION)
     # vampytest.assert_is(MFA_CONVERSION.get_converter, )
     # vampytest.assert_is(MFA_CONVERSION.put_converter, )
     vampytest.assert_is(MFA_CONVERSION.validator, validate_mfa)
@@ -588,6 +590,7 @@ def test__MESSAGE_NOTIFICATION_CONVERSION__generic():
     """
     Tests whether ``MESSAGE_NOTIFICATION_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(MESSAGE_NOTIFICATION_CONVERSION)
     # vampytest.assert_is(MESSAGE_NOTIFICATION_CONVERSION.get_converter, )
     # vampytest.assert_is(MESSAGE_NOTIFICATION_CONVERSION.put_converter, )
     vampytest.assert_is(MESSAGE_NOTIFICATION_CONVERSION.validator, validate_message_notification)
@@ -643,6 +646,7 @@ def test__NAME_CONVERSION__generic():
     """
     Tests whether ``NAME_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(NAME_CONVERSION)
     vampytest.assert_is(NAME_CONVERSION.get_converter, get_converter_name)
     vampytest.assert_is(NAME_CONVERSION.put_converter, put_converter_name)
     vampytest.assert_is(NAME_CONVERSION.validator, validate_name)
@@ -654,6 +658,7 @@ def test__NSFW_LEVEL_CONVERSION__generic():
     """
     Tests whether ``NSFW_LEVEL_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(NSFW_LEVEL_CONVERSION)
     # vampytest.assert_is(NSFW_LEVEL_CONVERSION.get_converter, )
     # vampytest.assert_is(NSFW_LEVEL_CONVERSION.put_converter, )
     vampytest.assert_is(NSFW_LEVEL_CONVERSION.validator, validate_nsfw_level)
@@ -709,6 +714,7 @@ def test__OWNER_ID_CONVERSION__generic():
     """
     Tests whether ``OWNER_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(OWNER_ID_CONVERSION)
     vampytest.assert_is(OWNER_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(OWNER_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(OWNER_ID_CONVERSION.validator, validate_owner_id)
@@ -720,6 +726,7 @@ def test__PUBLIC_UPDATES_CHANNEL_ID_CONVERSION__generic():
     """
     Tests whether ``PUBLIC_UPDATES_CHANNEL_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(PUBLIC_UPDATES_CHANNEL_ID_CONVERSION)
     vampytest.assert_is(PUBLIC_UPDATES_CHANNEL_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(PUBLIC_UPDATES_CHANNEL_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(PUBLIC_UPDATES_CHANNEL_ID_CONVERSION.validator, validate_public_updates_channel_id)
@@ -732,6 +739,7 @@ def test__RULES_CHANNEL_ID_CONVERSION__generic():
     """
     Tests whether ``RULES_CHANNEL_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(RULES_CHANNEL_ID_CONVERSION)
     vampytest.assert_is(RULES_CHANNEL_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(RULES_CHANNEL_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(RULES_CHANNEL_ID_CONVERSION.validator, validate_rules_channel_id)
@@ -743,6 +751,7 @@ def test__SAFETY_ALERTS_CHANNEL_ID_CONVERSION__generic():
     """
     Tests whether ``SAFETY_ALERTS_CHANNEL_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(SAFETY_ALERTS_CHANNEL_ID_CONVERSION)
     vampytest.assert_is(SAFETY_ALERTS_CHANNEL_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(SAFETY_ALERTS_CHANNEL_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(SAFETY_ALERTS_CHANNEL_ID_CONVERSION.validator, validate_safety_alerts_channel_id)
@@ -754,6 +763,7 @@ def test__SYSTEM_CHANNEL_ID_CONVERSION__generic():
     """
     Tests whether ``SYSTEM_CHANNEL_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(SYSTEM_CHANNEL_ID_CONVERSION)
     vampytest.assert_is(SYSTEM_CHANNEL_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(SYSTEM_CHANNEL_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(SYSTEM_CHANNEL_ID_CONVERSION.validator, validate_system_channel_id)
@@ -765,6 +775,7 @@ def test__SYSTEM_CHANNEL_FLAGS_CONVERSION__generic():
     """
     Tests whether ``SYSTEM_CHANNEL_FLAGS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(SYSTEM_CHANNEL_FLAGS_CONVERSION)
     # vampytest.assert_is(SYSTEM_CHANNEL_FLAGS_CONVERSION.get_converter, )
     # vampytest.assert_is(SYSTEM_CHANNEL_FLAGS_CONVERSION.put_converter, )
     vampytest.assert_is(SYSTEM_CHANNEL_FLAGS_CONVERSION.validator, validate_system_channel_flags)
@@ -825,6 +836,7 @@ def test__VANITY_CODE_CONVERSION__generic():
     """
     Tests whether ``VANITY_CODE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(VANITY_CODE_CONVERSION)
     vampytest.assert_is(VANITY_CODE_CONVERSION.get_converter, get_converter_description)
     vampytest.assert_is(VANITY_CODE_CONVERSION.put_converter, put_converter_description)
     vampytest.assert_is(VANITY_CODE_CONVERSION.validator, validate_vanity_code)
@@ -836,6 +848,7 @@ def test__VERIFICATION_LEVEL_CONVERSION__generic():
     """
     Tests whether ``VERIFICATION_LEVEL_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(VERIFICATION_LEVEL_CONVERSION)
     # vampytest.assert_is(VERIFICATION_LEVEL_CONVERSION.get_converter, )
     # vampytest.assert_is(VERIFICATION_LEVEL_CONVERSION.put_converter, )
     vampytest.assert_is(VERIFICATION_LEVEL_CONVERSION.validator, validate_verification_level)
@@ -891,6 +904,7 @@ def test__WIDGET_CHANNEL_ID_CONVERSION__generic():
     """
     Tests whether ``WIDGET_CHANNEL_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(WIDGET_CHANNEL_ID_CONVERSION)
     vampytest.assert_is(WIDGET_CHANNEL_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(WIDGET_CHANNEL_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(WIDGET_CHANNEL_ID_CONVERSION.validator, validate_widget_channel_id)
@@ -902,6 +916,7 @@ def test__WIDGET_ENABLED_CONVERSION__generic():
     """
     Tests whether ``WIDGET_ENABLED_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(WIDGET_ENABLED_CONVERSION)
     # vampytest.assert_is(WIDGET_ENABLED_CONVERSION.get_converter, )
     # vampytest.assert_is(WIDGET_ENABLED_CONVERSION.put_converter, )
     vampytest.assert_is(WIDGET_ENABLED_CONVERSION.validator, validate_widget_enabled)

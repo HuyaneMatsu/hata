@@ -7,6 +7,12 @@ from ....channel.permission_overwrite.fields import (
 from ....permission import Permission
 from ....permission.constants import PERMISSION_ALLOW_KEY, PERMISSION_DENY_KEY
 
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversion import (
+    _assert_fields_set as _assert_conversion_fields_set
+)
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversionGroup import (
+    _assert_fields_set as _assert_conversion_group_fields_set
+)
 from ...conversion_helpers.converters import get_converter_id, put_converter_id
 
 from ..channel_permission_overwrite import (
@@ -19,6 +25,7 @@ def test__APPLICATION_COMMAND_CONVERSIONS():
     """
     Tests whether `CHANNEL_PERMISSION_OVERWRITE_CONVERSIONS` contains conversion for every expected key.
     """
+    _assert_conversion_group_fields_set(CHANNEL_PERMISSION_OVERWRITE_CONVERSIONS)
     vampytest.assert_eq(
         {*CHANNEL_PERMISSION_OVERWRITE_CONVERSIONS.get_converters.keys()},
         {PERMISSION_ALLOW_KEY, PERMISSION_DENY_KEY, 'id', 'type'},
@@ -30,6 +37,7 @@ def test__ALLOW_CONVERSION__generic():
     """
     Tests whether ``ALLOW_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(ALLOW_CONVERSION)
     # vampytest.assert_is(ALLOW_CONVERSION.get_converter, )
     # vampytest.assert_is(ALLOW_CONVERSION.put_converter, )
     vampytest.assert_is(ALLOW_CONVERSION.validator, validate_allow)
@@ -41,6 +49,7 @@ def test__DENY_CONVERSION__generic():
     """
     Tests whether ``DENY_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(DENY_CONVERSION)
     # vampytest.assert_is(DENY_CONVERSION.get_converter, )
     # vampytest.assert_is(DENY_CONVERSION.put_converter, )
     vampytest.assert_is(DENY_CONVERSION.validator, validate_deny)
@@ -112,6 +121,7 @@ def test__TARGET_ID_CONVERSION__generic():
     """
     Tests whether ``TARGET_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(TARGET_ID_CONVERSION)
     vampytest.assert_is(TARGET_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(TARGET_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(TARGET_ID_CONVERSION.validator, validate_target_id)
@@ -123,6 +133,7 @@ def test__TARGET_TYPE_CONVERSION__generic():
     """
     Tests whether ``TARGET_TYPE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(TARGET_TYPE_CONVERSION)
     # vampytest.assert_is(TARGET_TYPE_CONVERSION.get_converter, )
     # vampytest.assert_is(TARGET_TYPE_CONVERSION.put_converter, )
     vampytest.assert_is(TARGET_TYPE_CONVERSION.validator, validate_target_type)

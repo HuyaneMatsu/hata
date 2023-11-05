@@ -16,6 +16,12 @@ from ....scheduled_event.scheduled_event_entity_metadata.fields import validate_
 from ....utils import datetime_to_timestamp
 
 from ...audit_log_entry_change_conversion import AuditLogEntryChangeConversion
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversion import (
+    _assert_fields_set as _assert_conversion_fields_set
+)
+from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversionGroup import (
+    _assert_fields_set as _assert_conversion_group_fields_set
+)
 from ...conversion_helpers.converters import (
     get_converter_description, get_converter_id, get_converter_ids, get_converter_name, put_converter_description,
     put_converter_id, put_converter_ids, put_converter_name
@@ -32,6 +38,7 @@ def test__SCHEDULED_EVENT_CONVERSIONS():
     """
     Tests whether `SCHEDULED_EVENT_CONVERSIONS` contains conversion for every expected key.
     """
+    _assert_conversion_group_fields_set(SCHEDULED_EVENT_CONVERSIONS)
     vampytest.assert_eq(
         {*SCHEDULED_EVENT_CONVERSIONS.get_converters.keys()},
         {
@@ -47,6 +54,7 @@ def test__CHANNEL_ID_CONVERSION__generic():
     """
     Tests whether ``CHANNEL_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(CHANNEL_ID_CONVERSION)
     vampytest.assert_is(CHANNEL_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(CHANNEL_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(CHANNEL_ID_CONVERSION.validator, validate_channel_id)
@@ -58,6 +66,7 @@ def test__DESCRIPTION_CONVERSION__generic():
     """
     Tests whether ``DESCRIPTION_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(DESCRIPTION_CONVERSION)
     vampytest.assert_is(DESCRIPTION_CONVERSION.get_converter, get_converter_description)
     vampytest.assert_is(DESCRIPTION_CONVERSION.put_converter, put_converter_description)
     vampytest.assert_is(DESCRIPTION_CONVERSION.validator, validate_description)
@@ -69,12 +78,23 @@ def test__ENTITY_ID_CONVERSION__generic():
     """
     Tests whether ``ENTITY_ID_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(ENTITY_ID_CONVERSION)
     vampytest.assert_is(ENTITY_ID_CONVERSION.get_converter, get_converter_id)
     vampytest.assert_is(ENTITY_ID_CONVERSION.put_converter, put_converter_id)
     vampytest.assert_is(ENTITY_ID_CONVERSION.validator, validate_entity_id)
 
 
 # ---- entity_metadata ----
+
+def test__ENTITY_METADATA_CONVERSION__generic():
+    """
+    Tests whether ``ENTITY_METADATA_CONVERSION`` works as intended.
+    """
+    _assert_conversion_fields_set(ENTITY_METADATA_CONVERSION)
+    # vampytest.assert_is(ENTITY_METADATA_CONVERSION.get_converter, )
+    # vampytest.assert_is(ENTITY_METADATA_CONVERSION.put_converter, )
+    # vampytest.assert_is(ENTITY_METADATA_CONVERSION.validator, )
+
 
 def _iter_options__entity_metadata__get_converter():
     yield None, None
@@ -162,6 +182,7 @@ def test__ENTITY_TYPE_CONVERSION__generic():
     """
     Tests whether ``ENTITY_TYPE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(ENTITY_TYPE_CONVERSION)
     # vampytest.assert_is(ENTITY_TYPE_CONVERSION.get_converter, )
     # vampytest.assert_is(ENTITY_TYPE_CONVERSION.put_converter, )
     vampytest.assert_is(ENTITY_TYPE_CONVERSION.validator, validate_entity_type)
@@ -217,8 +238,9 @@ def test__IMAGE_CONVERSION__generic():
     """
     Tests whether ``IMAGE_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(IMAGE_CONVERSION)
     vampytest.assert_eq(IMAGE_CONVERSION.get_converter, Icon.from_base_16_hash)
-    vampytest.assert_eq(IMAGE_CONVERSION.put_converter, Icon.as_base_16_hash)
+    vampytest.assert_eq(IMAGE_CONVERSION.put_converter, Icon.as_base_16_hash.fget)
     vampytest.assert_eq(IMAGE_CONVERSION.validator, SCHEDULED_EVENT_IMAGE.validate_icon)
 
 
@@ -228,6 +250,7 @@ def test__LOCATION_CONVERSION__generic():
     """
     Tests whether ``LOCATION_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(LOCATION_CONVERSION)
     vampytest.assert_is(LOCATION_CONVERSION.get_converter, get_converter_description)
     vampytest.assert_is(LOCATION_CONVERSION.put_converter, put_converter_description)
     vampytest.assert_is(LOCATION_CONVERSION.validator, validate_location)
@@ -239,6 +262,7 @@ def test__NAME_CONVERSION__generic():
     """
     Tests whether ``NAME_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(NAME_CONVERSION)
     vampytest.assert_is(NAME_CONVERSION.get_converter, get_converter_name)
     vampytest.assert_is(NAME_CONVERSION.put_converter, put_converter_name)
     vampytest.assert_is(NAME_CONVERSION.validator, validate_name)
@@ -250,6 +274,7 @@ def test__PRIVACY_LEVEL_CONVERSION__generic():
     """
     Tests whether ``PRIVACY_LEVEL_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(PRIVACY_LEVEL_CONVERSION)
     # vampytest.assert_is(PRIVACY_LEVEL_CONVERSION.get_converter, )
     # vampytest.assert_is(PRIVACY_LEVEL_CONVERSION.put_converter, )
     vampytest.assert_is(PRIVACY_LEVEL_CONVERSION.validator, validate_privacy_level)
@@ -305,6 +330,7 @@ def test__END_CONVERSION__generic():
     """
     Tests whether ``END_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(END_CONVERSION)
     # vampytest.assert_is(END_CONVERSION.get_converter, )
     # vampytest.assert_is(END_CONVERSION.put_converter, )
     vampytest.assert_is(END_CONVERSION.validator, validate_end)
@@ -316,6 +342,7 @@ def test__START_CONVERSION__generic():
     """
     Tests whether ``START_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(START_CONVERSION)
     # vampytest.assert_is(START_CONVERSION.get_converter, )
     # vampytest.assert_is(START_CONVERSION.put_converter, )
     vampytest.assert_is(START_CONVERSION.validator, validate_start)
@@ -386,6 +413,7 @@ def test__SKU_IDS_CONVERSION__generic():
     """
     Tests whether ``SKU_IDS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(SKU_IDS_CONVERSION)
     vampytest.assert_is(SKU_IDS_CONVERSION.get_converter, get_converter_ids)
     vampytest.assert_is(SKU_IDS_CONVERSION.put_converter, put_converter_ids)
     vampytest.assert_is(SKU_IDS_CONVERSION.validator, validate_sku_ids)
@@ -397,6 +425,7 @@ def test__STATUS_CONVERSION__generic():
     """
     Tests whether ``STATUS_CONVERSION`` works as intended.
     """
+    _assert_conversion_fields_set(STATUS_CONVERSION)
     # vampytest.assert_is(STATUS_CONVERSION.get_converter, )
     # vampytest.assert_is(STATUS_CONVERSION.put_converter, )
     vampytest.assert_is(STATUS_CONVERSION.validator, validate_status)
@@ -444,4 +473,3 @@ def test__STATUS_CONVERSION__put_converter(input_value):
     output : `int`
     """
     return STATUS_CONVERSION.put_converter(input_value)
-

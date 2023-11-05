@@ -62,7 +62,7 @@ BANNER_CONVERSION = AuditLogEntryChangeConversion(
     'banner',
     FLAG_IS_MODIFICATION,
     get_converter = Icon.from_base_16_hash,
-    put_converter = Icon.as_base_16_hash,
+    put_converter = Icon.as_base_16_hash.fget,
     validator = GUILD_BANNER.validate_icon,
 )
 
@@ -123,7 +123,7 @@ DISCOVERY_SPLASH_CONVERSION = AuditLogEntryChangeConversion(
     'discovery_splash',
     FLAG_IS_MODIFICATION,
     get_converter = Icon.from_base_16_hash,
-    put_converter = Icon.as_base_16_hash,
+    put_converter = Icon.as_base_16_hash.fget,
     validator = GUILD_DISCOVERY_SPLASH.validate_icon,
 )
 
@@ -155,7 +155,7 @@ ICON_CONVERSION = AuditLogEntryChangeConversion(
     'icon',
     FLAG_IS_MODIFICATION,
     get_converter = Icon.from_base_16_hash,
-    put_converter = Icon.as_base_16_hash,
+    put_converter = Icon.as_base_16_hash.fget,
     validator = GUILD_ICON.validate_icon,
 )
 
@@ -167,7 +167,7 @@ INVITE_SPLASH_CONVERSION = AuditLogEntryChangeConversion(
     'invite_splash',
     FLAG_IS_MODIFICATION,
     get_converter = Icon.from_base_16_hash,
-    put_converter = Icon.as_base_16_hash,
+    put_converter = Icon.as_base_16_hash.fget,
     validator = GUILD_INVITE_SPLASH.validate_icon,
 )
 

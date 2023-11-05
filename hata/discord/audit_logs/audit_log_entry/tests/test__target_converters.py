@@ -176,7 +176,7 @@ def test__target_converter(converter, entry):
     
     Parameters
     ----------
-    converter : `FunctionType`
+    converter : `FunctionType | MethodType`
         Converter to test.
     entry : ``AuditLogEntry``
         Entry to get its target of.

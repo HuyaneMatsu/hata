@@ -1,3 +1,15 @@
+## 1.3.45 *\[2023-11-??\]*
+
+### Improvements
+
+- Add `ERROR_CODES.entitlement_already_granted`.
+- Add `ERROR_CODES.invalid_sku`.
+
+### Bug fixes
+
+- Fix `timedelta_to_id_difference` did not convert days or bigger units.
+- Some audit log change conversions were built badly failing `.to_data`.
+
 ## 1.3.44 *\[2023-10-31\]*
 
 ### Improvements

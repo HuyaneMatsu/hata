@@ -689,7 +689,7 @@ class AuditLogEntryType(PreinstancedBase):
                 f'Please use `.user_kick` instead.'
             ),
             FutureWarning,
-            stacklevel = 2,
+            stacklevel = 3,
         )
         
         return cls.user_kick
@@ -706,7 +706,7 @@ class AuditLogEntryType(PreinstancedBase):
                 f'Please use `.user_prune` instead.'
             ),
             FutureWarning,
-            stacklevel = 2,
+            stacklevel = 3,
         )
         
         return cls.user_prune
@@ -723,7 +723,7 @@ class AuditLogEntryType(PreinstancedBase):
                 f'Please use `.user_ban_add` instead.'
             ),
             FutureWarning,
-            stacklevel = 2,
+            stacklevel = 3,
         )
         
         return cls.user_ban_add
@@ -740,7 +740,7 @@ class AuditLogEntryType(PreinstancedBase):
                 f'Please use `.user_ban_remove` instead.'
             ),
             FutureWarning,
-            stacklevel = 2,
+            stacklevel = 3,
         )
         
         return cls.user_ban_remove
@@ -757,7 +757,7 @@ class AuditLogEntryType(PreinstancedBase):
                 f'Please use `.user_update` instead.'
             ),
             FutureWarning,
-            stacklevel = 2,
+            stacklevel = 3,
         )
         
         return cls.user_update
@@ -774,7 +774,7 @@ class AuditLogEntryType(PreinstancedBase):
                 f'Please use `.user_role_update` instead.'
             ),
             FutureWarning,
-            stacklevel = 2,
+            stacklevel = 3,
         )
         
         return cls.user_role_update
@@ -791,7 +791,7 @@ class AuditLogEntryType(PreinstancedBase):
                 f'Please use `.user_move` instead.'
             ),
             FutureWarning,
-            stacklevel = 2,
+            stacklevel = 3,
         )
         
         return cls.user_move
@@ -808,7 +808,7 @@ class AuditLogEntryType(PreinstancedBase):
                 f'Please use `.user_disconnect` instead.'
             ),
             FutureWarning,
-            stacklevel = 2,
+            stacklevel = 3,
         )
         
         return cls.user_disconnect

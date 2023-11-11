@@ -10,6 +10,9 @@ from warnings import warn
 
 from scarletio import DOCS_ENABLED, RichAttributeErrorBaseType, copy_docs, docs_property, include
 
+from ...env import ALLOW_DEBUG_MESSAGES
+from ...utils.debug import call_debug_logger
+
 from .place_holder import PlaceHolder
 from .preinstanced import Preinstance as P, PreinstancedBase
 
@@ -715,7 +718,17 @@ class Icon(RichAttributeErrorBaseType):
                     icon_type = create_alternative_icon_type(ICON_TYPE_STATIC, ICON_TYPE_ANIMATED, icon[:-32])
                 icon = icon[-32:]
             
-            icon_hash = int(icon, 16)
+            try:
+                icon_hash = int(icon, 16)
+            except ValueError:
+                if ALLOW_DEBUG_MESSAGES:
+                    call_debug_logger(
+                        f'Unknown icon hash format: {icon!r}',
+                        True,
+                    )
+                
+                icon_type = ICON_TYPE_NONE
+                icon_hash = 0
         
         self = object.__new__(cls)
         self.type = icon_type
@@ -818,11 +831,13 @@ class IconSlot:
     )
     
     _compile_globals = {
+        'ALLOW_DEBUG_MESSAGES': ALLOW_DEBUG_MESSAGES,
         'ICON_TYPE_NONE': ICON_TYPE_NONE,
         'ICON_TYPE_STATIC': ICON_TYPE_STATIC,
         'ICON_TYPE_ANIMATED': ICON_TYPE_ANIMATED,
         'ICON_TYPE_ANIMATED_APNG': ICON_TYPE_ANIMATED_APNG,
         'Icon': Icon,
+        'call_debug_logger': call_debug_logger,
         'create_alternative_icon_type': create_alternative_icon_type,
     }
     
@@ -889,7 +904,18 @@ class IconSlot:
             f'            else:\n'
             f'                icon_type = create_alternative_icon_type(ICON_TYPE_STATIC, {animated_icon_type_name}, icon[:-32])\n'
             f'            icon = icon[-32:]\n'
-            f'        icon_hash = int(icon, 16)\n'
+            f''
+            f'        try:\n'
+            f'            icon_hash = int(icon, 16)\n'
+            f'        except ValueError:\n'
+            f'            if ALLOW_DEBUG_MESSAGES:\n'
+            f'                call_debug_logger(\n'
+            f'                    f\'Unknown icon hash format: {{icon!r}}\',\n'
+            f'                    True,\n'
+            f'                )\n'
+            f''
+            f'            icon_type = ICON_TYPE_NONE\n'
+            f'            icon_hash = 0\n'
             f''
             f'    self.{added_internal_attribute_name_type} = icon_type\n'
             f'    self.{added_instance_attribute_name_hash} = icon_hash\n'
@@ -917,7 +943,18 @@ class IconSlot:
                 f'            else:\n'
                 f'                icon_type = create_alternative_icon_type(ICON_TYPE_STATIC, {animated_icon_type_name}, icon[:-32])\n'
                 f'            icon = icon[-32:]\n'
-                f'        icon_hash = int(icon, 16)\n'
+                f''
+                f'        try:\n'
+                f'            icon_hash = int(icon, 16)\n'
+                f'        except ValueError:\n'
+                f'            if ALLOW_DEBUG_MESSAGES:\n'
+                f'                call_debug_logger(\n'
+                f'                    f\'Unknown icon hash format: {{icon!r}}\',\n'
+                f'                    True,\n'
+                f'                )\n'
+                f''
+                f'            icon_type = ICON_TYPE_NONE\n'
+                f'            icon_hash = 0\n'
                 f''
                 f'    self_icon_type = self.{added_internal_attribute_name_type}\n'
                 f'    self_icon_hash = self.{added_instance_attribute_name_hash}\n'

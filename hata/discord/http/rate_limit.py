@@ -1,7 +1,7 @@
 __all__ = ()
 
 from collections import deque
-from datetime import datetime, timezone
+from datetime import datetime as DateTime, timezone as TimeZone
 
 from scarletio import Future, LOOP_TIME, ScarletLock
 from scarletio.web_common.headers import DATE
@@ -25,7 +25,6 @@ LIMITER_WEBHOOK = 'webhook_id'
 LIMITER_INTERACTION = 'interaction_id'
 LIMITER_GLOBAL = 'global'
 LIMITER_UNLIMITED = 'unlimited'
-
 
 class RateLimitGroup:
     """
@@ -311,6 +310,68 @@ class RateLimitUnit:
         return ''.join(repr_parts)
 
 
+def _get_delay_reset_after_from_headers(headers):
+    """
+    Gets rate limit delay using `RATE_LIMIT_RESET_AFTER` key.
+    
+    Parameters
+    ----------
+    headers : ``IgnoreCaseMultiValueDictionary``
+        Request headers.
+    
+    Returns
+    -------
+    delay : `None | float`
+    """
+    # KeyError: X-RateLimit-Reset-After
+    delay_reset_after_raw = headers.get(RATE_LIMIT_RESET_AFTER, None)
+    if delay_reset_after_raw is None:
+        return
+    
+    try:
+        return float(delay_reset_after_raw)
+    except ValueError:
+        # This branch was never met, but lets keep it stupid proof.
+        pass
+
+
+def _get_delay_reset_after_from_difference_from_headers(headers):
+    """
+    Gets rate limit delay using `RATE_LIMIT_RESET` and `DATE` keys..
+    
+    Parameters
+    ----------
+    headers : ``IgnoreCaseMultiValueDictionary``
+        Request headers.
+    
+    Returns
+    -------
+    delay : `None | float`
+    """
+    rate_limit_reset_at_raw = headers.get(RATE_LIMIT_RESET, None)
+    if rate_limit_reset_at_raw is None:
+        return
+    
+    request_done_at_raw = headers.get(DATE, None)
+    if request_done_at_raw is None:
+        return
+    
+    try:
+        rate_limit_reset_at = DateTime.fromtimestamp(float(rate_limit_reset_at_raw), TimeZone.utc)
+    except ValueError:
+        # I dont know what they drank, but it happened:
+        # ValueError: year 584556072 is out of range
+        return
+    
+    try:
+        request_done_at = parse_date_header_to_datetime(request_done_at_raw)
+    except ValueError:
+        # This branch was never met, but keep is stupid proof
+        return
+    
+    return (rate_limit_reset_at - request_done_at).total_seconds()
+
+
 def get_rate_limit_delay_from_headers(headers):
     """
     Returns rate limit delay based on the given headers.
@@ -324,21 +385,23 @@ def get_rate_limit_delay_from_headers(headers):
     -------
     delay : `float`
     """
-    delay_reset_after = float(headers[RATE_LIMIT_RESET_AFTER])
+    delay_0 = _get_delay_reset_after_from_headers(headers)
+    delay_1 = _get_delay_reset_after_from_difference_from_headers(headers)
     
-    try:
-        rate_limit_reset_at = datetime.fromtimestamp(float(headers[RATE_LIMIT_RESET]), timezone.utc)
-    except ValueError:
-        # I dont know what they drank, but it happened:
-        # ValueError: year 584556072 is out of range
-        return delay_reset_after
+    if delay_0 is None:
+        if delay_1 is None:
+            # Discord is shitting itself
+            delay = 60.0
+        else:
+            delay = delay_1
     
-    request_done_at = parse_date_header_to_datetime(headers[DATE])
+    else:
+        if delay_1 is None:
+            delay = delay_0
+        else:
+            delay = min(delay_0, delay_1)
     
-    return min(
-        delay_reset_after,
-        (rate_limit_reset_at - request_done_at).total_seconds(),
-    )
+    return delay
 
 
 class RateLimitHandler:

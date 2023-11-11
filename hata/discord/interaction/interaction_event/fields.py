@@ -228,7 +228,7 @@ validate_type = preinstanced_validator_factory('interaction_type', InteractionTy
 
 # user & user_permissions
 
-def parse_user(data, guild_id):
+def parse_user(data, guild_id = 0):
     """
     Parses out the interaction event's user from the given data.
     
@@ -236,7 +236,7 @@ def parse_user(data, guild_id):
     ----------
     data : `dict` of (`str`, `object`) items
         Interaction event data.
-    guild_id : `int`
+    guild_id : `int` = `0`, Optional (Keyword only)
         The respective guild's identifier.
     
     Returns

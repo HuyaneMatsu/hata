@@ -53,6 +53,7 @@ from ..user import (
     User, create_partial_user_from_id, thread_user_create, thread_user_delete, thread_user_difference_update,
     thread_user_pop
 )
+from ..user.voice_state.fields import parse_user as parse_voice_state_user
 from ..utils import Gift, Relationship
 
 from .core import DEFAULT_EVENT_HANDLER, add_parser, maybe_ensure_launch
@@ -2339,7 +2340,7 @@ del GUILD_DELETE__CAL, \
 
 
 def GUILD_AUDIT_LOG_ENTRY_CREATE__CAL(client, data):
-    audit_log_entry = AuditLogEntry(data)
+    audit_log_entry = AuditLogEntry.from_data(data)
     if (audit_log_entry is not None):
         Task(KOKORO, client.events.audit_log_entry_create(client, audit_log_entry))
 
@@ -2803,15 +2804,9 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
     except KeyError:
         return
     
-    try:
-        guild_profile_data = data['member']
-    except KeyError:
-        user_data = data['user']
-        guild_profile_data = None
-    else:
-        user_data = guild_profile_data['user']
-    
-    user = User.from_data(user_data, guild_profile_data, guild_id)
+    user = parse_voice_state_user(data)
+    if user is None:
+        return
     
     if user is client:
         for action, voice_state, change in guild._update_voice_state(data, user):
@@ -2905,15 +2900,10 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
         clients.close()
         return
     
-    try:
-        guild_profile_data = data['member']
-    except KeyError:
-        user_data = data['user']
-        guild_profile_data = None
-    else:
-        user_data = guild_profile_data['user']
-    
-    user = User.from_data(user_data, guild_profile_data, guild_id)
+    user = parse_voice_state_user(data)
+    if user is None:
+        clients.close()
+        return
     
     actions = [*guild._update_voice_state(data, user)]
     if not actions:
@@ -2986,15 +2976,9 @@ def VOICE_STATE_UPDATE__OPT_SC(client, data):
     except KeyError:
         return
     
-    try:
-        guild_profile_data = data['member']
-    except KeyError:
-        user_data = data['user']
-        guild_profile_data = None
-    else:
-        user_data = guild_profile_data['user']
-    
-    user = User.from_data(user_data, guild_profile_data, guild_id)
+    user = parse_voice_state_user(data)
+    if user is None:
+        return
     
     if user is client:
         for action, voice_state, change in guild._update_voice_state(data, user):
@@ -3042,15 +3026,9 @@ def VOICE_STATE_UPDATE__OPT_MC(client, data):
     if first_client(guild.clients, INTENT_MASK_GUILD_VOICE_STATES, client) is not client:
         return
     
-    try:
-        guild_profile_data = data['member']
-    except KeyError:
-        user_data = data['user']
-        guild_profile_data = None
-    else:
-        user_data = guild_profile_data['user']
-    
-    user = User.from_data(user_data, guild_profile_data, guild_id)
+    user = parse_voice_state_user(data)
+    if user is None:
+        return
     
     if isinstance(user, Client):
         for action, voice_state, change in guild._update_voice_state(data, user):

@@ -12,7 +12,7 @@ from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, force_string_validator_factory,
     nullable_date_time_validator_factory
 )
-from ..user import ClientUserBase
+from ..user import ClientUserBase, User, ZEROUSER
 
 # channel_id
 
@@ -83,3 +83,39 @@ validate_speaker = bool_validator_factory('speaker', False)
 parse_user_id = entity_id_parser_factory('user_id')
 put_user_id_into = entity_id_putter_factory('user_id')
 validate_user_id = entity_id_validator_factory('user_id', ClientUserBase)
+
+# user
+
+
+def parse_user(data, guild_id = 0):
+    """
+    Parses out the voice state's user from the given data.
+    
+    Returns `None` if user could not be parsed.
+        
+    Parameters
+    ----------
+    data : `dict` of (`str`, `object`) items
+        Interaction event data.
+    guild_id : `int` = `0`, Optional (Keyword only)
+        The respective guild's identifier.
+    
+    Returns
+    -------
+    user : `None | ClientUserBase`
+    """
+    # user
+    try:
+        guild_profile_data = data['member']
+    except KeyError:
+        user_data = data.get('user', None)
+        if user_data is None:
+            return None
+        
+        guild_profile_data = None
+    else:
+        user_data = guild_profile_data.get('user', None)
+        if user_data is None:
+            return None
+    
+    return User.from_data(user_data, guild_profile_data, guild_id)

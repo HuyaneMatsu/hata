@@ -4,11 +4,15 @@
 
 - Add `ERROR_CODES.entitlement_already_granted`.
 - Add `ERROR_CODES.invalid_sku`.
+- Now rate limit handler handles missing headers better in case Discord shits itself.
+- Now icon converter handles the case when discord returns incorrect base16 128 bit hash.
+- Now `VOICE_STATE` dispatch event handler handles when discord returns no user.
 
 ### Bug fixes
 
 - Fix `timedelta_to_id_difference` did not convert days or bigger units.
 - Some audit log change conversions were built badly failing `.to_data`.
+- Fix `TypeError` in `GUILD_AUDIT_LOG_ENTRY_CREATE`. (from 1.3.44)
 
 ## 1.3.44 *\[2023-10-31\]*
 

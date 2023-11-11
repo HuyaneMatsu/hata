@@ -1276,7 +1276,7 @@ class ClientCompoundGuildEndpoints(Compound):
             warn(
                 (
                     f'`{type(self).__name__}.audit_log_get_chunk`\'s `event` parameter is deprecated and will be '
-                    f'removed in 2024 March. Please use `.entry_type` instead.'
+                    f'removed in 2024 March. Please use `entry_type` instead.'
                 ),
                 FutureWarning,
                 stacklevel = 2,

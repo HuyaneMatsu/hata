@@ -13,6 +13,8 @@ class AuditLogEntryChangeConversionGroup(RichAttributeErrorBaseType):
     ----------
     conversions : `tuple<AuditLogEntryChangeConversion>`
         The grouped conversions.
+    default_get_converters : `None | list<str, int, FunctionType>`
+        Default get converters.
     get_converters : `dict<str, (str, int, FunctionType | MethodType)>`
         Raw to processed converters.
     put_converters : `dict<(str, int), (str, FunctionType | MethodType)>`
@@ -20,7 +22,7 @@ class AuditLogEntryChangeConversionGroup(RichAttributeErrorBaseType):
     validators : `dict<(str, int), FunctionType | MethodType>`
         Validators.
     """
-    __slots__ = ('conversions', 'get_converters', 'put_converters', 'validators')
+    __slots__ = ('conversions', 'default_get_converters', 'get_converters', 'put_converters', 'validators')
     
     def __new__(cls, *conversions):
         """

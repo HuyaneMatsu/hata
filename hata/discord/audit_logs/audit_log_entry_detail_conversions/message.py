@@ -3,7 +3,7 @@ __all__ = ()
 from ...message.message.fields import validate_channel_id, validate_id
 
 from ..audit_log_entry_detail_conversion import AuditLogEntryDetailConversion, AuditLogEntryDetailConversionGroup
-from ..conversion_helpers.converters import get_converter_id, put_converter_id
+from ..conversion_helpers.converters import value_deserializer_id, value_serializer_id
 
 
 # ---- channel_id ----
@@ -11,9 +11,9 @@ from ..conversion_helpers.converters import get_converter_id, put_converter_id
 CHANNEL_ID_CONVERSION = AuditLogEntryDetailConversion(
     'channel_id',
     'channel_id',
-    get_converter = get_converter_id,
-    put_converter = put_converter_id,
-    validator = validate_channel_id,
+    value_deserializer = value_deserializer_id,
+    value_serializer = value_serializer_id,
+    value_validator = validate_channel_id,
 )
 
 
@@ -24,14 +24,14 @@ COUNT_CONVERSION = AuditLogEntryDetailConversion(
     'count',
 )
 
-@COUNT_CONVERSION.set_get_converter
-def count_get_converter(value):
+@COUNT_CONVERSION.set_value_deserializer
+def count_deserializer(value):
     if value is None:
         value = 0
     return value
 
 
-@COUNT_CONVERSION.set_validator
+@COUNT_CONVERSION.set_value_validator
 def validate_count(value):
     if not isinstance(value, int):
         raise TypeError(f'`count` can be `int`, got {value.__class__.__name__}; {value!r}.')
@@ -47,9 +47,9 @@ def validate_count(value):
 ID_CONVERSION = AuditLogEntryDetailConversion(
     'message_id',
     'id',
-    get_converter = get_converter_id,
-    put_converter = put_converter_id,
-    validator = validate_id,
+    value_deserializer = value_deserializer_id,
+    value_serializer = value_serializer_id,
+    value_validator = validate_id,
 )
 
 

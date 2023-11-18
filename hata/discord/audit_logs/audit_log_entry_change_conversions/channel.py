@@ -16,38 +16,36 @@ from ...channel.channel_metadata.fields import (
 )
 from ...emoji import create_partial_emoji_data, create_partial_emoji_from_data
 
-from ..audit_log_change.flags import FLAG_IS_IGNORED, FLAG_IS_MODIFICATION
 from ..audit_log_entry_change_conversion import AuditLogEntryChangeConversion, AuditLogEntryChangeConversionGroup
+from ..audit_log_entry_change_conversion.change_deserializers import change_deserializer_deprecation
 from ..conversion_helpers.converters import (
-    get_converter_description, get_converter_id, get_converter_ids, get_converter_name, put_converter_description,
-    put_converter_id, put_converter_ids, put_converter_name
+    value_deserializer_description, value_deserializer_id, value_deserializer_ids, value_deserializer_name,
+    value_serializer_description, value_serializer_id, value_serializer_ids, value_serializer_name
 )
 
 
 # ---- applied_tag_ids ----
 
 APPLIED_TAG_IDS_CONVERSION = AuditLogEntryChangeConversion(
-    'applied_tags',
+    ('applied_tags',),
     'applied_tag_ids',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_ids,
-    put_converter = put_converter_ids,
-    validator = validate_applied_tag_ids,
+    value_deserializer = value_deserializer_ids,
+    value_serializer = value_serializer_ids,
+    value_validator = validate_applied_tag_ids,
 )
 
 
 # ---- archived ----
 
 ARCHIVED_CONVERSION = AuditLogEntryChangeConversion(
+    ('archived',),
     'archived',
-    'archived',
-    FLAG_IS_MODIFICATION,
-    validator = validate_archived,
+    value_validator = validate_archived,
 )
 
 
-@ARCHIVED_CONVERSION.set_get_converter
-def archived_get_converter(value):
+@ARCHIVED_CONVERSION.set_value_deserializer
+def archived_value_deserializer(value):
     if value is None:
         value = False
 
@@ -57,15 +55,14 @@ def archived_get_converter(value):
 # ---- auto_archive_after ----
 
 AUTO_ARCHIVE_AFTER_CONVERSION = AuditLogEntryChangeConversion(
-    'auto_archive_duration',
+    ('auto_archive_duration',),
     'auto_archive_after',
-    FLAG_IS_MODIFICATION,
-    validator = validate_auto_archive_after,
+    value_validator = validate_auto_archive_after,
 )
 
 
-@AUTO_ARCHIVE_AFTER_CONVERSION.set_get_converter
-def auto_archive_after_get_converter(value):
+@AUTO_ARCHIVE_AFTER_CONVERSION.set_value_deserializer
+def auto_archive_after_value_deserializer(value):
     if value is None:
         value = AUTO_ARCHIVE_DEFAULT
     else:
@@ -73,23 +70,22 @@ def auto_archive_after_get_converter(value):
     return value
 
 
-@AUTO_ARCHIVE_AFTER_CONVERSION.set_put_converter
-def auto_archive_after_put_converter(value):
+@AUTO_ARCHIVE_AFTER_CONVERSION.set_value_serializer
+def auto_archive_after_value_serializer(value):
     return value // 60
 
 
 # --- available_tags ----
 
 AVAILABLE_TAGS_CONVERSION = AuditLogEntryChangeConversion(
+    ('available_tags',),
     'available_tags',
-    'available_tags',
-    FLAG_IS_MODIFICATION,
-    validator = validate_available_tags,
+    value_validator = validate_available_tags,
 )
 
 
-@AVAILABLE_TAGS_CONVERSION.set_get_converter
-def available_tags_get_converter(value):
+@AVAILABLE_TAGS_CONVERSION.set_value_deserializer
+def available_tags_value_deserializer(value):
     if value is None:
         pass
     elif (not value):
@@ -99,8 +95,8 @@ def available_tags_get_converter(value):
     return value
 
 
-@AVAILABLE_TAGS_CONVERSION.set_put_converter
-def available_tags_put_converter(value):
+@AVAILABLE_TAGS_CONVERSION.set_value_serializer
+def available_tags_value_serializer(value):
     if value is None:
         value = []
     else:
@@ -111,15 +107,14 @@ def available_tags_put_converter(value):
 # ---- bitrate ----
 
 BITRATE_CONVERSION = AuditLogEntryChangeConversion(
+    ('bitrate',),
     'bitrate',
-    'bitrate',
-    FLAG_IS_MODIFICATION,
-    validator = validate_bitrate,
+    value_validator = validate_bitrate,
 )
 
 
-@BITRATE_CONVERSION.set_get_converter
-def bitrate_get_converter(value):
+@BITRATE_CONVERSION.set_value_deserializer
+def bitrate_value_deserializer(value):
     if value is None:
         value = BITRATE_DEFAULT
     return value
@@ -128,15 +123,14 @@ def bitrate_get_converter(value):
 # ---- default_thread_auto_archive_after ----
 
 DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION = AuditLogEntryChangeConversion(
-    'default_auto_archive_duration',
+    ('default_auto_archive_duration',),
     'default_thread_auto_archive_after',
-    FLAG_IS_MODIFICATION,
-    validator = validate_default_thread_auto_archive_after,
+    value_validator = validate_default_thread_auto_archive_after,
 )
 
 
-@DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.set_get_converter
-def default_thread_auto_archive_after_get_converter(value):
+@DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.set_value_deserializer
+def default_thread_auto_archive_after_value_deserializer(value):
     if value is None:
         value = AUTO_ARCHIVE_DEFAULT
     else:
@@ -144,71 +138,68 @@ def default_thread_auto_archive_after_get_converter(value):
     return value
 
 
-@DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.set_put_converter
-def default_thread_auto_archive_after_put_converter(value):
+@DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.set_value_serializer
+def default_thread_auto_archive_after_value_serializer(value):
     return value // 60
 
 
 # ---- default_forum_layout ----
 
 DEFAULT_FORUM_LAYOUT_CONVERSION = AuditLogEntryChangeConversion(
+    ('default_forum_layout',),
     'default_forum_layout',
-    'default_forum_layout',
-    FLAG_IS_MODIFICATION,
-    validator = validate_default_forum_layout,
+    value_validator = validate_default_forum_layout,
 )
 
 
-@DEFAULT_FORUM_LAYOUT_CONVERSION.set_get_converter
-def default_forum_layout_get_converter(value):
+@DEFAULT_FORUM_LAYOUT_CONVERSION.set_value_deserializer
+def default_forum_layout_value_deserializer(value):
     return ForumLayout.get(value)
 
 
-@DEFAULT_FORUM_LAYOUT_CONVERSION.set_put_converter
-def default_forum_layout_put_converter(value):
+@DEFAULT_FORUM_LAYOUT_CONVERSION.set_value_serializer
+def default_forum_layout_value_serializer(value):
     return value.value
 
 
 # ---- default_sort_order ----
 
 DEFAULT_SORT_ORDER_CONVERSION = AuditLogEntryChangeConversion(
+    ('default_sort_order',),
     'default_sort_order',
-    'default_sort_order',
-    FLAG_IS_MODIFICATION,
-    validator = validate_default_sort_order,
+    value_validator = validate_default_sort_order,
 )
 
 
-@DEFAULT_SORT_ORDER_CONVERSION.set_get_converter
-def default_sort_order_get_converter(value):
+@DEFAULT_SORT_ORDER_CONVERSION.set_value_deserializer
+def default_sort_order_value_deserializer(value):
     return SortOrder.get(value)
 
 
-@DEFAULT_SORT_ORDER_CONVERSION.set_put_converter
-def default_sort_order_put_converter(value):
+@DEFAULT_SORT_ORDER_CONVERSION.set_value_serializer
+def default_sort_order_value_serializer(value):
     return value.value
 
 
 # ---- default_thread_reaction ----
 
 DEFAULT_THREAD_REACTION_CONVERSION = AuditLogEntryChangeConversion(
-    'default_reaction_emoji',
+    ('default_reaction_emoji',),
     'default_thread_reaction',
-    FLAG_IS_MODIFICATION,
-    validator = validate_default_thread_reaction,
+    value_validator = validate_default_thread_reaction,
 )
 
 
-@DEFAULT_THREAD_REACTION_CONVERSION.set_get_converter
-def default_thread_reaction_get_converter(value):
+@DEFAULT_THREAD_REACTION_CONVERSION.set_value_deserializer
+def default_thread_reaction_value_deserializer(value):
     if (value is not None):
         value = create_partial_emoji_from_data(value)
     
     return value
 
 
-@DEFAULT_THREAD_REACTION_CONVERSION.set_put_converter
-def default_thread_reaction_put_converter(value):
+@DEFAULT_THREAD_REACTION_CONVERSION.set_value_serializer
+def default_thread_reaction_value_serializer(value):
     if value is not None:
         value = create_partial_emoji_data(value)
     
@@ -218,14 +209,13 @@ def default_thread_reaction_put_converter(value):
 # ---- default_thread_slowmode ----
 
 DEFAULT_THREAD_SLOWMODE_CONVERSION = AuditLogEntryChangeConversion(
-    'default_thread_rate_limit_per_user',
+    ('default_thread_rate_limit_per_user',),
     'default_thread_slowmode',
-    FLAG_IS_MODIFICATION,
-    validator = validate_default_thread_slowmode,
+    value_validator = validate_default_thread_slowmode,
 )
 
-@DEFAULT_THREAD_SLOWMODE_CONVERSION.set_get_converter
-def default_thread_slowmode_get_converter(value):
+@DEFAULT_THREAD_SLOWMODE_CONVERSION.set_value_deserializer
+def default_thread_slowmode_value_deserializer(value):
     if value is None:
         value = SLOWMODE_DEFAULT
     return value
@@ -234,15 +224,14 @@ def default_thread_slowmode_get_converter(value):
 # ---- flags ----
 
 FLAGS_CONVERSION = AuditLogEntryChangeConversion(
+    ('flags',),
     'flags',
-    'flags',
-    FLAG_IS_MODIFICATION,
-    validator = validate_flags,
+    value_validator = validate_flags,
 )
 
 
-@FLAGS_CONVERSION.set_get_converter
-def flags_get_converter(value):
+@FLAGS_CONVERSION.set_value_deserializer
+def flags_value_deserializer(value):
     if value is None:
         value = ChannelFlag()
     else:
@@ -251,32 +240,31 @@ def flags_get_converter(value):
     return value
 
 
-@FLAGS_CONVERSION.set_put_converter
-def flags_put_converter(value):
+@FLAGS_CONVERSION.set_value_serializer
+def flags_value_serializer(value):
     return int(value)
 
 
 # ---- icon_emoji  ----
 
 ICON_EMOJI_CONVERSION_IGNORED = AuditLogEntryChangeConversion(
-    'icon_emoji',
+    ('icon_emoji',),
     '',
-    FLAG_IS_IGNORED,
+    change_deserializer = change_deserializer_deprecation,
 )
 
 
 # ---- invitable ----
 
 INVITABLE_CONVERSION = AuditLogEntryChangeConversion(
+    ('invitable',),
     'invitable',
-    'invitable',
-    FLAG_IS_MODIFICATION,
-    validator = validate_invitable,
+    value_validator = validate_invitable,
 )
 
 
-@INVITABLE_CONVERSION.set_get_converter
-def invitable_get_converter(value):
+@INVITABLE_CONVERSION.set_value_deserializer
+def invitable_value_deserializer(value):
     if value is None:
         value = True
     return value
@@ -285,27 +273,25 @@ def invitable_get_converter(value):
 # ---- name ----
 
 NAME_CONVERSION = AuditLogEntryChangeConversion(
+    ('name',),
     'name',
-    'name',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_name,
-    put_converter = put_converter_name,
-    validator = validate_name,
+    value_deserializer = value_deserializer_name,
+    value_serializer = value_serializer_name,
+    value_validator = validate_name,
 )
 
 
 # ---- nsfw ----
 
 NSFW_CONVERSION = AuditLogEntryChangeConversion(
+    ('nsfw',),
     'nsfw',
-    'nsfw',
-    FLAG_IS_MODIFICATION,
-    validator = validate_nsfw,
+    value_validator = validate_nsfw,
 )
 
 
-@NSFW_CONVERSION.set_get_converter
-def nsfw_get_converter(value):
+@NSFW_CONVERSION.set_value_deserializer
+def nsfw_value_deserializer(value):
     if value is None:
         value = False
     return value
@@ -314,15 +300,14 @@ def nsfw_get_converter(value):
 # ---- open ----
 
 OPEN_CONVERSION = AuditLogEntryChangeConversion(
-    'locked',
+    ('locked',),
     'open',
-    FLAG_IS_MODIFICATION,
-    validator = validate_open,
+    value_validator = validate_open,
 )
 
 
-@OPEN_CONVERSION.set_get_converter
-def open_get_converter(value):
+@OPEN_CONVERSION.set_value_deserializer
+def open_value_deserializer(value):
     if value is None:
         value = True
     else:
@@ -330,34 +315,32 @@ def open_get_converter(value):
     return value
 
 
-@OPEN_CONVERSION.set_put_converter
-def open_put_converter(value):
+@OPEN_CONVERSION.set_value_serializer
+def open_value_serializer(value):
     return not value
 
 
 # ---- parent_id ----
 
 PARENT_ID_CONVERSION = AuditLogEntryChangeConversion(
+    ('parent_id',),
     'parent_id',
-    'parent_id',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_id,
-    put_converter = put_converter_id,
-    validator = validate_parent_id,
+    value_deserializer = value_deserializer_id,
+    value_serializer = value_serializer_id,
+    value_validator = validate_parent_id,
 )
 
 
 # ---- permission_overwrites ----
 
 PERMISSION_OVERWRITES_CONVERSION = AuditLogEntryChangeConversion(
+    ('permission_overwrites',),
     'permission_overwrites',
-    'permission_overwrites',
-    FLAG_IS_MODIFICATION,
-    validator = validate_permission_overwrites,
+    value_validator = validate_permission_overwrites,
 )
 
-@PERMISSION_OVERWRITES_CONVERSION.set_get_converter
-def permission_overwrite_get_converter(value):
+@PERMISSION_OVERWRITES_CONVERSION.set_value_deserializer
+def permission_overwrite_value_deserializer(value):
     if value is None:
         pass
     elif (not value):
@@ -371,8 +354,8 @@ def permission_overwrite_get_converter(value):
     return value
 
 
-@PERMISSION_OVERWRITES_CONVERSION.set_put_converter
-def permission_overwrite_put_converter(value):
+@PERMISSION_OVERWRITES_CONVERSION.set_value_serializer
+def permission_overwrite_value_serializer(value):
     if value is None:
         value = []
     else:
@@ -387,14 +370,13 @@ def permission_overwrite_put_converter(value):
 # ---- position ----
 
 POSITION_CONVERSION = AuditLogEntryChangeConversion(
+    ('position',),
     'position',
-    'position',
-    FLAG_IS_MODIFICATION,
-    validator = validate_position,
+    value_validator = validate_position,
 )
 
-@POSITION_CONVERSION.set_get_converter
-def position_get_converter(value):
+@POSITION_CONVERSION.set_value_deserializer
+def position_value_deserializer(value):
     if value is None:
         value = 0
     return value
@@ -403,34 +385,32 @@ def position_get_converter(value):
 # ---- region ----
 
 REGION_CONVERSION = AuditLogEntryChangeConversion(
-    'rtc_region',
+    ('rtc_region',),
     'region',
-    FLAG_IS_MODIFICATION,
-    validator = validate_region,
+    value_validator = validate_region,
 )
 
 
-@REGION_CONVERSION.set_get_converter
-def region_get_converter(value):
+@REGION_CONVERSION.set_value_deserializer
+def region_value_deserializer(value):
     return VoiceRegion.get(value)
 
 
-@REGION_CONVERSION.set_put_converter
-def region_put_converter(value):
+@REGION_CONVERSION.set_value_serializer
+def region_value_serializer(value):
     return value.value
 
 
 # ---- slowmode ----
 
 SLOWMODE_CONVERSION = AuditLogEntryChangeConversion(
-    'rate_limit_per_user',
+    ('rate_limit_per_user',),
     'slowmode',
-    FLAG_IS_MODIFICATION,
-    validator = validate_slowmode,
+    value_validator = validate_slowmode,
 )
 
-@SLOWMODE_CONVERSION.set_get_converter
-def slowmode_get_converter(value):
+@SLOWMODE_CONVERSION.set_value_deserializer
+def slowmode_value_deserializer(value):
     if value is None:
         value = SLOWMODE_DEFAULT
     return value
@@ -439,84 +419,80 @@ def slowmode_get_converter(value):
 # ---- template  ----
 
 TEMPLATE_CONVERSION_IGNORED = AuditLogEntryChangeConversion(
-    'template',
+    ('template',),
     '',
-    FLAG_IS_IGNORED,
+    change_deserializer = change_deserializer_deprecation,
 )
 
 
 # ---- theme_color  ----
 
 THEME_COLOR_CONVERSION_IGNORED = AuditLogEntryChangeConversion(
-    'theme_color',
+    ('theme_color',),
     '',
-    FLAG_IS_IGNORED,
+    change_deserializer = change_deserializer_deprecation,
 )
 
 
 # ---- topic ----
 
 TOPIC_CONVERSION = AuditLogEntryChangeConversion(
+    ('topic',),
     'topic',
-    'topic',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_description,
-    put_converter = put_converter_description,
-    validator = validate_topic,
+    value_deserializer = value_deserializer_description,
+    value_serializer = value_serializer_description,
+    value_validator = validate_topic,
 )
 
 
 # ---- type ----
 
 TYPE_CONVERSION = AuditLogEntryChangeConversion(
+    ('type',),
     'type',
-    'type',
-    FLAG_IS_MODIFICATION,
-    validator = validate_type,
+    value_validator = validate_type,
 )
 
 
-@TYPE_CONVERSION.set_get_converter
-def type_get_converter(value):
+@TYPE_CONVERSION.set_value_deserializer
+def type_value_deserializer(value):
     return ChannelType.get(value)
 
 
-@TYPE_CONVERSION.set_put_converter
-def type_put_converter(value):
+@TYPE_CONVERSION.set_value_serializer
+def type_value_serializer(value):
     return value.value
 
 
 # ---- video_quality_mode ----
 
 VIDEO_QUALITY_MODE_CONVERSION = AuditLogEntryChangeConversion(
+    ('video_quality_mode',),
     'video_quality_mode',
-    'video_quality_mode',
-    FLAG_IS_MODIFICATION,
-    validator = validate_video_quality_mode,
+    value_validator = validate_video_quality_mode,
 )
 
 
-@VIDEO_QUALITY_MODE_CONVERSION.set_get_converter
-def video_quality_mode_get_converter(value):
+@VIDEO_QUALITY_MODE_CONVERSION.set_value_deserializer
+def video_quality_mode_value_deserializer(value):
     return VideoQualityMode.get(value)
 
 
-@VIDEO_QUALITY_MODE_CONVERSION.set_put_converter
-def video_quality_mode_put_converter(value):
+@VIDEO_QUALITY_MODE_CONVERSION.set_value_serializer
+def video_quality_mode_value_serializer(value):
     return value.value
 
 
 # ---- user_limit ----
 
 USER_LIMIT_CONVERSION = AuditLogEntryChangeConversion(
+    ('user_limit',),
     'user_limit',
-    'user_limit',
-    FLAG_IS_MODIFICATION,
-    validator = validate_user_limit,
+    value_validator = validate_user_limit,
 )
 
-@USER_LIMIT_CONVERSION.set_get_converter
-def user_limit_get_converter(value):
+@USER_LIMIT_CONVERSION.set_value_deserializer
+def user_limit_value_deserializer(value):
     if value is None:
         value = USER_LIMIT_DEFAULT
     return value

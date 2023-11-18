@@ -5,7 +5,6 @@ from ....user import User, ClientUserBase
 
 from ...audit_log import AuditLog
 from ...audit_log_change import AuditLogChange
-from ...audit_log_change.flags import FLAG_IS_MODIFICATION
 
 from ..audit_log_entry import AuditLogEntry
 from ..preinstanced import AuditLogEntryType
@@ -16,7 +15,7 @@ def test__AuditLogEntry__copy():
     """
     Tests whether ``AuditLogEntry.copy`` works as intended.
     """
-    changes = [AuditLogChange('name', FLAG_IS_MODIFICATION, after = 'koishi')]
+    changes = [AuditLogChange('name', after = 'koishi')]
     details = {'users_removed': 6}
     entry_type = AuditLogEntryType.guild_update
     guild_id = 202310290037
@@ -47,7 +46,7 @@ def test__AuditLogEntry__copy_with__no_fields():
     
     Case: no fields given.
     """
-    changes = [AuditLogChange('name', FLAG_IS_MODIFICATION, after = 'koishi')]
+    changes = [AuditLogChange('name', after = 'koishi')]
     details = {'users_removed': 6}
     entry_type = AuditLogEntryType.guild_update
     guild_id = 202310290040
@@ -78,7 +77,7 @@ def test__AuditLogEntry__copy_with__all_fields():
     
     Case: All fields given.
     """
-    old_changes = [AuditLogChange('name', FLAG_IS_MODIFICATION, after = 'koishi')]
+    old_changes = [AuditLogChange('name', after = 'koishi')]
     old_details = {'users_removed': 6}
     old_entry_type = AuditLogEntryType.guild_update
     old_guild_id = 202310290043
@@ -86,7 +85,7 @@ def test__AuditLogEntry__copy_with__all_fields():
     old_target_id = 202310290044
     old_user_id = 202310290045
     
-    new_changes = [AuditLogChange('name', FLAG_IS_MODIFICATION, after = 'orin')]
+    new_changes = [AuditLogChange('name', after = 'orin')]
     new_details = {'status': 'party'}
     new_entry_type = AuditLogEntryType.channel_update
     new_guild_id = 202310290046
@@ -226,8 +225,8 @@ def test_AuditLogEntry__user(audit_log_entry):
 def _iter_options__get_change():
     yield AuditLogEntry(), 'name', None
     
-    change_0 = AuditLogChange('description', FLAG_IS_MODIFICATION, after = None)
-    change_1 = AuditLogChange('name', FLAG_IS_MODIFICATION, after = 'mister')
+    change_0 = AuditLogChange('description', after = None)
+    change_1 = AuditLogChange('name', after = 'mister')
     
     yield (
         AuditLogEntry(
@@ -270,8 +269,8 @@ def test_AuditLogEntry__get_change(audit_log_entry, attribute_name):
 def _iter_options__iter_changes():
     yield AuditLogEntry(), set()
     
-    change_0 = AuditLogChange('description', FLAG_IS_MODIFICATION, after = None)
-    change_1 = AuditLogChange('name', FLAG_IS_MODIFICATION, after = 'mister')
+    change_0 = AuditLogChange('description', after = None)
+    change_1 = AuditLogChange('name', after = 'mister')
     
     yield (
         AuditLogEntry(

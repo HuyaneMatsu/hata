@@ -13,60 +13,55 @@ from ...scheduled_event.scheduled_event_entity_metadata.fields import validate_l
 from ...scheduled_event.scheduled_event_entity_metadata.utils import try_get_scheduled_event_metadata_type_from_data
 from ...utils import datetime_to_timestamp, timestamp_to_datetime
 
-from ..audit_log_change.flags import FLAG_IS_MODIFICATION
 from ..audit_log_entry_change_conversion import AuditLogEntryChangeConversion, AuditLogEntryChangeConversionGroup
 from ..conversion_helpers.converters import (
-    get_converter_description, get_converter_id, get_converter_ids, get_converter_name, put_converter_description,
-    put_converter_id, put_converter_ids, put_converter_name
+    value_deserializer_description, value_deserializer_id, value_deserializer_ids, value_deserializer_name, value_serializer_description,
+    value_serializer_id, value_serializer_ids, value_serializer_name
 )
 
 
 # ---- channel_id ----
 
 CHANNEL_ID_CONVERSION = AuditLogEntryChangeConversion(
+    ('channel_id',),
     'channel_id',
-    'channel_id',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_id,
-    put_converter = put_converter_id,
-    validator = validate_channel_id,
+    value_deserializer = value_deserializer_id,
+    value_serializer = value_serializer_id,
+    value_validator = validate_channel_id,
 )
 
 
 # ---- description ----
 
 DESCRIPTION_CONVERSION = AuditLogEntryChangeConversion(
+    ('description',),
     'description',
-    'description',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_description,
-    put_converter = put_converter_description,
-    validator = validate_description,
+    value_deserializer = value_deserializer_description,
+    value_serializer = value_serializer_description,
+    value_validator = validate_description,
 )
 
 
 # ---- entity_id ----
 
 ENTITY_ID_CONVERSION = AuditLogEntryChangeConversion(
+    ('entity_id',),
     'entity_id',
-    'entity_id',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_id,
-    put_converter = put_converter_id,
-    validator = validate_entity_id,
+    value_deserializer = value_deserializer_id,
+    value_serializer = value_serializer_id,
+    value_validator = validate_entity_id,
 )
 
 
 # ---- entity_metadata ----
 
 ENTITY_METADATA_CONVERSION = AuditLogEntryChangeConversion(
+    ('entity_metadata',),
     'entity_metadata',
-    'entity_metadata',
-    FLAG_IS_MODIFICATION,
 )
 
-@ENTITY_METADATA_CONVERSION.set_get_converter
-def entity_metadata_get_converter(value):
+@ENTITY_METADATA_CONVERSION.set_value_deserializer
+def entity_metadata_value_deserializer(value):
     if value is not None:
         metadata_type = try_get_scheduled_event_metadata_type_from_data(value)
         if metadata_type is None:
@@ -77,15 +72,15 @@ def entity_metadata_get_converter(value):
     return value
 
 
-@ENTITY_METADATA_CONVERSION.set_put_converter
-def entity_metadata_put_converter(value):
+@ENTITY_METADATA_CONVERSION.set_value_serializer
+def entity_metadata_value_serializer(value):
     if value is not None:
         value = value.to_data(defaults = True)
     return value
 
 
-@ENTITY_METADATA_CONVERSION.set_validator
-def entity_metadata_validator(value):
+@ENTITY_METADATA_CONVERSION.set_value_validator
+def entity_metadata_value_validator(value):
     if value is None or isinstance(value, ScheduledEventEntityMetadataBase):
         return value
     
@@ -98,108 +93,101 @@ def entity_metadata_validator(value):
 # ---- entity_type ----
 
 ENTITY_TYPE_CONVERSION = AuditLogEntryChangeConversion(
+    ('entity_type',),
     'entity_type',
-    'entity_type',
-    FLAG_IS_MODIFICATION,
-    validator = validate_entity_type,
+    value_validator = validate_entity_type,
 )
 
 
-@ENTITY_TYPE_CONVERSION.set_get_converter
-def entity_type_get_converter(value):
+@ENTITY_TYPE_CONVERSION.set_value_deserializer
+def entity_type_value_deserializer(value):
     return ScheduledEventEntityType.get(value)
 
 
-@ENTITY_TYPE_CONVERSION.set_put_converter
-def entity_type_put_converter(value):
+@ENTITY_TYPE_CONVERSION.set_value_serializer
+def entity_type_value_serializer(value):
     return value.value
 
 
 # ---- image ----
 
 IMAGE_CONVERSION = AuditLogEntryChangeConversion(
-    'image_hash',
+    ('image_hash',),
     'image',
-    FLAG_IS_MODIFICATION,
-    get_converter = Icon.from_base_16_hash,
-    put_converter = Icon.as_base_16_hash.fget,
-    validator = SCHEDULED_EVENT_IMAGE.validate_icon,
+    value_deserializer = Icon.from_base_16_hash,
+    value_serializer = Icon.as_base_16_hash.fget,
+    value_validator = SCHEDULED_EVENT_IMAGE.validate_icon,
 )
 
 
 # ---- location ----
 
 LOCATION_CONVERSION = AuditLogEntryChangeConversion(
+    ('location',),
     'location',
-    'location',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_description,
-    put_converter = put_converter_description,
-    validator = validate_location,
+    value_deserializer = value_deserializer_description,
+    value_serializer = value_serializer_description,
+    value_validator = validate_location,
 )
 
 # ---- name ----
 
 NAME_CONVERSION = AuditLogEntryChangeConversion(
+    ('name',),
     'name',
-    'name',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_name,
-    put_converter = put_converter_name,
-    validator = validate_name,
+    value_deserializer = value_deserializer_name,
+    value_serializer = value_serializer_name,
+    value_validator = validate_name,
 )
 
 
 # ---- privacy_level ----
 
 PRIVACY_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
+    ('privacy_level',),
     'privacy_level',
-    'privacy_level',
-    FLAG_IS_MODIFICATION,
-    validator = validate_privacy_level,
+    value_validator = validate_privacy_level,
 )
 
 
-@PRIVACY_LEVEL_CONVERSION.set_get_converter
-def privacy_level_get_converter(value):
+@PRIVACY_LEVEL_CONVERSION.set_value_deserializer
+def privacy_level_value_deserializer(value):
     return PrivacyLevel.get(value)
 
 
-@PRIVACY_LEVEL_CONVERSION.set_put_converter
-def privacy_level_put_converter(value):
+@PRIVACY_LEVEL_CONVERSION.set_value_serializer
+def privacy_level_value_serializer(value):
     return value.value
 
 
 # ---- end ----
 
 END_CONVERSION = AuditLogEntryChangeConversion(
-    'scheduled_end_time',
+    ('scheduled_end_time',),
     'end',
-    FLAG_IS_MODIFICATION,
-    validator = validate_end,
+    value_validator = validate_end,
 )
 
 
 # ---- start ----
 
 START_CONVERSION = AuditLogEntryChangeConversion(
-    'scheduled_start_time',
+    ('scheduled_start_time',),
     'start',
-    FLAG_IS_MODIFICATION,
-    validator = validate_start,
+    value_validator = validate_start,
 )
 
 # ----
 
-@END_CONVERSION.set_get_converter
-@START_CONVERSION.set_get_converter
+@END_CONVERSION.set_value_deserializer
+@START_CONVERSION.set_value_deserializer
 def date_time_converter_get(value):
     if (value is not None):
         value = timestamp_to_datetime(value)
     return value
 
-@END_CONVERSION.set_put_converter
-@START_CONVERSION.set_put_converter
+@END_CONVERSION.set_value_serializer
+@START_CONVERSION.set_value_serializer
 def date_time_converter_put(value):
     if (value is not None):
         value = datetime_to_timestamp(value)
@@ -209,32 +197,30 @@ def date_time_converter_put(value):
 # ---- sku_ids ----
 
 SKU_IDS_CONVERSION = AuditLogEntryChangeConversion(
+    ('sku_ids',),
     'sku_ids',
-    'sku_ids',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_ids,
-    put_converter = put_converter_ids,
-    validator = validate_sku_ids,
+    value_deserializer = value_deserializer_ids,
+    value_serializer = value_serializer_ids,
+    value_validator = validate_sku_ids,
 )
 
 
 # ---- status ----
 
 STATUS_CONVERSION = AuditLogEntryChangeConversion(
+    ('status',),
     'status',
-    'status',
-    FLAG_IS_MODIFICATION,
-    validator = validate_status,
+    value_validator = validate_status,
 )
 
 
-@STATUS_CONVERSION.set_get_converter
-def status_get_converter(value):
+@STATUS_CONVERSION.set_value_deserializer
+def status_value_deserializer(value):
     return ScheduledEventStatus.get(value)
 
 
-@STATUS_CONVERSION.set_put_converter
-def status_put_converter(value):
+@STATUS_CONVERSION.set_value_serializer
+def status_value_serializer(value):
     return value.value
 
 

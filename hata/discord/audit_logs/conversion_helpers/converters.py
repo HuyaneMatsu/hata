@@ -1,7 +1,7 @@
 __all__ = ()
 
 
-def get_converter_id(value):
+def value_deserializer_id(value):
     """
     Shared `get_id` conversion.
     
@@ -22,7 +22,7 @@ def get_converter_id(value):
     return value
 
 
-def put_converter_id(value):
+def value_serializer_id(value):
     """
     Shared `put_id` conversion.
     
@@ -43,7 +43,7 @@ def put_converter_id(value):
     return value
 
 
-def get_converter_ids(value):
+def value_deserializer_ids(value):
     """
     Shared `get_ids` conversion.
     
@@ -66,7 +66,7 @@ def get_converter_ids(value):
     return value
 
 
-def put_converter_ids(value):
+def value_serializer_ids(value):
     """
     Shared `put_ids` conversion.
     
@@ -87,7 +87,7 @@ def put_converter_ids(value):
     return value
 
 
-def get_converter_name(value):
+def value_deserializer_name(value):
     """
     Shared `get_name` conversion.
     
@@ -106,7 +106,7 @@ def get_converter_name(value):
     return value
 
 
-def put_converter_name(value):
+def value_serializer_name(value):
     """
     Shared `put_name` conversion.
     
@@ -122,7 +122,7 @@ def put_converter_name(value):
     return value
 
 
-def get_converter_string_array(value):
+def value_deserializer_string_array(value):
     """
     Shared `get_string_array` conversion.
     
@@ -144,7 +144,7 @@ def get_converter_string_array(value):
     return value
 
 
-def put_converter_string_array(value):
+def value_serializer_string_array(value):
     """
     Shared `put_string_array` conversion.
     
@@ -164,7 +164,7 @@ def put_converter_string_array(value):
     return value
 
 
-def get_converter_description(value):
+def value_deserializer_description(value):
     """
     Shared `get_description` conversion.
     
@@ -184,7 +184,7 @@ def get_converter_description(value):
     return value
 
 
-def put_converter_description(value):
+def value_serializer_description(value):
     """
     Shared `put_description` conversion.
     

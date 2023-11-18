@@ -13,7 +13,7 @@ from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConvers
 from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversionGroup import (
     _assert_fields_set as _assert_conversion_group_fields_set
 )
-from ...conversion_helpers.converters import get_converter_name, put_converter_name
+from ...conversion_helpers.converters import value_deserializer_name, value_serializer_name
 
 from ..integration import (
     EMOJIS_ENABLED_CONVERSION, EXPIRE_BEHAVIOR_CONVERSION, EXPIRE_GRACE_PERIOD_CONVERSION, INTEGRATION_CONVERSIONS,
@@ -27,7 +27,7 @@ def test__INTEGRATION_CONVERSIONS():
     """
     _assert_conversion_group_fields_set(INTEGRATION_CONVERSIONS)
     vampytest.assert_eq(
-        {*INTEGRATION_CONVERSIONS.get_converters.keys()},
+        {*INTEGRATION_CONVERSIONS.iter_field_keys()},
         {'enable_emoticons', 'expire_behavior', 'expire_grace_period', 'name', 'type'},
     )
 
@@ -39,21 +39,20 @@ def test__EMOJIS_ENABLED_CONVERSION__generic():
     Tests whether ``EMOJIS_ENABLED_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(EMOJIS_ENABLED_CONVERSION)
-    # vampytest.assert_is(EMOJIS_ENABLED_CONVERSION.get_converter, )
-    # vampytest.assert_is(EMOJIS_ENABLED_CONVERSION.put_converter, )
-    vampytest.assert_is(EMOJIS_ENABLED_CONVERSION.validator, validate_emojis_enabled)
+    vampytest.assert_is(EMOJIS_ENABLED_CONVERSION.value_serializer, None)
+    vampytest.assert_is(EMOJIS_ENABLED_CONVERSION.value_validator, validate_emojis_enabled)
 
 
-def _iter_options__emojis_enabled__get_converter():
+def _iter_options__emojis_enabled__value_deserializer():
     yield True, True
     yield False, False
     yield None, True
 
 
-@vampytest._(vampytest.call_from(_iter_options__emojis_enabled__get_converter()).returning_last())
-def test__EMOJIS_ENABLED_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__emojis_enabled__value_deserializer()).returning_last())
+def test__EMOJIS_ENABLED_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `EMOJIS_ENABLED_CONVERSION.get_converter` works as intended.
+    Tests whether `EMOJIS_ENABLED_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -64,29 +63,7 @@ def test__EMOJIS_ENABLED_CONVERSION__get_converter(input_value):
     -------
     output : `bool`
     """
-    return EMOJIS_ENABLED_CONVERSION.get_converter(input_value)
-
-
-def _iter_options__emojis_enabled__put_converter():
-    yield True, True
-    yield False, False
-
-
-@vampytest._(vampytest.call_from(_iter_options__emojis_enabled__put_converter()).returning_last())
-def test__EMOJIS_ENABLED_CONVERSION__put_converter(input_value):
-    """
-    Tests whether `EMOJIS_ENABLED_CONVERSION.put_converter` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `bool`
-        Processed value.
-    
-    Returns
-    -------
-    output : `bool`
-    """
-    return EMOJIS_ENABLED_CONVERSION.put_converter(input_value)
+    return EMOJIS_ENABLED_CONVERSION.value_deserializer(input_value)
 
 
 # ---- expire_behavior ----
@@ -96,20 +73,18 @@ def test__EXPIRE_BEHAVIOR_CONVERSION__generic():
     Tests whether ``EXPIRE_BEHAVIOR_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(EXPIRE_BEHAVIOR_CONVERSION)
-    # vampytest.assert_is(EXPIRE_BEHAVIOR_CONVERSION.get_converter, )
-    # vampytest.assert_is(EXPIRE_BEHAVIOR_CONVERSION.put_converter, )
-    vampytest.assert_is(EXPIRE_BEHAVIOR_CONVERSION.validator, validate_expire_behavior)
+    vampytest.assert_is(EXPIRE_BEHAVIOR_CONVERSION.value_validator, validate_expire_behavior)
 
 
-def _iter_options__expire_behavior__get_converter():
+def _iter_options__expire_behavior__value_deserializer():
     yield None, IntegrationExpireBehavior.remove_role
     yield IntegrationExpireBehavior.kick.value, IntegrationExpireBehavior.kick
 
 
-@vampytest._(vampytest.call_from(_iter_options__expire_behavior__get_converter()).returning_last())
-def test__EXPIRE_BEHAVIOR_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__expire_behavior__value_deserializer()).returning_last())
+def test__EXPIRE_BEHAVIOR_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `EXPIRE_BEHAVIOR_CONVERSION.get_converter` works as intended.
+    Tests whether `EXPIRE_BEHAVIOR_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -120,18 +95,18 @@ def test__EXPIRE_BEHAVIOR_CONVERSION__get_converter(input_value):
     -------
     output : ``IntegrationExpireBehavior``
     """
-    return EXPIRE_BEHAVIOR_CONVERSION.get_converter(input_value)
+    return EXPIRE_BEHAVIOR_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__expire_behavior__put_converter():
+def _iter_options__expire_behavior__value_serializer():
     yield IntegrationExpireBehavior.remove_role, IntegrationExpireBehavior.remove_role.value
     yield IntegrationExpireBehavior.kick, IntegrationExpireBehavior.kick.value
 
 
-@vampytest._(vampytest.call_from(_iter_options__expire_behavior__put_converter()).returning_last())
-def test__EXPIRE_BEHAVIOR_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__expire_behavior__value_serializer()).returning_last())
+def test__EXPIRE_BEHAVIOR_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `EXPIRE_BEHAVIOR_CONVERSION.put_converter` works as intended.
+    Tests whether `EXPIRE_BEHAVIOR_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -142,7 +117,7 @@ def test__EXPIRE_BEHAVIOR_CONVERSION__put_converter(input_value):
     -------
     output : `int`
     """
-    return EXPIRE_BEHAVIOR_CONVERSION.put_converter(input_value)
+    return EXPIRE_BEHAVIOR_CONVERSION.value_serializer(input_value)
 
 
 # ---- expire_grace_period ----
@@ -152,21 +127,20 @@ def test__EXPIRE_GRACE_PERIOD_CONVERSION__generic():
     Tests whether ``EXPIRE_GRACE_PERIOD_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(EXPIRE_GRACE_PERIOD_CONVERSION)
-    # vampytest.assert_is(EXPIRE_GRACE_PERIOD_CONVERSION.get_converter, )
-    # vampytest.assert_is(EXPIRE_GRACE_PERIOD_CONVERSION.put_converter, )
-    vampytest.assert_is(EXPIRE_GRACE_PERIOD_CONVERSION.validator, validate_expire_grace_period)
+    vampytest.assert_is(EXPIRE_GRACE_PERIOD_CONVERSION.value_serializer, None)
+    vampytest.assert_is(EXPIRE_GRACE_PERIOD_CONVERSION.value_validator, validate_expire_grace_period)
 
 
-def _iter_options__expire_grace_period__get_converter():
+def _iter_options__expire_grace_period__value_deserializer():
     yield 60, 60
     yield 0, 0
     yield None, EXPIRE_GRACE_PERIOD_DEFAULT
 
 
-@vampytest._(vampytest.call_from(_iter_options__expire_grace_period__get_converter()).returning_last())
-def test__EXPIRE_GRACE_PERIOD_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__expire_grace_period__value_deserializer()).returning_last())
+def test__EXPIRE_GRACE_PERIOD_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `EXPIRE_GRACE_PERIOD_CONVERSION.get_converter` works as intended.
+    Tests whether `EXPIRE_GRACE_PERIOD_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -177,29 +151,7 @@ def test__EXPIRE_GRACE_PERIOD_CONVERSION__get_converter(input_value):
     -------
     output : `int`
     """
-    return EXPIRE_GRACE_PERIOD_CONVERSION.get_converter(input_value)
-
-
-def _iter_options__expire_grace_period__put_converter():
-    yield 60, 60
-    yield EXPIRE_GRACE_PERIOD_DEFAULT, EXPIRE_GRACE_PERIOD_DEFAULT
-
-
-@vampytest._(vampytest.call_from(_iter_options__expire_grace_period__put_converter()).returning_last())
-def test__EXPIRE_GRACE_PERIOD_CONVERSION__put_converter(input_value):
-    """
-    Tests whether `EXPIRE_GRACE_PERIOD_CONVERSION.put_converter` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `int`
-        Processed value.
-    
-    Returns
-    -------
-    output : `int`
-    """
-    return EXPIRE_GRACE_PERIOD_CONVERSION.put_converter(input_value)
+    return EXPIRE_GRACE_PERIOD_CONVERSION.value_deserializer(input_value)
 
 
 # ---- name ----
@@ -209,9 +161,9 @@ def test__NAME_CONVERSION__generic():
     Tests whether ``NAME_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(NAME_CONVERSION)
-    vampytest.assert_is(NAME_CONVERSION.get_converter, get_converter_name)
-    vampytest.assert_is(NAME_CONVERSION.put_converter, put_converter_name)
-    vampytest.assert_is(NAME_CONVERSION.validator, validate_name)
+    vampytest.assert_is(NAME_CONVERSION.value_deserializer, value_deserializer_name)
+    vampytest.assert_is(NAME_CONVERSION.value_serializer, value_serializer_name)
+    vampytest.assert_is(NAME_CONVERSION.value_validator, validate_name)
 
 
 # ---- type ----
@@ -221,20 +173,18 @@ def test__TYPE_CONVERSION__generic():
     Tests whether ``TYPE_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(TYPE_CONVERSION)
-    # vampytest.assert_is(TYPE_CONVERSION.get_converter, )
-    # vampytest.assert_is(TYPE_CONVERSION.put_converter, )
-    vampytest.assert_is(TYPE_CONVERSION.validator, validate_type)
+    vampytest.assert_is(TYPE_CONVERSION.value_validator, validate_type)
 
 
-def _iter_options__type__get_converter():
+def _iter_options__type__value_deserializer():
     yield None, IntegrationType.none
     yield IntegrationType.discord.value, IntegrationType.discord
 
 
-@vampytest._(vampytest.call_from(_iter_options__type__get_converter()).returning_last())
-def test__TYPE_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__type__value_deserializer()).returning_last())
+def test__TYPE_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `TYPE_CONVERSION.get_converter` works as intended.
+    Tests whether `TYPE_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -245,18 +195,18 @@ def test__TYPE_CONVERSION__get_converter(input_value):
     -------
     output : ``IntegrationType``
     """
-    return TYPE_CONVERSION.get_converter(input_value)
+    return TYPE_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__type__put_converter():
+def _iter_options__type__value_serializer():
     yield IntegrationType.none, IntegrationType.none.value
     yield IntegrationType.discord, IntegrationType.discord.value
 
 
-@vampytest._(vampytest.call_from(_iter_options__type__put_converter()).returning_last())
-def test__TYPE_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__type__value_serializer()).returning_last())
+def test__TYPE_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `TYPE_CONVERSION.put_converter` works as intended.
+    Tests whether `TYPE_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -267,4 +217,4 @@ def test__TYPE_CONVERSION__put_converter(input_value):
     -------
     output : `str`
     """
-    return TYPE_CONVERSION.put_converter(input_value)
+    return TYPE_CONVERSION.value_serializer(input_value)

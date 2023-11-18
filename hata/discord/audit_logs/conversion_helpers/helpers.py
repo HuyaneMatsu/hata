@@ -12,13 +12,16 @@ def _hash_function(function):
     
     Parameters
     ----------
-    function : ``FunctionType | MethodType`
+    function : `None | FunctionType | MethodType`
         The function to hash.
     
     Returns
     -------
     hash_value : `int`
     """
+    if function is None:
+        return 0
+    
     code = function.__code__
     
     hash_value = 0
@@ -35,9 +38,9 @@ def _eq_functions(function_0, function_1):
     
     Parameters
     ----------
-    function_0 : `FunctionType | MethodType`
+    function_0 : `None | FunctionType | MethodType`
         Function to equal with.
-    function_1 : `FunctionType | MethodType`
+    function_1 : `None | FunctionType | MethodType`
         Function to equal with.
     
     Returns
@@ -46,6 +49,9 @@ def _eq_functions(function_0, function_1):
     """
     if function_0 is function_1:
         return True
+    
+    if (function_0 is None) or (function_1 is None):
+        return False
     
     code_0 = function_0.__code__
     code_1 = function_1.__code__
@@ -56,22 +62,6 @@ def _eq_functions(function_0, function_1):
             return False
     
     return True
-
-
-def _default_converter_and_validator(value):
-    """
-    Default converter and validator. Does nothing.
-    
-    Parameters
-    ----------
-    value : `object`
-        The value to process or validate.
-    
-    Returns
-    -------
-    value : `value`
-    """
-    return value
 
 
 SORT_KEY = lambda item: item[0]

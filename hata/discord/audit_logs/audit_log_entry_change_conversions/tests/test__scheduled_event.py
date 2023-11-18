@@ -23,8 +23,8 @@ from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConvers
     _assert_fields_set as _assert_conversion_group_fields_set
 )
 from ...conversion_helpers.converters import (
-    get_converter_description, get_converter_id, get_converter_ids, get_converter_name, put_converter_description,
-    put_converter_id, put_converter_ids, put_converter_name
+    value_deserializer_description, value_deserializer_id, value_deserializer_ids, value_deserializer_name, value_serializer_description,
+    value_serializer_id, value_serializer_ids, value_serializer_name
 )
 
 from ..scheduled_event import (
@@ -40,7 +40,7 @@ def test__SCHEDULED_EVENT_CONVERSIONS():
     """
     _assert_conversion_group_fields_set(SCHEDULED_EVENT_CONVERSIONS)
     vampytest.assert_eq(
-        {*SCHEDULED_EVENT_CONVERSIONS.get_converters.keys()},
+        {*SCHEDULED_EVENT_CONVERSIONS.iter_field_keys()},
         {
             'channel_id', 'description', 'entity_id', 'entity_metadata', 'entity_type', 'image_hash', 'location',
             'name', 'privacy_level', 'scheduled_end_time', 'scheduled_start_time', 'sku_ids', 'status',
@@ -55,9 +55,9 @@ def test__CHANNEL_ID_CONVERSION__generic():
     Tests whether ``CHANNEL_ID_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(CHANNEL_ID_CONVERSION)
-    vampytest.assert_is(CHANNEL_ID_CONVERSION.get_converter, get_converter_id)
-    vampytest.assert_is(CHANNEL_ID_CONVERSION.put_converter, put_converter_id)
-    vampytest.assert_is(CHANNEL_ID_CONVERSION.validator, validate_channel_id)
+    vampytest.assert_is(CHANNEL_ID_CONVERSION.value_deserializer, value_deserializer_id)
+    vampytest.assert_is(CHANNEL_ID_CONVERSION.value_serializer, value_serializer_id)
+    vampytest.assert_is(CHANNEL_ID_CONVERSION.value_validator, validate_channel_id)
 
 
 # ---- description ----
@@ -67,9 +67,9 @@ def test__DESCRIPTION_CONVERSION__generic():
     Tests whether ``DESCRIPTION_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(DESCRIPTION_CONVERSION)
-    vampytest.assert_is(DESCRIPTION_CONVERSION.get_converter, get_converter_description)
-    vampytest.assert_is(DESCRIPTION_CONVERSION.put_converter, put_converter_description)
-    vampytest.assert_is(DESCRIPTION_CONVERSION.validator, validate_description)
+    vampytest.assert_is(DESCRIPTION_CONVERSION.value_deserializer, value_deserializer_description)
+    vampytest.assert_is(DESCRIPTION_CONVERSION.value_serializer, value_serializer_description)
+    vampytest.assert_is(DESCRIPTION_CONVERSION.value_validator, validate_description)
 
 
 # ---- entity_id ----
@@ -79,9 +79,9 @@ def test__ENTITY_ID_CONVERSION__generic():
     Tests whether ``ENTITY_ID_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(ENTITY_ID_CONVERSION)
-    vampytest.assert_is(ENTITY_ID_CONVERSION.get_converter, get_converter_id)
-    vampytest.assert_is(ENTITY_ID_CONVERSION.put_converter, put_converter_id)
-    vampytest.assert_is(ENTITY_ID_CONVERSION.validator, validate_entity_id)
+    vampytest.assert_is(ENTITY_ID_CONVERSION.value_deserializer, value_deserializer_id)
+    vampytest.assert_is(ENTITY_ID_CONVERSION.value_serializer, value_serializer_id)
+    vampytest.assert_is(ENTITY_ID_CONVERSION.value_validator, validate_entity_id)
 
 
 # ---- entity_metadata ----
@@ -91,21 +91,18 @@ def test__ENTITY_METADATA_CONVERSION__generic():
     Tests whether ``ENTITY_METADATA_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(ENTITY_METADATA_CONVERSION)
-    # vampytest.assert_is(ENTITY_METADATA_CONVERSION.get_converter, )
-    # vampytest.assert_is(ENTITY_METADATA_CONVERSION.put_converter, )
-    # vampytest.assert_is(ENTITY_METADATA_CONVERSION.validator, )
 
 
-def _iter_options__entity_metadata__get_converter():
+def _iter_options__entity_metadata__value_deserializer():
     yield None, None
     metadata = ScheduledEventEntityMetadataLocation(location = 'koishi')
     yield metadata.to_data(defaults = True), metadata
 
 
-@vampytest._(vampytest.call_from(_iter_options__entity_metadata__get_converter()).returning_last())
-def test__ENTITY_METADATA_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__entity_metadata__value_deserializer()).returning_last())
+def test__ENTITY_METADATA_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `ENTITY_METADATA_CONVERSION.get_converter` works as intended.
+    Tests whether `ENTITY_METADATA_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -116,20 +113,20 @@ def test__ENTITY_METADATA_CONVERSION__get_converter(input_value):
     -------
     output : `None | ScheduledEventEntityMetadataBase`
     """
-    return ENTITY_METADATA_CONVERSION.get_converter(input_value)
+    return ENTITY_METADATA_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__entity_metadata__put_converter():
+def _iter_options__entity_metadata__value_serializer():
     yield None, None
     
     metadata = ScheduledEventEntityMetadataLocation(location = 'koishi')
     yield metadata, metadata.to_data(defaults = True)
 
 
-@vampytest._(vampytest.call_from(_iter_options__entity_metadata__put_converter()).returning_last())
-def test__ENTITY_METADATA_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__entity_metadata__value_serializer()).returning_last())
+def test__ENTITY_METADATA_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `ENTITY_METADATA_CONVERSION.put_converter` works as intended.
+    Tests whether `ENTITY_METADATA_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -140,25 +137,25 @@ def test__ENTITY_METADATA_CONVERSION__put_converter(input_value):
     -------
     output : `None | dict<str, object>`
     """
-    return ENTITY_METADATA_CONVERSION.put_converter(input_value)
+    return ENTITY_METADATA_CONVERSION.value_serializer(input_value)
 
 
-def _iter_options__entity_metadata__validator__passing():
+def _iter_options__entity_metadata__value_validator__passing():
     yield None, None
     
     metadata = ScheduledEventEntityMetadataLocation(location = 'koishi')
     yield metadata, metadata
 
 
-def _iter_options__entity_metadata__validator__type_error():
+def _iter_options__entity_metadata__value_validator__type_error():
     yield 12.6
 
 
-@vampytest._(vampytest.call_from(_iter_options__entity_metadata__validator__passing()).returning_last())
-@vampytest._(vampytest.call_from(_iter_options__entity_metadata__validator__type_error()).raising(TypeError))
-def test__ENTITY_METADATA_CONVERSION__validator(input_value):
+@vampytest._(vampytest.call_from(_iter_options__entity_metadata__value_validator__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__entity_metadata__value_validator__type_error()).raising(TypeError))
+def test__ENTITY_METADATA_CONVERSION__value_validator(input_value):
     """
-    Tests whether `ENTITY_METADATA_CONVERSION.validator` works as intended.
+    Tests whether `ENTITY_METADATA_CONVERSION.value_validator` works as intended.
     
     Parameters
     ----------
@@ -173,7 +170,7 @@ def test__ENTITY_METADATA_CONVERSION__validator(input_value):
     ------
     TypeError
     """
-    return ENTITY_METADATA_CONVERSION.validator(input_value)
+    return ENTITY_METADATA_CONVERSION.value_validator(input_value)
 
 
 # ---- entity_type ----
@@ -183,20 +180,18 @@ def test__ENTITY_TYPE_CONVERSION__generic():
     Tests whether ``ENTITY_TYPE_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(ENTITY_TYPE_CONVERSION)
-    # vampytest.assert_is(ENTITY_TYPE_CONVERSION.get_converter, )
-    # vampytest.assert_is(ENTITY_TYPE_CONVERSION.put_converter, )
-    vampytest.assert_is(ENTITY_TYPE_CONVERSION.validator, validate_entity_type)
+    vampytest.assert_is(ENTITY_TYPE_CONVERSION.value_validator, validate_entity_type)
 
 
-def _iter_options__entity_type__get_converter():
+def _iter_options__entity_type__value_deserializer():
     yield None, ScheduledEventEntityType.none
     yield ScheduledEventEntityType.location.value, ScheduledEventEntityType.location
 
 
-@vampytest._(vampytest.call_from(_iter_options__entity_type__get_converter()).returning_last())
-def test__ENTITY_TYPE_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__entity_type__value_deserializer()).returning_last())
+def test__ENTITY_TYPE_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `ENTITY_TYPE_CONVERSION.get_converter` works as intended.
+    Tests whether `ENTITY_TYPE_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -207,18 +202,18 @@ def test__ENTITY_TYPE_CONVERSION__get_converter(input_value):
     -------
     output : ``ScheduledEventEntityType``
     """
-    return ENTITY_TYPE_CONVERSION.get_converter(input_value)
+    return ENTITY_TYPE_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__entity_type__put_converter():
+def _iter_options__entity_type__value_serializer():
     yield ScheduledEventEntityType.none, ScheduledEventEntityType.none.value
     yield ScheduledEventEntityType.location, ScheduledEventEntityType.location.value
 
 
-@vampytest._(vampytest.call_from(_iter_options__entity_type__put_converter()).returning_last())
-def test__ENTITY_TYPE_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__entity_type__value_serializer()).returning_last())
+def test__ENTITY_TYPE_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `ENTITY_TYPE_CONVERSION.put_converter` works as intended.
+    Tests whether `ENTITY_TYPE_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -229,7 +224,7 @@ def test__ENTITY_TYPE_CONVERSION__put_converter(input_value):
     -------
     output : `int`
     """
-    return ENTITY_TYPE_CONVERSION.put_converter(input_value)
+    return ENTITY_TYPE_CONVERSION.value_serializer(input_value)
 
 
 # ---- image ----
@@ -239,9 +234,9 @@ def test__IMAGE_CONVERSION__generic():
     Tests whether ``IMAGE_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(IMAGE_CONVERSION)
-    vampytest.assert_eq(IMAGE_CONVERSION.get_converter, Icon.from_base_16_hash)
-    vampytest.assert_eq(IMAGE_CONVERSION.put_converter, Icon.as_base_16_hash.fget)
-    vampytest.assert_eq(IMAGE_CONVERSION.validator, SCHEDULED_EVENT_IMAGE.validate_icon)
+    vampytest.assert_eq(IMAGE_CONVERSION.value_deserializer, Icon.from_base_16_hash)
+    vampytest.assert_eq(IMAGE_CONVERSION.value_serializer, Icon.as_base_16_hash.fget)
+    vampytest.assert_eq(IMAGE_CONVERSION.value_validator, SCHEDULED_EVENT_IMAGE.validate_icon)
 
 
 # ---- location ----
@@ -251,9 +246,9 @@ def test__LOCATION_CONVERSION__generic():
     Tests whether ``LOCATION_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(LOCATION_CONVERSION)
-    vampytest.assert_is(LOCATION_CONVERSION.get_converter, get_converter_description)
-    vampytest.assert_is(LOCATION_CONVERSION.put_converter, put_converter_description)
-    vampytest.assert_is(LOCATION_CONVERSION.validator, validate_location)
+    vampytest.assert_is(LOCATION_CONVERSION.value_deserializer, value_deserializer_description)
+    vampytest.assert_is(LOCATION_CONVERSION.value_serializer, value_serializer_description)
+    vampytest.assert_is(LOCATION_CONVERSION.value_validator, validate_location)
 
 
 # ---- name ----
@@ -263,9 +258,9 @@ def test__NAME_CONVERSION__generic():
     Tests whether ``NAME_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(NAME_CONVERSION)
-    vampytest.assert_is(NAME_CONVERSION.get_converter, get_converter_name)
-    vampytest.assert_is(NAME_CONVERSION.put_converter, put_converter_name)
-    vampytest.assert_is(NAME_CONVERSION.validator, validate_name)
+    vampytest.assert_is(NAME_CONVERSION.value_deserializer, value_deserializer_name)
+    vampytest.assert_is(NAME_CONVERSION.value_serializer, value_serializer_name)
+    vampytest.assert_is(NAME_CONVERSION.value_validator, validate_name)
 
 
 # ---- privacy_level ----
@@ -275,20 +270,18 @@ def test__PRIVACY_LEVEL_CONVERSION__generic():
     Tests whether ``PRIVACY_LEVEL_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(PRIVACY_LEVEL_CONVERSION)
-    # vampytest.assert_is(PRIVACY_LEVEL_CONVERSION.get_converter, )
-    # vampytest.assert_is(PRIVACY_LEVEL_CONVERSION.put_converter, )
-    vampytest.assert_is(PRIVACY_LEVEL_CONVERSION.validator, validate_privacy_level)
+    vampytest.assert_is(PRIVACY_LEVEL_CONVERSION.value_validator, validate_privacy_level)
 
 
-def _iter_options__privacy_level__get_converter():
+def _iter_options__privacy_level__value_deserializer():
     yield None, PrivacyLevel.none
     yield PrivacyLevel.public.value, PrivacyLevel.public
 
 
-@vampytest._(vampytest.call_from(_iter_options__privacy_level__get_converter()).returning_last())
-def test__PRIVACY_LEVEL_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__privacy_level__value_deserializer()).returning_last())
+def test__PRIVACY_LEVEL_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `PRIVACY_LEVEL_CONVERSION.get_converter` works as intended.
+    Tests whether `PRIVACY_LEVEL_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -299,18 +292,18 @@ def test__PRIVACY_LEVEL_CONVERSION__get_converter(input_value):
     -------
     output : ``PrivacyLevel``
     """
-    return PRIVACY_LEVEL_CONVERSION.get_converter(input_value)
+    return PRIVACY_LEVEL_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__privacy_level__put_converter():
+def _iter_options__privacy_level__value_serializer():
     yield PrivacyLevel.none, PrivacyLevel.none.value
     yield PrivacyLevel.public, PrivacyLevel.public.value
 
 
-@vampytest._(vampytest.call_from(_iter_options__privacy_level__put_converter()).returning_last())
-def test__PRIVACY_LEVEL_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__privacy_level__value_serializer()).returning_last())
+def test__PRIVACY_LEVEL_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `PRIVACY_LEVEL_CONVERSION.put_converter` works as intended.
+    Tests whether `PRIVACY_LEVEL_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -321,7 +314,7 @@ def test__PRIVACY_LEVEL_CONVERSION__put_converter(input_value):
     -------
     output : `int`
     """
-    return PRIVACY_LEVEL_CONVERSION.put_converter(input_value)
+    return PRIVACY_LEVEL_CONVERSION.value_serializer(input_value)
 
 
 # ---- end ----
@@ -331,9 +324,7 @@ def test__END_CONVERSION__generic():
     Tests whether ``END_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(END_CONVERSION)
-    # vampytest.assert_is(END_CONVERSION.get_converter, )
-    # vampytest.assert_is(END_CONVERSION.put_converter, )
-    vampytest.assert_is(END_CONVERSION.validator, validate_end)
+    vampytest.assert_is(END_CONVERSION.value_validator, validate_end)
 
 
 # ---- start ----
@@ -343,15 +334,13 @@ def test__START_CONVERSION__generic():
     Tests whether ``START_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(START_CONVERSION)
-    # vampytest.assert_is(START_CONVERSION.get_converter, )
-    # vampytest.assert_is(START_CONVERSION.put_converter, )
-    vampytest.assert_is(START_CONVERSION.validator, validate_start)
+    vampytest.assert_is(START_CONVERSION.value_validator, validate_start)
 
 
 # ----
 
 
-def _iter_options__date_time__get_converter():
+def _iter_options__date_time__value_deserializer():
     date_time = DateTime(2016, 5, 14)
     
     yield END_CONVERSION, datetime_to_timestamp(date_time), date_time
@@ -360,10 +349,10 @@ def _iter_options__date_time__get_converter():
     yield START_CONVERSION, None, None
 
 
-@vampytest._(vampytest.call_from(_iter_options__date_time__get_converter()).returning_last())
-def test__DATE_TIME_CONVERSION__get_converter(conversion, input_value):
+@vampytest._(vampytest.call_from(_iter_options__date_time__value_deserializer()).returning_last())
+def test__DATE_TIME_CONVERSION__value_deserializer(conversion, input_value):
     """
-    Tests whether `START_CONVERSION.get_converter` and `END_CONVERSION.get_converter` works as intended.
+    Tests whether `START_CONVERSION.value_deserializer` and `END_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -376,10 +365,10 @@ def test__DATE_TIME_CONVERSION__get_converter(conversion, input_value):
     -------
     output : `None | DateTime`
     """
-    return conversion.get_converter(input_value)
+    return conversion.value_deserializer(input_value)
 
 
-def _iter_options__date_time__put_converter():
+def _iter_options__date_time__value_serializer():
     date_time = DateTime(2016, 5, 14)
     
     yield END_CONVERSION, date_time, datetime_to_timestamp(date_time)
@@ -388,10 +377,10 @@ def _iter_options__date_time__put_converter():
     yield START_CONVERSION, None, None
 
 
-@vampytest._(vampytest.call_from(_iter_options__date_time__put_converter()).returning_last())
-def test__DATE_TIME_CONVERSION__put_converter(conversion, input_value):
+@vampytest._(vampytest.call_from(_iter_options__date_time__value_serializer()).returning_last())
+def test__DATE_TIME_CONVERSION__value_serializer(conversion, input_value):
     """
-    Tests whether `START_CONVERSION.put_converter` and `END_CONVERSION.put_converter` works as intended.
+    Tests whether `START_CONVERSION.value_serializer` and `END_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -404,7 +393,7 @@ def test__DATE_TIME_CONVERSION__put_converter(conversion, input_value):
     -------
     output : `None | str`
     """
-    return conversion.put_converter(input_value)
+    return conversion.value_serializer(input_value)
 
 
 # ---- sku_ids ----
@@ -414,9 +403,9 @@ def test__SKU_IDS_CONVERSION__generic():
     Tests whether ``SKU_IDS_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(SKU_IDS_CONVERSION)
-    vampytest.assert_is(SKU_IDS_CONVERSION.get_converter, get_converter_ids)
-    vampytest.assert_is(SKU_IDS_CONVERSION.put_converter, put_converter_ids)
-    vampytest.assert_is(SKU_IDS_CONVERSION.validator, validate_sku_ids)
+    vampytest.assert_is(SKU_IDS_CONVERSION.value_deserializer, value_deserializer_ids)
+    vampytest.assert_is(SKU_IDS_CONVERSION.value_serializer, value_serializer_ids)
+    vampytest.assert_is(SKU_IDS_CONVERSION.value_validator, validate_sku_ids)
 
 
 # ---- status ----
@@ -426,20 +415,18 @@ def test__STATUS_CONVERSION__generic():
     Tests whether ``STATUS_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(STATUS_CONVERSION)
-    # vampytest.assert_is(STATUS_CONVERSION.get_converter, )
-    # vampytest.assert_is(STATUS_CONVERSION.put_converter, )
-    vampytest.assert_is(STATUS_CONVERSION.validator, validate_status)
+    vampytest.assert_is(STATUS_CONVERSION.value_validator, validate_status)
 
 
-def _iter_options__status__get_converter():
+def _iter_options__status__value_deserializer():
     yield None, ScheduledEventStatus.none
     yield ScheduledEventStatus.active.value, ScheduledEventStatus.active
 
 
-@vampytest._(vampytest.call_from(_iter_options__status__get_converter()).returning_last())
-def test__STATUS_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__status__value_deserializer()).returning_last())
+def test__STATUS_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `STATUS_CONVERSION.get_converter` works as intended.
+    Tests whether `STATUS_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -450,18 +437,18 @@ def test__STATUS_CONVERSION__get_converter(input_value):
     -------
     output : ``ScheduledEventStatus``
     """
-    return STATUS_CONVERSION.get_converter(input_value)
+    return STATUS_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__status__put_converter():
+def _iter_options__status__value_serializer():
     yield ScheduledEventStatus.none, ScheduledEventStatus.none.value
     yield ScheduledEventStatus.active, ScheduledEventStatus.active.value
 
 
-@vampytest._(vampytest.call_from(_iter_options__status__put_converter()).returning_last())
-def test__STATUS_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__status__value_serializer()).returning_last())
+def test__STATUS_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `STATUS_CONVERSION.put_converter` works as intended.
+    Tests whether `STATUS_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -472,4 +459,4 @@ def test__STATUS_CONVERSION__put_converter(input_value):
     -------
     output : `int`
     """
-    return STATUS_CONVERSION.put_converter(input_value)
+    return STATUS_CONVERSION.value_serializer(input_value)

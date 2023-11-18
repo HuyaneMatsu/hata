@@ -2,7 +2,7 @@ __all__ = ('AuditLogEntryDetailConversion', )
 
 from scarletio import RichAttributeErrorBaseType
 
-from ..conversion_helpers.helpers import _default_converter_and_validator, _eq_functions, _hash_function
+from ..conversion_helpers.helpers import _eq_functions, _hash_function
 
 
 class AuditLogEntryDetailConversion(RichAttributeErrorBaseType):
@@ -15,16 +15,16 @@ class AuditLogEntryDetailConversion(RichAttributeErrorBaseType):
         The serialised name of the field.
     field_name : `str`
         The field's name.
-    get_converter : `FunctionType | MethodType`
+    value_deserializer : `FunctionType | MethodType`
         Raw to processed value converter.
-    put_converter : `FunctionType | MethodType`
+    value_serializer : `FunctionType | MethodType`
         Processed to raw value converter.
-    validator : `FunctionType | MethodType`
-        Detail validator.
+    value_validator : `FunctionType | MethodType`
+        Detail value validator.
     """
-    __slots__ = ('field_key', 'field_name', 'get_converter', 'put_converter', 'validator')
+    __slots__ = ('field_key', 'field_name', 'value_deserializer', 'value_serializer', 'value_validator')
     
-    def __new__(cls, field_key, field_name, *, get_converter = ..., put_converter = ..., validator = ...):
+    def __new__(cls, field_key, field_name, *, value_deserializer = ..., value_serializer = ..., value_validator = ...):
         """
         Creates a new detail conversion representation with the given fields.
         
@@ -34,28 +34,28 @@ class AuditLogEntryDetailConversion(RichAttributeErrorBaseType):
             The serialised name of the field.
         field_name : `str`
             The field's name.
-        get_converter : `FunctionType | MethodType`, Optional (Keyword only)
+        value_deserializer : `FunctionType | MethodType`, Optional (Keyword only)
             Raw to processed value converter.
-        put_converter : `FunctionType | MethodType`, Optional (Keyword only)
+        value_serializer : `FunctionType | MethodType`, Optional (Keyword only)
             Processed to raw value converter.
-        validator : `FunctionType | MethodType`, Optional (Keyword only)
-            Detail validator.
+        value_validator : `FunctionType | MethodType`, Optional (Keyword only)
+            Detail value validator.
         """
-        if get_converter is ...:
-            get_converter = _default_converter_and_validator
+        if value_deserializer is ...:
+            value_deserializer = None
         
-        if put_converter is ...:
-            put_converter = _default_converter_and_validator
+        if value_serializer is ...:
+            value_serializer = None
         
-        if validator is ...:
-            validator = _default_converter_and_validator
+        if value_validator is ...:
+            value_validator = None
         
         self = object.__new__(cls)
         self.field_key = field_key
         self.field_name = field_name
-        self.get_converter = get_converter
-        self.put_converter = put_converter
-        self.validator = validator
+        self.value_deserializer = value_deserializer
+        self.value_serializer = value_serializer
+        self.value_validator = value_validator
         return self
     
     
@@ -71,29 +71,29 @@ class AuditLogEntryDetailConversion(RichAttributeErrorBaseType):
         repr_parts.append(', field_name = ')
         repr_parts.append(repr(self.field_name))
         
-        # get_converter
-        get_converter = self.get_converter
-        if get_converter is not _default_converter_and_validator:
-            repr_parts.append(', get_converter = ')
-            repr_parts.append(get_converter.__module__)
+        # value_deserializer
+        value_deserializer = self.value_deserializer
+        if value_deserializer is not None:
+            repr_parts.append(', value_deserializer = ')
+            repr_parts.append(value_deserializer.__module__)
             repr_parts.append('.')
-            repr_parts.append(get_converter.__name__)
+            repr_parts.append(value_deserializer.__name__)
         
-        # put_converter
-        put_converter = self.put_converter
-        if put_converter is not _default_converter_and_validator:
-            repr_parts.append(', put_converter = ')
-            repr_parts.append(put_converter.__module__)
+        # value_serializer
+        value_serializer = self.value_serializer
+        if value_serializer is not None:
+            repr_parts.append(', value_serializer = ')
+            repr_parts.append(value_serializer.__module__)
             repr_parts.append('.')
-            repr_parts.append(put_converter.__name__)
+            repr_parts.append(value_serializer.__name__)
         
-        # validator
-        validator = self.validator
-        if validator is not _default_converter_and_validator:
-            repr_parts.append(', validator = ')
-            repr_parts.append(validator.__module__)
+        # value_validator
+        value_validator = self.value_validator
+        if value_validator is not None:
+            repr_parts.append(', value_validator = ')
+            repr_parts.append(value_validator.__module__)
             repr_parts.append('.')
-            repr_parts.append(validator.__name__)
+            repr_parts.append(value_validator.__name__)
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -112,20 +112,20 @@ class AuditLogEntryDetailConversion(RichAttributeErrorBaseType):
         if field_key != field_name:
             hash_value ^= hash(field_name)
         
-        # get_converter
-        get_converter = self.get_converter
-        if get_converter is not _default_converter_and_validator:
-            hash_value ^= _hash_function(get_converter)
+        # value_deserializer
+        value_deserializer = self.value_deserializer
+        if value_deserializer is not None:
+            hash_value ^= _hash_function(value_deserializer)
         
-        # put_converter
-        put_converter = self.put_converter
-        if put_converter is not _default_converter_and_validator:
-            hash_value ^= _hash_function(put_converter)
+        # value_serializer
+        value_serializer = self.value_serializer
+        if value_serializer is not None:
+            hash_value ^= _hash_function(value_serializer)
         
-        # validator
-        validator = self.validator
-        if validator is not _default_converter_and_validator:
-            hash_value ^= _hash_function(validator)
+        # value_validator
+        value_validator = self.value_validator
+        if value_validator is not None:
+            hash_value ^= _hash_function(value_validator)
         
         return hash_value
     
@@ -142,67 +142,67 @@ class AuditLogEntryDetailConversion(RichAttributeErrorBaseType):
         if self.field_name != other.field_name:
             return False
         
-        # get_converter
-        if not _eq_functions(self.get_converter, other.get_converter):
+        # value_deserializer
+        if not _eq_functions(self.value_deserializer, other.value_deserializer):
             return False
         
-        # put_converter
-        if not _eq_functions(self.put_converter, other.put_converter):
+        # value_serializer
+        if not _eq_functions(self.value_serializer, other.value_serializer):
             return False
         
-        # validator
-        if not _eq_functions(self.validator, other.validator):
+        # value_validator
+        if not _eq_functions(self.value_validator, other.value_validator):
             return False
         
         return True
     
     
-    def set_get_converter(self, get_converter):
+    def set_value_deserializer(self, value_deserializer):
         """
         Sets the get converter of the conversion and returns it back.
         
         Parameters
         ----------
-        get_converter : `FunctionType | MethodType`
+        value_deserializer : `FunctionType | MethodType`
             Converter to put.
         
         Returns
         -------
-        get_converter : `get_converter`
+        value_deserializer : `value_deserializer`
         """
-        self.get_converter = get_converter
-        return get_converter
+        self.value_deserializer = value_deserializer
+        return value_deserializer
     
     
-    def set_put_converter(self, put_converter):
+    def set_value_serializer(self, value_serializer):
         """
         Sets the put converter of the conversion and returns it back.
         
         Parameters
         ----------
-        put_converter : `FunctionType | MethodType`
+        value_serializer : `FunctionType | MethodType`
             Converter to put.
         
         Returns
         -------
-        put_converter : `put_converter`
+        value_serializer : `value_serializer`
         """
-        self.put_converter = put_converter
-        return put_converter
+        self.value_serializer = value_serializer
+        return value_serializer
     
     
-    def set_validator(self, validator):
+    def set_value_validator(self, value_validator):
         """
         Sets the converter of the conversion and returns it back.
         
         Parameters
         ----------
-        validator : `FunctionType | MethodType`
+        value_validator : `FunctionType | MethodType`
             Converter to put.
         
         Returns
         -------
-        validator : `validator`
+        value_validator : `value_validator`
         """
-        self.validator = validator
-        return validator
+        self.value_validator = value_validator
+        return value_validator

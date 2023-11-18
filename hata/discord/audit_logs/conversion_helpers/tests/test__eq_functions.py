@@ -20,6 +20,9 @@ def _iter_options():
     yield test_function_0, test_function_0, True
     yield test_function_0, test_function_1, True
     yield test_function_0, test_function_2, False
+    yield None, None, True
+    yield test_function_0, None, False
+    yield None, test_function_0, False
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -29,9 +32,9 @@ def test__eq_functions(function_0, function_1):
     
     Parameters
     ----------
-    function_0 : `FunctionType | MethodType`
+    function_0 : `None | FunctionType | MethodType`
         Function to equal with.
-    function_1 : `FunctionType | MethodType`
+    function_1 : `None | FunctionType | MethodType`
         Function to equal with.
     
     Returns

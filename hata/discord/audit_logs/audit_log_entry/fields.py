@@ -16,16 +16,15 @@ from ...guild import Guild
 from ...user import ClientUserBase
 
 from ..audit_log_change import AuditLogChange
-from ..audit_log_change.flags import (
-    FLAG_HAS_AFTER, FLAG_HAS_BEFORE, FLAG_IS_ADDITION, FLAG_IS_IGNORED, FLAG_IS_MODIFICATION, FLAG_IS_REMOVAL,
-    get_flags_name
-)
+from ..audit_log_entry_change_conversion.value_mergers import value_merger_replace
+from ..audit_log_change.flags import FLAG_HAS_AFTER, FLAG_HAS_BEFORE
 
 from .constants import REASON_LENGTH_MAX, REASON_LENGTH_MIN
 from .preinstanced import AuditLogEntryType
 
 
 # changes
+
 
 def parse_changes(data, entry_type = AuditLogEntryType.none):
     """
@@ -48,23 +47,19 @@ def parse_changes(data, entry_type = AuditLogEntryType.none):
     
     changes = None
     
-    change_conversions = entry_type.target_type.change_conversions
-    if change_conversions is None:
-        converters = None
-    else:
-        converters = change_conversions.get_converters
-    
+    conversion_group = entry_type.target_type.change_conversions
+
     for change_data in change_datas:
         key = change_data.get('key', None)
         if key is None:
             continue
         
-        if converters is None:
-            triplet = None
+        if conversion_group is None:
+            conversion = None
         else:
-            triplet = converters.get(key, None)
+            conversion = conversion_group.get_conversion_for_key(key)
         
-        if triplet is None:
+        if conversion is None:
             if ALLOW_DEBUG_MESSAGES:
                 call_debug_logger(
                     (
@@ -76,64 +71,31 @@ def parse_changes(data, entry_type = AuditLogEntryType.none):
                 )
             continue
         
-        attribute_name, flags, get_converter = triplet
-        
-        if flags & FLAG_IS_MODIFICATION:
-            try:
-                before = change_data['old_value']
-            except KeyError:
-                before = None
-            else:
-                before = get_converter(before)
-                flags |= FLAG_HAS_BEFORE
+        for change in conversion.change_deserializer(conversion, change_data):
+            if changes is None:
+                changes = {}
             
-            try:
-                after = change_data['new_value']
-            except KeyError:
-                after = None
-            else:
-                after = get_converter(after)
-                flags |= FLAG_HAS_AFTER
-        
-        elif flags & FLAG_IS_REMOVAL:
-            try:
-                before = change_data['new_value']
-            except KeyError:
-                before = None
-            else:
-                before = get_converter(before)
-                flags |= FLAG_HAS_BEFORE
-            
-            after = None
-            
-        elif flags & FLAG_IS_ADDITION:
-            before = None
-            
-            try:
-                after = change_data['new_value']
-            except KeyError:
-                after = None
-            else:
-                after = get_converter(after)
-                flags |= FLAG_HAS_AFTER
-        
-        elif flags & FLAG_IS_IGNORED:
-            continue
-        
-        else:
-            # Should not happen
-            before = None
-            after = None
-        
-        change = AuditLogChange.from_fields(attribute_name, flags, before, after)
-        
-        if changes is None:
-            changes = {}
-        
-        current_change = changes.setdefault(attribute_name, change)
-        if (change is not current_change):
-            merged_change = current_change + change
-            changes[attribute_name] = merged_change
+            attribute_name = change.attribute_name
+            current_change = changes.setdefault(attribute_name, change)
+            if (change is not current_change):
+                value_merger = conversion.value_merger
+                if value_merger is None:
+                    call_debug_logger(
+                        (
+                            f'Unexpected audit log entry merging (no or mismatching rules):\n'
+                            f'- Instance 0: {change!r}\n'
+                            f'- Instance 1: {current_change!r}'
+                        ),
+                        True,
+                    )
+                    value_merger = value_merger_replace
+                
+                changes[attribute_name] = AuditLogChange.from_fields(
+                    attribute_name,
+                    change.flags | current_change.flags,
+                    value_merger(current_change.before, change.before),
+                    value_merger(current_change.after, change.after),
+                )
 
     return changes
 
@@ -164,67 +126,18 @@ def put_changes_into(changes, data, defaults, *, entry_type = AuditLogEntryType.
     
     change_datas = []
     
-    change_conversions = entry_type.target_type.change_conversions
-    if change_conversions is None:
-        converters = None
-    else:
-        converters = change_conversions.put_converters
+    conversion_group = entry_type.target_type.change_conversions
     
     for change in changes.values():
-        attribute_name = change.attribute_name
-        flags = change.flags
+        if conversion_group is None:
+            conversion = None
+        else:
+            conversion = conversion_group.get_conversion_for_name(change.attribute_name)
         
-        if flags & FLAG_IS_MODIFICATION:
-            if converters is None:
-                duplet = None
-            else:
-                duplet = converters.get((attribute_name, FLAG_IS_MODIFICATION), None)
-            if duplet is None:
-                continue
-            
-            key, converter = duplet
-            
-            change_data = {'key': key}
-            
-            if flags & FLAG_HAS_BEFORE:
-                change_data['old_value'] = converter(change.before)
-            
-            if flags & FLAG_HAS_AFTER:
-                change_data['new_value'] = converter(change.after)
-            change_datas.append(change_data)
+        if conversion is None:
+            continue
         
-        if flags & FLAG_IS_REMOVAL:
-            if converters is None:
-                duplet = None
-            else:
-                duplet = converters.get((attribute_name, FLAG_IS_REMOVAL), None)
-            if duplet is None:
-                continue
-            
-            key, converter = duplet
-            
-            change_data = {'key': key}
-            
-            if flags & FLAG_HAS_BEFORE:
-                change_data['new_value'] = converter(change.before)
-            
-            change_datas.append(change_data)
-        
-        if flags & FLAG_IS_ADDITION:
-            if converters is None:
-                duplet = None
-            else:
-                duplet = converters.get((attribute_name, FLAG_IS_ADDITION), None)
-            if duplet is None:
-                continue
-            
-            key, converter = duplet
-            
-            change_data = {'key': key}
-            
-            if flags & FLAG_HAS_AFTER:
-                change_data['new_value'] = converter(change.after)
-            
+        for change_data in conversion.change_serializer(conversion, change):
             change_datas.append(change_data)
     
     
@@ -264,11 +177,7 @@ def validate_changes(changes, *, entry_type = AuditLogEntryType.none):
         )
     
     
-    change_conversions = entry_type.target_type.change_conversions
-    if change_conversions is None:
-        validators = None
-    else:
-        validators = change_conversions.validators
+    conversion_group = entry_type.target_type.change_conversions
     
     validated_changes = None
     
@@ -283,65 +192,32 @@ def validate_changes(changes, *, entry_type = AuditLogEntryType.none):
         flags = change.flags
         validated_change = AuditLogChange.create_clean(attribute_name)
         
-        if flags & FLAG_IS_MODIFICATION:
-            if change_conversions is None:
-                validator = None
-            else:
-                validator = validators.get((attribute_name, FLAG_IS_MODIFICATION), None)
-            
-            if validator is None:
-                raise ValueError(
-                    f'No validator for `{attribute_name}` of `{get_flags_name(FLAG_IS_MODIFICATION)}` exists, '
-                    f'got change = {change!r}; changes = {changes!r}.'
-                )
-            
-            if flags & FLAG_HAS_BEFORE:
-                validated_change.before = validator(change.before)
-                validated_change.flags |= FLAG_HAS_BEFORE
-            
-            if flags & FLAG_HAS_AFTER:
-                validated_change.after = validator(change.after)
-                validated_change.flags |= FLAG_HAS_AFTER
-            
-            validated_change.flags |= FLAG_IS_MODIFICATION
+        if conversion_group is None:
+            conversion = None
+        else:
+            conversion = conversion_group.get_conversion_for_name(attribute_name)
         
+        if conversion is None:
+            raise ValueError(
+                f'No validator exists for `{attribute_name}`, got change = {change!r}; changes = {changes!r}.'
+            )
         
-        if flags & FLAG_IS_REMOVAL:
-            if change_conversions is None:
-                validator = None
-            else:
-                validator = validators.get((attribute_name, FLAG_IS_REMOVAL), None)
-            
-            if validator is None:
-                raise ValueError(
-                    f'No validator for `{attribute_name}` of `{get_flags_name(FLAG_IS_REMOVAL)}` exists, '
-                    f'got change = {change!r}; changes = {changes!r}.'
-                )
-            
-            if flags & FLAG_HAS_BEFORE:
-                validated_change.before = validator(change.before)
-                validated_change.flags |= FLAG_HAS_BEFORE
+        value_validator = conversion.value_validator
         
-            validated_change.flags |= FLAG_IS_REMOVAL
+        if flags & FLAG_HAS_BEFORE:
+            value = change.before
+            if (value_validator is not None):
+                value = value_validator(value)
+            validated_change.before = value
+            validated_change.flags |= FLAG_HAS_BEFORE
         
-        
-        if flags & FLAG_IS_ADDITION:
-            if change_conversions is None:
-                validator = None
-            else:
-                validator = validators.get((attribute_name, FLAG_IS_ADDITION), None)
-            
-            if validator is None:
-                raise ValueError(
-                    f'No validator for `{attribute_name}` of `{get_flags_name(FLAG_IS_ADDITION)}` exists, '
-                    f'got change = {change!r}; changes = {changes!r}.'
-                )
-            
-            if flags & FLAG_HAS_AFTER:
-                validated_change.after = validator(change.after)
-                validated_change.flags |= FLAG_HAS_AFTER
-        
-            validated_change.flags |= FLAG_IS_ADDITION
+        if flags & FLAG_HAS_AFTER:
+            value = change.after
+            if (value_validator is not None):
+                value = value_validator(value)
+            validated_change.after = value
+            validated_change.flags |= FLAG_HAS_AFTER
+    
         
         if validated_changes is None:
             validated_changes = {}
@@ -373,19 +249,15 @@ def parse_details(data, entry_type = AuditLogEntryType.none):
     
     details = None
     
-    detail_conversions = entry_type.target_type.detail_conversions
-    if detail_conversions is None:
-        converters = None
-    else:
-        converters = detail_conversions.get_converters
+    conversion_group = entry_type.target_type.detail_conversions
     
     for key, value in details_raw.items():
-        if converters is None:
-            duplet = None
+        if conversion_group is None:
+            conversion = None
         else:
-            duplet = converters.get(key, None)
+            conversion = conversion_group.get_conversion_for_key(key)
         
-        if duplet is None:
+        if conversion is None:
             if ALLOW_DEBUG_MESSAGES:
                 call_debug_logger(
                     (
@@ -397,13 +269,14 @@ def parse_details(data, entry_type = AuditLogEntryType.none):
                 )
             continue
         
-        name, converter = duplet
-        value = converter(value)
+        value_deserializer = conversion.value_deserializer
+        if (value_deserializer is not None):
+            value = value_deserializer(value)
         
         if details is None:
             details = {}
         
-        details[name] = value
+        details[conversion.field_name] = value
     
     return details
 
@@ -432,24 +305,23 @@ def put_details_into(details, data, defaults, *, entry_type = AuditLogEntryType.
             data['options'] = []
         return data
     
-    detail_conversions = entry_type.target_type.detail_conversions
-    if detail_conversions is None:
-        converters = None
-    else:
-        converters = detail_conversions.put_converters
+    conversion_group = entry_type.target_type.detail_conversions
     
     details_raw = {}
     
     for name, value in details.items():
-        if converters is None:
-            duplet = None
+        if conversion_group is None:
+            conversion = None
         else:
-            duplet = converters.get(name, None)
-        if duplet is None:
+            conversion = conversion_group.get_conversion_for_name(name)
+        if conversion is None:
             continue
         
-        key, converter = duplet
-        details_raw[key] = converter(value)
+        value_serializer = conversion.value_serializer
+        if (value_serializer is not None):
+            value = value_serializer(value)
+        
+        details_raw[conversion.field_key] = value
     
     data['options'] = details_raw
     return data
@@ -485,11 +357,7 @@ def validate_details(details, *, entry_type = AuditLogEntryType.none):
             f'`details` can be `None`, dict`, got {type(details).__name__}; {details!r}.'
         )
     
-    detail_conversions = entry_type.target_type.detail_conversions
-    if detail_conversions is None:
-        validators = None
-    else:
-        validators = detail_conversions.validators
+    conversion_group = entry_type.target_type.detail_conversions
     
     validated_details = None
     
@@ -499,16 +367,18 @@ def validate_details(details, *, entry_type = AuditLogEntryType.none):
                 f'`details` keys can be `str`, got {type(name).__name__}; {name!r}; details = {details!r}.'
             )
         
-        if validators is None:
-            validator = None
+        if conversion_group is None:
+            conversion = None
         else:
-            validator = validators.get(name, None)
-        if validator is None:
+            conversion = conversion_group.get_conversion_for_name(name)
+        if conversion is None:
             raise ValueError(
                 f'No validator for `{name}` of exists, got value = {value!r}; details = {details!r}.'
             )
         
-        value = validator(value)
+        value_validator = conversion.value_validator
+        if (value_validator is not None):
+            value = value_validator(value)
         
         if validated_details is None:
             validated_details = {}

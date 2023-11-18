@@ -7,33 +7,32 @@ from ...sticker.sticker.fields import (
     validate_sort_value, validate_tags, validate_type
 )
 
-from ..audit_log_change.flags import FLAG_IS_IGNORED, FLAG_IS_MODIFICATION
 from ..audit_log_entry_change_conversion import AuditLogEntryChangeConversion, AuditLogEntryChangeConversionGroup
+from ..audit_log_entry_change_conversion.change_deserializers import change_deserializer_deprecation
 from ..conversion_helpers.converters import (
-    get_converter_description, get_converter_id, get_converter_name, put_converter_description, put_converter_id,
-    put_converter_name
+    value_deserializer_description, value_deserializer_id, value_deserializer_name, value_serializer_description, value_serializer_id,
+    value_serializer_name
 )
 
 # ---- asset ----
 
 ASSET_CONVERSION_IGNORED = AuditLogEntryChangeConversion(
-    'asset',
+    ('asset',),
     '',
-    FLAG_IS_IGNORED,
+    change_deserializer = change_deserializer_deprecation,
 )
 
 # ---- available ----
 
 AVAILABLE_CONVERSION = AuditLogEntryChangeConversion(
+    ('available',),
     'available',
-    'available',
-    FLAG_IS_MODIFICATION,
-    validator = validate_available,
+    value_validator = validate_available,
 )
 
 
-@AVAILABLE_CONVERSION.set_get_converter
-def available_get_converter(value):
+@AVAILABLE_CONVERSION.set_value_deserializer
+def available_value_deserializer(value):
     if value is None:
         value = True
     return value
@@ -42,83 +41,77 @@ def available_get_converter(value):
 # ---- description ----
 
 DESCRIPTION_CONVERSION = AuditLogEntryChangeConversion(
+    ('description',),
     'description',
-    'description',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_description,
-    put_converter = put_converter_description,
-    validator = validate_description,
+    value_deserializer = value_deserializer_description,
+    value_serializer = value_serializer_description,
+    value_validator = validate_description,
 )
 
 
 # ---- format ----
 
 FORMAT_CONVERSION = AuditLogEntryChangeConversion(
-    'format_type',
+    ('format_type',),
     'format',
-    FLAG_IS_MODIFICATION,
-    validator = validate_format,
+    value_validator = validate_format,
 )
 
 
-@FORMAT_CONVERSION.set_get_converter
-def format_get_converter(value):
+@FORMAT_CONVERSION.set_value_deserializer
+def format_value_deserializer(value):
     return StickerFormat.get(value)
 
 
-@FORMAT_CONVERSION.set_put_converter
-def format_put_converter(value):
+@FORMAT_CONVERSION.set_value_serializer
+def format_value_serializer(value):
     return value.value
 
 
 # ---- guild_id ----
 
 GUILD_ID_CONVERSION = AuditLogEntryChangeConversion(
+    ('guild_id',),
     'guild_id',
-    'guild_id',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_id,
-    put_converter = put_converter_id,
-    validator = validate_guild_id,
+    value_deserializer = value_deserializer_id,
+    value_serializer = value_serializer_id,
+    value_validator = validate_guild_id,
 )
 
 
 # ---- id ----
 
 ID_CONVERSION = AuditLogEntryChangeConversion(
+    ('id',),
     'id',
-    'id',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_id,
-    put_converter = put_converter_id,
-    validator = validate_id,
+    value_deserializer = value_deserializer_id,
+    value_serializer = value_serializer_id,
+    value_validator = validate_id,
 )
 
 
 # ---- name ----
 
 NAME_CONVERSION = AuditLogEntryChangeConversion(
+    ('name',),
     'name',
-    'name',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_name,
-    put_converter = put_converter_name,
-    validator = validate_name,
+    value_deserializer = value_deserializer_name,
+    value_serializer = value_serializer_name,
+    value_validator = validate_name,
 )
 
 
 # ---- sort_value ----
 
 SORT_VALUE_CONVERSION = AuditLogEntryChangeConversion(
+    ('sort_value',),
     'sort_value',
-    'sort_value',
-    FLAG_IS_MODIFICATION,
-    validator = validate_sort_value,
+    value_validator = validate_sort_value,
 )
 
 
-@SORT_VALUE_CONVERSION.set_get_converter
-def sort_value_get_converter(value):
+@SORT_VALUE_CONVERSION.set_value_deserializer
+def sort_value_value_deserializer(value):
     if value is None:
         value = SORT_VALUE_MIN
     return value
@@ -127,15 +120,14 @@ def sort_value_get_converter(value):
 # ---- tags ----
 
 TAGS_CONVERSION = AuditLogEntryChangeConversion(
+    ('tags',),
     'tags',
-    'tags',
-    FLAG_IS_MODIFICATION,
-    validator = validate_tags,
+    value_validator = validate_tags,
 )
 
 
-@TAGS_CONVERSION.set_get_converter
-def tags_get_converter(value):
+@TAGS_CONVERSION.set_value_deserializer
+def tags_value_deserializer(value):
     if value is None:
         pass
     elif (not value):
@@ -146,8 +138,8 @@ def tags_get_converter(value):
     return value
 
 
-@TAGS_CONVERSION.set_put_converter
-def tags_put_converter(value):
+@TAGS_CONVERSION.set_value_serializer
+def tags_value_serializer(value):
     if value is None:
        value = ''
     else:
@@ -156,24 +148,22 @@ def tags_put_converter(value):
     return value
 
 
-
 # ---- type ----
 
 TYPE_CONVERSION = AuditLogEntryChangeConversion(
+    ('type',),
     'type',
-    'type',
-    FLAG_IS_MODIFICATION,
-    validator = validate_type,
+    value_validator = validate_type,
 )
 
 
-@TYPE_CONVERSION.set_get_converter
-def type_get_converter(value):
+@TYPE_CONVERSION.set_value_deserializer
+def type_value_deserializer(value):
     return StickerType.get(value)
 
 
-@TYPE_CONVERSION.set_put_converter
-def type_put_converter(value):
+@TYPE_CONVERSION.set_value_serializer
+def type_value_serializer(value):
     return value.value
 
 

@@ -9,36 +9,36 @@ from ...user.guild_profile.guild_profile import GUILD_PROFILE_AVATAR
 from ...user.voice_state.fields import validate_deaf, validate_mute
 from ...utils import datetime_to_timestamp, timestamp_to_datetime
 
-from ..audit_log_change.flags import FLAG_IS_ADDITION, FLAG_IS_MODIFICATION, FLAG_IS_REMOVAL
 from ..audit_log_entry_change_conversion import AuditLogEntryChangeConversion, AuditLogEntryChangeConversionGroup
+from ..audit_log_entry_change_conversion.change_deserializers import change_deserializer_addition_and_removal
+from ..audit_log_entry_change_conversion.change_serializers import change_serializer_addition_and_removal
+from ..audit_log_entry_change_conversion.value_mergers import value_merger_sorted_array
 from ..audit_log_role import AuditLogRole
-from ..conversion_helpers.converters import get_converter_description, put_converter_description
+from ..conversion_helpers.converters import value_deserializer_description, value_serializer_description
 
 
 # ---- avatar ----
 
 AVATAR_CONVERSION = AuditLogEntryChangeConversion(
-    'avatar_hash',
+    ('avatar_hash',),
     'avatar',
-    FLAG_IS_MODIFICATION,
-    get_converter = Icon.from_base_16_hash,
-    put_converter = Icon.as_base_16_hash.fget,
-    validator = GUILD_PROFILE_AVATAR.validate_icon,
+    value_deserializer = Icon.from_base_16_hash,
+    value_serializer = Icon.as_base_16_hash.fget,
+    value_validator = GUILD_PROFILE_AVATAR.validate_icon,
 )
 
 
 # ---- bypasses_verification ----
 
 BYPASSES_VERIFICATION_CONVERSION = AuditLogEntryChangeConversion(
+    ('bypasses_verification',),
     'bypasses_verification',
-    'bypasses_verification',
-    FLAG_IS_MODIFICATION,
-    validator = validate_bypasses_verification,
+    value_validator = validate_bypasses_verification,
 )
 
 
-@BYPASSES_VERIFICATION_CONVERSION.set_get_converter
-def bypasses_verification_get_converter(value):
+@BYPASSES_VERIFICATION_CONVERSION.set_value_deserializer
+def bypasses_verification_value_deserializer(value):
     if value is None:
         value = False
 
@@ -48,15 +48,14 @@ def bypasses_verification_get_converter(value):
 # ---- deaf ----
 
 DEAF_CONVERSION = AuditLogEntryChangeConversion(
+    ('deaf',),
     'deaf',
-    'deaf',
-    FLAG_IS_MODIFICATION,
-    validator = validate_deaf,
+    value_validator = validate_deaf,
 )
 
 
-@DEAF_CONVERSION.set_get_converter
-def deaf_get_converter(value):
+@DEAF_CONVERSION.set_value_deserializer
+def deaf_value_deserializer(value):
     if value is None:
         value = False
 
@@ -66,15 +65,14 @@ def deaf_get_converter(value):
 # ---- flags ----
 
 FLAGS_CONVERSION = AuditLogEntryChangeConversion(
+    ('flags',),
     'flags',
-    'flags',
-    FLAG_IS_MODIFICATION,
-    validator = validate_flags,
+    value_validator = validate_flags,
 )
 
 
-@FLAGS_CONVERSION.set_get_converter
-def flags_get_converter(value):
+@FLAGS_CONVERSION.set_value_deserializer
+def flags_value_deserializer(value):
     if value is None:
         value = GuildProfileFlag()
     else:
@@ -83,23 +81,22 @@ def flags_get_converter(value):
     return value
 
 
-@FLAGS_CONVERSION.set_put_converter
-def flags_put_converter(value):
+@FLAGS_CONVERSION.set_value_serializer
+def flags_value_serializer(value):
     return int(value)
 
 
 # ---- mute ----
 
 MUTE_CONVERSION = AuditLogEntryChangeConversion(
+    ('mute',),
     'mute',
-    'mute',
-    FLAG_IS_MODIFICATION,
-    validator = validate_mute,
+    value_validator = validate_mute,
 )
 
 
-@MUTE_CONVERSION.set_get_converter
-def mute_get_converter(value):
+@MUTE_CONVERSION.set_value_deserializer
+def mute_value_deserializer(value):
     if value is None:
         value = False
 
@@ -109,27 +106,25 @@ def mute_get_converter(value):
 # ---- nick ----
 
 NICK_CONVERSION = AuditLogEntryChangeConversion(
+    ('nick',),
     'nick',
-    'nick',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_description,
-    put_converter = put_converter_description,
-    validator = validate_nick,
+    value_deserializer = value_deserializer_description,
+    value_serializer = value_serializer_description,
+    value_validator = validate_nick,
 )
 
 
 # ---- pending ----
 
 PENDING_CONVERSION = AuditLogEntryChangeConversion(
+    ('pending',),
     'pending',
-    'pending',
-    FLAG_IS_MODIFICATION,
-    validator = validate_pending,
+    value_validator = validate_pending,
 )
 
 
-@PENDING_CONVERSION.set_get_converter
-def pending_get_converter(value):
+@PENDING_CONVERSION.set_value_deserializer
+def pending_value_deserializer(value):
     if value is None:
         value = False
 
@@ -138,23 +133,17 @@ def pending_get_converter(value):
 
 # ---- roles ----
 
-ROLES_CONVERSION__ADDITION = AuditLogEntryChangeConversion(
-    '$add',
+ROLES_CONVERSION = AuditLogEntryChangeConversion(
+    ('$remove', '$add'),
     'roles',
-    FLAG_IS_ADDITION,
+    change_deserializer = change_deserializer_addition_and_removal,
+    change_serializer = change_serializer_addition_and_removal,
+    value_merger = value_merger_sorted_array,
 )
 
 
-ROLES_CONVERSION__REMOVAL = AuditLogEntryChangeConversion(
-    '$remove',
-    'roles',
-    FLAG_IS_REMOVAL,
-)
-
-
-@ROLES_CONVERSION__ADDITION.set_get_converter
-@ROLES_CONVERSION__REMOVAL.set_get_converter
-def roles_get_converter(value):
+@ROLES_CONVERSION.set_value_deserializer
+def roles_value_deserializer(value):
     if value is None:
         pass
     elif (not value):
@@ -164,9 +153,8 @@ def roles_get_converter(value):
     return value
 
 
-@ROLES_CONVERSION__ADDITION.set_put_converter
-@ROLES_CONVERSION__REMOVAL.set_put_converter
-def roles_put_converter(value):
+@ROLES_CONVERSION.set_value_serializer
+def roles_value_serializer(value):
     if value is None:
         value = []
     else:
@@ -174,9 +162,8 @@ def roles_put_converter(value):
     return value
 
 
-@ROLES_CONVERSION__ADDITION.set_validator
-@ROLES_CONVERSION__REMOVAL.set_validator
-def roles_validator(value):
+@ROLES_CONVERSION.set_value_validator
+def roles_value_validator(value):
     if value is None:
         return None
     
@@ -207,21 +194,20 @@ def roles_validator(value):
 # ---- timed_out_until ----
 
 TIMED_OUT_UNTIL_CONVERSION = AuditLogEntryChangeConversion(
-    'communication_disabled_until',
+    ('communication_disabled_until',),
     'timed_out_until',
-    FLAG_IS_MODIFICATION,
-    validator = validate_timed_out_until,
+    value_validator = validate_timed_out_until,
 )
 
 
-@TIMED_OUT_UNTIL_CONVERSION.set_get_converter
+@TIMED_OUT_UNTIL_CONVERSION.set_value_deserializer
 def timed_out_until_converter_get(value):
     if (value is not None):
         value = timestamp_to_datetime(value)
     return value
 
 
-@TIMED_OUT_UNTIL_CONVERSION.set_put_converter
+@TIMED_OUT_UNTIL_CONVERSION.set_value_serializer
 def timed_out_until_converter_put(value):
     if (value is not None):
         value = datetime_to_timestamp(value)
@@ -238,7 +224,6 @@ USER_CONVERSIONS = AuditLogEntryChangeConversionGroup(
     MUTE_CONVERSION,
     NICK_CONVERSION,
     PENDING_CONVERSION,
-    ROLES_CONVERSION__ADDITION,
-    ROLES_CONVERSION__REMOVAL,
+    ROLES_CONVERSION,
     TIMED_OUT_UNTIL_CONVERSION,
 )

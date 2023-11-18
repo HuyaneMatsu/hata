@@ -11,14 +11,12 @@ class AuditLogEntryDetailConversionGroup(RichAttributeErrorBaseType):
     ----------
     conversions : `tuple<AuditLogEntryDetailConversion>`
         The grouped conversions.
-    get_converters : `dict<str, (str, FunctionType)>`
-        Raw to processed converters.
-    put_converters : `dict<str, (str, FunctionType)>`
-       Processed to raw converters.
-    validators : `dict<str, FunctionType>`
-        Validators.
+    key_to_conversion : `None | dict<str, AuditLogEntryDetailConversion>`
+        Field key to conversion relation used when deserializing.
+    name_to_conversion : `None | dict<str, AuditLogEntryDetailConversion>`
+        Name to conversion relation.
     """
-    __slots__ = ('conversions', 'get_converters', 'put_converters', 'validators')
+    __slots__ = ('conversions', 'key_to_conversion', 'name_to_conversion')
     
     def __new__(cls, *conversions):
         """
@@ -29,24 +27,29 @@ class AuditLogEntryDetailConversionGroup(RichAttributeErrorBaseType):
         *conversions : ``AuditLogEntryDetailConversion``
             Conversions to group.
         """
-        get_converters = {}
-        put_converters = {}
-        validators = {}
+        key_to_conversion = None
+        name_to_conversion = None
         
         for conversion in conversions:
             field_key = conversion.field_key
-            field_name = conversion.field_name
             
-            get_converters.setdefault(field_key, (field_name, conversion.get_converter))
-            put_converters.setdefault(field_name, (field_key, conversion.put_converter))
-            validators.setdefault(field_name, conversion.validator)
+            if key_to_conversion is None:
+                key_to_conversion = {}
+            
+            key_to_conversion[field_key] = conversion
+            
+            field_name = conversion.field_name
+            if field_name:
+                if name_to_conversion is None:
+                    name_to_conversion = {}
+                
+                name_to_conversion[field_name] = conversion
         
         # Construct
         self = object.__new__(cls)
         self.conversions = conversions
-        self.get_converters = get_converters
-        self.put_converters = put_converters
-        self.validators = validators
+        self.key_to_conversion = key_to_conversion
+        self.name_to_conversion = name_to_conversion
         return self
     
     
@@ -76,3 +79,39 @@ class AuditLogEntryDetailConversionGroup(RichAttributeErrorBaseType):
             return False
         
         return True
+    
+    
+    def get_conversion_for_key(self, key):
+        """
+        Gets the conversion for the given key.
+        
+        Parameters
+        ----------
+        key : `str`
+            Conversion key.
+        
+        Returns
+        -------
+        conversion : `None | AuditLogEntryDetailConversion`
+        """
+        key_to_conversion = self.key_to_conversion
+        if (key_to_conversion is not None):
+            return key_to_conversion.get(key, None)
+
+    
+    def get_conversion_for_name(self, name):
+        """
+        Gets the conversion for the given name.
+        
+        Parameters
+        ----------
+        name : `str`
+            Conversion name.
+        
+        Returns
+        -------
+        conversion : `None | AuditLogEntryDetailConversion`
+        """
+        name_to_conversion = self.name_to_conversion
+        if (name_to_conversion is not None):
+            return name_to_conversion.get(name, None)

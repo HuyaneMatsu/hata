@@ -1,6 +1,6 @@
 import vampytest
 
-from ..converters import get_converter_string_array
+from ..converters import value_deserializer_string_array
 
 
 def _iter_options():
@@ -14,9 +14,9 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__get_converter_string_array(input_value):
+def test__value_deserializer_string_array(input_value):
     """
-    Tests whether ``get_converter_string_array`` works as intended.
+    Tests whether ``value_deserializer_string_array`` works as intended.
     
     Parameters
     ----------
@@ -27,4 +27,4 @@ def test__get_converter_string_array(input_value):
     -------
     output : `None | tuple<int>`
     """
-    return get_converter_string_array(input_value)
+    return value_deserializer_string_array(input_value)

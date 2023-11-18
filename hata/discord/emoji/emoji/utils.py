@@ -4,9 +4,10 @@ __all__ = (
     'put_exclusive_emoji_data_into', 'put_partial_emoji_inline_data_into'
 )
 
-import warnings
-
 from scarletio import export, include
+
+from ....env import ALLOW_DEBUG_MESSAGES
+from ....utils.debug import call_debug_logger
 
 from ...core import EMOJIS, UNICODE_TO_EMOJI
 
@@ -31,10 +32,14 @@ def _create_new_unicode(unicode_string):
     """
     unicode_bytes = unicode_string.encode()
     
-    warnings.warn(
-        f'\nUndefined emoji : {unicode_bytes!r}\nPlease open an issue with this message.',
-        RuntimeWarning,
-    )
+    if ALLOW_DEBUG_MESSAGES:
+        call_debug_logger(
+            (
+                f'Undefined emoji : {unicode_bytes!r}\n'
+                f'Please open an issue with this message.'
+            ),
+            True,
+        )
     
     return Emoji._create_unicode(Unicode('', unicode_bytes, False, None, None), False)
 
@@ -278,11 +283,17 @@ def create_unicode_emoji(unicode):
     try:
         unicode_emoji = UNICODE_TO_EMOJI[unicode]
     except KeyError:
-        raw_value = unicode.encode()
-        warnings.warn(
-            f'Undefined emoji : {raw_value!r}\nPlease open an issue with this message.',
-            RuntimeWarning,
-        )
-        unicode_emoji = Emoji._create_unicode(Unicode('', raw_value, False, None, None), False)
+        unicode_bytes = unicode.encode()
+        
+        if ALLOW_DEBUG_MESSAGES:
+            call_debug_logger(
+                (
+                    f'Undefined emoji : {unicode_bytes!r}\n'
+                    f'Please open an issue with this message.'
+                ),
+                True,
+            )
+        
+        unicode_emoji = Emoji._create_unicode(Unicode('', unicode_bytes, False, None, None), False)
     
     return unicode_emoji

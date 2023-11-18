@@ -14,26 +14,27 @@ from ...auto_moderation.trigger_metadata.fields import (
 )
 from ...auto_moderation.trigger_metadata.utils import try_get_auto_moderation_trigger_metadata_type_from_data
 
-from ..audit_log_change.flags import FLAG_IS_ADDITION, FLAG_IS_MODIFICATION, FLAG_IS_REMOVAL
 from ..audit_log_entry_change_conversion import AuditLogEntryChangeConversion, AuditLogEntryChangeConversionGroup
+from ..audit_log_entry_change_conversion.change_deserializers import change_deserializer_addition_and_removal
+from ..audit_log_entry_change_conversion.change_serializers import change_serializer_addition_and_removal
+from ..audit_log_entry_change_conversion.value_mergers import value_merger_sorted_array
 from ..conversion_helpers.converters import (
-    get_converter_id, get_converter_ids, get_converter_name, get_converter_string_array, put_converter_id,
-    put_converter_ids, put_converter_name, put_converter_string_array
+    value_deserializer_id, value_deserializer_ids, value_deserializer_name, value_deserializer_string_array,
+    value_serializer_id, value_serializer_ids, value_serializer_name, value_serializer_string_array
 )
 
 
 # ---- action ----
 
 ACTIONS_CONVERSION = AuditLogEntryChangeConversion(
+    ('actions',),
     'actions',
-    'actions',
-    FLAG_IS_MODIFICATION,
-    validator = validate_actions,
+    value_validator = validate_actions,
 )
 
 
-@ACTIONS_CONVERSION.set_get_converter
-def actions_get_converter(value):
+@ACTIONS_CONVERSION.set_value_deserializer
+def actions_value_deserializer(value):
     if value is None:
         pass
     elif (not value):
@@ -43,8 +44,8 @@ def actions_get_converter(value):
     return value
 
 
-@ACTIONS_CONVERSION.set_put_converter
-def actions_put_converter(value):
+@ACTIONS_CONVERSION.set_value_serializer
+def actions_value_serializer(value):
     if value is None:
         value = []
     else:
@@ -55,27 +56,25 @@ def actions_put_converter(value):
 # ---- creator_id ----
 
 CREATOR_ID_CONVERSION = AuditLogEntryChangeConversion(
+    ('creator_id',),
     'creator_id',
-    'creator_id',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_id,
-    put_converter = put_converter_id,
-    validator = validate_creator_id,
+    value_deserializer = value_deserializer_id,
+    value_serializer = value_serializer_id,
+    value_validator = validate_creator_id,
 )
 
 
 # ---- enabled ----
 
 ENABLED_CONVERSION = AuditLogEntryChangeConversion(
+    ('enabled',),
     'enabled',
-    'enabled',
-    FLAG_IS_MODIFICATION,
-    validator = validate_enabled,
+    value_validator = validate_enabled,
 )
 
 
-@ENABLED_CONVERSION.set_get_converter
-def enabled_get_converter(value):
+@ENABLED_CONVERSION.set_value_deserializer
+def enabled_value_deserializer(value):
     if value is None:
         value = True
     return value
@@ -83,102 +82,82 @@ def enabled_get_converter(value):
 
 # ---- excluded_keywords ----
 
-EXCLUDED_KEYWORDS_CONVERSION__ADDITION = AuditLogEntryChangeConversion(
-    '$add_allow_list',
+EXCLUDED_KEYWORDS_CONVERSION = AuditLogEntryChangeConversion(
+    ('$remove_allow_list', '$add_allow_list'),
     'excluded_keywords',
-    FLAG_IS_ADDITION,
-    get_converter = get_converter_string_array,
-    put_converter = put_converter_string_array,
-    validator = validate_excluded_keywords,
-)
-
-
-EXCLUDED_KEYWORDS_CONVERSION__REMOVAL = AuditLogEntryChangeConversion(
-    '$remove_allow_list',
-    'excluded_keywords',
-    FLAG_IS_REMOVAL,
-    get_converter = get_converter_string_array,
-    put_converter = put_converter_string_array,
-    validator = validate_excluded_keywords,
+    change_deserializer = change_deserializer_addition_and_removal,
+    change_serializer = change_serializer_addition_and_removal,
+    value_merger = value_merger_sorted_array,
+    value_deserializer = value_deserializer_string_array,
+    value_serializer = value_serializer_string_array,
+    value_validator = validate_excluded_keywords,
 )
 
 # ---- event_type ----
 
 EVENT_TYPE_CONVERSION = AuditLogEntryChangeConversion(
+    ('event_type',),
     'event_type',
-    'event_type',
-    FLAG_IS_MODIFICATION,
-    validator = validate_event_type,
+    value_validator = validate_event_type,
 )
 
 
-@EVENT_TYPE_CONVERSION.set_get_converter
-def event_type_get_converter(value):
+@EVENT_TYPE_CONVERSION.set_value_deserializer
+def event_type_value_deserializer(value):
     return AutoModerationEventType.get(value)
 
 
-@EVENT_TYPE_CONVERSION.set_put_converter
-def event_type_put_converter(value):
+@EVENT_TYPE_CONVERSION.set_value_serializer
+def event_type_value_serializer(value):
     return value.value
 
 
 # ---- excluded_channel_ids ----
 
 EXCLUDED_CHANNEL_IDS_CONVERSION = AuditLogEntryChangeConversion(
-    'exempt_channels',
+    ('exempt_channels',),
     'excluded_channel_ids',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_ids,
-    put_converter = put_converter_ids,
-    validator = validate_excluded_channel_ids,
+    value_deserializer = value_deserializer_ids,
+    value_serializer = value_serializer_ids,
+    value_validator = validate_excluded_channel_ids,
 )
 
 
 # ---- excluded_role_ids ----
 
 EXCLUDED_ROLE_IDS_CONVERSION = AuditLogEntryChangeConversion(
-    'exempt_roles',
+    ('exempt_roles',),
     'excluded_role_ids',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_ids,
-    put_converter = put_converter_ids,
-    validator = validate_excluded_role_ids,
+    value_deserializer = value_deserializer_ids,
+    value_serializer = value_serializer_ids,
+    value_validator = validate_excluded_role_ids,
 )
 
 
 # ---- keywords ---
 
-KEYWORDS_CONVERSION__ADDITION = AuditLogEntryChangeConversion(
-    '$add_keyword_filter',
+KEYWORDS_CONVERSION = AuditLogEntryChangeConversion(
+    ('$remove_keyword_filter', '$add_keyword_filter'),
     'keywords',
-    FLAG_IS_ADDITION,
-    get_converter = get_converter_string_array,
-    put_converter = put_converter_string_array,
-    validator = validate_keywords,
-)
-
-
-KEYWORDS_CONVERSION__REMOVAL = AuditLogEntryChangeConversion(
-    '$remove_keyword_filter',
-    'keywords',
-    FLAG_IS_REMOVAL,
-    get_converter = get_converter_string_array,
-    put_converter = put_converter_string_array,
-    validator = validate_keywords,
+    change_deserializer = change_deserializer_addition_and_removal,
+    change_serializer = change_serializer_addition_and_removal,
+    value_merger = value_merger_sorted_array,
+    value_deserializer = value_deserializer_string_array,
+    value_serializer = value_serializer_string_array,
+    value_validator = validate_keywords,
 )
 
 # ---- mention_limit ----
 
 MENTION_LIMIT_CONVERSION = AuditLogEntryChangeConversion(
-    'mention_total_limit',
+    ('mention_total_limit',),
     'mention_limit',
-    FLAG_IS_MODIFICATION,
-    validator = validate_mention_limit,
+    value_validator = validate_mention_limit,
 )
 
 
-@MENTION_LIMIT_CONVERSION.set_get_converter
-def mention_limit_get_converter(value):
+@MENTION_LIMIT_CONVERSION.set_value_deserializer
+def mention_limit_value_deserializer(value):
     if value is None:
         value = AUTO_MODERATION_TRIGGER_MENTION_LIMIT_MAX
     return value
@@ -187,27 +166,25 @@ def mention_limit_get_converter(value):
 # ---- name ----
 
 NAME_CONVERSION = AuditLogEntryChangeConversion(
+    ('name',),
     'name',
-    'name',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_name,
-    put_converter = put_converter_name,
-    validator = validate_name,
+    value_deserializer = value_deserializer_name,
+    value_serializer = value_serializer_name,
+    value_validator = validate_name,
 )
 
 
 # ---- raid_protection ----
 
 RAID_PROTECTION_CONVERSION = AuditLogEntryChangeConversion(
-    'mention_raid_protection_enabled',
+    ('mention_raid_protection_enabled',),
     'raid_protection',
-    FLAG_IS_MODIFICATION,
-    validator = validate_raid_protection,
+    value_validator = validate_raid_protection,
 )
 
 
-@RAID_PROTECTION_CONVERSION.set_get_converter
-def raid_protection_get_converter(value):
+@RAID_PROTECTION_CONVERSION.set_value_deserializer
+def raid_protection_value_deserializer(value):
     if value is None:
         value = False
     return value
@@ -215,36 +192,27 @@ def raid_protection_get_converter(value):
 
 # ---- regex_patterns ---
 
-REGEX_PATTERNS_CONVERSION__ADDITION = AuditLogEntryChangeConversion(
-    '$add_regex_patterns',
+REGEX_PATTERNS_CONVERSION = AuditLogEntryChangeConversion(
+    ('$remove_regex_patterns', '$add_regex_patterns'),
     'regex_patterns',
-    FLAG_IS_ADDITION,
-    get_converter = get_converter_string_array,
-    put_converter = put_converter_string_array,
-    validator = validate_regex_patterns,
-)
-
-
-REGEX_PATTERNS_CONVERSION__REMOVAL = AuditLogEntryChangeConversion(
-    '$remove_regex_patterns',
-    'regex_patterns',
-    FLAG_IS_REMOVAL,
-    get_converter = get_converter_string_array,
-    put_converter = put_converter_string_array,
-    validator = validate_regex_patterns,
+    change_deserializer = change_deserializer_addition_and_removal,
+    change_serializer = change_serializer_addition_and_removal,
+    value_merger = value_merger_sorted_array,
+    value_deserializer = value_deserializer_string_array,
+    value_serializer = value_serializer_string_array,
+    value_validator = validate_regex_patterns,
 )
 
 
 # ---- trigger_metadata ----
 
 TRIGGER_METADATA_CONVERSION = AuditLogEntryChangeConversion(
+    ('trigger_metadata',),
     'trigger_metadata',
-    'trigger_metadata',
-    FLAG_IS_MODIFICATION,
 )
 
-@TRIGGER_METADATA_CONVERSION.set_get_converter
-def trigger_metadata_get_converter(value):
+@TRIGGER_METADATA_CONVERSION.set_value_deserializer
+def trigger_metadata_value_deserializer(value):
     if value is not None:
         metadata_type = try_get_auto_moderation_trigger_metadata_type_from_data(value)
         if metadata_type is None:
@@ -255,15 +223,15 @@ def trigger_metadata_get_converter(value):
     return value
 
 
-@TRIGGER_METADATA_CONVERSION.set_put_converter
-def trigger_metadata_put_converter(value):
+@TRIGGER_METADATA_CONVERSION.set_value_serializer
+def trigger_metadata_value_serializer(value):
     if value is not None:
         value = value.to_data(defaults = True)
     return value
 
 
-@TRIGGER_METADATA_CONVERSION.set_validator
-def trigger_metadata_validator(value):
+@TRIGGER_METADATA_CONVERSION.set_value_validator
+def trigger_metadata_value_validator(value):
     if value is None or isinstance(value, AutoModerationRuleTriggerMetadataBase):
         return value
     
@@ -276,20 +244,19 @@ def trigger_metadata_validator(value):
 # ---- trigger_type ----
 
 TRIGGER_TYPE_CONVERSION = AuditLogEntryChangeConversion(
+    ('trigger_type',),
     'trigger_type',
-    'trigger_type',
-    FLAG_IS_MODIFICATION,
-    validator = validate_trigger_type,
+    value_validator = validate_trigger_type,
 )
 
 
-@TRIGGER_TYPE_CONVERSION.set_get_converter
-def trigger_type_get_converter(value):
+@TRIGGER_TYPE_CONVERSION.set_value_deserializer
+def trigger_type_value_deserializer(value):
     return AutoModerationRuleTriggerType.get(value)
 
 
-@TRIGGER_TYPE_CONVERSION.set_put_converter
-def trigger_type_put_converter(value):
+@TRIGGER_TYPE_CONVERSION.set_value_serializer
+def trigger_type_value_serializer(value):
     return value.value
 
 
@@ -299,18 +266,15 @@ AUTO_MODERATION_RULE_CONVERSIONS = AuditLogEntryChangeConversionGroup(
     ACTIONS_CONVERSION,
     CREATOR_ID_CONVERSION,
     ENABLED_CONVERSION,
-    EXCLUDED_KEYWORDS_CONVERSION__ADDITION,
-    EXCLUDED_KEYWORDS_CONVERSION__REMOVAL,
+    EXCLUDED_KEYWORDS_CONVERSION,
     EVENT_TYPE_CONVERSION,
     EXCLUDED_CHANNEL_IDS_CONVERSION,
     EXCLUDED_ROLE_IDS_CONVERSION,
-    KEYWORDS_CONVERSION__ADDITION,
-    KEYWORDS_CONVERSION__REMOVAL,
+    KEYWORDS_CONVERSION,
     MENTION_LIMIT_CONVERSION,
     NAME_CONVERSION,
     RAID_PROTECTION_CONVERSION,
-    REGEX_PATTERNS_CONVERSION__ADDITION,
-    REGEX_PATTERNS_CONVERSION__REMOVAL,
+    REGEX_PATTERNS_CONVERSION,
     TRIGGER_METADATA_CONVERSION,
     TRIGGER_TYPE_CONVERSION,
 )

@@ -1214,8 +1214,7 @@ class Client(
         
         if self.bot:
             task = Task(KOKORO, self.update_application_info())
-            if __debug__:
-                task.__silence__()
+            task.silence()
         
         # Check it twice, because meanwhile logging in, connect calls are not limited
         if self.running:

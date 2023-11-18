@@ -4,10 +4,8 @@ from scarletio import RichAttributeErrorBaseType
 
 from ..conversion_helpers.helpers import _hash_change_value
 
-from .flags import (
-    FLAG_HAS_AFTER, FLAG_HAS_BEFORE, FLAG_IS_ADDITION, FLAG_IS_MODIFICATION, FLAG_IS_REMOVAL, get_flags_name
-)
-from .fields import validate_attribute_name, validate_flags
+from .fields import validate_attribute_name
+from .flags import FLAG_HAS_AFTER, FLAG_HAS_BEFORE
 
 
 class AuditLogChange(RichAttributeErrorBaseType):
@@ -22,6 +20,8 @@ class AuditLogChange(RichAttributeErrorBaseType):
         The name of the changed attribute.
     before : `object`
         The changed attribute's original value. Defaults to `None`.
+    flags : `int`
+        Bitwise flags containing additional details.
     
     Notes
     -----
@@ -101,8 +101,6 @@ class AuditLogChange(RichAttributeErrorBaseType):
     | emoji                             | `None`, ``Emoji``                                                                     |
     +-----------------------------------+---------------------------------------------------------------------------------------+
     | emojis_enabled                    | `None`, `bool`                                                                        |
-    +-----------------------------------+---------------------------------------------------------------------------------------+
-    | enable_emojis                     | `None`, `bool`                                                                        |
     +-----------------------------------+---------------------------------------------------------------------------------------+
     | enabled                           | `None`, `bool`                                                                        |
     +-----------------------------------+---------------------------------------------------------------------------------------+
@@ -266,7 +264,7 @@ class AuditLogChange(RichAttributeErrorBaseType):
     """
     __slots__ = ('after', 'attribute_name', 'before', 'flags')
     
-    def __new__(cls, attribute_name, flags, *, before = ..., after = ...):
+    def __new__(cls, attribute_name, *, before = ..., after = ...):
         """
         Creates a new audit log change instance.
         
@@ -278,11 +276,16 @@ class AuditLogChange(RichAttributeErrorBaseType):
             The changed attribute's new value.
         before : `object`, Optional (Keyword only)
             The changed attribute's original value.
-        flags : `int`, Optional (Keyword only)
-            Bitwise flags containing additional details.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         """
         attribute_name = validate_attribute_name(attribute_name)
-        flags = validate_flags(flags)
+        flags = 0
         
         # after
         if after is ...:
@@ -368,9 +371,6 @@ class AuditLogChange(RichAttributeErrorBaseType):
         repr_parts.append(repr(self.attribute_name))
         
         flags = self.flags
-        repr_parts.append(', flags = ')
-        repr_parts.append(get_flags_name(flags))
-        
         if flags & FLAG_HAS_BEFORE:
             repr_parts.append(', before = ')
             repr_parts.append(repr(self.before))
@@ -446,91 +446,3 @@ class AuditLogChange(RichAttributeErrorBaseType):
         has_after : `bool`
         """
         return True if self.flags & FLAG_HAS_AFTER else False
-    
-    
-    def is_modification(self):
-        """
-        Returns whether the change represents whether something was modified.
-        
-        Returns
-        -------
-        is_modification : `bool`
-        """
-        return True if self.flags & FLAG_IS_MODIFICATION else False
-    
-    
-    def is_addition(self):
-        """
-        Returns whether the change represents whether something was added.
-        
-        Returns
-        -------
-        is_addition : `bool`
-        """
-        return True if self.flags & FLAG_IS_ADDITION else False
-    
-    
-    def is_removal(self):
-        """
-        Returns whether the change represents whether something was removed.
-        
-        Returns
-        -------
-        is_removal : `bool`
-        """
-        return True if self.flags & FLAG_IS_REMOVAL else False
-    
-    
-    def __add__(self, other):
-        """Adds two audit log changes together."""
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return self._merge(other)
-        
-    
-    def __radd__(self, other):
-        """Adds two audit log changes together."""
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        return other._merge(self)
-    
-    
-    def _merge(self, other):
-        """
-        Merges two audit log changes together.
-        
-        Parameters
-        ----------
-        other : `instance<type<self>>`
-            Other audit log change instance.
-        
-        Returns
-        -------
-        new : `instance<type<self>>`
-        """
-        self_flags = self.flags
-        other_flags = other.flags
-        
-        if self_flags & FLAG_HAS_BEFORE:
-            before = self.before
-        elif other_flags & FLAG_HAS_BEFORE:
-            before = other.before
-        else:
-            before = None
-        
-        if self_flags & FLAG_HAS_AFTER:
-            after = self.after
-        elif other_flags & FLAG_HAS_AFTER:
-            after = other.after
-        else:
-            after = None
-        
-        # Construct
-        new = object.__new__(type(self))
-        new.attribute_name = self.attribute_name
-        new.after = after
-        new.before = before
-        new.flags = self_flags | other_flags
-        return new

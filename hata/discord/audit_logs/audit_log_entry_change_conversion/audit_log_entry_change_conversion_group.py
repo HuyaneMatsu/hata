@@ -2,8 +2,6 @@ __all__ = ('AuditLogEntryChangeConversionGroup', )
 
 from scarletio import RichAttributeErrorBaseType
 
-from ..audit_log_change.flags import FLAG_IS_IGNORED
-
 
 class AuditLogEntryChangeConversionGroup(RichAttributeErrorBaseType):
     """
@@ -13,16 +11,14 @@ class AuditLogEntryChangeConversionGroup(RichAttributeErrorBaseType):
     ----------
     conversions : `tuple<AuditLogEntryChangeConversion>`
         The grouped conversions.
-    default_get_converters : `None | list<str, int, FunctionType>`
-        Default get converters.
-    get_converters : `dict<str, (str, int, FunctionType | MethodType)>`
-        Raw to processed converters.
-    put_converters : `dict<(str, int), (str, FunctionType | MethodType)>`
-       Processed to raw converters.
-    validators : `dict<(str, int), FunctionType | MethodType>`
-        Validators.
+    key_pre_checker_conversions : `None | list<AuditLogEntryChangeConversion>`
+        Conversions which have key pre checker.
+    key_to_conversion : `None | dict<str, AuditLogEntryChangeConversion>`
+        Field key to conversion relation used when deserializing.
+    name_to_conversion : `None | dict<str, AuditLogEntryChangeConversion>`
+        Name to conversion relation.
     """
-    __slots__ = ('conversions', 'default_get_converters', 'get_converters', 'put_converters', 'validators')
+    __slots__ = ('conversions', 'key_pre_checker_conversions', 'key_to_conversion', 'name_to_conversion',)
     
     def __new__(cls, *conversions):
         """
@@ -33,37 +29,37 @@ class AuditLogEntryChangeConversionGroup(RichAttributeErrorBaseType):
         *conversions : ``AuditLogEntryChangeConversion``
             Conversions to group.
         """
-        get_converters = {}
-        put_converters = {}
-        validators = {}
+        key_pre_checker_conversions = None
+        key_to_conversion = None
+        name_to_conversion = None
+        
         
         for conversion in conversions:
-            field_key = conversion.field_key
-            field_name = conversion.field_name
-            flags = conversion.flags
+            if conversion.should_add_as_key_based_deserializer():
+                for key in conversion.iter_field_keys():
+                    if key_to_conversion is None:
+                        key_to_conversion = {}
+                    
+                    key_to_conversion[key] = conversion
             
-            get_converters.setdefault(
-                field_key,
-                (field_name, flags, conversion.get_converter),
-            )
-            if flags & FLAG_IS_IGNORED:
-                continue
+            if conversion.should_add_as_key_pre_check_deserializer():
+                if key_pre_checker_conversions is None:
+                    key_pre_checker_conversions = []
+                
+                key_pre_checker_conversions.append(conversion)
             
-            put_converters.setdefault(
-                (field_name, flags),
-                (field_key, conversion.put_converter),
-            )
-            validators.setdefault(
-                (field_name, flags),
-                conversion.validator,
-            )
+            if conversion.should_add_by_field_name():
+                if name_to_conversion is None:
+                    name_to_conversion = {}
+                
+                name_to_conversion[conversion.field_name] = conversion
         
         # Construct
         self = object.__new__(cls)
         self.conversions = conversions
-        self.get_converters = get_converters
-        self.put_converters = put_converters
-        self.validators = validators
+        self.key_pre_checker_conversions = key_pre_checker_conversions
+        self.key_to_conversion = key_to_conversion
+        self.name_to_conversion = name_to_conversion
         return self
     
     
@@ -93,3 +89,64 @@ class AuditLogEntryChangeConversionGroup(RichAttributeErrorBaseType):
             return False
         
         return True
+    
+    
+    def iter_field_keys(self):
+        """
+        Iterates over the field keys of the conversion group.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        field_key : `str`
+        """
+        for conversion in self.conversions:
+            yield from conversion.iter_field_keys()
+    
+    
+    def get_conversion_for_key(self, key):
+        """
+        Gets the conversion for the given key.
+        
+        Parameters
+        ----------
+        key : `str`
+            Conversion key.
+        
+        Returns
+        -------
+        conversion : `None | AuditLogEntryChangeConversion`
+        """
+        key_to_conversion = self.key_to_conversion
+        if (key_to_conversion is not None):
+            try:
+                conversion = key_to_conversion[key]
+            except KeyError:
+                pass
+            else:
+                return conversion
+        
+        key_pre_checker_conversions = self.key_pre_checker_conversions
+        if (key_pre_checker_conversions is not None):
+            for conversion in key_pre_checker_conversions:
+                if conversion.change_deserialization_key_pre_check(key):
+                    return conversion
+    
+    
+    def get_conversion_for_name(self, name):
+        """
+        Gets the conversion for the given name.
+        
+        Parameters
+        ----------
+        name : `str`
+            Conversion name.
+        
+        Returns
+        -------
+        conversion : `None | AuditLogEntryChangeConversion`
+        """
+        name_to_conversion = self.name_to_conversion
+        if (name_to_conversion is not None):
+            return name_to_conversion.get(name, None)

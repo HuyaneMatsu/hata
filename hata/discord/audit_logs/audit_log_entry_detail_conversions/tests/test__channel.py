@@ -10,7 +10,7 @@ from ...audit_log_entry_detail_conversion.tests.test__AuditLogEntryDetailConvers
     _assert_fields_set as _assert_conversion_group_fields_set
 )
 from ...conversion_helpers.converters import (
-    get_converter_description, get_converter_id, put_converter_description, put_converter_id
+    value_deserializer_description, value_deserializer_id, value_serializer_description, value_serializer_id
 )
 
 from ..channel import CHANNEL_CONVERSIONS, ID_CONVERSION, STATUS_CONVERSION
@@ -22,7 +22,7 @@ def test__CHANNEL_CONVERSIONS():
     """
     _assert_conversion_group_fields_set(CHANNEL_CONVERSIONS)
     vampytest.assert_eq(
-        {*CHANNEL_CONVERSIONS.get_converters.keys()},
+        {conversion.field_key for conversion in CHANNEL_CONVERSIONS.conversions},
         {'status', 'channel_id'}
     )
 
@@ -34,9 +34,9 @@ def test__STATUS_CONVERSION__generic():
     Tests whether ``STATUS_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(STATUS_CONVERSION)
-    vampytest.assert_is(STATUS_CONVERSION.get_converter, get_converter_description)
-    vampytest.assert_is(STATUS_CONVERSION.put_converter, put_converter_description)
-    vampytest.assert_is(STATUS_CONVERSION.validator, validate_status)
+    vampytest.assert_is(STATUS_CONVERSION.value_deserializer, value_deserializer_description)
+    vampytest.assert_is(STATUS_CONVERSION.value_serializer, value_serializer_description)
+    vampytest.assert_is(STATUS_CONVERSION.value_validator, validate_status)
 
 
 # ---- id ----
@@ -46,6 +46,6 @@ def test__ID_CONVERSION__generic():
     Tests whether ``ID_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(ID_CONVERSION)
-    vampytest.assert_is(ID_CONVERSION.get_converter, get_converter_id)
-    vampytest.assert_is(ID_CONVERSION.put_converter, put_converter_id)
-    vampytest.assert_is(ID_CONVERSION.validator, validate_id)
+    vampytest.assert_is(ID_CONVERSION.value_deserializer, value_deserializer_id)
+    vampytest.assert_is(ID_CONVERSION.value_serializer, value_serializer_id)
+    vampytest.assert_is(ID_CONVERSION.value_validator, validate_id)

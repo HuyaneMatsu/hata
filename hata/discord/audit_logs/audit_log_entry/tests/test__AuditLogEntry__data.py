@@ -2,7 +2,6 @@ import vampytest
 
 from ...audit_log import AuditLog
 from ...audit_log_change import AuditLogChange
-from ...audit_log_change.flags import FLAG_IS_MODIFICATION
 
 from ..audit_log_entry import AuditLogEntry
 from ..preinstanced import AuditLogEntryType
@@ -18,7 +17,7 @@ def test__AuditLogEntry__from_data():
     """
     entry_id = 202310290016
     
-    changes = [AuditLogChange('name', FLAG_IS_MODIFICATION, after = 'koishi')]
+    changes = [AuditLogChange('name', after = 'koishi')]
     details = {'users_removed': 6}
     entry_type = AuditLogEntryType.guild_update
     guild_id = 202310290017
@@ -63,7 +62,7 @@ def test__AuditLogEntry__to_data():
     """
     entry_id = 202310290020
     
-    changes = [AuditLogChange('name', FLAG_IS_MODIFICATION, after = 'koishi')]
+    changes = [AuditLogChange('name', after = 'koishi')]
     details = {'users_removed': 6}
     entry_type = AuditLogEntryType.guild_update
     guild_id = 202310290021

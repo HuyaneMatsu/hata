@@ -1,6 +1,6 @@
 import vampytest
 
-from ..converters import get_converter_id
+from ..converters import value_deserializer_id
 
 
 def _iter_options():
@@ -10,9 +10,9 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__get_converter_id(input_value):
+def test__value_deserializer_id(input_value):
     """
-    Tests whether ``get_converter_id`` works as intended.
+    Tests whether ``value_deserializer_id`` works as intended.
     
     Parameters
     ----------
@@ -23,4 +23,4 @@ def test__get_converter_id(input_value):
     -------
     output : `int`
     """
-    return get_converter_id(input_value)
+    return value_deserializer_id(input_value)

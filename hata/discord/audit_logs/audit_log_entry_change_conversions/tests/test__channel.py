@@ -18,6 +18,7 @@ from ....channel.channel_metadata.fields import (
 from ....core import BUILTIN_EMOJIS
 from ....emoji import create_partial_emoji_data
 
+from ...audit_log_entry_change_conversion.change_deserializers import change_deserializer_deprecation
 from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversion import (
     _assert_fields_set as _assert_conversion_fields_set
 )
@@ -25,17 +26,19 @@ from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConvers
     _assert_fields_set as _assert_conversion_group_fields_set
 )
 from ...conversion_helpers.converters import (
-    get_converter_description, get_converter_id, get_converter_ids, get_converter_name, put_converter_description,
-    put_converter_id, put_converter_ids, put_converter_name
+    value_deserializer_description, value_deserializer_id, value_deserializer_ids, value_deserializer_name,
+    value_serializer_description, value_serializer_id, value_serializer_ids, value_serializer_name
 )
 
 from ..channel import (
     APPLIED_TAG_IDS_CONVERSION, ARCHIVED_CONVERSION, AUTO_ARCHIVE_AFTER_CONVERSION, AVAILABLE_TAGS_CONVERSION,
     BITRATE_CONVERSION, CHANNEL_CONVERSIONS, DEFAULT_FORUM_LAYOUT_CONVERSION, DEFAULT_SORT_ORDER_CONVERSION,
     DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION, DEFAULT_THREAD_REACTION_CONVERSION,
-    DEFAULT_THREAD_SLOWMODE_CONVERSION, FLAGS_CONVERSION, INVITABLE_CONVERSION, NAME_CONVERSION, NSFW_CONVERSION,
-    OPEN_CONVERSION, PARENT_ID_CONVERSION, PERMISSION_OVERWRITES_CONVERSION, POSITION_CONVERSION, REGION_CONVERSION,
-    SLOWMODE_CONVERSION, TOPIC_CONVERSION, TYPE_CONVERSION, USER_LIMIT_CONVERSION, VIDEO_QUALITY_MODE_CONVERSION
+    DEFAULT_THREAD_SLOWMODE_CONVERSION, FLAGS_CONVERSION, ICON_EMOJI_CONVERSION_IGNORED, INVITABLE_CONVERSION,
+    NAME_CONVERSION, NSFW_CONVERSION, OPEN_CONVERSION, PARENT_ID_CONVERSION, PERMISSION_OVERWRITES_CONVERSION,
+    POSITION_CONVERSION, REGION_CONVERSION, SLOWMODE_CONVERSION, TEMPLATE_CONVERSION_IGNORED,
+    THEME_COLOR_CONVERSION_IGNORED, TOPIC_CONVERSION, TYPE_CONVERSION, USER_LIMIT_CONVERSION,
+    VIDEO_QUALITY_MODE_CONVERSION
 )
 
 
@@ -45,7 +48,7 @@ def test__CHANNEL_CONVERSIONS():
     """
     _assert_conversion_group_fields_set(CHANNEL_CONVERSIONS)
     vampytest.assert_eq(
-        {*CHANNEL_CONVERSIONS.get_converters.keys()},
+        {*CHANNEL_CONVERSIONS.iter_field_keys()},
         {
             'applied_tags', 'archived', 'auto_archive_duration', 'available_tags', 'bitrate',
             'default_auto_archive_duration', 'default_forum_layout', 'default_sort_order', 'default_reaction_emoji',
@@ -62,9 +65,9 @@ def test__APPLIED_TAG_IDS_CONVERSION__generic():
     Tests whether ``APPLIED_TAG_IDS_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(APPLIED_TAG_IDS_CONVERSION)
-    vampytest.assert_is(APPLIED_TAG_IDS_CONVERSION.get_converter, get_converter_ids)
-    vampytest.assert_is(APPLIED_TAG_IDS_CONVERSION.put_converter, put_converter_ids)
-    vampytest.assert_is(APPLIED_TAG_IDS_CONVERSION.validator, validate_applied_tag_ids)
+    vampytest.assert_is(APPLIED_TAG_IDS_CONVERSION.value_deserializer, value_deserializer_ids)
+    vampytest.assert_is(APPLIED_TAG_IDS_CONVERSION.value_serializer, value_serializer_ids)
+    vampytest.assert_is(APPLIED_TAG_IDS_CONVERSION.value_validator, validate_applied_tag_ids)
 
 
 # ---- archived ----
@@ -74,21 +77,20 @@ def test__ARCHIVED_CONVERSION__generic():
     Tests whether ``ARCHIVED_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(ARCHIVED_CONVERSION)
-    # vampytest.assert_is(ARCHIVED_CONVERSION.get_converter, )
-    # vampytest.assert_is(ARCHIVED_CONVERSION.put_converter, )
-    vampytest.assert_is(ARCHIVED_CONVERSION.validator, validate_archived)
+    vampytest.assert_is(ARCHIVED_CONVERSION.value_serializer, None)
+    vampytest.assert_is(ARCHIVED_CONVERSION.value_validator, validate_archived)
 
 
-def _iter_options__archived__get_converter():
+def _iter_options__archived__value_deserializer():
     yield True, True
     yield False, False
     yield None, False
 
 
-@vampytest._(vampytest.call_from(_iter_options__archived__get_converter()).returning_last())
-def test__ARCHIVED_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__archived__value_deserializer()).returning_last())
+def test__ARCHIVED_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `ARCHIVED_CONVERSION.get_converter` works as intended.
+    Tests whether `ARCHIVED_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -99,29 +101,7 @@ def test__ARCHIVED_CONVERSION__get_converter(input_value):
     -------
     output : `bool`
     """
-    return ARCHIVED_CONVERSION.get_converter(input_value)
-
-
-def _iter_options__archived__put_converter():
-    yield True, True
-    yield False, False
-
-
-@vampytest._(vampytest.call_from(_iter_options__archived__put_converter()).returning_last())
-def test__ARCHIVED_CONVERSION__put_converter(input_value):
-    """
-    Tests whether `ARCHIVED_CONVERSION.put_converter` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `bool`
-        Processed value.
-    
-    Returns
-    -------
-    output : `bool`
-    """
-    return ARCHIVED_CONVERSION.put_converter(input_value)
+    return ARCHIVED_CONVERSION.value_deserializer(input_value)
 
 
 # ---- auto_archive_after ----
@@ -131,21 +111,19 @@ def test__AUTO_ARCHIVE_AFTER_CONVERSION__generic():
     Tests whether ``AUTO_ARCHIVE_AFTER_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(AUTO_ARCHIVE_AFTER_CONVERSION)
-    # vampytest.assert_is(AUTO_ARCHIVE_AFTER_CONVERSION.get_converter, )
-    # vampytest.assert_is(AUTO_ARCHIVE_AFTER_CONVERSION.put_converter, )
-    vampytest.assert_is(AUTO_ARCHIVE_AFTER_CONVERSION.validator, validate_auto_archive_after)
+    vampytest.assert_is(AUTO_ARCHIVE_AFTER_CONVERSION.value_validator, validate_auto_archive_after)
 
 
-def _iter_options__auto_archive_after__get_converter():
+def _iter_options__auto_archive_after__value_deserializer():
     yield 1, 60
     yield 0, 0
     yield None, AUTO_ARCHIVE_DEFAULT
 
 
-@vampytest._(vampytest.call_from(_iter_options__auto_archive_after__get_converter()).returning_last())
-def test__AUTO_ARCHIVE_AFTER_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__auto_archive_after__value_deserializer()).returning_last())
+def test__AUTO_ARCHIVE_AFTER_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `AUTO_ARCHIVE_AFTER_CONVERSION.get_converter` works as intended.
+    Tests whether `AUTO_ARCHIVE_AFTER_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -156,18 +134,18 @@ def test__AUTO_ARCHIVE_AFTER_CONVERSION__get_converter(input_value):
     -------
     output : `int`
     """
-    return AUTO_ARCHIVE_AFTER_CONVERSION.get_converter(input_value)
+    return AUTO_ARCHIVE_AFTER_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__auto_archive_after__put_converter():
+def _iter_options__auto_archive_after__value_serializer():
     yield 60, 1
     yield 0, 0
 
 
-@vampytest._(vampytest.call_from(_iter_options__auto_archive_after__put_converter()).returning_last())
-def test__AUTO_ARCHIVE_AFTER_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__auto_archive_after__value_serializer()).returning_last())
+def test__AUTO_ARCHIVE_AFTER_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `AUTO_ARCHIVE_AFTER_CONVERSION.put_converter` works as intended.
+    Tests whether `AUTO_ARCHIVE_AFTER_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -178,7 +156,7 @@ def test__AUTO_ARCHIVE_AFTER_CONVERSION__put_converter(input_value):
     -------
     output : `int`
     """
-    return AUTO_ARCHIVE_AFTER_CONVERSION.put_converter(input_value)
+    return AUTO_ARCHIVE_AFTER_CONVERSION.value_serializer(input_value)
 
 
 # --- available_tags ----
@@ -188,12 +166,10 @@ def test__AVAILABLE_TAGS_CONVERSION__generic():
     Tests whether ``AVAILABLE_TAGS_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(AVAILABLE_TAGS_CONVERSION)
-    # vampytest.assert_is(AVAILABLE_TAGS_CONVERSION.get_converter, )
-    # vampytest.assert_is(AVAILABLE_TAGS_CONVERSION.put_converter, )
-    vampytest.assert_is(AVAILABLE_TAGS_CONVERSION.validator, validate_available_tags)
+    vampytest.assert_is(AVAILABLE_TAGS_CONVERSION.value_validator, validate_available_tags)
     
 
-def _iter_options__available_tags__get_converter():
+def _iter_options__available_tags__value_deserializer():
     tag_0 = ForumTag.precreate(202310260000, name = 'koishi')
     tag_1 = ForumTag.precreate(202310260001, name = 'satori')
     
@@ -208,10 +184,10 @@ def _iter_options__available_tags__get_converter():
     )
 
 
-@vampytest._(vampytest.call_from(_iter_options__available_tags__get_converter()).returning_last())
-def test__AVAILABLE_TAGS_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__available_tags__value_deserializer()).returning_last())
+def test__AVAILABLE_TAGS_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `AVAILABLE_TAGS_CONVERSION.get_converter` works as intended.
+    Tests whether `AVAILABLE_TAGS_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -222,10 +198,10 @@ def test__AVAILABLE_TAGS_CONVERSION__get_converter(input_value):
     -------
     output : `None | tuple<AutoModerationAction>`
     """
-    return AVAILABLE_TAGS_CONVERSION.get_converter(input_value)
+    return AVAILABLE_TAGS_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__available_tags__put_converter():
+def _iter_options__available_tags__value_serializer():
     tag_0 = ForumTag.precreate(202310260002, name = 'koishi')
     tag_1 = ForumTag.precreate(202310260003, name = 'satori')
     
@@ -239,10 +215,10 @@ def _iter_options__available_tags__put_converter():
     )
 
 
-@vampytest._(vampytest.call_from(_iter_options__available_tags__put_converter()).returning_last())
-def test__AVAILABLE_TAGS_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__available_tags__value_serializer()).returning_last())
+def test__AVAILABLE_TAGS_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `AVAILABLE_TAGS_CONVERSION.put_converter` works as intended.
+    Tests whether `AVAILABLE_TAGS_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -253,7 +229,7 @@ def test__AVAILABLE_TAGS_CONVERSION__put_converter(input_value):
     -------
     output : `list<dict<str, object>>`
     """
-    return AVAILABLE_TAGS_CONVERSION.put_converter(input_value)
+    return AVAILABLE_TAGS_CONVERSION.value_serializer(input_value)
 
 
 # ---- bitrate ----
@@ -263,21 +239,20 @@ def test__BITRATE_CONVERSION__generic():
     Tests whether ``BITRATE_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(BITRATE_CONVERSION)
-    # vampytest.assert_is(BITRATE_CONVERSION.get_converter, )
-    # vampytest.assert_is(BITRATE_CONVERSION.put_converter, )
-    vampytest.assert_is(BITRATE_CONVERSION.validator, validate_bitrate)
+    vampytest.assert_is(BITRATE_CONVERSION.value_serializer, None)
+    vampytest.assert_is(BITRATE_CONVERSION.value_validator, validate_bitrate)
 
 
-def _iter_options__bitrate__get_converter():
+def _iter_options__bitrate__value_deserializer():
     yield 60, 60
     yield 0, 0
     yield None, BITRATE_DEFAULT
 
 
-@vampytest._(vampytest.call_from(_iter_options__bitrate__get_converter()).returning_last())
-def test__BITRATE_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__bitrate__value_deserializer()).returning_last())
+def test__BITRATE_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `BITRATE_CONVERSION.get_converter` works as intended.
+    Tests whether `BITRATE_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -288,29 +263,7 @@ def test__BITRATE_CONVERSION__get_converter(input_value):
     -------
     output : `int`
     """
-    return BITRATE_CONVERSION.get_converter(input_value)
-
-
-def _iter_options__bitrate__put_converter():
-    yield 60, 60
-    yield BITRATE_DEFAULT, BITRATE_DEFAULT
-
-
-@vampytest._(vampytest.call_from(_iter_options__bitrate__put_converter()).returning_last())
-def test__BITRATE_CONVERSION__put_converter(input_value):
-    """
-    Tests whether `BITRATE_CONVERSION.put_converter` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `int`
-        Processed value.
-    
-    Returns
-    -------
-    output : `int`
-    """
-    return BITRATE_CONVERSION.put_converter(input_value)
+    return BITRATE_CONVERSION.value_deserializer(input_value)
 
 
 # ---- default_thread_auto_archive_after ----
@@ -320,23 +273,21 @@ def test__DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION__generic():
     Tests whether ``DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION)
-    # vampytest.assert_is(DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.get_converter, )
-    # vampytest.assert_is(DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.put_converter, )
     vampytest.assert_is(
-        DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.validator, validate_default_thread_auto_archive_after
+        DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.value_validator, validate_default_thread_auto_archive_after
     )
 
 
-def _iter_options__default_thread_auto_archive_after__get_converter():
+def _iter_options__default_thread_auto_archive_after__value_deserializer():
     yield 1, 60
     yield 0, 0
     yield None, AUTO_ARCHIVE_DEFAULT
 
 
-@vampytest._(vampytest.call_from(_iter_options__default_thread_auto_archive_after__get_converter()).returning_last())
-def test__DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__default_thread_auto_archive_after__value_deserializer()).returning_last())
+def test__DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.get_converter` works as intended.
+    Tests whether `DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -347,18 +298,18 @@ def test__DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION__get_converter(input_valu
     -------
     output : `int`
     """
-    return DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.get_converter(input_value)
+    return DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__default_thread_auto_archive_after__put_converter():
+def _iter_options__default_thread_auto_archive_after__value_serializer():
     yield 60, 1
     yield 0, 0
 
 
-@vampytest._(vampytest.call_from(_iter_options__default_thread_auto_archive_after__put_converter()).returning_last())
-def test__DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__default_thread_auto_archive_after__value_serializer()).returning_last())
+def test__DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.put_converter` works as intended.
+    Tests whether `DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -369,7 +320,7 @@ def test__DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION__put_converter(input_valu
     -------
     output : `int`
     """
-    return DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.put_converter(input_value)
+    return DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION.value_serializer(input_value)
 
 
 # ---- default_forum_layout ----
@@ -379,20 +330,18 @@ def test__DEFAULT_FORUM_LAYOUT_CONVERSION__generic():
     Tests whether ``DEFAULT_FORUM_LAYOUT_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(DEFAULT_FORUM_LAYOUT_CONVERSION)
-    # vampytest.assert_is(DEFAULT_FORUM_LAYOUT_CONVERSION.get_converter, )
-    # vampytest.assert_is(DEFAULT_FORUM_LAYOUT_CONVERSION.put_converter, )
-    vampytest.assert_is(DEFAULT_FORUM_LAYOUT_CONVERSION.validator, validate_default_forum_layout)
+    vampytest.assert_is(DEFAULT_FORUM_LAYOUT_CONVERSION.value_validator, validate_default_forum_layout)
 
 
-def _iter_options__default_forum_layout__get_converter():
+def _iter_options__default_forum_layout__value_deserializer():
     yield None, ForumLayout.none
     yield ForumLayout.list.value, ForumLayout.list
 
 
-@vampytest._(vampytest.call_from(_iter_options__default_forum_layout__get_converter()).returning_last())
-def test__DEFAULT_FORUM_LAYOUT_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__default_forum_layout__value_deserializer()).returning_last())
+def test__DEFAULT_FORUM_LAYOUT_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `DEFAULT_FORUM_LAYOUT_CONVERSION.get_converter` works as intended.
+    Tests whether `DEFAULT_FORUM_LAYOUT_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -403,18 +352,18 @@ def test__DEFAULT_FORUM_LAYOUT_CONVERSION__get_converter(input_value):
     -------
     output : ``ForumLayout``
     """
-    return DEFAULT_FORUM_LAYOUT_CONVERSION.get_converter(input_value)
+    return DEFAULT_FORUM_LAYOUT_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__default_forum_layout__put_converter():
+def _iter_options__default_forum_layout__value_serializer():
     yield ForumLayout.none, ForumLayout.none.value
     yield ForumLayout.list, ForumLayout.list.value
 
 
-@vampytest._(vampytest.call_from(_iter_options__default_forum_layout__put_converter()).returning_last())
-def test__DEFAULT_FORUM_LAYOUT_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__default_forum_layout__value_serializer()).returning_last())
+def test__DEFAULT_FORUM_LAYOUT_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `DEFAULT_FORUM_LAYOUT_CONVERSION.put_converter` works as intended.
+    Tests whether `DEFAULT_FORUM_LAYOUT_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -425,7 +374,7 @@ def test__DEFAULT_FORUM_LAYOUT_CONVERSION__put_converter(input_value):
     -------
     output : `int`
     """
-    return DEFAULT_FORUM_LAYOUT_CONVERSION.put_converter(input_value)
+    return DEFAULT_FORUM_LAYOUT_CONVERSION.value_serializer(input_value)
 
 
 # ---- default_sort_order ----
@@ -435,20 +384,18 @@ def test__DEFAULT_SORT_ORDER_CONVERSION__generic():
     Tests whether ``DEFAULT_SORT_ORDER_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(DEFAULT_SORT_ORDER_CONVERSION)
-    # vampytest.assert_is(DEFAULT_SORT_ORDER_CONVERSION.get_converter, )
-    # vampytest.assert_is(DEFAULT_SORT_ORDER_CONVERSION.put_converter, )
-    vampytest.assert_is(DEFAULT_SORT_ORDER_CONVERSION.validator, validate_default_sort_order)
+    vampytest.assert_is(DEFAULT_SORT_ORDER_CONVERSION.value_validator, validate_default_sort_order)
 
 
-def _iter_options__default_sort_order__get_converter():
+def _iter_options__default_sort_order__value_deserializer():
     yield None, SortOrder.latest_activity
     yield SortOrder.creation_date.value, SortOrder.creation_date
 
 
-@vampytest._(vampytest.call_from(_iter_options__default_sort_order__get_converter()).returning_last())
-def test__DEFAULT_SORT_ORDER_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__default_sort_order__value_deserializer()).returning_last())
+def test__DEFAULT_SORT_ORDER_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `DEFAULT_SORT_ORDER_CONVERSION.get_converter` works as intended.
+    Tests whether `DEFAULT_SORT_ORDER_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -459,18 +406,18 @@ def test__DEFAULT_SORT_ORDER_CONVERSION__get_converter(input_value):
     -------
     output : ``SortOrder``
     """
-    return DEFAULT_SORT_ORDER_CONVERSION.get_converter(input_value)
+    return DEFAULT_SORT_ORDER_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__default_sort_order__put_converter():
+def _iter_options__default_sort_order__value_serializer():
     yield SortOrder.latest_activity, SortOrder.latest_activity.value
     yield SortOrder.creation_date, SortOrder.creation_date.value
 
 
-@vampytest._(vampytest.call_from(_iter_options__default_sort_order__put_converter()).returning_last())
-def test__DEFAULT_SORT_ORDER_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__default_sort_order__value_serializer()).returning_last())
+def test__DEFAULT_SORT_ORDER_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `DEFAULT_SORT_ORDER_CONVERSION.put_converter` works as intended.
+    Tests whether `DEFAULT_SORT_ORDER_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -481,7 +428,7 @@ def test__DEFAULT_SORT_ORDER_CONVERSION__put_converter(input_value):
     -------
     output : `int`
     """
-    return DEFAULT_SORT_ORDER_CONVERSION.put_converter(input_value)
+    return DEFAULT_SORT_ORDER_CONVERSION.value_serializer(input_value)
 
 
 # ---- default_thread_reaction ----
@@ -491,21 +438,19 @@ def test__DEFAULT_THREAD_REACTION_CONVERSION__generic():
     Tests whether ``DEFAULT_THREAD_REACTION_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(DEFAULT_THREAD_REACTION_CONVERSION)
-    # vampytest.assert_is(DEFAULT_THREAD_REACTION_CONVERSION.get_converter, )
-    # vampytest.assert_is(DEFAULT_THREAD_REACTION_CONVERSION.put_converter, )
-    vampytest.assert_is(DEFAULT_THREAD_REACTION_CONVERSION.validator, validate_default_thread_reaction)
+    vampytest.assert_is(DEFAULT_THREAD_REACTION_CONVERSION.value_validator, validate_default_thread_reaction)
 
 
-def _iter_options__default_thread_reaction__get_converter():
+def _iter_options__default_thread_reaction__value_deserializer():
     emoji = BUILTIN_EMOJIS['x']
     yield None, None
     yield create_partial_emoji_data(emoji), emoji
 
 
-@vampytest._(vampytest.call_from(_iter_options__default_thread_reaction__get_converter()).returning_last())
-def test__DEFAULT_THREAD_REACTION_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__default_thread_reaction__value_deserializer()).returning_last())
+def test__DEFAULT_THREAD_REACTION_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `DEFAULT_THREAD_REACTION_CONVERSION.get_converter` works as intended.
+    Tests whether `DEFAULT_THREAD_REACTION_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -516,19 +461,19 @@ def test__DEFAULT_THREAD_REACTION_CONVERSION__get_converter(input_value):
     -------
     output : `None | Emoji`
     """
-    return DEFAULT_THREAD_REACTION_CONVERSION.get_converter(input_value)
+    return DEFAULT_THREAD_REACTION_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__default_thread_reaction__put_converter():
+def _iter_options__default_thread_reaction__value_serializer():
     emoji = BUILTIN_EMOJIS['x']
     yield None, None
     yield emoji, create_partial_emoji_data(emoji)
 
 
-@vampytest._(vampytest.call_from(_iter_options__default_thread_reaction__put_converter()).returning_last())
-def test__DEFAULT_THREAD_REACTION_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__default_thread_reaction__value_serializer()).returning_last())
+def test__DEFAULT_THREAD_REACTION_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `DEFAULT_THREAD_REACTION_CONVERSION.put_converter` works as intended.
+    Tests whether `DEFAULT_THREAD_REACTION_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -539,7 +484,7 @@ def test__DEFAULT_THREAD_REACTION_CONVERSION__put_converter(input_value):
     -------
     output : `None | dict<str, object>`
     """
-    return DEFAULT_THREAD_REACTION_CONVERSION.put_converter(input_value)
+    return DEFAULT_THREAD_REACTION_CONVERSION.value_serializer(input_value)
 
 
 # ---- default_thread_slowmode ----
@@ -549,21 +494,20 @@ def test__DEFAULT_THREAD_SLOWMODE_CONVERSION__generic():
     Tests whether ``DEFAULT_THREAD_SLOWMODE_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(DEFAULT_THREAD_SLOWMODE_CONVERSION)
-    # vampytest.assert_is(DEFAULT_THREAD_SLOWMODE_CONVERSION.get_converter, )
-    # vampytest.assert_is(DEFAULT_THREAD_SLOWMODE_CONVERSION.put_converter, )
-    vampytest.assert_is(DEFAULT_THREAD_SLOWMODE_CONVERSION.validator, validate_default_thread_slowmode)
+    vampytest.assert_is(DEFAULT_THREAD_SLOWMODE_CONVERSION.value_serializer, None)
+    vampytest.assert_is(DEFAULT_THREAD_SLOWMODE_CONVERSION.value_validator, validate_default_thread_slowmode)
 
 
-def _iter_options__default_thread_slowmode__get_converter():
+def _iter_options__default_thread_slowmode__value_deserializer():
     yield 60, 60
     yield 0, 0
     yield None, SLOWMODE_DEFAULT
 
 
-@vampytest._(vampytest.call_from(_iter_options__default_thread_slowmode__get_converter()).returning_last())
-def test__DEFAULT_THREAD_SLOWMODE_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__default_thread_slowmode__value_deserializer()).returning_last())
+def test__DEFAULT_THREAD_SLOWMODE_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `DEFAULT_THREAD_SLOWMODE_CONVERSION.get_converter` works as intended.
+    Tests whether `DEFAULT_THREAD_SLOWMODE_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -574,29 +518,7 @@ def test__DEFAULT_THREAD_SLOWMODE_CONVERSION__get_converter(input_value):
     -------
     output : `int`
     """
-    return DEFAULT_THREAD_SLOWMODE_CONVERSION.get_converter(input_value)
-
-
-def _iter_options__default_thread_slowmode__put_converter():
-    yield 60, 60
-    yield SLOWMODE_DEFAULT, SLOWMODE_DEFAULT
-
-
-@vampytest._(vampytest.call_from(_iter_options__default_thread_slowmode__put_converter()).returning_last())
-def test__DEFAULT_THREAD_SLOWMODE_CONVERSION__put_converter(input_value):
-    """
-    Tests whether `DEFAULT_THREAD_SLOWMODE_CONVERSION.put_converter` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `int`
-        Processed value.
-    
-    Returns
-    -------
-    output : `int`
-    """
-    return DEFAULT_THREAD_SLOWMODE_CONVERSION.put_converter(input_value)
+    return DEFAULT_THREAD_SLOWMODE_CONVERSION.value_deserializer(input_value)
 
 
 # ---- flags ----
@@ -606,21 +528,19 @@ def test__FLAGS_CONVERSION__generic():
     Tests whether ``FLAGS_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(FLAGS_CONVERSION)
-    # vampytest.assert_is(FLAGS_CONVERSION.get_converter, )
-    # vampytest.assert_is(FLAGS_CONVERSION.put_converter, )
-    vampytest.assert_is(FLAGS_CONVERSION.validator, validate_flags)
+    vampytest.assert_is(FLAGS_CONVERSION.value_validator, validate_flags)
 
 
-def _iter_options__flags__get_converter():
+def _iter_options__flags__value_deserializer():
     yield 60, ChannelFlag(60)
     yield 0, ChannelFlag()
     yield None, ChannelFlag()
 
 
-@vampytest._(vampytest.call_from(_iter_options__flags__get_converter()).returning_last())
-def test__FLAGS_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__flags__value_deserializer()).returning_last())
+def test__FLAGS_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `FLAGS_CONVERSION.get_converter` works as intended.
+    Tests whether `FLAGS_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -631,20 +551,20 @@ def test__FLAGS_CONVERSION__get_converter(input_value):
     -------
     output : ``ChannelFlag``
     """
-    output = FLAGS_CONVERSION.get_converter(input_value)
+    output = FLAGS_CONVERSION.value_deserializer(input_value)
     vampytest.assert_instance(output, ChannelFlag)
     return output
 
 
-def _iter_options__flags__put_converter():
+def _iter_options__flags__value_serializer():
     yield ChannelFlag(60), 60
     yield ChannelFlag(), 0
 
 
-@vampytest._(vampytest.call_from(_iter_options__flags__put_converter()).returning_last())
-def test__FLAGS_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__flags__value_serializer()).returning_last())
+def test__FLAGS_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `FLAGS_CONVERSION.put_converter` works as intended.
+    Tests whether `FLAGS_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -655,7 +575,7 @@ def test__FLAGS_CONVERSION__put_converter(input_value):
     -------
     output : `int`
     """
-    output = FLAGS_CONVERSION.put_converter(input_value)
+    output = FLAGS_CONVERSION.value_serializer(input_value)
     vampytest.assert_instance(output, int, accept_subtypes = False)
     return output
 
@@ -667,21 +587,20 @@ def test__INVITABLE_CONVERSION__generic():
     Tests whether ``INVITABLE_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(INVITABLE_CONVERSION)
-    # vampytest.assert_is(INVITABLE_CONVERSION.get_converter, )
-    # vampytest.assert_is(INVITABLE_CONVERSION.put_converter, )
-    vampytest.assert_is(INVITABLE_CONVERSION.validator, validate_invitable)
+    vampytest.assert_is(INVITABLE_CONVERSION.value_serializer, None)
+    vampytest.assert_is(INVITABLE_CONVERSION.value_validator, validate_invitable)
 
 
-def _iter_options__invitable__get_converter():
+def _iter_options__invitable__value_deserializer():
     yield True, True
     yield False, False
     yield None, True
 
 
-@vampytest._(vampytest.call_from(_iter_options__invitable__get_converter()).returning_last())
-def test__INVITABLE_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__invitable__value_deserializer()).returning_last())
+def test__INVITABLE_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `INVITABLE_CONVERSION.get_converter` works as intended.
+    Tests whether `INVITABLE_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -692,29 +611,7 @@ def test__INVITABLE_CONVERSION__get_converter(input_value):
     -------
     output : `bool`
     """
-    return INVITABLE_CONVERSION.get_converter(input_value)
-
-
-def _iter_options__invitable__put_converter():
-    yield True, True
-    yield False, False
-
-
-@vampytest._(vampytest.call_from(_iter_options__invitable__put_converter()).returning_last())
-def test__INVITABLE_CONVERSION__put_converter(input_value):
-    """
-    Tests whether `INVITABLE_CONVERSION.put_converter` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `bool`
-        Processed value.
-    
-    Returns
-    -------
-    output : `bool`
-    """
-    return INVITABLE_CONVERSION.put_converter(input_value)
+    return INVITABLE_CONVERSION.value_deserializer(input_value)
 
 
 # ---- name ----
@@ -724,9 +621,9 @@ def test__NAME_CONVERSION__generic():
     Tests whether ``NAME_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(NAME_CONVERSION)
-    vampytest.assert_is(NAME_CONVERSION.get_converter, get_converter_name)
-    vampytest.assert_is(NAME_CONVERSION.put_converter, put_converter_name)
-    vampytest.assert_is(NAME_CONVERSION.validator, validate_name)
+    vampytest.assert_is(NAME_CONVERSION.value_deserializer, value_deserializer_name)
+    vampytest.assert_is(NAME_CONVERSION.value_serializer, value_serializer_name)
+    vampytest.assert_is(NAME_CONVERSION.value_validator, validate_name)
 
 
 # ---- nsfw ----
@@ -736,21 +633,20 @@ def test__NSFW_CONVERSION__generic():
     Tests whether ``NSFW_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(NSFW_CONVERSION)
-    # vampytest.assert_is(NSFW_CONVERSION.get_converter, )
-    # vampytest.assert_is(NSFW_CONVERSION.put_converter, )
-    vampytest.assert_is(NSFW_CONVERSION.validator, validate_nsfw)
+    vampytest.assert_is(NSFW_CONVERSION.value_serializer, None)
+    vampytest.assert_is(NSFW_CONVERSION.value_validator, validate_nsfw)
 
 
-def _iter_options__nsfw__get_converter():
+def _iter_options__nsfw__value_deserializer():
     yield True, True
     yield False, False
     yield None, False
 
 
-@vampytest._(vampytest.call_from(_iter_options__nsfw__get_converter()).returning_last())
-def test__NSFW_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__nsfw__value_deserializer()).returning_last())
+def test__NSFW_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `NSFW_CONVERSION.get_converter` works as intended.
+    Tests whether `NSFW_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -761,29 +657,7 @@ def test__NSFW_CONVERSION__get_converter(input_value):
     -------
     output : `bool`
     """
-    return NSFW_CONVERSION.get_converter(input_value)
-
-
-def _iter_options__nsfw__put_converter():
-    yield True, True
-    yield False, False
-
-
-@vampytest._(vampytest.call_from(_iter_options__nsfw__put_converter()).returning_last())
-def test__NSFW_CONVERSION__put_converter(input_value):
-    """
-    Tests whether `NSFW_CONVERSION.put_converter` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `bool`
-        Processed value.
-    
-    Returns
-    -------
-    output : `bool`
-    """
-    return NSFW_CONVERSION.put_converter(input_value)
+    return NSFW_CONVERSION.value_deserializer(input_value)
 
 
 # ---- open ----
@@ -793,21 +667,19 @@ def test__OPEN_CONVERSION__generic():
     Tests whether ``OPEN_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(OPEN_CONVERSION)
-    # vampytest.assert_is(OPEN_CONVERSION.get_converter, )
-    # vampytest.assert_is(OPEN_CONVERSION.put_converter, )
-    vampytest.assert_is(OPEN_CONVERSION.validator, validate_open)
+    vampytest.assert_is(OPEN_CONVERSION.value_validator, validate_open)
 
 
-def _iter_options__open__get_converter():
+def _iter_options__open__value_deserializer():
     yield True, False
     yield False, True
     yield None, True
 
 
-@vampytest._(vampytest.call_from(_iter_options__open__get_converter()).returning_last())
-def test__OPEN_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__open__value_deserializer()).returning_last())
+def test__OPEN_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `OPEN_CONVERSION.get_converter` works as intended.
+    Tests whether `OPEN_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -818,18 +690,18 @@ def test__OPEN_CONVERSION__get_converter(input_value):
     -------
     output : `bool`
     """
-    return OPEN_CONVERSION.get_converter(input_value)
+    return OPEN_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__open__put_converter():
+def _iter_options__open__value_serializer():
     yield True, False
     yield False, True
 
 
-@vampytest._(vampytest.call_from(_iter_options__open__put_converter()).returning_last())
-def test__OPEN_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__open__value_serializer()).returning_last())
+def test__OPEN_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `OPEN_CONVERSION.put_converter` works as intended.
+    Tests whether `OPEN_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -840,7 +712,7 @@ def test__OPEN_CONVERSION__put_converter(input_value):
     -------
     output : `bool`
     """
-    return OPEN_CONVERSION.put_converter(input_value)
+    return OPEN_CONVERSION.value_serializer(input_value)
 
 
 # ---- parent_id ----
@@ -850,9 +722,9 @@ def test__PARENT_ID_CONVERSION__generic():
     Tests whether ``PARENT_ID_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(PARENT_ID_CONVERSION)
-    vampytest.assert_is(PARENT_ID_CONVERSION.get_converter, get_converter_id)
-    vampytest.assert_is(PARENT_ID_CONVERSION.put_converter, put_converter_id)
-    vampytest.assert_is(PARENT_ID_CONVERSION.validator, validate_parent_id)
+    vampytest.assert_is(PARENT_ID_CONVERSION.value_deserializer, value_deserializer_id)
+    vampytest.assert_is(PARENT_ID_CONVERSION.value_serializer, value_serializer_id)
+    vampytest.assert_is(PARENT_ID_CONVERSION.value_validator, validate_parent_id)
 
 
 # ---- permission_overwrites ----
@@ -862,12 +734,10 @@ def test__PERMISSION_OVERWRITES_CONVERSION__generic():
     Tests whether ``PERMISSION_OVERWRITES_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(PERMISSION_OVERWRITES_CONVERSION)
-    # vampytest.assert_is(PERMISSION_OVERWRITES_CONVERSION.get_converter, )
-    # vampytest.assert_is(PERMISSION_OVERWRITES_CONVERSION.put_converter, )
-    vampytest.assert_is(PERMISSION_OVERWRITES_CONVERSION.validator, validate_permission_overwrites)
+    vampytest.assert_is(PERMISSION_OVERWRITES_CONVERSION.value_validator, validate_permission_overwrites)
     
 
-def _iter_options__permission_overwrites__get_converter():
+def _iter_options__permission_overwrites__value_deserializer():
     permission_overwrite_0 = PermissionOverwrite(202310260006, target_type = PermissionOverwriteTargetType.role)
     permission_overwrite_1 = PermissionOverwrite(202310260007, target_type = PermissionOverwriteTargetType.role)
     
@@ -885,10 +755,10 @@ def _iter_options__permission_overwrites__get_converter():
     )
 
 
-@vampytest._(vampytest.call_from(_iter_options__permission_overwrites__get_converter()).returning_last())
-def test__PERMISSION_OVERWRITES_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__permission_overwrites__value_deserializer()).returning_last())
+def test__PERMISSION_OVERWRITES_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `PERMISSION_OVERWRITES_CONVERSION.get_converter` works as intended.
+    Tests whether `PERMISSION_OVERWRITES_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -899,10 +769,10 @@ def test__PERMISSION_OVERWRITES_CONVERSION__get_converter(input_value):
     -------
     output : `None | tuple<AutoModerationAction>`
     """
-    return PERMISSION_OVERWRITES_CONVERSION.get_converter(input_value)
+    return PERMISSION_OVERWRITES_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__permission_overwrites__put_converter():
+def _iter_options__permission_overwrites__value_serializer():
     permission_overwrite_0 = PermissionOverwrite(202310260008, target_type = PermissionOverwriteTargetType.role)
     permission_overwrite_1 = PermissionOverwrite(202310260009, target_type = PermissionOverwriteTargetType.role)
     
@@ -919,10 +789,10 @@ def _iter_options__permission_overwrites__put_converter():
     )
 
 
-@vampytest._(vampytest.call_from(_iter_options__permission_overwrites__put_converter()).returning_last())
-def test__PERMISSION_OVERWRITES_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__permission_overwrites__value_serializer()).returning_last())
+def test__PERMISSION_OVERWRITES_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `PERMISSION_OVERWRITES_CONVERSION.put_converter` works as intended.
+    Tests whether `PERMISSION_OVERWRITES_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -933,7 +803,7 @@ def test__PERMISSION_OVERWRITES_CONVERSION__put_converter(input_value):
     -------
     output : `list<dict<str, object>>`
     """
-    return PERMISSION_OVERWRITES_CONVERSION.put_converter(input_value)
+    return PERMISSION_OVERWRITES_CONVERSION.value_serializer(input_value)
 
 
 # ---- position ----
@@ -943,21 +813,20 @@ def test__POSITION_CONVERSION__generic():
     Tests whether ``POSITION_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(POSITION_CONVERSION)
-    # vampytest.assert_is(POSITION_CONVERSION.get_converter, )
-    # vampytest.assert_is(POSITION_CONVERSION.put_converter, )
-    vampytest.assert_is(POSITION_CONVERSION.validator, validate_position)
+    vampytest.assert_is(POSITION_CONVERSION.value_serializer, None)
+    vampytest.assert_is(POSITION_CONVERSION.value_validator, validate_position)
 
 
-def _iter_options__position__get_converter():
+def _iter_options__position__value_deserializer():
     yield 60, 60
     yield 0, 0
     yield None, 0
 
 
-@vampytest._(vampytest.call_from(_iter_options__position__get_converter()).returning_last())
-def test__POSITION_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__position__value_deserializer()).returning_last())
+def test__POSITION_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `POSITION_CONVERSION.get_converter` works as intended.
+    Tests whether `POSITION_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -968,29 +837,7 @@ def test__POSITION_CONVERSION__get_converter(input_value):
     -------
     output : `int`
     """
-    return POSITION_CONVERSION.get_converter(input_value)
-
-
-def _iter_options__position__put_converter():
-    yield 60, 60
-    yield 0, 0
-
-
-@vampytest._(vampytest.call_from(_iter_options__position__put_converter()).returning_last())
-def test__POSITION_CONVERSION__put_converter(input_value):
-    """
-    Tests whether `POSITION_CONVERSION.put_converter` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `int`
-        Processed value.
-    
-    Returns
-    -------
-    output : `int`
-    """
-    return POSITION_CONVERSION.put_converter(input_value)
+    return POSITION_CONVERSION.value_deserializer(input_value)
 
 
 # ---- region ----
@@ -1000,20 +847,18 @@ def test__REGION_CONVERSION__generic():
     Tests whether ``REGION_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(REGION_CONVERSION)
-    # vampytest.assert_is(REGION_CONVERSION.get_converter, )
-    # vampytest.assert_is(REGION_CONVERSION.put_converter, )
-    vampytest.assert_is(REGION_CONVERSION.validator, validate_region)
+    vampytest.assert_is(REGION_CONVERSION.value_validator, validate_region)
 
 
-def _iter_options__region__get_converter():
+def _iter_options__region__value_deserializer():
     yield None, VoiceRegion.unknown
     yield VoiceRegion.brazil.value, VoiceRegion.brazil
 
 
-@vampytest._(vampytest.call_from(_iter_options__region__get_converter()).returning_last())
-def test__REGION_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__region__value_deserializer()).returning_last())
+def test__REGION_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `REGION_CONVERSION.get_converter` works as intended.
+    Tests whether `REGION_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -1024,18 +869,18 @@ def test__REGION_CONVERSION__get_converter(input_value):
     -------
     output : ``VoiceRegion``
     """
-    return REGION_CONVERSION.get_converter(input_value)
+    return REGION_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__region__put_converter():
+def _iter_options__region__value_serializer():
     yield VoiceRegion.unknown, VoiceRegion.unknown.value
     yield VoiceRegion.brazil, VoiceRegion.brazil.value
 
 
-@vampytest._(vampytest.call_from(_iter_options__region__put_converter()).returning_last())
-def test__REGION_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__region__value_serializer()).returning_last())
+def test__REGION_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `REGION_CONVERSION.put_converter` works as intended.
+    Tests whether `REGION_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -1046,7 +891,7 @@ def test__REGION_CONVERSION__put_converter(input_value):
     -------
     output : `str`
     """
-    return REGION_CONVERSION.put_converter(input_value)
+    return REGION_CONVERSION.value_serializer(input_value)
 
 
 # ---- slowmode ----
@@ -1056,21 +901,20 @@ def test__SLOWMODE_CONVERSION__generic():
     Tests whether ``SLOWMODE_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(SLOWMODE_CONVERSION)
-    # vampytest.assert_is(SLOWMODE_CONVERSION.get_converter, )
-    # vampytest.assert_is(SLOWMODE_CONVERSION.put_converter, )
-    vampytest.assert_is(SLOWMODE_CONVERSION.validator, validate_slowmode)
+    vampytest.assert_is(SLOWMODE_CONVERSION.value_serializer, None)
+    vampytest.assert_is(SLOWMODE_CONVERSION.value_validator, validate_slowmode)
 
 
-def _iter_options__slowmode__get_converter():
+def _iter_options__slowmode__value_deserializer():
     yield 60, 60
     yield 0, 0
     yield None, SLOWMODE_DEFAULT
 
 
-@vampytest._(vampytest.call_from(_iter_options__slowmode__get_converter()).returning_last())
-def test__SLOWMODE_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__slowmode__value_deserializer()).returning_last())
+def test__SLOWMODE_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `SLOWMODE_CONVERSION.get_converter` works as intended.
+    Tests whether `SLOWMODE_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -1081,29 +925,7 @@ def test__SLOWMODE_CONVERSION__get_converter(input_value):
     -------
     output : `int`
     """
-    return SLOWMODE_CONVERSION.get_converter(input_value)
-
-
-def _iter_options__slowmode__put_converter():
-    yield 60, 60
-    yield SLOWMODE_DEFAULT, SLOWMODE_DEFAULT
-
-
-@vampytest._(vampytest.call_from(_iter_options__slowmode__put_converter()).returning_last())
-def test__SLOWMODE_CONVERSION__put_converter(input_value):
-    """
-    Tests whether `SLOWMODE_CONVERSION.put_converter` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `int`
-        Processed value.
-    
-    Returns
-    -------
-    output : `int`
-    """
-    return SLOWMODE_CONVERSION.put_converter(input_value)
+    return SLOWMODE_CONVERSION.value_deserializer(input_value)
 
 
 # ---- topic ----
@@ -1113,9 +935,9 @@ def test__TOPIC_CONVERSION__generic():
     Tests whether ``TOPIC_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(TOPIC_CONVERSION)
-    vampytest.assert_is(TOPIC_CONVERSION.get_converter, get_converter_description)
-    vampytest.assert_is(TOPIC_CONVERSION.put_converter, put_converter_description)
-    vampytest.assert_is(TOPIC_CONVERSION.validator, validate_topic)
+    vampytest.assert_is(TOPIC_CONVERSION.value_deserializer, value_deserializer_description)
+    vampytest.assert_is(TOPIC_CONVERSION.value_serializer, value_serializer_description)
+    vampytest.assert_is(TOPIC_CONVERSION.value_validator, validate_topic)
 
 
 # ---- type ----
@@ -1125,20 +947,18 @@ def test__TYPE_CONVERSION__generic():
     Tests whether ``TYPE_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(TYPE_CONVERSION)
-    # vampytest.assert_is(TYPE_CONVERSION.get_converter, )
-    # vampytest.assert_is(TYPE_CONVERSION.put_converter, )
-    vampytest.assert_is(TYPE_CONVERSION.validator, validate_type)
+    vampytest.assert_is(TYPE_CONVERSION.value_validator, validate_type)
 
 
-def _iter_options__type__get_converter():
+def _iter_options__type__value_deserializer():
     yield None, ChannelType.guild_text
     yield ChannelType.guild_voice.value, ChannelType.guild_voice
 
 
-@vampytest._(vampytest.call_from(_iter_options__type__get_converter()).returning_last())
-def test__TYPE_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__type__value_deserializer()).returning_last())
+def test__TYPE_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `TYPE_CONVERSION.get_converter` works as intended.
+    Tests whether `TYPE_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -1149,18 +969,18 @@ def test__TYPE_CONVERSION__get_converter(input_value):
     -------
     output : ``ChannelType``
     """
-    return TYPE_CONVERSION.get_converter(input_value)
+    return TYPE_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__type__put_converter():
+def _iter_options__type__value_serializer():
     yield ChannelType.guild_text, ChannelType.guild_text.value
     yield ChannelType.guild_voice, ChannelType.guild_voice.value
 
 
-@vampytest._(vampytest.call_from(_iter_options__type__put_converter()).returning_last())
-def test__TYPE_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__type__value_serializer()).returning_last())
+def test__TYPE_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `TYPE_CONVERSION.put_converter` works as intended.
+    Tests whether `TYPE_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -1171,7 +991,7 @@ def test__TYPE_CONVERSION__put_converter(input_value):
     -------
     output : `int`
     """
-    return TYPE_CONVERSION.put_converter(input_value)
+    return TYPE_CONVERSION.value_serializer(input_value)
 
 
 # ---- video_quality_mode ----
@@ -1181,20 +1001,18 @@ def test__VIDEO_QUALITY_MODE_CONVERSION__generic():
     Tests whether ``VIDEO_QUALITY_MODE_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(VIDEO_QUALITY_MODE_CONVERSION)
-    # vampytest.assert_is(VIDEO_QUALITY_MODE_CONVERSION.get_converter, )
-    # vampytest.assert_is(VIDEO_QUALITY_MODE_CONVERSION.put_converter, )
-    vampytest.assert_is(VIDEO_QUALITY_MODE_CONVERSION.validator, validate_video_quality_mode)
+    vampytest.assert_is(VIDEO_QUALITY_MODE_CONVERSION.value_validator, validate_video_quality_mode)
 
 
-def _iter_options__video_quality_mode__get_converter():
+def _iter_options__video_quality_mode__value_deserializer():
     yield None, VideoQualityMode.none
     yield VideoQualityMode.full.value, VideoQualityMode.full
 
 
-@vampytest._(vampytest.call_from(_iter_options__video_quality_mode__get_converter()).returning_last())
-def test__VIDEO_QUALITY_MODE_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__video_quality_mode__value_deserializer()).returning_last())
+def test__VIDEO_QUALITY_MODE_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `VIDEO_QUALITY_MODE_CONVERSION.get_converter` works as intended.
+    Tests whether `VIDEO_QUALITY_MODE_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -1205,18 +1023,18 @@ def test__VIDEO_QUALITY_MODE_CONVERSION__get_converter(input_value):
     -------
     output : ``VideoQualityMode``
     """
-    return VIDEO_QUALITY_MODE_CONVERSION.get_converter(input_value)
+    return VIDEO_QUALITY_MODE_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__video_quality_mode__put_converter():
+def _iter_options__video_quality_mode__value_serializer():
     yield VideoQualityMode.none, VideoQualityMode.none.value
     yield VideoQualityMode.full, VideoQualityMode.full.value
 
 
-@vampytest._(vampytest.call_from(_iter_options__video_quality_mode__put_converter()).returning_last())
-def test__VIDEO_QUALITY_MODE_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__video_quality_mode__value_serializer()).returning_last())
+def test__VIDEO_QUALITY_MODE_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `VIDEO_QUALITY_MODE_CONVERSION.put_converter` works as intended.
+    Tests whether `VIDEO_QUALITY_MODE_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -1227,7 +1045,7 @@ def test__VIDEO_QUALITY_MODE_CONVERSION__put_converter(input_value):
     -------
     output : `int`
     """
-    return VIDEO_QUALITY_MODE_CONVERSION.put_converter(input_value)
+    return VIDEO_QUALITY_MODE_CONVERSION.value_serializer(input_value)
 
 
 # ---- user_limit ----
@@ -1237,21 +1055,20 @@ def test__USER_LIMIT_CONVERSION__generic():
     Tests whether ``USER_LIMIT_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(USER_LIMIT_CONVERSION)
-    # vampytest.assert_is(USER_LIMIT_CONVERSION.get_converter, )
-    # vampytest.assert_is(USER_LIMIT_CONVERSION.put_converter, )
-    vampytest.assert_is(USER_LIMIT_CONVERSION.validator, validate_user_limit)
+    vampytest.assert_is(USER_LIMIT_CONVERSION.value_serializer, None)
+    vampytest.assert_is(USER_LIMIT_CONVERSION.value_validator, validate_user_limit)
 
 
-def _iter_options__user_limit__get_converter():
+def _iter_options__user_limit__value_deserializer():
     yield 60, 60
     yield 0, 0
     yield None, USER_LIMIT_DEFAULT
 
 
-@vampytest._(vampytest.call_from(_iter_options__user_limit__get_converter()).returning_last())
-def test__USER_LIMIT_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__user_limit__value_deserializer()).returning_last())
+def test__USER_LIMIT_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `USER_LIMIT_CONVERSION.get_converter` works as intended.
+    Tests whether `USER_LIMIT_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -1262,26 +1079,28 @@ def test__USER_LIMIT_CONVERSION__get_converter(input_value):
     -------
     output : `int`
     """
-    return USER_LIMIT_CONVERSION.get_converter(input_value)
+    return USER_LIMIT_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__user_limit__put_converter():
-    yield 60, 60
-    yield USER_LIMIT_DEFAULT, USER_LIMIT_DEFAULT
+# ---- ignored ----
+
+def _iter_options__ignored():
+    yield ICON_EMOJI_CONVERSION_IGNORED
+    yield THEME_COLOR_CONVERSION_IGNORED
+    yield TEMPLATE_CONVERSION_IGNORED
 
 
-@vampytest._(vampytest.call_from(_iter_options__user_limit__put_converter()).returning_last())
-def test__USER_LIMIT_CONVERSION__put_converter(input_value):
+@vampytest.call_from(_iter_options__ignored())
+def test_ignored(conversion):
     """
-    Tests whether `USER_LIMIT_CONVERSION.put_converter` works as intended.
+    Tests whether the ignored conversions are set up as intended.
     
     Parameters
     ----------
-    input_value : `int`
-        Processed value.
-    
-    Returns
-    -------
-    output : `int`
+    conversion : ``AuditLogEntryChangeConversion``
+        The conversion to test.
     """
-    return USER_LIMIT_CONVERSION.put_converter(input_value)
+    _assert_conversion_fields_set(conversion)
+    vampytest.assert_is(conversion.change_deserializer, change_deserializer_deprecation)
+    vampytest.assert_eq(conversion.field_name, '')
+

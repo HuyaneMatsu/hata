@@ -5,44 +5,42 @@ from ...onboarding.onboarding_screen.fields import (
     validate_default_channel_ids, validate_enabled, validate_mode, validate_prompts
 )
 
-from ..audit_log_change.flags import FLAG_IS_IGNORED, FLAG_IS_MODIFICATION
 from ..audit_log_entry_change_conversion import AuditLogEntryChangeConversion, AuditLogEntryChangeConversionGroup
-from ..conversion_helpers.converters import get_converter_ids, put_converter_ids
+from ..audit_log_entry_change_conversion.change_deserializers import change_deserializer_deprecation
+from ..conversion_helpers.converters import value_deserializer_ids, value_serializer_ids
 
 
 # ---- below_requirements ---- 
 
 BELOW_REQUIREMENTS_CONVERSION_IGNORED = AuditLogEntryChangeConversion(
-    'below_requirements',
+    ('below_requirements',),
     '',
-    FLAG_IS_IGNORED,
+    change_deserializer = change_deserializer_deprecation,
 )
 
 
 # ---- default_channel_ids ----
 
 DEFAULT_CHANNEL_IDS_CONVERSION = AuditLogEntryChangeConversion(
+    ('default_channel_ids',),
     'default_channel_ids',
-    'default_channel_ids',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_ids,
-    put_converter = put_converter_ids,
-    validator = validate_default_channel_ids,
+    value_deserializer = value_deserializer_ids,
+    value_serializer = value_serializer_ids,
+    value_validator = validate_default_channel_ids,
 )
 
 
 # ---- enabled ----
 
 ENABLED_CONVERSION = AuditLogEntryChangeConversion(
+    ('enabled',),
     'enabled',
-    'enabled',
-    FLAG_IS_MODIFICATION,
-    validator = validate_enabled,
+    value_validator = validate_enabled,
 )
 
 
-@ENABLED_CONVERSION.set_get_converter
-def enabled_get_converter(value):
+@ENABLED_CONVERSION.set_value_deserializer
+def enabled_value_deserializer(value):
     if value is None:
         value = True
     return value
@@ -51,36 +49,33 @@ def enabled_get_converter(value):
 # ---- mode ----
 
 MODE_CONVERSION = AuditLogEntryChangeConversion(
+    ('mode',),
     'mode',
-    'mode',
-    FLAG_IS_MODIFICATION,
-    validator = validate_mode,
+    value_validator = validate_mode,
 )
 
 
-@MODE_CONVERSION.set_get_converter
-def mode_get_converter(value):
+@MODE_CONVERSION.set_value_deserializer
+def mode_value_deserializer(value):
     return OnboardingMode.get(value)
 
 
-@MODE_CONVERSION.set_put_converter
-def mode_put_converter(value):
+@MODE_CONVERSION.set_value_serializer
+def mode_value_serializer(value):
     return value.value
-
 
 
 # ---- prompts ----
 
 PROMPTS_CONVERSION = AuditLogEntryChangeConversion(
+    ('prompts',),
     'prompts',
-    'prompts',
-    FLAG_IS_MODIFICATION,
-    validator = validate_prompts,
+    value_validator = validate_prompts,
 )
 
 
-@PROMPTS_CONVERSION.set_get_converter
-def prompts_get_converter(value):
+@PROMPTS_CONVERSION.set_value_deserializer
+def prompts_value_deserializer(value):
     if value is None:
         pass
     elif (not value):
@@ -91,8 +86,8 @@ def prompts_get_converter(value):
     return value
 
 
-@PROMPTS_CONVERSION.set_put_converter
-def prompts_put_converter(value):
+@PROMPTS_CONVERSION.set_value_serializer
+def prompts_value_serializer(value):
     if value is None:
         value = []
     else:

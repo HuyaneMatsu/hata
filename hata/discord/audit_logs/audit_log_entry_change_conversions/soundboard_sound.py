@@ -1,102 +1,96 @@
 __all__ = ()
 
-
 from ...soundboard.soundboard_sound.fields import (
-    validate_available, validate_user_id, validate_id, validate_name, validate_volume
+    validate_available, validate_emoji, validate_id, validate_name, validate_user_id, validate_volume
 )
 
-from ..audit_log_change.flags import FLAG_IS_IGNORED, FLAG_IS_MODIFICATION
 from ..audit_log_entry_change_conversion import AuditLogEntryChangeConversion, AuditLogEntryChangeConversionGroup
-from ..conversion_helpers.converters import get_converter_id, get_converter_name, put_converter_id, put_converter_name
+from ..audit_log_entry_change_conversion.change_deserializers import (
+    change_deserializer_deprecation, change_deserializer_flattened_emoji
+)
+from ..audit_log_entry_change_conversion.change_serializers import change_serializer_flattened_emoji
+from ..audit_log_entry_change_conversion.value_mergers import value_merger_replace
+from ..conversion_helpers.converters import (
+    value_deserializer_id, value_deserializer_name, value_serializer_id, value_serializer_name
+)
 
 
 # ---- available ----
 
 AVAILABLE_CONVERSION = AuditLogEntryChangeConversion(
+    ('available',),
     'available',
-    'available',
-    FLAG_IS_MODIFICATION,
-    validator = validate_available,
+    value_validator = validate_available,
 )
 
 
-@AVAILABLE_CONVERSION.set_get_converter
-def available_get_converter(value):
+@AVAILABLE_CONVERSION.set_value_deserializer
+def available_value_deserializer(value):
     if value is None:
         value = True
     return value
 
 
 # ---- emoji ----
-# Need to add support for this as well
-# EMOJI_CONVERSION_0 = AuditLogEntryChangeConversion(
-#     'emoji_id',
-#     'emoji',
-#     FLAG_IS_MODIFICATION,
-#     validator = validate_emoji,
-# )
-#
-#
-# EMOJI_CONVERSION1 = AuditLogEntryChangeConversion(
-#     'emoji_name',
-#     'emoji',
-#     FLAG_IS_MODIFICATION,
-#     validator = validate_emoji,
-# )
+
+EMOJI_CONVERSION = AuditLogEntryChangeConversion(
+    ('emoji_id', 'emoji_name'),
+    'emoji',
+    change_deserializer = change_deserializer_flattened_emoji,
+    change_serializer = change_serializer_flattened_emoji,
+    value_validator = validate_emoji,
+    value_merger = value_merger_replace
+)
 
 # ---- id  ----
 
 ID_CONVERSION = AuditLogEntryChangeConversion(
-    'sound_id',
+    ('sound_id',),
     'id',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_id,
-    put_converter = put_converter_id,
-    validator = validate_id,
+    value_deserializer = value_deserializer_id,
+    value_serializer = value_serializer_id,
+    value_validator = validate_id,
 )
 
 
 ID_CONVERSION_IGNORED = AuditLogEntryChangeConversion(
-    'id',
+    ('id',),
     '',
-    FLAG_IS_IGNORED,
+    change_deserializer = change_deserializer_deprecation,
 )
 
 # ---- name ----
 
 NAME_CONVERSION = AuditLogEntryChangeConversion(
+    ('name',),
     'name',
-    'name',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_name,
-    put_converter = put_converter_name,
-    validator = validate_name,
+    value_deserializer = value_deserializer_name,
+    value_serializer = value_serializer_name,
+    value_validator = validate_name,
 )
 
 # ---- user_id ----
 
 USER_ID_CONVERSION = AuditLogEntryChangeConversion(
+    ('user_id',),
     'user_id',
-    'user_id',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_id,
-    put_converter = put_converter_id,
-    validator = validate_user_id,
+    value_deserializer = value_deserializer_id,
+    value_serializer = value_serializer_id,
+    value_validator = validate_user_id,
 )
 
 
 # ---- volume ----
 
 VOLUME_CONVERSION = AuditLogEntryChangeConversion(
+    ('volume',),
     'volume',
-    'volume',
-    FLAG_IS_MODIFICATION,
-    validator = validate_volume,
+    value_validator = validate_volume,
 )
 
 
-@VOLUME_CONVERSION.set_get_converter
-def volume_get_converter(value):
+@VOLUME_CONVERSION.set_value_deserializer
+def volume_value_deserializer(value):
     if (value is None):
         value = 1.0
     
@@ -107,6 +101,7 @@ def volume_get_converter(value):
 
 SOUNDBOARD_SOUND_CONVERSIONS = AuditLogEntryChangeConversionGroup(
     AVAILABLE_CONVERSION,
+    EMOJI_CONVERSION,
     ID_CONVERSION,
     ID_CONVERSION_IGNORED,
     NAME_CONVERSION,

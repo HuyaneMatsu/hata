@@ -1,6 +1,6 @@
 import vampytest
 
-from ..converters import put_converter_name
+from ..converters import value_serializer_name
 
 
 def _iter_options():
@@ -10,9 +10,9 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_converter_name(input_value):
+def test__value_serializer_name(input_value):
     """
-    Tests whether ``put_converter_name`` works as intended.
+    Tests whether ``value_serializer_name`` works as intended.
     
     Parameters
     ----------
@@ -23,4 +23,4 @@ def test__put_converter_name(input_value):
     -------
     output : `str`
     """
-    return put_converter_name(input_value)
+    return value_serializer_name(input_value)

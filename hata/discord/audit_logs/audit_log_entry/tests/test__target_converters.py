@@ -16,7 +16,6 @@ from ....user import User
 from ....webhook import Webhook
 
 from ...audit_log_change import AuditLogChange
-from ...audit_log_change.flags import FLAG_IS_MODIFICATION
 
 from ..audit_log_entry import AuditLogEntry
 from ..preinstanced import AuditLogEntryType
@@ -73,7 +72,7 @@ def _iter_options():
     yield (
         target_converter_invite,
         AuditLogEntry(
-            changes = [AuditLogChange('code', FLAG_IS_MODIFICATION, before = code)],
+            changes = [AuditLogChange('code', before = code)],
             entry_type = AuditLogEntryType.invite_update,
         ),
         invite,
@@ -83,7 +82,7 @@ def _iter_options():
     yield (
         target_converter_invite,
         AuditLogEntry(
-            changes = [AuditLogChange('code', FLAG_IS_MODIFICATION, after = code)],
+            changes = [AuditLogChange('code', after = code)],
             entry_type = AuditLogEntryType.invite_update,
         ),
         invite,

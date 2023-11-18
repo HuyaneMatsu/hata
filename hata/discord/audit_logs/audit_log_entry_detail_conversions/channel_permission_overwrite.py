@@ -5,7 +5,9 @@ from ...channel.permission_overwrite.fields import validate_target_id, validate_
 from ...role.role.fields import validate_name
 
 from ..audit_log_entry_detail_conversion import AuditLogEntryDetailConversion, AuditLogEntryDetailConversionGroup
-from ..conversion_helpers.converters import get_converter_id, get_converter_name, put_converter_id, put_converter_name
+from ..conversion_helpers.converters import (
+    value_deserializer_id, value_deserializer_name, value_serializer_id, value_serializer_name
+)
 
 
 # ---- role_name ----
@@ -13,9 +15,9 @@ from ..conversion_helpers.converters import get_converter_id, get_converter_name
 ROLE_NAME_CONVERSION = AuditLogEntryDetailConversion(
     'role_name',
     'role_name',
-    get_converter = get_converter_name,
-    put_converter = put_converter_name,
-    validator = validate_name,
+    value_deserializer = value_deserializer_name,
+    value_serializer = value_serializer_name,
+    value_validator = validate_name,
 )
 
 
@@ -24,9 +26,9 @@ ROLE_NAME_CONVERSION = AuditLogEntryDetailConversion(
 TARGET_ID_CONVERSION = AuditLogEntryDetailConversion(
     'id',
     'target_id',
-    get_converter = get_converter_id,
-    put_converter = put_converter_id,
-    validator = validate_target_id,
+    value_deserializer = value_deserializer_id,
+    value_serializer = value_serializer_id,
+    value_validator = validate_target_id,
 )
 
 
@@ -35,19 +37,19 @@ TARGET_ID_CONVERSION = AuditLogEntryDetailConversion(
 TARGET_TYPE_CONVERSION = AuditLogEntryDetailConversion(
     'type',
     'target_type',
-    validator = validate_target_type,
+    value_validator = validate_target_type,
 )
 
-@TARGET_TYPE_CONVERSION.set_get_converter
-def target_type_get_converter(value):
+@TARGET_TYPE_CONVERSION.set_value_deserializer
+def target_type_value_deserializer(value):
     if (value is not None) and (PermissionOverwriteTargetType.VALUE_TYPE is int):
         value = int(value)
     
     return PermissionOverwriteTargetType.get(value)
 
 
-@TARGET_TYPE_CONVERSION.set_put_converter
-def target_type_put_converter(value):
+@TARGET_TYPE_CONVERSION.set_value_serializer
+def target_type_value_serializer(value):
     return str(value.value)
 
 

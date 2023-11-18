@@ -1,4 +1,4 @@
-## 1.3.45 *\[2023-11-??\]*
+## 1.3.45 *\[2023-11-18\]*
 
 ### Improvements
 
@@ -7,12 +7,19 @@
 - Now rate limit handler handles missing headers better in case Discord shits itself.
 - Now icon converter handles the case when discord returns incorrect base16 128 bit hash.
 - Now `VOICE_STATE` dispatch event handler handles when discord returns no user.
+- Add actually working `emoji` audit log change conversions for soundboard sounds.
+- Add `permission_overwrite` audit log change conversion for application commands.
 
 ### Bug fixes
 
 - Fix `timedelta_to_id_difference` did not convert days or bigger units.
 - Some audit log change conversions were built badly failing `.to_data`.
 - Fix `TypeError` in `GUILD_AUDIT_LOG_ENTRY_CREATE`. (from 1.3.44)
+
+### Renames, Deprecations & Removals
+
+- Remove `AuditLogChange.is_modification`, `.is_addition` and `.is_removal`.
+    The whole system had to be remade again to support the missing entries.
 
 ## 1.3.44 *\[2023-10-31\]*
 

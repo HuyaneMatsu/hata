@@ -8,10 +8,10 @@ Sakuya = Client(TOKEN_1)
 Remilia = Client(TOKEN_2)
 Flandre = Client(TOKEN_3)
 
-# With `ClientWrapper` you can add event handler to all clients...
+# With `ClientWrapper` you can add event handlers to all clients...
 ALL = ClientWrapper()
 
-# ...or just for specific clients.
+# ...or to just the specified ones.
 ONLY_SAKUYA_AND_REMILIA = ClientWrapper(Sakuya, Remilia)
 
 
@@ -24,7 +24,7 @@ async def ready(client):
 @ONLY_SAKUYA_AND_REMILIA.events
 async def message_create(client, message):
     # This event is registered only to Sakuya and Remilia
-    # When either of them see message that is '!basement' they will reply with 'nope'
+    # When either of them sees a message that is '!basement' they will reply with 'nope'
     if message.content == '!basement':
         await client.message_create(message.channel, 'nope')
 

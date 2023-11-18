@@ -11,15 +11,15 @@ DAYS_CONVERSION = AuditLogEntryDetailConversion(
 )
 
 
-@DAYS_CONVERSION.set_get_converter
-def days_get_converter(value):
+@DAYS_CONVERSION.set_value_deserializer
+def days_value_deserializer(value):
     if value is None:
         value = 0
     return value
 
 
-@DAYS_CONVERSION.set_validator
-def days_validator(value):
+@DAYS_CONVERSION.set_value_validator
+def days_value_validator(value):
     if not isinstance(value, int):
         raise TypeError(f'`days` can be `int`, got {value.__class__.__name__}; {value!r}.')
     
@@ -37,15 +37,15 @@ USERS_REMOVED_CONVERSION = AuditLogEntryDetailConversion(
 )
 
 
-@USERS_REMOVED_CONVERSION.set_get_converter
-def users_removed_get_converter(value):
+@USERS_REMOVED_CONVERSION.set_value_deserializer
+def users_removed_value_deserializer(value):
     if value is None:
         value = 0
     return value
 
 
-@USERS_REMOVED_CONVERSION.set_validator
-def users_removed_validator(value):
+@USERS_REMOVED_CONVERSION.set_value_validator
+def users_removed_value_validator(value):
     if not isinstance(value, int):
         raise TypeError(f'`users_removed` can be `int`, got {value.__class__.__name__}; {value!r}.')
     

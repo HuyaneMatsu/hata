@@ -5,17 +5,18 @@ from ....onboarding.onboarding_screen.fields import (
     validate_default_channel_ids, validate_enabled, validate_mode, validate_prompts
 )
 
+from ...audit_log_entry_change_conversion.change_deserializers import change_deserializer_deprecation
 from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversion import (
     _assert_fields_set as _assert_conversion_fields_set
 )
 from ...audit_log_entry_change_conversion.tests.test__AuditLogEntryChangeConversionGroup import (
     _assert_fields_set as _assert_conversion_group_fields_set
 )
-from ...conversion_helpers.converters import get_converter_ids, put_converter_ids
+from ...conversion_helpers.converters import value_deserializer_ids, value_serializer_ids
 
 from ..onboarding_screen import (
-    DEFAULT_CHANNEL_IDS_CONVERSION, ENABLED_CONVERSION, MODE_CONVERSION, ONBOARDING_SCREEN_CONVERSIONS,
-    PROMPTS_CONVERSION
+    BELOW_REQUIREMENTS_CONVERSION_IGNORED, DEFAULT_CHANNEL_IDS_CONVERSION, ENABLED_CONVERSION, MODE_CONVERSION,
+    ONBOARDING_SCREEN_CONVERSIONS, PROMPTS_CONVERSION
 )
 
 
@@ -25,7 +26,7 @@ def test__ONBOARDING_SCREEN_CONVERSIONS():
     """
     _assert_conversion_group_fields_set(ONBOARDING_SCREEN_CONVERSIONS)
     vampytest.assert_eq(
-        {*ONBOARDING_SCREEN_CONVERSIONS.get_converters.keys()},
+        {*ONBOARDING_SCREEN_CONVERSIONS.iter_field_keys()},
         {'default_channel_ids', 'enabled', 'prompts', 'below_requirements', 'mode'},
     )
 
@@ -37,9 +38,9 @@ def test__DEFAULT_CHANNEL_IDS_CONVERSION__generic():
     Tests whether ``DEFAULT_CHANNEL_IDS_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(DEFAULT_CHANNEL_IDS_CONVERSION)
-    vampytest.assert_is(DEFAULT_CHANNEL_IDS_CONVERSION.get_converter, get_converter_ids)
-    vampytest.assert_is(DEFAULT_CHANNEL_IDS_CONVERSION.put_converter, put_converter_ids)
-    vampytest.assert_is(DEFAULT_CHANNEL_IDS_CONVERSION.validator, validate_default_channel_ids)
+    vampytest.assert_is(DEFAULT_CHANNEL_IDS_CONVERSION.value_deserializer, value_deserializer_ids)
+    vampytest.assert_is(DEFAULT_CHANNEL_IDS_CONVERSION.value_serializer, value_serializer_ids)
+    vampytest.assert_is(DEFAULT_CHANNEL_IDS_CONVERSION.value_validator, validate_default_channel_ids)
 
 
 # ---- enabled ----
@@ -49,21 +50,20 @@ def test__ENABLED_CONVERSION__generic():
     Tests whether ``ENABLED_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(ENABLED_CONVERSION)
-    # vampytest.assert_is(ENABLED_CONVERSION.get_converter, )
-    # vampytest.assert_is(ENABLED_CONVERSION.put_converter, )
-    vampytest.assert_is(ENABLED_CONVERSION.validator, validate_enabled)
+    vampytest.assert_is(ENABLED_CONVERSION.value_serializer, None)
+    vampytest.assert_is(ENABLED_CONVERSION.value_validator, validate_enabled)
 
 
-def _iter_options__enabled__get_converter():
+def _iter_options__enabled__value_deserializer():
     yield True, True
     yield False, False
     yield None, True
 
 
-@vampytest._(vampytest.call_from(_iter_options__enabled__get_converter()).returning_last())
-def test__ENABLED_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__enabled__value_deserializer()).returning_last())
+def test__ENABLED_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `ENABLED_CONVERSION.get_converter` works as intended.
+    Tests whether `ENABLED_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -74,29 +74,7 @@ def test__ENABLED_CONVERSION__get_converter(input_value):
     -------
     output : `bool`
     """
-    return ENABLED_CONVERSION.get_converter(input_value)
-
-
-def _iter_options__enabled__put_converter():
-    yield True, True
-    yield False, False
-
-
-@vampytest._(vampytest.call_from(_iter_options__enabled__put_converter()).returning_last())
-def test__ENABLED_CONVERSION__put_converter(input_value):
-    """
-    Tests whether `ENABLED_CONVERSION.put_converter` works as intended.
-    
-    Parameters
-    ----------
-    input_value : `bool`
-        Processed value.
-    
-    Returns
-    -------
-    output : `bool`
-    """
-    return ENABLED_CONVERSION.put_converter(input_value)
+    return ENABLED_CONVERSION.value_deserializer(input_value)
 
 
 # ---- mode ----
@@ -106,20 +84,18 @@ def test__MODE_CONVERSION__generic():
     Tests whether ``MODE_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(MODE_CONVERSION)
-    # vampytest.assert_is(MODE_CONVERSION.get_converter, )
-    # vampytest.assert_is(MODE_CONVERSION.put_converter, )
-    vampytest.assert_is(MODE_CONVERSION.validator, validate_mode)
+    vampytest.assert_is(MODE_CONVERSION.value_validator, validate_mode)
 
 
-def _iter_options__mode__get_converter():
+def _iter_options__mode__value_deserializer():
     yield None, OnboardingMode.default
     yield OnboardingMode.advanced.value, OnboardingMode.advanced
 
 
-@vampytest._(vampytest.call_from(_iter_options__mode__get_converter()).returning_last())
-def test__MODE_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__mode__value_deserializer()).returning_last())
+def test__MODE_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `MODE_CONVERSION.get_converter` works as intended.
+    Tests whether `MODE_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -130,18 +106,18 @@ def test__MODE_CONVERSION__get_converter(input_value):
     -------
     output : ``OnboardingMode``
     """
-    return MODE_CONVERSION.get_converter(input_value)
+    return MODE_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__mode__put_converter():
+def _iter_options__mode__value_serializer():
     yield OnboardingMode.default, OnboardingMode.default.value
     yield OnboardingMode.advanced, OnboardingMode.advanced.value
 
 
-@vampytest._(vampytest.call_from(_iter_options__mode__put_converter()).returning_last())
-def test__MODE_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_options__mode__value_serializer()).returning_last())
+def test__MODE_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `MODE_CONVERSION.put_converter` works as intended.
+    Tests whether `MODE_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -152,7 +128,7 @@ def test__MODE_CONVERSION__put_converter(input_value):
     -------
     output : `str`
     """
-    return MODE_CONVERSION.put_converter(input_value)
+    return MODE_CONVERSION.value_serializer(input_value)
 
 
 # ---- prompts ----
@@ -162,12 +138,10 @@ def test__PROMPTS_CONVERSION__generic():
     Tests whether ``PROMPTS_CONVERSION`` works as intended.
     """
     _assert_conversion_fields_set(PROMPTS_CONVERSION)
-    # vampytest.assert_is(PROMPTS_CONVERSION.get_converter, )
-    # vampytest.assert_is(PROMPTS_CONVERSION.put_converter, )
-    vampytest.assert_is(PROMPTS_CONVERSION.validator, validate_prompts)
+    vampytest.assert_is(PROMPTS_CONVERSION.value_validator, validate_prompts)
     
 
-def _iter_prompts__prompts__get_converter():
+def _iter_prompts__prompts__value_deserializer():
     prompt_0 = OnboardingPrompt.precreate(202310250004)
     prompt_1 = OnboardingPrompt.precreate(202310250005)
     
@@ -182,10 +156,10 @@ def _iter_prompts__prompts__get_converter():
     )
 
 
-@vampytest._(vampytest.call_from(_iter_prompts__prompts__get_converter()).returning_last())
-def test__PROMPTS_CONVERSION__get_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_prompts__prompts__value_deserializer()).returning_last())
+def test__PROMPTS_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `PROMPTS_CONVERSION.get_converter` works as intended.
+    Tests whether `PROMPTS_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -196,10 +170,10 @@ def test__PROMPTS_CONVERSION__get_converter(input_value):
     -------
     output : `None | tuple<OnboardingPrompt>`
     """
-    return PROMPTS_CONVERSION.get_converter(input_value)
+    return PROMPTS_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_prompts__prompts__put_converter():
+def _iter_prompts__prompts__value_serializer():
     prompt_0 = OnboardingPrompt.precreate(202310250006)
     prompt_1 = OnboardingPrompt.precreate(202310250007)
     
@@ -213,10 +187,10 @@ def _iter_prompts__prompts__put_converter():
     )
 
 
-@vampytest._(vampytest.call_from(_iter_prompts__prompts__put_converter()).returning_last())
-def test__PROMPTS_CONVERSION__put_converter(input_value):
+@vampytest._(vampytest.call_from(_iter_prompts__prompts__value_serializer()).returning_last())
+def test__PROMPTS_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `PROMPTS_CONVERSION.put_converter` works as intended.
+    Tests whether `PROMPTS_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -227,4 +201,26 @@ def test__PROMPTS_CONVERSION__put_converter(input_value):
     -------
     output : `list<dict<str, object>>`
     """
-    return PROMPTS_CONVERSION.put_converter(input_value)
+    return PROMPTS_CONVERSION.value_serializer(input_value)
+
+
+# ---- ignored ----
+
+def _iter_options__ignored():
+    yield BELOW_REQUIREMENTS_CONVERSION_IGNORED
+
+
+@vampytest.call_from(_iter_options__ignored())
+def test_ignored(conversion):
+    """
+    Tests whether the ignored conversions are set up as intended.
+    
+    Parameters
+    ----------
+    conversion : ``AuditLogEntryChangeConversion``
+        The conversion to test.
+    """
+    _assert_conversion_fields_set(conversion)
+    vampytest.assert_is(conversion.change_deserializer, change_deserializer_deprecation)
+    vampytest.assert_eq(conversion.field_name, '')
+

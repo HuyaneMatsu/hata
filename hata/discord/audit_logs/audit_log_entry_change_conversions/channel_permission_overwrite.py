@@ -7,36 +7,33 @@ from ...channel.permission_overwrite.fields import (
 from ...permission import Permission
 from ...permission.constants import PERMISSION_ALLOW_KEY, PERMISSION_DENY_KEY
 
-from ..audit_log_change.flags import FLAG_IS_MODIFICATION
 from ..audit_log_entry_change_conversion import AuditLogEntryChangeConversion, AuditLogEntryChangeConversionGroup
-from ..conversion_helpers.converters import get_converter_id, put_converter_id
+from ..conversion_helpers.converters import value_deserializer_id, value_serializer_id
 
 
 # ---- allow ----
 
 ALLOW_CONVERSION = AuditLogEntryChangeConversion(
-    PERMISSION_ALLOW_KEY,
+    (PERMISSION_ALLOW_KEY,),
     'allow',
-    FLAG_IS_MODIFICATION,
-    validator = validate_allow,
+    value_validator = validate_allow,
 )
 
 
 # ---- deny ----
 
 DENY_CONVERSION = AuditLogEntryChangeConversion(
-    PERMISSION_DENY_KEY,
+    (PERMISSION_DENY_KEY,),
     'deny',
-    FLAG_IS_MODIFICATION,
-    validator = validate_deny,
+    value_validator = validate_deny,
 )
 
 
 # ----
 
-@ALLOW_CONVERSION.set_get_converter
-@DENY_CONVERSION.set_get_converter
-def permission_get_converter(value):
+@ALLOW_CONVERSION.set_value_deserializer
+@DENY_CONVERSION.set_value_deserializer
+def permission_value_deserializer(value):
     if value is None:
         value = Permission()
     else:
@@ -44,44 +41,42 @@ def permission_get_converter(value):
     return value
 
 
-@ALLOW_CONVERSION.set_put_converter
-@DENY_CONVERSION.set_put_converter
-def permission_put_converter(value):
+@ALLOW_CONVERSION.set_value_serializer
+@DENY_CONVERSION.set_value_serializer
+def permission_value_serializer(value):
     return format(value, 'd')
 
 
 # ---- target_id ----
 
 TARGET_ID_CONVERSION = AuditLogEntryChangeConversion(
-    'id',
+    ('id',),
     'target_id',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_id,
-    put_converter = put_converter_id,
-    validator = validate_target_id,
+    value_deserializer = value_deserializer_id,
+    value_serializer = value_serializer_id,
+    value_validator = validate_target_id,
 )
 
 
 # ---- target_type ----
 
 TARGET_TYPE_CONVERSION = AuditLogEntryChangeConversion(
-    'type',
+    ('type',),
     'target_type',
-    FLAG_IS_MODIFICATION,
-    validator = validate_target_type,
+    value_validator = validate_target_type,
 )
 
 
-@TARGET_TYPE_CONVERSION.set_get_converter
-def target_type_get_converter(value):
+@TARGET_TYPE_CONVERSION.set_value_deserializer
+def target_type_value_deserializer(value):
     if (value is not None) and (PermissionOverwriteTargetType.VALUE_TYPE is int):
         value = int(value)
     
     return PermissionOverwriteTargetType.get(value)
 
 
-@TARGET_TYPE_CONVERSION.set_put_converter
-def target_type_put_converter(value):
+@TARGET_TYPE_CONVERSION.set_value_serializer
+def target_type_value_serializer(value):
     return str(value.value)
 
 

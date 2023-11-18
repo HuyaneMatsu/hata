@@ -2,25 +2,23 @@ __all__ = ()
 
 from ...emoji.emoji.fields import validate_available, validate_name, validate_role_ids
 
-from ..audit_log_change.flags import FLAG_IS_MODIFICATION
 from ..audit_log_entry_change_conversion import AuditLogEntryChangeConversion, AuditLogEntryChangeConversionGroup
 from ..conversion_helpers.converters import (
-    get_converter_ids, get_converter_name, put_converter_ids, put_converter_name
+    value_deserializer_ids, value_deserializer_name, value_serializer_ids, value_serializer_name
 )
 
 
 # ---- available ----
 
 AVAILABLE_CONVERSION = AuditLogEntryChangeConversion(
+    ('available',),
     'available',
-    'available',
-    FLAG_IS_MODIFICATION,
-    validator = validate_available,
+    value_validator = validate_available,
 )
 
 
-@AVAILABLE_CONVERSION.set_get_converter
-def available_get_converter(value):
+@AVAILABLE_CONVERSION.set_value_deserializer
+def available_value_deserializer(value):
     if value is None:
         value = True
     return value
@@ -29,24 +27,22 @@ def available_get_converter(value):
 # ---- name ----
 
 NAME_CONVERSION = AuditLogEntryChangeConversion(
+    ('name',),
     'name',
-    'name',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_name,
-    put_converter = put_converter_name,
-    validator = validate_name,
+    value_deserializer = value_deserializer_name,
+    value_serializer = value_serializer_name,
+    value_validator = validate_name,
 )
 
 
 # ---- role_ids ----
 
 ROLE_IDS_CONVERSION = AuditLogEntryChangeConversion(
-    'roles',
+    ('roles',),
     'role_ids',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_ids,
-    put_converter = put_converter_ids,
-    validator = validate_role_ids,
+    value_deserializer = value_deserializer_ids,
+    value_serializer = value_serializer_ids,
+    value_validator = validate_role_ids,
 )
 
 

@@ -33,9 +33,9 @@ def _assert_fields_set(conversion):
     vampytest.assert_instance(conversion, AuditLogEntryDetailConversion)
     vampytest.assert_instance(conversion.field_key, str)
     vampytest.assert_instance(conversion.field_name, str)
-    vampytest.assert_instance(conversion.get_converter, FunctionType, MethodType)
-    vampytest.assert_instance(conversion.put_converter, FunctionType, MethodType)
-    vampytest.assert_instance(conversion.validator, FunctionType, MethodType)
+    vampytest.assert_instance(conversion.value_deserializer, FunctionType, MethodType, nullable = True)
+    vampytest.assert_instance(conversion.value_serializer, FunctionType, MethodType, nullable = True)
+    vampytest.assert_instance(conversion.value_validator, FunctionType, MethodType, nullable = True)
 
 
 def test__AuditLogEntryDetailConversion__new__minimal_fields():
@@ -66,25 +66,25 @@ def test__AuditLogEntryDetailConversion__new__all_fields():
     """
     field_key = 'koishi'
     field_name = 'komeiji'
-    get_converter = _test_function_0
-    put_converter = _test_function_1
-    validator = _test_function_2
+    value_deserializer = _test_function_0
+    value_serializer = _test_function_1
+    value_validator = _test_function_2
     
     conversion = AuditLogEntryDetailConversion(
         field_key,
         field_name,
-        get_converter = get_converter,
-        put_converter = put_converter,
-        validator = validator,
+        value_deserializer = value_deserializer,
+        value_serializer = value_serializer,
+        value_validator = value_validator,
     )
     
     _assert_fields_set(conversion)
     
     vampytest.assert_eq(conversion.field_key, field_key)
     vampytest.assert_eq(conversion.field_name, field_name)
-    vampytest.assert_is(conversion.get_converter, get_converter)
-    vampytest.assert_is(conversion.put_converter, put_converter)
-    vampytest.assert_is(conversion.validator, validator)
+    vampytest.assert_is(conversion.value_deserializer, value_deserializer)
+    vampytest.assert_is(conversion.value_serializer, value_serializer)
+    vampytest.assert_is(conversion.value_validator, value_validator)
 
 
 def test__AuditLogEntryDetailConversion__repr():
@@ -93,16 +93,16 @@ def test__AuditLogEntryDetailConversion__repr():
     """
     field_key = 'koishi'
     field_name = 'komeiji'
-    get_converter = _test_function_0
-    put_converter = _test_function_1
-    validator = _test_function_2
+    value_deserializer = _test_function_0
+    value_serializer = _test_function_1
+    value_validator = _test_function_2
     
     conversion = AuditLogEntryDetailConversion(
         field_key,
         field_name,
-        get_converter = get_converter,
-        put_converter = put_converter,
-        validator = validator,
+        value_deserializer = value_deserializer,
+        value_serializer = value_serializer,
+        value_validator = value_validator,
     )
     
     vampytest.assert_instance(repr(conversion), str)
@@ -114,16 +114,16 @@ def test__AuditLogEntryDetailConversion__hash():
     """
     field_key = 'koishi'
     field_name = 'komeiji'
-    get_converter = _test_function_0
-    put_converter = _test_function_1
-    validator = _test_function_2
+    value_deserializer = _test_function_0
+    value_serializer = _test_function_1
+    value_validator = _test_function_2
     
     conversion = AuditLogEntryDetailConversion(
         field_key,
         field_name,
-        get_converter = get_converter,
-        put_converter = put_converter,
-        validator = validator,
+        value_deserializer = value_deserializer,
+        value_serializer = value_serializer,
+        value_validator = value_validator,
     )
     
     vampytest.assert_instance(hash(conversion), int)
@@ -135,16 +135,16 @@ def test__AuditLogEntryDetailConversion__eq():
     """
     field_key = 'koishi'
     field_name = 'komeiji'
-    get_converter = _test_function_0
-    put_converter = _test_function_1
-    validator = _test_function_2
+    value_deserializer = _test_function_0
+    value_serializer = _test_function_1
+    value_validator = _test_function_2
     
     keyword_parameters = {
         'field_key': field_key,
         'field_name': field_name,
-        'get_converter': get_converter,
-        'put_converter': put_converter,
-        'validator': validator,
+        'value_deserializer': value_deserializer,
+        'value_serializer': value_serializer,
+        'value_validator': value_validator,
     }
     
     conversion = AuditLogEntryDetailConversion(**keyword_parameters)
@@ -154,36 +154,17 @@ def test__AuditLogEntryDetailConversion__eq():
     for field_name, field_value in (
         ('field_key', 'Kaenbyou'),
         ('field_name', 'Rin'),
-        ('get_converter', _test_function_3),
-        ('put_converter', _test_function_3),
-        ('validator', _test_function_3),
+        ('value_deserializer', _test_function_3),
+        ('value_serializer', _test_function_3),
+        ('value_validator', _test_function_3),
     ):
         test_conversion = AuditLogEntryDetailConversion(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(conversion, test_conversion)
 
 
-def test__AuditLogEntryDetailConversion__set_get_converter():
+def test__AuditLogEntryDetailConversion__set_value_deserializer():
     """
-    Tests whether ``AuditLogEntryDetailConversion.set_get_converter`` works as intended.
-    """
-    field_key = 'koishi'
-    field_name = 'komeiji'
-    
-    conversion = AuditLogEntryDetailConversion(
-        field_key,
-        field_name,
-    )
-    
-    function = _test_function_3
-    
-    output = conversion.set_get_converter(function)
-    vampytest.assert_is(output, function)
-    vampytest.assert_is(conversion.get_converter, function)
-
-
-def test__AuditLogEntryDetailConversion__set_put_converter():
-    """
-    Tests whether ``AuditLogEntryDetailConversion.set_put_converter`` works as intended.
+    Tests whether ``AuditLogEntryDetailConversion.set_value_deserializer`` works as intended.
     """
     field_key = 'koishi'
     field_name = 'komeiji'
@@ -195,14 +176,14 @@ def test__AuditLogEntryDetailConversion__set_put_converter():
     
     function = _test_function_3
     
-    output = conversion.set_put_converter(function)
+    output = conversion.set_value_deserializer(function)
     vampytest.assert_is(output, function)
-    vampytest.assert_is(conversion.put_converter, function)
+    vampytest.assert_is(conversion.value_deserializer, function)
 
 
-def test__AuditLogEntryDetailConversion__set_validator():
+def test__AuditLogEntryDetailConversion__set_value_serializer():
     """
-    Tests whether ``AuditLogEntryDetailConversion.set_validator`` works as intended.
+    Tests whether ``AuditLogEntryDetailConversion.set_value_serializer`` works as intended.
     """
     field_key = 'koishi'
     field_name = 'komeiji'
@@ -214,6 +195,25 @@ def test__AuditLogEntryDetailConversion__set_validator():
     
     function = _test_function_3
     
-    output = conversion.set_validator(function)
+    output = conversion.set_value_serializer(function)
     vampytest.assert_is(output, function)
-    vampytest.assert_is(conversion.validator, function)
+    vampytest.assert_is(conversion.value_serializer, function)
+
+
+def test__AuditLogEntryDetailConversion__set_value_validator():
+    """
+    Tests whether ``AuditLogEntryDetailConversion.set_value_validator`` works as intended.
+    """
+    field_key = 'koishi'
+    field_name = 'komeiji'
+    
+    conversion = AuditLogEntryDetailConversion(
+        field_key,
+        field_name,
+    )
+    
+    function = _test_function_3
+    
+    output = conversion.set_value_validator(function)
+    vampytest.assert_is(output, function)
+    vampytest.assert_is(conversion.value_validator, function)

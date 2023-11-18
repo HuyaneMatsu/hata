@@ -1,5 +1,3 @@
-import warnings as module_warnings
-
 import vampytest
 
 from ....core import BUILTIN_EMOJIS
@@ -16,14 +14,21 @@ def test__create_unicode_emoji__0():
     """
     emoji = BUILTIN_EMOJIS['x']
     
-    with module_warnings.catch_warnings(record = True) as warnings:
-        module_warnings.simplefilter('always')
-        
-        output = create_unicode_emoji(emoji.unicode)
-        
-        vampytest.assert_eq(len(warnings), 0)
+    debug_logger_called = False
+    def call_debug_logger(message, unique):
+        nonlocal debug_logger_called
+        debug_logger_called = True
+    
+    mocked = vampytest.mock_globals(
+        create_unicode_emoji,
+        ALLOW_DEBUG_MESSAGES = True,
+        call_debug_logger = call_debug_logger
+    )
+    
+    output = mocked(emoji.unicode)
     
     vampytest.assert_is(output, emoji)
+    vampytest.assert_false(debug_logger_called)
 
 
 
@@ -35,12 +40,19 @@ def test__create_unicode_emoji__1():
     """
     unicode = '20230101_0003'
     
-    with module_warnings.catch_warnings(record = True) as warnings:
-        module_warnings.simplefilter('always')
-        
-        output = create_unicode_emoji(unicode)
-        
-        vampytest.assert_eq(len(warnings), 1)
+    debug_logger_called = False
+    def call_debug_logger(message, unique):
+        nonlocal debug_logger_called
+        debug_logger_called = True
     
+    mocked = vampytest.mock_globals(
+        create_unicode_emoji,
+        ALLOW_DEBUG_MESSAGES = True,
+        call_debug_logger = call_debug_logger
+    )
+    
+    output = mocked(unicode)
+        
     vampytest.assert_instance(output, Emoji)
     vampytest.assert_eq(output.unicode, unicode)
+    vampytest.assert_true(debug_logger_called)

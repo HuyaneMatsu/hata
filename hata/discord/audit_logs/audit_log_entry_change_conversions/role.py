@@ -12,23 +12,21 @@ from ...role.role.fields import (
 )
 from ...role.role.role import ROLE_ICON
 
-from ..audit_log_change.flags import FLAG_IS_MODIFICATION
 from ..audit_log_entry_change_conversion import AuditLogEntryChangeConversion, AuditLogEntryChangeConversionGroup
-from ..conversion_helpers.converters import get_converter_name, put_converter_name
+from ..conversion_helpers.converters import value_deserializer_name, value_serializer_name
 
 
 # ---- color ----
 
 COLOR_CONVERSION = AuditLogEntryChangeConversion(
+    ('color',),
     'color',
-    'color',
-    FLAG_IS_MODIFICATION,
-    validator = validate_color,
+    value_validator = validate_color,
 )
 
 
-@COLOR_CONVERSION.set_get_converter
-def color_get_converter(value):
+@COLOR_CONVERSION.set_value_deserializer
+def color_value_deserializer(value):
     if value is None:
         value = Color()
     else:
@@ -37,23 +35,22 @@ def color_get_converter(value):
     return value
 
 
-@COLOR_CONVERSION.set_put_converter
-def color_put_converter(value):
+@COLOR_CONVERSION.set_value_serializer
+def color_value_serializer(value):
     return int(value)
 
 
 # ---- flags ----
 
 FLAGS_CONVERSION = AuditLogEntryChangeConversion(
+    ('flags',),
     'flags',
-    'flags',
-    FLAG_IS_MODIFICATION,
-    validator = validate_flags,
+    value_validator = validate_flags,
 )
 
 
-@FLAGS_CONVERSION.set_get_converter
-def flags_get_converter(value):
+@FLAGS_CONVERSION.set_value_deserializer
+def flags_value_deserializer(value):
     if value is None:
         value = RoleFlag()
     else:
@@ -62,35 +59,33 @@ def flags_get_converter(value):
     return value
 
 
-@FLAGS_CONVERSION.set_put_converter
-def flags_put_converter(value):
+@FLAGS_CONVERSION.set_value_serializer
+def flags_value_serializer(value):
     return int(value)
 
 
 # ---- icon ----
 
 ICON_CONVERSION = AuditLogEntryChangeConversion(
-    'icon_hash',
+    ('icon_hash',),
     'icon',
-    FLAG_IS_MODIFICATION,
-    get_converter = Icon.from_base_16_hash,
-    put_converter = Icon.as_base_16_hash.fget,
-    validator = ROLE_ICON.validate_icon,
+    value_deserializer = Icon.from_base_16_hash,
+    value_serializer = Icon.as_base_16_hash.fget,
+    value_validator = ROLE_ICON.validate_icon,
 )
 
 
 # ---- mentionable ----
 
 MENTIONABLE_CONVERSION = AuditLogEntryChangeConversion(
+    ('mentionable',),
     'mentionable',
-    'mentionable',
-    FLAG_IS_MODIFICATION,
-    validator = validate_mentionable,
+    value_validator = validate_mentionable,
 )
 
 
-@MENTIONABLE_CONVERSION.set_get_converter
-def mentionable_get_converter(value):
+@MENTIONABLE_CONVERSION.set_value_deserializer
+def mentionable_value_deserializer(value):
     if value is None:
         value = False
 
@@ -100,27 +95,25 @@ def mentionable_get_converter(value):
 # ---- name ----
 
 NAME_CONVERSION = AuditLogEntryChangeConversion(
+    ('name',),
     'name',
-    'name',
-    FLAG_IS_MODIFICATION,
-    get_converter = get_converter_name,
-    put_converter = put_converter_name,
-    validator = validate_name,
+    value_deserializer = value_deserializer_name,
+    value_serializer = value_serializer_name,
+    value_validator = validate_name,
 )
 
 
 # ---- permissions ----
 
 PERMISSIONS_CONVERSION = AuditLogEntryChangeConversion(
-    PERMISSION_KEY,
+    (PERMISSION_KEY,),
     'permissions',
-    FLAG_IS_MODIFICATION,
-    validator = validate_permissions,
+    value_validator = validate_permissions,
 )
 
 
-@PERMISSIONS_CONVERSION.set_get_converter
-def permission_get_converter(value):
+@PERMISSIONS_CONVERSION.set_value_deserializer
+def permission_value_deserializer(value):
     if value is None:
         value = Permission()
     else:
@@ -128,22 +121,21 @@ def permission_get_converter(value):
     return value
 
 
-@PERMISSIONS_CONVERSION.set_put_converter
-def permission_put_converter(value):
+@PERMISSIONS_CONVERSION.set_value_serializer
+def permission_value_serializer(value):
     return format(value, 'd')
 
 
 # ---- position ----
 
 POSITION_CONVERSION = AuditLogEntryChangeConversion(
+    ('position',),
     'position',
-    'position',
-    FLAG_IS_MODIFICATION,
-    validator = validate_position,
+    value_validator = validate_position,
 )
 
-@POSITION_CONVERSION.set_get_converter
-def position_get_converter(value):
+@POSITION_CONVERSION.set_value_deserializer
+def position_value_deserializer(value):
     if value is None:
         value = 0
     return value
@@ -152,15 +144,14 @@ def position_get_converter(value):
 # ---- separated ----
 
 SEPARATED_CONVERSION = AuditLogEntryChangeConversion(
-    'hoist',
+    ('hoist',),
     'separated',
-    FLAG_IS_MODIFICATION,
-    validator = validate_separated,
+    value_validator = validate_separated,
 )
 
 
-@SEPARATED_CONVERSION.set_get_converter
-def separated_get_converter(value):
+@SEPARATED_CONVERSION.set_value_deserializer
+def separated_value_deserializer(value):
     if value is None:
         value = False
 
@@ -170,22 +161,21 @@ def separated_get_converter(value):
 # ---- unicode_emoji ----
 
 UNICODE_EMOJI_CONVERSION = AuditLogEntryChangeConversion(
+    ('unicode_emoji',),
     'unicode_emoji',
-    'unicode_emoji',
-    FLAG_IS_MODIFICATION,
-    validator = validate_unicode_emoji,
+    value_validator = validate_unicode_emoji,
 )
 
-@UNICODE_EMOJI_CONVERSION.set_get_converter
-def position_get_converter(value):
+@UNICODE_EMOJI_CONVERSION.set_value_deserializer
+def position_value_deserializer(value):
     if (value is not None):
         value = create_unicode_emoji(value)
     
     return value
 
 
-@UNICODE_EMOJI_CONVERSION.set_put_converter
-def position_put_converter(value):
+@UNICODE_EMOJI_CONVERSION.set_value_serializer
+def position_value_serializer(value):
     if (value is not None):
         value = value.unicode
     

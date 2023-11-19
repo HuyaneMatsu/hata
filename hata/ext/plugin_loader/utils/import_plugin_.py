@@ -1,8 +1,11 @@
 __all__ = ('import_plugin',)
 
 from os.path import basename as get_file_name, splitext as split_file_name_and_extension
+from threading import current_thread
 
 from scarletio import export, get_last_module_frame
+
+from ....discord import KOKORO
 
 from ..plugin import PLUGINS
 from ..plugin_loader import PLUGIN_LOADER
@@ -46,6 +49,12 @@ def import_plugin(plugin_name, *variable_names, **keyword_parameters):
     PluginError
         - Any exception raised by the other plugin is funneled.
     """
+    if current_thread() is KOKORO:
+        raise RuntimeError(
+            f'Cannot execute `{import_plugin.__name__}` on `{KOKORO!r}`; plugin_name = {plugin_name!r}. '
+            f'You are probably trying to import a plugin for the first time from an async function.'
+        )
+
     # Validate input types
     if not isinstance(plugin_name, str):
         raise TypeError(
@@ -56,7 +65,7 @@ def import_plugin(plugin_name, *variable_names, **keyword_parameters):
         if not isinstance(variable_name, str):
             raise TypeError(
                 f'`variable_names` can contain only `str`, got {plugin_name.__class__.__name__}; '
-                f'{plugin_name!r}; variable_names={variable_names!r}.'
+                f'{plugin_name!r}; variable_names = {variable_names!r}.'
             )
         
         if not variable_name.isidentifier():

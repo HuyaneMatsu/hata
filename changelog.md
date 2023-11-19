@@ -1,4 +1,4 @@
-## 1.3.45 *\[2023-11-18\]*
+## 1.3.45 *\[2023-11-19\]*
 
 ### Improvements
 
@@ -9,6 +9,10 @@
 - Now `VOICE_STATE` dispatch event handler handles when discord returns no user.
 - Add actually working `emoji` audit log change conversions for soundboard sounds.
 - Add `permission_overwrite` audit log change conversion for application commands.
+
+#### ext.plugin_loader
+
+- `import_plugin` now drops `RuntimeError` if called from `KOKORO`.
 
 ### Bug fixes
 

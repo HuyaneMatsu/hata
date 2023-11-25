@@ -3,12 +3,13 @@ __all__ = ('CommandBase',)
 from functools import partial as partial_func
 
 from scarletio import RichAttributeErrorBaseType
+
 from .....discord.events.handling_helpers import create_event_from_class
 
-from ...exceptions import _register_exception_handler, test_exception_handler
+from ...interfaces.exception_handler import ExceptionHandlerInterface
 
 
-class CommandBase(RichAttributeErrorBaseType):
+class CommandBase(ExceptionHandlerInterface, RichAttributeErrorBaseType):
     """
     Base type for ``Slasher``'s commands.
     
@@ -101,36 +102,19 @@ class CommandBase(RichAttributeErrorBaseType):
         raise NotImplementedError
     
     
-    def _cursed_repr_builder(self):
+    def _build_repr_body_into(self, repr_parts):
         """
-        Representation builder helper.
-        
-        This method is a generator.
-        
-        Examples
-        --------
-        ```
-        for repr_parts in self._cursed_repr_builder():
-            repr_parts.append(', oh no')
-        
-        return ''.join(repr_parts)
-        ```
+        Representation builder helper to build the representation's body.
         """
-        repr_parts = ['<', self.__class__.__name__]
-        
         repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
-        
-        yield repr_parts
-        
-        repr_parts.append('>')
     
     
     def __repr__(self):
         """Returns the command's representation."""
-        for repr_parts in self._cursed_repr_builder():
-            pass
-        
+        repr_parts = ['<', self.__class__.__name__]
+        self._build_repr_body_into(repr_parts)
+        repr_parts.append('>')
         return ''.join(repr_parts)
     
     
@@ -250,56 +234,6 @@ class CommandBase(RichAttributeErrorBaseType):
         
         return new
     
-    
-    def error(self, exception_handler = None, *, first = False):
-        """
-        Registers an exception handler to the command.
-        
-        Parameters
-        ----------
-        exception_handler : `None`, `CoroutineFunction` = `None`, Optional
-            Exception handler to register.
-        first : `bool` = `False`, Optional (Keyword Only)
-            Whether the exception handler should run first.
-        
-        Returns
-        -------
-        exception_handler / wrapper : `CoroutineFunction` / `functools.partial`
-            If `exception_handler` is not given, returns a wrapper.
-        """
-        if exception_handler is None:
-            return partial_func(_register_exception_handler, first)
-        
-        return self._register_exception_handler(exception_handler, first)
-    
-    
-    def _register_exception_handler(self, exception_handler, first):
-        """
-        Registers an exception handler to the command.
-        
-        Parameters
-        ----------
-        exception_handler : `CoroutineFunction`
-            Exception handler to register.
-        first : `bool`
-            Whether the exception handler should run first.
-        
-        Returns
-        -------
-        exception_handler : `CoroutineFunction`
-        """
-        test_exception_handler(exception_handler)
-        
-        exception_handlers = self._exception_handlers
-        if exception_handlers is None:
-            self._exception_handlers = exception_handlers = []
-        
-        if first:
-            exception_handlers.insert(0, exception_handler)
-        else:
-            exception_handlers.append(exception_handler)
-        
-        return exception_handler
     
     # ---- Mention ----
     

@@ -472,7 +472,7 @@ class ClientCompoundGuildEndpoints(Compound):
                 profile = self.guild_profiles[guild.id]
             except KeyError:
                 self.guild_profiles[guild.id] = GuildProfile.from_data(user_data)
-                if guild not in guild.clients:
+                if self not in guild.clients:
                     guild.clients.append(self)
             else:
                 profile._update_attributes(user_data)

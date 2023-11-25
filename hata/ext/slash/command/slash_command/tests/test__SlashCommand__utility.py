@@ -3,7 +3,7 @@ from ......discord import Client
 
 def test__SlashCommand__autocomplete():
     """
-    Issue: `AttributeError` in `SlashCommand._add_autocomplete_function`.
+    Issue: `AttributeError` in `SlashCommand._register_auto_completer`.
     
     By: Al_Loiz [ICU]#5392.
     

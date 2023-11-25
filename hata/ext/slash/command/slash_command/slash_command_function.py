@@ -1,7 +1,5 @@
 __all__ = ('SlashCommandFunction',)
 
-from functools import partial as partial_func
-
 from scarletio import WeakReferer, RichAttributeErrorBaseType, copy_docs
 
 from .....discord.application_command import ApplicationCommandOption, ApplicationCommandOptionType
@@ -9,17 +7,21 @@ from .....discord.client import Client
 from .....discord.interaction import InteractionEvent
 
 from ...converters import InternalParameterConverter, SlashCommandParameterConverter
-from ...exceptions import _register_exception_handler, handle_command_exception, test_exception_handler
+from ...exceptions import handle_command_exception
+
+from ...interfaces.autocomplete import AutocompleteInterface
+from ...interfaces.command import CommandInterface
+from ...interfaces.exception_handler import ExceptionHandlerInterface
 from ...responding import process_command_coroutine
 
 from ..command_base import CommandBase
-from ..command_base_application_command.constants import APPLICATION_COMMAND_FUNCTION_DEEPNESS
 
-from .helpers import _build_auto_complete_parameter_names, _register_auto_complete_function
 from .slash_command_parameter_auto_completer import SlashCommandParameterAutoCompleter
 
 
-class SlashCommandFunction(RichAttributeErrorBaseType):
+class SlashCommandFunction(
+    AutocompleteInterface, CommandInterface, ExceptionHandlerInterface, RichAttributeErrorBaseType
+):
     """
     Represents a slash command's backend implementation.
     
@@ -447,76 +449,16 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
         hash_value ^= hash(self.response_modifier)
         
         return hash_value
-        
-    
-    def autocomplete(self, parameter_name, *parameter_names, function = None):
-        """
-        Registers an auto completer function to the application command.
-        
-        Parameters
-        ----------
-        parameter_name : `str`
-            The parameter's name.
-        *parameter_names : `str`
-            Additional parameter names to autocomplete
-        function : `None`, `callable` = `None`, Optional (Keyword only)
-            The function to register as auto completer.
-        
-        Returns
-        -------
-        function / wrapper : `callable`, `functools.partial`
-            The registered function if given or a wrapper to register the function with.
-        
-        Raises
-        ------
-        RuntimeError
-            - If the parameter already has a auto completer defined.
-            - If the application command function has no parameter named, like `parameter_name`.
-            - If the parameter cannot be auto completed.
-        TypeError
-            If `function` is not an asynchronous.
-        """
-        parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
-        
-        if (function is None):
-            return partial_func(_register_auto_complete_function, self, parameter_names)
-        
-        return self._add_autocomplete_function(parameter_names, function)
     
     
-    def _add_autocomplete_function(self, parameter_names, function):
-        """
-        Registers an autocomplete function.
-        
-        Parameters
-        ----------
-        parameter_names : `list` of `str`
-            The parameters' names.
-        function : `async-callable`
-            The function to register as auto completer.
-        
-        Returns
-        -------
-        auto_completer : ``SlashCommandParameterAutoCompleter``
-            The registered auto completer
-        
-        Raises
-        ------
-        RuntimeError
-            - If the application command function has no parameter named, like `parameter_name`.
-            - If the parameter cannot be auto completed.
-        TypeError
-            - If `function` is not an asynchronous.
-        """
-        if isinstance(function, SlashCommandParameterAutoCompleter):
-            function = function._command_function
-        
-        auto_completer = SlashCommandParameterAutoCompleter(
-            function,
-            parameter_names,
-            APPLICATION_COMMAND_FUNCTION_DEEPNESS,
-            self,
-        )
+    @copy_docs(CommandInterface.get_command_function)
+    def get_command_function(self):
+        return self._command_function
+    
+    
+    @copy_docs(AutocompleteInterface._register_auto_completer)
+    def _register_auto_completer(self, parameter_names, function):
+        auto_completer = self._make_auto_completer(function, parameter_names)
         
         auto_completable_parameters = self._get_auto_completable_parameters()
         matched_auto_completable_parameters = auto_completer._difference_match_parameters(auto_completable_parameters)
@@ -526,12 +468,7 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
                 f'parameters of `{auto_completer!r}`.'
             )
         
-        auto_completers = self._auto_completers
-        if (auto_completers is None):
-            auto_completers = []
-            self._auto_completers = auto_completers
-        
-        auto_completers.append(auto_completer)
+        self._store_auto_completer(auto_completer)
         
         for parameter_converter in matched_auto_completable_parameters:
             parameter_converter.register_auto_completer(auto_completer)
@@ -561,57 +498,6 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
             resolved += parameter_converter.register_auto_completer(auto_completer)
         
         return resolved
-    
-    
-    def error(self, exception_handler = None, *, first = False):
-        """
-        Registers an exception handler to the ``SlashCommandFunction``.
-        
-        Parameters
-        ----------
-        exception_handler : `None`, `CoroutineFunction` = `None`, Optional
-            Exception handler to register.
-        first : `bool` = `False`, Optional (Keyword Only)
-            Whether the exception handler should run first.
-        
-        Returns
-        -------
-        exception_handler / wrapper : `CoroutineFunction` / `functools.partial`
-            If `exception_handler` is not given, returns a wrapper.
-        """
-        if exception_handler is None:
-            return partial_func(_register_exception_handler, first)
-        
-        return self._register_exception_handler(exception_handler, first)
-    
-    
-    def _register_exception_handler(self, exception_handler, first):
-        """
-        Registers an exception handler to the ``SlashCommandFunction``.
-        
-        Parameters
-        ----------
-        exception_handler : `CoroutineFunction`
-            Exception handler to register.
-        first : `bool`
-            Whether the exception handler should run first.
-        
-        Returns
-        -------
-        exception_handler : `CoroutineFunction`
-        """
-        test_exception_handler(exception_handler)
-        
-        exception_handlers = self._exception_handlers
-        if exception_handlers is None:
-            self._exception_handlers = exception_handlers = []
-        
-        if first:
-            exception_handlers.insert(0, exception_handler)
-        else:
-            exception_handlers.append(exception_handler)
-        
-        return exception_handler
     
     
     def _get_self_reference(self):

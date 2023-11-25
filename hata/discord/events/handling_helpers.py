@@ -701,19 +701,23 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         | commands                      | `list` of `object`                |
         +-------------------------------+-----------------------------------+
     
-    parent : ``ClientWrapper``
-        The parent ``ClientWrapper``.
-    """
-    __slots__ = ('_getter', '_from_class_constructor', 'parent')
+    _router_type : `type<Router>`
+        Router type for outputs.
     
-    def __init__(self, parent, getter, from_class_constructor):
+    parent : ``ClientWrapper``
+        The parent client wrapper.
+    """
+    __slots__ = ('_getter', '_from_class_constructor', '_router_type', 'parent')
+    
+    def __init__(self, parent, getter, from_class_constructor, router_type):
         """
         Creates an ``_EventHandlerManagerRouter`` routing to all the clients of a ``ClientWrapper``.
         
         Parameters
         ----------
         parent : ``ClientWrapper``
-            The respective routed client wrapper.
+            The parent client wrapper.
+        
         getter : `callable`
             A callable what should return the ``_EventHandlerManager``-s of the `_EventHandlerManagerRouter`, on who the
             extension is applied.
@@ -753,10 +757,14 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
             +===============================+===================================+
             | commands                      | `list` of `object`                |
             +-------------------------------+-----------------------------------+
+        
+        router_type : `instance<type<Router>>`
+            Router type for outputs.
         """
-        self.parent = parent
         self._getter = getter
         self._from_class_constructor = from_class_constructor
+        self._router_type = router_type
+        self.parent = parent
     
     
     def __call__(self, func = ..., *args, **kwargs):
@@ -774,7 +782,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         
         Returns
         -------
-        func : ``Routed``
+        func : `instance<self._router_type>`
            The added functions.
         """
         if func is ...:
@@ -795,7 +803,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
             func = handler.create_event(func_, *args, **kwargs)
             routed.append(func)
         
-        return Router(routed)
+        return self._router_type(routed)
     
     
     def from_class(self, klass):
@@ -1104,6 +1112,7 @@ class Router(tuple):
     """
     Object used to describe multiple captured created command-like objects.
     """
+    __slots__ = ()
     
     def __repr__(self):
         """Returns the router's representation."""
@@ -1201,7 +1210,8 @@ def route_parameter(parameter, count):
         if len(parameter) != count:
             raise ValueError(
                 f'The represented router has `{count}` applicable clients, meanwhile received only '
-                f'`{len(parameter)}` routed values, got: {parameter!r}.'
+                f'`{len(parameter)}` routed values, got: {parameter!r}. '
+                f'When a value is a `tuple` routing is attempted, so perhaps you wanted to use a `list` instead?'
             )
         
         last = None
@@ -1218,8 +1228,8 @@ def route_parameter(parameter, count):
     else:
         for _ in range(count):
             yield parameter
-    
-    
+
+
 def route_kwargs(kwargs, count):
     """
     Routes the given `kwargs` to the given `count` amount of copies.

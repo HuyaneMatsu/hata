@@ -1,8 +1,6 @@
 __all__ = ()
 
-from scarletio import export
-
-from .....discord.application_command import ApplicationCommandOptionType
+from ...discord.application_command import ApplicationCommandOptionType
 
 
 APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND = ApplicationCommandOptionType.sub_command
@@ -13,6 +11,3 @@ APPLICATION_COMMAND_HANDLER_DEEPNESS = 0
 APPLICATION_COMMAND_DEEPNESS = 1
 APPLICATION_COMMAND_CATEGORY_DEEPNESS_START = 2
 APPLICATION_COMMAND_CATEGORY_DEEPNESS_MAX = 3
-
-
-export(APPLICATION_COMMAND_FUNCTION_DEEPNESS, 'APPLICATION_COMMAND_FUNCTION_DEEPNESS')

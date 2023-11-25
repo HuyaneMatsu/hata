@@ -1,26 +1,25 @@
 __all__ = ('SlashCommandCategory',)
 
-from functools import partial as partial_func
-
 from scarletio import RichAttributeErrorBaseType, WeakReferer, copy_docs, include
 
 from .....discord.application_command import ApplicationCommandOption, ApplicationCommandOptionType
 from .....discord.application_command.application_command.constants import APPLICATION_COMMAND_OPTIONS_MAX
 from .....discord.client import Client
-from .....discord.events.handling_helpers import Router, _EventHandlerManager, create_event_from_class
+from .....discord.events.handling_helpers import create_event_from_class
 from .....discord.interaction import InteractionEvent
 
-from ...exceptions import (
-    SlashCommandParameterConversionError, _register_exception_handler, handle_command_exception, test_exception_handler
-)
-
-from ..command_base import CommandBase
-from ..command_base_application_command.constants import (
+from ...constants import (
     APPLICATION_COMMAND_CATEGORY_DEEPNESS_MAX, APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND,
     APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_CATEGORY
 )
+from ...exceptions import SlashCommandParameterConversionError, handle_command_exception
+from ...interfaces.autocomplete import AutocompleteInterface
+from ...interfaces.exception_handler import ExceptionHandlerInterface
+from ...interfaces.nestable import NestableInterface
 
-from .helpers import _build_auto_complete_parameter_names, _register_auto_complete_function, _reset_parent_schema
+from ..command_base import CommandBase
+
+from .helpers import _reset_parent_schema
 from .slash_command_parameter_auto_completer import SlashCommandParameterAutoCompleter
 
 
@@ -28,7 +27,9 @@ Slasher = include('Slasher')
 SlashCommand = include('SlashCommand')
 
 
-class SlashCommandCategory(RichAttributeErrorBaseType):
+class SlashCommandCategory(
+    AutocompleteInterface, ExceptionHandlerInterface, NestableInterface, RichAttributeErrorBaseType
+):
     """
     Represents an application command's backend implementation.
     
@@ -306,93 +307,26 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
         )
     
     
-    @property
-    def interactions(self):
-        """
-        Enables you to add sub-commands under the sub-category.
-        
-        Returns
-        -------
-        handler : ``_EventHandlerManager``
-        """
-        return _EventHandlerManager(self)
+    @copy_docs(NestableInterface._make_command_instance_from_parameters)
+    def _make_command_instance_from_parameters(self, function, positional_parameters, keyword_parameters):
+        return SlashCommand(function, *positional_parameters, **keyword_parameters)
     
     
-    def create_event(self, func, *args, **kwargs):
-        """
-        Adds a sub-command under the slash category.
-        
-        Parameters
-        ----------
-        func : `async-callable`
-            The function used as the command when using the respective slash command.
-        *args : Positional Parameters
-            Positional parameters to pass to ``SlashCommand``'s constructor.
-        **kwargs : Keyword parameters
-            Keyword parameters to pass to the ``SlashCommand``'s constructor.
-        
-        Returns
-        -------
-        self : ``SlashCommandCategory``
-        
-        Raises
-        ------
-        TypeError
-            If Any parameter's type is incorrect.
-        ValueError
-            If Any parameter's value is incorrect.
-        RuntimeError
-            - The ``SlashCommand`` reached the maximal amount of children.
-            - Cannot add anymore sub-category under sub-categories.
-            - If the command to add is a default sub-command meanwhile the category already has one.
-        """
-        if isinstance(func, Router):
-            func = func[0]
-        
-        if isinstance(func, SlashCommand):
-            self._add_application_command(func)
-            return self
-        
-        command = SlashCommand(func, *args, **kwargs)
-        if isinstance(command, Router):
-            command = command[0]
-        
-        return self._add_application_command(command)
-    
-    
-    def create_event_from_class(self, klass):
-        """
-        Breaks down the given class to it's class attributes and tries to add it as a sub-command.
-        
-        Parameters
-        ----------
-        klass : `type`
-            The class, from what's attributes the command will be created.
-        
-        Returns
-        -------
-        self : ``SlashCommandCategory``
-         
-        Raises
-        ------
-        TypeError
-            If Any attribute's type is incorrect.
-        ValueError
-            If Any attribute's value is incorrect.
-        RuntimeError
-            - The ``SlashCommand`` reached the maximal amount of children.
-            - Cannot add anymore sub-category under sub-categories.
-            - If the command to add is a default sub-command meanwhile the category already has one.
-        """
-        command = create_event_from_class(
+    @copy_docs(NestableInterface._make_command_instance_from_class)
+    def _make_command_instance_from_class(self, klass):
+        return create_event_from_class(
             SlashCommand, klass, SlashCommand.COMMAND_PARAMETER_NAMES, SlashCommand.COMMAND_NAME_NAME,
             SlashCommand.COMMAND_COMMAND_NAME
         )
+    
+    
+    @copy_docs(NestableInterface._store_command_instance)
+    def _store_command_instance(self, command):
+        if isinstance(command, SlashCommand):
+            instance = self._add_application_command(command)
+            return True, instance
         
-        if isinstance(command, Router):
-            command = command[0]
-        
-        return self._add_application_command(command)
+        return False, None
     
     
     def _add_application_command(self, command):
@@ -500,72 +434,10 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
         return True
     
     
-    def autocomplete(self, parameter_name, *parameter_names, function = None):
-        """
-        Registers an auto completer function to the application command.
-        
-        Parameters
-        ----------
-        parameter_name : `str`
-            The parameter's name.
-        *parameter_names : `str`
-            Additional parameter names to autocomplete
-        function : `None`, `callable` = `None`, Optional (Keyword only)
-            The function to register as auto completer.
-        
-        Returns
-        -------
-        function / wrapper : `async-callable`, `functools.partial`
-            The registered function if given or a wrapper to register the function with.
-        """
-        parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
-        
-        if (function is None):
-            return partial_func(_register_auto_complete_function, self, parameter_names)
-            
-        return self._add_autocomplete_function(parameter_names, function)
-    
-    
-    def _add_autocomplete_function(self, parameter_names, function):
-        """
-        Registers an autocomplete function.
-        
-        Parameters
-        ----------
-        parameter_names : `list` of `str`
-            The parameters' names.
-        function : `async-callable`
-            The function to register as auto completer.
-        
-        Returns
-        -------
-        auto_completer : ``SlashCommandParameterAutoCompleter``
-            The registered auto completer
-        
-        Raises
-        ------
-        RuntimeError
-            - If the application command function has no parameter named, like `parameter_name`.
-            - If the parameter cannot be auto completed.
-        TypeError
-            - If `function` is not an asynchronous.
-        """
-        if isinstance(function, SlashCommandParameterAutoCompleter):
-            function = function._command
-        
-        auto_completer = SlashCommandParameterAutoCompleter(
-            function,
-            parameter_names,
-            self._deepness,
-            self,
-        )
-        
-        auto_completers = self._auto_completers
-        if (auto_completers is None):
-            auto_completers = []
-            self._auto_completers = auto_completers
-        
-        auto_completers.append(auto_completer)
+    @copy_docs(AutocompleteInterface._register_auto_completer)
+    def _register_auto_completer(self, parameter_names, function):
+        auto_completer = self._make_auto_completer(function, parameter_names)
+        self._store_auto_completer(auto_completer)
         
         resolved = 0
         sub_commands = self._sub_commands
@@ -574,6 +446,7 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
         
         if resolved:
             _reset_parent_schema(self)
+        
         
         return auto_completer
     
@@ -597,57 +470,6 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
              resolved += sub_command._try_resolve_auto_completer(auto_completer)
         
         return resolved
-    
-    
-    def error(self, exception_handler = None, *, first = False):
-        """
-        Registers an exception handler to the ``SlashCommandCategory``.
-        
-        Parameters
-        ----------
-        exception_handler : `None`, `CoroutineFunction` = `None`, Optional
-            Exception handler to register.
-        first : `bool` = `False`, Optional (Keyword Only)
-            Whether the exception handler should run first.
-        
-        Returns
-        -------
-        exception_handler / wrapper : `CoroutineFunction` / `functools.partial`
-            If `exception_handler` is not given, returns a wrapper.
-        """
-        if exception_handler is None:
-            return partial_func(_register_exception_handler, first)
-        
-        return self._register_exception_handler(exception_handler, first)
-    
-    
-    def _register_exception_handler(self, exception_handler, first):
-        """
-        Registers an exception handler to the ``SlashCommandCategory``.
-        
-        Parameters
-        ----------
-        exception_handler : `CoroutineFunction`
-            Exception handler to register.
-        first : `bool`
-            Whether the exception handler should run first.
-        
-        Returns
-        -------
-        exception_handler : `CoroutineFunction`
-        """
-        test_exception_handler(exception_handler)
-        
-        exception_handlers = self._exception_handlers
-        if exception_handlers is None:
-            self._exception_handlers = exception_handlers = []
-        
-        if first:
-            exception_handlers.insert(0, exception_handler)
-        else:
-            exception_handlers.append(exception_handler)
-        
-        return exception_handler
     
     
     def _get_self_reference(self):

@@ -43,7 +43,7 @@ def test__parse_all_emojis__unicode_multiple():
 
 def test__parse_all_emojis__mixed():
     """
-    Tests whether `parse_all_emojis` parses multiple & multy-kind emojis correctly.
+    Tests whether `parse_all_emojis` parses multiple & multi-kind emojis correctly.
     """
     emojis = {
         BUILTIN_EMOJIS['heart'],

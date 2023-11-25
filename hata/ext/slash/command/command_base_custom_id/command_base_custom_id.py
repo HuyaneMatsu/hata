@@ -2,10 +2,12 @@ __all__ = ('CommandBaseCustomId', )
 
 from scarletio import copy_docs
 
+from ...interfaces.command import CommandInterface
+
 from ..command_base import CommandBase
 
 
-class CommandBaseCustomId(CommandBase):
+class CommandBaseCustomId(CommandInterface, CommandBase):
     """
     Base type for commands based on `custom_id` matching.
     
@@ -91,58 +93,58 @@ class CommandBaseCustomId(CommandBase):
         raise NotImplementedError
     
     
-    @copy_docs(CommandBase._cursed_repr_builder)
-    def _cursed_repr_builder(self):
-        for repr_parts in CommandBase._cursed_repr_builder(self):
+    @copy_docs(CommandBase._build_repr_body_into)
+    def _build_repr_body_into(self, repr_parts):
+        CommandBase._build_repr_body_into(self, repr_parts)
             
-            string_custom_ids = self._string_custom_ids
-            if (string_custom_ids is not None):
-                
-                repr_parts.append(', string_custom_ids = [')
-                index = 0
-                limit = len(string_custom_ids)
-                
-                while True:
-                    string_custom_id = string_custom_ids[index]
-                    repr_parts.append(repr(string_custom_id))
-                    
-                    index += 1
-                    if index == limit:
-                        break
-                    
-                    repr_parts.append(', ')
-                    continue
-                
-                repr_parts.append(']')
+        string_custom_ids = self._string_custom_ids
+        if (string_custom_ids is not None):
             
-            regex_custom_ids = self._regex_custom_ids
-            if (regex_custom_ids is not None):
-                
-                repr_parts.append(', regex_custom_ids = [')
-                index = 0
-                limit = len(regex_custom_ids)
-                
-                while True:
-                    regex_custom_id = regex_custom_ids[index]
-                    repr_parts.append(repr(regex_custom_id.pattern.pattern))
-                    
-                    index += 1
-                    if index == limit:
-                        break
-                    
-                    repr_parts.append(', ')
-                    continue
-                
-                repr_parts.append(']')
+            repr_parts.append(', string_custom_ids = [')
+            index = 0
+            limit = len(string_custom_ids)
             
+            while True:
+                string_custom_id = string_custom_ids[index]
+                repr_parts.append(repr(string_custom_id))
+                
+                index += 1
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
             
-            yield repr_parts
+            repr_parts.append(']')
+        
+        regex_custom_ids = self._regex_custom_ids
+        if (regex_custom_ids is not None):
             
-            response_modifier = self.response_modifier
-            if (response_modifier is not None):
-                repr_parts.append(', response_modifier = ')
-                repr_parts.append(repr(response_modifier))
-    
+            repr_parts.append(', regex_custom_ids = [')
+            index = 0
+            limit = len(regex_custom_ids)
+            
+            while True:
+                regex_custom_id = regex_custom_ids[index]
+                repr_parts.append(repr(regex_custom_id.pattern.pattern))
+                
+                index += 1
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(']')
+        
+        
+        yield repr_parts
+        
+        response_modifier = self.response_modifier
+        if (response_modifier is not None):
+            repr_parts.append(', response_modifier = ')
+            repr_parts.append(repr(response_modifier))
+
     
     async def invoke(self, client, interaction_event, regex_match):
         """
@@ -248,3 +250,8 @@ class CommandBaseCustomId(CommandBase):
         new.response_modifier = self.response_modifier
         
         return new
+    
+    
+    @copy_docs(CommandInterface.get_command_function)
+    def get_command_function(self):
+        return self._command_function

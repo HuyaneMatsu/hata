@@ -5,21 +5,22 @@ from scarletio import copy_docs
 from .....discord.events.handling_helpers import Router, check_name, route_name, route_value
 
 from ...converters import get_context_command_parameter_converters
+from ...exceptions import handle_command_exception
+from ...interfaces.command import CommandInterface
+from ...responding import process_command_coroutine
+from ...response_modifier import ResponseModifier
 from ...utils import _check_maybe_route, raw_name_to_display
 from ...wrappers import CommandWrapper
-from ...exceptions import handle_command_exception
-from ...responding import process_command_coroutine
 
 from ..command_base_application_command import CommandBaseApplicationCommand
 from ..command_base_application_command.helpers import (
-    _validate_allow_in_dm, _validate_delete_on_unload, _validate_guild,
-    _validate_is_global, _validate_name, _validate_nsfw, _validate_required_permissions
+    _validate_allow_in_dm, _validate_delete_on_unload, _validate_guild, _validate_is_global, _validate_name,
+    _validate_nsfw, _validate_required_permissions
 )
 from ..helpers import validate_application_target_type
-from ...response_modifier import ResponseModifier
 
 
-class ContextCommand(CommandBaseApplicationCommand):
+class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
     """
     Base class for ``Slasher``'s application commands.
     
@@ -313,14 +314,12 @@ class ContextCommand(CommandBaseApplicationCommand):
             return self
     
     
-    @copy_docs(CommandBaseApplicationCommand._cursed_repr_builder)
-    def _cursed_repr_builder(self):
-        for repr_parts in CommandBaseApplicationCommand._cursed_repr_builder(self):
-            
-            yield repr_parts
-            
-            repr_parts.append(', target = ')
-            repr_parts.append(self.target.name)
+    @copy_docs(CommandBaseApplicationCommand._build_repr_body_into)
+    def _build_repr_body_into(self, repr_parts):
+        CommandBaseApplicationCommand._build_repr_body_into(self, repr_parts)
+        
+        repr_parts.append(', target = ')
+        repr_parts.append(self.target.name)
     
     
     @copy_docs(CommandBaseApplicationCommand.invoke)
@@ -440,3 +439,8 @@ class ContextCommand(CommandBaseApplicationCommand):
             return False
         
         return True
+
+    
+    @copy_docs(CommandInterface.get_command_function)
+    def get_command_function(self):
+        return self._command_function

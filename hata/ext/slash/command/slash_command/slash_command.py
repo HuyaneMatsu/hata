@@ -1,41 +1,39 @@
 __all__ = ('SlashCommand',)
 
-from functools import partial as partial_func
-
 from scarletio import WeakReferer, copy_docs, export
 
 from .....discord.application_command import ApplicationCommandTargetType
 from .....discord.application_command.application_command.constants import APPLICATION_COMMAND_OPTIONS_MAX
 from .....discord.events.handling_helpers import Router, _EventHandlerManager, check_name, route_name, route_value
 
+from ...constants import (
+    APPLICATION_COMMAND_CATEGORY_DEEPNESS_START, APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND,
+    APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_CATEGORY
+)
 from ...converters import get_slash_command_parameter_converters
 from ...exceptions import SlashCommandParameterConversionError, handle_command_exception
+from ...interfaces.autocomplete import AutocompleteInterface
+from ...interfaces.command import CommandInterface
+from ...interfaces.nestable import NestableInterface
 from ...response_modifier import ResponseModifier
 from ...utils import _check_maybe_route, raw_name_to_display
 from ...wrappers import CommandWrapper, get_parameter_configurers
 
 from ..command_base_application_command import CommandBaseApplicationCommand
-from ..command_base_application_command.constants import (
-    APPLICATION_COMMAND_CATEGORY_DEEPNESS_START, APPLICATION_COMMAND_DEEPNESS,
-    APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND, APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_CATEGORY
-)
 from ..command_base_application_command.helpers import (
     _reset_application_command_schema, _validate_allow_in_dm, _validate_delete_on_unload,
     _validate_guild, _validate_is_global, _validate_name, _validate_nsfw, _validate_required_permissions
 )
 
 
-from .helpers import (
-    _build_auto_complete_parameter_names, _generate_description_from, _register_auto_complete_function,
-    _validate_is_default
-)
+from .helpers import _generate_description_from, _validate_is_default
 from .slash_command_category import SlashCommandCategory
 from .slash_command_function import SlashCommandFunction
 from .slash_command_parameter_auto_completer import SlashCommandParameterAutoCompleter
 
 
 @export
-class SlashCommand(CommandBaseApplicationCommand):
+class SlashCommand(AutocompleteInterface, CommandInterface, NestableInterface, CommandBaseApplicationCommand):
     """
     Class to wrap an application command providing interface for ``Slasher``.
     
@@ -306,7 +304,7 @@ class SlashCommand(CommandBaseApplicationCommand):
                 if is_global and (guild_ids is not None):
                     raise TypeError(
                         f'`is_global` and `guild` contradict each other, got is_global = {is_global!r}, '
-                        f'guild={guild!r}.'
+                        f'guild = {guild!r}.'
                     )
                 
                 if (command is None):
@@ -394,16 +392,14 @@ class SlashCommand(CommandBaseApplicationCommand):
             return self
     
     
-    @copy_docs(CommandBaseApplicationCommand._cursed_repr_builder)
-    def _cursed_repr_builder(self):
-        for repr_parts in CommandBaseApplicationCommand._cursed_repr_builder(self):
-            
-            yield repr_parts
-            
-            description = self.description
-            if self.name != description:
-                 repr_parts.append(', description = ')
-                 repr_parts.append(repr(description))
+    @copy_docs(CommandBaseApplicationCommand._build_repr_body_into)
+    def _build_repr_body_into(self, repr_parts):
+        CommandBaseApplicationCommand._build_repr_body_into(self, repr_parts)
+        
+        description = self.description
+        if self.name != description:
+             repr_parts.append(', description = ')
+             repr_parts.append(repr(description))
     
     
     @copy_docs(CommandBaseApplicationCommand.invoke)
@@ -637,94 +633,29 @@ class SlashCommand(CommandBaseApplicationCommand):
         return SlashCommandCategory(self, deepness)
     
     
-    @property
-    @copy_docs(CommandBaseApplicationCommand.interactions)
-    def interactions(self):
-        if self._command is not None:
-            raise RuntimeError(
-                f'The {self.__class__.__name__} is not a category.'
-            )
-        
-        return _EventHandlerManager(self)
+    @copy_docs(NestableInterface._is_nestable)
+    def _is_nestable(self):
+        return True if self.get_command_function() is None else False
     
     
-    def create_event(self, func, *args, **keyword_parameters):
-        """
-        Adds a sub-command under the slash command.
-        
-        Parameters
-        ----------
-        func : `async-callable`
-            The function used as the command when using the respective slash command.
-        *args : Positional Parameters
-            Positional parameters to pass to ``SlashCommand``'s constructor.
-        **keyword_parameters : Keyword parameters
-            Keyword parameters to pass to the ``SlashCommand``'s constructor.
-        
-        Returns
-        -------
-        self : ``SlashCommandFunction``, ``SlashCommandCategory``
-        
-        Raises
-        ------
-        TypeError
-            If Any parameter's type is incorrect.
-        ValueError
-            If Any parameter's value is incorrect.
-        RuntimeError
-            - The ``SlashCommand`` is not a category.
-            - The ``SlashCommand`` reached the maximal amount of children.
-            - If the command to add is a default sub-command meanwhile the category already has one.
-        """
-        if self._command is not None:
-            raise RuntimeError(f'The {self!r} is not a category.')
-        
-        if isinstance(func, Router):
-            func = func[0]
-        
-        if isinstance(func, type(self)):
-            self._add_application_command(func)
-            return self
-        
-        command = type(self)(func, *args, **keyword_parameters)
-        
-        if isinstance(command, Router):
-            command = command[0]
-        
-        return self._add_application_command(command)
+    @copy_docs(NestableInterface._make_command_instance_from_parameters)
+    def _make_command_instance_from_parameters(self, function, positional_parameters, keyword_parameters):
+        return type(self)(function, *positional_parameters, **keyword_parameters)
     
     
-    def create_event_from_class(self, klass):
-        """
-        Breaks down the given class to it's class attributes and tries to add it as a sub-command or sub-category.
-        
-        Parameters
-        ----------
-        klass : `type`
-            The class, from what's attributes the command will be created.
-        
-        Returns
-        -------
-        self : ``SlashCommandFunction``, ``SlashCommandCategory``
-         
-        Raises
-        ------
-        TypeError
-            If Any attribute's type is incorrect.
-        ValueError
-            If Any attribute's value is incorrect.
-        RuntimeError
-            - The ``SlashCommand`` is not a category.
-            - The ``SlashCommand`` reached the maximal amount of children.
-            - If the command to add is a default sub-command meanwhile the category already has one.
-        """
-        command = type(self).from_class(klass)
-        
-        if isinstance(command, Router):
-            command = command[0]
-        
-        return self._add_application_command(command)
+    @copy_docs(NestableInterface._make_command_instance_from_class)
+    def _make_command_instance_from_class(self, klass):
+        return type(self).from_class(klass)
     
+    
+    @copy_docs(NestableInterface._store_command_instance)
+    def _store_command_instance(self, command):
+        if isinstance(command, type(self)):
+            instance = self._add_application_command(command)
+            return True, instance
+        
+        return False, None
+        
     
     def _add_application_command(self, command):
         """
@@ -789,60 +720,12 @@ class SlashCommand(CommandBaseApplicationCommand):
         return real_command_count
     
     
-    @copy_docs(CommandBaseApplicationCommand.autocomplete)
-    def autocomplete(self, parameter_name, *parameter_names, function = None):
-        parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
-        
-        if (function is None):
-            return partial_func(_register_auto_complete_function, self, parameter_names)
-        
-        return self._add_autocomplete_function(parameter_names, function)
-    
-    
-    def _add_autocomplete_function(self, parameter_names, function):
-        """
-        Registers an autocomplete function.
-        
-        Parameters
-        ----------
-        parameter_names : `list` of `str`
-            The parameters' names.
-        function : `async-callable`
-            The function to register as auto completer.
-        
-        Returns
-        -------
-        auto_completer : ``SlashCommandParameterAutoCompleter``
-            The registered auto completer
-        
-        Raises
-        ------
-        RuntimeError
-            - If the application command function has no parameter named, like `parameter_name`.
-            - If the parameter cannot be auto completed.
-        TypeError
-            - If `function` is not an asynchronous.
-        """
-        if isinstance(function, SlashCommandParameterAutoCompleter):
-            function = function._command_function
-        
-        command_function = self._command
-        if command_function is None:
-            
-            auto_completer = SlashCommandParameterAutoCompleter(
-                function,
-                parameter_names,
-                APPLICATION_COMMAND_DEEPNESS,
-                self,
-            )
-            
-            # If it is none, try to resolve the parameters in sub commands.
-            auto_completers = self._auto_completers
-            if (auto_completers is None):
-                auto_completers = []
-                self._auto_completers = auto_completers
-            
-            auto_completers.append(auto_completer)
+    @copy_docs(AutocompleteInterface._register_auto_completer)
+    def _register_auto_completer(self, parameter_names, function):
+        slash_command_function = self._command
+        if slash_command_function is None:
+            auto_completer = self._make_auto_completer(function, parameter_names)
+            self._store_auto_completer(auto_completer)
             
             sub_commands = self._sub_commands
             if (sub_commands is not None):
@@ -850,7 +733,7 @@ class SlashCommand(CommandBaseApplicationCommand):
                     sub_command._try_resolve_auto_completer(auto_completer)
         
         else:
-            auto_completer = command_function._add_autocomplete_function(parameter_names, function)
+            auto_completer = slash_command_function._register_auto_completer(parameter_names, function)
         
         _reset_application_command_schema(self)
         
@@ -902,3 +785,10 @@ class SlashCommand(CommandBaseApplicationCommand):
             _reset_application_command_schema(self)
         
         return resolved
+
+    
+    @copy_docs(CommandInterface.get_command_function)
+    def get_command_function(self):
+        slash_command_function = self._command
+        if (slash_command_function is not None):
+            return slash_command_function.get_command_function()

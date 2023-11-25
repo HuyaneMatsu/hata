@@ -256,54 +256,54 @@ class CommandBaseApplicationCommand(CommandBase):
         return True
     
     
-    @copy_docs(CommandBase._cursed_repr_builder)
-    def _cursed_repr_builder(self):
-        for repr_parts in CommandBase._cursed_repr_builder(self):
-            
-            repr_parts.append(', type = ')
-            guild_ids = self.guild_ids
-            if guild_ids is None:
-                if self.global_:
-                    type_name = 'global'
-                else:
-                    type_name = 'non-global'
+    @copy_docs(CommandBase._build_repr_body_into)
+    def _build_repr_body_into(self, repr_parts):
+        CommandBase._build_repr_body_into(self, repr_parts)
+        
+        repr_parts.append(', type = ')
+        guild_ids = self.guild_ids
+        if guild_ids is None:
+            if self.global_:
+                type_name = 'global'
             else:
-                type_name = 'guild bound'
+                type_name = 'non-global'
+        else:
+            type_name = 'guild bound'
+        
+        repr_parts.append(type_name)
+        
+        yield repr_parts
+        
+        allow_in_dm = self.allow_in_dm
+        if (allow_in_dm is not None):
+            repr_parts.append(', allow_in_dm = ')
+            repr_parts.append(repr(allow_in_dm))
+        
+        nsfw = self.nsfw
+        if (nsfw is not None):
+            repr_parts.append(', nsfw = ')
+            repr_parts.append(repr(nsfw))
+        
+        required_permissions = self.required_permissions
+        if (required_permissions is not None):
+            repr_parts.append(', required_permissions = ')
+            repr_parts.append(repr(required_permissions))
+        
+        unloading_behaviour = self._unloading_behaviour
+        if unloading_behaviour != UNLOADING_BEHAVIOUR_INHERIT:
+            repr_parts.append(', unloading_behaviour = ')
+            if unloading_behaviour == UNLOADING_BEHAVIOUR_DELETE:
+                unloading_behaviour_name = 'delete'
+            else:
+                unloading_behaviour_name = 'keep'
             
-            repr_parts.append(type_name)
-            
-            yield repr_parts
-            
-            allow_in_dm = self.allow_in_dm
-            if (allow_in_dm is not None):
-                repr_parts.append(', allow_in_dm = ')
-                repr_parts.append(repr(allow_in_dm))
-            
-            nsfw = self.nsfw
-            if (nsfw is not None):
-                repr_parts.append(', nsfw = ')
-                repr_parts.append(repr(nsfw))
-            
-            required_permissions = self.required_permissions
-            if (required_permissions is not None):
-                repr_parts.append(', required_permissions = ')
-                repr_parts.append(repr(required_permissions))
-            
-            unloading_behaviour = self._unloading_behaviour
-            if unloading_behaviour != UNLOADING_BEHAVIOUR_INHERIT:
-                repr_parts.append(', unloading_behaviour = ')
-                if unloading_behaviour == UNLOADING_BEHAVIOUR_DELETE:
-                    unloading_behaviour_name = 'delete'
-                else:
-                    unloading_behaviour_name = 'keep'
-                
-                repr_parts.append(unloading_behaviour_name)
-            
-            if (guild_ids is not None):
-                repr_parts.append(', guild_ids = ')
-                repr_parts.append(repr(guild_ids))
-    
-    
+            repr_parts.append(unloading_behaviour_name)
+        
+        if (guild_ids is not None):
+            repr_parts.append(', guild_ids = ')
+            repr_parts.append(repr(guild_ids))
+
+
     async def invoke_auto_completion(self, client, interaction_event, auto_complete_option):
         """
         Calls the auto completion function of the slasher application command.

@@ -3,22 +3,23 @@ __all__ = ('SlashCommandParameterAutoCompleter', )
 
 from functools import partial as partial_func
 
-from scarletio import RichAttributeErrorBaseType, export
+from scarletio import RichAttributeErrorBaseType, copy_docs, export
 
 from .....discord.client import Client
 from .....discord.interaction import InteractionEvent
 
+from ...constants import APPLICATION_COMMAND_FUNCTION_DEEPNESS
 from ...converters import SlashCommandParameterConverter, get_application_command_parameter_auto_completer_converters
-
-from ...exceptions import _register_exception_handler, handle_command_exception, test_exception_handler
+from ...exceptions import handle_command_exception
+from ...interfaces.command import CommandInterface
+from ...interfaces.exception_handler import ExceptionHandlerInterface
 from ...responding import process_command_coroutine
 from ...utils import raw_name_to_display
 
-from ..command_base_application_command.constants import APPLICATION_COMMAND_FUNCTION_DEEPNESS
 
 
 @export
-class SlashCommandParameterAutoCompleter(RichAttributeErrorBaseType):
+class SlashCommandParameterAutoCompleter(CommandInterface, ExceptionHandlerInterface, RichAttributeErrorBaseType):
     """
     Represents an application command parameter's auto completer.
     
@@ -347,52 +348,6 @@ class SlashCommandParameterAutoCompleter(RichAttributeErrorBaseType):
         return matched
     
     
-    def error(self, exception_handler = None, *, first = False):
-        """
-        Registers an exception handler to the ``SlashCommandParameterAutoCompleter``.
-        
-        Parameters
-        ----------
-        exception_handler : `None`, `CoroutineFunction` = `True`, Optional
-            Exception handler to register.
-        first : `bool` = `False`, Optional (Keyword Only)
-            Whether the exception handler should run first.
-        
-        Returns
-        -------
-        exception_handler / wrapper : `CoroutineFunction` / `functools.partial`
-            If `exception_handler` is not given, returns a wrapper.
-        """
-        if exception_handler is None:
-            return partial_func(_register_exception_handler, first)
-        
-        return self._register_exception_handler(exception_handler, first)
-    
-    
-    def _register_exception_handler(self, exception_handler, first):
-        """
-        Registers an exception handler to the ``SlashCommandParameterAutoCompleter``.
-        
-        Parameters
-        ----------
-        exception_handler : `CoroutineFunction`
-            Exception handler to register.
-        first : `bool`
-            Whether the exception handler should run first.
-        
-        Returns
-        -------
-        exception_handler : `CoroutineFunction`
-        """
-        test_exception_handler(exception_handler)
-        
-        exception_handlers = self._exception_handlers
-        if exception_handlers is None:
-            self._exception_handlers = exception_handlers = []
-        
-        if first:
-            exception_handlers.insert(0, exception_handler)
-        else:
-            exception_handlers.append(exception_handler)
-        
-        return exception_handler
+    @copy_docs(CommandInterface.get_command_function)
+    def get_command_function(self):
+        return self._command_function

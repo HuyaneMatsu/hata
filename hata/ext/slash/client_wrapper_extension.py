@@ -2,10 +2,11 @@ __all__ = ()
 
 from scarletio import KeepType
 
-from ...discord.client.utils import ClientWrapper
+from ...discord.client.client_wrapper import ClientWrapper
 from ...discord.events.handling_helpers import _EventHandlerManagerRouter
 
 from .command import SlashCommand
+from .router import InteractionCommandRouter
 from .slasher import Slasher
 
 
@@ -69,5 +70,4 @@ class ClientWrapper:
         -------
         event_handler_manager_router : ``_EventHandlerManagerRouter``
         """
-        return _EventHandlerManagerRouter(self, interactions_getter, from_class_constructor)
-
+        return _EventHandlerManagerRouter(self, interactions_getter, from_class_constructor, InteractionCommandRouter)

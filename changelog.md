@@ -1,3 +1,31 @@
+## 1.3.46 *\[2023-11-??\]*
+
+### Improvements
+
+- Add `ClientWrapper.__iter__`.
+- Add `ClientWrapper.__contains__`.
+- Add `ClientWrapper.__eq__`.
+- Add `ClientWrapperEventsProxy.__repr__`.
+- Add `ClientWrapperEventsProxy.__eq__`.
+- Add `ClientWrapperEventsProxy.__delattr__`.
+- Add `ClientWrapperEventsProxy.__setattr__`.
+
+#### ext.slash
+
+- Routed command registration output now supports registering nested commands.
+- Routed command registration output now supports registering auto completers.
+- Routed command registration output now supports registering exception handlers.
+- Add `AutocompleteInterface` to group up autocomplete logic.
+- Add `CommandInterface` to group up command logic (not much at this case).
+- Add `ExceptionHandlerInterface` to group up exception handler logic.
+- Add `NestableInterface` to group up nesting logic.
+
+### Renames, Deprecations & Removals
+
+- Rename `ClientWrapper._events_wrapper` to `ClientWrapperEventsProxy`.
+- `ClientWrapper.__delattr__` removed.
+- `ClientWrapper.__setattr__` removed.
+
 ## 1.3.45 *\[2023-11-19\]*
 
 ### Improvements

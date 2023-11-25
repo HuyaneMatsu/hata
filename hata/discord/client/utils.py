@@ -1,13 +1,12 @@
 __all__ = (
-    'ClientWrapper', 'BanEntry', 'Typer', 'run_console_till_interruption', 'start_clients', 'stop_clients',
-    'wait_for_interruption'
+    'BanEntry', 'Typer', 'run_console_till_interruption', 'start_clients', 'stop_clients', 'wait_for_interruption'
 )
 
 import sys
 from threading import current_thread
 from time import sleep as blocking_sleep
 
-from scarletio import CancelledError, Task, TaskGroup, get_last_module_frame, include, sleep
+from scarletio import CancelledError, Task, TaskGroup, get_last_module_frame, sleep
 from scarletio.tools.asynchronous_interactive_console import (
     create_banner, create_exit_message, run_asynchronous_interactive_console
 )
@@ -19,8 +18,6 @@ from ..permission.constants import PERMISSION_KEY
 
 PACKAGE = __import__(PACKAGE_NAME)
 
-
-Client = include('Client')
 
 def start_clients():
     """
@@ -207,7 +204,7 @@ class UserGuildPermission:
     
     def __repr__(self):
         """Returns the user guild permission's representation."""
-        return f'<{self.__class__.__name__}  owner = {self.owner}, permissions = {int.__repr__(self.permission)}>'
+        return f'<{self.__class__.__name__}  owner = {self.owner}, permissions = {self.permission:d}>'
     
     
     def __len__(self):
@@ -316,222 +313,7 @@ class Typer:
             waiter.cancel()
     
     
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exception_type, exception_value, exception_traceback):
         """Exits the typer's context block by cancelling it."""
         self.cancel()
         return False
-
-
-class ClientWrapper:
-    """
-    Wraps together more clients enabling to add the same event handlers or commands to them. Tho for that feature, you
-    need first import it's respective extension.
-    
-    Attributes
-    ----------
-    clients : ``Clients``
-        The clients to wrap together.
-    """
-    __slots__ = ('clients',)
-    
-    def __new__(cls, *clients):
-        """
-        Creates a new ``ClientWrapper`` with the given clients. If no clients are given, then will wrap
-        all the clients.
-        
-        Parameters
-        ----------
-        *clients : ``Client``
-            The clients to wrap together.
-        
-        Raises
-        ------
-        TypeError
-            A non ``Client`` was given.
-        """
-        if clients:
-            for client in clients:
-                if not isinstance(client, Client):
-                    raise TypeError(
-                        f'{cls.__name__} expects only `{Client.__name__}`, got '
-                        f'{client.__class__.__name__}; {client!r}.'
-                    )
-        else:
-            clients = tuple(CLIENTS.values())
-        
-        self = object.__new__(cls)
-        object.__setattr__(self, 'clients', clients)
-        return self
-    
-    
-    def __repr__(self):
-        """Returns the client wrapper's representation."""
-        result = [self.__class__.__name__, '(']
-        
-        clients = self.clients
-        limit = len(clients)
-        if limit:
-            index = 0
-            while True:
-                client = clients[index]
-                result.append(client.full_name)
-                
-                index += 1
-                if index == limit:
-                    break
-                
-                result.append(', ')
-                continue
-        
-        result.append(')')
-        
-        return ''.join(result)
-    
-    
-    def events(self, func = None, name = None, overwrite = False):
-        """
-        Adds the given `func` as event handler to the contained clients' with the given parameters.
-        
-        If `func` parameter is not given, returns an ``._events_wrapper``, what allows using this method
-        as a decorator with passing additional keyword parameters at the same time.
-        
-        Parameters
-        ----------
-        func : `None`, `callable` = `None`, Optional
-            The event handler to add to the respective clients.
-            
-            If not given, will return a decorator.
-        
-        name : `None`, `str` = `None`, Optional
-            The name to which event the handler should be registered to.
-            
-            If not given, it will be extracted from the handler's name.
-        
-        overwrite : `bool` = `False`, Optional
-            Whether the current event handler(s) should be replaced by the added one.
-        
-        
-        Returns
-        -------
-        func : `callable`
-            The given `func`. ``._events_wrapper`` if `func` was not given.
-        
-        Raises
-        ------
-        AttributeError
-            Invalid event name.
-        TypeError
-            - If `func` is given as `None`.
-            - If `func` was not given as callable.
-            - If `func` is not as async and neither cannot be converted to an async one.
-            - If `func` expects less or more non reserved positional parameters as `expected` is.
-            - If `name` was not passed as `None` or type `str`.
-        """
-
-        if func is None:
-            return self._events_wrapper(self, (name, overwrite))
-        
-        for client in self.clients:
-            client.events(func, name = name, overwrite = overwrite)
-        
-        return func
-    
-    
-    class _events_wrapper:
-        """
-        When the parent ``ClientWrapper``'s `.events` is called without giving the `func` parameter to it an instance
-        of this class is created for allowing using it as a decorator with passing additional keyword parameters at the
-        same time.
-        
-        Attributes
-        ----------
-        parent : ``ClientWrapper``
-            The owner event descriptor.
-        parameters: `tuple` of `object`
-            Additional keyword parameters (in order) passed when the wrapper was created.
-        """
-        __slots__ = ('parent', 'parameters',)
-        
-        def __init__(self, parent, parameters):
-            """
-            Creates an instance from the given parameters.
-            
-            Parameters
-            ----------
-            parent : ``EventHandlerManager``
-                The owner event descriptor.
-            parameters: `tuple` of `object`
-                Additional keyword parameters (in order) passed when the wrapper was created.
-            """
-            self.parent = parent
-            self.parameters = parameters
-        
-        
-        def __call__(self, func):
-            """
-            Adds the given `func` as event handler to the parent's clients' with the stored up parameters.
-            
-            Parameters
-            ----------
-            func : `callable`
-                The event handler to add to the respective clients.
-            
-            Returns
-            -------
-            func : `callable`
-                The added callable.
-            
-            Raises
-            ------
-            AttributeError
-                Invalid event name.
-            TypeError
-                - If `func` is given as `None`.
-                - If `func` was not given as callable.
-                - If `func` is not as async and neither cannot be converted to an async one.
-                - If `func` expects less or more non reserved positional parameters as `expected` is.
-                - If `name` was not passed as `None` or type `str`.
-            """
-            if func is None:
-                raise TypeError('`func` is given as `None`.')
-            
-            return self.parent.events(func, *self.parameters)
-    
-    
-    def __setattr__(self, attribute_name, attribute_value):
-        """
-        Sets the given event handler for the respective clients under the specified event name. Updates the respective
-        event's parser(s) if needed.
-        
-        Parameters
-        ----------
-        attribute_name : `str`
-            The name of the event.
-        attribute_value : `callable`
-            The event handler.
-        
-        Raises
-        ------
-        AttributeError
-            ``EventHandlerManager`` has no attribute named as the given `attribute_name`.
-        """
-        for client in self.clients:
-            client.events.__setattr__(attribute_name, attribute_value)
-    
-    
-    def __delattr__(self, attribute_name):
-        """
-        Removes the event handler with the given name from the respective client's events.
-        
-        Parameters
-        ----------
-        attribute_name : `str`
-            The name of the event.
-        
-        Raises
-        ------
-        AttributeError
-            ``EventHandlerManager`` has no attribute named as the given `attribute_name`.
-        """
-        for client in self.clients:
-            client.events.__delattr__(attribute_name)

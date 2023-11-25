@@ -209,6 +209,7 @@ setup(
         'hata.ext.slash.command.context_command',
         'hata.ext.slash.command.form_submit_command',
         'hata.ext.slash.command.slash_command',
+        'hata.ext.slash.interfaces',
         'hata.ext.slash.menus',
         'hata.ext.solarlink',
         'hata.ext.top_gg',

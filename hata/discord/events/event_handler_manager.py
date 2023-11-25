@@ -1354,7 +1354,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             object.__setattr__(self, event_handler_name, event_handler)
     
     
-    def __call__(self, func = None, name = None, overwrite = False):
+    def __call__(self, func = None, *, name = ..., overwrite = ...):
         """
         Adds the given `func` as an event handler.
         
@@ -1365,10 +1365,10 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             
             If given as `None` will return a decorator.
         
-        name : `None`, `str` = `None`, Optional
+        name : `None`, `str`, Optional (Keyword only)
             A name to be used instead of the passed `func`'s when adding it.
         
-        overwrite : `bool` = `False`, Optional
+        overwrite : `bool`, Optional (Keyword only)
             Whether the passed `func` should overwrite the already added ones with the same name or extend them.
         
         Returns
@@ -1388,6 +1388,12 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         """
         if func is None:
             return partial_func(self, name = name, overwrite = overwrite)
+        
+        if name is ...:
+            name = None
+        
+        if overwrite is ...:
+            overwrite = False
         
         name = check_name(func, name)
         

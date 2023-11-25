@@ -4,7 +4,9 @@ import warnings
 from datetime import datetime, timedelta
 from functools import partial as partial_func
 
-from scarletio import RichAttributeErrorBaseType, Task, TaskGroup, WeakKeyDictionary, WeakReferer, export, run_coroutine
+from scarletio import (
+    RichAttributeErrorBaseType, Task, TaskGroup, WeakKeyDictionary, WeakReferer, copy_docs, export, run_coroutine
+)
 
 from ...discord.application_command import (
     APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommand, ApplicationCommandTargetType
@@ -19,17 +21,18 @@ from ...discord.interaction import InteractionEvent, InteractionType
 
 from .command import (
     CommandBase, CommandBaseApplicationCommand, ComponentCommand, ContextCommand, FormSubmitCommand, SlashCommand,
-    SlashCommandParameterAutoCompleter, validate_application_target_type
+    validate_application_target_type
 )
-from .command.command_base_application_command.constants import APPLICATION_COMMAND_HANDLER_DEEPNESS
 from .command.component_command.constants import COMMAND_TARGETS_COMPONENT_COMMAND
 from .command.form_submit_command.constants import COMMAND_TARGETS_FORM_COMPONENT_COMMAND
-from .command.slash_command.helpers import _build_auto_complete_parameter_names, _register_auto_complete_function
 from .exceptions import (
-    SlasherSyncError, _register_exception_handler, _validate_random_error_message_getter,
-    default_slasher_exception_handler, default_slasher_random_error_message_getter, test_exception_handler
+    SlasherSyncError, _validate_random_error_message_getter, default_slasher_exception_handler,
+    default_slasher_random_error_message_getter
 )
 from .helpers import validate_translation_table
+from .interfaces.autocomplete import AutocompleteInterface
+from .interfaces.exception_handler import ExceptionHandlerInterface
+from .interfaces.nestable import NestableInterface
 from .permission_mismatch import (
     PermissionMismatchWarning, are_application_command_permission_overwrites_equal,
     check_and_warn_can_request_owners_access_of, create_permission_mismatch_message
@@ -811,7 +814,7 @@ class CommandState(RichAttributeErrorBaseType):
 
 
 @export
-class Slasher(EventHandlerBase):
+class Slasher(AutocompleteInterface, ExceptionHandlerInterface, NestableInterface, EventHandlerBase):
     """
     Slash command processor.
     
@@ -1378,79 +1381,33 @@ class Slasher(EventHandlerBase):
         self._component_interaction_waiters[message] = actual_waiter
     
     
-    def create_event(self, func, *args, target = None, **kwargs):
-        """
-        Adds a command.
+    @copy_docs(NestableInterface._store_command_instance)
+    def _store_command_instance(self, command):
+        if isinstance(command, CommandBaseApplicationCommand):
+            instance = self._add_application_command(command)
+            return True, instance
         
-        Parameters
-        ----------
-        func : `async-callable`
-            The function used as the command when using the respective command.
+        if isinstance(command, ComponentCommand):
+            instance = self._add_component_command(command)
+            return True, instance
         
-        name : `None`, `str`, `tuple` of (`str`, `Ellipsis`, `None`)
-            The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
-            instead.
-        description : `None`, `object`, `tuple` of (`None`, `Ellipsis`, `object`), Optional
-            Description to use instead of the function's docstring.
-        is_global : `None`, `bool`, `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether the application command command is global. Defaults to `False`.
-        guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
-                `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)), Optional
-            To which guild(s) the command is bound to.
-        is_default : `None`, `bool`, `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether the command is the default command in it's category.
-        delete_on_unload : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
-            Whether the command should be deleted from Discord when removed.
-            Whether the command is enabled by default for everyone who has `use_application_commands` permission.
-            
-            > This field is deprecated.
+        if isinstance(command, FormSubmitCommand):
+            instance = self._add_form_submit_command(command)
+            return True, instance
         
-        allow_in_dm : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
-            Whether the command can be used in private channels (dm).
-        custom_id : `str`, (`list`, `set`) of `str`, `tuple` of (`str`, (`list`, `set`) of `str`)
-            Custom id to match by the component command.
-        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy``, \
-                `list` of (`str`, ``UserBase``, ``Role`` ), Optional (Keyword only)
-            Which user or role can the response message ping (or everyone).
-        show_for_invoking_user_only : `bool`, Optional (Keyword only)
-            Whether the response message should only be shown for the invoking user.
-        target : `None`, `int`, `str`, ``ApplicationCommandTargetType`` = `None`, Optional
-            The target type of the command.
-        
-        Returns
-        -------
-        func : ``CommandBase``
-             The created or added command.
-        
-        Raises
-        ------
-        TypeError
-            If Any parameter's type is incorrect.
-        ValueError
-            If Any parameter's value is incorrect.
-        """
-        if isinstance(func, Router):
-            func = func[0]
-        
-        if isinstance(func, CommandBaseApplicationCommand):
-            self._add_application_command(func)
-            return func
-        
-        if isinstance(func, ComponentCommand):
-            self._add_component_command(func)
-            return func
-        
-        if isinstance(func, FormSubmitCommand):
-            self._add_form_submit_command(func)
-            return func
-        
-        
-        if 'custom_id' in kwargs:
+        return False, None
+    
+    
+    @copy_docs(NestableInterface._make_command_instance_from_parameters)
+    def _make_command_instance_from_parameters(self, function, positional_parameters, keyword_parameters):
+        target = keyword_parameters.pop('target', None)
+
+        if 'custom_id' in keyword_parameters:
             if (target is None) or (target in COMMAND_TARGETS_COMPONENT_COMMAND):
-                command = ComponentCommand(func, *args, **kwargs)
+                instance = ComponentCommand(function, *positional_parameters, **keyword_parameters)
             
             elif (target in COMMAND_TARGETS_FORM_COMPONENT_COMMAND):
-                command = FormSubmitCommand(func, *args, **kwargs)
+                instance = FormSubmitCommand(function, *positional_parameters, **keyword_parameters)
             
             else:
                 raise ValueError(
@@ -1461,60 +1418,23 @@ class Slasher(EventHandlerBase):
         else:
             target = validate_application_target_type(target)
             if target in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES:
-                command = ContextCommand(func, *args, **kwargs, target = target)
+                instance = ContextCommand(function, *positional_parameters, **keyword_parameters, target = target)
             else:
-                command = SlashCommand(func, *args, **kwargs)
+                instance = SlashCommand(function, *positional_parameters, **keyword_parameters)
         
-        if isinstance(command, Router):
-            command = command[0]
-        
-        # Register command
-        
-        if isinstance(command, CommandBaseApplicationCommand):
-            self._add_application_command(command)
-        
-        elif isinstance(command, ComponentCommand):
-            self._add_component_command(command)
-        
-        elif isinstance(command, FormSubmitCommand):
-            self._add_form_submit_command(command)
-        
-        else:
-            # No more cases
-            pass
-        
-        return command
+        return instance
     
     
-    def create_event_from_class(self, klass):
-        """
-        Breaks down the given class to it's class attributes and tries to add it as a command.
-        
-        Parameters
-        ----------
-        klass : `type`
-            The class, from what's attributes the command will be created.
-        
-        Returns
-        -------
-        func : ``CommandBase``
-             The created or added command.
-        
-        Raises
-        ------
-        TypeError
-            If Any attribute's type is incorrect.
-        ValueError
-            If Any attribute's value is incorrect.
-        """
+    @copy_docs(NestableInterface._make_command_instance_from_class)
+    def _make_command_instance_from_class(self, klass):
         target = getattr(klass, 'target', None)
         
         if hasattr(klass, 'custom_id'):
             if (target is None) or (target in COMMAND_TARGETS_COMPONENT_COMMAND):
-                command = ComponentCommand.from_class(klass)
+                instance = ComponentCommand.from_class(klass)
             
             elif (target in COMMAND_TARGETS_FORM_COMPONENT_COMMAND):
-                command = FormSubmitCommand.from_class(klass)
+                instance = FormSubmitCommand.from_class(klass)
             
             else:
                 raise ValueError(
@@ -1525,40 +1445,31 @@ class Slasher(EventHandlerBase):
         else:
             target = validate_application_target_type(target)
             if target in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES:
-                command = ContextCommand.from_class(klass)
+                instance = ContextCommand.from_class(klass)
             
             else:
-                command = SlashCommand.from_class(klass)
+                instance = SlashCommand.from_class(klass)
         
-        
-        if isinstance(command, Router):
-            command = command[0]
-        
-        if isinstance(command, SlashCommand):
-            self._add_application_command(command)
-        else:
-            self._add_component_command(command)
-        
-        return command
+        return instance
     
     
-    def _add_application_command(self, command):
+    def _add_application_command(self, application_command):
         """
         Adds a application command to the ``Slasher`` if applicable.
         
         Parameters
         ---------
-        command : ``CommandBaseApplicationCommand``
+        application_command : ``CommandBaseApplicationCommand``
             The command to add.
         """
-        command._parent_reference = self._get_self_reference()
+        application_command._parent_reference = self._get_self_reference()
         
-        if self._check_late_register(command, True):
-            return
+        if not self._check_late_register(application_command, True):
+            self._register_application_command(application_command)
+            
+            self._maybe_sync()
         
-        self._register_application_command(command)
-        
-        self._maybe_sync()
+        return application_command
     
     
     def _register_application_command(self, command):
@@ -2910,6 +2821,7 @@ class Slasher(EventHandlerBase):
                 self._register_helper(command, non_global_command_state, guild_id, application_command.id)
                 break
     
+    
     def _maybe_unregister_guild_command(self, application_command, guild_id):
         """
         Tries to unregister the given non-global application command from the slasher.
@@ -2931,9 +2843,11 @@ class Slasher(EventHandlerBase):
                 self._unregister_helper(command, non_global_command_state, guild_id)
                 break
     
+    
     def __repr__(self):
         """Returns the slasher's representation."""
-        return f'<{self.__class__.__name__} sync_should={len(self._sync_should)}, sync_done={len(self._sync_done)}>'
+        return f'<{self.__class__.__name__} sync_should = {len(self._sync_should)}, sync_done = {len(self._sync_done)}>'
+    
     
     @property
     def delete_commands_on_unload(self):
@@ -3098,57 +3012,6 @@ class Slasher(EventHandlerBase):
         Task(KOKORO, self._do_main_sync(client))
     
     
-    def error(self, exception_handler = None, *, first = False):
-        """
-        Registers an exception handler to the ``Slasher``.
-        
-        Parameters
-        ----------
-        exception_handler : `None`, `CoroutineFunction` = `None`, Optional
-            Exception handler to register.
-        first : `bool` = `False`, Optional (Keyword Only)
-            Whether the exception handler should run first.
-        
-        Returns
-        -------
-        exception_handler / wrapper : `CoroutineFunction` / `functools.partial`
-            If `exception_handler` is not given, returns a wrapper.
-        """
-        if exception_handler is None:
-            return partial_func(_register_exception_handler, first)
-        
-        return self._register_exception_handler(exception_handler, first)
-    
-    
-    def _register_exception_handler(self, exception_handler, first):
-        """
-        Registers an exception handler to the ``Slasher``.
-        
-        Parameters
-        ----------
-        exception_handler : `CoroutineFunction`
-            Exception handler to register.
-        first : `bool`
-            Whether the exception handler should run first.
-        
-        Returns
-        -------
-        exception_handler : `CoroutineFunction`
-        """
-        test_exception_handler(exception_handler)
-        
-        exception_handlers = self._exception_handlers
-        if exception_handlers is None:
-            self._exception_handlers = exception_handlers = []
-        
-        if first:
-            exception_handlers.insert(0, exception_handler)
-        else:
-            exception_handlers.append(exception_handler)
-        
-        return exception_handler
-    
-    
     def _add_component_command(self, component_command):
         """
         Adds a component command to the ``Slasher`` if applicable.
@@ -3163,8 +3026,12 @@ class Slasher(EventHandlerBase):
         RuntimeError
             If the command would only partially overwrite an other commands.
         """
-        self._add_custom_id_based_command(component_command, self._component_commands,
-            self._string_custom_id_to_component_command, self._regex_custom_id_to_component_command)
+        self._add_custom_id_based_command(
+            component_command, self._component_commands,
+            self._string_custom_id_to_component_command,
+            self._regex_custom_id_to_component_command,
+        )
+        return component_command
     
     
     def _add_form_submit_command(self, form_submit_command):
@@ -3181,12 +3048,22 @@ class Slasher(EventHandlerBase):
         RuntimeError
             If the command would only partially overwrite an other commands.
         """
-        self._add_custom_id_based_command(form_submit_command, self._form_submit_commands,
-            self._string_custom_id_to_form_submit_command, self._regex_custom_id_to_form_submit_command)
+        self._add_custom_id_based_command(
+            form_submit_command,
+            self._form_submit_commands,
+            self._string_custom_id_to_form_submit_command,
+            self._regex_custom_id_to_form_submit_command,
+        )
+        return form_submit_command
     
     
-    def _add_custom_id_based_command(self, custom_id_based_command, custom_id_based_commands,
-            string_custom_id_to_custom_id_based_command, regex_custom_id_to_custom_id_based_command):
+    def _add_custom_id_based_command(
+        self,
+        custom_id_based_command,
+        custom_id_based_commands,
+        string_custom_id_to_custom_id_based_command,
+        regex_custom_id_to_custom_id_based_command,
+    ):
         """
         Adds a custom id based command to the ``Slasher`` if applicable.
         
@@ -3468,83 +3345,11 @@ class Slasher(EventHandlerBase):
             self._self_reference = self_reference
         
         return self_reference
-
-
-    def autocomplete(self, parameter_name, *parameter_names, function = None):
-        """
-        Registers an auto completer function to the slasher.
-        
-        Parameters
-        ----------
-        parameter_name : `str`
-            The parameter's name.
-        *parameter_names : `str`
-            Additional parameter names to autocomplete
-        function : `None`, `async-callable` = `None`, Optional (Keyword only)
-            The function to register as auto completer.
-        
-        Returns
-        -------
-        function / wrapper : `async-callable`, `functools.partial`
-            The registered function if given or a wrapper to register the function with.
-        
-        Raises
-        ------
-        RuntimeError
-            - If the parameter already has a auto completer defined.
-            - If the application command function has no parameter named, like `parameter_name`.
-            - If the parameter cannot be auto completed.
-        TypeError
-            If `function` is not an asynchronous.
-        """
-        parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
-        
-        if (function is None):
-            return partial_func(_register_auto_complete_function, self, parameter_names)
-            
-        return self._add_autocomplete_function(parameter_names, function)
     
     
-    def _add_autocomplete_function(self, parameter_names, function):
-        """
-        Registers an autocomplete function.
-        
-        Parameters
-        ----------
-        parameter_names : `list` of `str`
-            The parameters' names.
-        function : `async-callable`
-            The function to register as auto completer.
-        
-        Returns
-        -------
-        function : `async-callable`
-            The registered function.
-        
-        Raises
-        ------
-        RuntimeError
-            - If the application command function has no parameter named, like `parameter_name`.
-            - If the parameter cannot be auto completed.
-        TypeError
-            If `function` is not an asynchronous.
-        """
-        if isinstance(function, SlashCommandParameterAutoCompleter):
-            function = function._command
-        
-        auto_completer = SlashCommandParameterAutoCompleter(
-            function,
-            parameter_names,
-            APPLICATION_COMMAND_HANDLER_DEEPNESS,
-            self,
-        )
-        
-        auto_completers = self._auto_completers
-        if (auto_completers is None):
-            auto_completers = []
-            self._auto_completers = auto_completers
-        
-        auto_completers.append(auto_completer)
+    @copy_docs(AutocompleteInterface._register_auto_completer)
+    def _register_auto_completer(self, parameter_names, function):
+        auto_completer = AutocompleteInterface._register_auto_completer(self, parameter_names, function)
         
         for command_state in self._command_states.values():
             active = command_state._active

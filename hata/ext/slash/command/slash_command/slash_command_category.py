@@ -16,6 +16,7 @@ from ...exceptions import SlashCommandParameterConversionError, handle_command_e
 from ...interfaces.autocomplete import AutocompleteInterface
 from ...interfaces.exception_handler import ExceptionHandlerInterface
 from ...interfaces.nestable import NestableInterface
+from ...interfaces.self_reference import SelfReferenceInterface
 
 from ..command_base import CommandBase
 
@@ -28,7 +29,11 @@ SlashCommand = include('SlashCommand')
 
 
 class SlashCommandCategory(
-    AutocompleteInterface, ExceptionHandlerInterface, NestableInterface, RichAttributeErrorBaseType
+    AutocompleteInterface,
+    ExceptionHandlerInterface,
+    NestableInterface,
+    SelfReferenceInterface,
+    RichAttributeErrorBaseType,
 ):
     """
     Represents an application command's backend implementation.
@@ -44,7 +49,7 @@ class SlashCommandCategory(
         
         Same as ``Slasher._exception_handlers``.
     
-    _self_reference : ``WeakReferer`` to ``SlashCommandCategory``
+    _self_reference : ``WeakReferer``
         Back reference to the slasher application command category.
         
         Used by sub commands to access the parent entity.
@@ -366,7 +371,7 @@ class SlashCommandCategory(
                         f'{self!r} already has default command.'
                     )
         
-        as_sub_command._parent_reference = self._get_self_reference()
+        as_sub_command._parent_reference = self.get_self_reference()
         sub_commands[command.name] = as_sub_command
         
         _reset_parent_schema(self)
@@ -435,7 +440,7 @@ class SlashCommandCategory(
     
     
     @copy_docs(AutocompleteInterface._register_auto_completer)
-    def _register_auto_completer(self, parameter_names, function):
+    def _register_auto_completer(self, function, parameter_names):
         auto_completer = self._make_auto_completer(function, parameter_names)
         self._store_auto_completer(auto_completer)
         
@@ -470,22 +475,6 @@ class SlashCommandCategory(
              resolved += sub_command._try_resolve_auto_completer(auto_completer)
         
         return resolved
-    
-    
-    def _get_self_reference(self):
-        """
-        Gets a weak reference to the ``SlashCommandCategory``.
-        
-        Returns
-        -------
-        self_reference : ``WeakReferer`` to ``SlashCommandCategory``
-        """
-        self_reference = self._self_reference
-        if self_reference is None:
-            self_reference = WeakReferer(self)
-            self._self_reference = self_reference
-        
-        return self_reference
     
     
     # ---- Mention ----

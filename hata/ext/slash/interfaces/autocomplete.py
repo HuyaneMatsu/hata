@@ -14,7 +14,7 @@ from .command import CommandInterface
 SlashCommandParameterAutoCompleter = include('SlashCommandParameterAutoCompleter')
 
 
-def _checkout_auto_complete_parameter_name(parameter_name):
+def validate_auto_complete_parameter_name(parameter_name):
     """
     Checks out one parameter name to auto complete.
     
@@ -55,7 +55,7 @@ def _checkout_auto_complete_parameter_name(parameter_name):
     return parameter_name
 
 
-def _build_auto_complete_parameter_names(parameter_name, parameter_names):
+def build_auto_complete_parameter_names(parameter_name, parameter_names):
     """
     Builds a checks out parameter names.
     
@@ -63,12 +63,12 @@ def _build_auto_complete_parameter_names(parameter_name, parameter_names):
     ----------
     parameter_name : `str`
         The parameter's name to auto complete.
-    parameter_names : `tuple` of `str`
+    parameter_names : `tuple<str>`
         Additional parameter to autocomplete.
     
     Returns
     -------
-    processed_parameter_names : `list` of `str`
+    processed_parameter_names : `list<str>`
         The processed parameter names.
     
     Raises
@@ -80,18 +80,19 @@ def _build_auto_complete_parameter_names(parameter_name, parameter_names):
     """
     processed_parameter_names = []
     
-    parameter_name = _checkout_auto_complete_parameter_name(parameter_name)
+    parameter_name = validate_auto_complete_parameter_name(parameter_name)
     processed_parameter_names.append(parameter_name)
     
     if parameter_names:
-        for iter_parameter_name in parameter_names:
-            iter_parameter_name = _checkout_auto_complete_parameter_name(iter_parameter_name)
-            processed_parameter_names.append(iter_parameter_name)
+        for iterated_parameter_name in parameter_names:
+            iterated_parameter_name = validate_auto_complete_parameter_name(iterated_parameter_name)
+            if iterated_parameter_name not in processed_parameter_names:
+                processed_parameter_names.append(iterated_parameter_name)
     
     return processed_parameter_names
 
 
-def _register_auto_complete_function(parent, parameter_names, function):
+def _register_auto_completer(parent, parameter_names, function):
     """
     Returned by `.autocomplete` decorators wrapped inside of `functools.partial` if `function` is not given.
     
@@ -106,7 +107,7 @@ def _register_auto_complete_function(parent, parameter_names, function):
     
     Returns
     -------
-    auto_completer : ``SlashCommandParameterAutoCompleter``
+    auto_completer : `SlashCommandParameterAutoCompleter | InteractionCommandRouter`
         The registered auto completer
     
     Raises
@@ -118,12 +119,7 @@ def _register_auto_complete_function(parent, parameter_names, function):
     TypeError
         If `function` is not an asynchronous.
     """
-    if (function is None):
-        raise RuntimeError(
-            f'`function` cannot be `None`.'
-        )
-    
-    return parent._register_auto_completer(parameter_names, function)
+    return parent._register_auto_completer(function, parameter_names)
 
 
 class AutocompleteInterface(RichAttributeErrorBaseType):
@@ -132,7 +128,7 @@ class AutocompleteInterface(RichAttributeErrorBaseType):
     """
     __slots__ = ()
     
-    def autocomplete(self, parameter_name, *parameter_names, function = None):
+    def autocomplete(self, parameter_name, *parameter_names, function = ...):
         """
         Registers an auto completer function to the application command.
         
@@ -142,7 +138,7 @@ class AutocompleteInterface(RichAttributeErrorBaseType):
             The parameter's name.
         *parameter_names : `str`
             Additional parameter names to autocomplete
-        function : `None`, `callable` = `None`, Optional (Keyword only)
+        function : `None`, `callable`, Optional (Keyword only)
             The function to register as auto completer.
         
         Returns
@@ -159,28 +155,28 @@ class AutocompleteInterface(RichAttributeErrorBaseType):
         TypeError
             If `function` is not an asynchronous.
         """
-        parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
+        parameter_names = build_auto_complete_parameter_names(parameter_name, parameter_names)
         
-        if (function is None):
-            return partial_func(_register_auto_complete_function, self, parameter_names)
+        if (function is ...):
+            return partial_func(_register_auto_completer, self, parameter_names)
         
-        return self._register_auto_completer(parameter_names, function)
+        return self._register_auto_completer(function, parameter_names)
     
     
-    def _register_auto_completer(self, parameter_names, function):
+    def _register_auto_completer(self, function, parameter_names):
         """
         Registers an autocomplete function.
         
         Parameters
         ----------
-        parameter_names : `list<str>`
-            The parameters' names.
         function : `async-callable`
             The function to register as auto completer.
+        parameter_names : `list<str>`
+            The parameters' names.
         
         Returns
         -------
-        auto_completer : ``SlashCommandParameterAutoCompleter``
+        auto_completer : `SlashCommandParameterAutoCompleter | InteractionCommandRouter`
             The registered auto completer
         
         Raises

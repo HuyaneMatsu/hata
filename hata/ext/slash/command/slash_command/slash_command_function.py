@@ -12,6 +12,7 @@ from ...exceptions import handle_command_exception
 from ...interfaces.autocomplete import AutocompleteInterface
 from ...interfaces.command import CommandInterface
 from ...interfaces.exception_handler import ExceptionHandlerInterface
+from ...interfaces.self_reference import SelfReferenceInterface
 from ...responding import process_command_coroutine
 
 from ..command_base import CommandBase
@@ -20,7 +21,11 @@ from .slash_command_parameter_auto_completer import SlashCommandParameterAutoCom
 
 
 class SlashCommandFunction(
-    AutocompleteInterface, CommandInterface, ExceptionHandlerInterface, RichAttributeErrorBaseType
+    AutocompleteInterface,
+    CommandInterface,
+    ExceptionHandlerInterface,
+    SelfReferenceInterface,
+    RichAttributeErrorBaseType,
 ):
     """
     Represents a slash command's backend implementation.
@@ -44,7 +49,7 @@ class SlashCommandFunction(
     _parent_reference : `None`, ``WeakReferer`` to (``SlashCommand``,``SlashCommandCategory``)
         Reference to the parent application command or category.
     
-    _self_reference : `None`, ``WeakReferer`` to ``SlashCommandFunction``
+    _self_reference : `None`, ``WeakReferer``
         Back reference to the slasher application command function.
         
         Used by auto completers to access the parent entity.
@@ -457,7 +462,7 @@ class SlashCommandFunction(
     
     
     @copy_docs(AutocompleteInterface._register_auto_completer)
-    def _register_auto_completer(self, parameter_names, function):
+    def _register_auto_completer(self, function, parameter_names):
         auto_completer = self._make_auto_completer(function, parameter_names)
         
         auto_completable_parameters = self._get_auto_completable_parameters()
@@ -499,22 +504,7 @@ class SlashCommandFunction(
         
         return resolved
     
-    
-    def _get_self_reference(self):
-        """
-        Gets a weak reference to the ``SlashCommandFunction``.
-        
-        Returns
-        -------
-        self_reference : ``WeakReferer`` to ``SlashCommandFunction``
-        """
-        self_reference = self._self_reference
-        if self_reference is None:
-            self_reference = WeakReferer(self)
-            self._self_reference = self_reference
-        
-        return self_reference
-    
+
     # ---- Mention ----
     
     @property

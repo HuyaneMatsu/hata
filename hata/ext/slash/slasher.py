@@ -33,6 +33,7 @@ from .helpers import validate_translation_table
 from .interfaces.autocomplete import AutocompleteInterface
 from .interfaces.exception_handler import ExceptionHandlerInterface
 from .interfaces.nestable import NestableInterface
+from .interfaces.self_reference import SelfReferenceInterface
 from .permission_mismatch import (
     PermissionMismatchWarning, are_application_command_permission_overwrites_equal,
     check_and_warn_can_request_owners_access_of, create_permission_mismatch_message
@@ -814,7 +815,9 @@ class CommandState(RichAttributeErrorBaseType):
 
 
 @export
-class Slasher(AutocompleteInterface, ExceptionHandlerInterface, NestableInterface, EventHandlerBase):
+class Slasher(
+    AutocompleteInterface, ExceptionHandlerInterface, NestableInterface, SelfReferenceInterface, EventHandlerBase
+):
     """
     Slash command processor.
     
@@ -896,7 +899,7 @@ class Slasher(AutocompleteInterface, ExceptionHandlerInterface, NestableInterfac
     _regex_custom_id_to_form_submit_command : `dict` of (``RegexMatcher``, ``FormSubmitCommand``) items
         A dictionary which contains form submit commands based on regex patterns.
     
-    _self_reference : `None`, ``WeakReferer`` to ``Slasher``
+    _self_reference : `None`, ``WeakReferer`` to `instance<cls>`
         Reference back to the slasher. Used to reference back from commands.
     
     _string_custom_id_to_component_command : `dict` of (`str`, ``ComponentCommand``) items
@@ -1462,7 +1465,7 @@ class Slasher(AutocompleteInterface, ExceptionHandlerInterface, NestableInterfac
         application_command : ``CommandBaseApplicationCommand``
             The command to add.
         """
-        application_command._parent_reference = self._get_self_reference()
+        application_command._parent_reference = self.get_self_reference()
         
         if not self._check_late_register(application_command, True):
             self._register_application_command(application_command)
@@ -3083,7 +3086,7 @@ class Slasher(AutocompleteInterface, ExceptionHandlerInterface, NestableInterfac
         RuntimeError
             If the command would only partially overwrite an other commands.
         """
-        custom_id_based_command._parent_reference = self._get_self_reference()
+        custom_id_based_command._parent_reference = self.get_self_reference()
         
         overwrite_commands = None
         
@@ -3331,25 +3334,9 @@ class Slasher(AutocompleteInterface, ExceptionHandlerInterface, NestableInterfac
         return command_count_with_sub_commands
     
     
-    def _get_self_reference(self):
-        """
-        Gets a weak reference to the ``Slasher``.
-        
-        Returns
-        -------
-        self_reference : ``WeakReferer`` to ``Slasher``
-        """
-        self_reference = self._self_reference
-        if self_reference is None:
-            self_reference = WeakReferer(self)
-            self._self_reference = self_reference
-        
-        return self_reference
-    
-    
     @copy_docs(AutocompleteInterface._register_auto_completer)
-    def _register_auto_completer(self, parameter_names, function):
-        auto_completer = AutocompleteInterface._register_auto_completer(self, parameter_names, function)
+    def _register_auto_completer(self, function, parameter_names):
+        auto_completer = AutocompleteInterface._register_auto_completer(self, function, parameter_names)
         
         for command_state in self._command_states.values():
             active = command_state._active

@@ -1,10 +1,10 @@
 __all__ = ('SlashCommand',)
 
-from scarletio import WeakReferer, copy_docs, export
+from scarletio import copy_docs, export
 
 from .....discord.application_command import ApplicationCommandTargetType
 from .....discord.application_command.application_command.constants import APPLICATION_COMMAND_OPTIONS_MAX
-from .....discord.events.handling_helpers import Router, _EventHandlerManager, check_name, route_name, route_value
+from .....discord.events.handling_helpers import Router, check_name, route_name, route_value
 
 from ...constants import (
     APPLICATION_COMMAND_CATEGORY_DEEPNESS_START, APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND,
@@ -15,6 +15,7 @@ from ...exceptions import SlashCommandParameterConversionError, handle_command_e
 from ...interfaces.autocomplete import AutocompleteInterface
 from ...interfaces.command import CommandInterface
 from ...interfaces.nestable import NestableInterface
+from ...interfaces.self_reference import SelfReferenceInterface
 from ...response_modifier import ResponseModifier
 from ...utils import _check_maybe_route, raw_name_to_display
 from ...wrappers import CommandWrapper, get_parameter_configurers
@@ -33,7 +34,9 @@ from .slash_command_parameter_auto_completer import SlashCommandParameterAutoCom
 
 
 @export
-class SlashCommand(AutocompleteInterface, CommandInterface, NestableInterface, CommandBaseApplicationCommand):
+class SlashCommand(
+    AutocompleteInterface, CommandInterface, NestableInterface, SelfReferenceInterface, CommandBaseApplicationCommand
+):
     """
     Class to wrap an application command providing interface for ``Slasher``.
     
@@ -44,7 +47,7 @@ class SlashCommand(AutocompleteInterface, CommandInterface, NestableInterface, C
         
         Same as ``Slasher._exception_handlers``.
     
-    _parent_reference : `None`, ``WeakReferer`` to ``Slasher``
+    _parent_reference : `None`, ``WeakReferer``
         Reference to the slasher application command's parent.
     
     name : `str`
@@ -100,7 +103,7 @@ class SlashCommand(AutocompleteInterface, CommandInterface, NestableInterface, C
     _command : `None`, ``SlashCommandFunction``
         The command of the slash command.
     
-    _self_reference : `None`, ``WeakReferer`` to ``SlashCommand``
+    _self_reference : `None`, ``WeakReferer``
         Back reference to the slasher application command.
         
         Used by sub commands to access the parent entity.
@@ -337,7 +340,7 @@ class SlashCommand(AutocompleteInterface, CommandInterface, NestableInterface, C
                 self._self_reference = None
                 
                 if (command_function is not None):
-                    command_function._parent_reference = self._get_self_reference()
+                    command_function._parent_reference = self.get_self_reference()
                 
                 if (wrappers is not None):
                     for wrapper in wrappers:
@@ -383,7 +386,7 @@ class SlashCommand(AutocompleteInterface, CommandInterface, NestableInterface, C
             self._self_reference = None
             
             if (command_function is not None):
-                command_function._parent_reference = self._get_self_reference()
+                command_function._parent_reference = self.get_self_reference()
             
             if (wrappers is not None):
                 for wrapper in wrappers:
@@ -474,7 +477,7 @@ class SlashCommand(AutocompleteInterface, CommandInterface, NestableInterface, C
         
         if (sub_commands is not None):
             for sub_command in sub_commands.values():
-                sub_command._parent_reference = new._get_self_reference()
+                sub_command._parent_reference = new.get_self_reference()
         
         return new
     
@@ -687,7 +690,7 @@ class SlashCommand(AutocompleteInterface, CommandInterface, NestableInterface, C
                     )
         
         as_sub_command = command.as_sub_command(APPLICATION_COMMAND_CATEGORY_DEEPNESS_START)
-        as_sub_command._parent_reference = self._get_self_reference()
+        as_sub_command._parent_reference = self.get_self_reference()
         
         sub_commands[as_sub_command.name] = as_sub_command
         _reset_application_command_schema(self)
@@ -721,7 +724,7 @@ class SlashCommand(AutocompleteInterface, CommandInterface, NestableInterface, C
     
     
     @copy_docs(AutocompleteInterface._register_auto_completer)
-    def _register_auto_completer(self, parameter_names, function):
+    def _register_auto_completer(self, function, parameter_names):
         slash_command_function = self._command
         if slash_command_function is None:
             auto_completer = self._make_auto_completer(function, parameter_names)
@@ -733,27 +736,11 @@ class SlashCommand(AutocompleteInterface, CommandInterface, NestableInterface, C
                     sub_command._try_resolve_auto_completer(auto_completer)
         
         else:
-            auto_completer = slash_command_function._register_auto_completer(parameter_names, function)
+            auto_completer = slash_command_function._register_auto_completer(function, parameter_names)
         
         _reset_application_command_schema(self)
         
         return auto_completer
-    
-    
-    def _get_self_reference(self):
-        """
-        Gets a weak reference to the ``SlashCommand``.
-        
-        Returns
-        -------
-        self_reference : ``WeakReferer`` to ``SlashCommand``
-        """
-        self_reference = self._self_reference
-        if self_reference is None:
-            self_reference = WeakReferer(self)
-            self._self_reference = self_reference
-        
-        return self_reference
     
     
     def _try_resolve_auto_completer(self, auto_completer):

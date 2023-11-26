@@ -452,14 +452,14 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
         return f'<{self.__class__.__name__} of {self.parent!r}>'
     
     
-    def __call__(self, func = ..., *args, **kwargs):
+    def __call__(self, function = ..., *args, **kwargs):
         """
         Adds the given `func` to the event handler manager's parent. If `func` is not passed, then returns a
         ``._wrapper` to allow using the manager as a decorator with still passing keyword parameters.
         
         Parameters
         ----------
-        func : `callable`, Optional
+        function : `callable`, Optional
             The event to be added to the respective event handler.
         *args : Positional parameters
             Additionally passed positional parameters to be passed with the given `func` to the event handler.
@@ -472,11 +472,11 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
             - The created instance by the respective event handler.
             - If `func` was not passed, then returns a ``._wrapper``.
         """
-        if func is ...:
+        if function is ...:
             return partial_func(self, *args, **kwargs)
         
-        func = self.parent.create_event(func, *args, **kwargs)
-        return func
+        function = self.parent.create_event(function, *args, **kwargs)
+        return function
     
     
     def from_class(self, klass):
@@ -767,7 +767,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         self.parent = parent
     
     
-    def __call__(self, func = ..., *args, **kwargs):
+    def __call__(self, function = ..., *args, **kwargs):
         """
         Adds the given `func` to all of the represented client's respective event handler managers.
         
@@ -782,10 +782,10 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         
         Returns
         -------
-        func : `instance<self._router_type>`
+        function : `instance<self._router_type>`
            The added functions.
         """
-        if func is ...:
+        if function is ...:
             return partial_func(self, *args, **kwargs)
         
         handlers = self._getter(self)
@@ -796,12 +796,12 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         
         routed_args = route_args(args, count)
         routed_kwargs = route_kwargs(kwargs, count)
-        routed_func = maybe_route_func(func, count)
+        routed_func = maybe_route_func(function, count)
         routed = []
         
         for handler, func_, args, kwargs in zip(handlers, routed_func, routed_args, routed_kwargs):
-            func = handler.create_event(func_, *args, **kwargs)
-            routed.append(func)
+            function = handler.create_event(func_, *args, **kwargs)
+            routed.append(function)
         
         return self._router_type(routed)
     

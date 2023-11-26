@@ -482,62 +482,6 @@ class CommandBaseApplicationCommand(CommandBase):
         )
     
     
-    def autocomplete(self, parameter_name, *parameter_names, function = None):
-        """
-        Registers an auto completer function to the application command.
-        
-        Can be used as a decorator, as:
-        
-        ```py
-        @bot.interactions(is_global = True)
-        async def buy(
-            item: ('str', 'Select an item to buy.'),
-        ):
-            return 'Great success.'
-        
-        AUTO_COMPLETE_CHOICES = (
-            'cake',
-            'shrimp fry',
-        )
-        
-        @buy.autocomplete('item')
-        async def autocomplete_item_parameter(value):
-            if value is None:
-                return AUTO_COMPLETE_CHOICES[:20]
-            
-            value = value.lower()
-            
-            return [choice for choice in AUTO_COMPLETE_CHOICES if choice.startswith(value)]
-        ```
-        
-        Parameters
-        ----------
-        parameter_name : `str`
-            The parameter's name.
-        *parameter_names : `str`
-            Additional parameter names to autocomplete
-        function : `None`, `async-callable` = `None`, Optional (Keyword only)
-            The function to register as auto completer.
-        
-        Returns
-        -------
-        function / wrapper : `async-callable`, `functools.partial`
-            The registered function if given or a wrapper to register the function with.
-        
-        Raises
-        ------
-        RuntimeError
-            - If the parameter already has a auto completer defined.
-            - If the application command function has no parameter named, like `parameter_name`.
-            - If the parameter cannot be auto completed.
-        TypeError
-            If `function` is not an asynchronous.
-        """
-        raise RuntimeError(
-            f'{self.__class__.__name__} is not auto-completable.'
-        )
-    
-    
     # ---- Permission overwrites ----
 
     def add_permission_overwrite(self, guild_id, permission_overwrite):

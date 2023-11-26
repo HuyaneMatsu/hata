@@ -30,7 +30,7 @@ class ComponentCommand(CommandBaseCustomId):
         
         Same as ``Slasher._exception_handlers``.
     
-    _parent_reference : `None`, ``WeakReferer`` to ``SlashCommand``
+    _parent_reference : `None`, ``WeakReferer`` to ``SelfReferenceInterface``
         The parent slasher of the component command.
     _parameter_converters : `tuple` of ``ParameterConverter``
         Parsers to parse command parameters.

@@ -26,13 +26,13 @@ class InteractionCommandRouter(AutocompleteInterface, ExceptionHandlerInterface,
     
     
     @copy_docs(AutocompleteInterface.autocomplete)
-    def autocomplete(self, parameter_name, *parameter_names, function = None):
+    def autocomplete(self, parameter_name, *parameter_names, function = ...):
         self._check_supports_auto_completion()
         return AutocompleteInterface.autocomplete(self, parameter_name, *parameter_names, function = function)
     
     
     @copy_docs(AutocompleteInterface._register_auto_completer)
-    def _register_auto_completer(self, parameter_names, function):
+    def _register_auto_completer(self, function, parameter_names):
         self._check_supports_auto_completion()
 
         exceptions = None
@@ -40,7 +40,7 @@ class InteractionCommandRouter(AutocompleteInterface, ExceptionHandlerInterface,
         
         for instance in self:
             try:
-                added_auto_completer = instance._register_auto_completer(parameter_names, function)
+                added_auto_completer = instance._register_auto_completer(function, parameter_names)
             except RuntimeError as exception:
                 if exceptions is None:
                     exceptions = []

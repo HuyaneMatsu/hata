@@ -19,6 +19,7 @@
 - Add `CommandInterface` to group up command logic (not much at this case).
 - Add `ExceptionHandlerInterface` to group up exception handler logic.
 - Add `NestableInterface` to group up nesting logic.
+- Add `SelfReferenceInterface` to group up self-reference logic.
 
 ### Renames, Deprecations & Removals
 

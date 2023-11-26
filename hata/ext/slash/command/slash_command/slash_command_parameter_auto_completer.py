@@ -1,8 +1,5 @@
 __all__ = ('SlashCommandParameterAutoCompleter', )
 
-
-from functools import partial as partial_func
-
 from scarletio import RichAttributeErrorBaseType, copy_docs, export
 
 from .....discord.client import Client
@@ -13,6 +10,7 @@ from ...converters import SlashCommandParameterConverter, get_application_comman
 from ...exceptions import handle_command_exception
 from ...interfaces.command import CommandInterface
 from ...interfaces.exception_handler import ExceptionHandlerInterface
+from ...interfaces.self_reference import get_self_reference_of
 from ...responding import process_command_coroutine
 from ...utils import raw_name_to_display
 
@@ -59,26 +57,23 @@ class SlashCommandParameterAutoCompleter(CommandInterface, ExceptionHandlerInter
             The names, which should be auto completed.
         deepness : `int`
             How deep the auto completer was created.
-        parent : `None`, ``Slasher``, ``SlashCommand``, ``SlashCommandCategory``,
-            ``SlashCommandFunction``
+        parent : `None | SelfReferenceInterface | object`
+            The parent of the auto completer.
         """
         command, parameter_converters = get_application_command_parameter_auto_completer_converters(function)
         
-        name_pairs = frozenset((name, raw_name_to_display(name)) for name in set(parameter_names))
+        name_pairs = frozenset((name, raw_name_to_display(name)) for name in parameter_names)
         
-        if parent is None:
-            parent_reference = None
-        else:
-            parent_reference = parent._get_self_reference()
+        parent_reference = get_self_reference_of(parent)
         
         self = object.__new__(cls)
         
         self._command_function = command
-        self._parameter_converters = parameter_converters
-        self.name_pairs = name_pairs
-        self.deepness = deepness
-        self._parent_reference = parent_reference
         self._exception_handlers = None
+        self._parameter_converters = parameter_converters
+        self._parent_reference = parent_reference
+        self.deepness = deepness
+        self.name_pairs = name_pairs
         
         return self
     
@@ -117,7 +112,7 @@ class SlashCommandParameterAutoCompleter(CommandInterface, ExceptionHandlerInter
         else:
             if (self_parent is None):
                 new = self
-                new._parent_reference = new_parent._get_self_reference()
+                new._parent_reference = get_self_reference_of(new_parent)
             
             else:
                 if (new_parent is self_parent):
@@ -125,7 +120,7 @@ class SlashCommandParameterAutoCompleter(CommandInterface, ExceptionHandlerInter
                 
                 else:
                     new = self.copy()
-                    new._parent_reference = new_parent._get_self_reference()
+                    new._parent_reference = get_self_reference_of(new_parent)
         
         return new
     

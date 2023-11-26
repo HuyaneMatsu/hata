@@ -5,13 +5,13 @@ from functools import partial as partial_func
 from scarletio import CallableAnalyzer, RichAttributeErrorBaseType
 
 
-def test_exception_handler(exception_handler):
+def validate_exception_handler(function):
     """
     Tests whether the given exception handler accepts the expected amount of parameters.
     
     Parameters
     ----------
-    exception_handler : `CoroutineFunctionType`
+    function : `CoroutineFunctionType`
         A function, which handles an exception and returns whether handled it.
         
         The following parameters are passed to it:
@@ -38,23 +38,27 @@ def test_exception_handler(exception_handler):
         | handled           | `bool`    |
         +-------------------+-----------+
     
+    Returns
+    -------
+    exception_handler : `CoroutineFunctionType`
+    
     Raises
     ------
     TypeError
         - If `exception_handler` accepts bad amount of parameters.
         - If `exception_handler` is not a coroutine function.
     """
-    analyzer = CallableAnalyzer(exception_handler)
+    analyzer = CallableAnalyzer(function)
     if not analyzer.is_async():
         raise TypeError(
-            f'`exception_handler` can be `async` function, got {exception_handler!r}.'
+            f'`exception_handler` can be `async` function, got {function!r}.'
         )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 4:
         raise TypeError(
             f'`exception_handler` should accept `4` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got {exception_handler!r}.'
+            f'least `{min_!r}`, got {function!r}.'
         )
     
     if min_ != 4:
@@ -62,8 +66,10 @@ def test_exception_handler(exception_handler):
             if not analyzer.accepts_args():
                 raise TypeError(
                     f'`exception_handler` should accept `4` parameters, meanwhile the given callable '
-                    f'expects up to `{max_!r}`, got {exception_handler!r}.'
+                    f'expects up to `{max_!r}`, got {function!r}.'
                 )
+    
+    return function
 
 
 def _register_exception_handler(parent, first, exception_handler):
@@ -90,9 +96,6 @@ def _register_exception_handler(parent, first, exception_handler):
     RuntimeError
         If `exception_handler` is given as `None`.
     """
-    if (exception_handler is None):
-        raise RuntimeError('`exception_handler` cannot be `None`.')
-    
     return parent._register_exception_handler(exception_handler, first)
 
 
@@ -102,14 +105,14 @@ class ExceptionHandlerInterface(RichAttributeErrorBaseType):
     """
     __slots__ = ()
     
-    def error(self, exception_handler = None, *, first = False):
+    def error(self, function = ..., *, first = False):
         """
         Registers an exception handler to the ``SlashCommandCategory``.
         
         Parameters
         ----------
-        exception_handler : `None`, `CoroutineFunctionType` = `None`, Optional
-            Exception handler to register.
+        function : `None`, `CoroutineFunctionType`, Optional
+            Function to register as exception handler.
         first : `bool` = `False`, Optional (Keyword Only)
             Whether the exception handler should run first.
         
@@ -118,19 +121,19 @@ class ExceptionHandlerInterface(RichAttributeErrorBaseType):
         exception_handler / wrapper : `CoroutineFunctionType` / `functools.partial`
             If `exception_handler` is not given, returns a wrapper.
         """
-        if exception_handler is None:
-            return partial_func(_register_exception_handler, first)
+        if function is ...:
+            return partial_func(_register_exception_handler, self, first)
         
-        return self._register_exception_handler(exception_handler, first)
+        return self._register_exception_handler(function, first)
     
     
-    def _register_exception_handler(self, exception_handler, first):
+    def _register_exception_handler(self, function, first):
         """
         Registers an exception handler to the ``SlashCommandCategory``.
         
         Parameters
         ----------
-        exception_handler : `CoroutineFunctionType`
+        function : `CoroutineFunctionType`
             Exception handler to register.
         first : `bool`
             Whether the exception handler should run first.
@@ -139,7 +142,7 @@ class ExceptionHandlerInterface(RichAttributeErrorBaseType):
         -------
         exception_handler : `CoroutineFunctionType`
         """
-        test_exception_handler(exception_handler)
+        exception_handler = validate_exception_handler(function)
         self._store_exception_handler(exception_handler, first)
         return exception_handler
     

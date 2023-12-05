@@ -133,7 +133,7 @@ def _iter_options__target():
 
 
 @vampytest._(vampytest.call_from(_iter_options__target()).returning_last())
-def test_AuditLogEntry__target(audit_log_entry):
+def test__AuditLogEntry__target(audit_log_entry):
     """
     Tests whether ``AuditLogEntry.target`` works as intended.
     
@@ -157,7 +157,7 @@ def _iter_options__parent():
 
 
 @vampytest._(vampytest.call_from(_iter_options__parent()).returning_last())
-def test_AuditLogEntry__parent(audit_log_entry):
+def test__AuditLogEntry__parent(audit_log_entry):
     """
     Tests whether ``AuditLogEntry.parent`` works as intended.
     
@@ -182,7 +182,7 @@ def _iter_options__guild():
 
 
 @vampytest._(vampytest.call_from(_iter_options__guild()).returning_last())
-def test_AuditLogEntry__guild(audit_log_entry):
+def test__AuditLogEntry__guild(audit_log_entry):
     """
     Tests whether ``AuditLogEntry.guild`` works as intended.
     
@@ -206,7 +206,7 @@ def _iter_options__user():
 
 
 @vampytest._(vampytest.call_from(_iter_options__user()).returning_last())
-def test_AuditLogEntry__user(audit_log_entry):
+def test__AuditLogEntry__user(audit_log_entry):
     """
     Tests whether ``AuditLogEntry.user`` works as intended.
     
@@ -248,7 +248,7 @@ def _iter_options__get_change():
 
 
 @vampytest._(vampytest.call_from(_iter_options__get_change()).returning_last())
-def test_AuditLogEntry__get_change(audit_log_entry, attribute_name):
+def test__AuditLogEntry__get_change(audit_log_entry, attribute_name):
     """
     Tests whether ``AuditLogEntry.get_change`` works as intended.
     
@@ -290,7 +290,7 @@ def _iter_options__iter_changes():
 
 
 @vampytest._(vampytest.call_from(_iter_options__iter_changes()).returning_last())
-def test_AuditLogEntry__iter_changes(audit_log_entry):
+def test__AuditLogEntry__iter_changes(audit_log_entry):
     """
     Tests whether ``AuditLogEntry.iter_changes`` works as intended.
     
@@ -333,7 +333,7 @@ def _iter_options__get_detail():
 
 
 @vampytest._(vampytest.call_from(_iter_options__get_detail()).returning_last())
-def test_AuditLogEntry__get_detail(audit_log_entry, name):
+def test__AuditLogEntry__get_detail(audit_log_entry, name):
     """
     Tests whether ``AuditLogEntry.get_detail`` works as intended.
     
@@ -375,7 +375,7 @@ def _iter_options__iter_details():
 
 
 @vampytest._(vampytest.call_from(_iter_options__iter_details()).returning_last())
-def test_AuditLogEntry__iter_details(audit_log_entry):
+def test__AuditLogEntry__iter_details(audit_log_entry):
     """
     Tests whether ``AuditLogEntry.iter_details`` works as intended.
     

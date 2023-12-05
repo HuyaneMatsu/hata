@@ -447,11 +447,19 @@ class DiscordHTTPClient(HTTPClient):
         )
     
     # bot only
+    async def oauth2_application_get_own(self):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.oauth2_application_get_own, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/oauth2/applications/@me',
+        )
+    
+    
     async def application_get_own(self):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.application_get_own, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET,
-            f'{API_ENDPOINT}/oauth2/applications/@me',
+            f'{API_ENDPOINT}/applications/@me',
         )
     
     

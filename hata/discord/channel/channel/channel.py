@@ -122,7 +122,7 @@ class Channel(DiscordEntity, immortal = True):
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
         
-        default_thread_reaction : `None`, ``Emoji``, Optional (Keyword only)
+        default_thread_reaction_emoji : `None`, ``Emoji``, Optional (Keyword only)
             The emoji to show in the add reaction button on a thread of the forum channel.
         
         default_thread_slowmode : `int`, Optional (Keyword only)
@@ -954,7 +954,7 @@ class Channel(DiscordEntity, immortal = True):
             +---------------------------------------+-----------------------------------------------------------+
             | default_thread_auto_archive_after     | `int`                                                     |
             +---------------------------------------+-----------------------------------------------------------+
-            | default_thread_reaction               | `None`, ``Emoji``                                         |
+            | default_thread_reaction_emoji         | `None`, ``Emoji``                                         |
             +---------------------------------------+-----------------------------------------------------------+
             | default_thread_slowmode               | `int`                                                     |
             +---------------------------------------+-----------------------------------------------------------+
@@ -1211,7 +1211,7 @@ class Channel(DiscordEntity, immortal = True):
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
         
-        default_thread_reaction : `None`, ``Emoji``, Optional (Keyword only)
+        default_thread_reaction_emoji : `None`, ``Emoji``, Optional (Keyword only)
             The emoji to show in the add reaction button on a thread of the forum channel.
         
         default_thread_slowmode : `int`, Optional (Keyword only)
@@ -1610,9 +1610,23 @@ class Channel(DiscordEntity, immortal = True):
     
     
     @property
+    @copy_docs(ChannelMetadataBase.default_thread_reaction_emoji)
+    def default_thread_reaction_emoji(self):
+        return self.metadata.default_thread_reaction_emoji
+    
+    
+    @property
     @copy_docs(ChannelMetadataBase.default_thread_reaction)
     def default_thread_reaction(self):
-        return self.metadata.default_thread_reaction
+        warn(
+            (
+                f'`{self.__class__.__name__}.default_thread_reaction` is deprecated and will be removed in '
+                f'2024 Marc. Please use `.default_thread_reaction_emoji` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.default_thread_reaction_emoji
     
     
     @property
@@ -2087,7 +2101,7 @@ class Channel(DiscordEntity, immortal = True):
         default_thread_slowmode : `int`, Optional (Keyword only)
             The default slowmode applied to the channel's threads.
         
-        default_thread_reaction : `None`, ``Emoji``, Optional (Keyword only)
+        default_thread_reaction_emoji : `None`, ``Emoji``, Optional (Keyword only)
             The emoji to show in the add reaction button on a thread of the forum channel.
         
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)

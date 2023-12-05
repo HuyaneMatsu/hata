@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import ContentFilterLevel
 
 
-def test__ContentFilterLevel__name():
+@vampytest.call_from(ContentFilterLevel.INSTANCES.values())
+def test__ContentFilterLevel__instances(instance):
     """
-    Tests whether ``ContentFilterLevel`` instance names are all strings.
+    Tests whether ``ContentFilterLevel`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``ContentFilterLevel``
+        The instance to test.
     """
-    for instance in ContentFilterLevel.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ContentFilterLevel__value():
-    """
-    Tests whether ``ContentFilterLevel`` instance values are all the expected value type.
-    """
-    for instance in ContentFilterLevel.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ContentFilterLevel.VALUE_TYPE)
+    vampytest.assert_instance(instance, ContentFilterLevel)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ContentFilterLevel.VALUE_TYPE)

@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import ApplicationType
 
 
-def test__ApplicationType__name():
+@vampytest.call_from(ApplicationType.INSTANCES.values())
+def test__ApplicationType__instances(instance):
     """
-    Tests whether ``ApplicationType`` instance names are all strings.
+    Tests whether ``ApplicationType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``ApplicationType``
+        The instance to test.
     """
-    for instance in ApplicationType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ApplicationType__value():
-    """
-    Tests whether ``ApplicationType`` instance values are all the expected value type.
-    """
-    for instance in ApplicationType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ApplicationType.VALUE_TYPE)
+    vampytest.assert_instance(instance, ApplicationType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ApplicationType.VALUE_TYPE)

@@ -43,7 +43,7 @@ def _iter_options__general_properties():
     yield (ChannelType.guild_forum, 'available_tags', (ForumTag('tumoneko'), ))
     yield (ChannelType.guild_voice, 'bitrate', 50000)
     yield (ChannelType.guild_forum, 'default_thread_auto_archive_after', 604800)
-    yield (ChannelType.guild_forum, 'default_thread_reaction', BUILTIN_EMOJIS['heart'])
+    yield (ChannelType.guild_forum, 'default_thread_reaction_emoji', BUILTIN_EMOJIS['heart'])
     yield (ChannelType.guild_forum, 'default_thread_slowmode', 69)
     yield (ChannelType.guild_forum, 'flags', ChannelFlag(1))
     yield (ChannelType.guild_thread_private, 'invitable', False)

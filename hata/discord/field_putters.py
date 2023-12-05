@@ -727,9 +727,54 @@ def negated_bool_optional_putter_factory(field_key, default_value):
     return putter
 
 
-def nullable_date_time_optional_putter_factory(field_key):
+def nullable_date_time_putter_factory(field_key):
     """
     Returns a new nullable date time putter.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(field_value, data, defaults):
+        """
+        Puts the given `DateTime` into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        field_value : `DateTime`
+            Date time field value.
+        data : `dict` of (`str`, `object`) items
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `object`) items
+        """
+        nonlocal field_key
+        
+        if field_value is None:
+            timestamp = None
+        else:
+            timestamp = datetime_to_timestamp(field_value)
+        data[field_key] = timestamp
+        
+        return data
+    
+    return putter
+
+
+def nullable_date_time_optional_putter_factory(field_key):
+    """
+    Returns a new nullable date time optional putter.
     
     Parameters
     ----------

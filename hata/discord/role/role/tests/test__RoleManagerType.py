@@ -5,25 +5,17 @@ from ...role_manager_metadata import RoleManagerMetadataBase
 from ..preinstanced import RoleManagerType
 
 
-def test__RoleManagerType__name():
+@vampytest.call_from(RoleManagerType.INSTANCES.values())
+def test__RoleManagerType__instances(instance):
     """
-    Tests whether ``RoleManagerType`` instance names are all strings.
+    Tests whether ``RoleManagerType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``RoleManagerType``
+        The instance to test.
     """
-    for instance in RoleManagerType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__RoleManagerType__value():
-    """
-    Tests whether ``RoleManagerType`` instance values are all the expected value type.
-    """
-    for instance in RoleManagerType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, RoleManagerType.VALUE_TYPE)
-
-
-def test__RoleManagerType__metadata_type():
-    """
-    Tests whether ``RoleManagerType.metadata_type``-s are set correctly.
-    """
-    for instance in RoleManagerType.INSTANCES.values():
-        vampytest.assert_subtype(instance.metadata_type, RoleManagerMetadataBase)
+    vampytest.assert_instance(instance, RoleManagerType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, RoleManagerType.VALUE_TYPE)
+    vampytest.assert_subtype(instance.metadata_type, RoleManagerMetadataBase)

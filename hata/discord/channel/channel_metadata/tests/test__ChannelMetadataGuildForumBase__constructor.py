@@ -23,7 +23,7 @@ def _assert_fields_set(channel_metadata):
     vampytest.assert_instance(channel_metadata.default_forum_layout, ForumLayout)
     vampytest.assert_instance(channel_metadata.default_sort_order, SortOrder)
     vampytest.assert_instance(channel_metadata.default_thread_auto_archive_after, int)
-    vampytest.assert_instance(channel_metadata.default_thread_reaction, Emoji, nullable = True)
+    vampytest.assert_instance(channel_metadata.default_thread_reaction_emoji, Emoji, nullable = True)
     vampytest.assert_instance(channel_metadata.default_thread_slowmode, int)
     vampytest.assert_instance(channel_metadata.flags, ChannelFlag)
     vampytest.assert_instance(channel_metadata.topic, str, nullable = True)
@@ -50,7 +50,7 @@ def test__ChannelMetadataGuildForumBase__new__0():
         )
     ]
     default_thread_auto_archive_after = 86400
-    default_thread_reaction = BUILTIN_EMOJIS['monkey']
+    default_thread_reaction_emoji = BUILTIN_EMOJIS['monkey']
     default_thread_slowmode = 60
     flags = ChannelFlag(1)
     topic = 'Dearest'
@@ -64,7 +64,7 @@ def test__ChannelMetadataGuildForumBase__new__0():
         position = position,
         available_tags = available_tags,
         default_thread_auto_archive_after = default_thread_auto_archive_after,
-        default_thread_reaction = default_thread_reaction,
+        default_thread_reaction_emoji = default_thread_reaction_emoji,
         default_thread_slowmode = default_thread_slowmode,
         flags = flags,
         topic = topic,
@@ -82,7 +82,7 @@ def test__ChannelMetadataGuildForumBase__new__0():
     vampytest.assert_eq(channel_metadata.position, position)
     vampytest.assert_eq(channel_metadata.available_tags, tuple(available_tags))
     vampytest.assert_eq(channel_metadata.default_thread_auto_archive_after, default_thread_auto_archive_after)
-    vampytest.assert_eq(channel_metadata.default_thread_reaction, default_thread_reaction)
+    vampytest.assert_eq(channel_metadata.default_thread_reaction_emoji, default_thread_reaction_emoji)
     vampytest.assert_eq(channel_metadata.default_thread_slowmode, default_thread_slowmode)
     vampytest.assert_eq(channel_metadata.flags, flags)
     vampytest.assert_eq(channel_metadata.topic, topic)
@@ -121,7 +121,7 @@ def test__ChannelMetadataGuildForumBase__from_keyword_parameters__0():
         )
     ]
     default_thread_auto_archive_after = 86400
-    default_thread_reaction = BUILTIN_EMOJIS['monkey']
+    default_thread_reaction_emoji = BUILTIN_EMOJIS['monkey']
     default_thread_slowmode = 60
     flags = ChannelFlag(1)
     topic = 'Dearest'
@@ -135,7 +135,7 @@ def test__ChannelMetadataGuildForumBase__from_keyword_parameters__0():
         'position': position,
         'available_tags': available_tags,
         'default_thread_auto_archive_after': default_thread_auto_archive_after,
-        'default_thread_reaction': default_thread_reaction,
+        'default_thread_reaction_emoji': default_thread_reaction_emoji,
         'default_thread_slowmode': default_thread_slowmode,
         'flags': flags,
         'topic': topic,
@@ -156,7 +156,7 @@ def test__ChannelMetadataGuildForumBase__from_keyword_parameters__0():
     vampytest.assert_eq(channel_metadata.position, position)
     vampytest.assert_eq(channel_metadata.available_tags, tuple(available_tags))
     vampytest.assert_eq(channel_metadata.default_thread_auto_archive_after, default_thread_auto_archive_after)
-    vampytest.assert_eq(channel_metadata.default_thread_reaction, default_thread_reaction)
+    vampytest.assert_eq(channel_metadata.default_thread_reaction_emoji, default_thread_reaction_emoji)
     vampytest.assert_eq(channel_metadata.default_thread_slowmode, default_thread_slowmode)
     vampytest.assert_eq(channel_metadata.flags, flags)
     vampytest.assert_eq(channel_metadata.topic, topic)

@@ -3,14 +3,27 @@ import vampytest
 from ..fields import put_bot_public_into
 
 
-def test__put_bot_public_into():
+def _iter_options():
+    yield False, False, {}
+    yield False, True, {'bot_public': False}
+    yield True, False, {'bot_public': True}
+    yield True, True, {'bot_public': True}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_bot_public_into(input_value, defaults):
     """
     Tests whether ``put_bot_public_into`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `bool`
+        The value to serialise.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
     """
-    for input_, defaults, expected_output in (
-        (False, False, {}),
-        (False, True, {'bot_public': False}),
-        (True, False, {'bot_public': True}),
-    ):
-        data = put_bot_public_into(input_, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    return put_bot_public_into(input_value, {}, defaults)

@@ -4,14 +4,14 @@ from ...field_parsers import nullable_string_parser_factory
 from ...field_putters import nullable_string_putter_factory, url_optional_putter_factory
 from ...field_validators import nullable_string_validator_factory, url_optional_validator_factory
 
-from .constants import EMBED_FOOTER_TEXT_LENGTH_MAX
+from .constants import ICON_URL_LENGTH_MAX, TEXT_LENGTH_MAX
 
 # icon_url
 
 parse_icon_url = nullable_string_parser_factory('icon_url')
 put_icon_url_into = url_optional_putter_factory('icon_url')
 # url validator doesnt allow attachment:\\image.png formats
-validate_icon_url = nullable_string_validator_factory('icon_url', 0, 16384)
+validate_icon_url = nullable_string_validator_factory('icon_url', 0, ICON_URL_LENGTH_MAX)
 
 # icon_proxy_url
 
@@ -55,9 +55,9 @@ def validate_text(text):
     if text_length == 0:
         return None
     
-    if text_length > EMBED_FOOTER_TEXT_LENGTH_MAX:
+    if text_length > TEXT_LENGTH_MAX:
         raise ValueError(
-            f'`text` length` must be <= {EMBED_FOOTER_TEXT_LENGTH_MAX}, got {text_length}; text = {text!r}.'
+            f'`text` length` must be <= {TEXT_LENGTH_MAX}, got {text_length}; text = {text!r}.'
         )
     
     return text

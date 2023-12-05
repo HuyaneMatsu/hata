@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import PremiumType
 
 
-def test__PremiumType__name():
+@vampytest.call_from(PremiumType.INSTANCES.values())
+def test__PremiumType__instances(instance):
     """
-    Tests whether ``PremiumType`` instance names are all strings.
+    Tests whether ``PremiumType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``PremiumType``
+        The instance to test.
     """
-    for instance in PremiumType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__PremiumType__value():
-    """
-    Tests whether ``PremiumType`` instance values are all the expected value type.
-    """
-    for instance in PremiumType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, PremiumType.VALUE_TYPE)
+    vampytest.assert_instance(instance, PremiumType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, PremiumType.VALUE_TYPE)

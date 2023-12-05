@@ -5,33 +5,18 @@ import vampytest
 from ..preinstanced import ApplicationRoleConnectionValueType
 
 
-def test__ApplicationRoleConnectionValueType__name():
+@vampytest.call_from(ApplicationRoleConnectionValueType.INSTANCES.values())
+def test__ApplicationRoleConnectionValueType__instances(instance):
     """
-    Tests whether ``ApplicationRoleConnectionValueType`` instance names are all strings.
+    Tests whether ``ApplicationRoleConnectionValueType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``ApplicationRoleConnectionValueType``
+        The instance to test.
     """
-    for instance in ApplicationRoleConnectionValueType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ApplicationRoleConnectionValueType__value():
-    """
-    Tests whether ``ApplicationRoleConnectionValueType`` instance values are all the expected value type.
-    """
-    for instance in ApplicationRoleConnectionValueType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ApplicationRoleConnectionValueType.VALUE_TYPE)
-
-
-def test__ApplicationRoleConnectionValueType__serializer():
-    """
-    Tests whether ``ApplicationRoleConnectionValueType.serializer``-s are all set correctly.
-    """
-    for instance in ApplicationRoleConnectionValueType.INSTANCES.values():
-        vampytest.assert_instance(instance.serializer, FunctionType)
-
-
-def test__ApplicationRoleConnectionValueType__deserializer():
-    """
-    Tests whether ``ApplicationRoleConnectionValueType.deserializer``-s are all set correctly.
-    """
-    for instance in ApplicationRoleConnectionValueType.INSTANCES.values():
-        vampytest.assert_instance(instance.deserializer, FunctionType)
+    vampytest.assert_instance(instance, ApplicationRoleConnectionValueType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ApplicationRoleConnectionValueType.VALUE_TYPE)
+    vampytest.assert_instance(instance.serializer, FunctionType)
+    vampytest.assert_instance(instance.deserializer, FunctionType)

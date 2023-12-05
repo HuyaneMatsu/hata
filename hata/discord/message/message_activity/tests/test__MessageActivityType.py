@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import MessageActivityType
 
 
-def test__MessageActivityType__name():
+@vampytest.call_from(MessageActivityType.INSTANCES.values())
+def test__MessageActivityType__instances(instance):
     """
-    Tests whether ``MessageActivityType`` instance names are all strings.
+    Tests whether ``MessageActivityType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``MessageActivityType``
+        The instance to test.
     """
-    for instance in MessageActivityType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__MessageActivityType__value():
-    """
-    Tests whether ``MessageActivityType`` instance values are all the expected value type.
-    """
-    for instance in MessageActivityType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, MessageActivityType.VALUE_TYPE)
+    vampytest.assert_instance(instance, MessageActivityType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, MessageActivityType.VALUE_TYPE)

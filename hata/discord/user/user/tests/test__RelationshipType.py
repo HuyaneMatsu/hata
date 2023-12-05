@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import RelationshipType
 
 
-def test__RelationshipType__name():
+@vampytest.call_from(RelationshipType.INSTANCES.values())
+def test__RelationshipType__instances(instance):
     """
-    Tests whether ``RelationshipType`` instance names are all strings.
+    Tests whether ``RelationshipType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``RelationshipType``
+        The instance to test.
     """
-    for instance in RelationshipType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__RelationshipType__value():
-    """
-    Tests whether ``RelationshipType`` instance values are all the expected value type.
-    """
-    for instance in RelationshipType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, RelationshipType.VALUE_TYPE)
+    vampytest.assert_instance(instance, RelationshipType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, RelationshipType.VALUE_TYPE)

@@ -36,6 +36,8 @@ setup(
         'hata.discord.application.application_install_parameters',
         'hata.discord.application.application_role_connection',
         'hata.discord.application.application_role_connection_metadata',
+        'hata.discord.application.client_platform_configuration',
+        'hata.discord.application.embedded_activity_configuration',
         'hata.discord.application.entitlement',
         'hata.discord.application.eula',
         'hata.discord.application.sku',

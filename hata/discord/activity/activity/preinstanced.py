@@ -7,7 +7,7 @@ from ..activity_metadata import ActivityMetadataBase, ActivityMetadataCustom, Ac
 
 class ActivityType(PreinstancedBase):
     """
-    Represents an ``AutoModerationAction``'s type.
+    Represents an ``Activity``'s type.
     
     Attributes
     ----------
@@ -66,7 +66,7 @@ class ActivityType(PreinstancedBase):
         
         Returns
         -------
-        self : ``ActivityType``
+        self : `instance<cls>`
             The created instance.
         """
         self = object.__new__(cls)

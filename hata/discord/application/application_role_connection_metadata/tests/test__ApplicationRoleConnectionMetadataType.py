@@ -3,25 +3,17 @@ import vampytest
 from ..preinstanced import ApplicationRoleConnectionMetadataType, ApplicationRoleConnectionValueType
 
 
-def test__ApplicationRoleConnectionMetadataType__name():
+@vampytest.call_from(ApplicationRoleConnectionMetadataType.INSTANCES.values())
+def test__ApplicationRoleConnectionMetadataType__instances(instance):
     """
-    Tests whether ``ApplicationRoleConnectionMetadataType`` instance names are all strings.
+    Tests whether ``ApplicationRoleConnectionMetadataType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``ApplicationRoleConnectionMetadataType``
+        The instance to test.
     """
-    for instance in ApplicationRoleConnectionMetadataType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ApplicationRoleConnectionMetadataType__value():
-    """
-    Tests whether ``ApplicationRoleConnectionMetadataType`` instance values are all the expected value type.
-    """
-    for instance in ApplicationRoleConnectionMetadataType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ApplicationRoleConnectionMetadataType.VALUE_TYPE)
-
-
-def test__ApplicationRoleConnectionMetadataType__value_type():
-    """
-    Tests whether ``ApplicationRoleConnectionMetadataType.value_type``-s are all set correctly.
-    """
-    for instance in ApplicationRoleConnectionMetadataType.INSTANCES.values():
-        vampytest.assert_instance(instance.value_type, ApplicationRoleConnectionValueType)
+    vampytest.assert_instance(instance, ApplicationRoleConnectionMetadataType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ApplicationRoleConnectionMetadataType.VALUE_TYPE)
+    vampytest.assert_instance(instance.value_type, ApplicationRoleConnectionValueType)

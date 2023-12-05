@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import Oauth2Scope
 
 
-def test__Oauth2Scope__name():
+@vampytest.call_from(Oauth2Scope.INSTANCES.values())
+def test__Oauth2Scope__instances(instance):
     """
-    Tests whether ``Oauth2Scope`` instance names are all strings.
+    Tests whether ``Oauth2Scope`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``Oauth2Scope``
+        The instance to test.
     """
-    for instance in Oauth2Scope.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__Oauth2Scope__value():
-    """
-    Tests whether ``Oauth2Scope`` instance values are all the expected value type.
-    """
-    for instance in Oauth2Scope.INSTANCES.values():
-        vampytest.assert_instance(instance.value, Oauth2Scope.VALUE_TYPE)
+    vampytest.assert_instance(instance, Oauth2Scope)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, Oauth2Scope.VALUE_TYPE)

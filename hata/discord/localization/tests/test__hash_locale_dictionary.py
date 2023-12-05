@@ -1,6 +1,6 @@
 import vampytest
 
-from .. import Locale
+from ..preinstanced import Locale
 from ..utils import hash_locale_dictionary
 
 

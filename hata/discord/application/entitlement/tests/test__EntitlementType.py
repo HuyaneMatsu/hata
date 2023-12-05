@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import EntitlementType
 
 
-def test__EntitlementType__name():
+@vampytest.call_from(EntitlementType.INSTANCES.values())
+def test__EntitlementType__instances(instance):
     """
-    Tests whether ``EntitlementType`` instance names are all strings.
+    Tests whether ``EntitlementType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``EntitlementType``
+        The instance to test.
     """
-    for instance in EntitlementType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__EntitlementType__value():
-    """
-    Tests whether ``EntitlementType`` instance values are all the expected value type.
-    """
-    for instance in EntitlementType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, EntitlementType.VALUE_TYPE)
+    vampytest.assert_instance(instance, EntitlementType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, EntitlementType.VALUE_TYPE)

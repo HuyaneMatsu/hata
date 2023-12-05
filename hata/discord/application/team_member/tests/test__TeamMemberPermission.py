@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import TeamMemberPermission
 
 
-def test__TeamMemberPermission__name():
+@vampytest.call_from(TeamMemberPermission.INSTANCES.values())
+def test__TeamMemberPermission__instances(instance):
     """
-    Tests whether ``TeamMemberPermission`` instance names are all strings.
+    Tests whether ``TeamMemberPermission`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``TeamMemberPermission``
+        The instance to test.
     """
-    for instance in TeamMemberPermission.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__TeamMemberPermission__value():
-    """
-    Tests whether ``TeamMemberPermission`` instance values are all the expected value type.
-    """
-    for instance in TeamMemberPermission.INSTANCES.values():
-        vampytest.assert_instance(instance.value, TeamMemberPermission.VALUE_TYPE)
+    vampytest.assert_instance(instance, TeamMemberPermission)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, TeamMemberPermission.VALUE_TYPE)

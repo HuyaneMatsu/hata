@@ -11,36 +11,21 @@ from ..preinstanced import MessageType
 from ...message_call import MessageCall
 
 
-def test__MessageType__name():
+@vampytest.call_from(MessageType.INSTANCES.values())
+def test__MessageType__instances(instance):
     """
-    Tests whether ``MessageType`` instance names are all strings.
+    Tests whether ``MessageType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``MessageType``
+        The instance to test.
     """
-    for instance in MessageType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__MessageType__value():
-    """
-    Tests whether ``MessageType`` instance values are all the expected value type.
-    """
-    for instance in MessageType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, MessageType.VALUE_TYPE)
-
-
-def test__MessageType__converter():
-    """
-    Tests whether ``MessageType`` converters are all the expected value type.
-    """
-    for instance in MessageType.INSTANCES.values():
-        vampytest.assert_instance(instance.converter, FunctionType)
-
-
-def test__MessageType__deletable():
-    """
-    Tests whether ``MessageType.deletable``-s are all set as expected.
-    """
-    for instance in MessageType.INSTANCES.values():
-        vampytest.assert_instance(instance.deletable, bool)
+    vampytest.assert_instance(instance, MessageType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, MessageType.VALUE_TYPE)
+    vampytest.assert_instance(instance.converter, FunctionType)
+    vampytest.assert_instance(instance.deletable, bool)
 
 
 def test__MessageType__call():

@@ -6,6 +6,8 @@ from ...field_validators import (
     int_conditional_validator_factory, nullable_string_validator_factory, url_optional_validator_factory
 )
 
+from .constants import URL_LENGTH_MAX
+
 # height
 
 parse_height = int_parser_factory('height', 0)
@@ -22,7 +24,7 @@ validate_height = int_conditional_validator_factory(
 parse_url = nullable_string_parser_factory('url')
 put_url_into = url_optional_putter_factory('url')
 # url validator doesnt allow attachment:\\image.png formats
-validate_url = nullable_string_validator_factory('url', 0, 16384)
+validate_url = nullable_string_validator_factory('url', 0, URL_LENGTH_MAX)
 
 # icon_proxy_url
 

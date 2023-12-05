@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import Theme
 
 
-def test__Theme__name():
+@vampytest.call_from(Theme.INSTANCES.values())
+def test__Theme__instances(instance):
     """
-    Tests whether ``Theme`` instance names are all strings.
+    Tests whether ``Theme`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``Theme``
+        The instance to test.
     """
-    for instance in Theme.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__Theme__value():
-    """
-    Tests whether ``Theme`` instance values are all the expected value type.
-    """
-    for instance in Theme.INSTANCES.values():
-        vampytest.assert_instance(instance.value, Theme.VALUE_TYPE)
+    vampytest.assert_instance(instance, Theme)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, Theme.VALUE_TYPE)

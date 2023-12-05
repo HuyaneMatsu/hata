@@ -579,7 +579,7 @@ class ClientCompoundChannelEndpoints(Compound):
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
         
-        default_thread_reaction : `None`, ``Emoji``, Optional (Keyword only)
+        default_thread_reaction_emoji : `None`, ``Emoji``, Optional (Keyword only)
             The emoji to show in the add reaction button on a thread of the forum channel.
                 
         default_thread_slowmode : `int`, Optional (Keyword only)
@@ -709,7 +709,7 @@ class ClientCompoundChannelEndpoints(Compound):
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
         
-        default_thread_reaction : `None`, ``Emoji``, Optional (Keyword only)
+        default_thread_reaction_emoji : `None`, ``Emoji``, Optional (Keyword only)
             The emoji to show in the add reaction button on a thread of the forum channel.
                 
         default_thread_slowmode : `int`, Optional (Keyword only)

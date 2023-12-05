@@ -5,25 +5,17 @@ from ...scheduled_event_entity_metadata import ScheduledEventEntityMetadataBase
 from ..preinstanced import ScheduledEventEntityType
 
 
-def test__ScheduledEventEntityType__name():
+@vampytest.call_from(ScheduledEventEntityType.INSTANCES.values())
+def test__ScheduledEventEntityType__instances(instance):
     """
-    Tests whether ``ScheduledEventEntityType`` instance names are all strings.
+    Tests whether ``ScheduledEventEntityType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``ScheduledEventEntityType``
+        The instance to test.
     """
-    for instance in ScheduledEventEntityType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ScheduledEventEntityType__value():
-    """
-    Tests whether ``ScheduledEventEntityType`` instance values are all the expected value type.
-    """
-    for instance in ScheduledEventEntityType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ScheduledEventEntityType.VALUE_TYPE)
-
-
-def test__ScheduledEventEntityType__metadata_type():
-    """
-    Tests whether ``ScheduledEventEntityType`` instance metadata_types are all the expected metadata_type type.
-    """
-    for instance in ScheduledEventEntityType.INSTANCES.values():
-        vampytest.assert_subtype(instance.metadata_type, ScheduledEventEntityMetadataBase)
+    vampytest.assert_instance(instance, ScheduledEventEntityType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ScheduledEventEntityType.VALUE_TYPE)
+    vampytest.assert_subtype(instance.metadata_type, ScheduledEventEntityMetadataBase)

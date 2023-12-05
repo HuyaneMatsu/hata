@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import ReactionType
 
 
-def test__ReactionType__name():
+@vampytest.call_from(ReactionType.INSTANCES.values())
+def test__ReactionType__instances(instance):
     """
-    Tests whether ``ReactionType`` instance names are all strings.
+    Tests whether ``ReactionType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``ReactionType``
+        The instance to test.
     """
-    for instance in ReactionType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ReactionType__value():
-    """
-    Tests whether ``ReactionType`` instance values are all the expected value type.
-    """
-    for instance in ReactionType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ReactionType.VALUE_TYPE)
+    vampytest.assert_instance(instance, ReactionType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ReactionType.VALUE_TYPE)

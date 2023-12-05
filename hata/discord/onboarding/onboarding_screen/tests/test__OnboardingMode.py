@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import OnboardingMode
 
 
-def test__OnboardingMode__name():
+@vampytest.call_from(OnboardingMode.INSTANCES.values())
+def test__OnboardingMode__instances(instance):
     """
-    Tests whether ``OnboardingMode`` instance names are all strings.
+    Tests whether ``OnboardingMode`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``OnboardingMode``
+        The instance to test.
     """
-    for instance in OnboardingMode.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__OnboardingMode__value():
-    """
-    Tests whether ``OnboardingMode`` instance values are all the expected value type.
-    """
-    for instance in OnboardingMode.INSTANCES.values():
-        vampytest.assert_instance(instance.value, OnboardingMode.VALUE_TYPE)
+    vampytest.assert_instance(instance, OnboardingMode)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, OnboardingMode.VALUE_TYPE)

@@ -3,6 +3,8 @@ from .application_executable import *
 from .application_install_parameters import *
 from .application_role_connection import *
 from .application_role_connection_metadata import *
+from .client_platform_configuration import *
+from .embedded_activity_configuration import *
 from .entitlement import *
 from .eula import *
 from .sku import *
@@ -17,6 +19,8 @@ __all__ = (
     *application_install_parameters.__all__,
     *application_role_connection.__all__,
     *application_role_connection_metadata.__all__,
+    *client_platform_configuration.__all__,
+    *embedded_activity_configuration.__all__,
     *entitlement.__all__,
     *eula.__all__,
     *sku.__all__,

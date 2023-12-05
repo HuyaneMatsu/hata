@@ -3,41 +3,38 @@ import vampytest
 from ..preinstanced import Status
 
 
-def test__Status__name():
+@vampytest.call_from(Status.INSTANCES.values())
+def test__Status__instances(instance):
     """
-    Tests whether ``Status`` instance names are all strings.
+    Tests whether ``Status`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``Status``
+        The instance to test.
     """
-    for instance in Status.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance, Status)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, Status.VALUE_TYPE)
+    vampytest.assert_instance(instance.position, int)
 
 
-def test__Status__value():
+@vampytest.call_from(Status.INSTANCES.values())
+def test__Status__repr(instance):
     """
-    Tests whether ``Status`` instance values are all the expected value type.
+    Tests whether ``Status.__repr__`` works as intended.
+    
+    Parameters
+    ----------
+    instance : ``Status``
+        The instance to test.
     """
-    for instance in Status.INSTANCES.values():
-        vampytest.assert_instance(instance.value, Status.VALUE_TYPE)
-
-
-def test__Status__position():
-    """
-    Tests whether ``Status`` instance positions are all strings.
-    """
-    for instance in Status.INSTANCES.values():
-        vampytest.assert_instance(instance.position, int)
-
-
-def test__Status__repr():
-    """
-    Tests whether ``Status.__repr__`` works as intended..
-    """
-    for instance in Status.INSTANCES.values():
-        vampytest.assert_instance(repr(Status.online), str)
+    vampytest.assert_instance(repr(instance), str)
 
 
 def test__Status__sort():
     """
-    Tests whether ``Status`` sorting works as intended..
+    Tests whether ``Status`` sorting works as intended.
     """
     vampytest.assert_eq(
         sorted(['idle', Status.online, 'your custom status', Status.dnd]),

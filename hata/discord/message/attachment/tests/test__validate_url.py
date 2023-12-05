@@ -3,42 +3,40 @@ import vampytest
 from ..fields import validate_url
 
 
-def test__validate_url__0():
+def _iter_options__passing():
+    yield 'https://orindance.party/', 'https://orindance.party/'
+
+
+def _iter_options__type_error():
+    yield 12.6
+
+
+
+def _iter_options__value_error():
+    yield None
+    yield ''
+    yield 'a'
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_url(input_value):
     """
     Tests whether `validate_url` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        ('https://orindance.party/', 'https://orindance.party/'),
-    ):
-        output = validate_url(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_url__1():
-    """
-    Tests whether `validate_url` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    Case: `ValueError`.
-    """
-    for input_value in (
-        None,
-        '',
-        'a',
-    ):
-        with vampytest.assert_raises(ValueError):
-            validate_url(input_value)
-
-
-def test__validate_url__2():
-    """
-    Tests whether `validate_url` works as intended.
+    Returns
+    -------
+    output : `str`
     
-    Case: `TypeError`.
+    Raises
+    ------
+    TypeError
+    ValueError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_url(input_value)
+    return validate_url(input_value)

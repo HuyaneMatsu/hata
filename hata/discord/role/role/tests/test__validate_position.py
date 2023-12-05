@@ -8,12 +8,21 @@ def _iter_options__passing():
     yield 1, 1
 
 
+def _iter_options__type_error():
+    yield 12.6
+    yield '12'
+
+
+def _iter_options__value_error():
+    yield -1
+
+
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
-def test__validate_position__passing(input_value):
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_position(input_value):
     """
     Tests whether `validate_position` works as intended.
-    
-    Case: passing.
     
     Parameters
     ----------
@@ -23,48 +32,10 @@ def test__validate_position__passing(input_value):
     Returns
     -------
     output : `int`
-    """
-    return validate_position(input_value)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-@vampytest.call_with('12')
-def test__validate_position__type_error(input_value):
-    """
-    Tests whether `validate_position` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Input value to validate.
     
     Raises
     ------
     TypeError
-        The occurred exception.
-    """
-    validate_position(input_value)
-
-
-@vampytest.raising(ValueError)
-@vampytest.call_with(-1)
-def test__validate_position__value_error(input_value):
-    """
-    Tests whether `validate_position` works as intended.
-    
-    Case: `ValueError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Input value to validate.
-    
-    Raises
-    ------
     ValueError
-        The occurred exception.
     """
-    validate_position(input_value)
+    return validate_position(input_value)

@@ -8,6 +8,7 @@ def _iter_options():
     yield ApplicationFlag(0), False, {}
     yield ApplicationFlag(0), True, {'flags': 0}
     yield ApplicationFlag(1), False, {'flags': 1}
+    yield ApplicationFlag(1), True, {'flags': 1}
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

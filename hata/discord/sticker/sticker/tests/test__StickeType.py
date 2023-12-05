@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import StickerType
 
 
-def test__StickerType__name():
+@vampytest.call_from(StickerType.INSTANCES.values())
+def test__StickerType__instances(instance):
     """
-    Tests whether ``StickerType`` instance names are all strings.
+    Tests whether ``StickerType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``StickerType``
+        The instance to test.
     """
-    for instance in StickerType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__StickerType__value():
-    """
-    Tests whether ``StickerType`` instance values are all the expected value type.
-    """
-    for instance in StickerType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, StickerType.VALUE_TYPE)
+    vampytest.assert_instance(instance, StickerType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, StickerType.VALUE_TYPE)

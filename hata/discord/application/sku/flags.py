@@ -30,6 +30,10 @@ class SKUFlag(FlagBase):
     +-----------------------------------+-------------------+
     | application_user_subscription     | 8                 |
     +-----------------------------------+-------------------+
+    | creator_monetization              | 9                 |
+    +-----------------------------------+-------------------+
+    | guild_product                     | 10                |
+    +-----------------------------------+-------------------+
     """
     __keys__ = {
         'premium_purchase': 0,
@@ -41,4 +45,6 @@ class SKUFlag(FlagBase):
         'giftable': 6,
         'application_guild_subscription': 7,
         'application_user_subscription': 8,
+        'creator_monetization': 9,
+        'guild_product': 10,
     }

@@ -1,6 +1,6 @@
 import vampytest
 
-from ..constants import EMBED_AUTHOR_NAME_LENGTH_MAX
+from ..constants import NAME_LENGTH_MAX
 from ..fields import validate_name
 
 
@@ -33,7 +33,7 @@ def test__validate_name__passing(input_value):
 
 
 @vampytest.raising(ValueError)
-@vampytest.call_with('a' * (EMBED_AUTHOR_NAME_LENGTH_MAX + 1))
+@vampytest.call_with('a' * (NAME_LENGTH_MAX + 1))
 def test__validate_name__value_error(input_value):
     """
     Tests whether `validate_name` works as intended.

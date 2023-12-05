@@ -1217,7 +1217,7 @@ def nullable_string_array_validator_factory(field_name, *, ordered = True):
     return validator
 
 
-def url_optional_validator_factory(field_name):
+def url_optional_validator_factory(field_name, *, length_max = ...):
     """
     Returns an optional url validator.
     
@@ -1225,11 +1225,16 @@ def url_optional_validator_factory(field_name):
     ----------
     field_name : `str`
         The field's name.
+    max_length : `int`
+        The maximal allowed length of the url.
     
     Returns
     -------
     validator : `FunctionType`
     """
+    if length_max is ...:
+        length_max = 2048
+    
     def validator(url):
         """
         Validates the given string.
@@ -1253,19 +1258,26 @@ def url_optional_validator_factory(field_name):
             - If `url` is not an url.
         """
         nonlocal field_name
+        nonlocal length_max
         
         if (url is not None):
             if not isinstance(url, str):
                 raise TypeError(
-                    f'`{field_name}` can be `None`, `str`, got {url.__class__.__name__}; {url!r}.'
+                    f'`{field_name!s}` can be `None`, `str`, got {url.__class__.__name__!s}; {url!r}.'
                 )
             
-            if url:
+            url_length = len(url)
+            if url_length:
+                if url_length > length_max:
+                    raise ValueError(
+                        f'`{field_name!s}` can be up to {length_max!s} character long, got {url_length!s}; {url!r}.'
+                    )
+                    
                 if not is_url(url):
                     raise ValueError(
-                        f'`{field_name}` is not a valid url, got {url!r}.'
+                        f'`{field_name!s}` is not a valid url, got {url!r}.'
                     )
-            
+                
             else:
                 url = None
         

@@ -6,33 +6,18 @@ from ..flags import ChannelTypeFlag
 from ..preinstanced import ChannelType
 
 
-def test__ChannelType__name():
+@vampytest.call_from(ChannelType.INSTANCES.values())
+def test__ChannelType__instances(instance):
     """
-    Tests whether ``ChannelType`` instance names are all strings.
+    Tests whether ``ChannelType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``ChannelType``
+        The instance to test.
     """
-    for instance in ChannelType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ChannelType__value():
-    """
-    Tests whether ``ChannelType`` instance values are all the expected value type.
-    """
-    for instance in ChannelType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ChannelType.VALUE_TYPE)
-
-
-def test__ChannelType__flags():
-    """
-    Tests whether ``ChannelType`` instance flags are channel type flags.
-    """
-    for instance in ChannelType.INSTANCES.values():
-        vampytest.assert_instance(instance.flags, ChannelTypeFlag)
-
-
-def test__ChannelType__metadata_type():
-    """
-    Tests whether ``ChannelType`` instance metadata types are all metadata types.
-    """
-    for instance in ChannelType.INSTANCES.values():
-        vampytest.assert_subtype(instance.metadata_type, ChannelMetadataBase)
+    vampytest.assert_instance(instance, ChannelType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ChannelType.VALUE_TYPE)
+    vampytest.assert_instance(instance.flags, ChannelTypeFlag)
+    vampytest.assert_subtype(instance.metadata_type, ChannelMetadataBase)

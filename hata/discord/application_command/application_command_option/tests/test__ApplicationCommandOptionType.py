@@ -5,25 +5,17 @@ from ..preinstanced import ApplicationCommandOptionType
 from ...application_command_option_metadata import ApplicationCommandOptionMetadataBase
 
 
-def test__ApplicationCommandOptionType__name():
+@vampytest.call_from(ApplicationCommandOptionType.INSTANCES.values())
+def test__ApplicationCommandOptionType__instances(instance):
     """
-    Tests whether ``ApplicationCommandOptionType`` instance names are all strings.
+    Tests whether ``ApplicationCommandOptionType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``ApplicationCommandOptionType``
+        The instance to test.
     """
-    for instance in ApplicationCommandOptionType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ApplicationCommandOptionType__value():
-    """
-    Tests whether ``ApplicationCommandOptionType`` instance values are all the expected value type.
-    """
-    for instance in ApplicationCommandOptionType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ApplicationCommandOptionType.VALUE_TYPE)
-
-
-def test__ApplicationCommandOptionType__metadata_type():
-    """
-    Tests whether ``ApplicationCommandOptionType.metadata_type``-s are all set as intended.
-    """
-    for instance in ApplicationCommandOptionType.INSTANCES.values():
-        vampytest.assert_subtype(instance.metadata_type, ApplicationCommandOptionMetadataBase)
+    vampytest.assert_instance(instance, ApplicationCommandOptionType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ApplicationCommandOptionType.VALUE_TYPE)
+    vampytest.assert_subtype(instance.metadata_type, ApplicationCommandOptionMetadataBase)

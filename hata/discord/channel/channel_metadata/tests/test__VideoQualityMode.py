@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import VideoQualityMode
 
 
-def test__VideoQualityMode__name():
+@vampytest.call_from(VideoQualityMode.INSTANCES.values())
+def test__VideoQualityMode__instances(instance):
     """
-    Tests whether ``VideoQualityMode`` instance names are all strings.
+    Tests whether ``VideoQualityMode`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``VideoQualityMode``
+        The instance to test.
     """
-    for instance in VideoQualityMode.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__VideoQualityMode__value():
-    """
-    Tests whether ``VideoQualityMode`` instance values are all the expected value type.
-    """
-    for instance in VideoQualityMode.INSTANCES.values():
-        vampytest.assert_instance(instance.value, VideoQualityMode.VALUE_TYPE)
+    vampytest.assert_instance(instance, VideoQualityMode)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, VideoQualityMode.VALUE_TYPE)

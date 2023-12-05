@@ -20,6 +20,19 @@ def _iter_options():
             ],
         },
     )
+    yield (
+        (
+            GuildFeature.animated_banner,
+            GuildFeature.animated_icon,
+        ),
+        True,
+        {
+            'features': [
+                GuildFeature.animated_banner.value,
+                GuildFeature.animated_icon.value,
+            ],
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

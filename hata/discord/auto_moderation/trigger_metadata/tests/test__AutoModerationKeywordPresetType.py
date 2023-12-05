@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import AutoModerationKeywordPresetType
 
 
-def test__AutoModerationKeywordPresetType__name():
+@vampytest.call_from(AutoModerationKeywordPresetType.INSTANCES.values())
+def test__AutoModerationKeywordPresetType__instances(instance):
     """
-    Tests whether ``AutoModerationKeywordPresetType`` instance names are all strings.
+    Tests whether ``AutoModerationKeywordPresetType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``AutoModerationKeywordPresetType``
+        The instance to test.
     """
-    for instance in AutoModerationKeywordPresetType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__AutoModerationKeywordPresetType__value():
-    """
-    Tests whether ``AutoModerationKeywordPresetType`` instance values are all the expected value type.
-    """
-    for instance in AutoModerationKeywordPresetType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, AutoModerationKeywordPresetType.VALUE_TYPE)
+    vampytest.assert_instance(instance, AutoModerationKeywordPresetType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, AutoModerationKeywordPresetType.VALUE_TYPE)

@@ -3,15 +3,26 @@ import vampytest
 from ..fields import parse_keywords
 
 
-def test__parse_keywords():
+def _iter_options():
+    yield {}, None
+    yield {'keywords': None}, None
+    yield {'keywords': []}, None
+    yield {'keywords': ['a']}, ('a', )
+    yield {'keywords': ['b', 'a']}, ('a', 'b')
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_keywords(input_data):
     """
     Tests whether ``parse_keywords`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | tuple<str>`
     """
-    for input_data, expected_output in (
-        ({}, None),
-        ({'keywords': None}, None),
-        ({'keywords': []}, None),
-        ({'keywords': ['a']}, ('a', )),
-    ):
-        output = parse_keywords(input_data)
-        vampytest.assert_eq(output, expected_output)
+    return parse_keywords(input_data)

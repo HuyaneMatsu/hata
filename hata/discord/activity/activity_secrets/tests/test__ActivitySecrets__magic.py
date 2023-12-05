@@ -1,6 +1,6 @@
 import vampytest
 
-from .. import ActivitySecrets
+from ..secrets import ActivitySecrets
 
 
 def test__ActivitySecrets__repr():

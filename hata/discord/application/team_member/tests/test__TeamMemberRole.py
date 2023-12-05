@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import TeamMemberRole
 
 
-def test__TeamMemberRole__name():
+@vampytest.call_from(TeamMemberRole.INSTANCES.values())
+def test__TeamMemberRole__instances(instance):
     """
-    Tests whether ``TeamMemberRole`` instance names are all strings.
+    Tests whether ``TeamMemberRole`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``TeamMemberRole``
+        The instance to test.
     """
-    for instance in TeamMemberRole.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__TeamMemberRole__value():
-    """
-    Tests whether ``TeamMemberRole`` instance values are all the expected value type.
-    """
-    for instance in TeamMemberRole.INSTANCES.values():
-        vampytest.assert_instance(instance.value, TeamMemberRole.VALUE_TYPE)
+    vampytest.assert_instance(instance, TeamMemberRole)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, TeamMemberRole.VALUE_TYPE)

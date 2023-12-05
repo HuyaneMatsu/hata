@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import PrivacyLevel
 
 
-def test__PrivacyLevel__name():
+@vampytest.call_from(PrivacyLevel.INSTANCES.values())
+def test__PrivacyLevel__instances(instance):
     """
-    Tests whether ``PrivacyLevel`` instance names are all strings.
+    Tests whether ``PrivacyLevel`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``PrivacyLevel``
+        The instance to test.
     """
-    for instance in PrivacyLevel.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__PrivacyLevel__value():
-    """
-    Tests whether ``PrivacyLevel`` instance values are all the expected value type.
-    """
-    for instance in PrivacyLevel.INSTANCES.values():
-        vampytest.assert_instance(instance.value, PrivacyLevel.VALUE_TYPE)
+    vampytest.assert_instance(instance, PrivacyLevel)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, PrivacyLevel.VALUE_TYPE)

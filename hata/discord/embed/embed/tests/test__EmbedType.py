@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import EmbedType
 
 
-def test__EmbedType__name():
+@vampytest.call_from(EmbedType.INSTANCES.values())
+def test__EmbedType__instances(instance):
     """
-    Tests whether ``EmbedType`` instance names are all strings.
+    Tests whether ``EmbedType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``EmbedType``
+        The instance to test.
     """
-    for instance in EmbedType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__EmbedType__value():
-    """
-    Tests whether ``EmbedType`` instance values are all the expected value type.
-    """
-    for instance in EmbedType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, EmbedType.VALUE_TYPE)
+    vampytest.assert_instance(instance, EmbedType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, EmbedType.VALUE_TYPE)

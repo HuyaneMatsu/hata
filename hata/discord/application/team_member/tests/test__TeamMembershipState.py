@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import TeamMembershipState
 
 
-def test__TeamMembershipState__name():
+@vampytest.call_from(TeamMembershipState.INSTANCES.values())
+def test__TeamMembershipState__instances(instance):
     """
-    Tests whether ``TeamMembershipState`` instance names are all strings.
+    Tests whether ``TeamMembershipState`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``TeamMembershipState``
+        The instance to test.
     """
-    for instance in TeamMembershipState.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__TeamMembershipState__value():
-    """
-    Tests whether ``TeamMembershipState`` instance values are all the expected value type.
-    """
-    for instance in TeamMembershipState.INSTANCES.values():
-        vampytest.assert_instance(instance.value, TeamMembershipState.VALUE_TYPE)
+    vampytest.assert_instance(instance, TeamMembershipState)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, TeamMembershipState.VALUE_TYPE)

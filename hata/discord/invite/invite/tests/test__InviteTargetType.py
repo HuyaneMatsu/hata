@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import InviteTargetType
 
 
-def test__InviteTargetType__name():
+@vampytest.call_from(InviteTargetType.INSTANCES.values())
+def test__InviteTargetType__instances(instance):
     """
-    Tests whether ``InviteTargetType`` instance names are all strings.
+    Tests whether ``InviteTargetType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``InviteTargetType``
+        The instance to test.
     """
-    for instance in InviteTargetType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__InviteTargetType__value():
-    """
-    Tests whether ``InviteTargetType`` instance values are all the expected value type.
-    """
-    for instance in InviteTargetType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, InviteTargetType.VALUE_TYPE)
+    vampytest.assert_instance(instance, InviteTargetType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, InviteTargetType.VALUE_TYPE)

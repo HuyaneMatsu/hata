@@ -129,6 +129,15 @@ Group Details
     - Resets after : `OPT`
 
 - application_get
+    - Endpoint : `/applications/@me`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `1000`
+    - Resets after : `1.0`
+    - Notes: `remaining` always returns `0` incorrectly, but reset is `0.001` seconds.
+
+- application_get_own
     - Endpoint : `/applications/{application_id}`
     - Method : `GET`
     - Required auth : `UN`
@@ -1627,7 +1636,7 @@ Group Details
     - Limit : `250`
     - Resets after : `6.0`
 
-- application_get_own
+- oauth2_application_get_own
     - Endpoint : `/oauth2/applications/@me`
     - Method : `GET`
     - Required auth : `bot`
@@ -2078,6 +2087,7 @@ GROUP_THREAD_ACTION = RateLimitGroup()
 
 oauth2_token = RateLimitGroup(optimistic = True)
 application_get = RateLimitGroup().unlimited()
+application_get_own = RateLimitGroup()
 achievement_get_all = RateLimitGroup()
 achievement_create = RateLimitGroup()
 achievement_delete = RateLimitGroup()
@@ -2258,7 +2268,7 @@ hypesquad_house_change = RateLimitGroup() # untested
 interaction_response_message_create = RateLimitGroup.unlimited()
 invite_delete = RateLimitGroup.unlimited()
 invite_get = RateLimitGroup()
-application_get_own = RateLimitGroup(optimistic = True)
+oauth2_application_get_own = RateLimitGroup(optimistic = True)
 bulk_ack = RateLimitGroup(optimistic = True) # untested
 soundboard_sound_get_all_default = RateLimitGroup.unlimited()
 stage_get_all = RateLimitGroup.unlimited()

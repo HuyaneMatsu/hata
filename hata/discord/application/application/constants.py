@@ -1,10 +1,12 @@
 __all__ = ()
 
 BOT_PUBLIC_DEFAULT = False
-BOT_REQUIRE_CODE_GRANT_DEFAULT = False
+BOT_REQUIRES_CODE_GRANT_DEFAULT = False
 OVERLAY_DEFAULT = False
 OVERLAY_COMPATIBILITY_HOOK_DEFAULT = False
 HOOK_DEFAULT = False
+INTEGRATION_PUBLIC_DEFAULT = False
+INTEGRATION_REQUIRES_CODE_GRANT_DEFAULT = False
 
 
 MAX_PARTICIPANTS_DEFAULT = 0
@@ -22,15 +24,35 @@ EMBEDDED_ACTIVITY_NAME_TO_APPLICATION_ID = {
     'Chess in The Park': 832012774040141894,
     'Fishington.io': 814288819477020702,
     'Poker Night': 755827207812677713,
-    'YouTube Together': 755600276941176913,
-    'Watch Together': 880218394199220334,
-    'Watch Together Dev': 880218832743055411,
+    'Land-io': 903769130790969345,
     'Sketch Heads': 902271654783242291,
     'Letter League': 879863686565621790,
-    'Spell Cast': 852509694341283871,
     'Checkers In The Park': 832013003968348200,
-    'Ocho': 832025144389533716,
-    'Putt Party': 910224161476083792,
+    'Chef Showdown': 1037680572660727838,
+    'Bobble League': 947957217959759964,
+    'Krunker Strike FRVR': 1011683823555199066,
+    'Gartic Phone': 1007373802981822582,
+    'Whiteboard': 1070087967294631976,
+    'Know What I Meme': 1078728822972764312,
+    'Color Together': 1039835161136746497,
+    'Bobble Bash': 1107689944685748377,
+    
+    # Spell Cast old name.
+    # 'Spell Cast': 852509694341283871,
+    'SpellCast': 852509694341283871,
+    
+    # Ocho old name.
+    # 'Ocho': 832025144389533716,
+    'Blazing 8s': 832025144389533716,
+    
+    # Application id changed.
+    # 'Putt Party': 910224161476083792,
+    'Putt Party': 945737671223947305,
+    
+    # Many versions uoh.
+    # 'YouTube Together': 755600276941176913,
+    'Watch Together': 880218394199220334,
+    # 'Watch Together Dev': 880218832743055411,
 }
 
 

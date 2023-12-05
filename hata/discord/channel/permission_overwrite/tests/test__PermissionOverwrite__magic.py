@@ -1,6 +1,7 @@
 import vampytest
 
-from .. import PermissionOverwrite, PermissionOverwriteTargetType
+from ..permission_overwrite import PermissionOverwrite
+from ..preinstanced import PermissionOverwriteTargetType
 
 
 def test__PermissionOverwrite__hash():

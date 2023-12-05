@@ -347,11 +347,11 @@ validate_default_thread_auto_archive_after = int_options_validator_factory(
     'default_thread_auto_archive_after', AUTO_ARCHIVE_OPTIONS
 )
 
-# default_thread_reaction
+# default_thread_reaction_emoji
 
-def parse_default_thread_reaction(data):
+def parse_default_thread_reaction_emoji(data):
     """
-    Parses out the `default_thread_reaction` field from the given data.
+    Parses out the `default_thread_reaction_emoji` field from the given data.
     
     Parameters
     ----------
@@ -360,24 +360,24 @@ def parse_default_thread_reaction(data):
     
     Returns
     -------
-    default_thread_reaction : `None`, ``Emoji``
+    default_thread_reaction_emoji : `None`, ``Emoji``
     """
-    default_thread_reaction_data = data.get('default_reaction_emoji', None)
-    if (default_thread_reaction_data is None):
-        default_thread_reaction = None
+    default_thread_reaction_emoji_data = data.get('default_reaction_emoji', None)
+    if (default_thread_reaction_emoji_data is None):
+        default_thread_reaction_emoji = None
     else:
-        default_thread_reaction = create_emoji_from_exclusive_data(default_thread_reaction_data)
+        default_thread_reaction_emoji = create_emoji_from_exclusive_data(default_thread_reaction_emoji_data)
     
-    return default_thread_reaction
+    return default_thread_reaction_emoji
 
 
-def put_default_thread_reaction_into(default_thread_reaction, data, defaults):
+def put_default_thread_reaction_emoji_into(default_thread_reaction_emoji, data, defaults):
     """
-    Puts the `default_thread_reaction`'s data into the given `data` json serializable object.
+    Puts the `default_thread_reaction_emoji`'s data into the given `data` json serializable object.
     
     Parameters
     ----------
-    default_thread_reaction : `None`, ``Emoji``
+    default_thread_reaction_emoji : `None`, ``Emoji``
         The emoji to show in the add reaction button on a thread of the forum channel.
     data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
@@ -388,18 +388,18 @@ def put_default_thread_reaction_into(default_thread_reaction, data, defaults):
     -------
     data : `dict` of (`str`, `object`) items
     """
-    if defaults or (default_thread_reaction is not None):
-        if default_thread_reaction is None:
+    if defaults or (default_thread_reaction_emoji is not None):
+        if default_thread_reaction_emoji is None:
             emoji_data = None
         else:
-            emoji_data = put_exclusive_emoji_data_into(default_thread_reaction, {})
+            emoji_data = put_exclusive_emoji_data_into(default_thread_reaction_emoji, {})
         
         data['default_reaction_emoji'] = emoji_data
     
     return data
 
 
-validate_default_thread_reaction = nullable_entity_validator_factory('default_thread_reaction', Emoji)
+validate_default_thread_reaction_emoji = nullable_entity_validator_factory('default_thread_reaction_emoji', Emoji)
 
 # default_thread_slowmode
 

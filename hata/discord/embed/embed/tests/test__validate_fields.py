@@ -2,7 +2,7 @@ import vampytest
 
 from ...embed_field import EmbedField
 
-from ..constants import EMBED_FIELDS_LENGTH_MAX
+from ..constants import FIELDS_LENGTH_MAX
 from ..fields import validate_fields
 
 
@@ -18,7 +18,7 @@ def test__validate_fields__0():
         ([], None),
         ([field], [field]),
         (None, None),
-        ([field] * (EMBED_FIELDS_LENGTH_MAX + 1), [field] * (EMBED_FIELDS_LENGTH_MAX + 1)),
+        ([field] * (FIELDS_LENGTH_MAX + 1), [field] * (FIELDS_LENGTH_MAX + 1)),
     ):
         output = validate_fields(input_value)
         vampytest.assert_eq(output, expected_output)

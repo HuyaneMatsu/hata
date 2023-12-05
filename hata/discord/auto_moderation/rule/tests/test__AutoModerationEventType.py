@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import AutoModerationEventType
 
 
-def test__AutoModerationEventType__name():
+@vampytest.call_from(AutoModerationEventType.INSTANCES.values())
+def test__AutoModerationEventType__instances(instance):
     """
-    Tests whether ``AutoModerationEventType`` instances have their `.name` set correctly.
+    Tests whether ``AutoModerationEventType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``AutoModerationEventType``
+        The instance to test.
     """
-    for instance in AutoModerationEventType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__AutoModerationEventType__value():
-    """
-    Tests whether ``AutoModerationEventType`` instances have their `.value` set correctly.
-    """
-    for instance in AutoModerationEventType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, AutoModerationEventType.VALUE_TYPE)
+    vampytest.assert_instance(instance, AutoModerationEventType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, AutoModerationEventType.VALUE_TYPE)

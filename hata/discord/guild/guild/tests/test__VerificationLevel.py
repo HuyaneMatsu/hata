@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import VerificationLevel
 
 
-def test__VerificationLevel__name():
+@vampytest.call_from(VerificationLevel.INSTANCES.values())
+def test__VerificationLevel__instances(instance):
     """
-    Tests whether ``VerificationLevel`` instance names are all strings.
+    Tests whether ``VerificationLevel`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``VerificationLevel``
+        The instance to test.
     """
-    for instance in VerificationLevel.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__VerificationLevel__value():
-    """
-    Tests whether ``VerificationLevel`` instance values are all the expected value type.
-    """
-    for instance in VerificationLevel.INSTANCES.values():
-        vampytest.assert_instance(instance.value, VerificationLevel.VALUE_TYPE)
+    vampytest.assert_instance(instance, VerificationLevel)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, VerificationLevel.VALUE_TYPE)

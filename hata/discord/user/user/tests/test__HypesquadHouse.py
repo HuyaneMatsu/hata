@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import HypesquadHouse
 
 
-def test__HypesquadHouse__name():
+@vampytest.call_from(HypesquadHouse.INSTANCES.values())
+def test__HypesquadHouse__instances(instance):
     """
-    Tests whether ``HypesquadHouse`` instance names are all strings.
+    Tests whether ``HypesquadHouse`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``HypesquadHouse``
+        The instance to test.
     """
-    for instance in HypesquadHouse.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__HypesquadHouse__value():
-    """
-    Tests whether ``HypesquadHouse`` instance values are all the expected value type.
-    """
-    for instance in HypesquadHouse.INSTANCES.values():
-        vampytest.assert_instance(instance.value, HypesquadHouse.VALUE_TYPE)
+    vampytest.assert_instance(instance, HypesquadHouse)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, HypesquadHouse.VALUE_TYPE)

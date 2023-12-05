@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import VerificationScreenStepType
 
 
-def test__VerificationScreenStepType__name():
+@vampytest.call_from(VerificationScreenStepType.INSTANCES.values())
+def test__VerificationScreenStepType__instances(instance):
     """
-    Tests whether ``VerificationScreenStepType`` instance names are all strings.
+    Tests whether ``VerificationScreenStepType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``VerificationScreenStepType``
+        The instance to test.
     """
-    for instance in VerificationScreenStepType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__VerificationScreenStepType__value():
-    """
-    Tests whether ``VerificationScreenStepType`` instance values are all the expected value type.
-    """
-    for instance in VerificationScreenStepType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, VerificationScreenStepType.VALUE_TYPE)
+    vampytest.assert_instance(instance, VerificationScreenStepType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, VerificationScreenStepType.VALUE_TYPE)

@@ -228,7 +228,7 @@ put_position_into = int_putter_factory('position')
 validate_position = int_conditional_validator_factory(
     'position',
     0,
-    lambda position : position >= 0,
+    (lambda position : position >= 0),
     '>= 0',
 )
 

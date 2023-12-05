@@ -5,25 +5,17 @@ from ...action_metadata import AutoModerationActionMetadataBase
 from ..preinstanced import AutoModerationActionType
 
 
-def test__AutoModerationActionType__name():
+@vampytest.call_from(AutoModerationActionType.INSTANCES.values())
+def test__AutoModerationActionType__instances(instance):
     """
-    Tests whether ``AutoModerationActionMetadataBase.name`` are all correctly set.
+    Tests whether ``AutoModerationActionType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``AutoModerationActionType``
+        The instance to test.
     """
-    for instance in AutoModerationActionType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__AutoModerationActionType__value():
-    """
-    Tests whether ``AutoModerationActionMetadataBase.value`` are all correctly set.
-    """
-    for instance in AutoModerationActionType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, AutoModerationActionType.VALUE_TYPE)
-
-
-def test__AutoModerationActionType__metadata_type():
-    """
-    Tests whether ``AutoModerationActionMetadataBase.metadata_type`` are all correctly set.
-    """
-    for instance in AutoModerationActionType.INSTANCES.values():
-        vampytest.assert_subtype(instance.metadata_type, AutoModerationActionMetadataBase)
+    vampytest.assert_instance(instance, AutoModerationActionType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, AutoModerationActionType.VALUE_TYPE)
+    vampytest.assert_subtype(instance.metadata_type, AutoModerationActionMetadataBase)

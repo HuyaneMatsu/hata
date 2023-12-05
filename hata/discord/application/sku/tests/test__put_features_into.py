@@ -20,6 +20,19 @@ def _iter_options():
             ],
         },
     )
+    yield (
+        (
+            SKUFeature.single_player,
+            SKUFeature.pvp,
+        ),
+        True,
+        {
+            'features': [
+                SKUFeature.single_player.value,
+                SKUFeature.pvp.value,
+            ],
+        },
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

@@ -149,7 +149,7 @@ class HypesquadHouse(PreinstancedBase):
     value : `int`
         The Discord side identifier value of the hypesquad house.
     name : `str`
-        The default name of the hypesquad house.
+        The name of the hypesquad house.
     
     Class Attributes
     ----------------

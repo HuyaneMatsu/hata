@@ -5,25 +5,17 @@ from ...component_metadata import ComponentMetadataBase
 from ..preinstanced import ComponentType
 
 
-def test__ComponentType__name():
+@vampytest.call_from(ComponentType.INSTANCES.values())
+def test__ComponentType__instances(instance):
     """
-    Tests whether ``ComponentType`` instance names are all strings.
+    Tests whether ``ComponentType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``ComponentType``
+        The instance to test.
     """
-    for instance in ComponentType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ComponentType__value():
-    """
-    Tests whether ``ComponentType`` instance values are all the expected value type.
-    """
-    for instance in ComponentType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ComponentType.VALUE_TYPE)
-
-
-def test__ComponentType__metadata_type():
-    """
-    Tests whether ``ComponentType`` instance metadata types are all metadata types.
-    """
-    for instance in ComponentType.INSTANCES.values():
-        vampytest.assert_subtype(instance.metadata_type, ComponentMetadataBase)
+    vampytest.assert_instance(instance, ComponentType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ComponentType.VALUE_TYPE)
+    vampytest.assert_subtype(instance.metadata_type, ComponentMetadataBase)

@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import ButtonStyle
 
 
-def test__ButtonStyle__name():
+@vampytest.call_from(ButtonStyle.INSTANCES.values())
+def test__ButtonStyle__instances(instance):
     """
-    Tests whether ``ButtonStyle`` instance names are all strings.
+    Tests whether ``ButtonStyle`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``ButtonStyle``
+        The instance to test.
     """
-    for instance in ButtonStyle.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ButtonStyle__value():
-    """
-    Tests whether ``ButtonStyle`` instance values are all the expected value type.
-    """
-    for instance in ButtonStyle.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ButtonStyle.VALUE_TYPE)
+    vampytest.assert_instance(instance, ButtonStyle)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ButtonStyle.VALUE_TYPE)

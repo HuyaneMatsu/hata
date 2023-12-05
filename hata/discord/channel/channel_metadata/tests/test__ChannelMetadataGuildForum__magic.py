@@ -29,7 +29,7 @@ def test__ChannelMetadataGuildForum__repr():
         )
     ]
     default_thread_auto_archive_after = 86400
-    default_thread_reaction = BUILTIN_EMOJIS['monkey']
+    default_thread_reaction_emoji = BUILTIN_EMOJIS['monkey']
     default_thread_slowmode = 60
     flags = ChannelFlag(1)
     topic = 'Dearest'
@@ -44,7 +44,7 @@ def test__ChannelMetadataGuildForum__repr():
         position = position,
         available_tags = available_tags,
         default_thread_auto_archive_after = default_thread_auto_archive_after,
-        default_thread_reaction = default_thread_reaction,
+        default_thread_reaction_emoji = default_thread_reaction_emoji,
         default_thread_slowmode = default_thread_slowmode,
         flags = flags,
         topic = topic,
@@ -74,7 +74,7 @@ def test__ChannelMetadataGuildForum__hash():
         )
     ]
     default_thread_auto_archive_after = 86400
-    default_thread_reaction = BUILTIN_EMOJIS['monkey']
+    default_thread_reaction_emoji = BUILTIN_EMOJIS['monkey']
     default_thread_slowmode = 60
     flags = ChannelFlag(1)
     topic = 'Dearest'
@@ -89,7 +89,7 @@ def test__ChannelMetadataGuildForum__hash():
         position = position,
         available_tags = available_tags,
         default_thread_auto_archive_after = default_thread_auto_archive_after,
-        default_thread_reaction = default_thread_reaction,
+        default_thread_reaction_emoji = default_thread_reaction_emoji,
         default_thread_slowmode = default_thread_slowmode,
         flags = flags,
         topic = topic,
@@ -119,7 +119,7 @@ def test__ChannelMetadataGuildForum__eq():
         )
     ]
     default_thread_auto_archive_after = 86400
-    default_thread_reaction = BUILTIN_EMOJIS['monkey']
+    default_thread_reaction_emoji = BUILTIN_EMOJIS['monkey']
     default_thread_slowmode = 60
     flags = ChannelFlag(1)
     topic = 'Dearest'
@@ -133,7 +133,7 @@ def test__ChannelMetadataGuildForum__eq():
         'position': position,
         'available_tags': available_tags,
         'default_thread_auto_archive_after': default_thread_auto_archive_after,
-        'default_thread_reaction': default_thread_reaction,
+        'default_thread_reaction_emoji': default_thread_reaction_emoji,
         'default_thread_slowmode': default_thread_slowmode,
         'flags': flags,
         'topic': topic,
@@ -157,7 +157,7 @@ def test__ChannelMetadataGuildForum__eq():
         ('position', 6),
         ('available_tags', None),
         ('default_thread_auto_archive_after', 3600),
-        ('default_thread_reaction', None),
+        ('default_thread_reaction_emoji', None),
         ('default_thread_slowmode', 0),
         ('flags', ChannelFlag(3)),
         ('topic', 'Dai'),

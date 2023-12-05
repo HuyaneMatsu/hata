@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import MessageNotificationLevel
 
 
-def test__MessageNotificationLevel__name():
+@vampytest.call_from(MessageNotificationLevel.INSTANCES.values())
+def test__MessageNotificationLevel__instances(instance):
     """
-    Tests whether ``MessageNotificationLevel`` instance names are all strings.
+    Tests whether ``MessageNotificationLevel`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``MessageNotificationLevel``
+        The instance to test.
     """
-    for instance in MessageNotificationLevel.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__MessageNotificationLevel__value():
-    """
-    Tests whether ``MessageNotificationLevel`` instance values are all the expected value type.
-    """
-    for instance in MessageNotificationLevel.INSTANCES.values():
-        vampytest.assert_instance(instance.value, MessageNotificationLevel.VALUE_TYPE)
+    vampytest.assert_instance(instance, MessageNotificationLevel)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, MessageNotificationLevel.VALUE_TYPE)

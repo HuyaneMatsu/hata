@@ -1,6 +1,6 @@
 import vampytest
 
-from ..constants import EMBED_FOOTER_TEXT_LENGTH_MAX
+from ..constants import TEXT_LENGTH_MAX
 from ..fields import validate_text
 
 
@@ -27,7 +27,7 @@ def test__validate_text__1():
     Case: `ValueError`.
     """
     for input_value in (
-        'a' * (EMBED_FOOTER_TEXT_LENGTH_MAX + 1),
+        'a' * (TEXT_LENGTH_MAX + 1),
     ):
         with vampytest.assert_raises(ValueError):
             validate_text(input_value)

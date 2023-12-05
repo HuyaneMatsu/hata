@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import HubType
 
 
-def test__HubType__name():
+@vampytest.call_from(HubType.INSTANCES.values())
+def test__HubType__instances(instance):
     """
-    Tests whether ``HubType`` instance names are all strings.
+    Tests whether ``HubType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``HubType``
+        The instance to test.
     """
-    for instance in HubType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__HubType__value():
-    """
-    Tests whether ``HubType`` instance values are all the expected value type.
-    """
-    for instance in HubType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, HubType.VALUE_TYPE)
+    vampytest.assert_instance(instance, HubType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, HubType.VALUE_TYPE)

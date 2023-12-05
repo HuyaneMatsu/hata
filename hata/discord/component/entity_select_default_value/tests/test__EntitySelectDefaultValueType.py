@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import EntitySelectDefaultValueType
 
 
-def test__EntitySelectDefaultValueType__name():
+@vampytest.call_from(EntitySelectDefaultValueType.INSTANCES.values())
+def test__EntitySelectDefaultValueType__instances(instance):
     """
-    Tests whether ``EntitySelectDefaultValueType`` instance names are all strings.
+    Tests whether ``EntitySelectDefaultValueType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``EntitySelectDefaultValueType``
+        The instance to test.
     """
-    for instance in EntitySelectDefaultValueType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__EntitySelectDefaultValueType__value():
-    """
-    Tests whether ``EntitySelectDefaultValueType`` instance values are all the expected value type.
-    """
-    for instance in EntitySelectDefaultValueType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, EntitySelectDefaultValueType.VALUE_TYPE)
+    vampytest.assert_instance(instance, EntitySelectDefaultValueType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, EntitySelectDefaultValueType.VALUE_TYPE)

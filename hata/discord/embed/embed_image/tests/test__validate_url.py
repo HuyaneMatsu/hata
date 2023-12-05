@@ -1,30 +1,44 @@
 import vampytest
 
+from ..constants import URL_LENGTH_MAX
 from ..fields import validate_url
 
 
-def test__validate_url__0():
+def _iter_options__passing():
+    yield None, None
+    yield '', None
+    yield 'https://orindance.party/', 'https://orindance.party/'
+    yield 'attachment://orin.png', 'attachment://orin.png'
+
+
+def _iter_options__type_error():
+    yield 12.6
+
+
+def _iter_options__value_error():
+    url = 'https://orindance.party/'
+    yield url + 'a' * (URL_LENGTH_MAX - len(url) + 1)
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_url(input_value):
     """
     Tests whether `validate_url` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        ('https://orindance.party/', 'https://orindance.party/'),
-        ('attachment://koishi.png', 'attachment://koishi.png'),
-    ):
-        output = validate_url(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_url__1():
-    """
-    Tests whether `validate_url` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to test with.
     
-    Case: `TypeError`.
+    Returns
+    -------
+    output : `None | str`
+    
+    Raises
+    ------
+    TypeError
+    ValueError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_url(input_value)
+    return validate_url(input_value)

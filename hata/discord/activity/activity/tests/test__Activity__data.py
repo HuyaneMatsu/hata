@@ -6,26 +6,30 @@ from ..preinstanced import ActivityType
 from .test__Activity__constructor import _assert_fields_set
 
 
-def test__Activity__from_data():
+@vampytest.call_from(
+    activity_type for activity_type in ActivityType.INSTANCES.values() if activity_type is not ActivityType.unknown
+)
+def test__Activity__from_data(activity_type):
     """
     Tests whether ``Activity.from_data`` works as expected.
+    
+    Parameters
+    ----------
+    activity_type : ``ActivityType``
+        activity type to test with.
     """
     state = 'Hollow'
     
-    for activity_type in ActivityType.INSTANCES.values():
-        if (activity_type is ActivityType.unknown):
-            continue
-        
-        data = {
-            'type': activity_type.value,
-            'state': state,
-        }
-        
-        activity = Activity.from_data(data)
-        _assert_fields_set(activity)
-        
-        vampytest.assert_is(activity.type, activity_type)
-        vampytest.assert_eq(activity.state, state)
+    data = {
+        'type': activity_type.value,
+        'state': state,
+    }
+    
+    activity = Activity.from_data(data)
+    _assert_fields_set(activity)
+    
+    vampytest.assert_is(activity.type, activity_type)
+    vampytest.assert_eq(activity.state, state)
 
 
 def test__Activity__to_data():

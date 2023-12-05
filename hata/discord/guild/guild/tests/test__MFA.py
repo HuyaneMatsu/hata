@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import MFA
 
 
-def test__MFA__name():
+@vampytest.call_from(MFA.INSTANCES.values())
+def test__MFA__instances(instance):
     """
-    Tests whether ``MFA`` instance names are all strings.
+    Tests whether ``MFA`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``MFA``
+        The instance to test.
     """
-    for instance in MFA.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__MFA__value():
-    """
-    Tests whether ``MFA`` instance values are all the expected value type.
-    """
-    for instance in MFA.INSTANCES.values():
-        vampytest.assert_instance(instance.value, MFA.VALUE_TYPE)
+    vampytest.assert_instance(instance, MFA)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, MFA.VALUE_TYPE)

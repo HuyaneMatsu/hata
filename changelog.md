@@ -1,4 +1,74 @@
-## 1.3.46 *\[2023-11-??\]*
+## 1.3.47 *\[2023-12-??\]*
+
+### Improvements
+
+- Add set `length` limit to `Component.url`.
+- Add set `length` limit to `Embed.url`.
+- Add set `length` limit to `EmbedAuthor.url`.
+- Add set `length` limit to `EmbedAuthor.icon_url`.
+- Add set `length` limit to `EmbedFooter.icon_url`.
+- Add set `length` limit to `EmbedImage.url`.
+- Add set `length` limit to `EmbedProvider.url`.
+- Add set `length` limit to `EmbedThumbnail.url`.
+- Add set `length` limit to `EmbedVideo.url`.
+- `Client.onboarding_screen_edit` now flattens emojis in `screen.prompts?[n].options?[n]`.
+- Add `Application.guild`.
+- Add `Application.approximate_guild_count`.
+- Add new `DiscordHTTPClient.application_get_own`. Rename old to `.oauth2_application_get_own`.
+- Add new `RATE_LIMIT_GROUPS.application_get_own`. Rename old to `.RATE_LIMIT_GROUPS`.
+- Update stored embedded activities.
+- Add `OrientationLockState`.
+- Add `PlatformType`.
+- Add `LabelType`.
+- Add `ReleasePhase`.
+- Add `ClientPlatformConfiguration`.
+- Add `EmbeddedActivityConfiguration`.
+- Add `Application.embedded_activity_configuration`.
+- Add `Application.monetized`.
+- Add `ApplicationMonetizationState˙.
+- Add `Application.creator_monetization_state`.
+- Add `SKUFlag.creator_monetization`.
+- Add `SKUFlag.guild_product`.
+- Add `SKUType.package`.
+- Add `SKUType.giftable`.
+- Add `ApplicationVerificationState`.
+- Add `ApplicationFlag.iframe_form`.
+- Add `ApplicationDiscoveryEligibilityFlags`.
+- Add `ApplicationDiscoverabilityState`.
+- Add `ApplicationExplicitContentFilterLevel`.
+- Add `ApplicationInteractionVersion`.
+- Add `ApplicationMonetizationEligibilityFlags`.
+- Add `ApplicationStoreState`.
+- Add `ApplicationRPCState`.
+- Add `Application.discoverability_state`.
+- Add `Application.discovery_eligibility_flags`.
+- Add `Application.explicit_content_filter_level`.
+- Add `Application.integration_public`.
+- Add `Application.integration_requires_code_grant`.
+- Add `Application.interaction_endpoint_url`.
+- Add `ApplicationInteractionEventType`.
+- Add `Application.interaction_event_types`.
+- Add `Application.iter_interaction_event_types`.
+- Add `Application.interaction_version`.
+- Add `ApplicationInternalGuildRestriction`.
+- Add `Application.internal_guild_restriction`.
+- Add `Application.redirect_urls`.
+- Add `Application.monetization_eligibility_flags`
+- Add `Application.monetization_state`.
+- Add `Application.iter_redirect_urls`.
+- Add `Application.rpc_state`.
+- Add `Application.store_state`.
+- Add `Application.verification_state`.
+- Add `ApplicationOverlayMethodFlags`.
+- Add `Application.overlay_methods`.
+
+### Renames, Deprecations & Removals
+
+- Rename `Channel.default_thread_reaction` to `.default_thread_reaction_emoji` to be aligned with the new reactions
+    structure.
+- Rename `Application.bot_require_code_grant` to `.bot_requires_code_grant`.
+
+## 1.3.46 *\[2023-11-26\]*
 
 ### Improvements
 

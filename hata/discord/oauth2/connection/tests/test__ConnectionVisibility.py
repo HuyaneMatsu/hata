@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import ConnectionVisibility
 
 
-def test__ConnectionVisibility__name():
+@vampytest.call_from(ConnectionVisibility.INSTANCES.values())
+def test__ConnectionVisibility__instances(instance):
     """
-    Tests whether ``ConnectionVisibility`` instance names are all strings.
+    Tests whether ``ConnectionVisibility`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``ConnectionVisibility``
+        The instance to test.
     """
-    for instance in ConnectionVisibility.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ConnectionVisibility__value():
-    """
-    Tests whether ``ConnectionVisibility`` instance values are all the expected value type.
-    """
-    for instance in ConnectionVisibility.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ConnectionVisibility.VALUE_TYPE)
+    vampytest.assert_instance(instance, ConnectionVisibility)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ConnectionVisibility.VALUE_TYPE)

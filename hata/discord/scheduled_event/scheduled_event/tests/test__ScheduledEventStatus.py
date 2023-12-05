@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import ScheduledEventStatus
 
 
-def test__ScheduledEventStatus__name():
+@vampytest.call_from(ScheduledEventStatus.INSTANCES.values())
+def test__ScheduledEventStatus__instances(instance):
     """
-    Tests whether ``ScheduledEventStatus`` instance names are all strings.
+    Tests whether ``ScheduledEventStatus`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``ScheduledEventStatus``
+        The instance to test.
     """
-    for instance in ScheduledEventStatus.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ScheduledEventStatus__value():
-    """
-    Tests whether ``ScheduledEventStatus`` instance values are all the expected value type.
-    """
-    for instance in ScheduledEventStatus.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ScheduledEventStatus.VALUE_TYPE)
+    vampytest.assert_instance(instance, ScheduledEventStatus)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ScheduledEventStatus.VALUE_TYPE)

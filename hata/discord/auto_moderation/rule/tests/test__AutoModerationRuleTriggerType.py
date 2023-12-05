@@ -5,33 +5,18 @@ from ...trigger_metadata import AutoModerationRuleTriggerMetadataBase
 from ..preinstanced import AutoModerationRuleTriggerType
 
 
-def test__AutoModerationRuleTriggerType__name():
+@vampytest.call_from(AutoModerationRuleTriggerType.INSTANCES.values())
+def test__AutoModerationRuleTriggerType__instances(instance):
     """
-    Tests whether ``AutoModerationRuleTriggerType`` instance names are all strings.
+    Tests whether ``AutoModerationRuleTriggerType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``AutoModerationRuleTriggerType``
+        The instance to test.
     """
-    for instance in AutoModerationRuleTriggerType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__AutoModerationRuleTriggerType__value():
-    """
-    Tests whether ``AutoModerationRuleTriggerType`` instance values are all the expected value type.
-    """
-    for instance in AutoModerationRuleTriggerType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, AutoModerationRuleTriggerType.VALUE_TYPE)
-
-
-def test__AutoModerationRuleTriggerType__max_per_guild():
-    """
-    Tests whether ``AutoModerationRuleTriggerType`` instance `.max_per_guild`-s are all ints.
-    """
-    for instance in AutoModerationRuleTriggerType.INSTANCES.values():
-        vampytest.assert_instance(instance.max_per_guild, int)
-
-
-def test__AutoModerationRuleTriggerType__metadata_type():
-    """
-    Tests whether ``AutoModerationRuleTriggerType`` instance `.metadata_type`-s are all set correctly.
-    """
-    for instance in AutoModerationRuleTriggerType.INSTANCES.values():
-        vampytest.assert_subtype(instance.metadata_type, AutoModerationRuleTriggerMetadataBase)
+    vampytest.assert_instance(instance, AutoModerationRuleTriggerType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, AutoModerationRuleTriggerType.VALUE_TYPE)
+    vampytest.assert_instance(instance.max_per_guild, int)
+    vampytest.assert_subtype(instance.metadata_type, AutoModerationRuleTriggerMetadataBase)

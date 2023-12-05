@@ -5,7 +5,7 @@ from ....guild import GuildFeature
 from ..fields import validate_features
 
 
-def _iter_options():
+def _iter_options__passing():
     yield None, None
     yield [], None
     yield GuildFeature.animated_banner, (GuildFeature.animated_banner, )
@@ -16,14 +16,18 @@ def _iter_options():
         [GuildFeature.animated_banner, GuildFeature.animated_icon],
         (GuildFeature.animated_banner, GuildFeature.animated_icon,),
     )
-    
 
-@vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_features__0(input_value):
+
+def _iter_options__type_error():
+    yield 12.6
+    yield [12.6]
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_features(input_value):
     """
     Tests whether `validate_features` works as intended.
-    
-    Case: passing.
     
     Parameters
     ----------
@@ -33,25 +37,9 @@ def test__validate_features__0(input_value):
     Returns
     -------
     output : `None | tuple<GuildFeature>
-    """
-    return validate_features(input_value)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-def test__validate_features__type_error(input_value):
-    """
-    Tests whether `validate_features` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        The value to validate.
     
     Raises
     ------
     TypeError
     """
-    validate_features(input_value)
+    return validate_features(input_value)

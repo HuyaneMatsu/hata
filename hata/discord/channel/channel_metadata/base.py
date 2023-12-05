@@ -1,6 +1,6 @@
 __all__ = ('ChannelMetadataBase',)
 
-from re import I as re_ignore_case, compile as re_compile, escape as re_escape
+from warnings import warn
 
 from scarletio import RichAttributeErrorBaseType, include
 
@@ -215,7 +215,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
             +---------------------------------------+-----------------------------------------------------------+
             | default_thread_auto_archive_after     | `int`                                                     |
             +---------------------------------------+-----------------------------------------------------------+
-            | default_thread_reaction               | `None`, ``Emoji``                                         |
+            | default_thread_reaction_emoji         | `None`, ``Emoji``                                         |
             +---------------------------------------+-----------------------------------------------------------+
             | default_thread_slowmode               | `int`                                                     |
             +---------------------------------------+-----------------------------------------------------------+
@@ -707,16 +707,32 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     )
     
     
-    default_thread_reaction = PlaceHolder(
+    default_thread_reaction_emoji = PlaceHolder(
         None,
         """
         Returns the emoji to show in the add reaction button on a thread of the forum channel.
         
         Returns
         -------
-        default_thread_reaction : ``Emoji``
+        default_thread_reaction_emoji : ``Emoji``
         """
     )
+    
+
+    @property
+    def default_thread_reaction(self):
+        """
+        Deprecated and will be removed in 2024 Marc. Please use `.default_thread_reaction_emoji` instead.
+        """
+        warn(
+            (
+                f'`{self.__class__.__name__}.default_thread_reaction` is deprecated and will be removed in '
+                f'2024 Marc. Please use `.default_thread_reaction_emoji` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.default_thread_reaction_emoji
     
     
     default_thread_slowmode = PlaceHolder(

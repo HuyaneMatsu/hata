@@ -366,7 +366,11 @@ class SKUType(PreinstancedBase):
         The name of the type.
     value : `int`
         The Discord side identifier value of the SKU type.
-        
+    giftable : `bool`
+        Whether the stock keeping unit is giftable.
+    package : `bool`
+        Whether the stock keeping unit is a package (or bundle).
+    
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``SKUType``) items
@@ -378,34 +382,83 @@ class SKUType(PreinstancedBase):
         The default name of the SKU types.
     
     Every predefined SKU type can be accessed as class attribute as well:
-    +-----------------------+-----------------------+-------+
-    | Class attribute name  | Name                  | Value |
-    +=======================+=======================+=======+
-    | none                  | none                  | 0     |
-    +-----------------------+-----------------------+-------+
-    | durable_primary       | durable primary       | 1     |
-    +-----------------------+-----------------------+-------+
-    | durable               | durable               | 2     |
-    +-----------------------+-----------------------+-------+
-    | consumable            | consumable            | 3     |
-    +-----------------------+-----------------------+-------+
-    | bundle                | bundle                | 4     |
-    +-----------------------+-----------------------+-------+
-    | subscription          | subscription          | 5     |
-    +-----------------------+-----------------------+-------+
-    | subscription_group    | subscription group    | 6     |
-    +-----------------------+-----------------------+-------+
+    
+    +-----------------------+-----------------------+-------+-----------+-----------+
+    | Class attribute name  | Name                  | Value | Giftable  | Package   |
+    +=======================+=======================+=======+===========+===========+
+    | none                  | none                  | 0     | `False`   | `False`   |
+    +-----------------------+-----------------------+-------+-----------+-----------+
+    | durable_primary       | durable primary       | 1     | `True`    | `False`   |
+    +-----------------------+-----------------------+-------+-----------+-----------+
+    | durable               | durable               | 2     | `True`    | `False`   |
+    +-----------------------+-----------------------+-------+-----------+-----------+
+    | consumable            | consumable            | 3     | `False`   | `False`   |
+    +-----------------------+-----------------------+-------+-----------+-----------+
+    | bundle                | bundle                | 4     | `False`   | `True`    |
+    +-----------------------+-----------------------+-------+-----------+-----------+
+    | subscription          | subscription          | 5     | `True`    | `False`   |
+    +-----------------------+-----------------------+-------+-----------+-----------+
+    | subscription_group    | subscription group    | 6     | `False`   | `True`    |
+    +-----------------------+-----------------------+-------+-----------+-----------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
     
-    __slots__ = ()
+    __slots__ = ('giftable', 'package')
+    
+
+    @classmethod
+    def _from_value(cls, value):
+        """
+        Creates a new stock keeping unit type with the given value.
+        
+        Parameters
+        ----------
+        value : `int`
+            The stock keeping unit type's identifier value.
+        
+        Returns
+        -------
+        self : `instance<cls>`
+            The created instance.
+        """
+        self = object.__new__(cls)
+        self.name = cls.DEFAULT_NAME
+        self.value = value
+        self.giftable = False
+        self.package = False
+        
+        return self
+    
+    
+    def __init__(self, value, name, giftable, package):
+        """
+        Creates a stock keeping unit type and stores it at the class's `.INSTANCES` class attribute as well.
+        
+        Parameters
+        ----------
+        value : `int`
+            The Discord side identifier value of the stock keeping unit type.
+        name : `str`
+            The default name of the stock keeping unit type.
+        giftable : `bool`
+            Whether the stock keeping unit is giftable.
+        package : `bool`
+            Whether the stock keeping unit is a package (or bundle).
+        """
+        self.value = value
+        self.name = name
+        self.giftable = giftable
+        self.package = package
+        
+        self.INSTANCES[value] = self
+    
     
     # predefined
-    none = P(0, 'none')
-    durable_primary = P(1, 'durable primary')
-    durable = P(2, 'durable')
-    consumable = P(3, 'consumable')
-    bundle = P(4, 'bundle')
-    subscription = P(5, 'subscription')
-    subscription_group = P(6, 'subscription group')
+    none = P(0, 'none', False, False)
+    durable_primary = P(1, 'durable primary', True, False)
+    durable = P(2, 'durable', True, False)
+    consumable = P(3, 'consumable', False, False)
+    bundle = P(4, 'bundle', False, True)
+    subscription = P(5, 'subscription', True, False)
+    subscription_group = P(6, 'subscription group', False, True)

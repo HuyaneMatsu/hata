@@ -23,7 +23,7 @@ from ..embed_provider import EmbedProvider
 from ..embed_thumbnail import EmbedThumbnail
 from ..embed_video import EmbedVideo
 
-from .constants import EMBED_DESCRIPTION_LENGTH_MAX, EMBED_TITLE_LENGTH_MAX
+from .constants import DESCRIPTION_LENGTH_MAX, TITLE_LENGTH_MAX, URL_LENGTH_MAX
 from .preinstanced import EmbedType
 
 # author
@@ -74,9 +74,9 @@ def validate_description(description):
     if description_length == 0:
         return None
     
-    if description_length > EMBED_DESCRIPTION_LENGTH_MAX:
+    if description_length > DESCRIPTION_LENGTH_MAX:
         raise ValueError(
-            f'`description` length` must be <= {EMBED_DESCRIPTION_LENGTH_MAX}, '
+            f'`description` length` must be <= {DESCRIPTION_LENGTH_MAX}, '
             f'got {description_length}; description = {description!r}.'
         )
     
@@ -243,9 +243,9 @@ def validate_title(title):
     if title_length == 0:
         return None
     
-    if title_length > EMBED_TITLE_LENGTH_MAX:
+    if title_length > TITLE_LENGTH_MAX:
         raise ValueError(
-            f'`title` length` must be <= {EMBED_TITLE_LENGTH_MAX}, '
+            f'`title` length` must be <= {TITLE_LENGTH_MAX}, '
             f'got {title_length}; title = {title!r}.'
         )
     
@@ -261,7 +261,7 @@ validate_type = preinstanced_validator_factory('embed_type', EmbedType)
 
 parse_url = nullable_string_parser_factory('url')
 put_url_into = url_optional_putter_factory('url')
-validate_url = url_optional_validator_factory('url')
+validate_url = url_optional_validator_factory('url', length_max = URL_LENGTH_MAX)
 
 # video
 

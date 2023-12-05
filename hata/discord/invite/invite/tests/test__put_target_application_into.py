@@ -47,7 +47,9 @@ def _iter_options():
             'terms_of_service_url': None,
             'type': None,
             'verify_key': '',
+            'embedded_activity_config': None,
             'max_participants': -1,
+            'is_monetized': False,
         },
     }
     

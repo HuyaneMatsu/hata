@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import SortOrder
 
 
-def test__SortOrder__name():
+@vampytest.call_from(SortOrder.INSTANCES.values())
+def test__SortOrder__instances(instance):
     """
-    Tests whether ``SortOrder`` instance names are all strings.
+    Tests whether ``SortOrder`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``SortOrder``
+        The instance to test.
     """
-    for instance in SortOrder.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__SortOrder__value():
-    """
-    Tests whether ``SortOrder`` instance values are all the expected value type.
-    """
-    for instance in SortOrder.INSTANCES.values():
-        vampytest.assert_instance(instance.value, SortOrder.VALUE_TYPE)
+    vampytest.assert_instance(instance, SortOrder)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, SortOrder.VALUE_TYPE)

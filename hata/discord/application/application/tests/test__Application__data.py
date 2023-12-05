@@ -8,16 +8,20 @@ from ....user import User
 from ...application_entity import ApplicationEntity
 from ...application_executable import ApplicationExecutable
 from ...application_install_parameters import ApplicationInstallParameters
+from ...embedded_activity_configuration import EmbeddedActivityConfiguration
 from ...third_party_sku import ThirdPartySKU
 
 from ..application import Application
-from ..flags import ApplicationFlag
-from ..preinstanced import ApplicationType
+from ..flags import ApplicationFlag, ApplicationDiscoveryEligibilityFlags, ApplicationMonetizationEligibilityFlags, \
+    ApplicationOverlayMethodFlags
+from ..preinstanced import ApplicationMonetizationState, ApplicationType, ApplicationDiscoverabilityState, \
+    ApplicationExplicitContentFilterLevel, ApplicationInteractionEventType, ApplicationInteractionVersion, \
+    ApplicationInternalGuildRestriction, ApplicationRPCState, ApplicationStoreState, ApplicationVerificationState
 
 from .test__Application__constructor import _assert_fields_set
 
 
-def test__Application__from_data__0():
+def test__Application__from_data__warning_and_attributes():
     """
     Tests whether `Application.from_data`` works as intended.
     
@@ -39,7 +43,7 @@ def test__Application__from_data__0():
         vampytest.assert_eq(len(warnings), 1)
 
 
-def test__Application__from_data__1():
+def test__Application__from_data__caching():
     """
     Tests whether `Application.from_data`` works as intended.
     
@@ -60,7 +64,7 @@ def test__Application__from_data__1():
         vampytest.assert_is(application, test_application)
 
 
-def test__Application__from_data_ready__0():
+def test__Application__from_data_ready__attributes():
     """
     Tests whether ``Application.from_data_ready`` works as intended.
     
@@ -81,7 +85,7 @@ def test__Application__from_data_ready__0():
     vampytest.assert_eq(application.flags, flags)
 
 
-def test__Application__from_data_ready__1():
+def test__Application__from_data_ready__caching():
     """
     Tests whether ``Application.from_data_ready`` works as intended.
     
@@ -99,7 +103,7 @@ def test__Application__from_data_ready__1():
     vampytest.assert_is(application, test_application)
 
 
-def test__Application__from_data_ready__2():
+def test__Application__from_data_ready__overwriting_partial():
     """
     Tests whether ``Application.from_data_ready`` works as intended.
     
@@ -116,7 +120,7 @@ def test__Application__from_data_ready__2():
     vampytest.assert_is(application, test_application)
 
 
-def test__Application__from_data_ready__3():
+def test__Application__from_data_ready__overwriting_full():
     """
     Tests whether ``Application.from_data_ready`` works as intended.
     
@@ -134,7 +138,7 @@ def test__Application__from_data_ready__3():
     vampytest.assert_is_not(application, test_application)
 
 
-def test__Application__from_data_own__0():
+def test__Application__from_data_own__attributes():
     """
     Tests whether ``Application.from_data_own`` works as intended.
     
@@ -142,8 +146,9 @@ def test__Application__from_data_own__0():
     """
     application_id = 202211290019
     
+    approximate_guild_count = 11
     bot_public = True
-    bot_require_code_grant = True
+    bot_requires_code_grant = True
     cover = Icon(IconType.static, 23)
     description = 'dancing'
     flags = ApplicationFlag(96)
@@ -158,18 +163,38 @@ def test__Application__from_data_own__0():
     application_type = ApplicationType.game
     verify_key = 'hell'
     
+    creator_monetization_state = ApplicationMonetizationState.disabled
     custom_install_url = 'https://orindance.party/'
+    developers = [ApplicationEntity.precreate(202312030000, name = 'BrainDead')]
+    discoverability_state = ApplicationDiscoverabilityState.blocked
+    discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags(9)
+    explicit_content_filter_level = ApplicationExplicitContentFilterLevel.filtered
     guild_id = 202211290020
     install_parameters = ApplicationInstallParameters(permissions = 8)
+    integration_public = True
+    integration_requires_code_grant = True
+    interaction_endpoint_url = 'https://orindance.party/'
+    interaction_event_types = [ApplicationInteractionEventType.none]
+    interaction_version = ApplicationInteractionVersion.selective
+    internal_guild_restriction = ApplicationInternalGuildRestriction.restricted
+    monetization_eligibility_flags = ApplicationMonetizationEligibilityFlags(17)
+    monetization_state = ApplicationMonetizationState.disabled
+    monetized = True
     owner = User.precreate(202211290021)
     primary_sku_id = 202211290022
+    publishers = [ApplicationEntity.precreate(202312040000, name = 'Brain')]
+    redirect_urls = ['https://orindance.party/']
     role_connection_verification_url = 'https://orindance.party/'
+    rpc_state = ApplicationRPCState.approved
     slug = 'https://orindance.party/'
+    store_state = ApplicationStoreState.approved
+    verification_state = ApplicationVerificationState.approved
     
     data = {
         'id': str(application_id),
+        'approximate_guild_count': approximate_guild_count,
         'bot_public': bot_public,
-        'bot_require_code_grant': bot_require_code_grant,
+        'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,
         'description': description,
         'flags': int(flags),
@@ -184,45 +209,86 @@ def test__Application__from_data_own__0():
         'type': application_type.value,
         'verify_key': verify_key,
         
+        'creator_monetization_state': creator_monetization_state.value,
         'custom_install_url': custom_install_url,
+        'developers': [developer.to_data(defaults = True, include_internals = True) for developer in developers],
+        'discoverability_state': discoverability_state.value,
+        'discovery_eligibility_flags': int(discovery_eligibility_flags),
+        'explicit_content_filter': explicit_content_filter_level.value,
         'guild_id': str(guild_id),
         'install_params': install_parameters.to_data(defaults = True),
+        'integration_public': integration_public,
+        'integration_require_code_grant': integration_requires_code_grant,
+        'interactions_endpoint_url': interaction_endpoint_url,
+        'interactions_event_types': [
+            interaction_event_type.value for interaction_event_type in interaction_event_types
+        ],
+        'interactions_version': interaction_version.value,
+        'internal_guild_restriction': internal_guild_restriction.value,
+        'monetization_eligibility_flags': int(monetization_eligibility_flags),
+        'monetization_state': monetization_state.value,
+        'is_monetized': monetized,
         'owner': owner.to_data(defaults = True, include_internals = True),
         'team': None,
         'primary_sku_id': str(primary_sku_id),
+        'publishers': [publisher.to_data(defaults = True, include_internals = True) for publisher in publishers],
+        'redirect_uris': redirect_urls,
         'role_connections_verification_url': role_connection_verification_url,
+        'rpc_application_state': rpc_state.value,
         'slug': slug,
+        'store_application_state': store_state.value,
+        'verification_state': verification_state.value,
     }
     
     application = Application.from_data_own(data)
     _assert_fields_set(application)
     vampytest.assert_eq(application.id, application_id)
     
+    vampytest.assert_eq(application.approximate_guild_count, approximate_guild_count)
     vampytest.assert_eq(application.bot_public, bot_public)
-    vampytest.assert_eq(application.bot_require_code_grant, bot_require_code_grant)
+    vampytest.assert_eq(application.bot_requires_code_grant, bot_requires_code_grant)
     vampytest.assert_eq(application.cover, cover)
+    vampytest.assert_is(application.creator_monetization_state, creator_monetization_state)
     vampytest.assert_eq(application.custom_install_url, custom_install_url)
+    vampytest.assert_is(application.discoverability_state, discoverability_state)
+    vampytest.assert_eq(application.discovery_eligibility_flags, discovery_eligibility_flags)
     vampytest.assert_eq(application.description, description)
+    vampytest.assert_eq(application.developers, tuple(developers))
+    vampytest.assert_is(application.explicit_content_filter_level, explicit_content_filter_level)
     vampytest.assert_eq(application.flags, flags)
     vampytest.assert_eq(application.guild_id, guild_id)
     vampytest.assert_eq(application.hook, hook)
-    vampytest.assert_eq(application.install_parameters, install_parameters)
     vampytest.assert_eq(application.icon, icon)
+    vampytest.assert_eq(application.install_parameters, install_parameters)
+    vampytest.assert_eq(application.integration_public, integration_public)
+    vampytest.assert_eq(application.integration_requires_code_grant, integration_requires_code_grant)
+    vampytest.assert_eq(application.interaction_endpoint_url, interaction_endpoint_url)
+    vampytest.assert_eq(application.interaction_event_types, tuple(interaction_event_types))
+    vampytest.assert_is(application.interaction_version, interaction_version)
+    vampytest.assert_is(application.internal_guild_restriction, internal_guild_restriction)
+    vampytest.assert_eq(application.monetization_eligibility_flags, monetization_eligibility_flags)
+    vampytest.assert_is(application.monetization_state, monetization_state)
+    vampytest.assert_eq(application.monetized, monetized)
     vampytest.assert_eq(application.name, name)
     vampytest.assert_eq(application.owner, owner)
     vampytest.assert_eq(application.primary_sku_id, primary_sku_id)
     vampytest.assert_eq(application.privacy_policy_url, privacy_policy_url)
+    vampytest.assert_eq(application.publishers, tuple(publishers))
+    vampytest.assert_eq(application.redirect_urls, tuple(redirect_urls))
     vampytest.assert_eq(application.role_connection_verification_url, role_connection_verification_url)
     vampytest.assert_eq(application.rpc_origins, tuple(rpc_origins))
+    vampytest.assert_is(application.rpc_state, rpc_state)
     vampytest.assert_eq(application.slug, slug)
     vampytest.assert_eq(application.splash, splash)
+    vampytest.assert_is(application.store_state, store_state)
     vampytest.assert_eq(application.tags, tuple(tags))
     vampytest.assert_eq(application.terms_of_service_url, terms_of_service_url)
     vampytest.assert_is(application.type, application_type)
     vampytest.assert_eq(application.verify_key, verify_key)
+    vampytest.assert_is(application.verification_state, verification_state)
 
 
-def test__Application__from_data_own__1():
+def test__Application__from_data_own__caching():
     """
     Tests whether ``Application.from_data_own`` works as intended.
     
@@ -240,7 +306,7 @@ def test__Application__from_data_own__1():
     vampytest.assert_is(application, test_application)
 
 
-def test__Application__from_data_own__2():
+def test__Application__from_data_own__overwriting_partial():
     """
     Tests whether ``Application.from_data_own`` works as intended.
     
@@ -257,7 +323,7 @@ def test__Application__from_data_own__2():
     vampytest.assert_is(application, test_application)
 
 
-def test__Application__from_data_own__3():
+def test__Application__from_data_own__overwriting_full():
     """
     Tests whether ``Application.from_data_own`` works as intended.
     
@@ -275,7 +341,7 @@ def test__Application__from_data_own__3():
     vampytest.assert_is_not(application, test_application)
 
 
-def test__Application__from_data_invite__0():
+def test__Application__from_data_invite__attributes():
     """
     Tests whether ``Application.from_data_invite`` works as intended.
     
@@ -284,7 +350,7 @@ def test__Application__from_data_invite__0():
     application_id = 202211290024
     
     bot_public = True
-    bot_require_code_grant = True
+    bot_requires_code_grant = True
     cover = Icon(IconType.static, 23)
     description = 'dancing'
     flags = ApplicationFlag(96)
@@ -299,12 +365,14 @@ def test__Application__from_data_invite__0():
     application_type = ApplicationType.game
     verify_key = 'hell'
     
+    embedded_activity_configuration = EmbeddedActivityConfiguration(position = 6)
     max_participants = 23
+    monetized = True
     
     data = {
         'id': str(application_id),
         'bot_public': bot_public,
-        'bot_require_code_grant': bot_require_code_grant,
+        'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,
         'description': description,
         'flags': int(flags),
@@ -319,7 +387,9 @@ def test__Application__from_data_invite__0():
         'type': application_type.value,
         'verify_key': verify_key,
         
+        'embedded_activity_config': embedded_activity_configuration.to_data(),
         'max_participants': max_participants,
+        'is_monetized': monetized,
     }
     
     application = Application.from_data_invite(data)
@@ -327,13 +397,15 @@ def test__Application__from_data_invite__0():
     vampytest.assert_eq(application.id, application_id)
     
     vampytest.assert_eq(application.bot_public, bot_public)
-    vampytest.assert_eq(application.bot_require_code_grant, bot_require_code_grant)
+    vampytest.assert_eq(application.bot_requires_code_grant, bot_requires_code_grant)
     vampytest.assert_eq(application.cover, cover)
     vampytest.assert_eq(application.description, description)
+    vampytest.assert_eq(application.embedded_activity_configuration, embedded_activity_configuration)
     vampytest.assert_eq(application.flags, flags)
     vampytest.assert_eq(application.hook, hook)
     vampytest.assert_eq(application.icon, icon)
     vampytest.assert_eq(application.max_participants, max_participants)
+    vampytest.assert_eq(application.monetized, monetized)
     vampytest.assert_eq(application.name, name)
     vampytest.assert_eq(application.privacy_policy_url, privacy_policy_url)
     vampytest.assert_eq(application.rpc_origins, tuple(rpc_origins))
@@ -344,7 +416,7 @@ def test__Application__from_data_invite__0():
     vampytest.assert_eq(application.verify_key, verify_key)
 
 
-def test__Application__from_data_invite__1():
+def test__Application__from_data_invite__caching():
     """
     Tests whether ``Application.from_data_invite`` works as intended.
     
@@ -362,7 +434,7 @@ def test__Application__from_data_invite__1():
     vampytest.assert_is(application, test_application)
 
 
-def test__Application__from_data_detectable__0():
+def test__Application__from_data_detectable__attributes():
     """
     Tests whether ``Application.from_data_detectable`` works as intended.
     
@@ -371,7 +443,7 @@ def test__Application__from_data_detectable__0():
     application_id = 202211290032
     
     bot_public = True
-    bot_require_code_grant = True
+    bot_requires_code_grant = True
     cover = Icon(IconType.static, 23)
     description = 'dancing'
     flags = ApplicationFlag(96)
@@ -394,6 +466,7 @@ def test__Application__from_data_detectable__0():
     guild_id = 202211290035
     overlay = True
     overlay_compatibility_hook = True
+    overlay_method_flags = ApplicationOverlayMethodFlags(26)
     primary_sku_id = 202211290036
     publishers = [ApplicationEntity.precreate(202211290037, name = 'Brain')]
     slug = 'https://orindance.party/'
@@ -402,7 +475,7 @@ def test__Application__from_data_detectable__0():
     data = {
         'id': str(application_id),
         'bot_public': bot_public,
-        'bot_require_code_grant': bot_require_code_grant,
+        'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,
         'description': description,
         'flags': int(flags),
@@ -425,6 +498,7 @@ def test__Application__from_data_detectable__0():
         'guild_id': str(guild_id),
         'overlay': overlay,
         'overlay_compatibility_hook': overlay_compatibility_hook,
+        'overlay_methods': int(overlay_method_flags),
         'primary_sku_id': str(primary_sku_id),
         'publishers': [publisher.to_data(defaults = True, include_internals = True) for publisher in publishers],
         'slug': slug,
@@ -437,7 +511,7 @@ def test__Application__from_data_detectable__0():
     
     vampytest.assert_eq(application.aliases, tuple(aliases))
     vampytest.assert_eq(application.bot_public, bot_public)
-    vampytest.assert_eq(application.bot_require_code_grant, bot_require_code_grant)
+    vampytest.assert_eq(application.bot_requires_code_grant, bot_requires_code_grant)
     vampytest.assert_eq(application.cover, cover)
     vampytest.assert_eq(application.deeplink_url, deeplink_url)
     vampytest.assert_eq(application.description, description)
@@ -451,6 +525,7 @@ def test__Application__from_data_detectable__0():
     vampytest.assert_eq(application.name, name)
     vampytest.assert_eq(application.overlay, overlay)
     vampytest.assert_eq(application.overlay_compatibility_hook, overlay_compatibility_hook)
+    vampytest.assert_eq(application.overlay_method_flags, overlay_method_flags)
     vampytest.assert_eq(application.primary_sku_id, primary_sku_id)
     vampytest.assert_eq(application.privacy_policy_url, privacy_policy_url)
     vampytest.assert_eq(application.publishers, tuple(publishers))
@@ -464,7 +539,7 @@ def test__Application__from_data_detectable__0():
     vampytest.assert_eq(application.verify_key, verify_key)
 
 
-def test__Application__from_data_detectable__1():
+def test__Application__from_data_detectable__caching():
     """
     Tests whether ``Application.from_data_detectable`` works as intended.
     
@@ -530,7 +605,6 @@ def test__Application__to_data_ready():
     )
 
 
-
 def test__Application__to_data_own():
     """
     Tests whether `Application.to_data`` works as intended.
@@ -539,8 +613,9 @@ def test__Application__to_data_own():
     """
     application_id = 202211290041
     
+    approximate_guild_count = 11
     bot_public = True
-    bot_require_code_grant = True
+    bot_requires_code_grant = True
     cover = Icon(IconType.static, 23)
     description = 'dancing'
     flags = ApplicationFlag(96)
@@ -555,44 +630,84 @@ def test__Application__to_data_own():
     application_type = ApplicationType.game
     verify_key = 'hell'
     
+    creator_monetization_state = ApplicationMonetizationState.disabled
     custom_install_url = 'https://orindance.party/'
+    developers = [ApplicationEntity.precreate(202312030001, name = 'BrainDead')]
+    discoverability_state = ApplicationDiscoverabilityState.blocked
+    discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags(9)
+    explicit_content_filter_level = ApplicationExplicitContentFilterLevel.filtered
     guild_id = 202211290042
     install_parameters = ApplicationInstallParameters(permissions = 8)
+    integration_public = True
+    integration_requires_code_grant = True
+    interaction_endpoint_url = 'https://orindance.party/'
+    interaction_event_types = [ApplicationInteractionEventType.none]
+    interaction_version = ApplicationInteractionVersion.selective
+    internal_guild_restriction = ApplicationInternalGuildRestriction.restricted
+    monetization_eligibility_flags = ApplicationMonetizationEligibilityFlags(17)
+    monetization_state = ApplicationMonetizationState.disabled
+    monetized = True
     owner = User.precreate(202211290043)
     primary_sku_id = 202211290044
+    publishers = [ApplicationEntity.precreate(202312040001, name = 'Brain')]
+    redirect_urls = ['https://orindance.party/']
     role_connection_verification_url = 'https://orindance.party/'
+    rpc_state = ApplicationRPCState.approved
     slug = 'https://orindance.party/'
+    store_state = ApplicationStoreState.approved
+    verification_state = ApplicationVerificationState.approved
     
     application = Application.precreate(
         application_id,
+        approximate_guild_count = approximate_guild_count,
         bot_public = bot_public,
-        bot_require_code_grant = bot_require_code_grant,
+        bot_requires_code_grant = bot_requires_code_grant,
         cover = cover,
+        creator_monetization_state = creator_monetization_state,
         custom_install_url = custom_install_url,
+        discoverability_state = discoverability_state,
+        discovery_eligibility_flags = discovery_eligibility_flags,
         description = description,
+        developers = developers,
+        explicit_content_filter_level = explicit_content_filter_level,
         flags = flags,
         guild_id = guild_id,
         hook = hook,
-        install_parameters = install_parameters,
         icon = icon,
+        install_parameters = install_parameters,
+        integration_public = integration_public,
+        integration_requires_code_grant = integration_requires_code_grant,
+        interaction_endpoint_url = interaction_endpoint_url,
+        interaction_event_types = interaction_event_types,
+        interaction_version = interaction_version,
+        internal_guild_restriction = internal_guild_restriction,
+        monetization_eligibility_flags = monetization_eligibility_flags,
+        monetization_state = monetization_state,
+        monetized = monetized,
         name = name,
         owner = owner,
         primary_sku_id = primary_sku_id,
         privacy_policy_url = privacy_policy_url,
+        publishers = publishers,
+        redirect_urls = redirect_urls,
         role_connection_verification_url = role_connection_verification_url,
         rpc_origins = rpc_origins,
+        rpc_state = rpc_state,
         slug = slug,
         splash = splash,
+        store_state = store_state,
         tags = tags,
         terms_of_service_url = terms_of_service_url,
         application_type = application_type,
+        verification_state = verification_state,
         verify_key = verify_key,
     )
     
     expected_data = {
         'id': str(application_id),
+        'approximate_guild_count': approximate_guild_count,
         'bot_public': bot_public,
-        'bot_require_code_grant': bot_require_code_grant,
+        'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,
         'description': description,
         'flags': int(flags),
@@ -607,14 +722,35 @@ def test__Application__to_data_own():
         'type': application_type.value,
         'verify_key': verify_key,
         
+        'creator_monetization_state': creator_monetization_state.value,
         'custom_install_url': custom_install_url,
+        'developers': [developer.to_data(defaults = True, include_internals = True) for developer in developers],
+        'discoverability_state': discoverability_state.value,
+        'discovery_eligibility_flags': int(discovery_eligibility_flags),
+        'explicit_content_filter': explicit_content_filter_level.value,
         'guild_id': str(guild_id),
         'install_params': install_parameters.to_data(defaults = True),
+        'integration_public': integration_public,
+        'integration_require_code_grant': integration_requires_code_grant,
+        'interactions_endpoint_url': interaction_endpoint_url,
+        'interactions_event_types': [
+            interaction_event_type.value for interaction_event_type in interaction_event_types
+        ],
+        'interactions_version': interaction_version.value,
+        'internal_guild_restriction': internal_guild_restriction.value,
+        'monetization_eligibility_flags': int(monetization_eligibility_flags),
+        'monetization_state': monetization_state.value,
+        'is_monetized': monetized,
         'owner': owner.to_data(defaults = True, include_internals = True),
         'team': None,
         'primary_sku_id': str(primary_sku_id),
+        'publishers': [publisher.to_data(defaults = True, include_internals = True) for publisher in publishers],
+        'redirect_uris': redirect_urls,
         'role_connections_verification_url': role_connection_verification_url,
+        'rpc_application_state': rpc_state.value,
         'slug': slug,
+        'store_application_state': store_state.value,
+        'verification_state': verification_state.value,
     }
     
     vampytest.assert_eq(
@@ -632,7 +768,7 @@ def test__Application__to_data_invite():
     application_id = 202211290045
     
     bot_public = True
-    bot_require_code_grant = True
+    bot_requires_code_grant = True
     cover = Icon(IconType.static, 23)
     description = 'dancing'
     flags = ApplicationFlag(96)
@@ -647,18 +783,22 @@ def test__Application__to_data_invite():
     application_type = ApplicationType.game
     verify_key = 'hell'
     
+    embedded_activity_configuration = EmbeddedActivityConfiguration(position = 6)
     max_participants = 23
+    monetized = True
     
     application = Application.precreate(
         application_id,
         bot_public = bot_public,
-        bot_require_code_grant = bot_require_code_grant,
+        bot_requires_code_grant = bot_requires_code_grant,
         cover = cover,
         description = description,
+        embedded_activity_configuration = embedded_activity_configuration,
         flags = flags,
         hook = hook,
         icon = icon,
         max_participants = max_participants,
+        monetized = monetized,
         name = name,
         privacy_policy_url = privacy_policy_url,
         rpc_origins = rpc_origins,
@@ -672,7 +812,7 @@ def test__Application__to_data_invite():
     expected_data = {
         'id': str(application_id),
         'bot_public': bot_public,
-        'bot_require_code_grant': bot_require_code_grant,
+        'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,
         'description': description,
         'flags': int(flags),
@@ -687,7 +827,9 @@ def test__Application__to_data_invite():
         'type': application_type.value,
         'verify_key': verify_key,
         
+        'embedded_activity_config': embedded_activity_configuration.to_data(defaults = True),
         'max_participants': max_participants,
+        'is_monetized': monetized,
     }
     
     vampytest.assert_eq(
@@ -705,7 +847,7 @@ def test__Application__to_data_detectable():
     application_id = 202211290046
     
     bot_public = True
-    bot_require_code_grant = True
+    bot_requires_code_grant = True
     cover = Icon(IconType.static, 23)
     description = 'dancing'
     flags = ApplicationFlag(96)
@@ -728,6 +870,7 @@ def test__Application__to_data_detectable():
     guild_id = 202211290049
     overlay = True
     overlay_compatibility_hook = True
+    overlay_method_flags = ApplicationOverlayMethodFlags(26)
     primary_sku_id = 202211290050
     publishers = [ApplicationEntity.precreate(202211290051, name = 'Brain')]
     slug = 'https://orindance.party/'
@@ -739,7 +882,7 @@ def test__Application__to_data_detectable():
         application_id,
         aliases = aliases,
         bot_public = bot_public,
-        bot_require_code_grant = bot_require_code_grant,
+        bot_requires_code_grant = bot_requires_code_grant,
         cover = cover,
         deeplink_url = deeplink_url,
         description = description,
@@ -753,6 +896,7 @@ def test__Application__to_data_detectable():
         name = name,
         overlay = overlay,
         overlay_compatibility_hook = overlay_compatibility_hook,
+        overlay_method_flags = overlay_method_flags,
         primary_sku_id = primary_sku_id,
         privacy_policy_url = privacy_policy_url,
         publishers = publishers,
@@ -769,7 +913,7 @@ def test__Application__to_data_detectable():
     expected_data = {
         'id': str(application_id),
         'bot_public': bot_public,
-        'bot_require_code_grant': bot_require_code_grant,
+        'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,
         'description': description,
         'flags': int(flags),
@@ -792,6 +936,7 @@ def test__Application__to_data_detectable():
         'guild_id': str(guild_id),
         'overlay': overlay,
         'overlay_compatibility_hook': overlay_compatibility_hook,
+        'overlay_methods': int(overlay_method_flags),
         'primary_sku_id': str(primary_sku_id),
         'publishers': [publisher.to_data(defaults = True, include_internals = True) for publisher in publishers],
         'slug': slug,

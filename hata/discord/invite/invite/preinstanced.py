@@ -34,7 +34,7 @@ class InviteTargetType(PreinstancedBase):
     +-------------------------------+-------------------------------+-------+
     | embedded_application          | embedded application          | 2     |
     +-------------------------------+-------------------------------+-------+
-    | role_subscription_purchase    | role subscription purchase    | 2     |
+    | role_subscription_purchase    | role subscription purchase    | 3     |
     +-------------------------------+-------------------------------+-------+
     """
     INSTANCES = {}

@@ -4,14 +4,14 @@ from ...field_parsers import nullable_string_parser_factory
 from ...field_putters import nullable_string_putter_factory, url_optional_putter_factory
 from ...field_validators import nullable_string_validator_factory, url_optional_validator_factory
 
-from .constants import EMBED_AUTHOR_NAME_LENGTH_MAX
+from .constants import ICON_URL_LENGTH_MAX, NAME_LENGTH_MAX, URL_LENGTH_MAX
 
 # icon_url
 
 parse_icon_url = nullable_string_parser_factory('icon_url')
 put_icon_url_into = url_optional_putter_factory('icon_url')
 # url validator doesnt allow attachment:\\image.png formats
-validate_icon_url = nullable_string_validator_factory('icon_url', 0, 16384)
+validate_icon_url = nullable_string_validator_factory('icon_url', 0, ICON_URL_LENGTH_MAX)
 
 # icon_proxy_url
 
@@ -55,9 +55,9 @@ def validate_name(name):
     if name_length == 0:
         return None
     
-    if name_length > EMBED_AUTHOR_NAME_LENGTH_MAX:
+    if name_length > NAME_LENGTH_MAX:
         raise ValueError(
-            f'`name` length` must be <= {EMBED_AUTHOR_NAME_LENGTH_MAX}, got {name_length}; name = {name!r}.'
+            f'`name` length` must be <= {NAME_LENGTH_MAX}, got {name_length}; name = {name!r}.'
         )
     
     return name
@@ -66,4 +66,4 @@ def validate_name(name):
 
 parse_url = nullable_string_parser_factory('url')
 put_url_into = url_optional_putter_factory('url')
-validate_url = url_optional_validator_factory('url')
+validate_url = url_optional_validator_factory('url', length_max = URL_LENGTH_MAX)

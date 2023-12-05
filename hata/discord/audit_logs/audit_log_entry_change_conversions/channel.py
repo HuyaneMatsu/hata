@@ -10,7 +10,7 @@ from ...channel.channel_metadata.constants import (
 from ...channel.channel_metadata.fields import (
     validate_applied_tag_ids, validate_archived, validate_auto_archive_after, validate_available_tags, validate_bitrate,
     validate_default_forum_layout, validate_default_sort_order, validate_default_thread_auto_archive_after,
-    validate_default_thread_reaction, validate_default_thread_slowmode, validate_flags, validate_invitable,
+    validate_default_thread_reaction_emoji, validate_default_thread_slowmode, validate_flags, validate_invitable,
     validate_name, validate_nsfw, validate_open, validate_parent_id, validate_permission_overwrites, validate_position,
     validate_region, validate_slowmode, validate_topic, validate_user_limit, validate_video_quality_mode
 )
@@ -181,25 +181,25 @@ def default_sort_order_value_serializer(value):
     return value.value
 
 
-# ---- default_thread_reaction ----
+# ---- default_thread_reaction_emoji ----
 
-DEFAULT_THREAD_REACTION_CONVERSION = AuditLogEntryChangeConversion(
+DEFAULT_THREAD_REACTION_EMOJI_CONVERSION = AuditLogEntryChangeConversion(
     ('default_reaction_emoji',),
-    'default_thread_reaction',
-    value_validator = validate_default_thread_reaction,
+    'default_thread_reaction_emoji',
+    value_validator = validate_default_thread_reaction_emoji,
 )
 
 
-@DEFAULT_THREAD_REACTION_CONVERSION.set_value_deserializer
-def default_thread_reaction_value_deserializer(value):
+@DEFAULT_THREAD_REACTION_EMOJI_CONVERSION.set_value_deserializer
+def default_thread_reaction_emoji_value_deserializer(value):
     if (value is not None):
         value = create_partial_emoji_from_data(value)
     
     return value
 
 
-@DEFAULT_THREAD_REACTION_CONVERSION.set_value_serializer
-def default_thread_reaction_value_serializer(value):
+@DEFAULT_THREAD_REACTION_EMOJI_CONVERSION.set_value_serializer
+def default_thread_reaction_emoji_value_serializer(value):
     if value is not None:
         value = create_partial_emoji_data(value)
     
@@ -509,7 +509,7 @@ CHANNEL_CONVERSIONS = AuditLogEntryChangeConversionGroup(
     DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION,
     DEFAULT_FORUM_LAYOUT_CONVERSION,
     DEFAULT_SORT_ORDER_CONVERSION,
-    DEFAULT_THREAD_REACTION_CONVERSION,
+    DEFAULT_THREAD_REACTION_EMOJI_CONVERSION,
     DEFAULT_THREAD_SLOWMODE_CONVERSION,
     FLAGS_CONVERSION,
     ICON_EMOJI_CONVERSION_IGNORED,

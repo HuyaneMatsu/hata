@@ -4,7 +4,7 @@ from ...field_parsers import bool_parser_factory, nullable_string_parser_factory
 from ...field_putters import bool_optional_putter_factory, nullable_string_putter_factory
 from ...field_validators import bool_validator_factory
 
-from .constants import EMBED_FIELD_NAME_LENGTH_MAX, EMBED_FIELD_VALUE_LENGTH_MAX
+from .constants import NAME_LENGTH_MAX, VALUE_LENGTH_MAX
 
 
 # inline
@@ -50,9 +50,9 @@ def validate_name(name):
     if name_length == 0:
         return None
     
-    if name_length > EMBED_FIELD_NAME_LENGTH_MAX:
+    if name_length > NAME_LENGTH_MAX:
         raise ValueError(
-            f'`name` length` must be <= {EMBED_FIELD_NAME_LENGTH_MAX}, got {name_length}; name = {name!r}.'
+            f'`name` length` must be <= {NAME_LENGTH_MAX}, got {name_length}; name = {name!r}.'
         )
     
     return name
@@ -93,9 +93,9 @@ def validate_value(value):
     if value_length == 0:
         return None
     
-    if value_length > EMBED_FIELD_VALUE_LENGTH_MAX:
+    if value_length > VALUE_LENGTH_MAX:
         raise ValueError(
-            f'`value` length` must be <= {EMBED_FIELD_VALUE_LENGTH_MAX}, got {value_length}; value = {value!r}.'
+            f'`value` length` must be <= {VALUE_LENGTH_MAX}, got {value_length}; value = {value!r}.'
         )
     
     return value

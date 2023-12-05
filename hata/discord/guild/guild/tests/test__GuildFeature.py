@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import GuildFeature
 
 
-def test__GuildFeature__name():
+@vampytest.call_from(GuildFeature.INSTANCES.values())
+def test__GuildFeature__instances(instance):
     """
-    Tests whether ``GuildFeature`` instance names are all strings.
+    Tests whether ``GuildFeature`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``GuildFeature``
+        The instance to test.
     """
-    for instance in GuildFeature.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__GuildFeature__value():
-    """
-    Tests whether ``GuildFeature`` instance values are all the expected value type.
-    """
-    for instance in GuildFeature.INSTANCES.values():
-        vampytest.assert_instance(instance.value, GuildFeature.VALUE_TYPE)
+    vampytest.assert_instance(instance, GuildFeature)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, GuildFeature.VALUE_TYPE)

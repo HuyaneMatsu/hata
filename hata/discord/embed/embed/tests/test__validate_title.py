@@ -1,6 +1,6 @@
 import vampytest
 
-from ..constants import EMBED_TITLE_LENGTH_MAX
+from ..constants import TITLE_LENGTH_MAX
 from ..fields import validate_title
 
 
@@ -27,7 +27,7 @@ def test__validate_title__1():
     Case: `ValueError`.
     """
     for input_value in (
-        'a' * (EMBED_TITLE_LENGTH_MAX + 1),
+        'a' * (TITLE_LENGTH_MAX + 1),
     ):
         with vampytest.assert_raises(ValueError):
             validate_title(input_value)

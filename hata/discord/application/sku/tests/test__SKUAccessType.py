@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import SKUAccessType
 
 
-def test__SKUAccessType__name():
+@vampytest.call_from(SKUAccessType.INSTANCES.values())
+def test__SKUAccessType__instances(instance):
     """
-    Tests whether ``SKUAccessType`` instance names are all strings.
+    Tests whether ``SKUAccessType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``SKUAccessType``
+        The instance to test.
     """
-    for instance in SKUAccessType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__SKUAccessType__value():
-    """
-    Tests whether ``SKUAccessType`` instance values are all the expected value type.
-    """
-    for instance in SKUAccessType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, SKUAccessType.VALUE_TYPE)
+    vampytest.assert_instance(instance, SKUAccessType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, SKUAccessType.VALUE_TYPE)

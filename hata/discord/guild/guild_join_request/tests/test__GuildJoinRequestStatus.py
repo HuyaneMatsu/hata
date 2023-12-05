@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import GuildJoinRequestStatus
 
 
-def test__GuildJoinRequestStatus__name():
+@vampytest.call_from(GuildJoinRequestStatus.INSTANCES.values())
+def test__GuildJoinRequestStatus__instances(instance):
     """
-    Tests whether ``GuildJoinRequestStatus`` instance names are all strings.
+    Tests whether ``GuildJoinRequestStatus`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``GuildJoinRequestStatus``
+        The instance to test.
     """
-    for instance in GuildJoinRequestStatus.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__GuildJoinRequestStatus__value():
-    """
-    Tests whether ``GuildJoinRequestStatus`` instance values are all the expected value type.
-    """
-    for instance in GuildJoinRequestStatus.INSTANCES.values():
-        vampytest.assert_instance(instance.value, GuildJoinRequestStatus.VALUE_TYPE)
+    vampytest.assert_instance(instance, GuildJoinRequestStatus)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, GuildJoinRequestStatus.VALUE_TYPE)

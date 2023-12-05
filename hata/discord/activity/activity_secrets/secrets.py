@@ -122,7 +122,6 @@ class ActivitySecrets(ActivityFieldBase):
             repr_parts.append(repr(match))
         
         repr_parts.append('>')
-        
         return ''.join(repr_parts)
     
     

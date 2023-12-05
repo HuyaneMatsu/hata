@@ -11,7 +11,7 @@ from ....channel.channel_metadata.constants import (
 from ....channel.channel_metadata.fields import (
     validate_applied_tag_ids, validate_archived, validate_auto_archive_after, validate_available_tags, validate_bitrate,
     validate_default_forum_layout, validate_default_sort_order, validate_default_thread_auto_archive_after,
-    validate_default_thread_reaction, validate_default_thread_slowmode, validate_flags, validate_invitable,
+    validate_default_thread_reaction_emoji, validate_default_thread_slowmode, validate_flags, validate_invitable,
     validate_name, validate_nsfw, validate_open, validate_parent_id, validate_permission_overwrites, validate_position,
     validate_region, validate_slowmode, validate_topic, validate_user_limit, validate_video_quality_mode
 )
@@ -33,7 +33,7 @@ from ...conversion_helpers.converters import (
 from ..channel import (
     APPLIED_TAG_IDS_CONVERSION, ARCHIVED_CONVERSION, AUTO_ARCHIVE_AFTER_CONVERSION, AVAILABLE_TAGS_CONVERSION,
     BITRATE_CONVERSION, CHANNEL_CONVERSIONS, DEFAULT_FORUM_LAYOUT_CONVERSION, DEFAULT_SORT_ORDER_CONVERSION,
-    DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION, DEFAULT_THREAD_REACTION_CONVERSION,
+    DEFAULT_THREAD_AUTO_ARCHIVE_AFTER_CONVERSION, DEFAULT_THREAD_REACTION_EMOJI_CONVERSION,
     DEFAULT_THREAD_SLOWMODE_CONVERSION, FLAGS_CONVERSION, ICON_EMOJI_CONVERSION_IGNORED, INVITABLE_CONVERSION,
     NAME_CONVERSION, NSFW_CONVERSION, OPEN_CONVERSION, PARENT_ID_CONVERSION, PERMISSION_OVERWRITES_CONVERSION,
     POSITION_CONVERSION, REGION_CONVERSION, SLOWMODE_CONVERSION, TEMPLATE_CONVERSION_IGNORED,
@@ -431,26 +431,26 @@ def test__DEFAULT_SORT_ORDER_CONVERSION__value_serializer(input_value):
     return DEFAULT_SORT_ORDER_CONVERSION.value_serializer(input_value)
 
 
-# ---- default_thread_reaction ----
+# ---- default_thread_reaction_emoji ----
 
-def test__DEFAULT_THREAD_REACTION_CONVERSION__generic():
+def test__DEFAULT_THREAD_REACTION_EMOJI_CONVERSION__generic():
     """
-    Tests whether ``DEFAULT_THREAD_REACTION_CONVERSION`` works as intended.
+    Tests whether ``DEFAULT_THREAD_REACTION_EMOJI_CONVERSION`` works as intended.
     """
-    _assert_conversion_fields_set(DEFAULT_THREAD_REACTION_CONVERSION)
-    vampytest.assert_is(DEFAULT_THREAD_REACTION_CONVERSION.value_validator, validate_default_thread_reaction)
+    _assert_conversion_fields_set(DEFAULT_THREAD_REACTION_EMOJI_CONVERSION)
+    vampytest.assert_is(DEFAULT_THREAD_REACTION_EMOJI_CONVERSION.value_validator, validate_default_thread_reaction_emoji)
 
 
-def _iter_options__default_thread_reaction__value_deserializer():
+def _iter_options__default_thread_reaction_emoji__value_deserializer():
     emoji = BUILTIN_EMOJIS['x']
     yield None, None
     yield create_partial_emoji_data(emoji), emoji
 
 
-@vampytest._(vampytest.call_from(_iter_options__default_thread_reaction__value_deserializer()).returning_last())
-def test__DEFAULT_THREAD_REACTION_CONVERSION__value_deserializer(input_value):
+@vampytest._(vampytest.call_from(_iter_options__default_thread_reaction_emoji__value_deserializer()).returning_last())
+def test__DEFAULT_THREAD_REACTION_EMOJI_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `DEFAULT_THREAD_REACTION_CONVERSION.value_deserializer` works as intended.
+    Tests whether `DEFAULT_THREAD_REACTION_EMOJI_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -461,19 +461,19 @@ def test__DEFAULT_THREAD_REACTION_CONVERSION__value_deserializer(input_value):
     -------
     output : `None | Emoji`
     """
-    return DEFAULT_THREAD_REACTION_CONVERSION.value_deserializer(input_value)
+    return DEFAULT_THREAD_REACTION_EMOJI_CONVERSION.value_deserializer(input_value)
 
 
-def _iter_options__default_thread_reaction__value_serializer():
+def _iter_options__default_thread_reaction_emoji__value_serializer():
     emoji = BUILTIN_EMOJIS['x']
     yield None, None
     yield emoji, create_partial_emoji_data(emoji)
 
 
-@vampytest._(vampytest.call_from(_iter_options__default_thread_reaction__value_serializer()).returning_last())
-def test__DEFAULT_THREAD_REACTION_CONVERSION__value_serializer(input_value):
+@vampytest._(vampytest.call_from(_iter_options__default_thread_reaction_emoji__value_serializer()).returning_last())
+def test__DEFAULT_THREAD_REACTION_EMOJI_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `DEFAULT_THREAD_REACTION_CONVERSION.value_serializer` works as intended.
+    Tests whether `DEFAULT_THREAD_REACTION_EMOJI_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -484,7 +484,7 @@ def test__DEFAULT_THREAD_REACTION_CONVERSION__value_serializer(input_value):
     -------
     output : `None | dict<str, object>`
     """
-    return DEFAULT_THREAD_REACTION_CONVERSION.value_serializer(input_value)
+    return DEFAULT_THREAD_REACTION_EMOJI_CONVERSION.value_serializer(input_value)
 
 
 # ---- default_thread_slowmode ----

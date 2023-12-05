@@ -5,25 +5,17 @@ from ...activity_metadata import ActivityMetadataBase
 from ..preinstanced import ActivityType
 
 
-def test__ActivityType__name():
+@vampytest.call_from(ActivityType.INSTANCES.values())
+def test__ActivityType__instances(instance):
     """
-    Tests whether ``ActivityType`` instance names are all strings.
-    """
-    for instance in ActivityType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ActivityType__value():
-    """
-    Tests whether ``ActivityType`` instance values are all the expected value type.
-    """
-    for instance in ActivityType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ActivityType.VALUE_TYPE)
+    Tests whether ``ActivityType`` instances have the correct structure.
     
-    
-def test__ActivityType__metadata_type():
+    Parameters
+    ----------
+    instance : ``ActivityType``
+        The instance to test.
     """
-    Tests whether ``ActivityType`` instance metadata types are all metadata types.
-    """
-    for instance in ActivityType.INSTANCES.values():
-        vampytest.assert_subtype(instance.metadata_type, ActivityMetadataBase)
+    vampytest.assert_instance(instance, ActivityType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ActivityType.VALUE_TYPE)
+    vampytest.assert_subtype(instance.metadata_type, ActivityMetadataBase)

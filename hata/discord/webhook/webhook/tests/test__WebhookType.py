@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import WebhookType
 
 
-def test__WebhookType__name():
+@vampytest.call_from(WebhookType.INSTANCES.values())
+def test__WebhookType__instances(instance):
     """
-    Tests whether ``WebhookType`` instance names are all strings.
+    Tests whether ``WebhookType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``WebhookType``
+        The instance to test.
     """
-    for instance in WebhookType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__WebhookType__value():
-    """
-    Tests whether ``WebhookType`` instance values are all the expected value type.
-    """
-    for instance in WebhookType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, WebhookType.VALUE_TYPE)
+    vampytest.assert_instance(instance, WebhookType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, WebhookType.VALUE_TYPE)

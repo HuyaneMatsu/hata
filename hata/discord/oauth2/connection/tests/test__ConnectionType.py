@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import ConnectionType
 
 
-def test__ConnectionType__name():
+@vampytest.call_from(ConnectionType.INSTANCES.values())
+def test__ConnectionType__instances(instance):
     """
-    Tests whether ``ConnectionType`` instance names are all strings.
+    Tests whether ``ConnectionType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``ConnectionType``
+        The instance to test.
     """
-    for instance in ConnectionType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__ConnectionType__value():
-    """
-    Tests whether ``ConnectionType`` instance values are all the expected value type.
-    """
-    for instance in ConnectionType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ConnectionType.VALUE_TYPE)
+    vampytest.assert_instance(instance, ConnectionType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, ConnectionType.VALUE_TYPE)

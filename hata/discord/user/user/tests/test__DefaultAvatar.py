@@ -8,28 +8,20 @@ from ...user import User
 from ..preinstanced import DefaultAvatar
 
 
-def test__DefaultAvatar__name():
+@vampytest.call_from(DefaultAvatar.INSTANCES.values())
+def test__DefaultAvatar__instances(instance):
     """
-    Tests whether ``DefaultAvatar`` instance names are all strings.
+    Tests whether ``DefaultAvatar`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``DefaultAvatar``
+        The instance to test.
     """
-    for instance in DefaultAvatar.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__DefaultAvatar__value():
-    """
-    Tests whether ``DefaultAvatar`` instance values are all the expected value type.
-    """
-    for instance in DefaultAvatar.INSTANCES.values():
-        vampytest.assert_instance(instance.value, DefaultAvatar.VALUE_TYPE)
-
-
-def test__DefaultAvatar__Color():
-    """
-    Tests whether ``DefaultAvatar`` colors are all set correctly.
-    """
-    for instance in DefaultAvatar.INSTANCES.values():
-        vampytest.assert_instance(instance.color, Color)
+    vampytest.assert_instance(instance, DefaultAvatar)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, DefaultAvatar.VALUE_TYPE)
+    vampytest.assert_instance(instance.color, Color)
 
 
 def test__DefaultAvatar__for():

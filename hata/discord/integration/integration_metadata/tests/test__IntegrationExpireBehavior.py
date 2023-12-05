@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import IntegrationExpireBehavior
 
 
-def test__IntegrationExpireBehavior__name():
+@vampytest.call_from(IntegrationExpireBehavior.INSTANCES.values())
+def test__IntegrationExpireBehavior__instances(instance):
     """
-    Tests whether ``IntegrationExpireBehavior`` instance names are all strings.
+    Tests whether ``IntegrationExpireBehavior`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``IntegrationExpireBehavior``
+        The instance to test.
     """
-    for instance in IntegrationExpireBehavior.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__IntegrationExpireBehavior__value():
-    """
-    Tests whether ``IntegrationExpireBehavior`` instance values are all the expected value type.
-    """
-    for instance in IntegrationExpireBehavior.INSTANCES.values():
-        vampytest.assert_instance(instance.value, IntegrationExpireBehavior.VALUE_TYPE)
+    vampytest.assert_instance(instance, IntegrationExpireBehavior)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, IntegrationExpireBehavior.VALUE_TYPE)

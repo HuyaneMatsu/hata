@@ -26,7 +26,7 @@ from ..string_select_option import StringSelectOption
 from .constants import (
     BUTTON_STYLE_DEFAULT, LABEL_LENGTH_MAX, MAX_LENGTH_DEFAULT, MAX_LENGTH_MAX, MAX_LENGTH_MIN, MAX_VALUES_DEFAULT,
     MAX_VALUES_MAX, MAX_VALUES_MIN, MIN_LENGTH_DEFAULT, MIN_LENGTH_MAX, MIN_LENGTH_MIN, MIN_VALUES_DEFAULT,
-    MIN_VALUES_MAX, MIN_VALUES_MIN, PLACEHOLDER_LENGTH_MAX, TEXT_INPUT_STYLE_DEFAULT, VALUE_LENGTH_MAX
+    MIN_VALUES_MAX, MIN_VALUES_MIN, PLACEHOLDER_LENGTH_MAX, TEXT_INPUT_STYLE_DEFAULT, URL_LENGTH_MAX, VALUE_LENGTH_MAX
 )
 from .preinstanced import ButtonStyle, TextInputStyle
 
@@ -327,7 +327,7 @@ validate_text_input_style = preinstanced_validator_factory('text_input_style', T
 
 parse_url = nullable_string_parser_factory('url')
 put_url_into = url_optional_putter_factory('url')
-validate_url = url_optional_validator_factory('url')
+validate_url = url_optional_validator_factory('url', length_max = URL_LENGTH_MAX)
 
 # value
 

@@ -4,7 +4,7 @@ from ...field_parsers import nullable_string_parser_factory
 from ...field_putters import nullable_string_putter_factory, url_optional_putter_factory
 from ...field_validators import url_optional_validator_factory
 
-from .constants import EMBED_PROVIDER_NAME_LENGTH_MAX
+from .constants import NAME_LENGTH_MAX, URL_LENGTH_MAX
 
 # name
 
@@ -42,9 +42,9 @@ def validate_name(name):
     if name_length == 0:
         return None
     
-    if name_length > EMBED_PROVIDER_NAME_LENGTH_MAX:
+    if name_length > NAME_LENGTH_MAX:
         raise ValueError(
-            f'`name` length` must be <= {EMBED_PROVIDER_NAME_LENGTH_MAX}, got {name_length}; name = {name!r}.'
+            f'`name` length` must be <= {NAME_LENGTH_MAX}, got {name_length}; name = {name!r}.'
         )
     
     return name
@@ -53,4 +53,4 @@ def validate_name(name):
 
 parse_url = nullable_string_parser_factory('url')
 put_url_into = url_optional_putter_factory('url')
-validate_url = url_optional_validator_factory('url')
+validate_url = url_optional_validator_factory('url', length_max = URL_LENGTH_MAX)

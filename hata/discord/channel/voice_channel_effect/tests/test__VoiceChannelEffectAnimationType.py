@@ -3,17 +3,16 @@ import vampytest
 from ..preinstanced import VoiceChannelEffectAnimationType
 
 
-def test__VoiceChannelEffectAnimationType__name():
+@vampytest.call_from(VoiceChannelEffectAnimationType.INSTANCES.values())
+def test__VoiceChannelEffectAnimationType__instances(instance):
     """
-    Tests whether ``VoiceChannelEffectAnimationType`` instance names are all strings.
+    Tests whether ``VoiceChannelEffectAnimationType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``VoiceChannelEffectAnimationType``
+        The instance to test.
     """
-    for instance in VoiceChannelEffectAnimationType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__VoiceChannelEffectAnimationType__value():
-    """
-    Tests whether ``VoiceChannelEffectAnimationType`` instance values are all the expected value type.
-    """
-    for instance in VoiceChannelEffectAnimationType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, VoiceChannelEffectAnimationType.VALUE_TYPE)
+    vampytest.assert_instance(instance, VoiceChannelEffectAnimationType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, VoiceChannelEffectAnimationType.VALUE_TYPE)

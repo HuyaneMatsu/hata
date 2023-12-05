@@ -3,17 +3,18 @@ import vampytest
 from ..preinstanced import SKUType
 
 
-def test__SKUType__name():
+@vampytest.call_from(SKUType.INSTANCES.values())
+def test__SKUType__instances(instance):
     """
-    Tests whether ``SKUType`` instance names are all strings.
+    Tests whether ``SKUType`` instances have the correct structure.
+    
+    Parameters
+    ----------
+    instance : ``SKUType``
+        The instance to test.
     """
-    for instance in SKUType.INSTANCES.values():
-        vampytest.assert_instance(instance.name, str)
-
-
-def test__SKUType__value():
-    """
-    Tests whether ``SKUType`` instance values are all the expected value type.
-    """
-    for instance in SKUType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, SKUType.VALUE_TYPE)
+    vampytest.assert_instance(instance, SKUType)
+    vampytest.assert_instance(instance.name, str)
+    vampytest.assert_instance(instance.value, SKUType.VALUE_TYPE)
+    vampytest.assert_instance(instance.giftable, bool)
+    vampytest.assert_instance(instance.package, bool)

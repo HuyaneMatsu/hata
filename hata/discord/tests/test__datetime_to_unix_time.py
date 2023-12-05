@@ -2,7 +2,7 @@ from datetime import datetime as DateTime
 
 import vampytest
 
-from .. import datetime_to_unix_time
+from ..utils import datetime_to_unix_time
 
 
 def test_datetime_to_unix_time__0():

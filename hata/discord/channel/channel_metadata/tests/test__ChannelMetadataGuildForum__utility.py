@@ -31,7 +31,7 @@ def test__ChannelMetadataGuildForum__copy():
         )
     ]
     default_thread_auto_archive_after = 86400
-    default_thread_reaction = BUILTIN_EMOJIS['monkey']
+    default_thread_reaction_emoji = BUILTIN_EMOJIS['monkey']
     default_thread_slowmode = 60
     flags = ChannelFlag(1)
     topic = 'Dearest'
@@ -45,7 +45,7 @@ def test__ChannelMetadataGuildForum__copy():
         position = position,
         available_tags = available_tags,
         default_thread_auto_archive_after = default_thread_auto_archive_after,
-        default_thread_reaction = default_thread_reaction,
+        default_thread_reaction_emoji = default_thread_reaction_emoji,
         default_thread_slowmode = default_thread_slowmode,
         flags = flags,
         topic = topic,
@@ -81,7 +81,7 @@ def test__ChannelMetadataGuildForum__copy_with__0():
         )
     ]
     default_thread_auto_archive_after = 86400
-    default_thread_reaction = BUILTIN_EMOJIS['monkey']
+    default_thread_reaction_emoji = BUILTIN_EMOJIS['monkey']
     default_thread_slowmode = 60
     flags = ChannelFlag(1)
     topic = 'Dearest'
@@ -95,7 +95,7 @@ def test__ChannelMetadataGuildForum__copy_with__0():
         position = position,
         available_tags = available_tags,
         default_thread_auto_archive_after = default_thread_auto_archive_after,
-        default_thread_reaction = default_thread_reaction,
+        default_thread_reaction_emoji = default_thread_reaction_emoji,
         default_thread_slowmode = default_thread_slowmode,
         flags = flags,
         topic = topic,
@@ -131,7 +131,7 @@ def test__ChannelMetadataGuildForum__copy_with__1():
         )
     ]
     old_default_thread_auto_archive_after = 86400
-    old_default_thread_reaction = BUILTIN_EMOJIS['monkey']
+    old_default_thread_reaction_emoji = BUILTIN_EMOJIS['monkey']
     old_default_thread_slowmode = 60
     old_flags = ChannelFlag(1)
     old_topic = 'Dearest'
@@ -153,7 +153,7 @@ def test__ChannelMetadataGuildForum__copy_with__1():
         )
     ]
     new_default_thread_auto_archive_after = 3600
-    new_default_thread_reaction = BUILTIN_EMOJIS['radio']
+    new_default_thread_reaction_emoji = BUILTIN_EMOJIS['radio']
     new_default_thread_slowmode = 600
     new_flags = ChannelFlag(4)
     new_topic = 'My'
@@ -167,7 +167,7 @@ def test__ChannelMetadataGuildForum__copy_with__1():
         position = old_position,
         available_tags = old_available_tags,
         default_thread_auto_archive_after = old_default_thread_auto_archive_after,
-        default_thread_reaction = old_default_thread_reaction,
+        default_thread_reaction_emoji = old_default_thread_reaction_emoji,
         default_thread_slowmode = old_default_thread_slowmode,
         flags = old_flags,
         topic = old_topic,
@@ -182,7 +182,7 @@ def test__ChannelMetadataGuildForum__copy_with__1():
         position = new_position,
         available_tags = new_available_tags,
         default_thread_auto_archive_after = new_default_thread_auto_archive_after,
-        default_thread_reaction = new_default_thread_reaction,
+        default_thread_reaction_emoji = new_default_thread_reaction_emoji,
         default_thread_slowmode = new_default_thread_slowmode,
         flags = new_flags,
         topic = new_topic,
@@ -201,7 +201,7 @@ def test__ChannelMetadataGuildForum__copy_with__1():
     vampytest.assert_eq(copy.position, new_position)
     vampytest.assert_eq(copy.available_tags, tuple(new_available_tags))
     vampytest.assert_eq(copy.default_thread_auto_archive_after, new_default_thread_auto_archive_after)
-    vampytest.assert_eq(copy.default_thread_reaction, new_default_thread_reaction)
+    vampytest.assert_eq(copy.default_thread_reaction_emoji, new_default_thread_reaction_emoji)
     vampytest.assert_eq(copy.default_thread_slowmode, new_default_thread_slowmode)
     vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.topic, new_topic)
@@ -231,7 +231,7 @@ def test__ChannelMetadataGuildForum__copy_with_keyword_parameters__0():
         )
     ]
     default_thread_auto_archive_after = 86400
-    default_thread_reaction = BUILTIN_EMOJIS['monkey']
+    default_thread_reaction_emoji = BUILTIN_EMOJIS['monkey']
     default_thread_slowmode = 60
     flags = ChannelFlag(1)
     topic = 'Dearest'
@@ -245,7 +245,7 @@ def test__ChannelMetadataGuildForum__copy_with_keyword_parameters__0():
         position = position,
         available_tags = available_tags,
         default_thread_auto_archive_after = default_thread_auto_archive_after,
-        default_thread_reaction = default_thread_reaction,
+        default_thread_reaction_emoji = default_thread_reaction_emoji,
         default_thread_slowmode = default_thread_slowmode,
         flags = flags,
         topic = topic,
@@ -283,7 +283,7 @@ def test__ChannelMetadataGuildForum__copy_with_keyword_parameters__1():
         )
     ]
     old_default_thread_auto_archive_after = 86400
-    old_default_thread_reaction = BUILTIN_EMOJIS['monkey']
+    old_default_thread_reaction_emoji = BUILTIN_EMOJIS['monkey']
     old_default_thread_slowmode = 60
     old_flags = ChannelFlag(1)
     old_topic = 'Dearest'
@@ -305,7 +305,7 @@ def test__ChannelMetadataGuildForum__copy_with_keyword_parameters__1():
         )
     ]
     new_default_thread_auto_archive_after = 3600
-    new_default_thread_reaction = BUILTIN_EMOJIS['radio']
+    new_default_thread_reaction_emoji = BUILTIN_EMOJIS['radio']
     new_default_thread_slowmode = 600
     new_flags = ChannelFlag(4)
     new_topic = 'My'
@@ -319,7 +319,7 @@ def test__ChannelMetadataGuildForum__copy_with_keyword_parameters__1():
         position = old_position,
         available_tags = old_available_tags,
         default_thread_auto_archive_after = old_default_thread_auto_archive_after,
-        default_thread_reaction = old_default_thread_reaction,
+        default_thread_reaction_emoji = old_default_thread_reaction_emoji,
         default_thread_slowmode = old_default_thread_slowmode,
         flags = old_flags,
         topic = old_topic,
@@ -334,7 +334,7 @@ def test__ChannelMetadataGuildForum__copy_with_keyword_parameters__1():
         'position': new_position,
         'available_tags': new_available_tags,
         'default_thread_auto_archive_after': new_default_thread_auto_archive_after,
-        'default_thread_reaction': new_default_thread_reaction,
+        'default_thread_reaction_emoji': new_default_thread_reaction_emoji,
         'default_thread_slowmode': new_default_thread_slowmode,
         'flags': new_flags,
         'topic': new_topic,
@@ -356,7 +356,7 @@ def test__ChannelMetadataGuildForum__copy_with_keyword_parameters__1():
     vampytest.assert_eq(copy.position, new_position)
     vampytest.assert_eq(copy.available_tags, tuple(new_available_tags))
     vampytest.assert_eq(copy.default_thread_auto_archive_after, new_default_thread_auto_archive_after)
-    vampytest.assert_eq(copy.default_thread_reaction, new_default_thread_reaction)
+    vampytest.assert_eq(copy.default_thread_reaction_emoji, new_default_thread_reaction_emoji)
     vampytest.assert_eq(copy.default_thread_slowmode, new_default_thread_slowmode)
     vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.topic, new_topic)

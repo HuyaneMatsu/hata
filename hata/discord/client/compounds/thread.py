@@ -290,7 +290,7 @@ class ClientCompoundThreadEndpoints(Compound):
         Other Parameters
         ----------------
         applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
-             The tags' identifier which have been applied to the thread. Applicable for threads of a forum.
+             The tags' identifier which have been applied to the thread. Applicable for threads of a forum-like channel.
         
         auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.

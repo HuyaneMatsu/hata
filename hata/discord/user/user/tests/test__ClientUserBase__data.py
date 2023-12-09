@@ -73,9 +73,9 @@ def test__ClientUserBase__to_data():
     )
 
 
-def test__ClientUserBase__difference_update_profile__missing_user():
+def test__ClientUserBase__from_data_and_difference_update_profile__missing_user():
     """
-    Tests whether ``ClientUserBase._difference_update_profile`` works as intended.
+    Tests whether ``ClientUserBase._from_data_and_difference_update_profile`` works as intended.
     
     Case: User missing.
     """
@@ -114,7 +114,7 @@ def test__ClientUserBase__difference_update_profile__missing_user():
     guild = Guild.precreate(guild_id)
     
     with vampytest.assert_raises(NotImplementedError):
-        user, old_attributes = ClientUserBase._difference_update_profile(data, guild)
+        user, old_attributes = ClientUserBase._from_data_and_difference_update_profile(data, guild)
     
     return # sub-type only
     
@@ -134,9 +134,9 @@ def test__ClientUserBase__difference_update_profile__missing_user():
     vampytest.assert_eq(user.bot, bot)
 
 
-def test__ClientUserBase__difference_update_profile__1():
+def test__ClientUserBase__from_data_and_difference_update_profile__user_missing_cache():
     """
-    Tests whether ``ClientUserBase._difference_update_profile`` works as intended.
+    Tests whether ``ClientUserBase._from_data_and_difference_update_profile`` works as intended.
     
     Case: User missing -> caching.
     """
@@ -152,19 +152,19 @@ def test__ClientUserBase__difference_update_profile__1():
     }
     
     with vampytest.assert_raises(NotImplementedError):
-        user, old_attributes = ClientUserBase._difference_update_profile(data, guild)
+        user, old_attributes = ClientUserBase._from_data_and_difference_update_profile(data, guild)
     
     return # sub-type only
     vampytest.assert_eq(guild.users, {user_id: user})
     vampytest.assert_eq(user.guild_profiles, {guild_id: guild_profile})
     
-    test_user, old_attributes = ClientUserBase._difference_update_profile(data, guild)
+    test_user, old_attributes = ClientUserBase._from_data_and_difference_update_profile(data, guild)
     vampytest.assert_is(user, test_user)
 
 
-def test__ClientUserBase__difference_update_profile__guild_profile_missing():
+def test__ClientUserBase__from_data_and_difference_update_profile__guild_profile_missing():
     """
-    Tests whether ``ClientUserBase._difference_update_profile`` works as intended.
+    Tests whether ``ClientUserBase._from_data_and_difference_update_profile`` works as intended.
     
     Case: guild profile missing.
     """
@@ -182,18 +182,17 @@ def test__ClientUserBase__difference_update_profile__guild_profile_missing():
         **guild_profile.to_data(defaults = True),
     }
     
-    output_user, old_attributes = ClientUserBase._difference_update_profile(data, guild)
+    output_user, old_attributes = ClientUserBase._from_data_and_difference_update_profile(data, guild)
     
     vampytest.assert_is(user, output_user)
-    vampytest.assert_instance(old_attributes, dict)
-    vampytest.assert_eq(old_attributes, {})
+    vampytest.assert_is(old_attributes, None)
     vampytest.assert_eq(guild.users, {user_id: user})
     vampytest.assert_eq(user.guild_profiles, {guild_id: guild_profile})
 
 
-def test__ClientUserBase__difference_update_profile__normal_update():
+def test__ClientUserBase__from_data_and_difference_update_profile__normal_update():
     """
-    Tests whether ``ClientUserBase._difference_update_profile`` works as intended.
+    Tests whether ``ClientUserBase._from_data_and_difference_update_profile`` works as intended.
     
     Case: Normal update.
     """
@@ -215,7 +214,7 @@ def test__ClientUserBase__difference_update_profile__normal_update():
         **new_guild_profile.to_data(defaults = True),
     }
     
-    output_user, old_attributes = ClientUserBase._difference_update_profile(data, guild)
+    output_user, old_attributes = ClientUserBase._from_data_and_difference_update_profile(data, guild)
     
     vampytest.assert_is(user, output_user)
     vampytest.assert_instance(old_attributes, dict)
@@ -223,9 +222,60 @@ def test__ClientUserBase__difference_update_profile__normal_update():
     vampytest.assert_eq(user.guild_profiles.get(guild_id, None), new_guild_profile)
 
 
-def test__ClientUserBase__update_profile__user_missing_and_caching():
+
+def test__ClientUserBase__difference_update_profile__guild_profile_missing():
     """
-    Tests whether ``ClientUserBase._update_profile`` works as intended.
+    Tests whether ``ClientUserBase._difference_update_profile`` works as intended.
+    
+    Case: guild profile missing.
+    """
+    user_id = 202312070004
+    guild_id = 202312070005
+    guild = Guild.precreate(guild_id)
+    
+    guild_profile = GuildProfile(nick = 'ibuki')
+    
+    user = ClientUserBase._create_empty(user_id)
+    
+    data = guild_profile.to_data(defaults = True)
+    
+    old_attributes = user._difference_update_profile(data, guild)
+    
+    vampytest.assert_is(old_attributes, None)
+    vampytest.assert_eq(guild.users, {user_id: user})
+    vampytest.assert_eq(user.guild_profiles, {guild_id: guild_profile})
+
+
+def test__ClientUserBase__difference_update_profile__normal_update():
+    """
+    Tests whether ``ClientUserBase._difference_update_profile`` works as intended.
+    
+    Case: Normal update.
+    """
+    user_id = 202312070006
+    guild_id = 202312070007
+    guild = Guild.precreate(guild_id)
+    
+    old_guild_profile = GuildProfile(nick = 'ibuki')
+    new_guild_profile = GuildProfile(nick = 'suika')
+    
+    
+    user = ClientUserBase._create_empty(user_id)
+    user.guild_profiles[guild_id] = old_guild_profile
+    guild.users[user_id] = user
+    
+    data = new_guild_profile.to_data(defaults = True)
+    
+    old_attributes = user._difference_update_profile(data, guild)
+    
+    vampytest.assert_instance(old_attributes, dict)
+    vampytest.assert_eq(old_attributes, {'nick': 'ibuki'})
+    vampytest.assert_eq(user.guild_profiles.get(guild_id, None), new_guild_profile)
+
+
+def test__ClientUserBase__from_data_and_update_profile__user_missing_and_caching():
+    """
+    Tests whether ``ClientUserBase._from_data_and_update_profile`` works as intended.
     
     Case: User missing + caching.
     """
@@ -264,13 +314,13 @@ def test__ClientUserBase__update_profile__user_missing_and_caching():
     }
     
     with vampytest.assert_raises(NotImplementedError):
-        user = ClientUserBase._update_profile(data, guild)
+        user = ClientUserBase._from_data_and_update_profile(data, guild)
     
     return # sub-type only
     vampytest.assert_eq(guild.users, {user_id: user})
     vampytest.assert_eq(user.guild_profiles, {guild_id: guild_profile})
     
-    test_user = ClientUserBase._update_profile(data, guild)
+    test_user = ClientUserBase._from_data_and_update_profile(data, guild)
     
     vampytest.assert_is(user, test_user)
     
@@ -285,9 +335,9 @@ def test__ClientUserBase__update_profile__user_missing_and_caching():
     vampytest.assert_eq(user.bot, bot)
 
 
-def test__ClientUserBase__update_profile__guild_profile_missing():
+def test__ClientUserBase__from_data_and_update_profile__guild_profile_missing():
     """
-    Tests whether ``ClientUserBase._update_profile`` works as intended.
+    Tests whether ``ClientUserBase._from_data_and_update_profile`` works as intended.
     
     Case: guild profile missing.
     """
@@ -305,16 +355,16 @@ def test__ClientUserBase__update_profile__guild_profile_missing():
         **guild_profile.to_data(defaults = True),
     }
     
-    output_user = ClientUserBase._update_profile(data, guild)
+    output_user = ClientUserBase._from_data_and_update_profile(data, guild)
     
     vampytest.assert_is(user, output_user)
     vampytest.assert_eq(guild.users, {user_id: user})
     vampytest.assert_eq(user.guild_profiles, {guild_id: guild_profile})
 
 
-def test__ClientUserBase__update_profile__normal_update():
+def test__ClientUserBase__from_data_and_update_profile__normal_update():
     """
-    Tests whether ``ClientUserBase._update_profile`` works as intended.
+    Tests whether ``ClientUserBase._from_data_and_update_profile`` works as intended.
     
     Case: Normal update.
     """
@@ -335,9 +385,61 @@ def test__ClientUserBase__update_profile__normal_update():
         **new_guild_profile.to_data(defaults = True),
     }
     
-    output_user = ClientUserBase._update_profile(data, guild)
+    output_user = ClientUserBase._from_data_and_update_profile(data, guild)
     
     vampytest.assert_is(user, output_user)
+    vampytest.assert_eq(user.guild_profiles, {guild_id: new_guild_profile})
+
+
+def test__ClientUserBase__update_profile__guild_profile_missing():
+    """
+    Tests whether ``ClientUserBase._update_profile`` works as intended.
+    
+    Case: guild profile missing.
+    """
+    user_id = 202312070000
+    guild_id = 202312070001
+    guild = Guild.precreate(guild_id)
+    
+    guild_profile = GuildProfile(nick = 'ibuki')
+    
+    user = ClientUserBase._create_empty(user_id)
+    
+    data = guild_profile.to_data(defaults = True)
+    
+    output = user._update_profile(data, guild)
+    
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
+    
+    vampytest.assert_eq(guild.users, {user_id: user})
+    vampytest.assert_eq(user.guild_profiles, {guild_id: guild_profile})
+
+
+def test__ClientUserBase__update_profile__normal_update():
+    """
+    Tests whether ``ClientUserBase._update_profile`` works as intended.
+    
+    Case: Normal update.
+    """
+    user_id = 202312070002
+    guild_id = 202312070003
+    guild = Guild.precreate(guild_id)
+    
+    old_guild_profile = GuildProfile(nick = 'ibuki')
+    new_guild_profile = GuildProfile(nick = 'suika')
+    
+    user = ClientUserBase._create_empty(user_id)
+    user.guild_profiles[guild_id] = old_guild_profile
+    guild.users[user_id] = user
+    
+    data = new_guild_profile.to_data(defaults = True)
+    
+    output = user._update_profile(data, guild)
+    
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
+    
     vampytest.assert_eq(user.guild_profiles, {guild_id: new_guild_profile})
 
 

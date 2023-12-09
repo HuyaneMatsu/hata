@@ -26,7 +26,7 @@ from ..gateway.client_gateway import DiscordGateway, DiscordGatewaySharder
 from ..http import DiscordHTTPClient, RateLimitProxy
 from ..localization.utils import LOCALE_DEFAULT
 from ..user import (
-    ClientUserBase, ClientUserPBase, GuildProfile, PremiumType, RelationshipType, Status, User, UserBase, UserFlag,
+    ClientUserBase, ClientUserPBase, PremiumType, RelationshipType, Status, User, UserBase, UserFlag,
     create_partial_user_from_id
 )
 from ..user.user.fields import (
@@ -1749,71 +1749,18 @@ class Client(
         self.premium_type = parse_premium_type(data)
     
     
-    def _difference_update_profile_only(self, data, guild):
-        """
-        Used only when user caching is disabled. Updates the client's guild profile for the given guild and returns
-        the changed old attributes in a `dict` with `attribute-name`, `old-value` relation.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `object`) items
-            Data received from Discord.
-        guild : ``Guild``
-            The respective guild of the guild profile.
-        
-        Returns
-        -------
-        old_attributes : `dict` of (`str`, `object`) items
-            All item in the returned dict is optional.
-        
-        Returned Data Structure
-        -----------------------
-        +-------------------+-------------------------------+
-        | Keys              | Values                        |
-        +===================+===============================+
-        | avatar            | ``Icon``                      |
-        +-------------------+-------------------------------+
-        | boosts_since      | `None`, `datetime`            |
-        +-------------------+-------------------------------+
-        | flags             | `None`, ``GuildProfileFlags`` |
-        +-------------------+-------------------------------+
-        | nick              | `None`, `str`                 |
-        +-------------------+-------------------------------+
-        | pending           | `bool`                        |
-        +-------------------+-------------------------------+
-        | role_ids          | `None`, `tuple` of `int`      |
-        +-------------------+-------------------------------+
-        | timed_out_until   | `None`, `datetime`            |
-        +-------------------+-------------------------------+
-        """
-        try:
-            profile = self.guild_profiles[guild.id]
-        except KeyError:
-            self.guild_profiles[guild.id] = GuildProfile.from_data(data)
-            guild.users[self.id] = self
-            return {}
-        
-        return profile._difference_update_attributes(data)
+    @copy_docs(ClientUserPBase._difference_update_profile)
+    def _difference_update_profile(self, data, guild):
+        old_attributes = ClientUserPBase._difference_update_profile(self, data, guild)
+        guild._invalidate_cache_permission()
+        return old_attributes
     
     
-    def _update_profile_only(self, data, guild):
-        """
-        Used only when user caching is disabled. Updates the client's guild profile for the given guild.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `object`) items
-            Data received from Discord.
-        guild : ``Guild``
-            The respective guild of the guild profile.
-        """
-        try:
-            profile = self.guild_profiles[guild.id]
-        except KeyError:
-            self.guild_profiles[guild.id] = GuildProfile.from_data(data)
-            guild.users[self.id] = self
-        else:
-            profile._update_attributes(data)
+    @copy_docs(ClientUserPBase._update_profile)
+    def _update_profile(self, data, guild):
+        updated_or_created = ClientUserPBase._update_profile(self, data, guild)
+        guild._invalidate_cache_permission()
+        return updated_or_created
     
     
     @property

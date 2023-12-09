@@ -8,6 +8,9 @@ from ...allowed_mentions import parse_allowed_mentions
 from ...application import Application
 from ...bases import maybe_snowflake
 from ...channel import Channel, ChannelType, create_partial_channel_from_id
+from ...channel.channel_metadata.fields import (
+    put_applied_tag_ids_into, validate_applied_tag_ids, validate_name as validate_thread_name
+)
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES_EXTENDED
 from ...message import Message, MessageFlag
 from ...utils import get_image_media_type, image_to_base64
@@ -552,12 +555,14 @@ class ClientCompoundWebhookEndpoints(Compound):
         content = None,
         *,
         allowed_mentions = ...,
+        applied_tag_ids = ...,
         avatar_url = None,
         components = None,
         embed = None,
         file = None,
         name = None,
         thread = None,
+        thread_name = ...,
         silent = False,
         suppress_embeds = False,
         tts = False,
@@ -585,6 +590,10 @@ class ClientCompoundWebhookEndpoints(Compound):
             
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         
+        applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
+             The tags' identifier which have been applied to the thread.
+             Applicable for threads of a forum-like channels.
+        
         avatar_url : `None`, `str` = `None`, Optional (Keyword only)
             The message's author's avatar's url. Defaults to the webhook's avatar' url by Discord.
         
@@ -608,6 +617,9 @@ class ClientCompoundWebhookEndpoints(Compound):
         
         thread : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
             The thread of the webhook's channel where the message should be sent.
+        
+        thread_name : `None`, `str`, Optional (Keyword only)
+            The thread's name to create. Applicable only in forum-like channels.
         
         silent : `bool` = `False`, Optional (Keyword only)
             Whether the message should be delivered silently.
@@ -717,6 +729,12 @@ class ClientCompoundWebhookEndpoints(Compound):
         
         if tts:
             message_data['tts'] = True
+        
+        if (applied_tag_ids is not ...):
+            put_applied_tag_ids_into(validate_applied_tag_ids(applied_tag_ids), message_data, True)
+        
+        if (thread_name is not ...):
+            message_data['thread_name'] = validate_thread_name(thread_name)
         
         flags = (
             (MESSAGE_FLAG_VALUE_SILENT if silent else 0) |

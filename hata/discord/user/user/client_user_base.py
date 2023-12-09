@@ -149,48 +149,60 @@ class ClientUserBase(OrinUserBase):
     
     
     @classmethod
-    @copy_docs(OrinUserBase._difference_update_profile)
-    def _difference_update_profile(cls, data, guild):
+    @copy_docs(OrinUserBase._from_data_and_difference_update_profile)
+    def _from_data_and_difference_update_profile(cls, data, guild):
         user_data = data['user']
         user_id = parse_id(user_data)
         
-        try:
-            user = USERS[user_id]
-        except KeyError:
-            user = cls.from_data(user_data, data, guild.id)
-            return user, {}
+        self = USERS.get(user_id, None)
+        if self is None:
+            self = cls.from_data(user_data, data, guild.id)
+            old_attributes = None
         
-        try:
-            guild_profile = user.guild_profiles[guild.id]
-        except KeyError:
-            user.guild_profiles[guild.id] = GuildProfile.from_data(data)
-            guild.users[user_id] = user
-            return user, {}
+        else:
+            old_attributes = self._difference_update_profile(data, guild)
+        
+        return self, old_attributes
+    
+    
+    @copy_docs(OrinUserBase._difference_update_profile)
+    def _difference_update_profile(self, data, guild):
+        guild_profile = self.guild_profiles.get(guild.id, None)
+        if guild_profile is None:
+            self.guild_profiles[guild.id] = GuildProfile.from_data(data)
+            guild.users[self.id] = self
+            return None
         
         guild_profile._set_joined(data)
-        return user, guild_profile._difference_update_attributes(data)
+        return guild_profile._difference_update_attributes(data)
     
     
     @classmethod
-    @copy_docs(OrinUserBase._update_profile)
-    def _update_profile(cls, data, guild):
+    @copy_docs(OrinUserBase._from_data_and_update_profile)
+    def _from_data_and_update_profile(cls, data, guild):
         user_data = data['user']
         user_id = parse_id(user_data)
         
-        try:
-            user = USERS[user_id]
-        except KeyError:
-            user = cls.from_data(user_data, data, guild.id)
+        self = USERS.get(user_id, None)
+        if self is None:
+            self = cls.from_data(user_data, data, guild.id)
         else:
-            try:
-                guild_profile = user.guild_profiles[guild.id]
-            except KeyError:
-                user.guild_profiles[guild.id] = GuildProfile.from_data(data)
-                guild.users[user_id] = user
-            else:
-                guild_profile._update_attributes(data)
+            self._update_profile(data, guild)
         
-        return user
+        return self
+    
+    
+    @copy_docs(OrinUserBase._update_profile)
+    def _update_profile(self, data, guild):
+        guild_profile = self.guild_profiles.get(guild.id, None)
+        if guild_profile is None:
+            self.guild_profiles[guild.id] = GuildProfile.from_data(data)
+            guild.users[self.id] = self
+            return False
+        
+        guild_profile._set_joined(data)
+        guild_profile._update_attributes(data)
+        return True
     
     
     @staticmethod

@@ -1,4 +1,4 @@
-## 1.3.47 *\[2023-12-??\]*
+## 1.3.47 *\[2023-12-09\]*
 
 ### Improvements
 
@@ -60,13 +60,40 @@
 - Add `Application.store_state`.
 - Add `Application.verification_state`.
 - Add `ApplicationOverlayMethodFlags`.
-- Add `Application.overlay_methods`.
+- Add `Application.overlay_method_flags`.
+- Add `ERROR_CODES.cloudflare_block`.
+- Add `EmbedType.gift`.
+- Add `EmbedType.safety_policy_notice`.
+- Add `MessageType.purchase_notification`.
+- Update `MessageType.welcome`'s formatter.
+- Update `MessageType.guild_incidents_disable`'s formatter.
+- Update `MessageType.guild_incidents_enable`'s formatter.
+- Update `MessageType.private_channel_integration_add`'s formatter.
+- Update `MessageType.private_channel_integration_remove`'s formatter.
+- Update `MessageType.application_subscription`'s formatter.
+- Update `MessageType.role_subscription_purchase`'s formatter.
+- Update `MessageType.thread_created`'s formatter.
+- Add `reason` parameter to `Client.channel_follow`.
+- Add `reason` parameter to `DiscordHTTPClient.channel_follow`.
+- Move guild permission cache reset from dispatch event parsers to the client type directly.
+- Add `applied_tag_ids` parameter to `Client.webhook_message_create`.
+- Add `thread_name` parameter to `Client.webhook_message_create`.
+- `Application.to_data` now is used for templating. Warning is only dropped when `include_internals` is given as `True`.
+- Add `Application.application_edit_own`.
+- Add `DiscordHTTPClient.application_edit_own`.
+- Add `RATE_LIMIT_GROUPS.application_edit_own`.
+- `DiscordException` is now slotted.
+
+### Bug fixes
+
+- Fix `Embed.post_review` should have been `.post_preview` (typo).
 
 ### Renames, Deprecations & Removals
 
 - Rename `Channel.default_thread_reaction` to `.default_thread_reaction_emoji` to be aligned with the new reactions
     structure.
 - Rename `Application.bot_require_code_grant` to `.bot_requires_code_grant`.
+- Rename `MessageType.application_subscription` to `.application_guild_subscription`.
 
 ## 1.3.46 *\[2023-11-26\]*
 

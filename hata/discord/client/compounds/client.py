@@ -4,10 +4,12 @@ from datetime import datetime as DateTime
 
 from scarletio import Compound
 
+from ...application import Application
+from ...application.application.utils import APPLICATION_FIELD_CONVERTERS
 from ...channel import Channel
 from ...http import DiscordHTTPClient
 from ...oauth2 import Connection
-from ...payload_building import add_payload_fields_from_keyword_parameters
+from ...payload_building import add_payload_fields_from_keyword_parameters, build_edit_payload
 from ...user.guild_profile.utils import GUILD_PROFILE_SELF_FIELD_CONVERTERS
 from ...user.user.utils import USER_SELF_FIELD_CONVERTERS
 from ...utils import datetime_to_timestamp
@@ -17,8 +19,8 @@ from ..request_helpers import get_guild_id, get_channel_guild_id_and_id
 
 class ClientCompoundClientEndpoints(Compound):
     
+    application : Application
     http : DiscordHTTPClient
-    
     
     async def edit(self, **keyword_parameters):
         """
@@ -241,3 +243,71 @@ class ClientCompoundClientEndpoints(Compound):
         }
         
         await self.http.voice_state_client_edit(guild_id, data)
+    
+    
+    async def application_edit_own(self, application_template = None, **keyword_parameters):
+        """
+        Edits the client's application.
+        
+        Parameters
+        ----------
+        application : `None`, ``Application`` = `None`, Optional
+            Application entity to use as a template.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to edit the application with.
+        
+        Other Parameters
+        ----------------
+        cover : `None`, `bytes-like`, Optional (Keyword only)
+            The application's cover.
+        
+        custom_install_url : `None`, `str`, Optional (Keyword only)
+            The application's default custom authorization link if enabled.
+        
+        description : `None`, `str`, Optional (Keyword only)
+            The description of the application.
+        
+        flags : `int`, ``ApplicationFlag``, Optional (Keyword only)
+            The application's public flags.
+        
+        icon : `None`,  `bytes-like`, Optional (Keyword only)
+            The application's icon.
+        
+        install_parameters : `None`, ``ApplicationInstallParameters``, Optional (Keyword only)
+            Settings for the application's default in-app authorization link, if enabled.
+        
+        interaction_endpoint_url : `None`, `str`, Optional (Keyword only)
+            Whether and to which url should interaction events be sent to.
+        
+        role_connection_verification_url : `None`, `str`, Optional (Keyword only)
+            The application's role connection verification entry point
+        
+        tags : `None`, `iterable` of `str`, Optional (Keyword only)
+            Up to 5 tags describing the content and functionality of the application.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        application = self.application
+            
+        data = build_edit_payload(
+            (None if application.partial else application),
+            application_template,
+            APPLICATION_FIELD_CONVERTERS,
+            keyword_parameters,
+        )
+        
+        if not data:
+            return
+        
+        data = await self.http.application_edit_own(data)
+        self.application = application.from_data_own(data)

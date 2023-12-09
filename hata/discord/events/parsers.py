@@ -958,6 +958,7 @@ del PRESENCE_UPDATE__CAL_SC, \
     PRESENCE_UPDATE__CAL_MC, \
     PRESENCE_UPDATE__OPT
 
+
 if CACHE_USER:
     def GUILD_MEMBER_UPDATE__CAL_SC(client, data):
         guild_id = int(data['guild_id'])
@@ -967,15 +968,13 @@ if CACHE_USER:
             guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        user, old_attributes = User._difference_update_profile(data, guild)
+        user, old_attributes = User._from_data_and_difference_update_profile(data, guild)
         
-        if not old_attributes:
+        if (old_attributes is not None) and (not old_attributes):
             return
         
-        if isinstance(user, Client):
-            guild._invalidate_cache_permission()
-        
         Task(KOKORO, client.events.guild_user_update(client, guild, user, old_attributes))
+    
     
     def GUILD_MEMBER_UPDATE__CAL_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -990,20 +989,18 @@ if CACHE_USER:
             clients.close()
             return
         
-        user, old_attributes = User._difference_update_profile(data, guild)
-        
-        if not old_attributes:
+        user, old_attributes = User._from_data_and_difference_update_profile(data, guild)
+
+        if (old_attributes is not None) and (not old_attributes):
             clients.close()
             return
-        
-        if isinstance(user, Client):
-            guild._invalidate_cache_permission()
         
         clients.send(user)
         for client_ in clients:
             event_handler = client_.events.guild_user_update
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(KOKORO, event_handler(client_, guild, user, old_attributes))
+    
     
     def GUILD_MEMBER_UPDATE__OPT_SC(client, data):
         guild_id = int(data['guild_id'])
@@ -1013,10 +1010,8 @@ if CACHE_USER:
             guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        user = User._update_profile(data, guild)
-
-        if isinstance(user, Client):
-            guild._invalidate_cache_permission()
+        User._from_data_and_update_profile(data, guild)
+    
     
     def GUILD_MEMBER_UPDATE__OPT_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -1029,10 +1024,7 @@ if CACHE_USER:
         if first_client_or_me(guild.clients, INTENT_MASK_GUILD_USERS, client) is not client:
             return
         
-        user = User._update_profile(data, guild)
-        
-        if isinstance(user, Client):
-            guild._invalidate_cache_permission()
+        User._from_data_and_update_profile(data, guild)
 
 else:
     def GUILD_MEMBER_UPDATE__CAL_SC(client, data):
@@ -1047,16 +1039,16 @@ else:
             guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        old_attributes = client._difference_update_profile_only(data, guild)
+        old_attributes = client._difference_update_profile(data, guild)
         
-        if not old_attributes:
+        if (old_attributes is not None) and (not old_attributes):
             return
-        
-        guild._invalidate_cache_permission()
         
         Task(KOKORO, client.events.guild_user_update(client, guild, client, old_attributes))
     
+    
     GUILD_MEMBER_UPDATE__CAL_MC = GUILD_MEMBER_UPDATE__CAL_SC
+    
     
     def GUILD_MEMBER_UPDATE__OPT_SC(client, data):
         user_id = int(data['user']['id'])
@@ -1070,11 +1062,11 @@ else:
             guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        client._update_profile_only(data, guild)
-        
-        guild._invalidate_cache_permission()
+        client._update_profile(data, guild)
+    
     
     GUILD_MEMBER_UPDATE__OPT_MC = GUILD_MEMBER_UPDATE__OPT_SC
+
 
 add_parser(
     'GUILD_MEMBER_UPDATE',

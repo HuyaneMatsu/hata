@@ -2,8 +2,9 @@ import vampytest
 
 from ...bases import IconType, Icon
 from ...color import Color
+from ...guild import Guild
 from ...localization import Locale
-from ...user import AvatarDecoration, PremiumType, UserFlag
+from ...user import AvatarDecoration, GuildProfile, PremiumType, UserFlag
 
 from ..client import Client
 
@@ -229,6 +230,152 @@ def test__Client__difference_update_attributes():
         )
     
     # Cleanup
+    finally:
+        client._delete()
+        client = None
+
+
+def test__ClientUserBase__difference_update_profile__guild_profile_missing():
+    """
+    Tests whether ``ClientUserBase._difference_update_profile`` works as intended.
+    
+    Case: guild profile missing.
+    """
+    client_id = 202312070012
+    guild_id = 202312070013
+    guild = Guild.precreate(guild_id)
+    
+    guild_profile = GuildProfile(nick = 'ibuki')
+    data = guild_profile.to_data(defaults = True)
+    
+    client = Client(
+        token = 'token_20231207_0012',
+        client_id = client_id,
+    )
+    
+    try:
+        guild.cached_permissions_for(client)
+        vampytest.assert_is_not(guild._cache_permission, None)
+        
+        old_attributes = client._difference_update_profile(data, guild)
+        vampytest.assert_is(old_attributes, None)
+        vampytest.assert_eq(guild.users, {client_id: client})
+        vampytest.assert_eq(client.guild_profiles, {guild_id: guild_profile})
+        vampytest.assert_is(guild._cache_permission, None)
+    
+    finally:
+        client._delete()
+        client = None
+        
+
+def test__ClientUserBase__difference_update_profile__normal_update():
+    """
+    Tests whether ``ClientUserBase._difference_update_profile`` works as intended.
+    
+    Case: Normal update.
+    """
+    client_id = 202312070014
+    guild_id = 202312070015
+    guild = Guild.precreate(guild_id)
+    
+    old_guild_profile = GuildProfile(nick = 'ibuki')
+    new_guild_profile = GuildProfile(nick = 'suika')
+    
+    data = new_guild_profile.to_data(defaults = True)
+    
+    client = Client(
+        token = 'token_20231207_0014',
+        client_id = client_id,
+    )
+    try:
+        guild.cached_permissions_for(client)
+        vampytest.assert_is_not(guild._cache_permission, None)
+        
+        client.guild_profiles[guild_id] = old_guild_profile
+        guild.users[client_id] = client
+        
+        old_attributes = client._difference_update_profile(data, guild)
+        
+        vampytest.assert_instance(old_attributes, dict)
+        vampytest.assert_eq(old_attributes, {'nick': 'ibuki'})
+        vampytest.assert_eq(client.guild_profiles.get(guild_id, None), new_guild_profile)
+        vampytest.assert_is(guild._cache_permission, None)
+    
+    finally:
+        client._delete()
+        client = None
+        
+
+
+def test__ClientUserBase__update_profile__guild_profile_missing():
+    """
+    Tests whether ``ClientUserBase._update_profile`` works as intended.
+    
+    Case: guild profile missing.
+    """
+    client_id = 202312070016
+    guild_id = 202312070017
+    guild = Guild.precreate(guild_id)
+    
+    guild_profile = GuildProfile(nick = 'ibuki')
+    
+    data = guild_profile.to_data(defaults = True)
+    
+    client = Client(
+        token = 'token_20231207_0016',
+        client_id = client_id,
+    )
+    try:
+        guild.cached_permissions_for(client)
+        vampytest.assert_is_not(guild._cache_permission, None)
+        
+        output = client._update_profile(data, guild)
+        
+        vampytest.assert_instance(output, bool)
+        vampytest.assert_eq(output, False)
+        
+        vampytest.assert_eq(guild.users, {client_id: client})
+        vampytest.assert_eq(client.guild_profiles, {guild_id: guild_profile})
+        vampytest.assert_is(guild._cache_permission, None)
+    finally:
+        client._delete()
+        client = None
+
+
+def test__ClientUserBase__update_profile__normal_update():
+    """
+    Tests whether ``ClientUserBase._update_profile`` works as intended.
+    
+    Case: Normal update.
+    """
+    client_id = 202312070018
+    guild_id = 202312070019
+    guild = Guild.precreate(guild_id)
+    
+    old_guild_profile = GuildProfile(nick = 'ibuki')
+    new_guild_profile = GuildProfile(nick = 'suika')
+    
+    data = new_guild_profile.to_data(defaults = True)
+    
+    client = Client(
+        token = 'token_20231207_0018',
+        client_id = client_id,
+    )
+    
+    try:
+        guild.cached_permissions_for(client)
+        vampytest.assert_is_not(guild._cache_permission, None)
+        
+        client.guild_profiles[guild_id] = old_guild_profile
+        guild.users[client_id] = client
+        
+        output = client._update_profile(data, guild)
+        
+        vampytest.assert_instance(output, bool)
+        vampytest.assert_eq(output, True)
+        
+        vampytest.assert_eq(client.guild_profiles, {guild_id: new_guild_profile})
+        vampytest.assert_is(guild._cache_permission, None)
     finally:
         client._delete()
         client = None

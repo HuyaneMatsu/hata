@@ -10,11 +10,15 @@ from ...embedded_activity_configuration import EmbeddedActivityConfiguration
 from ...third_party_sku import ThirdPartySKU
 
 from ..application import Application
-from ..flags import ApplicationFlag, ApplicationDiscoveryEligibilityFlags, ApplicationMonetizationEligibilityFlags, \
+from ..flags import (
+    ApplicationDiscoveryEligibilityFlags, ApplicationFlag, ApplicationMonetizationEligibilityFlags,
     ApplicationOverlayMethodFlags
-from ..preinstanced import ApplicationMonetizationState, ApplicationType, ApplicationDiscoverabilityState, \
-    ApplicationExplicitContentFilterLevel, ApplicationInteractionEventType, ApplicationInteractionVersion, \
-    ApplicationInternalGuildRestriction, ApplicationRPCState, ApplicationStoreState, ApplicationVerificationState
+)
+from ..preinstanced import (
+    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationInteractionEventType,
+    ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
+    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
+)
 
 
 def test__Application__repr():

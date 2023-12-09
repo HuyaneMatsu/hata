@@ -1378,17 +1378,17 @@ class UserBase(DiscordEntity, immortal = True):
     
     
     @classmethod
-    def _update_profile(cls, data, guild):
+    def _from_data_and_update_profile(cls, data, guild):
         """
         First tries to find the user, then it's respective guild profile for the given guild to update it.
         
         If the method cannot find the user, or the respective guild profile, then creates them.
         
-        Not like ``._difference_update_profile``, this method not calculates changes.
+        Not like ``._from_data_and_difference_update_profile``, this method not calculates changes.
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received guild member data.
         guild : ``Guild``
             The respective guild of the profile to update.
@@ -1401,8 +1401,27 @@ class UserBase(DiscordEntity, immortal = True):
         raise NotImplementedError
     
     
+    def _update_profile(self, data, guild):
+        """
+        Tries to find the user's respective guild profile. If it cannot find it, creates it.
+        
+        Parameters
+        ----------
+        data : `dict<str, object>`
+            Received guild profile data.
+        guild : ``Guild``
+            The respective guild of the profile to update.
+        
+        Returns
+        -------
+        updated : `bool`
+            Returns `True` if the guild profile was updated and `False` when created.
+        """
+        raise NotImplementedError
+    
+    
     @classmethod
-    def _difference_update_profile(cls, data, guild):
+    def _from_data_and_difference_update_profile(cls, data, guild):
         """
         First tries to find the user, then it's respective guild profile for the given guild to update it.
         
@@ -1410,7 +1429,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received guild member data.
         guild : ``Guild``
             The respective guild of the profile to update.
@@ -1419,9 +1438,12 @@ class UserBase(DiscordEntity, immortal = True):
         -------
         user : ``ClientUserBase``
             The respective user.
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `None | dict<str, object>`
             The changed attributes of the respective guild profile as a `dict` with `attribute-name` - `old-attribute`
             relation.
+            
+            May return `None` indicating that the guild profile was not cached before so we cannot determine whether
+            it would have been updated.
             
             The possible keys and values within `old_attributes` are all optional and they can be any of the following:
             +-------------------+-------------------------------+
@@ -1429,7 +1451,7 @@ class UserBase(DiscordEntity, immortal = True):
             +===================+===============================+
             | avatar            | ``Icon``                      |
             +-------------------+-------------------------------+
-            | boosts_since      | `None`, `datetime`            |
+            | boosts_since      | `None`, `DateTime`            |
             +-------------------+-------------------------------+
             | flags             | `None`, ``GuildProfileFlags`` |
             +-------------------+-------------------------------+
@@ -1439,7 +1461,49 @@ class UserBase(DiscordEntity, immortal = True):
             +-------------------+-------------------------------+
             | role_ids          | `None`, `tuple` of `int`      |
             +-------------------+-------------------------------+
-            | timed_out_until   | `None`, `datetime`            |
+            | timed_out_until   | `None`, `DateTime`            |
+            +-------------------+-------------------------------+
+        """
+        raise NotImplementedError
+    
+    
+    def _difference_update_profile(self, data, guild):
+        """
+        Tries to find the user's respective guild profile. If it cannot find it, creates it.
+        
+        Parameters
+        ----------
+        data : `dict<str, object>`
+            Received guild profile data.
+        guild : ``Guild``
+            The respective guild of the profile to update.
+        
+        Returns
+        -------
+        old_attributes : `None | dict<str, object>`
+            The changed attributes of the respective guild profile as a `dict` with `attribute-name` - `old-attribute`
+            relation.
+            
+            May return `None` indicating that the guild profile was not cached before so we cannot determine whether
+            it would have been updated.
+            
+            The possible keys and values within `old_attributes` are all optional and they can be any of the following:
+            +-------------------+-------------------------------+
+            | Keys              | Values                        |
+            +===================+===============================+
+            | avatar            | ``Icon``                      |
+            +-------------------+-------------------------------+
+            | boosts_since      | `None`, `DateTime`            |
+            +-------------------+-------------------------------+
+            | flags             | `None`, ``GuildProfileFlags`` |
+            +-------------------+-------------------------------+
+            | nick              | `None`, `str`                 |
+            +-------------------+-------------------------------+
+            | pending           | `bool`                        |
+            +-------------------+-------------------------------+
+            | role_ids          | `None`, `tuple` of `int`      |
+            +-------------------+-------------------------------+
+            | timed_out_until   | `None`, `DateTime`            |
             +-------------------+-------------------------------+
         """
         raise NotImplementedError

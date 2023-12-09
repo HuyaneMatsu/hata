@@ -37,15 +37,19 @@ class EmbedType(PreinstancedBase):
     +-------------------------------+-------------------------------+-------------------------------+
     | auto_moderation_notification  | auto moderation notification  | auto_moderation_notification  |
     +-------------------------------+-------------------------------+-------------------------------+
+    | gift                          | gift                          | gift                          |
+    +-------------------------------+-------------------------------+-------------------------------+
     | gifv                          | gifv                          | gifv                          |
     +-------------------------------+-------------------------------+-------------------------------+
     | image                         | image                         | image                         |
     +-------------------------------+-------------------------------+-------------------------------+
-    | post_review                   | post review                   | post_review                   |
+    | post_preview                  | post preview                  | post_preview                  |
     +-------------------------------+-------------------------------+-------------------------------+
     | link                          | link                          | link                          |
     +-------------------------------+-------------------------------+-------------------------------+
     | rich                          | rich                          | rich                          |
+    +-------------------------------+-------------------------------+-------------------------------+
+    | safety_policy_notice          | safety policy notice          | safety_policy_notice          |
     +-------------------------------+-------------------------------+-------------------------------+
     | text                          | text                          | text                          |
     +-------------------------------+-------------------------------+-------------------------------+
@@ -64,11 +68,13 @@ class EmbedType(PreinstancedBase):
     article = P('article', 'article')
     auto_moderation_message = P('auto_moderation_message', 'auto moderation message')
     auto_moderation_notification = P('auto_moderation_notification', 'auto moderation notification')
+    gift = P('gift', 'gift')
     gifv = P('gifv', 'gifv')
     image = P('image', 'image')
-    post_review = P('post_review', 'post review')
+    post_preview = P('post_preview', 'post preview')
     link = P('link', 'link')
     rich = P('rich', 'rich')
+    safety_policy_notice = P('safety_policy_notice', 'safety policy notice')
     text = P('text', 'text')
     tweet = P('tweet', 'tweet')
     video = P('video', 'video')

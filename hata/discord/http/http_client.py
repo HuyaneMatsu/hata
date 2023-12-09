@@ -463,6 +463,15 @@ class DiscordHTTPClient(HTTPClient):
         )
     
     
+    async def application_edit_own(self, data):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.application_edit_own, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_PATCH,
+            f'{API_ENDPOINT}/applications/@me',
+            data,
+        )
+    
+    
     async def client_connection_get_all(self):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.client_connection_get_all, NO_SPECIFIC_RATE_LIMITER),
@@ -646,12 +655,13 @@ class DiscordHTTPClient(HTTPClient):
         )
     
     
-    async def channel_follow(self, channel_id, data):
+    async def channel_follow(self, channel_id, data, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.channel_follow, channel_id),
             METHOD_POST,
             f'{API_ENDPOINT}/channels/{channel_id}/followers',
             data,
+            reason = reason,
         )
     
     
@@ -2223,8 +2233,9 @@ class DiscordHTTPClient(HTTPClient):
         )
     
     
-    async def interaction_followup_message_edit(self, application_id, interaction_id, interaction_token, message_id,
-            data):
+    async def interaction_followup_message_edit(
+        self, application_id, interaction_id, interaction_token, message_id, data
+    ):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.interaction_followup_message_edit, interaction_id),
             METHOD_PATCH,

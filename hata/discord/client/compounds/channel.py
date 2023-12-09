@@ -624,7 +624,9 @@ class ClientCompoundChannelEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If any parameter's type is incorrect.
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
@@ -804,7 +806,7 @@ class ClientCompoundChannelEndpoints(Compound):
         await self.http.channel_delete(channel_id, reason)
     
     
-    async def channel_follow(self, source_channel, target_channel):
+    async def channel_follow(self, source_channel, target_channel, *, reason):
         """
         Follows the `source_channel` with the `target_channel`. Returns the webhook, what will crosspost the published
         messages.
@@ -817,6 +819,8 @@ class ClientCompoundChannelEndpoints(Compound):
             The channel what will be followed. Must be an announcements channel.
         target_channel : ``Channel``, `int`instance
             The target channel where the webhook messages will be sent. Can be any guild text channel type.
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the respective guild's audit logs.
         
         Returns
         -------
@@ -843,7 +847,7 @@ class ClientCompoundChannelEndpoints(Compound):
             'webhook_channel_id': target_channel_id,
         }
         
-        data = await self.http.channel_follow(source_channel_id, data)
+        data = await self.http.channel_follow(source_channel_id, data, reason)
         webhook = await Webhook._from_follow_data(data, source_channel, target_channel_id, self)
         return webhook
     

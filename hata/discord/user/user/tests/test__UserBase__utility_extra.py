@@ -463,12 +463,38 @@ def test__UserBase__update_presence():
     user._update_presence(data)
 
 
+def test__UserBase__from_data_and_update_profile():
+    """
+    Tests whether ``Userbase._from_data_and_update_profile`` works as intended.
+    """
+    guild_id = 2023020400020
+    guild = Guild.precreate(guild_id)
+    
+    data = {}
+    
+    with vampytest.assert_raises(NotImplementedError):
+        UserBase._from_data_and_update_profile(data, guild)
+
+
+def test__UserBase__from_data_and_difference_update_profile():
+    """
+    Tests whether ``Userbase._from_data_and_difference_update_profile`` works as intended.
+    """
+    guild_id = 2023020400021
+    guild = Guild.precreate(guild_id)
+    
+    data = {}
+    
+    with vampytest.assert_raises(NotImplementedError):
+        UserBase._from_data_and_difference_update_profile(data, guild)
+
+
 def test__UserBase__update_profile():
     """
     Tests whether ``Userbase._update_profile`` works as intended.
     """
     user = UserBase()
-    guild_id = 2023020400020
+    guild_id = 202312060000
     guild = Guild.precreate(guild_id)
     
     data = {}
@@ -482,7 +508,7 @@ def test__UserBase__difference_update_profile():
     Tests whether ``Userbase._difference_update_profile`` works as intended.
     """
     user = UserBase()
-    guild_id = 2023020400020
+    guild_id = 202312060001
     guild = Guild.precreate(guild_id)
     
     data = {}

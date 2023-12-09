@@ -65,54 +65,29 @@ def convert_channel_icon_change(self):
     return f'{self.author.name} changed the channel icon.'
 
 def convert_new_pin(self):
-    return f'{self.author.name_at(self.guild_id)} pinned a message to this channel. See all pinned messages.'
+    return f'{self.author.name_at(self.guild_id)!s} pinned a message to this channel. See all pinned messages.'
 
 
 JOIN_MESSAGE_FORMATTERS = (
-    lambda name : f'{name} just joined the server - glhf!',
-    lambda name : f'{name} just joined. Everyone, look busy!',
-    lambda name : f'{name} just joined. Can I get a heal?',
-    lambda name : f'{name} joined your party.',
-    lambda name : f'{name} joined. You must construct additional pylons.',
-    lambda name : f'Ermagherd. {name} is here.',
-    lambda name : f'Welcome, {name}. Stay awhile and listen.',
-    lambda name : f'Welcome, {name}. We were expecting you ( ͡° ͜ʖ ͡°)',
-    lambda name : f'Welcome, {name}. We hope you brought pizza.',
-    lambda name : f'Welcome {name}. Leave your weapons by the door.',
-    lambda name : f'A wild {name} appeared.',
-    lambda name : f'Swoooosh. {name} just landed.',
-    lambda name : f'Brace yourselves. {name} just joined the server.',
-    lambda name : f'{name} just joined... or did they?',
-    lambda name : f'{name} just arrived. Seems OP - please nerf.',
-    lambda name : f'{name} just slid into the server.',
-    lambda name : f'A {name} has spawned in the server.',
-    lambda name : f'Big {name} showed up!',
-    lambda name : f'Where’s {name}? In the server!',
-    lambda name : f'{name} hopped into the server. Kangaroo!!',
-    lambda name : f'{name} just showed up. Hold my beer.',
-    lambda name : f'Challenger approaching - {name} has appeared!',
-    lambda name : f'It\'s a bird! It\'s a plane! Nevermind, it\'s just {name}.',
-    lambda name : f'It\'s {name}! Praise the sun! [T]/',
-    lambda name : f'Never gonna give {name} up. Never gonna let {name} down.',
-    lambda name : f'{name} has joined the battle bus.',
-    lambda name : f'Cheers, love! {name}\'s here!',
-    lambda name : f'Hey! Listen! {name} has joined!',
-    lambda name : f'We\'ve been expecting you {name}',
-    lambda name : f'It\'s dangerous to go alone, take {name}!',
-    lambda name : f'{name} has joined the server! It\'s super effective!',
-    lambda name : f'Cheers, love! {name} is here!',
-    lambda name : f'{name} is here, as the prophecy foretold.',
-    lambda name : f'{name} has arrived. Party\'s over.',
-    lambda name : f'Ready player {name}',
-    lambda name : f'{name} is here to kick butt and chew bubblegum. And {name} is all out of gum.',
-    lambda name : f'Hello. Is it {name} you\'re looking for?',
-    lambda name : f'{name} has joined. Stay a while and listen!',
-    lambda name : f'Roses are red, violets are blue, {name} joined this server with you',
+    (lambda name : f'{name} joined the party.'),
+    (lambda name : f'{name} is here.'),
+    (lambda name : f'Welcome, {name}. We hope you brought pizza.'),
+    (lambda name : f'A wild {name} appeared.'),
+    (lambda name : f'Swoooosh. {name} just landed.'),
+    (lambda name : f'{name} just slid into the server.'),
+    (lambda name : f'Big {name} showed up!'),
+    (lambda name : f'Welcome {name}. Say hi!'),
+    (lambda name : f'{name} hopped into the server.'),
+    (lambda name : f'Everyone welcome {name}!'),
+    (lambda name : f'Glad you\'re here, {name}.'),
+    (lambda name : f'Good to see you, {name}.'),
+    (lambda name : f'Yay you made it, {name}!'),
 )
 
 # TODO: this system changed, just pulled out the new texts from the js client source, but the calculation is bad
 def convert_welcome(self):
-    formatter = JOIN_MESSAGE_FORMATTERS[int(self.created_at.timestamp()) % len(JOIN_MESSAGE_FORMATTERS)]
+    seed = self.id // 4194304 + 1420070400000
+    formatter = JOIN_MESSAGE_FORMATTERS[seed % len(JOIN_MESSAGE_FORMATTERS)]
     user_name = self.author.name_at(self.guild_id)
     return formatter(user_name)
 
@@ -211,7 +186,15 @@ def convert_discovery_grace_period_final_warning(self):
 
 
 def convert_thread_created(self):
-    return f'{self.author.name_at(self.guild_id)} started a thread: {self.content!r}. See all threads.'
+    thread = self.thread
+    if thread is None:
+        thread_name = self.content
+        if thread_name is None:
+            thread_name = 'unknown'
+    else:
+        thread_name = thread.name
+    
+    return f'{self.author.name_at(self.guild_id)!s} started a thread: {thread_name!s}. See all threads.'
 
 
 def convert_auto_moderation_action(self):
@@ -252,6 +235,48 @@ def convert_auto_moderation_action(self):
             content_parts.append(' secs')
             break
     
+    if content_parts:
+        return ''.join(content_parts)
+
+
+def convert_role_subscription_purchase(self):
+    role_subscription = self.role_subscription
+    if (role_subscription is None):
+        return None
+    
+    user_name = self.author.name_at(self.guild_id)
+    tier_name = role_subscription.tier_name
+    total_months = role_subscription.total_months
+    renewal = role_subscription.renewal
+    
+    guild = self.guild
+    if guild is None:
+        guild_name = 'unknown'
+    else:
+        guild_name = guild.name
+    
+    case = (renewal << 1) | total_months > 0
+    
+    content_parts = [
+        user_name,
+        ' ',
+        ("renewed" if renewal else "joined"),
+        ' **',
+        tier_name,
+        '** ',
+        ('and has been a subscriber of', 'in their', 'and has been a subscriber of', 'as a subscriber of')[case],
+        ' ',
+        guild_name,
+        (' for ', ' subscription', ' for ', '')[case],
+    ]
+    
+    if total_months > 0:
+        content_parts.append(str(total_months))
+        content_parts.append(' month')
+        if total_months != 1:
+            content_parts.append('s')
+    
+    content_parts.append('!')
     return ''.join(content_parts)
 
 
@@ -263,23 +288,60 @@ def convert_invite_reminder(self):
 
 
 def convert_stage_start(self):
-    return f'{self.author.name_at(self.guild_id)} started {self.content!s}.'
+    return f'{self.author.name_at(self.guild_id)!s} started {self.content!s}.'
 
 
 def convert_stage_end(self):
-    return f'{self.author.name_at(self.guild_id)} ended {self.content!s}.'
+    return f'{self.author.name_at(self.guild_id)!s} ended {self.content!s}.'
 
 
 def convert_stage_topic_change(self):
-    return f'{self.author.name_at(self.guild_id)} changed the Stage topic: {self.content!r}'
+    return f'{self.author.name_at(self.guild_id)!s} changed the Stage topic: {self.content!s}'
 
 
 def convert_stage_speaker(self):
-    return f'{self.author.name_at(self.guild_id)} is now a speaker'
+    return f'{self.author.name_at(self.guild_id)!s} is now a speaker'
+
+
+def convert_application_guild_subscription(self):
+    application = self.application
+    if application is None:
+        application_name = 'unknown'
+    else:
+        application_name = application.name
+    
+    return f'{self.author.name_at(self.guild_id)} upgraded {application_name!s} to premium for this server! \uD83C\uDF89'
+
+
+def convert_private_channel_integration_add(self):
+    application = self.application
+    if application is None:
+        application_name = 'unknown'
+    else:
+        application_name = application.name
+    
+    return f'{self.author.name!s} added the {application_name!s} app. See our help center for more info.'
+
+
+def convert_private_channel_integration_remove(self):
+    application = self.application
+    if application is None:
+        application_name = 'unknown'
+    else:
+        application_name = application.name
+    
+    return f'{self.author.name!s} removed the {application_name} app. See our help center for more info.'
 
 
 def convert_guild_incidents_enable(self):
-    content_parts = [self.author.name_at(self.guild_id), ' enabled security actions']
+    content_parts = [self.author.name_at(self.guild_id), ' enabled security actions for ']
+    
+    guild = self.guild
+    if guild is None:
+        guild_name = 'unknown'
+    else:
+        guild_name = guild.name
+    content_parts.append(guild_name)
     
     content = self.content
     if content is not None:
@@ -291,7 +353,17 @@ def convert_guild_incidents_enable(self):
 
 
 def convert_guild_incidents_disable(self):
-    return f'{self.author.name_at(self.guild_id)} disabled security actions.'
+    guild = self.guild
+    if guild is None:
+        guild_name = 'unknown'
+    else:
+        guild_name = guild.name
+        
+    return f'{self.author.name_at(self.guild_id)!s} disabled security actions for {guild_name!s}.'
+
+
+def convert_purchase_notification(self):
+    return f'Thank you,\n {self.author.name_at(self.guild_id)!s}'
 
 
 class MessageType(PreinstancedBase):
@@ -374,7 +446,7 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | auto_moderation_action                    | auto moderation action                    | 24    | convert_auto_moderation_action                    | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | role_subscription_purchase                | role subscription purchase                | 25    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    | role_subscription_purchase                | role subscription purchase                | 25    | convert_role_subscription_purchase                | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | interaction_premium_upsell                | interaction premium upsell                | 26    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
@@ -388,11 +460,11 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | stage_topic_change                        | stage topic change                        | 31    | convert_stage_topic_change                        | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | application_subscription                  | application subscription                  | 32    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    | application_guild_subscription            | application guild subscription            | 32    | convert_application_guild_subscription            | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | private_channel_integration_add           | private channel integration add           | 33    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    | private_channel_integration_add           | private channel integration add           | 33    | convert_private_channel_integration_add           | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | private_channel_integration_remove        | private channel integration remove        | 34    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    | private_channel_integration_remove        | private channel integration remove        | 34    | convert_private_channel_integration_remove        | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | premium_referral                          | premium referral                          | 35    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
@@ -411,6 +483,8 @@ class MessageType(PreinstancedBase):
     | guild_gaming_stats                        | guild gaming stats                        | 42    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | poll                                      | poll                                      | 43    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | purchase_notification                     | purchase notification                     | 44    | MESSAGE_DEFAULT_CONVERTER                         | false     |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     """
     INSTANCES = {}
@@ -515,16 +589,22 @@ class MessageType(PreinstancedBase):
     invite_reminder = P(22, 'invite reminder', convert_invite_reminder, True)
     context_command = P(23, 'context command', MESSAGE_DEFAULT_CONVERTER, True)
     auto_moderation_action = P(24, 'auto moderation action', convert_auto_moderation_action, True)
-    role_subscription_purchase = P (25, 'role subscription purchase', MESSAGE_DEFAULT_CONVERTER, True)
+    role_subscription_purchase = P (25, 'role subscription purchase', convert_role_subscription_purchase, True)
     interaction_premium_upsell = P(26, 'interaction premium upsell', MESSAGE_DEFAULT_CONVERTER, True)
     stage_start = P(27, 'stage start', convert_stage_start, True)
     stage_end = P(28, 'stage end', convert_stage_end, True)
     stage_speaker = P(29, 'stage speaker', convert_stage_speaker, True)
     stage_request_to_speak = P(30, 'stage request to speak', MESSAGE_DEFAULT_CONVERTER, True)
     stage_topic_change = P(31, 'stage topic change', convert_stage_topic_change, True)
-    application_subscription = P(32, 'application subscription', MESSAGE_DEFAULT_CONVERTER, True)
-    private_channel_integration_add = P(33, 'private channel integration add', MESSAGE_DEFAULT_CONVERTER, True)
-    private_channel_integration_remove = P(34, 'private channel integration remove', MESSAGE_DEFAULT_CONVERTER, True)
+    application_guild_subscription = P(
+        32, 'application guild subscription', convert_application_guild_subscription, True
+    )
+    private_channel_integration_add = P(
+        33, 'private channel integration add', convert_private_channel_integration_add, True
+    )
+    private_channel_integration_remove = P(
+        34, 'private channel integration remove', convert_private_channel_integration_remove, True
+    )
     premium_referral = P(35, 'premium referral', MESSAGE_DEFAULT_CONVERTER, True)
     guild_incidents_enable = P(36, 'guild incidents enable', convert_guild_incidents_enable, False)
     guild_incidents_disable = P(37, 'guild incidents disable', convert_guild_incidents_disable, False)
@@ -534,6 +614,7 @@ class MessageType(PreinstancedBase):
     custom_gift = P(41, 'custom gif', MESSAGE_DEFAULT_CONVERTER, True)
     guild_gaming_stats = P(42, 'guild gaming stats', MESSAGE_DEFAULT_CONVERTER, True)
     poll = P(43, 'poll', MESSAGE_DEFAULT_CONVERTER, True)
+    purchase_notification = P(44, 'purchase notification', convert_purchase_notification, False)
 
 
     @class_property
@@ -570,32 +651,22 @@ class MessageType(PreinstancedBase):
         return cls.user_remove
 
 
-del convert_user_add
-del convert_user_remove
-del convert_call
-del convert_channel_name_change
-del convert_channel_icon_change
-del convert_new_pin
-del convert_welcome
-del convert_guild_boost
-del convert_guild_boost_tier_1
-del convert_guild_boost_tier_2
-del convert_guild_boost_tier_3
-del convert_new_follower_channel
-del convert_stream
-del convert_discovery_disqualified
-del convert_discovery_requalified
-del convert_discovery_grace_period_initial_warning
-del convert_discovery_grace_period_final_warning
-del convert_thread_created
-del convert_invite_reminder
-del convert_stage_start
-del convert_stage_end
-del convert_stage_topic_change
-del convert_stage_speaker
-del convert_auto_moderation_action
-del convert_guild_incidents_enable
-del convert_guild_incidents_disable
+    @class_property
+    def application_subscription(cls):
+        """
+        Deprecated and will be removed in 2023 November. Please use `.application_guild_subscription` instead.
+        """
+        warnings.warn(
+            (
+                f'`{cls.__name__}.application_subscription` is deprecated and will be removed in 2023 November. '
+                f'Please use `.application_guild_subscription` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return cls.application_guild_subscription
+
 
 GENERIC_MESSAGE_TYPES = frozenset((
     MessageType.default,

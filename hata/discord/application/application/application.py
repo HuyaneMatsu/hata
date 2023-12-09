@@ -1,69 +1,70 @@
 __all__ = ('Application', )
 
-from warnings import warn
 from functools import partial as partial_func
+from warnings import warn
 
 from scarletio import BaseMethodDescriptor, export
 
 from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
-from ...core import APPLICATION_ID_TO_CLIENT, APPLICATIONS, GUILDS
+from ...core import APPLICATIONS, APPLICATION_ID_TO_CLIENT, GUILDS
 from ...http import urls as module_urls
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ZEROUSER
 
 from .constants import (
-    BOT_PUBLIC_DEFAULT, BOT_REQUIRES_CODE_GRANT_DEFAULT, HOOK_DEFAULT, MAX_PARTICIPANTS_DEFAULT,
-    OVERLAY_COMPATIBILITY_HOOK_DEFAULT, OVERLAY_DEFAULT, INTEGRATION_PUBLIC_DEFAULT,
-    INTEGRATION_REQUIRES_CODE_GRANT_DEFAULT
+    BOT_PUBLIC_DEFAULT, BOT_REQUIRES_CODE_GRANT_DEFAULT, HOOK_DEFAULT, INTEGRATION_PUBLIC_DEFAULT,
+    INTEGRATION_REQUIRES_CODE_GRANT_DEFAULT, MAX_PARTICIPANTS_DEFAULT, OVERLAY_COMPATIBILITY_HOOK_DEFAULT,
+    OVERLAY_DEFAULT
 )
 from .fields import (
-    parse_aliases, parse_bot_public, parse_bot_requires_code_grant, parse_custom_install_url, parse_deeplink_url,
-    parse_description, parse_developers, parse_eula_id, parse_executables, parse_flags, parse_guild_id, parse_hook,
-    parse_id, parse_install_parameters, parse_max_participants, parse_name, parse_overlay,
-    parse_overlay_compatibility_hook, parse_owner, parse_primary_sku_id, parse_privacy_policy_url, parse_publishers,
-    parse_role_connection_verification_url, parse_rpc_origins, parse_slug, parse_tags, parse_terms_of_service_url,
-    parse_third_party_skus, parse_type, parse_verify_key, put_aliases_into, put_bot_public_into,
-    put_bot_requires_code_grant_into, put_custom_install_url_into, put_deeplink_url_into, put_description_into,
-    put_developers_into, put_eula_id_into, put_executables_into, put_flags_into, put_guild_id_into, put_hook_into,
-    put_id_into, put_install_parameters_into, put_max_participants_into, put_name_into,
-    put_overlay_compatibility_hook_into, put_overlay_into, put_owner_into, put_primary_sku_id_into,
-    put_privacy_policy_url_into, put_publishers_into, put_role_connection_verification_url_into, put_rpc_origins_into,
-    put_slug_into, put_tags_into, put_terms_of_service_url_into, put_third_party_skus_into, put_type_into,
-    put_verify_key_into, validate_aliases, validate_bot_public, validate_bot_requires_code_grant,
-    validate_custom_install_url, validate_deeplink_url, validate_description, validate_developers, validate_eula_id,
-    validate_executables, validate_flags, validate_guild_id, validate_hook, validate_id, validate_install_parameters,
-    validate_max_participants, validate_name, validate_overlay, validate_overlay_compatibility_hook, validate_owner,
-    validate_primary_sku_id, validate_privacy_policy_url, validate_publishers,
-    validate_role_connection_verification_url, validate_rpc_origins, validate_slug, validate_tags,
-    validate_terms_of_service_url, validate_third_party_skus, validate_type, validate_verify_key,
-    parse_approximate_guild_count, put_approximate_guild_count_into, validate_approximate_guild_count,
-    parse_embedded_activity_configuration, put_embedded_activity_configuration_into,
-    validate_embedded_activity_configuration, parse_monetized, put_monetized_into, validate_monetized,
-    parse_creator_monetization_state, put_creator_monetization_state_into, validate_creator_monetization_state,
-    parse_discoverability_state, put_discoverability_state_into, validate_discoverability_state,
-    parse_discovery_eligibility_flags, put_discovery_eligibility_flags_into, validate_discovery_eligibility_flags,
-    parse_explicit_content_filter_level, put_explicit_content_filter_level_into, validate_explicit_content_filter_level,
-    parse_integration_public, put_integration_public_into, validate_integration_public,
-    parse_integration_requires_code_grant, put_integration_requires_code_grant_into,
-    validate_integration_requires_code_grant,
-    parse_interaction_endpoint_url, validate_interaction_endpoint_url, put_interaction_endpoint_url_into,
-    parse_interaction_event_types, put_interaction_event_types_into, validate_interaction_event_types,
-    parse_interaction_version, put_interaction_version_into, validate_interaction_version,
-    parse_internal_guild_restriction, put_internal_guild_restriction_into, validate_internal_guild_restriction,
-    parse_monetization_eligibility_flags, put_monetization_eligibility_flags_into,
-    validate_monetization_eligibility_flags,
-    parse_monetization_state, put_monetization_state_into, validate_monetization_state,
-    parse_redirect_urls, put_redirect_urls_into, validate_redirect_urls,
-    parse_rpc_state, put_rpc_state_into, validate_rpc_state,
-    parse_store_state, put_store_state_into, validate_store_state,
-    parse_verification_state, put_verification_state_into, validate_verification_state,
-    parse_overlay_method_flags, put_overlay_method_flags_into, validate_overlay_method_flags,
+    parse_aliases, parse_approximate_guild_count, parse_bot_public, parse_bot_requires_code_grant,
+    parse_creator_monetization_state, parse_custom_install_url, parse_deeplink_url, parse_description, parse_developers,
+    parse_discoverability_state, parse_discovery_eligibility_flags, parse_embedded_activity_configuration,
+    parse_eula_id, parse_executables, parse_explicit_content_filter_level, parse_flags, parse_guild_id, parse_hook,
+    parse_id, parse_install_parameters, parse_integration_public, parse_integration_requires_code_grant,
+    parse_interaction_endpoint_url, parse_interaction_event_types, parse_interaction_version,
+    parse_internal_guild_restriction, parse_max_participants, parse_monetization_eligibility_flags,
+    parse_monetization_state, parse_monetized, parse_name, parse_overlay, parse_overlay_compatibility_hook,
+    parse_overlay_method_flags, parse_owner, parse_primary_sku_id, parse_privacy_policy_url, parse_publishers,
+    parse_redirect_urls, parse_role_connection_verification_url, parse_rpc_origins, parse_rpc_state, parse_slug,
+    parse_store_state, parse_tags, parse_terms_of_service_url, parse_third_party_skus, parse_type,
+    parse_verification_state, parse_verify_key, put_aliases_into, put_approximate_guild_count_into, put_bot_public_into,
+    put_bot_requires_code_grant_into, put_creator_monetization_state_into, put_custom_install_url_into,
+    put_deeplink_url_into, put_description_into, put_developers_into, put_discoverability_state_into,
+    put_discovery_eligibility_flags_into, put_embedded_activity_configuration_into, put_eula_id_into,
+    put_executables_into, put_explicit_content_filter_level_into, put_flags_into, put_guild_id_into, put_hook_into,
+    put_id_into, put_install_parameters_into, put_integration_public_into, put_integration_requires_code_grant_into,
+    put_interaction_endpoint_url_into, put_interaction_event_types_into, put_interaction_version_into,
+    put_internal_guild_restriction_into, put_max_participants_into, put_monetization_eligibility_flags_into,
+    put_monetization_state_into, put_monetized_into, put_name_into, put_overlay_compatibility_hook_into,
+    put_overlay_into, put_overlay_method_flags_into, put_owner_into, put_primary_sku_id_into,
+    put_privacy_policy_url_into, put_publishers_into, put_redirect_urls_into, put_role_connection_verification_url_into,
+    put_rpc_origins_into, put_rpc_state_into, put_slug_into, put_store_state_into, put_tags_into,
+    put_terms_of_service_url_into, put_third_party_skus_into, put_type_into, put_verification_state_into,
+    put_verify_key_into, validate_aliases, validate_approximate_guild_count, validate_bot_public,
+    validate_bot_requires_code_grant, validate_creator_monetization_state, validate_custom_install_url,
+    validate_deeplink_url, validate_description, validate_developers, validate_discoverability_state,
+    validate_discovery_eligibility_flags, validate_embedded_activity_configuration, validate_eula_id,
+    validate_executables, validate_explicit_content_filter_level, validate_flags, validate_guild_id, validate_hook,
+    validate_id, validate_install_parameters, validate_integration_public, validate_integration_requires_code_grant,
+    validate_interaction_endpoint_url, validate_interaction_event_types, validate_interaction_version,
+    validate_internal_guild_restriction, validate_max_participants, validate_monetization_eligibility_flags,
+    validate_monetization_state, validate_monetized, validate_name, validate_overlay,
+    validate_overlay_compatibility_hook, validate_overlay_method_flags, validate_owner, validate_primary_sku_id,
+    validate_privacy_policy_url, validate_publishers, validate_redirect_urls, validate_role_connection_verification_url,
+    validate_rpc_origins, validate_rpc_state, validate_slug, validate_store_state, validate_tags,
+    validate_terms_of_service_url, validate_third_party_skus, validate_type, validate_verification_state,
+    validate_verify_key
 )
-from .flags import ApplicationFlag, ApplicationDiscoveryEligibilityFlags, ApplicationMonetizationEligibilityFlags, \
+from .flags import (
+    ApplicationDiscoveryEligibilityFlags, ApplicationFlag, ApplicationMonetizationEligibilityFlags,
     ApplicationOverlayMethodFlags
-from .preinstanced import ApplicationMonetizationState, ApplicationType, ApplicationDiscoverabilityState, \
-    ApplicationExplicitContentFilterLevel, ApplicationInteractionVersion, ApplicationInternalGuildRestriction, \
-    ApplicationRPCState, ApplicationStoreState, ApplicationVerificationState
+)
+from .preinstanced import (
+    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationInteractionVersion,
+    ApplicationInternalGuildRestriction, ApplicationMonetizationState, ApplicationRPCState, ApplicationStoreState,
+    ApplicationType, ApplicationVerificationState
+)
 
 # Invite application fields
 #
@@ -290,7 +291,7 @@ from .preinstanced import ApplicationMonetizationState, ApplicationType, Applica
 # +-------------------------------------+-----------+-----------+---------------+
 
 
-application_cover = IconSlot(
+APPLICATION_COVER = IconSlot(
     'cover',
     'cover_image',
     module_urls.application_cover_url,
@@ -298,7 +299,7 @@ application_cover = IconSlot(
     add_updater = False,
 )
 
-application_icon = IconSlot(
+APPLICATION_ICON = IconSlot(
     'icon',
     'icon',
     module_urls.application_icon_url,
@@ -306,7 +307,7 @@ application_icon = IconSlot(
     add_updater = False,
 )
 
-application_splash = IconSlot(
+APPLICATION_SPLASH = IconSlot(
     'splash',
     'splash',
     None,
@@ -384,16 +385,16 @@ COMMON_CONSTRUCT_FIELDS = {
 
 PRECREATE_FIELDS = {
     **COMMON_CONSTRUCT_FIELDS,
-    'cover': ('cover', application_cover.validate_icon),
-    'icon': ('icon', application_icon.validate_icon),
-    'splash': ('splash', application_splash.validate_icon),
+    'cover': ('cover', APPLICATION_COVER.validate_icon),
+    'icon': ('icon', APPLICATION_ICON.validate_icon),
+    'splash': ('splash', APPLICATION_SPLASH.validate_icon),
 }
 
 NEW_FIELDS = {
     **COMMON_CONSTRUCT_FIELDS,
-    'cover': ('cover', partial_func(application_cover.validate_icon, allow_data = True)),
-    'icon': ('icon', partial_func(application_icon.validate_icon, allow_data = True)),
-    'splash': ('splash', partial_func(application_splash.validate_icon, allow_data = True)),
+    'cover': ('cover', partial_func(APPLICATION_COVER.validate_icon, allow_data = True)),
+    'icon': ('icon', partial_func(APPLICATION_ICON.validate_icon, allow_data = True)),
+    'splash': ('splash', partial_func(APPLICATION_SPLASH.validate_icon, allow_data = True)),
 }
 
 
@@ -626,9 +627,9 @@ class Application(DiscordEntity, immortal = True):
         'type', 'verification_state', 'verify_key'
     )
     
-    cover = application_cover
-    icon = application_icon
-    splash = application_splash
+    cover = APPLICATION_COVER
+    icon = APPLICATION_ICON
+    splash = APPLICATION_SPLASH
     
     @classmethod
     def _create_empty(cls, application_id):
@@ -1015,7 +1016,8 @@ class Application(DiscordEntity, immortal = True):
         """
         Convert the application back to a json serializable dictionary.
         
-        Please use a specialised method instead:
+        This one is method is used for templating only.
+        If you want direct underlaying functionality please use a specialised method instead:
         
         - ``.to_data_ready``
         - ``.to_data_own``
@@ -1034,16 +1036,28 @@ class Application(DiscordEntity, immortal = True):
         -------
         data : `dict` of (`str`, `str`) items
         """
-        warn(
-            (
-                f'`{self.__class__.__name__}` has specialized to-data converters. They are: `.to_data_ready`, '
-                f' `.to_data_own`, `.to_data_invite`, `.to_data_detectable`. Please use own of those instead.'
-            ),
-            RuntimeWarning,
-            stacklevel = 2,
-        )
+        if include_internals:
+            warn(
+                (
+                    f'`{self.__class__.__name__}` has specialized to-data converters if you wanna include internal '
+                    f'fields. They are: `.to_data_ready`, `.to_data_own`, `.to_data_invite`, `.to_data_detectable`. '
+                    f'Please use any of those instead.'
+                ),
+                RuntimeWarning,
+                stacklevel = 2,
+            )
         
-        return self._to_data_common(defaults, include_internals)
+        data = {}
+        type(self).cover.put_into(self.cover, data, defaults, as_data = not include_internals)
+        put_custom_install_url_into(self.custom_install_url, data, defaults)
+        put_description_into(self.description, data, defaults)
+        put_flags_into(self.flags, data, defaults)
+        type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
+        put_install_parameters_into(self.install_parameters, data, defaults)
+        put_interaction_endpoint_url_into(self.interaction_endpoint_url, data, defaults)
+        put_role_connection_verification_url_into(self.role_connection_verification_url, data, defaults)
+        put_tags_into(self.tags, data, defaults)
+        return data
     
     
     def to_data_ready(self, *, defaults = False, include_internals = False):
@@ -1749,7 +1763,7 @@ class Application(DiscordEntity, immortal = True):
         ----------------
         aliases : `None`, `iterable` of `str`, Optional (Keyword only)
             Aliases of the application's name.
-    
+        
         approximate_guild_count : `int`, Optional (Keyword only)
             The approximate count of the guilds the application is in.
         
@@ -1758,7 +1772,7 @@ class Application(DiscordEntity, immortal = True):
         
         bot_public : `bool`, Optional (Keyword only)
             Whether not only the application's owner can join the application's bot to guilds.
-            
+        
         bot_requires_code_grant : `bool`, Optional (Keyword only)
             Whether the application's bot will only join a guild when completing the full `oauth2` code grant flow.
         

@@ -144,6 +144,16 @@ Group Details
     - Limiter : `UNLIMITED`
     - Limit : `N/A`
     - Resets after : `N/A`
+    - Notes: Always returns `0 / 1000` with `0.001` reset after, so the limits are clearly broken.
+
+- application_edit_own
+    - Endpoint : `/applications/{application_id}`
+    - Method : `PATCH`
+    - Required auth : `UN`
+    - Limiter : `GLOBAL`
+    - Limit : `10`
+    - Resets after : `300.0`
+    - Notes: its staged rate limit instead of burst one.
 
 - achievement_get_all
     - Endpoint : `/applications/{application_id}/achievements`
@@ -2087,7 +2097,8 @@ GROUP_THREAD_ACTION = RateLimitGroup()
 
 oauth2_token = RateLimitGroup(optimistic = True)
 application_get = RateLimitGroup().unlimited()
-application_get_own = RateLimitGroup()
+application_get_own = RateLimitGroup().unlimited()
+application_edit_own = RateLimitGroup()
 achievement_get_all = RateLimitGroup()
 achievement_create = RateLimitGroup()
 achievement_delete = RateLimitGroup()

@@ -3,6 +3,7 @@ import warnings as module_warnings
 import vampytest
 
 from ....bases import Icon, IconType
+from ....permission import Permission
 from ....user import User
 
 from ...application_entity import ApplicationEntity
@@ -12,11 +13,15 @@ from ...embedded_activity_configuration import EmbeddedActivityConfiguration
 from ...third_party_sku import ThirdPartySKU
 
 from ..application import Application
-from ..flags import ApplicationFlag, ApplicationDiscoveryEligibilityFlags, ApplicationMonetizationEligibilityFlags, \
+from ..flags import (
+    ApplicationDiscoveryEligibilityFlags, ApplicationFlag, ApplicationMonetizationEligibilityFlags,
     ApplicationOverlayMethodFlags
-from ..preinstanced import ApplicationMonetizationState, ApplicationType, ApplicationDiscoverabilityState, \
-    ApplicationExplicitContentFilterLevel, ApplicationInteractionEventType, ApplicationInteractionVersion, \
-    ApplicationInternalGuildRestriction, ApplicationRPCState, ApplicationStoreState, ApplicationVerificationState
+)
+from ..preinstanced import (
+    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationInteractionEventType,
+    ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
+    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
+)
 
 from .test__Application__constructor import _assert_fields_set
 
@@ -557,7 +562,7 @@ def test__Application__from_data_detectable__caching():
     vampytest.assert_is(application, test_application)
 
 
-def test__Application__to_data():
+def test__Application__to_data__include_internals():
     """
     Tests whether `Application.to_data`` works as intended.
     
@@ -566,7 +571,7 @@ def test__Application__to_data():
     application_id = 202211290039
     
     application = Application.precreate(
-        application_id
+        application_id,
     )
     
     with module_warnings.catch_warnings(record = True) as warnings:
@@ -578,6 +583,60 @@ def test__Application__to_data():
     
     vampytest.assert_in('id', data)
     vampytest.assert_eq(data['id'], str(application_id))
+
+
+def test__Application__to_data__default():
+    """
+    Tests whether `Application.to_data`` works as intended.
+    
+    Case: defaults
+    """
+    cover = b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0Aayaya'
+    custom_install_url = 'https://orindance.party/'
+    description = 'koishi'
+    flags = ApplicationFlag(56)
+    icon = b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0Aayaya'
+    install_parameters = ApplicationInstallParameters(permissions = Permission(12))
+    interaction_endpoint_url = 'https://orindance.party/'
+    role_connection_verification_url = 'https://orindance.party/'
+    tags = ['satori']
+    
+    application = Application(
+        cover = cover,
+        custom_install_url = custom_install_url,
+        description = description,
+        flags = flags,
+        icon = icon,
+        install_parameters = install_parameters,
+        interaction_endpoint_url = interaction_endpoint_url,
+        role_connection_verification_url = role_connection_verification_url,
+        tags = tags,
+    )
+    
+    with module_warnings.catch_warnings(record = True) as warnings:
+        module_warnings.simplefilter('always')
+        
+        data = application.to_data(defaults = True)
+        
+        vampytest.assert_eq(len(warnings), 0)
+    
+    
+    expected_data = {
+        'cover_image': 'data:image/png;base64,iVBORw0KGgpheWF5YQ==',
+        'custom_install_url': custom_install_url,
+        'description': description,
+        'flags': int(flags),
+        'icon': 'data:image/png;base64,iVBORw0KGgpheWF5YQ==',
+        'install_params': install_parameters.to_data(defaults = True),
+        'interactions_endpoint_url': interaction_endpoint_url,
+        'role_connections_verification_url': role_connection_verification_url,
+        'tags': tags,
+    }
+    
+    vampytest.assert_eq(
+        data,
+        expected_data,
+    )
 
 
 def test__Application__to_data_ready():

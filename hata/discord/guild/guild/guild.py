@@ -4695,17 +4695,17 @@ class Guild(DiscordEntity, immortal = True):
         if not isinstance(user, Client):
             return self.permissions_for(user)
         
-        permission_cache = self._cache_permission
-        if permission_cache is None:
-            self._cache_permission = permission_cache = {}
+        cache_permission = self._cache_permission
+        if cache_permission is None:
+            self._cache_permission = cache_permission = {}
         else:
             try:
-                return permission_cache[user.id]
+                return cache_permission[user.id]
             except KeyError:
                 pass
         
         permissions = self.permissions_for(user)
-        permission_cache[user.id] = permissions
+        cache_permission[user.id] = permissions
         return permissions
     
     

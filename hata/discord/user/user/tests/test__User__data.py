@@ -131,9 +131,9 @@ def test__User__from_data__3():
     vampytest.assert_eq(user.guild_profiles, {guild_id: new_guild_profile})
 
 
-def test__User__difference_update_profile__0():
+def test__User__from_data_and_difference_update_profile__user_missing():
     """
-    Tests whether ``User._difference_update_profile`` works as intended.
+    Tests whether ``User._from_data_and_difference_update_profile`` works as intended.
     
     Case: User missing.
     """
@@ -171,12 +171,11 @@ def test__User__difference_update_profile__0():
     guild_id = 202302080017
     guild = Guild.precreate(guild_id)
     
-    user, old_attributes = User._difference_update_profile(data, guild)
+    user, old_attributes = User._from_data_and_difference_update_profile(data, guild)
     
     _assert_fields_set(user)
     vampytest.assert_eq(user.id, user_id)
-    vampytest.assert_instance(old_attributes, dict)
-    vampytest.assert_eq(old_attributes, {})
+    vampytest.assert_is(old_attributes, None)
     
     vampytest.assert_eq(user.avatar, avatar)
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
@@ -189,9 +188,9 @@ def test__User__difference_update_profile__0():
     vampytest.assert_eq(user.bot, bot)
 
 
-def test__User__difference_update_profile__1():
+def test__User__from_data_and_difference_update_profile__1():
     """
-    Tests whether ``User._difference_update_profile`` works as intended.
+    Tests whether ``User._from_data_and_difference_update_profile`` works as intended.
     
     Case: User missing -> caching.
     """
@@ -206,18 +205,18 @@ def test__User__difference_update_profile__1():
         **guild_profile.to_data(defaults = True),
     }
     
-    user, old_attributes = User._difference_update_profile(data, guild)
+    user, old_attributes = User._from_data_and_difference_update_profile(data, guild)
     
     vampytest.assert_eq(guild.users, {user_id: user})
     vampytest.assert_eq(user.guild_profiles, {guild_id: guild_profile})
     
-    test_user, old_attributes = User._difference_update_profile(data, guild)
+    test_user, old_attributes = User._from_data_and_difference_update_profile(data, guild)
     vampytest.assert_is(user, test_user)
 
 
-def test__User__difference_update_profile__2():
+def test__User__from_data_and_difference_update_profile__guild_profile_missing():
     """
-    Tests whether ``User._difference_update_profile`` works as intended.
+    Tests whether ``User._from_data_and_difference_update_profile`` works as intended.
     
     Case: guild profile missing.
     """
@@ -235,18 +234,17 @@ def test__User__difference_update_profile__2():
         **guild_profile.to_data(defaults = True),
     }
     
-    output_user, old_attributes = User._difference_update_profile(data, guild)
+    output_user, old_attributes = User._from_data_and_difference_update_profile(data, guild)
     
     vampytest.assert_is(user, output_user)
-    vampytest.assert_instance(old_attributes, dict)
-    vampytest.assert_eq(old_attributes, {})
+    vampytest.assert_is(old_attributes, None)
     vampytest.assert_eq(guild.users, {user_id: user})
     vampytest.assert_eq(user.guild_profiles, {guild_id: guild_profile})
 
 
-def test__User__difference_update_profile__3():
+def test__User__from_data_and_difference_update_profile__normal_update():
     """
-    Tests whether ``User._difference_update_profile`` works as intended.
+    Tests whether ``User._from_data_and_difference_update_profile`` works as intended.
     
     Case: Normal update.
     """
@@ -267,7 +265,7 @@ def test__User__difference_update_profile__3():
         **new_guild_profile.to_data(defaults = True),
     }
     
-    output_user, old_attributes = User._difference_update_profile(data, guild)
+    output_user, old_attributes = User._from_data_and_difference_update_profile(data, guild)
     
     vampytest.assert_is(user, output_user)
     vampytest.assert_instance(old_attributes, dict)
@@ -275,9 +273,9 @@ def test__User__difference_update_profile__3():
     vampytest.assert_eq(user.guild_profiles.get(guild_id, None), new_guild_profile)
 
 
-def test__User__update_profile__0():
+def test__User__from_data_and_update_profile__user_missing_cache():
     """
-    Tests whether ``User._update_profile`` works as intended.
+    Tests whether ``User._from_data_and_update_profile`` works as intended.
     
     Case: User missing + caching.
     """
@@ -315,12 +313,12 @@ def test__User__update_profile__0():
         **guild_profile.to_data(defaults = True),
     }
     
-    user = User._update_profile(data, guild)
+    user = User._from_data_and_update_profile(data, guild)
     
     vampytest.assert_eq(guild.users, {user_id: user})
     vampytest.assert_eq(user.guild_profiles, {guild_id: guild_profile})
     
-    test_user = User._update_profile(data, guild)
+    test_user = User._from_data_and_update_profile(data, guild)
     
     vampytest.assert_is(user, test_user)
     
@@ -335,9 +333,9 @@ def test__User__update_profile__0():
     vampytest.assert_eq(user.bot, bot)
 
 
-def test__User__update_profile__1():
+def test__User__from_data_and_update_profile__guild_profile_missing():
     """
-    Tests whether ``User._update_profile`` works as intended.
+    Tests whether ``User._from_data_and_update_profile`` works as intended.
     
     Case: guild profile missing.
     """
@@ -355,16 +353,16 @@ def test__User__update_profile__1():
         **guild_profile.to_data(defaults = True),
     }
     
-    output_user = User._update_profile(data, guild)
+    output_user = User._from_data_and_update_profile(data, guild)
     
     vampytest.assert_is(user, output_user)
     vampytest.assert_eq(guild.users, {user_id: user})
     vampytest.assert_eq(user.guild_profiles, {guild_id: guild_profile})
 
 
-def test__User__update_profile__2():
+def test__User__from_data_and_update_profile__normal_update():
     """
-    Tests whether ``User._update_profile`` works as intended.
+    Tests whether ``User._from_data_and_update_profile`` works as intended.
     
     Case: Normal update.
     """
@@ -386,7 +384,7 @@ def test__User__update_profile__2():
         **new_guild_profile.to_data(defaults = True),
     }
     
-    output_user = User._update_profile(data, guild)
+    output_user = User._from_data_and_update_profile(data, guild)
     
     vampytest.assert_is(user, output_user)
     vampytest.assert_eq(user.guild_profiles, {guild_id: new_guild_profile})

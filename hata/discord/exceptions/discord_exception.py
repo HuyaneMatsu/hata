@@ -59,18 +59,6 @@ class DiscordException(Exception):
     
     Attributes
     ----------
-    debug_options : `None`, `tuple` of `str`
-        Debug options of the http client.
-    
-    received_data : `object`
-        Deserialized `json` response data if applicable.
-    
-    response : ``ClientResponse``
-        The http client response, what caused the error.
-    
-    sent_data : `object`
-        Sent data.
-    
     _code : `None`, `int`
         Cache of the `.code` property.
         
@@ -87,8 +75,25 @@ class DiscordException(Exception):
     
     _message : `None`,  `str`
         Cache of the `.message` property.
+    
+    debug_options : `None`, `tuple` of `str`
+        Debug options of the http client.
+    
+    received_data : `object`
+        Deserialized `json` response data if applicable.
+    
+    response : ``ClientResponse``
+        The http client response, what caused the error.
+    
+    sent_data : `object`
+        Sent data.
     """
-    def __init__(self, response, received_data, sent_data, debug_options):
+    __slots__ = (
+        '_code', '_debug_info', '_errors', '_request_info', '_message', 'debug_options', 'received_data', 'response',
+        'sent_data',
+    )
+    
+    def __new__(cls, response, received_data, sent_data, debug_options):
         """
         Creates a new discord exception.
         
@@ -103,16 +108,20 @@ class DiscordException(Exception):
         debug_options : `None`, `tuple` of `str`
             Debug options of the http client.
         """
-        Exception.__init__(self)
-        self.response = response
-        self.received_data = received_data
-        self.sent_data = sent_data
-        self.debug_options = debug_options
+        self = Exception.__new__(cls)
         self._code = None
         self._debug_info = None
         self._errors = None
         self._request_info = None
         self._message = None
+        self.debug_options = debug_options
+        self.received_data = received_data
+        self.response = response
+        self.sent_data = sent_data
+        return self
+    
+    
+    __init__ = object.__init__
     
     
     @property

@@ -393,12 +393,12 @@ class Kokoro:
             # bug?
             waiter = self.ws_waiter
             if (waiter is not None):
-                waiter.__silence__()
+                waiter.silence()
             
             # despair?
             waiter = self.beat_waiter
             if (waiter is not None):
-                waiter.__silence__()
+                waiter.silence()
     """
     
     def __repr__(self):

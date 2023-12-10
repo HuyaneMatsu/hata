@@ -870,6 +870,9 @@ class Emoji(DiscordEntity, immortal = True):
         
         EMOJIS[emoji_id] = self
         UNICODE_TO_EMOJI[unicode.value] = self
+        for value in unicode.iter_unicode_aliases():
+            UNICODE_TO_EMOJI[value] = self
+        
         
         if register_by_name:
             BUILTIN_EMOJIS[unicode.get_system_name()] = self

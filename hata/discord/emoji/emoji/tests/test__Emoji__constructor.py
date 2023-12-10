@@ -152,7 +152,7 @@ def test__Emoji__create_unicode__0():
     emoticon = '20220811_0001'
     alias = '20220811_0002'
     
-    unicode = Unicode(name, b'abs', False, (emoticon, ), (alias, ))
+    unicode = Unicode(name, 'abs', False, (emoticon, ), (alias, ), None)
     
     emoji = Emoji._create_unicode(unicode, True)
     _assert_fields_set(emoji)
@@ -171,7 +171,7 @@ def test__Emoji__create_unicode__1():
     emoticon = '20220811_0004'
     alias = '20220811_0005'
     
-    unicode = Unicode(name, b'abs', False, (emoticon, ), (alias, ))
+    unicode = Unicode(name, 'abs', False, (emoticon, ), (alias, ), None)
     
     emoji = Emoji._create_unicode(unicode, False)
     _assert_fields_set(emoji)

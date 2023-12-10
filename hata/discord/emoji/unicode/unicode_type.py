@@ -23,10 +23,13 @@ class Unicode(RichAttributeErrorBaseType):
         Unicode value.
     variation_selector_16 : `bool`
         Whether the emoji is a variation selector 16 emoji.
+    unicode_aliases : `None | tuple<str>`
+        Alternative unicode strings representing the same unicode.
+        These are required because python parses unicodes badly.
     """
-    __slots__ = ('aliases', 'emoticons', 'name', 'value', 'variation_selector_16')
+    __slots__ = ('aliases', 'emoticons', 'name', 'value', 'variation_selector_16', 'unicode_aliases')
     
-    def __new__(cls, name, raw_value, variation_selector_16, aliases, emoticons):
+    def __new__(cls, name, value, variation_selector_16, aliases, emoticons, unicode_aliases):
         """
         Creates a new unicode.
         
@@ -34,17 +37,17 @@ class Unicode(RichAttributeErrorBaseType):
         ----------
         name : `str`
             The unicode's name.
-        raw_value : `bytes`
-            Binary unicode value.
+        value : `str`
+            Unicode value.
         variation_selector_16 : `bool`
             Whether the emoji is a variation selector 16 emoji.
         aliases : `None`, `tuple` of `str`
             Alternative names of the emoji.
         emoticons : `None`, `tuple` of `str`
             Emoticons which the emoji represents.
+        unicode_aliases : `None | tuple<str>`
+            Alternative unicode strings representing the same unicode.
         """
-        value = raw_value.decode('utf8')
-        
         self = object.__new__(cls)
         
         self.aliases = aliases
@@ -52,6 +55,7 @@ class Unicode(RichAttributeErrorBaseType):
         self.name = name
         self.value = value
         self.variation_selector_16 = variation_selector_16
+        self.unicode_aliases = unicode_aliases
         
         return self
     
@@ -119,3 +123,18 @@ class Unicode(RichAttributeErrorBaseType):
         """
         yield from self.iter_emoticons()
         yield from self.iter_aliases()
+    
+    
+    def iter_unicode_aliases(self):
+        """
+        Iterates over the unicode's unicode aliases.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        unicode_alias : `str`
+        """
+        unicode_aliases = self.unicode_aliases
+        if (unicode_aliases is not None):
+            yield from unicode_aliases

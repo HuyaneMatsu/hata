@@ -1036,6 +1036,8 @@ class Application(DiscordEntity, immortal = True):
         -------
         data : `dict` of (`str`, `str`) items
         """
+        data = {}
+        
         if include_internals:
             warn(
                 (
@@ -1046,8 +1048,9 @@ class Application(DiscordEntity, immortal = True):
                 RuntimeWarning,
                 stacklevel = 2,
             )
+            
+            put_id_into(self.id, data, defaults)
         
-        data = {}
         type(self).cover.put_into(self.cover, data, defaults, as_data = not include_internals)
         put_custom_install_url_into(self.custom_install_url, data, defaults)
         put_description_into(self.description, data, defaults)

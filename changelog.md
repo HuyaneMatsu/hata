@@ -1,3 +1,11 @@
+## 1.3.48 *\[2023-12-??\]*
+
+### Improvements
+
+- Add `31` new unicode emojis.
+- Add `Unicode.unicode_aliases`.
+- Add `Unicode.iter_unicode_aliases`.
+
 ## 1.3.47 *\[2023-12-09\]*
 
 ### Improvements

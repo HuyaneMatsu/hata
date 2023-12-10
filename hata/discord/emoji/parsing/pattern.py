@@ -215,6 +215,9 @@ def build_all_emoji_pattern():
     pattern_core = TrieNode(None)
     for unicode in UNICODES:
         pattern_core.extend_with_raw_string(unicode.value)
+        for value in unicode.iter_unicode_aliases():
+            pattern_core.extend_with_raw_string(value)
+    
     pattern_core.build_into(into)
     pattern_core = None
     

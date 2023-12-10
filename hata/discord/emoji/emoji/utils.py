@@ -41,7 +41,7 @@ def _create_new_unicode(unicode_string):
             True,
         )
     
-    return Emoji._create_unicode(Unicode('', unicode_bytes, False, None, None), False)
+    return Emoji._create_unicode(Unicode('', unicode_string, False, None, None, None), False)
 
 
 @export
@@ -294,6 +294,6 @@ def create_unicode_emoji(unicode):
                 True,
             )
         
-        unicode_emoji = Emoji._create_unicode(Unicode('', unicode_bytes, False, None, None), False)
+        unicode_emoji = Emoji._create_unicode(Unicode('', unicode, False, None, None, None), False)
     
     return unicode_emoji

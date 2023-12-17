@@ -57,7 +57,7 @@ def _assert_fields_set(client):
     vampytest.assert_instance(client.id, int)
     vampytest.assert_instance(client.intents, IntentFlag)
     vampytest.assert_instance(client.locale, Locale)
-    vampytest.assert_instance(client.mfa, bool)
+    vampytest.assert_instance(client.mfa_enabled, bool)
     vampytest.assert_instance(client.name, str)
     vampytest.assert_instance(client.premium_type, PremiumType)
     vampytest.assert_instance(client.private_channels, dict)
@@ -118,7 +118,7 @@ def test__ClientUserBase__new__1():
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
-    mfa = True
+    mfa_enabled = True
     premium_type = PremiumType.nitro_basic
     
     client = Client(
@@ -136,7 +136,7 @@ def test__ClientUserBase__new__1():
         email = email,
         email_verified = email_verified,
         locale = locale,
-        mfa = mfa,
+        mfa_enabled = mfa_enabled,
         premium_type = premium_type,
     )
     
@@ -156,7 +156,7 @@ def test__ClientUserBase__new__1():
         vampytest.assert_eq(client.email, email)
         vampytest.assert_eq(client.email_verified, email_verified)
         vampytest.assert_is(client.locale, locale)
-        vampytest.assert_eq(client.mfa, mfa)
+        vampytest.assert_eq(client.mfa_enabled, mfa_enabled)
         vampytest.assert_is(client.premium_type, premium_type)
     
     # Cleanup

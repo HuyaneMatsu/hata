@@ -27,7 +27,7 @@ from ..flags import SystemChannelFlag
 from ..guild import Guild
 from ..guild_premium_perks import GuildPremiumPerks, TIER_0, TIER_MAX
 from ..preinstanced import (
-    ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel
+    ExplicitContentFilterLevel, GuildFeature, HubType, MfaLevel, MessageNotificationLevel, NsfwLevel, VerificationLevel
 )
 from ..sticker_counts import StickerCounts
 
@@ -42,15 +42,15 @@ def test__Guild__copy():
     afk_timeout = 1800
     banner = Icon(IconType.animated, 12)
     boost_progress_bar_enabled = True
-    content_filter = ContentFilterLevel.no_role
+    explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
     invite_splash = Icon(IconType.animated, 18)
-    message_notification = MessageNotificationLevel.no_messages
-    mfa = MFA.elevated
+    default_message_notification_level = MessageNotificationLevel.no_messages
+    mfa_level = MfaLevel.elevated
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306230001
@@ -70,15 +70,15 @@ def test__Guild__copy():
         afk_timeout = afk_timeout,
         banner = banner,
         boost_progress_bar_enabled = boost_progress_bar_enabled,
-        content_filter = content_filter,
+        explicit_content_filter_level = explicit_content_filter_level,
         description = description,
         discovery_splash = discovery_splash,
         features = features,
         hub_type = hub_type,
         icon = icon,
         invite_splash = invite_splash,
-        message_notification = message_notification,
-        mfa = mfa,
+        default_message_notification_level = default_message_notification_level,
+        mfa_level = mfa_level,
         name = name,
         nsfw_level = nsfw_level,
         owner_id = owner_id,
@@ -110,15 +110,15 @@ def test__Guild__copy_with__0():
     afk_timeout = 1800
     banner = Icon(IconType.animated, 12)
     boost_progress_bar_enabled = True
-    content_filter = ContentFilterLevel.no_role
+    explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
     invite_splash = Icon(IconType.animated, 18)
-    message_notification = MessageNotificationLevel.no_messages
-    mfa = MFA.elevated
+    default_message_notification_level = MessageNotificationLevel.no_messages
+    mfa_level = MfaLevel.elevated
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306230008
@@ -138,15 +138,15 @@ def test__Guild__copy_with__0():
         afk_timeout = afk_timeout,
         banner = banner,
         boost_progress_bar_enabled = boost_progress_bar_enabled,
-        content_filter = content_filter,
+        explicit_content_filter_level = explicit_content_filter_level,
         description = description,
         discovery_splash = discovery_splash,
         features = features,
         hub_type = hub_type,
         icon = icon,
         invite_splash = invite_splash,
-        message_notification = message_notification,
-        mfa = mfa,
+        default_message_notification_level = default_message_notification_level,
+        mfa_level = mfa_level,
         name = name,
         nsfw_level = nsfw_level,
         owner_id = owner_id,
@@ -178,15 +178,15 @@ def test__Guild__copy_with__1():
     old_afk_timeout = 1800
     old_banner = Icon(IconType.animated, 12)
     old_boost_progress_bar_enabled = True
-    old_content_filter = ContentFilterLevel.no_role
+    old_explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     old_description = 'Koishi'
     old_discovery_splash = Icon(IconType.animated, 14)
     old_features = [GuildFeature.animated_icon]
     old_hub_type = HubType.college
     old_icon = Icon(IconType.animated, 16)
     old_invite_splash = Icon(IconType.animated, 18)
-    old_message_notification = MessageNotificationLevel.no_messages
-    old_mfa = MFA.elevated
+    old_default_message_notification_level = MessageNotificationLevel.no_messages
+    old_mfa_level = MfaLevel.elevated
     old_name = 'Komeiji'
     old_nsfw_level = NsfwLevel.explicit
     old_owner_id = 202306230015
@@ -205,15 +205,15 @@ def test__Guild__copy_with__1():
     new_afk_timeout = 60
     new_banner = Icon(IconType.animated, 112)
     new_boost_progress_bar_enabled = False
-    new_content_filter = ContentFilterLevel.everyone
+    new_explicit_content_filter_level = ExplicitContentFilterLevel.everyone
     new_description = 'Okuu'
     new_discovery_splash = Icon(IconType.animated, 114)
     new_features = [GuildFeature.animated_banner]
     new_hub_type = HubType.high_school
     new_icon = Icon(IconType.animated, 116)
     new_invite_splash = Icon(IconType.animated, 118)
-    new_message_notification = MessageNotificationLevel.all_messages
-    new_mfa = MFA.none
+    new_default_message_notification_level = MessageNotificationLevel.all_messages
+    new_mfa_level = MfaLevel.none
     new_name = 'Orin'
     new_nsfw_level = NsfwLevel.safe
     new_owner_id = 202306230021
@@ -233,15 +233,15 @@ def test__Guild__copy_with__1():
         afk_timeout = old_afk_timeout,
         banner = old_banner,
         boost_progress_bar_enabled = old_boost_progress_bar_enabled,
-        content_filter = old_content_filter,
+        explicit_content_filter_level = old_explicit_content_filter_level,
         description = old_description,
         discovery_splash = old_discovery_splash,
         features = old_features,
         hub_type = old_hub_type,
         icon = old_icon,
         invite_splash = old_invite_splash,
-        message_notification = old_message_notification,
-        mfa = old_mfa,
+        default_message_notification_level = old_default_message_notification_level,
+        mfa_level = old_mfa_level,
         name = old_name,
         nsfw_level = old_nsfw_level,
         owner_id = old_owner_id,
@@ -262,15 +262,15 @@ def test__Guild__copy_with__1():
         afk_timeout = new_afk_timeout,
         banner = new_banner,
         boost_progress_bar_enabled = new_boost_progress_bar_enabled,
-        content_filter = new_content_filter,
+        explicit_content_filter_level = new_explicit_content_filter_level,
         description = new_description,
         discovery_splash = new_discovery_splash,
         features = new_features,
         hub_type = new_hub_type,
         icon = new_icon,
         invite_splash = new_invite_splash,
-        message_notification = new_message_notification,
-        mfa = new_mfa,
+        default_message_notification_level = new_default_message_notification_level,
+        mfa_level = new_mfa_level,
         name = new_name,
         nsfw_level = new_nsfw_level,
         owner_id = new_owner_id,
@@ -295,15 +295,15 @@ def test__Guild__copy_with__1():
     vampytest.assert_eq(copy.afk_timeout, new_afk_timeout)
     vampytest.assert_eq(copy.banner, new_banner)
     vampytest.assert_eq(copy.boost_progress_bar_enabled, new_boost_progress_bar_enabled)
-    vampytest.assert_is(copy.content_filter, new_content_filter)
+    vampytest.assert_is(copy.explicit_content_filter_level, new_explicit_content_filter_level)
     vampytest.assert_eq(copy.description, new_description)
     vampytest.assert_eq(copy.discovery_splash, new_discovery_splash)
     vampytest.assert_eq(copy.features, tuple(new_features))
     vampytest.assert_is(copy.hub_type, new_hub_type)
     vampytest.assert_eq(copy.icon, new_icon)
     vampytest.assert_eq(copy.invite_splash, new_invite_splash)
-    vampytest.assert_is(copy.message_notification, new_message_notification)
-    vampytest.assert_is(copy.mfa, new_mfa)
+    vampytest.assert_is(copy.default_message_notification_level, new_default_message_notification_level)
+    vampytest.assert_is(copy.mfa_level, new_mfa_level)
     vampytest.assert_eq(copy.name, new_name)
     vampytest.assert_is(copy.nsfw_level, new_nsfw_level)
     vampytest.assert_eq(copy.owner_id, new_owner_id)

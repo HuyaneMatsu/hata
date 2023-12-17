@@ -4,11 +4,11 @@ from ....channel import Channel, ChannelType
 from ....role import Role
 
 from ..flags import SystemChannelFlag
-from ..preinstanced import ContentFilterLevel, VerificationLevel
+from ..preinstanced import ExplicitContentFilterLevel, VerificationLevel
 from ..utils import MessageNotificationLevel, create_new_guild_data
 
 
-def test__create_new_guild_data__0():
+def test__create_new_guild_data__no_fields():
     """
     Tests whether ``create_new_guild_data`` works as intended.
     
@@ -33,7 +33,7 @@ def test__create_new_guild_data__0():
     vampytest.assert_eq(data, expected_output)
 
 
-def test__create_new_guild_data__1():
+def test__create_new_guild_data__all_fields():
     """
     Tests whether ``create_new_guild_data`` works as intended.
     
@@ -43,10 +43,10 @@ def test__create_new_guild_data__1():
     afk_channel_id = 202306090004
     afk_timeout = 3600
     channels = [Channel.precreate(202306090005, channel_type = ChannelType.guild_text, name = 'orin')]
-    content_filter = ContentFilterLevel.no_role
+    explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     icon = b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0Aayaya'
     roles = [Role.precreate(202306090006, name = 'okuu')]
-    message_notification = MessageNotificationLevel.none
+    default_message_notification_level = MessageNotificationLevel.none
     system_channel_id = 202306090007
     system_channel_flags = SystemChannelFlag(12)
     verification_level = VerificationLevel.extreme
@@ -56,10 +56,10 @@ def test__create_new_guild_data__1():
         'afk_channel_id': str(afk_channel_id),
         'afk_timeout': afk_timeout,
         'channels': [channel.to_data(defaults = True, include_internals = True) for channel in channels],
-        'explicit_content_filter': content_filter.value,
+        'explicit_content_filter': explicit_content_filter_level.value,
         'icon': 'data:image/png;base64,iVBORw0KGgpheWF5YQ==',
         'roles': [role.to_data(defaults = True, include_internals = True) for role in roles],
-        'default_message_notifications': message_notification.value,
+        'default_message_notifications': default_message_notification_level.value,
         'system_channel_id': str(system_channel_id),
         'system_channel_flags': int(system_channel_flags),
         'verification_level': verification_level.value,
@@ -70,10 +70,10 @@ def test__create_new_guild_data__1():
         afk_channel_id = afk_channel_id,
         afk_timeout = afk_timeout,
         channels = channels,
-        content_filter = content_filter,
+        explicit_content_filter_level = explicit_content_filter_level,
         icon = icon,
         roles = roles,
-        message_notification = message_notification,
+        default_message_notification_level = default_message_notification_level,
         system_channel_flags = system_channel_flags,
         system_channel_id = system_channel_id,
         verification_level = verification_level,

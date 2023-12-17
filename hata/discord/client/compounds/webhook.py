@@ -217,7 +217,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             | 50013         | missing_permissions   | You need `manage_webhooks` permission. (Or the client has no  |
             |               |                       | access to the channel.)                                       |
             +---------------+-----------------------+---------------------------------------------------------------+
-            | 60003         | MFA_required          | You need to have multi-factor authorization to do this        |
+            | 60003         | mfa_required          | You need to have multi-factor authorization to do this        |
             |               |                       | operation (guild setting dependent). For bot accounts it      |
             |               |                       | means their owner needs mfa.                                  |
             +---------------+-----------------------+---------------------------------------------------------------+

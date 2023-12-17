@@ -1,6 +1,6 @@
 __all__ = ('CommandBase',)
 
-from functools import partial as partial_func
+from warnings import warn
 
 from scarletio import RichAttributeErrorBaseType
 
@@ -27,7 +27,6 @@ class CommandBase(ExceptionHandlerInterface, RichAttributeErrorBaseType):
         The command's name.
         
         Only used for debugging.
-    
     
     Class Attributes
     ----------------
@@ -73,6 +72,15 @@ class CommandBase(ExceptionHandlerInterface, RichAttributeErrorBaseType):
         ValueError
             If any attribute's value is incorrect.
         """
+        warn(
+            (
+                f'Creating commands with the from class constructor is deprecated and will be removed in 2024 Jun. '
+                f'Please use command decorators instead.'
+            ),
+            FutureWarning,
+            stacklevel = 5,
+        )
+        
         return create_event_from_class(
             cls, klass, cls.COMMAND_PARAMETER_NAMES, cls.COMMAND_NAME_NAME, cls.COMMAND_COMMAND_NAME
         )

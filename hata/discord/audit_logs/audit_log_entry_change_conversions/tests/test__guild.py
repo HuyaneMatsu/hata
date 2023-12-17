@@ -2,18 +2,19 @@ import vampytest
 
 from ....bases import Icon
 from ....guild import (
-    ContentFilterLevel, HubType, MFA, MessageNotificationLevel, NsfwLevel, SystemChannelFlag, VerificationLevel
+    ExplicitContentFilterLevel, HubType, MfaLevel, MessageNotificationLevel, NsfwLevel, SystemChannelFlag, VerificationLevel
 )
 from ....guild.guild.constants import (
     AFK_TIMEOUT_DEFAULT, MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT, MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
 )
 from ....guild.guild.fields import (
-    validate_afk_channel_id, validate_afk_timeout, validate_boost_progress_bar_enabled, validate_content_filter,
-    validate_description, validate_hub_type, validate_locale, validate_max_stage_channel_video_users,
-    validate_max_voice_channel_video_users, validate_message_notification, validate_mfa, validate_name,
-    validate_nsfw_level, validate_owner_id, validate_public_updates_channel_id, validate_rules_channel_id,
-    validate_safety_alerts_channel_id, validate_system_channel_flags, validate_system_channel_id, validate_vanity_code,
-    validate_verification_level, validate_widget_channel_id, validate_widget_enabled
+    validate_afk_channel_id, validate_afk_timeout, validate_boost_progress_bar_enabled, validate_description,
+    validate_explicit_content_filter_level, validate_hub_type, validate_locale, validate_max_stage_channel_video_users,
+    validate_max_voice_channel_video_users, validate_default_message_notification_level, validate_mfa_level,
+    validate_name, validate_nsfw_level, validate_owner_id, validate_public_updates_channel_id,
+    validate_rules_channel_id, validate_safety_alerts_channel_id, validate_system_channel_flags,
+    validate_system_channel_id, validate_vanity_code, validate_verification_level, validate_widget_channel_id,
+    validate_widget_enabled
 )
 from ....guild.guild.guild import GUILD_BANNER, GUILD_DISCOVERY_SPLASH, GUILD_ICON, GUILD_INVITE_SPLASH
 from ....localization import Locale
@@ -32,13 +33,13 @@ from ...conversion_helpers.converters import (
 
 from ..guild import (
     AFK_CHANNEL_ID_CONVERSION, AFK_TIMEOUT_CONVERSION, BANNER_CONVERSION, BOOST_PROGRESS_BAR_ENABLED_CONVERSION,
-    CONTENT_FILTER_CONVERSION, DESCRIPTION_CONVERSION, DISCOVERY_SPLASH_CONVERSION, GUILD_CONVERSIONS,
-    HUB_TYPE_CONVERSION, ICON_CONVERSION, INVITE_SPLASH_CONVERSION, LOCALE_CONVERSION,
-    MAX_STAGE_CHANNEL_VIDEO_USERS_CONVERSION, MAX_VOICE_CHANNEL_VIDEO_USERS_CONVERSION, MESSAGE_NOTIFICATION_CONVERSION,
-    MFA_CONVERSION, NAME_CONVERSION, NSFW_LEVEL_CONVERSION, OWNER_ID_CONVERSION, PUBLIC_UPDATES_CHANNEL_ID_CONVERSION,
-    RULES_CHANNEL_ID_CONVERSION, SAFETY_ALERTS_CHANNEL_ID_CONVERSION, SYSTEM_CHANNEL_FLAGS_CONVERSION,
-    SYSTEM_CHANNEL_ID_CONVERSION, VANITY_CODE_CONVERSION, VERIFICATION_LEVEL_CONVERSION, WIDGET_CHANNEL_ID_CONVERSION,
-    WIDGET_ENABLED_CONVERSION
+    DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION, DESCRIPTION_CONVERSION, DISCOVERY_SPLASH_CONVERSION,
+    EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION, GUILD_CONVERSIONS, HUB_TYPE_CONVERSION, ICON_CONVERSION,
+    INVITE_SPLASH_CONVERSION, LOCALE_CONVERSION, MAX_STAGE_CHANNEL_VIDEO_USERS_CONVERSION,
+    MAX_VOICE_CHANNEL_VIDEO_USERS_CONVERSION, MFA_LEVEL_CONVERSION, NAME_CONVERSION, NSFW_LEVEL_CONVERSION,
+    OWNER_ID_CONVERSION, PUBLIC_UPDATES_CHANNEL_ID_CONVERSION, RULES_CHANNEL_ID_CONVERSION,
+    SAFETY_ALERTS_CHANNEL_ID_CONVERSION, SYSTEM_CHANNEL_FLAGS_CONVERSION, SYSTEM_CHANNEL_ID_CONVERSION,
+    VANITY_CODE_CONVERSION, VERIFICATION_LEVEL_CONVERSION, WIDGET_CHANNEL_ID_CONVERSION, WIDGET_ENABLED_CONVERSION
 )
 
 
@@ -154,23 +155,23 @@ def test__BOOST_PROGRESS_BAR_ENABLED_CONVERSION__value_deserializer(input_value)
 
 # ---- content_filter ----
 
-def test__CONTENT_FILTER_CONVERSION__generic():
+def test__EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION__generic():
     """
-    Tests whether ``CONTENT_FILTER_CONVERSION`` works as intended.
+    Tests whether ``EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION`` works as intended.
     """
-    _assert_conversion_fields_set(CONTENT_FILTER_CONVERSION)
-    vampytest.assert_is(CONTENT_FILTER_CONVERSION.value_validator, validate_content_filter)
+    _assert_conversion_fields_set(EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION)
+    vampytest.assert_is(EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION.value_validator, validate_explicit_content_filter_level)
 
 
 def _iter_options__content_filter__value_deserializer():
-    yield None, ContentFilterLevel.disabled
-    yield ContentFilterLevel.everyone.value, ContentFilterLevel.everyone
+    yield None, ExplicitContentFilterLevel.disabled
+    yield ExplicitContentFilterLevel.everyone.value, ExplicitContentFilterLevel.everyone
 
 
 @vampytest._(vampytest.call_from(_iter_options__content_filter__value_deserializer()).returning_last())
-def test__CONTENT_FILTER_CONVERSION__value_deserializer(input_value):
+def test__EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `CONTENT_FILTER_CONVERSION.value_deserializer` works as intended.
+    Tests whether `EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -179,31 +180,31 @@ def test__CONTENT_FILTER_CONVERSION__value_deserializer(input_value):
     
     Returns
     -------
-    output : ``ContentFilterLevel``
+    output : ``ExplicitContentFilterLevel``
     """
-    return CONTENT_FILTER_CONVERSION.value_deserializer(input_value)
+    return EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION.value_deserializer(input_value)
 
 
 def _iter_options__content_filter__value_serializer():
-    yield ContentFilterLevel.disabled, ContentFilterLevel.disabled.value
-    yield ContentFilterLevel.everyone, ContentFilterLevel.everyone.value
+    yield ExplicitContentFilterLevel.disabled, ExplicitContentFilterLevel.disabled.value
+    yield ExplicitContentFilterLevel.everyone, ExplicitContentFilterLevel.everyone.value
 
 
 @vampytest._(vampytest.call_from(_iter_options__content_filter__value_serializer()).returning_last())
-def test__CONTENT_FILTER_CONVERSION__value_serializer(input_value):
+def test__EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `CONTENT_FILTER_CONVERSION.value_serializer` works as intended.
+    Tests whether `EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
-    input_value : ``ContentFilterLevel``
+    input_value : ``ExplicitContentFilterLevel``
         Processed value.
     
     Returns
     -------
     output : `int`
     """
-    return CONTENT_FILTER_CONVERSION.value_serializer(input_value)
+    return EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION.value_serializer(input_value)
 
 
 # ---- description ----
@@ -432,23 +433,23 @@ def test__MAX_VOICE_CHANNEL_VIDEO_USERS_CONVERSION__value_deserializer(input_val
 
 # ---- mfa ----
 
-def test__MFA_CONVERSION__generic():
+def test__MFA_LEVEL_CONVERSION__generic():
     """
-    Tests whether ``MFA_CONVERSION`` works as intended.
+    Tests whether ``MFA_LEVEL_CONVERSION`` works as intended.
     """
-    _assert_conversion_fields_set(MFA_CONVERSION)
-    vampytest.assert_is(MFA_CONVERSION.value_validator, validate_mfa)
+    _assert_conversion_fields_set(MFA_LEVEL_CONVERSION)
+    vampytest.assert_is(MFA_LEVEL_CONVERSION.value_validator, validate_mfa_level)
 
 
 def _iter_options__mfa__value_deserializer():
-    yield None, MFA.none
-    yield MFA.elevated.value, MFA.elevated
+    yield None, MfaLevel.none
+    yield MfaLevel.elevated.value, MfaLevel.elevated
 
 
 @vampytest._(vampytest.call_from(_iter_options__mfa__value_deserializer()).returning_last())
-def test__MFA_CONVERSION__value_deserializer(input_value):
+def test__MFA_LEVEL_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `MFA_CONVERSION.value_deserializer` works as intended.
+    Tests whether `MFA_LEVEL_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -457,41 +458,41 @@ def test__MFA_CONVERSION__value_deserializer(input_value):
     
     Returns
     -------
-    output : ``MFA``
+    output : ``MfaLevel``
     """
-    return MFA_CONVERSION.value_deserializer(input_value)
+    return MFA_LEVEL_CONVERSION.value_deserializer(input_value)
 
 
 def _iter_options__mfa__value_serializer():
-    yield MFA.none, MFA.none.value
-    yield MFA.elevated, MFA.elevated.value
+    yield MfaLevel.none, MfaLevel.none.value
+    yield MfaLevel.elevated, MfaLevel.elevated.value
 
 
 @vampytest._(vampytest.call_from(_iter_options__mfa__value_serializer()).returning_last())
-def test__MFA_CONVERSION__value_serializer(input_value):
+def test__MFA_LEVEL_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `MFA_CONVERSION.value_serializer` works as intended.
+    Tests whether `MFA_LEVEL_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
-    input_value : ``MFA``
+    input_value : ``MfaLevel``
         Processed value.
     
     Returns
     -------
     output : `int`
     """
-    return MFA_CONVERSION.value_serializer(input_value)
+    return MFA_LEVEL_CONVERSION.value_serializer(input_value)
 
 
 # --- message_notification ----
 
-def test__MESSAGE_NOTIFICATION_CONVERSION__generic():
+def test__DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION__generic():
     """
-    Tests whether ``MESSAGE_NOTIFICATION_CONVERSION`` works as intended.
+    Tests whether ``DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION`` works as intended.
     """
-    _assert_conversion_fields_set(MESSAGE_NOTIFICATION_CONVERSION)
-    vampytest.assert_is(MESSAGE_NOTIFICATION_CONVERSION.value_validator, validate_message_notification)
+    _assert_conversion_fields_set(DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION)
+    vampytest.assert_is(DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION.value_validator, validate_default_message_notification_level)
 
 
 def _iter_options__message_notification__value_deserializer():
@@ -500,9 +501,9 @@ def _iter_options__message_notification__value_deserializer():
 
 
 @vampytest._(vampytest.call_from(_iter_options__message_notification__value_deserializer()).returning_last())
-def test__MESSAGE_NOTIFICATION_CONVERSION__value_deserializer(input_value):
+def test__DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION__value_deserializer(input_value):
     """
-    Tests whether `MESSAGE_NOTIFICATION_CONVERSION.value_deserializer` works as intended.
+    Tests whether `DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION.value_deserializer` works as intended.
     
     Parameters
     ----------
@@ -513,7 +514,7 @@ def test__MESSAGE_NOTIFICATION_CONVERSION__value_deserializer(input_value):
     -------
     output : ``MessageNotificationLevel``
     """
-    return MESSAGE_NOTIFICATION_CONVERSION.value_deserializer(input_value)
+    return DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION.value_deserializer(input_value)
 
 
 def _iter_options__message_notification__value_serializer():
@@ -522,9 +523,9 @@ def _iter_options__message_notification__value_serializer():
 
 
 @vampytest._(vampytest.call_from(_iter_options__message_notification__value_serializer()).returning_last())
-def test__MESSAGE_NOTIFICATION_CONVERSION__value_serializer(input_value):
+def test__DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION__value_serializer(input_value):
     """
-    Tests whether `MESSAGE_NOTIFICATION_CONVERSION.value_serializer` works as intended.
+    Tests whether `DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION.value_serializer` works as intended.
     
     Parameters
     ----------
@@ -535,7 +536,7 @@ def test__MESSAGE_NOTIFICATION_CONVERSION__value_serializer(input_value):
     -------
     output : `int`
     """
-    return MESSAGE_NOTIFICATION_CONVERSION.value_serializer(input_value)
+    return DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION.value_serializer(input_value)
 
 
 # ---- name ----

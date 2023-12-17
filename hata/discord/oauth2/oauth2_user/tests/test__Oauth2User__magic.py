@@ -24,7 +24,7 @@ def test__Oauth2User__repr():
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
-    mfa = True
+    mfa_enabled = True
     premium_type = PremiumType.nitro
     
     user = Oauth2User._create_empty(user_id)
@@ -42,7 +42,7 @@ def test__Oauth2User__repr():
         email = email,
         email_verified = email_verified,
         locale = locale,
-        mfa = mfa,
+        mfa_enabled = mfa_enabled,
         premium_type = premium_type,
     )
     vampytest.assert_instance(repr(user), str)
@@ -64,7 +64,7 @@ def test__Oauth2User__hash():
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
-    mfa = True
+    mfa_enabled = True
     premium_type = PremiumType.nitro
     
     user = Oauth2User._create_empty(user_id)
@@ -82,7 +82,7 @@ def test__Oauth2User__hash():
         email = email,
         email_verified = email_verified,
         locale = locale,
-        mfa = mfa,
+        mfa_enabled = mfa_enabled,
         premium_type = premium_type,
     )
     vampytest.assert_instance(repr(user), str)
@@ -105,7 +105,7 @@ def test__Oauth2User__eq():
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
-    mfa = True
+    mfa_enabled = True
     premium_type = PremiumType.nitro
     
     keyword_parameters = {
@@ -120,7 +120,7 @@ def test__Oauth2User__eq():
         'email': email,
         'email_verified': email_verified,
         'locale': locale,
-        'mfa': mfa,
+        'mfa_enabled': mfa_enabled,
         'premium_type': premium_type,
     }
     
@@ -144,7 +144,7 @@ def test__Oauth2User__eq():
         ('email', None),
         ('email_verified', False),
         ('locale', Locale.dutch),
-        ('mfa', False),
+        ('mfa_enabled', False),
         ('premium_type', PremiumType.none),
     ):
         test_user = Oauth2User(**{**keyword_parameters, field_name: field_value})
@@ -168,7 +168,7 @@ def test__Oauth2User__format():
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
-    mfa = True
+    mfa_enabled = True
     premium_type = PremiumType.nitro
     
     user = Oauth2User(
@@ -183,7 +183,7 @@ def test__Oauth2User__format():
         email = email,
         email_verified = email_verified,
         locale = locale,
-        mfa = mfa,
+        mfa_enabled = mfa_enabled,
         premium_type = premium_type,
     )
     

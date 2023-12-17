@@ -1,5 +1,8 @@
 __all__ = ('SlashCommand',)
 
+from itertools import zip_longest
+from warnings import warn
+
 from scarletio import copy_docs, export
 
 from .....discord.application_command import ApplicationCommandTargetType
@@ -267,7 +270,7 @@ class SlashCommand(
                     if ((description is None) or (description is not default_description)) else
                     default_description
                 )
-                for sub_name, description in zip(name, description)
+                for sub_name, description in zip_longest(name, () if description is None else description)
             ]
         
         else:
@@ -347,6 +350,15 @@ class SlashCommand(
                         wrapper.apply(self)
                 
                 router.append(self)
+            
+            warn(
+                (
+                    f'Routing commands with tuple parameters is deprecated and will be removed in 2024 Jun. '
+                    f'Please use multiple command decorators instead.'
+                ),
+                FutureWarning,
+                stacklevel = 5,
+            )
             
             return Router(router)
         else:

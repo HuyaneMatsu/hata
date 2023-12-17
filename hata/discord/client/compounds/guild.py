@@ -583,7 +583,7 @@ class ClientCompoundGuildEndpoints(Compound):
         channels : `None`, `list` of (`dict<str, object>`, ``Channel``), Optional (Keyword only)
             A list of channels of the new guild. It should contain channel data objects.
         
-        content_filter : ``ContentFilterLevel``, `int`, Optional (Keyword only)
+        explicit_content_filter_level : ``ExplicitContentFilterLevel``, `int`, Optional (Keyword only)
             The content filter level of the guild.
         
         icon : `None`, `bytes-like`, Optional (Keyword only)
@@ -592,8 +592,8 @@ class ClientCompoundGuildEndpoints(Compound):
         roles : `None`, `list` of (`dict<str, object>`, ``Role``), Optional (Keyword only)
             A list of roles of the new guild. It should contain role data objects.
         
-        message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
-            The message notification level of the new guild.
+        default_message_notification_level : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
+            The default message notification level of the new guild.
         
         system_channel_flags : ``SystemChannelFlag``, `int`, Optional (Keyword only)
             Describe which type of messages are sent automatically to the system channel.
@@ -840,7 +840,7 @@ class ClientCompoundGuildEndpoints(Compound):
         boost_progress_bar_enabled : `bool`, Optional (Keyword only)
             Whether the guild has the boost progress bar enabled.
         
-        content_filter : ``ContentFilterLevel``, `int`, Optional (Keyword only)
+        explicit_content_filter_level : ``ExplicitContentFilterLevel``, `int`, Optional (Keyword only)
             The explicit content filter level of the guild.
         
         description : `None`, `str`
@@ -864,10 +864,10 @@ class ClientCompoundGuildEndpoints(Compound):
         locale : ``Locale``, `int`, Optional (Keyword only)
             The preferred language of the guild.
         
-        message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
-            The message notification level of the guild.
+        default_message_notification_level : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
+            The default message notification level of the guild.
         
-        mfa : ``MFA``, `int`, Optional (Keyword only)
+        mfa_level : ``MfaLevel``, `int`, Optional (Keyword only)
             The required multi-factor authentication level for the guild.
         
         name : `str`, Optional (Keyword only)
@@ -979,7 +979,7 @@ class ClientCompoundGuildEndpoints(Compound):
                             raise TypeError(
                                 f'`add_feature` was given as `iterable` so it expected to have '
                                 f'`{GuildFeature.__name__}`, `str` elements, but element `{index!r}` is '
-                                f'{feature.__class__.__name__}; {feature!r}; add_feature={add_feature!r}.'
+                                f'{feature.__class__.__name__}; {feature!r}; add_feature = {add_feature!r}.'
                             )
                         
                         features.add(feature)
@@ -1018,7 +1018,7 @@ class ClientCompoundGuildEndpoints(Compound):
                             raise TypeError(
                                 f'`remove_feature` was given as `iterable` so it expected to have '
                                 f'`{GuildFeature.__name__}`, `str` elements, but element `{index!r}` is '
-                                f'{feature.__class__.__name__}; {feature!r}; remove_feature={remove_feature!r}.'
+                                f'{feature.__class__.__name__}; {feature!r}; remove_feature = {remove_feature!r}.'
                             )
                         
                         features.discard(feature)

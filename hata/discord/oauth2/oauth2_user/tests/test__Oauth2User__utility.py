@@ -25,7 +25,7 @@ def test__Oauth2User__copy():
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
-    mfa = True
+    mfa_enabled = True
     premium_type = PremiumType.nitro
     
     user = Oauth2User(
@@ -40,7 +40,7 @@ def test__Oauth2User__copy():
         email = email,
         email_verified = email_verified,
         locale = locale,
-        mfa = mfa,
+        mfa_enabled = mfa_enabled,
         premium_type = premium_type,
     )
     
@@ -68,7 +68,7 @@ def test__Oauth2User__copy_with__0():
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
-    mfa = True
+    mfa_enabled = True
     premium_type = PremiumType.nitro
     
     user = Oauth2User(
@@ -83,7 +83,7 @@ def test__Oauth2User__copy_with__0():
         email = email,
         email_verified = email_verified,
         locale = locale,
-        mfa = mfa,
+        mfa_enabled = mfa_enabled,
         premium_type = premium_type,
     )
     
@@ -111,7 +111,7 @@ def test__Oauth2User__copy_with__1():
     old_email = 'rin@orindance.party'
     old_email_verified = True
     old_locale = Locale.greek
-    old_mfa = True
+    old_mfa_enabled = True
     old_premium_type = PremiumType.nitro
     
     new_avatar = Icon(IconType.animated, 23)
@@ -125,7 +125,7 @@ def test__Oauth2User__copy_with__1():
     new_email = 'orin@orindance.party'
     new_email_verified = False
     new_locale = Locale.greek
-    new_mfa = False
+    new_mfa_enabled = False
     new_premium_type = PremiumType.nitro_classic
     
     user = Oauth2User(
@@ -140,7 +140,7 @@ def test__Oauth2User__copy_with__1():
         email = old_email,
         email_verified = old_email_verified,
         locale = old_locale,
-        mfa = old_mfa,
+        mfa_enabled = old_mfa_enabled,
         premium_type = old_premium_type,
     )
     
@@ -155,7 +155,7 @@ def test__Oauth2User__copy_with__1():
         name = new_name,
         email = new_email,
         email_verified = new_email_verified,
-        mfa = new_mfa,
+        mfa_enabled = new_mfa_enabled,
         locale = new_locale,
         premium_type = new_premium_type,
     )
@@ -173,5 +173,5 @@ def test__Oauth2User__copy_with__1():
     vampytest.assert_eq(copy.email, new_email)
     vampytest.assert_eq(copy.email_verified, new_email_verified)
     vampytest.assert_is(copy.locale, new_locale)
-    vampytest.assert_eq(copy.mfa, new_mfa)
+    vampytest.assert_eq(copy.mfa_enabled, new_mfa_enabled)
     vampytest.assert_is(copy.premium_type, new_premium_type)

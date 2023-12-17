@@ -59,41 +59,41 @@ from .emoji_counts import EmojiCounts
 from .fields import (
     parse_afk_channel_id, parse_afk_timeout, parse_approximate_online_count, parse_approximate_user_count,
     parse_available, parse_boost_count, parse_boost_progress_bar_enabled, parse_channels, parse_client_guild_profile,
-    parse_content_filter, parse_description, parse_embedded_activity_states, parse_emojis, parse_features,
-    parse_hub_type, parse_id, parse_incidents, parse_inventory_settings, parse_large, parse_locale,
-    parse_max_presences, parse_max_stage_channel_video_users, parse_max_users, parse_max_voice_channel_video_users,
-    parse_message_notification, parse_mfa, parse_name, parse_nsfw_level, parse_owner_id, parse_premium_tier,
-    parse_public_updates_channel_id, parse_roles, parse_rules_channel_id, parse_safety_alerts_channel_id,
-    parse_scheduled_events, parse_stages, parse_stickers, parse_system_channel_flags, parse_system_channel_id,
-    parse_threads, parse_user_count, parse_users, parse_vanity_code, parse_verification_level, parse_voice_states,
-    parse_widget_channel_id, parse_widget_enabled, put_afk_channel_id_into, put_afk_timeout_into,
+    parse_default_message_notification_level, parse_description, parse_embedded_activity_states, parse_emojis,
+    parse_explicit_content_filter_level, parse_features, parse_hub_type, parse_id, parse_incidents,
+    parse_inventory_settings, parse_large, parse_locale, parse_max_presences, parse_max_stage_channel_video_users,
+    parse_max_users, parse_max_voice_channel_video_users, parse_mfa_level, parse_name, parse_nsfw_level, parse_owner_id,
+    parse_premium_tier, parse_public_updates_channel_id, parse_roles, parse_rules_channel_id,
+    parse_safety_alerts_channel_id, parse_scheduled_events, parse_stages, parse_stickers, parse_system_channel_flags,
+    parse_system_channel_id, parse_threads, parse_user_count, parse_users, parse_vanity_code, parse_verification_level,
+    parse_voice_states, parse_widget_channel_id, parse_widget_enabled, put_afk_channel_id_into, put_afk_timeout_into,
     put_approximate_online_count_into, put_approximate_user_count_into, put_available_into, put_boost_count_into,
-    put_boost_progress_bar_enabled_into, put_channels_into, put_content_filter_into, put_description_into,
-    put_embedded_activity_states_into, put_emojis_into, put_features_into, put_hub_type_into, put_id_into,
-    put_incidents_into, put_inventory_settings_into, put_large_into, put_locale_into, put_max_presences_into,
-    put_max_stage_channel_video_users_into, put_max_users_into, put_max_voice_channel_video_users_into,
-    put_message_notification_into, put_mfa_into, put_name_into, put_nsfw_level_into, put_owner_id_into,
+    put_boost_progress_bar_enabled_into, put_channels_into, put_default_message_notification_level_into,
+    put_description_into, put_embedded_activity_states_into, put_emojis_into, put_explicit_content_filter_level_into,
+    put_features_into, put_hub_type_into, put_id_into, put_incidents_into, put_inventory_settings_into, put_large_into,
+    put_locale_into, put_max_presences_into, put_max_stage_channel_video_users_into, put_max_users_into,
+    put_max_voice_channel_video_users_into, put_mfa_level_into, put_name_into, put_nsfw_level_into, put_owner_id_into,
     put_premium_tier_into, put_public_updates_channel_id_into, put_roles_into, put_rules_channel_id_into,
     put_safety_alerts_channel_id_into, put_scheduled_events_into, put_stages_into, put_stickers_into,
     put_system_channel_flags_into, put_system_channel_id_into, put_threads_into, put_user_count_into, put_users_into,
     put_vanity_code_into, put_verification_level_into, put_voice_states_into, put_widget_channel_id_into,
     put_widget_enabled_into, validate_afk_channel_id, validate_afk_timeout, validate_approximate_online_count,
     validate_approximate_user_count, validate_available, validate_boost_count, validate_boost_progress_bar_enabled,
-    validate_channels, validate_content_filter, validate_description, validate_embedded_activity_states,
-    validate_emojis, validate_features, validate_hub_type, validate_id, validate_incidents,
-    validate_inventory_settings, validate_large, validate_locale, validate_max_presences,
-    validate_max_stage_channel_video_users, validate_max_users, validate_max_voice_channel_video_users,
-    validate_message_notification, validate_mfa, validate_name, validate_nsfw_level, validate_owner_id,
+    validate_channels, validate_default_message_notification_level, validate_description,
+    validate_embedded_activity_states, validate_emojis, validate_explicit_content_filter_level, validate_features,
+    validate_hub_type, validate_id, validate_incidents, validate_inventory_settings, validate_large, validate_locale,
+    validate_max_presences, validate_max_stage_channel_video_users, validate_max_users,
+    validate_max_voice_channel_video_users, validate_mfa_level, validate_name, validate_nsfw_level, validate_owner_id,
     validate_premium_tier, validate_public_updates_channel_id, validate_roles, validate_rules_channel_id,
     validate_safety_alerts_channel_id, validate_scheduled_events, validate_soundboard_sounds, validate_stages,
-    validate_stickers, validate_system_channel_flags, validate_system_channel_id, validate_threads,
-    validate_user_count, validate_users, validate_vanity_code, validate_verification_level, validate_voice_states,
+    validate_stickers, validate_system_channel_flags, validate_system_channel_id, validate_threads, validate_user_count,
+    validate_users, validate_vanity_code, validate_verification_level, validate_voice_states,
     validate_widget_channel_id, validate_widget_enabled
 )
 from .flags import SystemChannelFlag
 from .guild_premium_perks import TIERS as PREMIUM_TIERS, TIER_MAX as PREMIUM_TIER_MAX
 from .preinstanced import (
-    ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel
+    ExplicitContentFilterLevel, GuildFeature, HubType, MfaLevel, MessageNotificationLevel, NsfwLevel, VerificationLevel
 )
 from .sticker_counts import StickerCounts
 from .helpers import (
@@ -140,6 +140,45 @@ GUILD_INVITE_SPLASH = IconSlot(
 )
 
 
+def _deprecate_validate_content_filter(value):
+    warn(
+        (
+            f'`{Guild.__name__}.precreate`\'s `content_filter` parameter is deprecated. '
+            f'And will be removed in 2024 April. '
+            f'Please use `explicit_content_filter_level` instead.'
+        ),
+        FutureWarning,
+        stacklevel = 4,
+    )
+    return validate_explicit_content_filter_level(value)
+
+
+def _deprecate_validate_mfa(value):
+    warn(
+        (
+            f'`{Guild.__name__}.precreate`\'s `mfa` parameter is deprecated. '
+            f'And will be removed in 2024 April. '
+            f'Please use `mfa_level` instead.'
+        ),
+        FutureWarning,
+        stacklevel = 4,
+    )
+    return validate_mfa_level(value)
+
+
+def _deprecate_validate_message_notification(value):
+    warn(
+        (
+            f'`{Guild.__name__}.precreate`\'s `message_notification` parameter is deprecated. '
+            f'And will be removed in 2024 April. '
+            f'Please use `default_message_notification_level` instead.'
+        ),
+        FutureWarning,
+        stacklevel = 4,
+    )
+    return validate_default_message_notification_level(value)
+
+
 PRECREATE_FIELDS = {
     'afk_channel': ('afk_channel_id', validate_afk_channel_id),
     'afk_channel_id': ('afk_channel_id', validate_afk_channel_id),
@@ -151,10 +190,15 @@ PRECREATE_FIELDS = {
     'boost_count': ('boost_count', validate_boost_count),
     'boost_progress_bar_enabled': ('boost_progress_bar_enabled', validate_boost_progress_bar_enabled),
     'channels': ('channels', validate_channels),
-    'content_filter': ('content_filter', validate_content_filter),
+    'content_filter': ('explicit_content_filter_level', _deprecate_validate_content_filter),
+    'message_notification': ('default_message_notification_level', _deprecate_validate_message_notification),
+    'default_message_notification_level': (
+        'default_message_notification_level', validate_default_message_notification_level,
+    ),
     'description': ('description', validate_description),
     'discovery_splash': ('discovery_splash', GUILD_INVITE_SPLASH.validate_icon),
     'embedded_activity_states': ('embedded_activity_states', validate_embedded_activity_states),
+    'explicit_content_filter_level': ('explicit_content_filter_level', validate_explicit_content_filter_level),
     'emojis': ('emojis', validate_emojis),
     'features': ('features', validate_features),
     'hub_type': ('hub_type', validate_hub_type),
@@ -167,8 +211,8 @@ PRECREATE_FIELDS = {
     'max_stage_channel_video_users': ('max_stage_channel_video_users', validate_max_stage_channel_video_users),
     'max_users': ('max_users', validate_max_users),
     'max_voice_channel_video_users': ('max_voice_channel_video_users', validate_max_voice_channel_video_users),
-    'message_notification': ('message_notification', validate_message_notification),
-    'mfa': ('mfa', validate_mfa),
+    'mfa': ('mfa_level', _deprecate_validate_mfa),
+    'mfa_level': ('mfa_level', validate_mfa_level),
     'name': ('name', validate_name),
     'nsfw_level': ('nsfw_level', validate_nsfw_level),
     'owner': ('owner_id', validate_owner_id),
@@ -263,8 +307,8 @@ class Guild(DiscordEntity, immortal = True):
     clients : `list` of ``Client``
         The loaded clients, who are the member of the guild. If no clients are member of a guild, it is partial.
     
-    content_filter : ``ContentFilterLevel``
-        The explicit content filter level of the guild.
+    default_message_notification_level : ``MessageNotificationLevel``
+        The default message notification level of the guild.
     
     description : `None`, `str`
         Description of the guild. The guild must be a Community guild.
@@ -280,6 +324,9 @@ class Guild(DiscordEntity, immortal = True):
     
     emojis : `dict` of (`int`, ``Emoji``) items
         The emojis of the guild stored in `emoji_id` - `emoji` relation.
+    
+    explicit_content_filter_level : ``ExplicitContentFilterLevel``
+        The explicit content filter level of the guild.
     
     features : `None`, `tuple` of ``GuildFeature``
         The guild's features.
@@ -336,10 +383,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Defaults to `25`.
     
-    message_notification : ``MessageNotificationLevel``
-        The message notification level of the guild.
-    
-    mfa : ``MFA``
+    mfa_level : ``MfaLevel``
         The required multi-factor authentication level for the guild.
     
     name : `str`
@@ -441,13 +485,13 @@ class Guild(DiscordEntity, immortal = True):
     __slots__ = (
         '_cache_boosters', '_cache_permission', '_state', 'afk_channel_id', 'afk_timeout', 'approximate_online_count',
         'approximate_user_count', 'available', 'boost_count', 'boost_progress_bar_enabled', 'channels', 'clients',
-        'content_filter', 'description', 'embedded_activity_states', 'emojis', 'features', 'hub_type', 'incidents',
-        'inventory_settings', 'large', 'locale', 'max_presences', 'max_stage_channel_video_users', 'max_users',
-        'max_voice_channel_video_users', 'message_notification', 'mfa', 'name', 'nsfw_level', 'owner_id',
-        'premium_tier', 'public_updates_channel_id', 'roles', 'rules_channel_id', 'safety_alerts_channel_id',
-        'scheduled_events', 'soundboard_sounds', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id',
-        'threads', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id',
-        'widget_enabled'
+        'default_message_notification_level', 'description', 'embedded_activity_states', 'emojis',
+        'explicit_content_filter_level', 'features', 'hub_type', 'incidents', 'inventory_settings', 'large', 'locale',
+        'max_presences', 'max_stage_channel_video_users', 'max_users', 'max_voice_channel_video_users', 'mfa_level',
+        'name', 'nsfw_level', 'owner_id', 'premium_tier', 'public_updates_channel_id', 'roles', 'rules_channel_id',
+        'safety_alerts_channel_id', 'scheduled_events', 'soundboard_sounds', 'stages', 'stickers',
+        'system_channel_flags', 'system_channel_id', 'threads', 'user_count', 'users', 'vanity_code',
+        'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled'
     )
     
     banner = GUILD_BANNER
@@ -463,15 +507,18 @@ class Guild(DiscordEntity, immortal = True):
         banner = ...,
         boost_progress_bar_enabled = ...,
         content_filter = ...,
-        discovery_splash = ...,
+        message_notification = ...,
+        default_message_notification_level = ...,
         description = ...,
+        discovery_splash = ...,
+        explicit_content_filter_level = ...,
         features = ...,
         hub_type = ...,
         icon = ...,
         invite_splash = ...,
         locale = ...,
-        message_notification = ...,
         mfa = ...,
+        mfa_level = ...,
         name = ...,
         nsfw_level = ...,
         owner_id = ...,
@@ -503,14 +550,17 @@ class Guild(DiscordEntity, immortal = True):
         boost_progress_bar_enabled : `bool`, Optional (Keyword only)
             Whether the guild has the boost progress bar enabled.
         
-        content_filter : ``ContentFilterLevel``, `int`, Optional (Keyword only)
-            The explicit content filter level of the guild.
+        default_message_notification_level : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
+            The default message notification level of the guild.
         
         description : `None`, `str`
             Description of the guild. The guild must be a Community guild.
         
         discovery_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The guild's discovery splash.
+        
+        explicit_content_filter_level : ``ExplicitContentFilterLevel``, `int`, Optional (Keyword only)
+            The explicit content filter level of the guild.
         
         features : `None`, `iterable` of `(`int`, `GuildFeature``), Optional (Keyword only)
             The guild's features.
@@ -527,10 +577,7 @@ class Guild(DiscordEntity, immortal = True):
         locale : ``Locale``, `int`, Optional (Keyword only)
             The preferred language of the guild.
         
-        message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
-            The message notification level of the guild.
-        
-        mfa : ``MFA``, `int`, Optional (Keyword only)
+        mfa_level : ``MfaLevel``, `int`, Optional (Keyword only)
             The required multi-factor authentication level for the guild.
         
         name : `str`, Optional (Keyword only)
@@ -604,23 +651,55 @@ class Guild(DiscordEntity, immortal = True):
         else:
             boost_progress_bar_enabled = validate_boost_progress_bar_enabled(boost_progress_bar_enabled)
         
-        # content_filter
-        if content_filter is ...:
-            content_filter = ContentFilterLevel.disabled
-        else:
-            content_filter = validate_content_filter(content_filter)
-        
         # discovery_splash
         if discovery_splash is ...:
             discovery_splash = None
         else:
             discovery_splash = cls.discovery_splash.validate_icon(discovery_splash, allow_data = True)
         
+        
+        if message_notification is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `message_notification` parameter is deprecated. '
+                    f'And will be removed in 2024 April. '
+                    f'Please use `default_message_notification_level` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            default_message_notification_level = message_notification
+        
+        # default_message_notification_level
+        if default_message_notification_level is ...:
+            default_message_notification_level = MessageNotificationLevel.all_messages
+        else:
+            default_message_notification_level = validate_default_message_notification_level(default_message_notification_level)
+        
+        
         # description
         if description is ...:
             description = None
         else:
             description = validate_description(description)
+        
+        if content_filter is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `content_filter` parameter is deprecated. '
+                    f'And will be removed in 2024 April. '
+                    f'Please use `explicit_content_filter_level` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            explicit_content_filter_level = content_filter
+        
+        # explicit_content_filter_level
+        if explicit_content_filter_level is ...:
+            explicit_content_filter_level = ExplicitContentFilterLevel.disabled
+        else:
+            explicit_content_filter_level = validate_explicit_content_filter_level(explicit_content_filter_level)
         
         # features
         if features is ...:
@@ -664,17 +743,23 @@ class Guild(DiscordEntity, immortal = True):
         else:
             locale = validate_locale(locale)
         
-        # message_notification
-        if message_notification is ...:
-            message_notification = MessageNotificationLevel.all_messages
-        else:
-            message_notification = validate_message_notification(message_notification)
+        if mfa is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `mfa` parameter is deprecated. '
+                    f'And will be removed in 2024 April. '
+                    f'Please use `mfa_level` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            mfa_level = mfa
         
-        # mfa
-        if mfa is ...:
-            mfa = MFA.none
+        # mfa_level
+        if mfa_level is ...:
+            mfa_level = MfaLevel.none
         else:
-            mfa = validate_mfa(mfa)
+            mfa_level = validate_mfa_level(mfa_level)
         
         # name
         if name is ...:
@@ -762,11 +847,12 @@ class Guild(DiscordEntity, immortal = True):
         self.boost_progress_bar_enabled = boost_progress_bar_enabled
         self.channels = {}
         self.clients = []
-        self.content_filter = content_filter
         self.discovery_splash = discovery_splash
+        self.default_message_notification_level = default_message_notification_level
         self.description = description
         self.embedded_activity_states = None
         self.emojis = {}
+        self.explicit_content_filter_level = explicit_content_filter_level
         self.features = features
         self.hub_type = hub_type
         self.icon = icon
@@ -780,8 +866,7 @@ class Guild(DiscordEntity, immortal = True):
         self.max_stage_channel_video_users = MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
         self.max_users = MAX_USERS_DEFAULT
         self.max_voice_channel_video_users = MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
-        self.message_notification = message_notification
-        self.mfa = mfa
+        self.mfa_level = mfa_level
         self.name = name
         self.nsfw_level = nsfw_level
         self.owner_id = owner_id
@@ -856,8 +941,8 @@ class Guild(DiscordEntity, immortal = True):
         channels : `None`, `iterable` of ``Channel``, `dict` of (`int`, ``Channel``) items, Optional (Keyword only)
             The channels of the guild.
         
-        content_filter : ``ContentFilterLevel``, `int`, Optional (Keyword only)
-            The explicit content filter level of the guild.
+        default_message_notification_level : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
+            The message notification level of the guild.
         
         description : `None`, `str`
             Description of the guild. The guild must be a Community guild.
@@ -870,6 +955,9 @@ class Guild(DiscordEntity, immortal = True):
         
         emojis : `None`, `iterable` of ``Emoji``, `dict` of (`int`, ``Emoji``) items, Optional (Keyword only)
             The emojis of the guild.
+        
+        explicit_content_filter_level : ``ExplicitContentFilterLevel``, `int`, Optional (Keyword only)
+            The explicit content filter level of the guild.
         
         features : `None`, `features` of `(`int`, `GuildFeature``), Optional (Keyword only)
             The guild's features.
@@ -907,10 +995,7 @@ class Guild(DiscordEntity, immortal = True):
         max_voice_channel_video_users : `int`, Optional (Keyword only)
             The maximal amount of users watching a video in a stage channel.
         
-        message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
-            The message notification level of the guild.
-        
-        mfa : ``MFA``, `int`, Optional (Keyword only)
+        mfa_level : ``MfaLevel``, `int`, Optional (Keyword only)
             The required multi-factor authentication level for the guild.
         
         name : `str`, Optional (Keyword only)
@@ -1080,12 +1165,13 @@ class Guild(DiscordEntity, immortal = True):
         self.boost_progress_bar_enabled = False
         self.channels = {}
         self.clients = []
-        self.content_filter = ContentFilterLevel.disabled
+        self.default_message_notification_level = MessageNotificationLevel.all_messages
+        self.description = None
         self.discovery_splash_hash = 0
         self.discovery_splash_type = ICON_TYPE_NONE
-        self.description = None
         self.embedded_activity_states = None
         self.emojis = {}
+        self.explicit_content_filter_level = ExplicitContentFilterLevel.disabled
         self.features = None
         self.hub_type = HubType.none
         self.icon_hash = 0
@@ -1101,8 +1187,7 @@ class Guild(DiscordEntity, immortal = True):
         self.max_stage_channel_video_users = MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
         self.max_users = MAX_USERS_DEFAULT
         self.max_voice_channel_video_users = MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
-        self.message_notification = MessageNotificationLevel.all_messages
-        self.mfa = MFA.none
+        self.mfa_level = MfaLevel.none
         self.name = ''
         self.nsfw_level = NsfwLevel.none
         self.owner_id = 0
@@ -1199,12 +1284,12 @@ class Guild(DiscordEntity, immortal = True):
         put_afk_channel_id_into(self.afk_channel_id, data, defaults)
         put_afk_timeout_into(self.afk_timeout, data, defaults)
         put_boost_progress_bar_enabled_into(self.boost_progress_bar_enabled, data, defaults)
-        put_content_filter_into(self.content_filter, data, defaults)
+        put_default_message_notification_level_into(self.default_message_notification_level, data, defaults)
         put_description_into(self.description, data, defaults)
+        put_explicit_content_filter_level_into(self.explicit_content_filter_level, data, defaults)
         put_features_into(self.features, data, defaults)
         put_hub_type_into(self.hub_type, data, defaults)
-        put_message_notification_into(self.message_notification, data, defaults)
-        put_mfa_into(self.mfa, data, defaults)
+        put_mfa_level_into(self.mfa_level, data, defaults)
         put_name_into(self.name, data, defaults)
         put_nsfw_level_into(self.nsfw_level, data, defaults)
         put_owner_id_into(self.owner_id, data, defaults)
@@ -1338,9 +1423,10 @@ class Guild(DiscordEntity, immortal = True):
         self._set_banner(data)
         self.boost_count = parse_boost_count(data)
         self.boost_progress_bar_enabled = parse_boost_progress_bar_enabled(data)
-        self.content_filter = parse_content_filter(data)
+        self.default_message_notification_level = parse_default_message_notification_level(data)
         self.description = parse_description(data)
         self._set_discovery_splash(data)
+        self.explicit_content_filter_level = parse_explicit_content_filter_level(data)
         self.features = parse_features(data)
         self.hub_type = parse_hub_type(data)
         self._set_icon(data)
@@ -1351,8 +1437,7 @@ class Guild(DiscordEntity, immortal = True):
         self.max_stage_channel_video_users = parse_max_stage_channel_video_users(data)
         self.max_users = parse_max_users(data)
         self.max_voice_channel_video_users = parse_max_voice_channel_video_users(data)
-        self.message_notification = parse_message_notification(data)
-        self.mfa = parse_mfa(data)
+        self.mfa_level = parse_mfa_level(data)
         self.name = parse_name(data)
         self.nsfw_level = parse_nsfw_level(data)
         self.owner_id = parse_owner_id(data)
@@ -1406,79 +1491,79 @@ class Guild(DiscordEntity, immortal = True):
         
         Returned Data Structure
         -----------------------
-        +-------------------------------+---------------------------------------+
-        | Keys                          | Values                                |
-        +===============================+=======================================+
-        | afk_channel_id                | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | afk_timeout                   | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | available                     | `bool`                                |
-        +-------------------------------+---------------------------------------+
-        | banner                        | ``Icon``                              |
-        +-------------------------------+---------------------------------------+
-        | boost_count                   | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | boost_progress_bar_enabled    | `bool`                                |
-        +-------------------------------+---------------------------------------+
-        | content_filter                | ``ContentFilterLevel``                |
-        +-------------------------------+---------------------------------------+
-        | description                   | `None`, `str`                         |
-        +-------------------------------+---------------------------------------+
-        | discovery_splash              | ``Icon``                              |
-        +-------------------------------+---------------------------------------+
-        | features                      | `None`, `tuple` of ``GuildFeature``   |
-        +-------------------------------+---------------------------------------+
-        | hub_type                      | ``HubType``                           |
-        +-------------------------------+---------------------------------------+
-        | icon                          | ``Icon``                              |
-        +-------------------------------+---------------------------------------+
-        | incidents                     | `None`, ``GuildIncidents``            |
-        +-------------------------------+---------------------------------------+
-        | inventory_settings            | `None`, ``GuildInventorySettings``    |
-        +-------------------------------+---------------------------------------+
-        | invite_splash                 | ``Icon``                              |
-        +-------------------------------+---------------------------------------+
-        | max_presences                 | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | max_stage_channel_video_users | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | max_users                     | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | max_voice_channel_video_users | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | message_notification          | ``MessageNotificationLevel``          |
-        +-------------------------------+---------------------------------------+
-        | mfa                           | ``MFA``                               |
-        +-------------------------------+---------------------------------------+
-        | name                          | `str`                                 |
-        +-------------------------------+---------------------------------------+
-        | nsfw_level                    | ``NsfwLevel``                         |
-        +-------------------------------+---------------------------------------+
-        | owner_id                      | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | locale                        | ``Locale``                            |
-        +-------------------------------+---------------------------------------+
-        | premium_tier                  | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | public_updates_channel_id     | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | rules_channel_id              | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | safety_alerts_channel_id      | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | system_channel_id             | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | system_channel_flags          | ``SystemChannelFlag``                 |
-        +-------------------------------+---------------------------------------+
-        | vanity_code                   | `None`, `str`                         |
-        +-------------------------------+---------------------------------------+
-        | verification_level            | ``VerificationLevel``                 |
-        +-------------------------------+---------------------------------------+
-        | widget_channel_id             | `int`                                 |
-        +-------------------------------+---------------------------------------+
-        | widget_enabled                | `bool`                                |
-        +-------------------------------+---------------------------------------+
+        +---------------------------------------+---------------------------------------+
+        | Keys                                  | Values                                |
+        +========================================+=======================================+
+        | afk_channel_id                        | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | afk_timeout                           | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | available                             | `bool`                                |
+        +---------------------------------------+---------------------------------------+
+        | banner                                | ``Icon``                              |
+        +---------------------------------------+---------------------------------------+
+        | boost_count                           | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | boost_progress_bar_enabled            | `bool`                                |
+        +---------------------------------------+---------------------------------------+
+        | explicit_content_filter_level         | ``ExplicitContentFilterLevel``        |
+        +---------------------------------------+---------------------------------------+
+        | default_message_notification_level    | ``MessageNotificationLevel``          |
+        +---------------------------------------+---------------------------------------+
+        | description                           | `None`, `str`                         |
+        +---------------------------------------+---------------------------------------+
+        | discovery_splash                      | ``Icon``                              |
+        +---------------------------------------+---------------------------------------+
+        | features                              | `None`, `tuple` of ``GuildFeature``   |
+        +---------------------------------------+---------------------------------------+
+        | hub_type                              | ``HubType``                           |
+        +---------------------------------------+---------------------------------------+
+        | icon                                  | ``Icon``                              |
+        +---------------------------------------+---------------------------------------+
+        | incidents                             | `None`, ``GuildIncidents``            |
+        +---------------------------------------+---------------------------------------+
+        | inventory_settings                    | `None`, ``GuildInventorySettings``    |
+        +---------------------------------------+---------------------------------------+
+        | invite_splash                         | ``Icon``                              |
+        +---------------------------------------+---------------------------------------+
+        | max_presences                         | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | max_stage_channel_video_users         | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | max_users                             | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | max_voice_channel_video_users         | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | mfa_level                             | ``MfaLevel``                          |
+        +---------------------------------------+---------------------------------------+
+        | name                                  | `str`                                 |
+        +---------------------------------------+---------------------------------------+
+        | nsfw_level                            | ``NsfwLevel``                         |
+        +---------------------------------------+---------------------------------------+
+        | owner_id                              | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | locale                                | ``Locale``                            |
+        +---------------------------------------+---------------------------------------+
+        | premium_tier                          | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | public_updates_channel_id             | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | rules_channel_id                      | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | safety_alerts_channel_id              | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | system_channel_id                     | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | system_channel_flags                  | ``SystemChannelFlag``                 |
+        +---------------------------------------+---------------------------------------+
+        | vanity_code                           | `None`, `str`                         |
+        +---------------------------------------+---------------------------------------+
+        | verification_level                    | ``VerificationLevel``                 |
+        +---------------------------------------+---------------------------------------+
+        | widget_channel_id                     | `int`                                 |
+        +---------------------------------------+---------------------------------------+
+        | widget_enabled                        | `bool`                                |
+        +---------------------------------------+---------------------------------------+
         """
         # Clear generic cache.
         self._clear_cache()
@@ -1518,11 +1603,11 @@ class Guild(DiscordEntity, immortal = True):
             old_attributes['boost_progress_bar_enabled'] = self.boost_progress_bar_enabled
             self.boost_progress_bar_enabled = boost_progress_bar_enabled
         
-        # content_filter
-        content_filter = parse_content_filter(data)
-        if self.content_filter is not content_filter:
-            old_attributes['content_filter'] = self.content_filter
-            self.content_filter = content_filter
+        # default_message_notification_level
+        default_message_notification_level = parse_default_message_notification_level(data)
+        if self.default_message_notification_level is not default_message_notification_level:
+            old_attributes['default_message_notification_level'] = self.default_message_notification_level
+            self.default_message_notification_level = default_message_notification_level
         
         # description
         description = parse_description(data)
@@ -1532,6 +1617,12 @@ class Guild(DiscordEntity, immortal = True):
         
         # discovery_splash
         self._update_discovery_splash(data, old_attributes)
+        
+        # explicit_content_filter_level
+        explicit_content_filter_level = parse_explicit_content_filter_level(data)
+        if self.explicit_content_filter_level is not explicit_content_filter_level:
+            old_attributes['explicit_content_filter_level'] = self.explicit_content_filter_level
+            self.explicit_content_filter_level = explicit_content_filter_level
         
         # features
         features = parse_features(data)
@@ -1587,17 +1678,11 @@ class Guild(DiscordEntity, immortal = True):
             old_attributes['max_voice_channel_video_users'] = self.max_voice_channel_video_users
             self.max_voice_channel_video_users = max_voice_channel_video_users
         
-        # message_notification
-        message_notification = parse_message_notification(data)
-        if self.message_notification is not message_notification:
-            old_attributes['message_notification'] = self.message_notification
-            self.message_notification = message_notification
-        
-        # mfa
-        mfa = parse_mfa(data)
-        if self.mfa is not mfa:
-            old_attributes['mfa'] = self.mfa
-            self.mfa = mfa
+        # mfa_level
+        mfa_level = parse_mfa_level(data)
+        if self.mfa_level is not mfa_level:
+            old_attributes['mfa_level'] = self.mfa_level
+            self.mfa_level = mfa_level
         
         # name
         name = parse_name(data)
@@ -1825,16 +1910,20 @@ class Guild(DiscordEntity, immortal = True):
         if self.boost_progress_bar_enabled != other.boost_progress_bar_enabled:
             return False
         
-        # content_filter
-        if self.content_filter is not other.content_filter:
-            return False
-        
         # discovery_splash
         if self.discovery_splash != other.discovery_splash:
             return False
         
+        # default_message_notification_level
+        if self.default_message_notification_level is not other.default_message_notification_level:
+            return False
+        
         # description
         if self.description != other.description:
+            return False
+        
+        # explicit_content_filter_level
+        if self.explicit_content_filter_level is not other.explicit_content_filter_level:
             return False
         
         # features
@@ -1853,12 +1942,8 @@ class Guild(DiscordEntity, immortal = True):
         if self.invite_splash != other.invite_splash:
             return False
         
-        # message_notification
-        if self.message_notification is not other.message_notification:
-            return False
-        
-        # mfa
-        if self.mfa != other.mfa:
+        # mfa_level
+        if self.mfa_level != other.mfa_level:
             return False
         
         # name
@@ -1952,19 +2037,22 @@ class Guild(DiscordEntity, immortal = True):
         # boost_progress_bar_enabled
         hash_value ^= self.boost_progress_bar_enabled << 2
         
-        # content_filter
-        hash_value ^= self.content_filter.value << 10
-        
         # discovery_splash
         discovery_splash = self.discovery_splash
         if discovery_splash:
             hash_value ^= 1 << 3
             hash_value ^= hash(discovery_splash)
         
+        # default_message_notification_level
+        hash_value ^= self.default_message_notification_level.value << 16
+        
         # description
         description = self.description
         if (description is not None):
             hash_value ^= hash(description)
+        
+        # explicit_content_filter_level
+        hash_value ^= self.explicit_content_filter_level.value << 10
         
         # features
         features = self.features
@@ -1989,11 +2077,8 @@ class Guild(DiscordEntity, immortal = True):
             hash_value ^= 1 << 5
             hash_value ^= hash(invite_splash)
         
-        # message_notification
-        hash_value ^= self.message_notification.value << 16
-        
-        # mfa
-        hash_value ^= self.mfa.value << 18
+        # mfa_level
+        hash_value ^= self.mfa_level.value << 18
         
         # name
         name = self.name
@@ -2081,14 +2166,15 @@ class Guild(DiscordEntity, immortal = True):
         new.boost_progress_bar_enabled = self.boost_progress_bar_enabled
         new.channels = {}
         new.clients = []
-        new.content_filter = self.content_filter
-        new.discovery_splash = self.discovery_splash
+        new.default_message_notification_level = self.default_message_notification_level
         new.description = self.description
+        new.discovery_splash = self.discovery_splash
         new.embedded_activity_states = None
         new.emojis = {}
+        new.explicit_content_filter_level = self.explicit_content_filter_level
         features = self.features
         if (features is not None):
-            features = (*(feature for feature in features),)
+            features = (*features,)
         new.features = features
         new.hub_type = self.hub_type
         new.icon = self.icon
@@ -2101,8 +2187,7 @@ class Guild(DiscordEntity, immortal = True):
         new.max_stage_channel_video_users = MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
         new.max_users = MAX_USERS_DEFAULT
         new.max_voice_channel_video_users = MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
-        new.message_notification = self. message_notification
-        new.mfa = self.mfa
+        new.mfa_level = self.mfa_level
         new.name = self.name
         new.nsfw_level = self.nsfw_level
         new.owner_id = self.owner_id
@@ -2137,15 +2222,18 @@ class Guild(DiscordEntity, immortal = True):
         banner = ...,
         boost_progress_bar_enabled = ...,
         content_filter = ...,
-        discovery_splash = ...,
+        message_notification = ...,
+        default_message_notification_level = ...,
         description = ...,
+        discovery_splash = ...,
+        explicit_content_filter_level = ...,
         features = ...,
         hub_type = ...,
         icon = ...,
         invite_splash = ...,
         locale = ...,
-        message_notification = ...,
         mfa = ...,
+        mfa_level = ...,
         name = ...,
         nsfw_level = ...,
         owner_id = ...,
@@ -2177,14 +2265,17 @@ class Guild(DiscordEntity, immortal = True):
         boost_progress_bar_enabled : `bool`, Optional (Keyword only)
             Whether the guild has the boost progress bar enabled.
         
-        content_filter : ``ContentFilterLevel``, `int`, Optional (Keyword only)
-            The explicit content filter level of the guild.
+        default_message_notification_level : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
+            The message notification level of the guild.
         
         description : `None`, `str`
             Description of the guild. The guild must be a Community guild.
         
         discovery_splash : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The guild's discovery splash.
+        
+        explicit_content_filter_level : ``ExplicitContentFilterLevel``, `int`, Optional (Keyword only)
+            The explicit content filter level of the guild.
         
         features : `None`, `iterable` of `(`int`, `GuildFeature``), Optional (Keyword only)
             The guild's features.
@@ -2201,10 +2292,7 @@ class Guild(DiscordEntity, immortal = True):
         locale : ``Locale``, `int`, Optional (Keyword only)
             The preferred language of the guild.
         
-        message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
-            The message notification level of the guild.
-        
-        mfa : ``MFA``, `int`, Optional (Keyword only)
+        mfa_level : ``MfaLevel``, `int`, Optional (Keyword only)
             The required multi-factor authentication level for the guild.
         
         name : `str`, Optional (Keyword only)
@@ -2278,23 +2366,53 @@ class Guild(DiscordEntity, immortal = True):
         else:
             boost_progress_bar_enabled = validate_boost_progress_bar_enabled(boost_progress_bar_enabled)
         
-        # content_filter
-        if content_filter is ...:
-            content_filter = self.content_filter
-        else:
-            content_filter = validate_content_filter(content_filter)
-        
         # discovery_splash
         if discovery_splash is ...:
             discovery_splash = self.discovery_splash
         else:
             discovery_splash = type(self).discovery_splash.validate_icon(discovery_splash, allow_data = True)
         
+        if message_notification is not ...:
+            warn(
+                (
+                    f'`{type(self).__name__}.copy_with`\'s `message_notification` parameter is deprecated. '
+                    f'And will be removed in 2024 April. '
+                    f'Please use `default_message_notification_level` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            default_message_notification_level = message_notification
+        
+        # default_message_notification_level
+        if default_message_notification_level is ...:
+            default_message_notification_level = self.default_message_notification_level
+        else:
+            default_message_notification_level = validate_default_message_notification_level(default_message_notification_level)
+        
         # description
         if description is ...:
             description = self.description
         else:
             description = validate_description(description)
+    
+        if content_filter is not ...:
+            warn(
+                (
+                    f'`{type(self).__name__}.copy_with`\'s `content_filter` parameter is deprecated. '
+                    f'And will be removed in 2024 April. '
+                    f'Please use `explicit_content_filter_level` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            explicit_content_filter_level = content_filter
+        
+        # explicit_content_filter_level
+        if explicit_content_filter_level is ...:
+            explicit_content_filter_level = self.explicit_content_filter_level
+        else:
+            explicit_content_filter_level = validate_explicit_content_filter_level(explicit_content_filter_level)
         
         # features
         if features is ...:
@@ -2326,7 +2444,7 @@ class Guild(DiscordEntity, immortal = True):
         if preferred_locale is not ...:
             warn(
                 (
-                    f'`{type(self).__name__}.precreate`\'s `preferred_locale` parameter is deprecated and will be '
+                    f'`{type(self).__name__}.copy_with`\'s `preferred_locale` parameter is deprecated and will be '
                     f'removed in 2024 February. Please use `locale` instead.'
                 ),
                 FutureWarning,
@@ -2340,17 +2458,23 @@ class Guild(DiscordEntity, immortal = True):
         else:
             locale = validate_locale(locale)
         
-        # message_notification
-        if message_notification is ...:
-            message_notification = self.message_notification
-        else:
-            message_notification = validate_message_notification(message_notification)
+        if mfa is not ...:
+            warn(
+                (
+                    f'`{type(self).__name__}.copy_with`\'s `mfa` parameter is deprecated. '
+                    f'And will be removed in 2024 April. '
+                    f'Please use `mfa_level` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            mfa_level = mfa
         
-        # mfa
-        if mfa is ...:
-            mfa = self.mfa
+        # mfa_level
+        if mfa_level is ...:
+            mfa_level = self.mfa_level
         else:
-            mfa = validate_mfa(mfa)
+            mfa_level = validate_mfa_level(mfa_level)
         
         # name
         if name is ...:
@@ -2439,11 +2563,12 @@ class Guild(DiscordEntity, immortal = True):
         new.boost_progress_bar_enabled = boost_progress_bar_enabled
         new.channels = {}
         new.clients = []
-        new.content_filter = content_filter
-        new.discovery_splash = discovery_splash
+        new.default_message_notification_level = default_message_notification_level
         new.description = description
+        new.discovery_splash = discovery_splash
         new.embedded_activity_states = None
         new.emojis = {}
+        new.explicit_content_filter_level = explicit_content_filter_level
         new.features = features
         new.hub_type = hub_type
         new.icon = icon
@@ -2457,8 +2582,7 @@ class Guild(DiscordEntity, immortal = True):
         new.max_stage_channel_video_users = MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
         new.max_users = MAX_USERS_DEFAULT
         new.max_voice_channel_video_users = MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
-        new.message_notification = message_notification
-        new.mfa = mfa
+        new.mfa_level = mfa_level
         new.name = name
         new.nsfw_level = nsfw_level
         new.owner_id = owner_id
@@ -5018,9 +5142,63 @@ class Guild(DiscordEntity, immortal = True):
         warn(
             (
                 f'`{self.__class__.__name__}.preferred_locale` is deprecated and will be removed in 2024 February.'
-                f'Please use `locale` instead.'
+                f'Please use `.locale` instead.'
             ),
             FutureWarning,
             stacklevel = 2,
         )
         return self.locale
+    
+    
+    @property
+    def content_filter(self):
+        """
+        Returns the guild's explicit content filter level.
+        
+        Deprecated and will be removed in 2024 April. Please use ``.explicit_content_filter_level`` instead.
+        """
+        warn(
+            (
+                f'`{self.__class__.__name__}.content_filter` is deprecated and will be removed in 2024 April.'
+                f'Please use `.explicit_content_filter_level` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.explicit_content_filter_level
+
+    
+    @property
+    def mfa(self):
+        """
+        Returns the guild's multi-factory authentication level.
+        
+        Deprecated and will be removed in 2024 April. Please use ``.mfa_level`` instead.
+        """
+        warn(
+            (
+                f'`{self.__class__.__name__}.mfa` is deprecated and will be removed in 2024 April.'
+                f'Please use `.mfa_level` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.mfa_level
+
+
+    @property
+    def message_notification(self):
+        """
+        Returns the guild's default message notification level.
+        
+        Deprecated and will be removed in 2024 April. Please use ``.default_message_notification_level`` instead.
+        """
+        warn(
+            (
+                f'`{self.__class__.__name__}.message_notification` is deprecated and will be removed in 2024 April.'
+                f'Please use `.default_message_notification_level` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.default_message_notification_level

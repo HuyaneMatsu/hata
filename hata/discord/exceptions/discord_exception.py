@@ -108,7 +108,7 @@ class DiscordException(Exception):
         debug_options : `None`, `tuple` of `str`
             Debug options of the http client.
         """
-        self = Exception.__new__(cls)
+        self = Exception.__new__(cls, response, received_data, sent_data, debug_options)
         self._code = None
         self._debug_info = None
         self._errors = None

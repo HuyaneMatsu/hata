@@ -953,11 +953,27 @@ class CommandProcessor(EventWaitforBase):
         """
         if isinstance(command, Command):
             pass
+        
         elif isinstance(command, Router):
             command = command[0]
+        
         else:
-            command = Command(command, name, description, aliases, category, checks, error_handlers, separator,
-                assigner, hidden, hidden_if_checks_fail)
+            command = Command(
+                command,
+                name,
+                description,
+                aliases,
+                category,
+                checks,
+                error_handlers,
+                separator,
+                assigner,
+                hidden,
+                hidden_if_checks_fail,
+            )
+            
+            if isinstance(command, Router):
+                command = command[0]
         
         self._add_command(command)
         return command

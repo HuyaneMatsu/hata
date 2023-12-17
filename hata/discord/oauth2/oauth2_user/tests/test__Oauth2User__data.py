@@ -30,7 +30,7 @@ def test__Oauth2User__from_data():
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
-    mfa = True
+    mfa_enabled = True
     premium_type = PremiumType.nitro
     
     data = {
@@ -48,7 +48,7 @@ def test__Oauth2User__from_data():
         'email': email,
         'verified': email_verified,
         'locale': locale.value,
-        'mfa_enabled': mfa,
+        'mfa_enabled': mfa_enabled,
         'premium_type': premium_type.value,
     }
     
@@ -68,7 +68,7 @@ def test__Oauth2User__from_data():
     vampytest.assert_eq(user.email, email)
     vampytest.assert_eq(user.email_verified, email_verified)
     vampytest.assert_is(user.locale, locale)
-    vampytest.assert_eq(user.mfa, mfa)
+    vampytest.assert_eq(user.mfa_enabled, mfa_enabled)
     vampytest.assert_is(user.premium_type, premium_type)
 
 
@@ -90,7 +90,7 @@ def test__Oauth2User__to_data():
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
-    mfa = True
+    mfa_enabled = True
     premium_type = PremiumType.nitro
     
     user = Oauth2User(
@@ -105,7 +105,7 @@ def test__Oauth2User__to_data():
         email = email,
         email_verified = email_verified,
         locale = locale,
-        mfa = mfa,
+        mfa_enabled = mfa_enabled,
         premium_type = premium_type,
     )
     user.id = user_id
@@ -125,7 +125,7 @@ def test__Oauth2User__to_data():
         'email': email,
         'verified': email_verified,
         'locale': locale.value,
-        'mfa_enabled': mfa,
+        'mfa_enabled': mfa_enabled,
         'premium_type': premium_type.value,
     }
     
@@ -150,7 +150,7 @@ def test__Oauth2User__update_attributes():
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
-    mfa = True
+    mfa_enabled = True
     premium_type = PremiumType.nitro_basic
     
     user = Oauth2User()
@@ -167,7 +167,7 @@ def test__Oauth2User__update_attributes():
         'email': email,
         'verified': email_verified,
         'locale': locale.value,
-        'mfa_enabled': mfa,
+        'mfa_enabled': mfa_enabled,
         'premium_type': premium_type.value,
     }
     
@@ -184,7 +184,7 @@ def test__Oauth2User__update_attributes():
     vampytest.assert_eq(user.email, email)
     vampytest.assert_eq(user.email_verified, email_verified)
     vampytest.assert_is(user.locale, locale)
-    vampytest.assert_eq(user.mfa, mfa)
+    vampytest.assert_eq(user.mfa_enabled, mfa_enabled)
     vampytest.assert_is(user.premium_type, premium_type)
 
 
@@ -203,7 +203,7 @@ def test__Oauth2User__difference_update_attributes():
     old_email = 'rin@orindance.party'
     old_email_verified = True
     old_locale = Locale.greek
-    old_mfa = True
+    old_mfa_enabled = True
     old_premium_type = PremiumType.nitro
     
     new_avatar = Icon(IconType.animated, 13)
@@ -217,7 +217,7 @@ def test__Oauth2User__difference_update_attributes():
     new_email = 'okuu@orindance.party'
     new_email_verified = False
     new_locale = Locale.dutch
-    new_mfa = False
+    new_mfa_enabled = False
     new_premium_type = PremiumType.nitro_classic
     
     user = Oauth2User(
@@ -232,7 +232,7 @@ def test__Oauth2User__difference_update_attributes():
         email = old_email,
         email_verified = old_email_verified,
         locale = old_locale,
-        mfa = old_mfa,
+        mfa_enabled = old_mfa_enabled,
         premium_type = old_premium_type,
     )
     
@@ -248,7 +248,7 @@ def test__Oauth2User__difference_update_attributes():
         'email': new_email,
         'verified': new_email_verified,
         'locale': new_locale.value,
-        'mfa_enabled': new_mfa,
+        'mfa_enabled': new_mfa_enabled,
         'premium_type': new_premium_type.value,
     }
     
@@ -265,7 +265,7 @@ def test__Oauth2User__difference_update_attributes():
     vampytest.assert_eq(user.email, new_email)
     vampytest.assert_eq(user.email_verified, new_email_verified)
     vampytest.assert_is(user.locale, new_locale)
-    vampytest.assert_eq(user.mfa, new_mfa)
+    vampytest.assert_eq(user.mfa_enabled, new_mfa_enabled)
     vampytest.assert_is(user.premium_type, new_premium_type)
     
     vampytest.assert_eq(
@@ -282,7 +282,7 @@ def test__Oauth2User__difference_update_attributes():
             'email_verified': old_email_verified,
             'flags': old_flags,
             'locale': old_locale,
-            'mfa': old_mfa,
+            'mfa_enabled': old_mfa_enabled,
             'premium_type': old_premium_type,
         },
     )

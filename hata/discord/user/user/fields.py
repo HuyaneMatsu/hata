@@ -352,11 +352,11 @@ parse_locale = preinstanced_parser_factory('locale', Locale, LOCALE_DEFAULT)
 put_locale_into = preinstanced_putter_factory('locale')
 validate_locale = preinstanced_validator_factory('locale', Locale)
 
-# mfa
+# mfa_enabled
 
-parse_mfa = bool_parser_factory('mfa_enabled', False)
-put_mfa_into = bool_optional_putter_factory('mfa_enabled', False)
-validate_mfa = bool_validator_factory('mfa', False)
+parse_mfa_enabled = bool_parser_factory('mfa_enabled', False)
+put_mfa_enabled_into = bool_optional_putter_factory('mfa_enabled', False)
+validate_mfa_enabled = bool_validator_factory('mfa_enabled', False)
 
 # name
 

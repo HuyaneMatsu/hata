@@ -6,7 +6,7 @@ from ....localization import Locale
 from ..flags import SystemChannelFlag
 from ..guild import Guild
 from ..preinstanced import (
-    ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel
+    ExplicitContentFilterLevel, GuildFeature, HubType, MfaLevel, MessageNotificationLevel, NsfwLevel, VerificationLevel
 )
 
 
@@ -75,15 +75,15 @@ def test__Guild__eq():
     afk_timeout = 1800
     banner = Icon(IconType.animated, 12)
     boost_progress_bar_enabled = True
-    content_filter = ContentFilterLevel.no_role
+    explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
     invite_splash = Icon(IconType.animated, 18)
-    message_notification = MessageNotificationLevel.no_messages
-    mfa = MFA.elevated
+    default_message_notification_level = MessageNotificationLevel.no_messages
+    mfa_level = MfaLevel.elevated
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306220135
@@ -103,15 +103,15 @@ def test__Guild__eq():
         'afk_timeout': afk_timeout,
         'banner': banner,
         'boost_progress_bar_enabled': boost_progress_bar_enabled,
-        'content_filter': content_filter,
+        'explicit_content_filter_level': explicit_content_filter_level,
         'description': description,
         'discovery_splash': discovery_splash,
         'features': features,
         'hub_type': hub_type,
         'icon': icon,
         'invite_splash': invite_splash,
-        'message_notification': message_notification,
-        'mfa': mfa,
+        'default_message_notification_level': default_message_notification_level,
+        'mfa_level': mfa_level,
         'name': name,
         'nsfw_level': nsfw_level,
         'owner_id': owner_id,
@@ -139,15 +139,15 @@ def test__Guild__eq():
         ('afk_timeout', 60),
         ('banner', Icon(IconType.animated, 112)),
         ('boost_progress_bar_enabled', False),
-        ('content_filter', ContentFilterLevel.everyone),
+        ('explicit_content_filter_level', ExplicitContentFilterLevel.everyone),
         ('description', 'Orin'),
         ('discovery_splash', Icon(IconType.animated, 114)),
         ('features', [GuildFeature.animated_banner]),
         ('hub_type', HubType.high_school),
         ('icon', Icon(IconType.animated, 116)),
         ('invite_splash', Icon(IconType.animated, 118)),
-        ('message_notification', MessageNotificationLevel.only_mentions),
-        ('mfa', MFA.none),
+        ('default_message_notification_level', MessageNotificationLevel.only_mentions),
+        ('mfa_level', MfaLevel.none),
         ('name', 'Okuu'),
         ('nsfw_level', NsfwLevel.safe),
         ('owner_id', 202306220144),
@@ -176,15 +176,15 @@ def test__Guild__hash():
     afk_timeout = 1800
     banner = Icon(IconType.animated, 12)
     boost_progress_bar_enabled = True
-    content_filter = ContentFilterLevel.no_role
+    explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
     invite_splash = Icon(IconType.animated, 18)
-    message_notification = MessageNotificationLevel.no_messages
-    mfa = MFA.elevated
+    default_message_notification_level = MessageNotificationLevel.no_messages
+    mfa_level = MfaLevel.elevated
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306220152
@@ -204,15 +204,15 @@ def test__Guild__hash():
         'afk_timeout': afk_timeout,
         'banner': banner,
         'boost_progress_bar_enabled': boost_progress_bar_enabled,
-        'content_filter': content_filter,
+        'explicit_content_filter_level': explicit_content_filter_level,
         'description': description,
         'discovery_splash': discovery_splash,
         'features': features,
         'hub_type': hub_type,
         'icon': icon,
         'invite_splash': invite_splash,
-        'message_notification': message_notification,
-        'mfa': mfa,
+        'default_message_notification_level': default_message_notification_level,
+        'mfa_level': mfa_level,
         'name': name,
         'nsfw_level': nsfw_level,
         'owner_id': owner_id,

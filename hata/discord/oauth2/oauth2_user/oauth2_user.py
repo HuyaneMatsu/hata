@@ -5,9 +5,9 @@ from scarletio import copy_docs
 from ...localization.utils import LOCALE_DEFAULT
 from ...user import OrinUserBase, PremiumType, UserFlag
 from ...user.user.fields import (
-    parse_email, parse_email_verified, parse_id, parse_locale, parse_mfa, parse_premium_type, put_email_into,
-    put_email_verified_into, put_locale_into, put_mfa_into, put_oauth2_flags_into, put_premium_type_into,
-    validate_email, validate_email_verified, validate_locale, validate_mfa, validate_premium_type
+    parse_email, parse_email_verified, parse_id, parse_locale, parse_mfa_enabled, parse_premium_type, put_email_into,
+    put_email_verified_into, put_locale_into, put_mfa_enabled_into, put_oauth2_flags_into, put_premium_type_into,
+    validate_email, validate_email_verified, validate_locale, validate_mfa_enabled, validate_premium_type
 )
 
 from ..oauth2_access import Oauth2Access
@@ -48,14 +48,14 @@ class Oauth2User(OrinUserBase):
         The user's unique identifier number.
     locale : ``Locale``
         The preferred locale by the user.
-    mfa : `bool`
+    mfa_enabled : `bool`
         Whether the user has two factor authorization enabled on the account.
     name : str
         The user's username.
     premium_type : ``PremiumType``
         The Nitro subscription type of the user.
     """
-    __slots__ = ('access', 'email', 'email_verified', 'locale', 'mfa', 'premium_type')
+    __slots__ = ('access', 'email', 'email_verified', 'locale', 'mfa_enabled', 'premium_type')
     
     def __new__(
         cls,
@@ -70,7 +70,7 @@ class Oauth2User(OrinUserBase):
         email_verified = ...,
         flags = ...,
         locale = ...,
-        mfa = ...,
+        mfa_enabled = ...,
         name = ...,
         premium_type = ...,
     ):
@@ -99,7 +99,7 @@ class Oauth2User(OrinUserBase):
             The user's flags.
         locale : ``Locale``, `str`, Optional (Keyword only)
             The preferred locale by the user.
-        mfa : `bool`, Optional (Keyword only)
+        mfa_enabled : `bool`, Optional (Keyword only)
             Whether the user has two factor authorization enabled on the account.
         name : `str`, Optional (Keyword only)
             The user's name.
@@ -131,11 +131,11 @@ class Oauth2User(OrinUserBase):
         else:
             locale = validate_locale(locale)
         
-        # mfa
-        if mfa is ...:
-            mfa = False
+        # mfa_enabled
+        if mfa_enabled is ...:
+            mfa_enabled = False
         else:
-            mfa = validate_mfa(mfa)
+            mfa_enabled = validate_mfa_enabled(mfa_enabled)
         
         # premium_type
         if premium_type is ...:
@@ -159,7 +159,7 @@ class Oauth2User(OrinUserBase):
         self.email = email
         self.email_verified = email_verified
         self.locale = locale
-        self.mfa = mfa
+        self.mfa_enabled = mfa_enabled
         self.premium_type = premium_type
         return self
     
@@ -193,7 +193,7 @@ class Oauth2User(OrinUserBase):
         put_email_into(self.email, data, defaults)
         put_email_verified_into(self.email_verified, data, defaults)
         put_locale_into(self.locale, data, defaults)
-        put_mfa_into(self.mfa, data, defaults)
+        put_mfa_enabled_into(self.mfa_enabled, data, defaults)
         put_oauth2_flags_into(self.flags, data, defaults)
         put_premium_type_into(self.premium_type, data, defaults)
         return data
@@ -206,7 +206,7 @@ class Oauth2User(OrinUserBase):
         self.email = parse_email(data)
         self.email_verified = parse_email_verified(data)
         self.locale = parse_locale(data)
-        self.mfa = parse_mfa(data)
+        self.mfa_enabled = parse_mfa_enabled(data)
         self.premium_type = parse_premium_type(data)
     
     
@@ -229,10 +229,10 @@ class Oauth2User(OrinUserBase):
             old_attributes['locale'] = self.locale
             self.locale = locale
         
-        mfa = parse_mfa(data)
-        if self.mfa != mfa:
-            old_attributes['mfa'] = self.mfa
-            self.mfa = mfa
+        mfa_enabled = parse_mfa_enabled(data)
+        if self.mfa_enabled != mfa_enabled:
+            old_attributes['mfa_enabled'] = self.mfa_enabled
+            self.mfa_enabled = mfa_enabled
         
         premium_type = parse_premium_type(data)
         if self.premium_type is not premium_type:
@@ -250,7 +250,7 @@ class Oauth2User(OrinUserBase):
         self.email = None
         self.email_verified = False
         self.locale = LOCALE_DEFAULT
-        self.mfa = False
+        self.mfa_enabled = False
         self.premium_type = PremiumType.none
     
     
@@ -261,7 +261,7 @@ class Oauth2User(OrinUserBase):
         new.email = self.email
         new.email_verified = self.email_verified
         new.locale = self.locale
-        new.mfa = self.mfa
+        new.mfa_enabled = self.mfa_enabled
         new.premium_type = self.premium_type
         return new
     
@@ -279,7 +279,7 @@ class Oauth2User(OrinUserBase):
         email_verified = ...,
         flags = ...,
         locale = ...,
-        mfa = ...,
+        mfa_enabled = ...,
         name = ...,
         premium_type = ...,
     ):
@@ -308,7 +308,7 @@ class Oauth2User(OrinUserBase):
             The user's flags.
         locale : ``Locale``, `str`, Optional (Keyword only)
             The preferred locale by the user.
-        mfa : `bool`, Optional (Keyword only)
+        mfa_enabled : `bool`, Optional (Keyword only)
             Whether the user has two factor authorization enabled on the account.
         name : `str`, Optional (Keyword only)
             The user's name.
@@ -340,11 +340,11 @@ class Oauth2User(OrinUserBase):
         else:
             locale = validate_locale(locale)
         
-        # mfa
-        if mfa is ...:
-            mfa = self.mfa
+        # mfa_enabled
+        if mfa_enabled is ...:
+            mfa_enabled = self.mfa_enabled
         else:
-            mfa = validate_mfa(mfa)
+            mfa_enabled = validate_mfa_enabled(mfa_enabled)
         
         # premium_type
         if premium_type is ...:
@@ -368,7 +368,7 @@ class Oauth2User(OrinUserBase):
         new.email = email
         new.email_verified = email_verified
         new.locale = locale
-        new.mfa = mfa
+        new.mfa_enabled = mfa_enabled
         new.premium_type = premium_type
         return new
     
@@ -388,8 +388,8 @@ class Oauth2User(OrinUserBase):
         # locale
         hash_value ^= hash(self.locale)
         
-        # mfa
-        hash_value ^= self.mfa << 5
+        # mfa_enabled
+        hash_value ^= self.mfa_enabled << 5
         
         # premium_type
         hash_value ^= hash(self.premium_type)

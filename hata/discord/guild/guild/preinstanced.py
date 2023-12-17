@@ -1,5 +1,6 @@
 __all__ = (
-    'ContentFilterLevel', 'GuildFeature', 'HubType', 'MFA', 'MessageNotificationLevel', 'NsfwLevel', 'VerificationLevel'
+    'ExplicitContentFilterLevel', 'GuildFeature', 'HubType', 'MfaLevel', 'MessageNotificationLevel', 'NsfwLevel',
+    'VerificationLevel'
 )
 import warnings
 
@@ -58,29 +59,29 @@ class VerificationLevel(PreinstancedBase):
 
 
 
-class ContentFilterLevel(PreinstancedBase):
+class ExplicitContentFilterLevel(PreinstancedBase):
     """
-    Represents Discord's content filter level.
+    Represents Discord's explicit_content filter level.
     
     Attributes
     ----------
     value : `int`
-        The Discord side identifier value of the content filter level.
+        The Discord side identifier value of the explicit_content filter level.
     name : `str`
-        The default name of the content filter level.
+        The default name of the explicit content filter level.
     
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``ContentFilterLevel``) items
-        Stores the predefined content filter levels. This container is accessed when translating a Discord side
-        identifier of a content filter level. The identifier value is used as a key to get it's wrapper side
+    INSTANCES : `dict` of (`int`, ``ExplicitContentFilterLevel``) items
+        Stores the predefined explicit_content filter levels. This container is accessed when translating a Discord side
+        identifier of a explicit_content filter level. The identifier value is used as a key to get it's wrapper side
         representation.
     VALUE_TYPE : `type` = `int`
         The verification filter levels' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the content filter levels.
+        The default name of the explicit content filter levels.
     
-    Every predefined content filter level is also stored as a class attribute:
+    Every predefined explicit content filter level is also stored as a class attribute:
     
     +-----------------------+-----------+-------+
     | Class attribute name  | name      | value |
@@ -101,7 +102,6 @@ class ContentFilterLevel(PreinstancedBase):
     disabled = P(0, 'disabled')
     no_role = P(1, 'no_role')
     everyone = P(2, 'everyone')
-
 
 
 @export
@@ -535,7 +535,8 @@ class NsfwLevel(PreinstancedBase):
 
 class MessageNotificationLevel(PreinstancedBase):
     """
-    Represents the default message notification level of a ``Guild``.
+    Represents the message notification level of a ``Guild``.
+    Only used to represents its default message notification level.
     
     Attributes
     ----------
@@ -580,28 +581,28 @@ class MessageNotificationLevel(PreinstancedBase):
     none = P(3, 'none')
 
 
-class MFA(PreinstancedBase):
+class MfaLevel(PreinstancedBase):
     """
     Represents Discord's Multi-Factor Authentication's levels.
     
     Attributes
     ----------
     name : `str`
-        The default name of the MFA level.
+        The default name of the mfa level.
     value : `int`
-        The Discord side identifier value of the MFA level.
+        The Discord side identifier value of the Mfa level.
     
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``MFA``) items
-        Stores the predefined MFA level. This container is accessed when converting an MFA level's value to
+    INSTANCES : `dict` of (`int`, ``MfaLevel``) items
+        Stores the predefined mfa level. This container is accessed when converting an Mfa level's value to
         it's wrapper side representation.
     VALUE_TYPE : `type` = `int`
         The mfa levels' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`
         The default name of the mfa levels.
     
-    Each predefined MFA can also be accessed as class attribute:
+    Each predefined mfa can also be accessed as class attribute:
     
     +-----------------------+-----------+-------+
     | Class attribute name  | name      | value |

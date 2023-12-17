@@ -1,5 +1,7 @@
 __all__ = ('Command', )
 
+from warnings import warn
+
 from scarletio import WeakReferer, export
 
 from ...discord.events.handling_helpers import (
@@ -753,6 +755,15 @@ class Command:
         ValueError
             If any attribute's or value's type is correct, but it's type isn't.
         """
+        warn(
+            (
+                f'Creating commands with the from class constructor is deprecated and will be removed in 2024 Jun. '
+                f'Please use command decorators instead.'
+            ),
+            FutureWarning,
+            stacklevel = 4,
+        )
+        
         return create_event_from_class(
             cls, klass, COMMAND_PARAMETER_NAMES, COMMAND_NAME_NAME, COMMAND_COMMAND_NAME
         )
@@ -906,7 +917,17 @@ class Command:
                 
                 router.append(self)
             
+            warn(
+                (
+                    f'Routing commands with tuple parameters is deprecated and will be removed in 2024 Jun. '
+                    f'Please use multiple command decorators instead.'
+                ),
+                FutureWarning,
+                stacklevel = 4,
+            )
+            
             return Router(router)
+        
         else:
             if (aliases is not None):
                 aliases = tuple(aliases)

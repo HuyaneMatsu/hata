@@ -22,3 +22,8 @@ __all__ = (
     *sticker_counts.__all__,
     *utils.__all__,
 )
+
+
+from ....utils.module_deprecation import deprecated_import
+deprecated_import(ExplicitContentFilterLevel, 'ContentFilterLevel')
+deprecated_import(MfaLevel, 'MFA')

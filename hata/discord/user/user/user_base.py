@@ -1,9 +1,9 @@
 __all__ = ('UserBase', )
 
-import warnings
+from warnings import warn
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 
-from scarletio import copy_docs, include
+from scarletio import include
 
 from ...bases import DiscordEntity, ICON_TYPE_NONE, Icon, IconSlot, IconType, PlaceHolder, PlaceHolderFunctional
 from ...color import Color
@@ -148,7 +148,7 @@ class UserBase(DiscordEntity, immortal = True):
         +-----------------------+-------------------------------+-----------------------+
         | locale                | ``Locale``                    | ``Client``            |
         +-----------------------+-------------------------------+-----------------------+
-        | mfa                   | `bool`                        | ``Client``            |
+        | mfa_enabled           | `bool`                        | ``Client``            |
         +-----------------------+-------------------------------+-----------------------+
         | name                  | `str`                         | all                   |
         +-----------------------+-------------------------------+-----------------------+
@@ -563,8 +563,8 @@ class UserBase(DiscordEntity, immortal = True):
         if (self.locale is not other.locale):
             return False
         
-        # mfa
-        if (self.mfa != other.mfa):
+        # mfa_enabled
+        if (self.mfa_enabled != other.mfa_enabled):
             return False
         
         # name
@@ -766,14 +766,14 @@ class UserBase(DiscordEntity, immortal = True):
     )
     
     
-    mfa = PlaceHolder(
+    mfa_enabled = PlaceHolder(
         False,
         """
         Returns whether the user has two factor authorization enabled on the account.
         
         Returns
         -------
-        mfa : `bool`
+        mfa_enabled : `bool`
         """
     )
     
@@ -911,43 +911,26 @@ class UserBase(DiscordEntity, immortal = True):
     
     
     @property
-    def is_bot(self):
+    def mfa(self):
         """
-        Returns whether the user is a bot or a user account.
+        Returns whether the user has multi factory authentication enabled.
         
-        This property is deprecated and will be removed in 2023 August.
+        This property is deprecated and will be removed in 2024 April. Please use `mfa_enabled` instead.
         
         Returns
         -------
-        bot : `bool`
+        mfa_enabled : `bool`
         """
-        warnings.warn(
+        warn(
             (
-                f'`{self.__class__.__name__}.is_bot` is deprecated and will be removed in 2023 August.'
-                f'Please use `.bot` instead.'
+                f'`{self.__class__.__name__}.mfa` is deprecated and will be removed in 2024 April.'
+                f'Please use `.mfa_enabled` instead.'
             ),
             FutureWarning,
             stacklevel = 2,
         )
         
-        return self.bot
-    
-    
-    @property
-    def verified(self):
-        """
-        Deprecated and will be removed in 2023 August.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.verified` is deprecated and will be removed in 2023 August.'
-                f'Please use `.email_verified` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.email_verified
+        return self.mfa_enabled
     
     
     @property

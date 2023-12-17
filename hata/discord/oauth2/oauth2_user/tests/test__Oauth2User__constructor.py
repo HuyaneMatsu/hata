@@ -33,7 +33,7 @@ def _assert_fields_set(user):
     vampytest.assert_instance(user.email, str, nullable = True)
     vampytest.assert_instance(user.email_verified, bool)
     vampytest.assert_instance(user.locale, Locale)
-    vampytest.assert_instance(user.mfa, bool)
+    vampytest.assert_instance(user.mfa_enabled, bool)
     vampytest.assert_instance(user.premium_type, PremiumType)
 
 
@@ -64,7 +64,7 @@ def test__Oauth2User__new__1():
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
-    mfa = True
+    mfa_enabled = True
     premium_type = PremiumType.nitro
     
     user = Oauth2User(
@@ -79,7 +79,7 @@ def test__Oauth2User__new__1():
         email = email,
         email_verified = email_verified,
         locale = locale,
-        mfa = mfa,
+        mfa_enabled = mfa_enabled,
         premium_type = premium_type,
     )
     _assert_fields_set(user)
@@ -95,7 +95,7 @@ def test__Oauth2User__new__1():
     vampytest.assert_eq(user.email, email)
     vampytest.assert_eq(user.email_verified, email_verified)
     vampytest.assert_is(user.locale, locale)
-    vampytest.assert_eq(user.mfa, mfa)
+    vampytest.assert_eq(user.mfa_enabled, mfa_enabled)
     vampytest.assert_is(user.premium_type, premium_type)
 
 

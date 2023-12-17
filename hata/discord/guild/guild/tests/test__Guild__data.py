@@ -28,7 +28,7 @@ from ..constants import (
 from ..flags import SystemChannelFlag
 from ..guild import Guild
 from ..preinstanced import (
-    ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel
+    ExplicitContentFilterLevel, GuildFeature, HubType, MfaLevel, MessageNotificationLevel, NsfwLevel, VerificationLevel
 )
 
 from .test__Guild__constructor import _assert_fields_set
@@ -72,7 +72,7 @@ def test__Guild__from_data__all_fields():
         Channel.precreate(202306210040, channel_type = ChannelType.guild_text),
         Channel.precreate(202306210041, channel_type = ChannelType.guild_voice),
     ]
-    content_filter = ContentFilterLevel.no_role
+    explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     embedded_activity_states = [
@@ -94,8 +94,8 @@ def test__Guild__from_data__all_fields():
     max_stage_channel_video_users = 421
     max_users = 422
     max_voice_channel_video_users = 423
-    message_notification = MessageNotificationLevel.no_messages
-    mfa = MFA.elevated
+    default_message_notification_level = MessageNotificationLevel.no_messages
+    mfa_level = MfaLevel.elevated
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306210044
@@ -152,7 +152,7 @@ def test__Guild__from_data__all_fields():
         'premium_progress_bar_enabled': boost_progress_bar_enabled,
         'premium_subscription_count': boost_count,
         'channels': [channel.to_data(include_internals = True) for channel in channels],
-        'explicit_content_filter': content_filter.value,
+        'explicit_content_filter': explicit_content_filter_level.value,
         'description': description,
         'embedded_activities': [
             embedded_activity_state.to_data() for embedded_activity_state in embedded_activity_states
@@ -167,8 +167,8 @@ def test__Guild__from_data__all_fields():
         'max_stage_video_channel_users': max_stage_channel_video_users,
         'max_members': max_users,
         'max_video_channel_users': max_voice_channel_video_users,
-        'default_message_notifications': message_notification.value,
-        'mfa_level': mfa.value,
+        'default_message_notifications': default_message_notification_level.value,
+        'mfa_level': mfa_level.value,
         'name': name,
         'nsfw_level': nsfw_level.value,
         'owner_id': str(owner_id),
@@ -216,7 +216,7 @@ def test__Guild__from_data__all_fields():
     vampytest.assert_eq(guild.boost_count, boost_count)
     vampytest.assert_eq(guild.boost_progress_bar_enabled, boost_progress_bar_enabled)
     vampytest.assert_eq(guild.channels, {channel.id: channel for channel in channels})
-    vampytest.assert_is(guild.content_filter, content_filter)
+    vampytest.assert_is(guild.explicit_content_filter_level, explicit_content_filter_level)
     vampytest.assert_eq(guild.description, description)
     vampytest.assert_eq(guild.discovery_splash, discovery_splash)
     vampytest.assert_eq(guild.embedded_activity_states, set(embedded_activity_states))
@@ -232,8 +232,8 @@ def test__Guild__from_data__all_fields():
     vampytest.assert_eq(guild.max_stage_channel_video_users, max_stage_channel_video_users)
     vampytest.assert_eq(guild.max_users, max_users)
     vampytest.assert_eq(guild.max_voice_channel_video_users, max_voice_channel_video_users)
-    vampytest.assert_is(guild.message_notification, message_notification)
-    vampytest.assert_is(guild.mfa, mfa)
+    vampytest.assert_is(guild.default_message_notification_level, default_message_notification_level)
+    vampytest.assert_is(guild.mfa_level, mfa_level)
     vampytest.assert_eq(guild.name, name)
     vampytest.assert_is(guild.nsfw_level, nsfw_level)
     vampytest.assert_eq(guild.owner_id, owner_id)
@@ -327,7 +327,7 @@ def test__Guild__to_data():
         Channel.precreate(202306220002, channel_type = ChannelType.guild_text),
         Channel.precreate(202306220003, channel_type = ChannelType.guild_voice),
     ]
-    content_filter = ContentFilterLevel.no_role
+    explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     embedded_activity_states = [
@@ -349,8 +349,8 @@ def test__Guild__to_data():
     max_stage_channel_video_users = 421
     max_users = 422
     max_voice_channel_video_users = 423
-    message_notification = MessageNotificationLevel.no_messages
-    mfa = MFA.elevated
+    default_message_notification_level = MessageNotificationLevel.no_messages
+    mfa_level = MfaLevel.elevated
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306220006
@@ -409,7 +409,7 @@ def test__Guild__to_data():
         'premium_progress_bar_enabled': boost_progress_bar_enabled,
         'premium_subscription_count': boost_count,
         'channels': [channel.to_data(defaults = True, include_internals = True) for channel in channels],
-        'explicit_content_filter': content_filter.value,
+        'explicit_content_filter': explicit_content_filter_level.value,
         'description': description,
         'embedded_activities': [
             embedded_activity_state.to_data(defaults = True) for embedded_activity_state in embedded_activity_states
@@ -425,8 +425,8 @@ def test__Guild__to_data():
         'max_stage_video_channel_users': max_stage_channel_video_users,
         'max_members': max_users,
         'max_video_channel_users': max_voice_channel_video_users,
-        'default_message_notifications': message_notification.value,
-        'mfa_level': mfa.value,
+        'default_message_notifications': default_message_notification_level.value,
+        'mfa_level': mfa_level.value,
         'name': name,
         'nsfw_level': nsfw_level.value,
         'owner_id': str(owner_id),
@@ -474,7 +474,7 @@ def test__Guild__to_data():
         boost_count = boost_count,
         boost_progress_bar_enabled = boost_progress_bar_enabled,
         channels = channels,
-        content_filter = content_filter,
+        explicit_content_filter_level = explicit_content_filter_level,
         description = description,
         discovery_splash = discovery_splash,
         embedded_activity_states = embedded_activity_states,
@@ -490,8 +490,8 @@ def test__Guild__to_data():
         max_stage_channel_video_users = max_stage_channel_video_users,
         max_users = max_users,
         max_voice_channel_video_users = max_voice_channel_video_users,
-        message_notification = message_notification,
-        mfa = mfa,
+        default_message_notification_level = default_message_notification_level,
+        mfa_level = mfa_level,
         name = name,
         nsfw_level = nsfw_level,
         owner_id = owner_id,
@@ -543,7 +543,7 @@ def test__Guild__set_attributes__create():
         Channel.precreate(202306220038, channel_type = ChannelType.guild_text),
         Channel.precreate(202306220039, channel_type = ChannelType.guild_voice),
     ]
-    content_filter = ContentFilterLevel.no_role
+    explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     embedded_activity_states = [
@@ -565,8 +565,8 @@ def test__Guild__set_attributes__create():
     max_stage_channel_video_users = 421
     max_users = 422
     max_voice_channel_video_users = 423
-    message_notification = MessageNotificationLevel.no_messages
-    mfa = MFA.elevated
+    default_message_notification_level = MessageNotificationLevel.no_messages
+    mfa_level = MfaLevel.elevated
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306220044
@@ -623,7 +623,7 @@ def test__Guild__set_attributes__create():
         'premium_progress_bar_enabled': boost_progress_bar_enabled,
         'premium_subscription_count': boost_count,
         'channels': [channel.to_data(include_internals = True) for channel in channels],
-        'explicit_content_filter': content_filter.value,
+        'explicit_content_filter': explicit_content_filter_level.value,
         'description': description,
         'embedded_activities': [
             embedded_activity_state.to_data() for embedded_activity_state in embedded_activity_states
@@ -638,8 +638,8 @@ def test__Guild__set_attributes__create():
         'max_stage_video_channel_users': max_stage_channel_video_users,
         'max_members': max_users,
         'max_video_channel_users': max_voice_channel_video_users,
-        'default_message_notifications': message_notification.value,
-        'mfa_level': mfa.value,
+        'default_message_notifications': default_message_notification_level.value,
+        'mfa_level': mfa_level.value,
         'name': name,
         'nsfw_level': nsfw_level.value,
         'owner_id': str(owner_id),
@@ -689,7 +689,7 @@ def test__Guild__set_attributes__create():
     vampytest.assert_eq(guild.boost_count, boost_count)
     vampytest.assert_eq(guild.boost_progress_bar_enabled, boost_progress_bar_enabled)
     vampytest.assert_eq(guild.channels, {channel.id: channel for channel in channels})
-    vampytest.assert_is(guild.content_filter, content_filter)
+    vampytest.assert_is(guild.explicit_content_filter_level, explicit_content_filter_level)
     vampytest.assert_eq(guild.description, description)
     vampytest.assert_eq(guild.discovery_splash, discovery_splash)
     vampytest.assert_eq(guild.embedded_activity_states, set(embedded_activity_states))
@@ -705,8 +705,8 @@ def test__Guild__set_attributes__create():
     vampytest.assert_eq(guild.max_stage_channel_video_users, max_stage_channel_video_users)
     vampytest.assert_eq(guild.max_users, max_users)
     vampytest.assert_eq(guild.max_voice_channel_video_users, max_voice_channel_video_users)
-    vampytest.assert_is(guild.message_notification, message_notification)
-    vampytest.assert_is(guild.mfa, mfa)
+    vampytest.assert_is(guild.default_message_notification_level, default_message_notification_level)
+    vampytest.assert_is(guild.mfa_level, mfa_level)
     vampytest.assert_eq(guild.name, name)
     vampytest.assert_is(guild.nsfw_level, nsfw_level)
     vampytest.assert_eq(guild.owner_id, owner_id)
@@ -754,7 +754,7 @@ def test__Guild__set_attributes__existing():
         Channel.precreate(202306220070, channel_type = ChannelType.guild_text),
         Channel.precreate(202306220071, channel_type = ChannelType.guild_voice),
     ]
-    content_filter = ContentFilterLevel.no_role
+    explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     embedded_activity_states = [
@@ -776,8 +776,8 @@ def test__Guild__set_attributes__existing():
     max_stage_channel_video_users = 421
     max_users = 422
     max_voice_channel_video_users = 423
-    message_notification = MessageNotificationLevel.no_messages
-    mfa = MFA.elevated
+    default_message_notification_level = MessageNotificationLevel.no_messages
+    mfa_level = MfaLevel.elevated
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306220044
@@ -834,7 +834,7 @@ def test__Guild__set_attributes__existing():
         'premium_progress_bar_enabled': boost_progress_bar_enabled,
         'premium_subscription_count': boost_count,
         'channels': [channel.to_data(include_internals = True) for channel in channels],
-        'explicit_content_filter': content_filter.value,
+        'explicit_content_filter': explicit_content_filter_level.value,
         'description': description,
         'embedded_activities': [
             embedded_activity_state.to_data() for embedded_activity_state in embedded_activity_states
@@ -849,8 +849,8 @@ def test__Guild__set_attributes__existing():
         'max_stage_video_channel_users': max_stage_channel_video_users,
         'max_members': max_users,
         'max_video_channel_users': max_voice_channel_video_users,
-        'default_message_notifications': message_notification.value,
-        'mfa_level': mfa.value,
+        'default_message_notifications': default_message_notification_level.value,
+        'mfa_level': mfa_level.value,
         'name': name,
         'nsfw_level': nsfw_level.value,
         'owner_id': str(owner_id),
@@ -899,7 +899,7 @@ def test__Guild__set_attributes__existing():
     vampytest.assert_eq(guild.boost_count, boost_count)
     vampytest.assert_eq(guild.boost_progress_bar_enabled, boost_progress_bar_enabled)
     vampytest.assert_eq(guild.channels, {channel.id: channel for channel in channels})
-    vampytest.assert_is(guild.content_filter, content_filter)
+    vampytest.assert_is(guild.explicit_content_filter_level, explicit_content_filter_level)
     vampytest.assert_eq(guild.description, description)
     vampytest.assert_eq(guild.discovery_splash, discovery_splash)
     vampytest.assert_eq(guild.embedded_activity_states, set(embedded_activity_states))
@@ -915,8 +915,8 @@ def test__Guild__set_attributes__existing():
     vampytest.assert_eq(guild.max_stage_channel_video_users, max_stage_channel_video_users)
     vampytest.assert_eq(guild.max_users, max_users)
     vampytest.assert_eq(guild.max_voice_channel_video_users, max_voice_channel_video_users)
-    vampytest.assert_is(guild.message_notification, message_notification)
-    vampytest.assert_is(guild.mfa, mfa)
+    vampytest.assert_is(guild.default_message_notification_level, default_message_notification_level)
+    vampytest.assert_is(guild.mfa_level, mfa_level)
     vampytest.assert_eq(guild.name, name)
     vampytest.assert_is(guild.nsfw_level, nsfw_level)
     vampytest.assert_eq(guild.owner_id, owner_id)
@@ -958,7 +958,7 @@ def test__Guild__update_attributes():
     old_banner = Icon(IconType.animated, 12)
     old_boost_count = 3
     old_boost_progress_bar_enabled = True
-    old_content_filter = ContentFilterLevel.no_role
+    old_explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     old_description = 'Koishi'
     old_discovery_splash = Icon(IconType.animated, 14)
     old_features = [GuildFeature.animated_icon]
@@ -971,8 +971,8 @@ def test__Guild__update_attributes():
     old_max_stage_channel_video_users = 421
     old_max_users = 422
     old_max_voice_channel_video_users = 423
-    old_message_notification = MessageNotificationLevel.no_messages
-    old_mfa = MFA.elevated
+    old_default_message_notification_level = MessageNotificationLevel.no_messages
+    old_mfa_level = MfaLevel.elevated
     old_name = 'Komeiji'
     old_nsfw_level = NsfwLevel.explicit
     old_owner_id = 202306220102
@@ -996,7 +996,7 @@ def test__Guild__update_attributes():
     new_banner = Icon(IconType.animated, 112)
     new_boost_count = 13
     new_boost_progress_bar_enabled = False
-    new_content_filter = ContentFilterLevel.everyone
+    new_explicit_content_filter_level = ExplicitContentFilterLevel.everyone
     new_description = 'Orin'
     new_discovery_splash = Icon(IconType.animated, 114)
     new_features = [GuildFeature.animated_banner]
@@ -1009,8 +1009,8 @@ def test__Guild__update_attributes():
     new_max_stage_channel_video_users = 1421
     new_max_users = 1422
     new_max_voice_channel_video_users = 1423
-    new_message_notification = MessageNotificationLevel.only_mentions
-    new_mfa = MFA.none
+    new_default_message_notification_level = MessageNotificationLevel.only_mentions
+    new_mfa_level = MfaLevel.none
     new_name = 'Okuu'
     new_nsfw_level = NsfwLevel.safe
     new_owner_id = 202306220109
@@ -1037,7 +1037,7 @@ def test__Guild__update_attributes():
         banner = old_banner,
         boost_count = old_boost_count,
         boost_progress_bar_enabled = old_boost_progress_bar_enabled,
-        content_filter = old_content_filter,
+        explicit_content_filter_level = old_explicit_content_filter_level,
         description = old_description,
         discovery_splash = old_discovery_splash,
         features = old_features,
@@ -1050,8 +1050,8 @@ def test__Guild__update_attributes():
         max_stage_channel_video_users = old_max_stage_channel_video_users,
         max_users = old_max_users,
         max_voice_channel_video_users = old_max_voice_channel_video_users,
-        message_notification = old_message_notification,
-        mfa = old_mfa,
+        default_message_notification_level = old_default_message_notification_level,
+        mfa_level = old_mfa_level,
         name = old_name,
         nsfw_level = old_nsfw_level,
         owner_id = old_owner_id,
@@ -1076,7 +1076,7 @@ def test__Guild__update_attributes():
         'unavailable': not new_available,
         'premium_progress_bar_enabled': new_boost_progress_bar_enabled,
         'premium_subscription_count': new_boost_count,
-        'explicit_content_filter': new_content_filter.value,
+        'explicit_content_filter': new_explicit_content_filter_level.value,
         'description': new_description,
         'features': [feature.value for feature in new_features],
         'hub_type': new_hub_type.value,
@@ -1086,8 +1086,8 @@ def test__Guild__update_attributes():
         'max_stage_video_channel_users': new_max_stage_channel_video_users,
         'max_members': new_max_users,
         'max_video_channel_users': new_max_voice_channel_video_users,
-        'default_message_notifications': new_message_notification.value,
-        'mfa_level': new_mfa.value,
+        'default_message_notifications': new_default_message_notification_level.value,
+        'mfa_level': new_mfa_level.value,
         'name': new_name,
         'nsfw_level': new_nsfw_level.value,
         'owner_id': str(new_owner_id),
@@ -1118,7 +1118,7 @@ def test__Guild__update_attributes():
     vampytest.assert_eq(guild.banner, new_banner)
     vampytest.assert_eq(guild.boost_count, new_boost_count)
     vampytest.assert_eq(guild.boost_progress_bar_enabled, new_boost_progress_bar_enabled)
-    vampytest.assert_is(guild.content_filter, new_content_filter)
+    vampytest.assert_is(guild.explicit_content_filter_level, new_explicit_content_filter_level)
     vampytest.assert_eq(guild.description, new_description)
     vampytest.assert_eq(guild.discovery_splash, new_discovery_splash)
     vampytest.assert_eq(guild.features, tuple(new_features))
@@ -1131,8 +1131,8 @@ def test__Guild__update_attributes():
     vampytest.assert_eq(guild.max_stage_channel_video_users, new_max_stage_channel_video_users)
     vampytest.assert_eq(guild.max_users, new_max_users)
     vampytest.assert_eq(guild.max_voice_channel_video_users, new_max_voice_channel_video_users)
-    vampytest.assert_is(guild.message_notification, new_message_notification)
-    vampytest.assert_is(guild.mfa, new_mfa)
+    vampytest.assert_is(guild.default_message_notification_level, new_default_message_notification_level)
+    vampytest.assert_is(guild.mfa_level, new_mfa_level)
     vampytest.assert_eq(guild.name, new_name)
     vampytest.assert_is(guild.nsfw_level, new_nsfw_level)
     vampytest.assert_eq(guild.owner_id, new_owner_id)
@@ -1194,7 +1194,7 @@ def test__Guild__difference_update_attributes():
     old_banner = Icon(IconType.animated, 12)
     old_boost_count = 3
     old_boost_progress_bar_enabled = True
-    old_content_filter = ContentFilterLevel.no_role
+    old_explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     old_description = 'Koishi'
     old_discovery_splash = Icon(IconType.animated, 14)
     old_features = [GuildFeature.animated_icon]
@@ -1207,8 +1207,8 @@ def test__Guild__difference_update_attributes():
     old_max_stage_channel_video_users = 421
     old_max_users = 422
     old_max_voice_channel_video_users = 423
-    old_message_notification = MessageNotificationLevel.no_messages
-    old_mfa = MFA.elevated
+    old_default_message_notification_level = MessageNotificationLevel.no_messages
+    old_mfa_level = MfaLevel.elevated
     old_name = 'Komeiji'
     old_nsfw_level = NsfwLevel.explicit
     old_owner_id = 202306220118
@@ -1232,7 +1232,7 @@ def test__Guild__difference_update_attributes():
     new_banner = Icon(IconType.animated, 112)
     new_boost_count = 13
     new_boost_progress_bar_enabled = False
-    new_content_filter = ContentFilterLevel.everyone
+    new_explicit_content_filter_level = ExplicitContentFilterLevel.everyone
     new_description = 'Orin'
     new_discovery_splash = Icon(IconType.animated, 114)
     new_features = [GuildFeature.animated_banner]
@@ -1245,8 +1245,8 @@ def test__Guild__difference_update_attributes():
     new_max_stage_channel_video_users = 1421
     new_max_users = 1422
     new_max_voice_channel_video_users = 1423
-    new_message_notification = MessageNotificationLevel.only_mentions
-    new_mfa = MFA.none
+    new_default_message_notification_level = MessageNotificationLevel.only_mentions
+    new_mfa_level = MfaLevel.none
     new_name = 'Okuu'
     new_nsfw_level = NsfwLevel.safe
     new_owner_id = 202306220125
@@ -1273,7 +1273,7 @@ def test__Guild__difference_update_attributes():
         banner = old_banner,
         boost_count = old_boost_count,
         boost_progress_bar_enabled = old_boost_progress_bar_enabled,
-        content_filter = old_content_filter,
+        explicit_content_filter_level = old_explicit_content_filter_level,
         description = old_description,
         discovery_splash = old_discovery_splash,
         features = old_features,
@@ -1286,8 +1286,8 @@ def test__Guild__difference_update_attributes():
         max_stage_channel_video_users = old_max_stage_channel_video_users,
         max_users = old_max_users,
         max_voice_channel_video_users = old_max_voice_channel_video_users,
-        message_notification = old_message_notification,
-        mfa = old_mfa,
+        default_message_notification_level = old_default_message_notification_level,
+        mfa_level = old_mfa_level,
         name = old_name,
         nsfw_level = old_nsfw_level,
         owner_id = old_owner_id,
@@ -1312,7 +1312,7 @@ def test__Guild__difference_update_attributes():
         'unavailable': not new_available,
         'premium_progress_bar_enabled': new_boost_progress_bar_enabled,
         'premium_subscription_count': new_boost_count,
-        'explicit_content_filter': new_content_filter.value,
+        'explicit_content_filter': new_explicit_content_filter_level.value,
         'description': new_description,
         'features': [feature.value for feature in new_features],
         'hub_type': new_hub_type.value,
@@ -1322,8 +1322,8 @@ def test__Guild__difference_update_attributes():
         'max_stage_video_channel_users': new_max_stage_channel_video_users,
         'max_members': new_max_users,
         'max_video_channel_users': new_max_voice_channel_video_users,
-        'default_message_notifications': new_message_notification.value,
-        'mfa_level': new_mfa.value,
+        'default_message_notifications': new_default_message_notification_level.value,
+        'mfa_level': new_mfa_level.value,
         'name': new_name,
         'nsfw_level': new_nsfw_level.value,
         'owner_id': str(new_owner_id),
@@ -1354,7 +1354,7 @@ def test__Guild__difference_update_attributes():
     vampytest.assert_eq(guild.banner, new_banner)
     vampytest.assert_eq(guild.boost_count, new_boost_count)
     vampytest.assert_eq(guild.boost_progress_bar_enabled, new_boost_progress_bar_enabled)
-    vampytest.assert_is(guild.content_filter, new_content_filter)
+    vampytest.assert_is(guild.explicit_content_filter_level, new_explicit_content_filter_level)
     vampytest.assert_eq(guild.description, new_description)
     vampytest.assert_eq(guild.discovery_splash, new_discovery_splash)
     vampytest.assert_eq(guild.features, tuple(new_features))
@@ -1367,8 +1367,8 @@ def test__Guild__difference_update_attributes():
     vampytest.assert_eq(guild.max_stage_channel_video_users, new_max_stage_channel_video_users)
     vampytest.assert_eq(guild.max_users, new_max_users)
     vampytest.assert_eq(guild.max_voice_channel_video_users, new_max_voice_channel_video_users)
-    vampytest.assert_is(guild.message_notification, new_message_notification)
-    vampytest.assert_is(guild.mfa, new_mfa)
+    vampytest.assert_is(guild.default_message_notification_level, new_default_message_notification_level)
+    vampytest.assert_is(guild.mfa_level, new_mfa_level)
     vampytest.assert_eq(guild.name, new_name)
     vampytest.assert_is(guild.nsfw_level, new_nsfw_level)
     vampytest.assert_eq(guild.owner_id, new_owner_id)
@@ -1395,7 +1395,7 @@ def test__Guild__difference_update_attributes():
             'banner': old_banner,
             'boost_count': old_boost_count,
             'boost_progress_bar_enabled': old_boost_progress_bar_enabled,
-            'content_filter': old_content_filter,
+            'explicit_content_filter_level': old_explicit_content_filter_level,
             'description': old_description,
             'discovery_splash': old_discovery_splash,
             'features': tuple(old_features),
@@ -1408,8 +1408,8 @@ def test__Guild__difference_update_attributes():
             'max_stage_channel_video_users': old_max_stage_channel_video_users,
             'max_users': old_max_users,
             'max_voice_channel_video_users': old_max_voice_channel_video_users,
-            'message_notification': old_message_notification,
-            'mfa': old_mfa,
+            'default_message_notification_level': old_default_message_notification_level,
+            'mfa_level': old_mfa_level,
             'name': old_name,
             'nsfw_level': old_nsfw_level,
             'owner_id': old_owner_id,
@@ -1778,7 +1778,7 @@ def test__Guild__sync__default():
     banner = Icon(IconType.animated, 12)
     boost_count = 3
     boost_progress_bar_enabled = True
-    content_filter = ContentFilterLevel.no_role
+    explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     features = [GuildFeature.animated_icon]
@@ -1791,8 +1791,8 @@ def test__Guild__sync__default():
     max_stage_channel_video_users = 421
     max_users = 422
     max_voice_channel_video_users = 423
-    message_notification = MessageNotificationLevel.no_messages
-    mfa = MFA.elevated
+    default_message_notification_level = MessageNotificationLevel.no_messages
+    mfa_level = MfaLevel.elevated
     name = 'Komeiji'
     nsfw_level = NsfwLevel.explicit
     owner_id = 202306230083
@@ -1829,7 +1829,7 @@ def test__Guild__sync__default():
         'unavailable': not available,
         'premium_progress_bar_enabled': boost_progress_bar_enabled,
         'premium_subscription_count': boost_count,
-        'explicit_content_filter': content_filter.value,
+        'explicit_content_filter': explicit_content_filter_level.value,
         'description': description,
         'features': [feature.value for feature in features],
         'hub_type': hub_type.value,
@@ -1839,8 +1839,8 @@ def test__Guild__sync__default():
         'max_stage_video_channel_users': max_stage_channel_video_users,
         'max_members': max_users,
         'max_video_channel_users': max_voice_channel_video_users,
-        'default_message_notifications': message_notification.value,
-        'mfa_level': mfa.value,
+        'default_message_notifications': default_message_notification_level.value,
+        'mfa_level': mfa_level.value,
         'name': name,
         'nsfw_level': nsfw_level.value,
         'owner_id': str(owner_id),
@@ -1876,7 +1876,7 @@ def test__Guild__sync__default():
     vampytest.assert_eq(guild.banner, banner)
     vampytest.assert_eq(guild.boost_count, boost_count)
     vampytest.assert_eq(guild.boost_progress_bar_enabled, boost_progress_bar_enabled)
-    vampytest.assert_is(guild.content_filter, content_filter)
+    vampytest.assert_is(guild.explicit_content_filter_level, explicit_content_filter_level)
     vampytest.assert_eq(guild.description, description)
     vampytest.assert_eq(guild.discovery_splash, discovery_splash)
     vampytest.assert_eq(guild.emojis, {emoji.id: emoji for emoji in emojis})
@@ -1890,8 +1890,8 @@ def test__Guild__sync__default():
     vampytest.assert_eq(guild.max_stage_channel_video_users, max_stage_channel_video_users)
     vampytest.assert_eq(guild.max_users, max_users)
     vampytest.assert_eq(guild.max_voice_channel_video_users, max_voice_channel_video_users)
-    vampytest.assert_is(guild.message_notification, message_notification)
-    vampytest.assert_is(guild.mfa, mfa)
+    vampytest.assert_is(guild.default_message_notification_level, default_message_notification_level)
+    vampytest.assert_is(guild.mfa_level, mfa_level)
     vampytest.assert_eq(guild.name, name)
     vampytest.assert_is(guild.nsfw_level, nsfw_level)
     vampytest.assert_eq(guild.owner_id, owner_id)

@@ -1,5 +1,7 @@
 __all__ = ()
 
+from warnings import warn
+
 __doc__ = """
 The possible json error codes received from Discord HTTP API requests.
 
@@ -321,7 +323,7 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | bulk_delete_amount_out_of_range                                   | 50016     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| invalid_MFA_level                                                 | 50017     | -         |
+| invalid_mfa_level                                                 | 50017     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | invalid_password                                                  | 50018     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -445,21 +447,21 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | cannot_send_voice_message_to_this_channel                         | 50173     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| MFA_enabled                                                       | 60001     | -         |
+| mfa_enabled                                                       | 60001     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| MFA_disabled                                                      | 60002     | -         |
+| mfa_disabled                                                      | 60002     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| MFA_required                                                      | 60003     | -         |
+| mfa_required                                                      | 60003     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| MFA_unverified                                                    | 60004     | -         |
+| mfa_unverified                                                    | 60004     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| MFA_invalid_secret                                                | 60005     | -         |
+| mfa_invalid_secret                                                | 60005     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| MFA_invalid_ticket                                                | 60006     | -         |
+| mfa_invalid_ticket                                                | 60006     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| MFA_invalid_code                                                  | 60008     | -         |
+| mfa_invalid_code                                                  | 60008     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| MFA_invalid_session                                               | 60009     | -         |
+| mfa_invalid_session                                               | 60009     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | phone_number_unable_to_send                                       | 70003     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -736,7 +738,7 @@ missing_permissions = 50013
 invalid_token = 50014
 invalid_note = 50015
 bulk_delete_amount_out_of_range = 50016
-invalid_MFA_level = 50017
+invalid_mfa_level = 50017
 invalid_password = 50018
 cannot_pin_message_in_different_channel = 50019
 invite_code_invalid_or_taken = 50020
@@ -799,14 +801,14 @@ new_owner_ineligible_for_subscription = 50164
 activity_launch_age_gated = 50165
 cannot_send_voice_message_to_this_channel = 50173
 
-MFA_enabled = 60001
-MFA_disabled = 60002
-MFA_required = 60003
-MFA_unverified = 60004
-MFA_invalid_secret = 60005
-MFA_invalid_ticket = 60006
-MFA_invalid_code = 60008
-MFA_invalid_session = 60009
+mfa_enabled = 60001
+mfa_disabled = 60002
+mfa_required = 60003
+mfa_unverified = 60004
+mfa_invalid_secret = 60005
+mfa_invalid_ticket = 60006
+mfa_invalid_code = 60008
+mfa_invalid_session = 60009
 
 phone_number_unable_to_send = 70003
 phone_verification_required = 70007
@@ -886,3 +888,34 @@ clyde_consent_required = 310000
 
 cannot_enable_onboarding_requirements_not_met = 350000
 cannot_update_onboarding_requirements_not_met = 350001
+
+
+
+__deprecations__ = {
+    'MFA_enabled': ('mfa_enabled', '2024 April', mfa_enabled),
+    'MFA_disabled': ('mfa_disabled', '2024 April', mfa_disabled),
+    'MFA_required': ('mfa_required', '2024 April', mfa_required),
+    'MFA_unverified': ('mfa_unverified', '2024 April', mfa_unverified),
+    'MFA_invalid_secret': ('mfa_invalid_secret', '2024 April', mfa_invalid_secret),
+    'MFA_invalid_ticket': ('mfa_invalid_ticket', '2024 April', mfa_invalid_ticket),
+    'MFA_invalid_code':  ('mfa_invalid_code', '2024 April', mfa_invalid_code),
+    'MFA_invalid_session': ('mfa_invalid_session', '2024 April', mfa_invalid_session),
+    'invalid_MFA_level': ('invalid_mfa_level', '2024 April', invalid_mfa_level),
+}
+
+
+def __getattr__(name):
+    deprecation = __deprecations__.get(name, None)
+    if deprecation is None:
+        raise AttributeError
+    
+    new_name, removed_at, value = deprecation
+    warn(
+        (
+            f'`{name!s}` error code is deprecated and will be removed at {removed_at!s}. '
+            f'Please use `{new_name!s}` instead.'
+        ),
+        FutureWarning,
+        stacklevel = 2,
+    )
+    return value

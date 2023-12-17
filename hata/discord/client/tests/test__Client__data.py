@@ -80,7 +80,7 @@ def test__Client__update_attributes():
     email = 'rin@orindance.party'
     email_verified = True
     locale = Locale.greek
-    mfa = True
+    mfa_enabled = True
     premium_type = PremiumType.nitro_basic
     
     data = {
@@ -95,7 +95,7 @@ def test__Client__update_attributes():
         'email': email,
         'verified': email_verified,
         'locale': locale.value,
-        'mfa_enabled': mfa,
+        'mfa_enabled': mfa_enabled,
         'premium_type': premium_type.value,
     }
 
@@ -117,7 +117,7 @@ def test__Client__update_attributes():
         vampytest.assert_eq(client.email, email)
         vampytest.assert_eq(client.email_verified, email_verified)
         vampytest.assert_is(client.locale, locale)
-        vampytest.assert_eq(client.mfa, mfa)
+        vampytest.assert_eq(client.mfa_enabled, mfa_enabled)
         vampytest.assert_is(client.premium_type, premium_type)
     
     # Cleanup
@@ -141,7 +141,7 @@ def test__Client__difference_update_attributes():
     old_email = 'rin@orindance.party'
     old_email_verified = True
     old_locale = Locale.greek
-    old_mfa = True
+    old_mfa_enabled = True
     old_premium_type = PremiumType.nitro
     
     new_avatar = Icon(IconType.animated, 13)
@@ -155,7 +155,7 @@ def test__Client__difference_update_attributes():
     new_email = 'okuu@orindance.party'
     new_email_verified = False
     new_locale = Locale.dutch
-    new_mfa = False
+    new_mfa_enabled = False
     new_premium_type = PremiumType.nitro_classic
     
     data = {
@@ -170,7 +170,7 @@ def test__Client__difference_update_attributes():
         'email': new_email,
         'verified': new_email_verified,
         'locale': new_locale.value,
-        'mfa_enabled': new_mfa,
+        'mfa_enabled': new_mfa_enabled,
         'premium_type': new_premium_type.value,
     }
     
@@ -186,7 +186,7 @@ def test__Client__difference_update_attributes():
         'email_verified': old_email_verified,
         'flags': old_flags,
         'locale': old_locale,
-        'mfa': old_mfa,
+        'mfa_enabled': old_mfa_enabled,
         'premium_type': old_premium_type,
     }
     
@@ -203,7 +203,7 @@ def test__Client__difference_update_attributes():
         email = old_email,
         email_verified = old_email_verified,
         locale = old_locale,
-        mfa = old_mfa,
+        mfa_enabled = old_mfa_enabled,
         premium_type = old_premium_type,
     )
     
@@ -221,7 +221,7 @@ def test__Client__difference_update_attributes():
         vampytest.assert_eq(client.email, new_email)
         vampytest.assert_eq(client.email_verified, new_email_verified)
         vampytest.assert_is(client.locale, new_locale)
-        vampytest.assert_eq(client.mfa, new_mfa)
+        vampytest.assert_eq(client.mfa_enabled, new_mfa_enabled)
         vampytest.assert_is(client.premium_type, new_premium_type)
         
         vampytest.assert_eq(

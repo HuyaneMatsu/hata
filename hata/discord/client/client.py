@@ -30,10 +30,10 @@ from ..user import (
     create_partial_user_from_id
 )
 from ..user.user.fields import (
-    parse_email, parse_email_verified, parse_locale, parse_mfa, parse_premium_type, validate_avatar_decoration,
+    parse_email, parse_email_verified, parse_locale, parse_mfa_enabled, parse_premium_type, validate_avatar_decoration,
     validate_banner_color, validate_bot, validate_discriminator, validate_display_name, validate_email,
-    validate_email_verified, validate_flags, validate_locale, validate_mfa, validate_name, validate_premium_type,
-    validate_status
+    validate_email_verified, validate_flags, validate_locale, validate_mfa_enabled, validate_name,
+    validate_premium_type, validate_status
 )
 
 from .compounds import CLIENT_COMPOUNDS
@@ -168,7 +168,7 @@ class Client(
     locale : ``Locale``
         The preferred locale by the client.
     
-    mfa : `bool`
+    mfa_enabled : `bool`
         Whether the client has two factor authorization enabled on the account.
     
     name : str
@@ -245,7 +245,7 @@ class Client(
         '__dict__', '_activity', '_additional_owner_ids', '_gateway_max_concurrency', '_gateway_requesting',
         '_gateway_time', '_gateway_url', '_gateway_waiter', '_should_request_users', '_status', '_user_chunker_nonce',
         'application', 'email', 'email_verified', 'events', 'gateway', 'group_channels', 'guilds', 'http', 'intents',
-        'locale', 'mfa', 'premium_type', 'private_channels', 'ready_state', 'relationships', 'running', 'secret',
+        'locale', 'mfa_enabled', 'premium_type', 'private_channels', 'ready_state', 'relationships', 'running', 'secret',
         'shard_count', 'token', 'voice_clients'
     )
     
@@ -275,7 +275,7 @@ class Client(
         intents = ...,
         is_bot = ...,
         locale = ...,
-        mfa = ...,
+        mfa_enabled = ...,
         name = ...,
         premium_type = ...,
         secret = ...,
@@ -352,7 +352,7 @@ class Client(
         locale : ``Locale``, `str`, Optional (Keyword only)
             The preferred locale by the client.
         
-        mfa : `bool`, Optional (Keyword only)
+        mfa_enabled : `bool`, Optional (Keyword only)
             Whether the user has two factor authorization enabled on the account.
         
         name : `str`, Optional (Keyword only)
@@ -521,11 +521,11 @@ class Client(
         else:
             locale = validate_locale(locale)
         
-        # mfa
-        if mfa is ...:
-            mfa = False
+        # mfa_enabled
+        if mfa_enabled is ...:
+            mfa_enabled = False
         else:
-            mfa = validate_mfa(mfa)
+            mfa_enabled = validate_mfa_enabled(mfa_enabled)
         
         # name
         if name is ...:
@@ -617,7 +617,7 @@ class Client(
         self.http = DiscordHTTPClient(bot, token, debug_options = http_debug_options)
         self.intents = intents
         self.locale = locale
-        self.mfa = mfa
+        self.mfa_enabled = mfa_enabled
         self.premium_type = premium_type
         self.private_channels = {}
         self.ready_state = None
@@ -1725,10 +1725,10 @@ class Client(
             old_attributes['locale'] = self.locale
             self.locale = locale
         
-        mfa = parse_mfa(data)
-        if self.mfa != mfa:
-            old_attributes['mfa'] = self.mfa
-            self.mfa = mfa
+        mfa_enabled = parse_mfa_enabled(data)
+        if self.mfa_enabled != mfa_enabled:
+            old_attributes['mfa_enabled'] = self.mfa_enabled
+            self.mfa_enabled = mfa_enabled
         
         premium_type = parse_premium_type(data)
         if self.premium_type is not premium_type:
@@ -1745,7 +1745,7 @@ class Client(
         self.email = parse_email(data)
         self.email_verified = parse_email_verified(data)
         self.locale = parse_locale(data)
-        self.mfa = parse_mfa(data)
+        self.mfa_enabled = parse_mfa_enabled(data)
         self.premium_type = parse_premium_type(data)
     
     

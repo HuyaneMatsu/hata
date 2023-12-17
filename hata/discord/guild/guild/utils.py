@@ -4,6 +4,7 @@ __all__ = (
 )
 
 from functools import partial as partial_func
+from warnings import warn
 
 from scarletio import export
 
@@ -12,22 +13,62 @@ from ...core import GUILDS
 from .fields import (
     parse_available, parse_description, parse_features, parse_id, parse_locale, parse_name, parse_nsfw_level,
     parse_verification_level, put_afk_channel_id_into, put_afk_timeout_into, put_available_into,
-    put_boost_progress_bar_enabled_into, put_channels_and_channel_datas_into, put_content_filter_into,
-    put_description_into, put_features_into, put_hub_type_into, put_id_into, put_locale_into,
-    put_message_notification_into, put_mfa_into, put_name_into, put_nsfw_level_into, put_owner_id_into,
-    put_public_updates_channel_id_into, put_roles_and_role_datas_into, put_rules_channel_id_into,
-    put_safety_alerts_channel_id_into, put_system_channel_flags_into, put_system_channel_id_into, put_vanity_code_into,
-    put_verification_level_into, put_widget_channel_id_into, put_widget_enabled_into, validate_afk_channel_id,
-    validate_afk_timeout, validate_boost_progress_bar_enabled, validate_channels_and_channel_datas,
-    validate_content_filter, validate_description, validate_features, validate_hub_type, validate_locale,
-    validate_message_notification, validate_mfa, validate_name, validate_nsfw_level, validate_owner_id,
-    validate_public_updates_channel_id, validate_roles_and_role_datas, validate_rules_channel_id,
-    validate_safety_alerts_channel_id, validate_system_channel_flags, validate_system_channel_id, validate_vanity_code,
-    validate_verification_level, validate_widget_channel_id, validate_widget_enabled
+    put_boost_progress_bar_enabled_into, put_channels_and_channel_datas_into,
+    put_default_message_notification_level_into, put_description_into, put_explicit_content_filter_level_into,
+    put_features_into, put_hub_type_into, put_id_into, put_locale_into, put_mfa_level_into, put_name_into,
+    put_nsfw_level_into, put_owner_id_into, put_public_updates_channel_id_into, put_roles_and_role_datas_into,
+    put_rules_channel_id_into, put_safety_alerts_channel_id_into, put_system_channel_flags_into,
+    put_system_channel_id_into, put_vanity_code_into, put_verification_level_into, put_widget_channel_id_into,
+    put_widget_enabled_into, validate_afk_channel_id, validate_afk_timeout, validate_boost_progress_bar_enabled,
+    validate_channels_and_channel_datas, validate_default_message_notification_level, validate_description,
+    validate_explicit_content_filter_level, validate_features, validate_hub_type, validate_locale, validate_mfa_level,
+    validate_name, validate_nsfw_level, validate_owner_id, validate_public_updates_channel_id,
+    validate_roles_and_role_datas, validate_rules_channel_id, validate_safety_alerts_channel_id,
+    validate_system_channel_flags, validate_system_channel_id, validate_vanity_code, validate_verification_level,
+    validate_widget_channel_id, validate_widget_enabled
 )
 from .flags import SystemChannelFlag
 from .guild import GUILD_BANNER, GUILD_DISCOVERY_SPLASH, GUILD_ICON, GUILD_INVITE_SPLASH, Guild
-from .preinstanced import ContentFilterLevel, MessageNotificationLevel, NsfwLevel, VerificationLevel
+from .preinstanced import ExplicitContentFilterLevel, MessageNotificationLevel, NsfwLevel, VerificationLevel
+
+
+def _deprecate_validate_content_filter(value):
+    warn(
+        (
+            f'`content_filter` parameter is deprecated. '
+            f'And will be removed in 2024 April. '
+            f'Please use `explicit_content_filter_level` instead.'
+        ),
+        FutureWarning,
+        stacklevel = 5,
+    )
+    return validate_explicit_content_filter_level(value)
+
+
+def _deprecate_validate_mfa(value):
+    warn(
+        (
+            f'`mfa` parameter is deprecated. '
+            f'And will be removed in 2024 April. '
+            f'Please use `mfa_level` instead.'
+        ),
+        FutureWarning,
+        stacklevel = 5,
+    )
+    return validate_mfa_level(value)
+
+
+def _deprecate_validate_message_notification(value):
+    warn(
+        (
+            f'`message_notification` parameter is deprecated. '
+            f'And will be removed in 2024 April. '
+            f'Please use `default_message_notification_level` instead.'
+        ),
+        FutureWarning,
+        stacklevel = 5,
+    )
+    return validate_default_message_notification_level(value)
 
 
 GUILD_FIELD_CONVERTERS = {
@@ -38,12 +79,17 @@ GUILD_FIELD_CONVERTERS = {
         partial_func(GUILD_BANNER.put_into, as_data = True),
     ),
     'boost_progress_bar_enabled': (validate_boost_progress_bar_enabled, put_boost_progress_bar_enabled_into),
-    'content_filter': (validate_content_filter, put_content_filter_into),
+    'content_filter': (_deprecate_validate_content_filter, put_explicit_content_filter_level_into),
+    'message_notification': (_deprecate_validate_message_notification, put_default_message_notification_level_into),
+    'default_message_notification_level': (
+        validate_default_message_notification_level, put_default_message_notification_level_into)
+    ,
     'description': (validate_description, put_description_into),
     'discovery_splash': (
         partial_func(GUILD_DISCOVERY_SPLASH.validate_icon, allow_data = True),
         partial_func(GUILD_DISCOVERY_SPLASH.put_into, as_data = True),
     ),
+    'explicit_content_filter_level': (validate_explicit_content_filter_level, put_explicit_content_filter_level_into),
     'features': (validate_features, put_features_into),
     'hub_type': (validate_hub_type, put_hub_type_into),
     'icon': (
@@ -55,8 +101,8 @@ GUILD_FIELD_CONVERTERS = {
         partial_func(GUILD_INVITE_SPLASH.put_into, as_data = True),
     ),
     'locale': (validate_locale, put_locale_into),
-    'message_notification': (validate_message_notification, put_message_notification_into),
-    'mfa': (validate_mfa, put_mfa_into),
+    'mfa': (_deprecate_validate_mfa, put_mfa_level_into),
+    'mfa_level': (validate_mfa_level, put_mfa_level_into),
     'name': (validate_name, put_name_into),
     'nsfw_level': (validate_nsfw_level, put_nsfw_level_into),
     'owner_id': (validate_owner_id, put_owner_id_into),
@@ -177,13 +223,15 @@ def create_partial_guild_from_id(guild_id):
 
 def create_new_guild_data(
     *,
-    name = ...,
     afk_channel_id = ...,
     afk_timeout = ...,
     channels = ...,
     content_filter = ...,
-    icon = ...,
     message_notification = ...,
+    default_message_notification_level = ...,
+    explicit_content_filter_level = ...,
+    icon = ...,
+    name = ...,
     roles = ...,
     system_channel_flags = ...,
     system_channel_id = ...,
@@ -194,9 +242,6 @@ def create_new_guild_data(
     
     Parameters
     ----------
-    name : `str`, Optional (Keyword only)
-        The name of the new guild.
-    
     afk_channel_id : `None`, `int`, Optional (Keyword only)
         The id of the guild's afk channel. The id should be one of the channel's id from `channels`.
     
@@ -206,17 +251,20 @@ def create_new_guild_data(
     channels : `None`, `list` of `dict`, Optional (Keyword only)
         A list of channels of the new guild. It should contain channel data objects.
     
-    content_filter : ``ContentFilterLevel``, `int`, Optional (Keyword only)
+    default_message_notification_level : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
+        The message notification level of the new guild.
+    
+    explicit_content_filter_level : ``ExplicitContentFilterLevel``, `int`, Optional (Keyword only)
         The content filter level of the guild.
     
     icon : `None`, `bytes-like`, Optional (Keyword only)
         The icon of the new guild.
     
+    name : `str`, Optional (Keyword only)
+        The name of the new guild.
+    
     roles : `None`, `list` of (`dict<str, object>`, ``Role``), Optional (Keyword only)
         A list of roles of the new guild. It should contain role data objects.
-    
-    message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
-        The message notification level of the new guild.
     
     system_channel_flags : ``SystemChannelFlag``, `int`, Optional (Keyword only)
         Describe which type of messages are sent automatically to the system channel.
@@ -238,12 +286,6 @@ def create_new_guild_data(
     ValueError
         - If a parameter's value is incorrect.
     """
-    # name
-    if name is ...:
-        name = ''
-    else:
-        name = validate_name(name)
-    
     # afk_channel_id
     if afk_channel_id is ...:
         afk_channel_id = 0
@@ -262,28 +304,60 @@ def create_new_guild_data(
     else:
         channels = validate_channels_and_channel_datas(channels)
     
-    # content_filter
-    if content_filter is ...:
-        content_filter = ContentFilterLevel.disabled
+    
+    if message_notification is not ...:
+        warn(
+            (
+                f'`{create_new_guild_data.__name__}`\'s `message_notification` parameter is deprecated. '
+                f'And will be removed in 2024 April. '
+                f'Please use `default_message_notification_level` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        default_message_notification_level = message_notification
+    
+    # default_message_notification_level
+    if default_message_notification_level is ...:
+        default_message_notification_level = MessageNotificationLevel.all_messages
     else:
-        content_filter = validate_content_filter(content_filter)
+        default_message_notification_level = validate_default_message_notification_level(default_message_notification_level)
+    
+    
+    if content_filter is not ...:
+        warn(
+            (
+                f'`{create_new_guild_data.__name__}`\'s `content_filter` parameter is deprecated. '
+                f'And will be removed in 2024 April. '
+                f'Please use `explicit_content_filter_level` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        explicit_content_filter_level = content_filter
+    
+    # explicit_content_filter_level
+    if explicit_content_filter_level is ...:
+        explicit_content_filter_level = ExplicitContentFilterLevel.disabled
+    else:
+        explicit_content_filter_level = validate_explicit_content_filter_level(explicit_content_filter_level)
     
     if icon is ...:
         icon = None
     else:
         icon = GUILD_ICON.validate_icon(icon, allow_data = True)
     
+    # name
+    if name is ...:
+        name = ''
+    else:
+        name = validate_name(name)
+    
     # roles
     if roles is ...:
         roles = None
     else:
         roles = validate_roles_and_role_datas(roles)
-    
-    # message_notification
-    if message_notification is ...:
-        message_notification = MessageNotificationLevel.all_messages
-    else:
-        message_notification = validate_message_notification(message_notification)
     
     # system_channel_id
     if system_channel_id is ...:
@@ -308,10 +382,10 @@ def create_new_guild_data(
     put_afk_channel_id_into(afk_channel_id, data, defaults = True)
     put_afk_timeout_into(afk_timeout, data, defaults = True)
     put_channels_and_channel_datas_into(channels, data, defaults = True)
-    put_content_filter_into(content_filter, data, defaults = True)
+    put_explicit_content_filter_level_into(explicit_content_filter_level, data, defaults = True)
     GUILD_ICON.put_into(icon, data, defaults = True, as_data = True)
     put_roles_and_role_datas_into(roles, data, defaults = True)
-    put_message_notification_into(message_notification, data, defaults = True)
+    put_default_message_notification_level_into(default_message_notification_level, data, defaults = True)
     put_system_channel_id_into(system_channel_id, data, defaults = True)
     put_system_channel_flags_into(system_channel_flags, data, defaults = True)
     put_verification_level_into(verification_level, data, defaults = True)

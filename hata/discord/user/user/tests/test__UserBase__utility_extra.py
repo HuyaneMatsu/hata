@@ -36,7 +36,7 @@ def test__UserBase__placeholders():
     vampytest.assert_instance(user.flags, UserFlag)
     vampytest.assert_instance(user.guild_profiles, dict)
     vampytest.assert_instance(user.locale, Locale)
-    vampytest.assert_instance(user.mfa, bool)
+    vampytest.assert_instance(user.mfa_enabled, bool)
     vampytest.assert_instance(user.premium_type, PremiumType)
     vampytest.assert_instance(user.status, Status)
     vampytest.assert_instance(user.statuses, dict, nullable = True)

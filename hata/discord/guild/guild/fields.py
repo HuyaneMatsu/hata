@@ -44,7 +44,7 @@ from .constants import (
 )
 from .flags import SystemChannelFlag
 from .preinstanced import (
-    ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel
+    ExplicitContentFilterLevel, GuildFeature, HubType, MfaLevel, MessageNotificationLevel, NsfwLevel, VerificationLevel
 )
 
 # afk_channel_id
@@ -185,13 +185,15 @@ set_docs(
     """
 )
 
-# content_filter
+# default_message_notification_level
 
-parse_content_filter = preinstanced_parser_factory(
-    'explicit_content_filter', ContentFilterLevel, ContentFilterLevel.disabled
+parse_default_message_notification_level = preinstanced_parser_factory(
+    'default_message_notifications', MessageNotificationLevel, MessageNotificationLevel.all_messages
 )
-put_content_filter_into = preinstanced_putter_factory('explicit_content_filter')
-validate_content_filter = preinstanced_validator_factory('content_filter', ContentFilterLevel)
+put_default_message_notification_level_into = preinstanced_putter_factory('default_message_notifications')
+validate_default_message_notification_level = preinstanced_validator_factory(
+    'default_message_notification_level', MessageNotificationLevel
+)
 
 # description
 
@@ -308,6 +310,16 @@ def parse_emojis(data, emojis, guild_id = 0):
 put_emojis_into = entity_dictionary_putter_factory('emojis', Emoji, force_include_internals = True)
 validate_emojis = entity_dictionary_validator_factory('emojis', Emoji)
 
+# explicit_content_filter_level
+
+parse_explicit_content_filter_level = preinstanced_parser_factory(
+    'explicit_content_filter', ExplicitContentFilterLevel, ExplicitContentFilterLevel.disabled
+)
+put_explicit_content_filter_level_into = preinstanced_putter_factory('explicit_content_filter')
+validate_explicit_content_filter_level = preinstanced_validator_factory(
+    'explicit_content_filter_level', ExplicitContentFilterLevel
+)
+
 # features
 
 parse_features = preinstanced_array_parser_factory('features', GuildFeature)
@@ -392,19 +404,11 @@ validate_max_voice_channel_video_users = int_conditional_validator_factory(
     '>= 0',
 )
 
-# message_notification
+# mfa_level
 
-parse_message_notification = preinstanced_parser_factory(
-    'default_message_notifications', MessageNotificationLevel, MessageNotificationLevel.all_messages
-)
-put_message_notification_into = preinstanced_putter_factory('default_message_notifications')
-validate_message_notification = preinstanced_validator_factory('message_notification', MessageNotificationLevel)
-
-# mfa
-
-parse_mfa = preinstanced_parser_factory('mfa_level', MFA, MFA.none)
-put_mfa_into = preinstanced_putter_factory('mfa_level')
-validate_mfa = preinstanced_validator_factory('mfa', MFA)
+parse_mfa_level = preinstanced_parser_factory('mfa_level', MfaLevel, MfaLevel.none)
+put_mfa_level_into = preinstanced_putter_factory('mfa_level')
+validate_mfa_level = preinstanced_validator_factory('mfa_level', MfaLevel)
 
 # name
 

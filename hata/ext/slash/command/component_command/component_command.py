@@ -1,5 +1,7 @@
 __all__ = ('ComponentCommand', )
 
+from warnings import warn
+
 from scarletio import copy_docs
 
 from .....discord.events.handling_helpers import Router, check_name, route_name, route_value
@@ -153,6 +155,15 @@ class ComponentCommand(CommandBaseCustomId):
                         wrapper.apply(self)
                 
                 router.append(self)
+            
+            warn(
+                (
+                    f'Routing commands with tuple parameters is deprecated and will be removed in 2024 Jun. '
+                    f'Please use multiple command decorators instead.'
+                ),
+                FutureWarning,
+                stacklevel = 5,
+            )
             
             return Router(router)
         

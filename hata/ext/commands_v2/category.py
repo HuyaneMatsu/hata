@@ -338,8 +338,22 @@ class Category:
         elif isinstance(command, Router):
             command = command[0]
         else:
-            command = Command(command, name, description, aliases, category, checks, error_handlers, separator,
-                assigner, hidden, hidden_if_checks_fail)
+            command = Command(
+                command,
+                name,
+                description,
+                aliases,
+                category,
+                checks,
+                error_handlers,
+                separator,
+                assigner,
+                hidden,
+                hidden_if_checks_fail,
+            )
+            
+            if isinstance(command, Router):
+                command = command[0]
         
         command._category_hint = self.name
         

@@ -1,10 +1,28 @@
-## 1.3.48 *\[2023-12-??\]*
+## 1.3.48 *\[2023-12-17\]*
 
 ### Improvements
 
 - Add `31` new unicode emojis.
 - Add `Unicode.unicode_aliases`.
 - Add `Unicode.iter_unicode_aliases`.
+
+### Bug fixes
+
+- `repr(DiscordException)` was not called when rendering traceback. (From 1.3.47.)
+
+### Renames, Deprecations & Removals
+
+- Deprecate command routing by giving a parameter as tuple. Please use multiple decorators instead. Turns out this
+    was broken already at many places.
+- Deprecate from class command constructors. Please use a decorator instead. Turns out this was broken already at
+    many places.
+- Rename `ContentFilterLevel` to `ExplicitContentFilterLevel` to match it better what it exactly does.
+- Rename `content_filter` to `explicit_content_filter_level` to match it better what it exactly does.
+- Rename `MFA` to `MfaLevel` to match it better what it exactly does.
+- Rename `mfa` to `mfa_level` to match it better what it exactly does. (Case of guilds.)
+- Rename `message_notification` to `default_message_notification_level` to match it better what it exactly does.
+- Rename `mfa` to `mfa_enabled` to match it better what it exactly does. (Case of users.)
+- Rename `MFA` in error codes to `mfa`.
 
 ## 1.3.47 *\[2023-12-09\]*
 

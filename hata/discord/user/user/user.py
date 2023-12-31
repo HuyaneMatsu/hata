@@ -96,10 +96,10 @@ class User(USER_BASE_TYPE):
     id : `int`
         The user's unique identifier number.
     
-    name : str
+    name : `str`
         The user's name.
     
-    status : `Status`
+    status : ``Status``
         The user's display status.
         
         > Only available if presence caching is enabled.

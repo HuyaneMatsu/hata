@@ -1,3 +1,9 @@
+## 0.0.49 *\[2023-12-31\]*
+
+#### Improvements
+
+- Use new scarletio in dependencies.
+
 ## 1.3.48 *\[2023-12-17\]*
 
 ### Improvements

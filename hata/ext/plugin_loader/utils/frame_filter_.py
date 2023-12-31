@@ -7,20 +7,14 @@ from ..plugin import __file__ as PLUGIN_LOADER_PLUGIN_FILE_PATH
 from ..plugin_loader import __file__ as PLUGIN_LOADER_PLUGIN_LOADER_FILE_PATH
 
 
-def frame_filter(file_name, name, line_number, line):
+def frame_filter(frame):
     """
     Ignores import frames of plugin loading.
     
     Parameters
     ----------
-    file_name : `str`
-        The frame's respective file's name.
-    name : `str`
-        The frame's respective function's name.
-    line_number : `int`
-        The line's index where the exception occurred.
-    line : `str`
-        The frame's respective stripped line.
+    frame : ``FrameProxyBase``
+        The frame to check.
     
     Returns
     -------
@@ -28,6 +22,10 @@ def frame_filter(file_name, name, line_number, line):
         Whether the frame should be shown.
     """
     should_show_frame = True
+    
+    file_name = frame.file_name
+    name = frame.name
+    line = frame.line
     
     if file_name.startswith('<') and file_name.endswith('>'):
         should_show_frame = False

@@ -152,14 +152,14 @@ class AuditLogIterator(AuditLog):
         """
         entries = self.entries
         client = self.client
-        http = client.http
+        api = client.api
         data = self._data
         
         while True:
             if entries:
                 data['before'] = entries[-1].id
             
-            log_data = await http.audit_log_get_chunk(self.guild_id, data)
+            log_data = await api.audit_log_get_chunk(self.guild_id, data)
             
             if not self._populate(log_data):
                 return
@@ -215,7 +215,7 @@ class AuditLogIterator(AuditLog):
         if ln:
             data['before'] = self.entries[ln - 1].id
         
-        log_data = await self.client.http.audit_log_get_chunk(self.guild_id, data)
+        log_data = await self.client.api.audit_log_get_chunk(self.guild_id, data)
         
         if not self._populate(log_data):
             raise StopAsyncIteration

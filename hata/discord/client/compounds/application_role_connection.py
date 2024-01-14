@@ -3,7 +3,7 @@ __all__ = ()
 from scarletio import Compound
 
 from ...application import Application, ApplicationRoleConnectionMetadata
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 
 from .application_command import _assert__application_id
 
@@ -11,7 +11,7 @@ from .application_command import _assert__application_id
 class ClientCompoundApplicationRoleConnectionEndpoints(Compound):
     
     application: Application
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     async def application_role_connection_metadata_get_all(self):
         """
@@ -31,7 +31,7 @@ class ClientCompoundApplicationRoleConnectionEndpoints(Compound):
         application_id = self.application.id
         assert _assert__application_id(application_id)
         
-        datas = await self.http.application_role_connection_metadata_get_all(application_id)
+        datas = await self.api.application_role_connection_metadata_get_all(application_id)
         return [ApplicationRoleConnectionMetadata.from_data(data) for data in datas]
     
     
@@ -63,5 +63,5 @@ class ClientCompoundApplicationRoleConnectionEndpoints(Compound):
             for application_role_connection_metadata in application_role_connection_metadatas
         ]
         
-        datas = await self.http.application_role_connection_metadata_edit_all(application_id, datas)
+        datas = await self.api.application_role_connection_metadata_edit_all(application_id, datas)
         return [ApplicationRoleConnectionMetadata.from_data(data) for data in datas]

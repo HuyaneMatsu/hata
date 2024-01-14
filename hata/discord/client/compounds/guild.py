@@ -15,7 +15,7 @@ from ...guild.guild_incidents.utils import GUILD_INCIDENTS_FIELD_CONVERTERS
 from ...guild.guild_inventory_settings.utils import GUILD_INVENTORY_SETTINGS_FIELD_CONVERTERS
 from ...guild.verification_screen.utils import VERIFICATION_SCREEN_FIELD_CONVERTERS
 from ...guild.welcome_screen.utils import WELCOME_SCREEN_FIELD_CONVERTERS
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...payload_building import build_edit_payload
 from ...role import Role
 from ...onboarding import OnboardingScreen
@@ -60,7 +60,7 @@ class ClientCompoundGuildEndpoints(Compound):
     flags : UserFlag
     guild_profiles : dict
     guilds : set
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     id : int
     bot : bool
     premium_type : PremiumType
@@ -92,7 +92,7 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        guild_preview_data = await self.http.guild_preview_get(guild_id)
+        guild_preview_data = await self.api.guild_preview_get(guild_id)
         return GuildPreview.from_data(guild_preview_data)
     
     
@@ -124,7 +124,7 @@ class ClientCompoundGuildEndpoints(Compound):
         guild_id = get_guild_id(guild)
         user_id = get_user_id(user)
         
-        await self.http.guild_user_delete(guild_id, user_id, reason)
+        await self.api.guild_user_delete(guild_id, user_id, reason)
     
     
     async def welcome_screen_get(self, guild):
@@ -155,7 +155,7 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        welcome_screen_data = await self.http.welcome_screen_get(guild_id)
+        welcome_screen_data = await self.api.welcome_screen_get(guild_id)
         return WelcomeScreen.from_data(welcome_screen_data)
     
     
@@ -206,7 +206,7 @@ class ClientCompoundGuildEndpoints(Compound):
         guild_id = get_guild_id(guild)
         
         data = build_edit_payload(None, welcome_screen_template, WELCOME_SCREEN_FIELD_CONVERTERS, keyword_parameters)
-        welcome_screen_data = await self.http.welcome_screen_edit(guild_id, data)
+        welcome_screen_data = await self.api.welcome_screen_edit(guild_id, data)
         return WelcomeScreen.from_data(welcome_screen_data)
     
     
@@ -240,7 +240,7 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        verification_screen_data = await self.http.verification_screen_get(guild_id)
+        verification_screen_data = await self.api.verification_screen_get(guild_id)
         return VerificationScreen.from_data(verification_screen_data)
     
     
@@ -297,7 +297,7 @@ class ClientCompoundGuildEndpoints(Compound):
         data = build_edit_payload(
             None, verification_screen_template, VERIFICATION_SCREEN_FIELD_CONVERTERS, keyword_parameters
         )
-        verification_screen_data = await self.http.verification_screen_edit(guild_id, data)
+        verification_screen_data = await self.api.verification_screen_edit(guild_id, data)
         
         return VerificationScreen.from_data(verification_screen_data)
     
@@ -328,7 +328,7 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        onboarding_screen_data = await self.http.onboarding_screen_get(guild_id)
+        onboarding_screen_data = await self.api.onboarding_screen_get(guild_id)
         return OnboardingScreen.from_data(onboarding_screen_data)
     
     
@@ -385,7 +385,7 @@ class ClientCompoundGuildEndpoints(Compound):
         # https://github.com/discord/discord-api-docs/pull/6479
         data = flatten_emoji_data_in_onboarding_screen_prompt_options(data)
         
-        onboarding_screen_data = await self.http.onboarding_screen_edit(guild_id, data, reason)
+        onboarding_screen_data = await self.api.onboarding_screen_edit(guild_id, data, reason)
         return OnboardingScreen.from_data(onboarding_screen_data)
         
     
@@ -416,12 +416,12 @@ class ClientCompoundGuildEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         guild, guild_id = get_guild_and_id(guild)
-        data = await self.http.guild_get(guild_id, {'with_counts': True})
+        data = await self.api.guild_get(guild_id, {'with_counts': True})
         
         if guild is None:
-            channel_datas = await self.http.guild_channel_get_all(guild_id)
+            channel_datas = await self.api.guild_channel_get_all(guild_id)
             data['channels'] = channel_datas
-            user_data = await self.http.guild_user_get(guild_id, self.id)
+            user_data = await self.api.guild_user_get(guild_id, self.id)
             data['members'] = [user_data]
             guild = Guild.from_data(data, self)
         else:
@@ -458,19 +458,19 @@ class ClientCompoundGuildEndpoints(Compound):
         guild, guild_id = get_guild_and_id(guild)
         
         if guild is None:
-            data = await self.http.guild_get(guild_id, None)
-            channel_datas = await self.http.guild_channel_get_all(guild_id)
+            data = await self.api.guild_get(guild_id, None)
+            channel_datas = await self.api.guild_channel_get_all(guild_id)
             data['channels'] = channel_datas
-            user_data = await self.http.guild_user_get(guild_id, self.id)
+            user_data = await self.api.guild_user_get(guild_id, self.id)
             data['members'] = [user_data]
             guild = Guild.from_data(data, self)
         else:
-            data = await self.http.guild_get(guild_id, None)
+            data = await self.api.guild_get(guild_id, None)
             guild._update_generic(data)
-            channel_datas = await self.http.guild_channel_get_all(guild_id)
+            channel_datas = await self.api.guild_channel_get_all(guild_id)
             guild._update_channels(channel_datas)
             
-            user_data = await self.http.guild_user_get(guild_id, self.id)
+            user_data = await self.api.guild_user_get(guild_id, self.id)
             try:
                 profile = self.guild_profiles[guild.id]
             except KeyError:
@@ -486,7 +486,7 @@ class ClientCompoundGuildEndpoints(Compound):
 ##    async def _guild_sync_post_process(self, guild):
 ##        for client in CLIENTS.values():
 ##            try:
-##                user_data = await self.http.guild_user_get(guild.id, client.id)
+##                user_data = await self.api.guild_user_get(guild.id, client.id)
 ##           except (DiscordException, ConnectionError):
 ##                continue
 ##            try:
@@ -504,7 +504,7 @@ class ClientCompoundGuildEndpoints(Compound):
 ##        old_ids = set(guild.users)
 ##        data = {'limit': 1000, 'after': '0'}
 ##        while True:
-##            user_datas = await self.http.guild_users(guild.id, data)
+##            user_datas = await self.api.guild_users(guild.id, data)
 ##            for user_data in user_datas:
 ##                user = User._create_and_update(user_data, guild)
 ##                try:
@@ -552,7 +552,7 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        await self.http.guild_delete(guild_id)
+        await self.api.guild_delete(guild_id)
     
     
     async def guild_create(self, name, **keyword_parameters):
@@ -624,7 +624,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         data = create_new_guild_data(name = name, **keyword_parameters)
         
-        data = await self.http.guild_create(data)
+        data = await self.api.guild_create(data)
         # we can create only partial, because the guild data is not completed usually
         return create_partial_guild_from_data(data)
     
@@ -724,7 +724,7 @@ class ClientCompoundGuildEndpoints(Compound):
             if role_ids:
                 data['include_roles'] = role_ids
         
-        data = await self.http.guild_prune(guild_id, data, reason)
+        data = await self.api.guild_prune(guild_id, data, reason)
         return data.get('pruned', None)
     
     
@@ -792,7 +792,7 @@ class ClientCompoundGuildEndpoints(Compound):
             if role_ids:
                 data['include_roles'] = role_ids
         
-        data = await self.http.guild_prune_estimate(guild_id, data)
+        data = await self.api.guild_prune_estimate(guild_id, data)
         return data.get('pruned', None)
     
     
@@ -1032,7 +1032,7 @@ class ClientCompoundGuildEndpoints(Compound):
             data['features'] = features
         
         if data:
-            await self.http.guild_edit(guild_id, data, reason)
+            await self.api.guild_edit(guild_id, data, reason)
     
     
     async def guild_widget_get(self, guild):
@@ -1062,7 +1062,7 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        data = await self.http.guild_widget_get(guild_id)
+        data = await self.api.guild_widget_get(guild_id)
         return GuildWidget.from_data(data)
     
     
@@ -1102,7 +1102,7 @@ class ClientCompoundGuildEndpoints(Compound):
         query_parameters = {'limit': 1000, 'after': 0}
         users = []
         while True:
-            guild_profile_datas = await self.http.guild_user_get_chunk(guild_id, query_parameters)
+            guild_profile_datas = await self.api.guild_user_get_chunk(guild_id, query_parameters)
             for guild_profile_data in guild_profile_datas:
                 user = User.from_data(guild_profile_data['user'], guild_profile_data, guild_id)
                 users.append(user)
@@ -1140,7 +1140,7 @@ class ClientCompoundGuildEndpoints(Compound):
         
         query_parameters = {'after': 0, 'with_counts': True}
         while True:
-            data = await self.http.guild_get_chunk(query_parameters)
+            data = await self.api.guild_get_chunk(query_parameters)
             for guild_data in data:
                 guild = create_partial_guild_from_data(guild_data)
                 guild._update_counts_only(guild_data)
@@ -1183,7 +1183,7 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        data = await self.http.guild_voice_region_get_all(guild_id)
+        data = await self.api.guild_voice_region_get_all(guild_id)
         voice_regions = []
         optimals = []
         for voice_region_data in data:
@@ -1213,7 +1213,7 @@ class ClientCompoundGuildEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.voice_region_get_all()
+        data = await self.api.voice_region_get_all()
         voice_regions = []
         for voice_region_data in data:
             region = VoiceRegion.from_data(voice_region_data)
@@ -1335,7 +1335,7 @@ class ClientCompoundGuildEndpoints(Compound):
             
             data['action_type'] = entry_type_value
         
-        data = await self.http.audit_log_get_chunk(guild_id, data)
+        data = await self.api.audit_log_get_chunk(guild_id, data)
         return AuditLog(data, guild_id)
     
     
@@ -1426,7 +1426,7 @@ class ClientCompoundGuildEndpoints(Compound):
             keyword_parameters,
         )
         if data:
-            await self.http.guild_incidents_edit(guild_id, data, reason)
+            await self.api.guild_incidents_edit(guild_id, data, reason)
 
 
     async def guild_inventory_settings_edit(
@@ -1485,4 +1485,4 @@ class ClientCompoundGuildEndpoints(Compound):
             keyword_parameters,
         )
         if data:
-            await self.http.guild_inventory_settings_edit(guild_id, data, reason)
+            await self.api.guild_inventory_settings_edit(guild_id, data, reason)

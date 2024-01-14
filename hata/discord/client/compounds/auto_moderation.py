@@ -3,7 +3,7 @@ __all__ = ()
 from scarletio import Compound
 
 from ...auto_moderation import AutoModerationRule
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 
 from ..request_helpers import (
     get_auto_moderation_rule_and_guild_id_and_id, get_auto_moderation_rule_guild_id_and_id, get_guild_id
@@ -12,7 +12,7 @@ from ..request_helpers import (
 
 class ClientCompoundAutoModerationEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     async def auto_moderation_rule_get(self, auto_moderation_rule):
         """
@@ -42,7 +42,7 @@ class ClientCompoundAutoModerationEndpoints(Compound):
             auto_moderation_rule
         )
         
-        auto_moderation_rule_data = await self.http.auto_moderation_rule_get(guild_id, auto_moderation_rule_id)
+        auto_moderation_rule_data = await self.api.auto_moderation_rule_get(guild_id, auto_moderation_rule_id)
         
         if (auto_moderation_rule is None):
             auto_moderation_rule = AutoModerationRule.from_data(auto_moderation_rule_data)
@@ -79,7 +79,7 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        auto_moderation_rule_datas = await self.http.auto_moderation_rule_get_all(guild_id)
+        auto_moderation_rule_datas = await self.api.auto_moderation_rule_get_all(guild_id)
         
         return [
             AutoModerationRule.from_data(auto_moderation_rule_data)
@@ -127,7 +127,7 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         
         data = auto_moderation_rule.to_data()
         
-        auto_moderation_rule_data = await self.http.auto_moderation_rule_create(guild_id, data, reason)
+        auto_moderation_rule_data = await self.api.auto_moderation_rule_create(guild_id, data, reason)
         
         return AutoModerationRule.from_data(auto_moderation_rule_data)
     
@@ -171,7 +171,7 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         
         data = new_auto_moderation_rule.to_data()
         
-        await self.http.auto_moderation_rule_edit(guild_id, auto_moderation_rule_id, data, reason)
+        await self.api.auto_moderation_rule_edit(guild_id, auto_moderation_rule_id, data, reason)
     
     
     async def auto_moderation_rule_delete(self, auto_moderation_rule, *, reason = None):
@@ -197,4 +197,4 @@ class ClientCompoundAutoModerationEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         guild_id, auto_moderation_rule_id = get_auto_moderation_rule_guild_id_and_id(auto_moderation_rule)
-        await self.http.auto_moderation_rule_delete(guild_id, auto_moderation_rule_id, reason)
+        await self.api.auto_moderation_rule_delete(guild_id, auto_moderation_rule_id, reason)

@@ -4,7 +4,7 @@ from scarletio import Compound
 
 from ...guild import DiscoveryCategory, Guild, GuildDiscovery
 from ...guild.discovery.utils import GUILD_DISCOVERY_FIELD_CONVERTERS
-from ...http import DiscordHTTPClient, rate_limit_groups
+from ...http import DiscordApiClient, rate_limit_groups
 from ...payload_building import build_edit_payload
 
 from ..functionality_helpers import DiscoveryCategoryRequestCacher, DiscoveryTermRequestCacher
@@ -13,7 +13,7 @@ from ..request_helpers import get_guild_id
 
 class ClientCompoundDiscoveryEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     
     async def guild_discovery_get(self, guild):
@@ -43,7 +43,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         guild_id = get_guild_id(guild)
-        guild_discovery_data = await self.http.guild_discovery_get(guild_id)
+        guild_discovery_data = await self.api.guild_discovery_get(guild_id)
         return GuildDiscovery.from_data(guild_discovery_data)
     
     
@@ -97,7 +97,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         data = build_edit_payload(None, discovery_template, GUILD_DISCOVERY_FIELD_CONVERTERS, keyword_parameters)
-        guild_discovery_data = await self.http.guild_discovery_edit(guild_id, data)
+        guild_discovery_data = await self.api.guild_discovery_edit(guild_id, data)
         return GuildDiscovery.from_data(guild_discovery_data)
     
     
@@ -142,7 +142,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
                 f'got {category.__class__.__name__}; {category!r}.'
             )
         
-        await self.http.guild_discovery_add_sub_category(guild_id, category_id)
+        await self.api.guild_discovery_add_sub_category(guild_id, category_id)
     
     
     async def guild_discovery_delete_sub_category(self, guild, category):
@@ -186,7 +186,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
                 f'got {category.__class__.__name__}; {category!r}.'
             )
         
-        await self.http.guild_discovery_delete_sub_category(guild_id, category_id)
+        await self.api.guild_discovery_delete_sub_category(guild_id, category_id)
     
     
     async def discovery_category_get_all(self):
@@ -206,7 +206,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        discovery_category_datas = await self.http.discovery_category_get_all(None)
+        discovery_category_datas = await self.api.discovery_category_get_all(None)
         return [
             DiscoveryCategory.from_data(discovery_category_data)
             for discovery_category_data in discovery_category_datas
@@ -243,7 +243,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.discovery_validate_term({'term': term})
+        data = await self.api.discovery_validate_term({'term': term})
         return data['valid']
     
     

@@ -7,7 +7,7 @@ from scarletio.web_common import ConnectionClosed
 
 from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE
 
-from .heartbeat import Kokoro
+from .heartbeat import Kokoro, LATENCY_DEFAULT
 from .rate_limit import GatewayRateLimiter
 
 
@@ -74,7 +74,7 @@ class DiscordGatewayVoice:
     ----------
     client : ``VoiceClient``
         The owner voice client of the gateway.
-    kokoro : `None`, `Kokoro`
+    kokoro : `None | Kokoro`
         The heart of the gateway, sends beat-data at set intervals. If does not receives answer in time, restarts
         the gateway.
     rate_limit_handler : ``GatewayRateLimiter``
@@ -100,17 +100,16 @@ class DiscordGatewayVoice:
         self.rate_limit_handler = GatewayRateLimiter()
     
     
-    async def start(self):
+    def _create_kokoro(self):
         """
-        Starts the gateway's ``.kokoro``.
-        
-        This method is a coroutine.
+        Creates the gateway's ``.kokoro``.
         """
         kokoro = self.kokoro
         if kokoro is None:
-            self.kokoro = await Kokoro(self)
+            self.kokoro = Kokoro(self)
         else:
-            await kokoro.restart()
+            kokoro.stop()
+            
     
     # connecting, message receive and processing
     
@@ -134,24 +133,16 @@ class DiscordGatewayVoice:
         InvalidHandshake
         WebSocketProtocolError
         """
-        kokoro = self.kokoro
-        if (kokoro is not None):
-            kokoro.terminate()
-            del kokoro
+        self._create_kokoro()
         
         websocket = self.websocket
         if (websocket is not None) and (not websocket.closed):
-            await websocket.close(4000)
             self.websocket = None
+            await websocket.close(4000)
         
         gateway = f'wss://{self.client._endpoint}/?v=4'
         self.websocket = await self.client.client.http.connect_websocket(gateway)
-        
-        kokoro = self.kokoro
-        if kokoro is None:
-            self.kokoro = kokoro = await Kokoro(self)
-        kokoro.start_beating()
-        del kokoro
+        self.kokoro.restart()
         
         if resume:
             await self._resume()
@@ -241,11 +232,12 @@ class DiscordGatewayVoice:
         
         kokoro = self.kokoro
         if kokoro is None:
-            kokoro = await Kokoro(self)
+            kokoro = Kokoro(self)
+            self.kokoro = kokoro
         
         if operation == HELLO:
             # sowwy, but we need to ignore these or we will keep getting timeout
-            # kokoro.interval = data['heartbeat_interval']/100.
+            # kokoro.interval = data['heartbeat_interval'] / 100.
             # send a heartbeat immediately
             await kokoro.beat_now()
             return
@@ -261,13 +253,13 @@ class DiscordGatewayVoice:
             # data['mode'] is same as our default every time?
             self.client._secret_box = SecretBox(bytes(data['secret_key']))
             if kokoro.beater is None: # Discord order bug ?
-                kokoro.start_beating()
-                await self._beat()
+                kokoro.restart()
+                await self.beat()
             
             await self._set_speaking(self.client.speaking)
             return
         
-        if kokoro.beater is None:
+        if kokoro.runner is None:
             raise TimeoutError
         
         if operation == READY:
@@ -287,7 +279,8 @@ class DiscordGatewayVoice:
     @property
     def latency(self):
         """
-        The latency of the websocket in seconds. If no latency is recorded, will return `Kokoro.DEFAULT_LATENCY`.
+        The latency of the websocket in seconds.
+        If no latency is recorded will return the default latency.
         
         Returns
         -------
@@ -295,7 +288,8 @@ class DiscordGatewayVoice:
         """
         kokoro = self.kokoro
         if kokoro is None:
-            return Kokoro.DEFAULT_LATENCY
+            return LATENCY_DEFAULT
+        
         return kokoro.latency
     
     
@@ -307,11 +301,13 @@ class DiscordGatewayVoice:
         """
         kokoro = self.kokoro
         if kokoro is not None:
-            kokoro.terminate()
+            self.kokoro = None
+            kokoro.stop()
             
         websocket = self.websocket
         if websocket is None:
             return
+        
         self.websocket = None
         await websocket.close(4000)
     
@@ -327,7 +323,7 @@ class DiscordGatewayVoice:
         kokoro = self.kokoro
         if (kokoro is not None):
             self.kokoro = None
-            kokoro.cancel()
+            kokoro.stop()
         
         websocket = self.websocket
         if websocket is None:
@@ -352,13 +348,27 @@ class DiscordGatewayVoice:
         if websocket is None:
             return
         
-        if await self.rate_limit_handler:
+        if not (await self.rate_limit_handler):
             return
         
         try:
             await websocket.send(to_json(data))
         except ConnectionClosed:
             pass
+    
+    
+    async def beat(self):
+        """
+        Sends a `HEARTBEAT` packet to Discord.
+        
+        This method is a coroutine.
+        """
+        data = {
+            'op': HEARTBEAT,
+            'd': int(time_now() * 1000),
+        }
+        
+        await self.send_as_json(data)
     
     
     def __repr__(self):
@@ -431,20 +441,6 @@ class DiscordGatewayVoice:
                     'mode': 'xsalsa20_poly1305'
                 },
             },
-        }
-        
-        await self.send_as_json(data)
-    
-    
-    async def _beat(self):
-        """
-        Sends a `HEARTBEAT` packet to Discord.
-        
-        This method is a coroutine.
-        """
-        data = {
-            'op': HEARTBEAT,
-            'd': int(time_now() * 1000),
         }
         
         await self.send_as_json(data)

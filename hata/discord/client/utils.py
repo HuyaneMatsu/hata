@@ -272,7 +272,7 @@ class Typer:
         while self.timeout > 0.0:
             self.timeout -= 8.0
             self.waiter = waiter = sleep(8.0, KOKORO)
-            await self.client.http.typing(self.channel_id)
+            await self.client.api.typing(self.channel_id)
             await waiter
         
         self.waiter = None
@@ -292,7 +292,7 @@ class Typer:
                 sleep_duration = 8.0
             
             self.waiter = waiter = sleep(sleep_duration, KOKORO)
-            yield from self.client.http.typing(self.channel_id).__await__()
+            yield from self.client.api.typing(self.channel_id).__await__()
             
             try:
                 yield from waiter

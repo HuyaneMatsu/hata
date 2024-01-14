@@ -7,7 +7,7 @@ from scarletio import Compound
 from ....env import API_VERSION
 
 from ...bases import maybe_snowflake
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...integration import Integration
 
 from ..request_helpers import get_guild_id
@@ -15,7 +15,7 @@ from ..request_helpers import get_guild_id
 
 class ClientCompoundIntegrationEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     
     #TODO: decide if we should store integrations at Guild objects
@@ -46,7 +46,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
             """
             guild_id = get_guild_id(guild)
             
-            integration_datas = await self.http.integration_get_all(guild_id, None)
+            integration_datas = await self.api.integration_get_all(guild_id, None)
             return [Integration.from_data(integration_data) for integration_data in integration_datas]
     
     else:
@@ -76,7 +76,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
             """
             guild_id = get_guild_id(guild)
             
-            integration_datas = await self.http.integration_get_all(guild_id, {'include_applications': True})
+            integration_datas = await self.api.integration_get_all(guild_id, {'include_applications': True})
             return [Integration.from_data(integration_data) for integration_data in integration_datas]
     
     
@@ -131,7 +131,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
             'type' : type_,
         }
         
-        data = await self.http.integration_create(guild_id, data)
+        data = await self.api.integration_create(guild_id, data)
         return Integration.from_data(data)
     
     
@@ -246,7 +246,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
             
             data['enable_emoticons'] = emojis_enabled
         
-        await self.http.integration_edit(role.guild_id, integration.id, data)
+        await self.api.integration_edit(role.guild_id, integration.id, data)
     
     
     async def integration_delete(self, integration):
@@ -284,7 +284,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
         if role is None:
             return
         
-        await self.http.integration_delete(role.guild_id, integration.id)
+        await self.api.integration_delete(role.guild_id, integration.id)
     
     
     async def integration_sync(self, integration):
@@ -322,4 +322,4 @@ class ClientCompoundIntegrationEndpoints(Compound):
         if role is None:
             return
         
-        await self.http.integration_sync(role.guild_id, integration.id)
+        await self.api.integration_sync(role.guild_id, integration.id)

@@ -8,7 +8,7 @@ from ...application.entitlement.fields import (
     validate_sku_ids as validate_entitlement_sku_ids, validate_user_id as validate_entitlement_user_id
 )
 from ...application.entitlement.utils import ENTITLEMENT_FIELD_CONVERTERS
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...payload_building import build_create_payload
 from ...utils import log_time_converter
 
@@ -39,8 +39,8 @@ def _assert__application_id(application_id):
 
 class ClientCompoundApplicationEndpoints(Compound):
     
+    api : DiscordApiClient
     application: Application
-    http : DiscordHTTPClient
     
     
     async def entitlement_create(self, entitlement_template = None, **keyword_parameters):
@@ -93,7 +93,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         assert _assert__application_id(application_id)
         
         data = build_create_payload(entitlement_template, ENTITLEMENT_FIELD_CONVERTERS, keyword_parameters)
-        entitlement_data = await self.http.entitlement_create(application_id, data)
+        entitlement_data = await self.api.entitlement_create(application_id, data)
         return Entitlement.from_data(entitlement_data)
     
     
@@ -123,7 +123,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         assert _assert__application_id(application_id)
         
         entitlement_id = get_entitlement_id(entitlement)
-        await self.http.entitlement_delete(application_id, entitlement_id)
+        await self.api.entitlement_delete(application_id, entitlement_id)
     
     
     async def entitlement_get_all(self, *, exclude_ended = ..., guild_id = ..., sku_ids = ..., user_id = ...):
@@ -188,7 +188,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         entitlements = []
         
         while True:
-            entitlement_datas = await self.http.entitlement_get_chunk(application_id, query_parameters)
+            entitlement_datas = await self.api.entitlement_get_chunk(application_id, query_parameters)
             for entitlement_data in entitlement_datas:
                 entitlement = Entitlement.from_data(entitlement_data)
                 entitlements.append(entitlement)
@@ -300,7 +300,7 @@ class ClientCompoundApplicationEndpoints(Compound):
             if user_id:
                 query_parameters['user_id'] = user_id
         
-        entitlement_datas = await self.http.entitlement_get_chunk(application_id, query_parameters)
+        entitlement_datas = await self.api.entitlement_get_chunk(application_id, query_parameters)
         return [Entitlement.from_data(entitlement_data) for entitlement_data in entitlement_datas]
     
     
@@ -325,5 +325,5 @@ class ClientCompoundApplicationEndpoints(Compound):
         application_id = self.application.id
         assert _assert__application_id(application_id)
         
-        sku_datas = await self.http.sku_get_all(application_id)
+        sku_datas = await self.api.sku_get_all(application_id)
         return [SKU.from_data(sku_data) for sku_data in sku_datas]

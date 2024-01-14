@@ -4,7 +4,7 @@ import warnings
 
 from scarletio import Compound
 
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...payload_building import build_create_payload, build_edit_payload
 from ...scheduled_event import ScheduledEvent
 from ...scheduled_event.scheduled_event.utils import (
@@ -20,7 +20,7 @@ from ..request_helpers import (
 
 class ClientCompoundScheduledEventEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     
     async def scheduled_event_create(
@@ -112,7 +112,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         data = build_create_payload(
             scheduled_event_template, SCHEDULED_EVENT_CREATE_FIELD_CONVERTERS, keyword_parameters
         )
-        scheduled_event_data = await self.http.scheduled_event_create(guild_id, data, reason)
+        scheduled_event_data = await self.api.scheduled_event_create(guild_id, data, reason)
         return ScheduledEvent.from_data(scheduled_event_data)
     
     
@@ -191,7 +191,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
             scheduled_event, scheduled_event_template, SCHEDULED_EVENT_EDIT_FIELD_CONVERTERS, keyword_parameters
         )
         if data:
-            await self.http.scheduled_event_edit(guild_id, scheduled_event_id, data, reason)
+            await self.api.scheduled_event_edit(guild_id, scheduled_event_id, data, reason)
     
     
     async def scheduled_event_delete(self, scheduled_event):
@@ -215,7 +215,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
-        await self.http.scheduled_event_delete(guild_id, scheduled_event_id)
+        await self.api.scheduled_event_delete(guild_id, scheduled_event_id)
     
     
     async def scheduled_event_get(self, scheduled_event, *, force_update = False):
@@ -246,7 +246,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         """
         scheduled_event, guild_id, scheduled_event_id = get_scheduled_event_and_guild_id_and_id(scheduled_event)
         if (scheduled_event is None) or force_update:
-            data = await self.http.scheduled_event_get(guild_id, scheduled_event_id, {'with_user_count', None})
+            data = await self.api.scheduled_event_get(guild_id, scheduled_event_id, {'with_user_count', None})
             
             scheduled_event, is_created = ScheduledEvent.from_data_is_created(data)
             if not is_created:
@@ -280,7 +280,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         guild_id = get_guild_id(guild)
-        scheduled_event_datas = await self.http.scheduled_event_get_all_guild(guild_id, {'with_user_count': True})
+        scheduled_event_datas = await self.api.scheduled_event_get_all_guild(guild_id, {'with_user_count': True})
         return [ScheduledEvent.from_data(scheduled_event_data) for scheduled_event_data in scheduled_event_datas]
     
     
@@ -348,7 +348,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         if guild_id:
             query_parameters['with_member'] = True
         
-        scheduled_event_user_datas = await self.http.scheduled_event_user_get_chunk(
+        scheduled_event_user_datas = await self.api.scheduled_event_user_get_chunk(
             guild_id, scheduled_event_id, query_parameters
         )
         
@@ -395,7 +395,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         users = []
         
         while True:
-            scheduled_event_user_datas = await self.http.scheduled_event_user_get_chunk(
+            scheduled_event_user_datas = await self.api.scheduled_event_user_get_chunk(
                 guild_id, scheduled_event_id, query_parameters,
             )
             

@@ -2,7 +2,7 @@ __all__ = ()
 
 from scarletio import Compound
 
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...user import User
 from ...utils import log_time_converter
 
@@ -57,7 +57,7 @@ def _assert__guild_ban_get_chunk__limit(limit):
 
 class ClientCompoundGuildBanEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     
     async def guild_ban_add(self, guild, user, *, delete_message_duration = 0, reason = None):
@@ -104,7 +104,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
             data['delete_message_seconds'] = delete_message_duration
         
         
-        await self.http.guild_ban_add(guild_id, user_id, data, reason)
+        await self.api.guild_ban_add(guild_id, user_id, data, reason)
     
     
     async def guild_ban_delete(self, guild, user, *, reason = None):
@@ -135,7 +135,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         guild_id = get_guild_id(guild)
         user_id = get_user_id(user)
         
-        await self.http.guild_ban_delete(guild_id, user_id, reason)
+        await self.api.guild_ban_delete(guild_id, user_id, reason)
     
     
     async def guild_ban_get_chunk(self, guild, *, after = None, before = None, limit = 0):
@@ -194,7 +194,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         if (before is not None):
             query_parameters['before'] = log_time_converter(before)
         
-        ban_datas = await self.http.guild_ban_get_chunk(guild_id, query_parameters)
+        ban_datas = await self.api.guild_ban_get_chunk(guild_id, query_parameters)
         return [BanEntry(User.from_data(ban_data['user']), ban_data.get('reason', None)) for ban_data in ban_datas]
     
     
@@ -237,7 +237,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         ban_entries = []
         
         while True:
-            ban_datas = await self.http.guild_ban_get_chunk(guild_id, query_parameters)
+            ban_datas = await self.api.guild_ban_get_chunk(guild_id, query_parameters)
             
             for ban_data in ban_datas:
                 ban_entries.append(BanEntry(User.from_data(ban_data['user']), ban_data.get('reason', None)))
@@ -281,5 +281,5 @@ class ClientCompoundGuildBanEndpoints(Compound):
         guild_id = get_guild_id(guild)
         user_id = get_user_id(user)
         
-        data = await self.http.guild_ban_get(guild_id, user_id)
+        data = await self.api.guild_ban_get(guild_id, user_id)
         return BanEntry(User.from_data(data['user']), data.get('reason', None))

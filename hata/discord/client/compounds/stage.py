@@ -5,7 +5,7 @@ import warnings
 from scarletio import Compound
 
 from ...channel import Channel
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...payload_building import build_create_payload, build_edit_payload
 from ...stage import Stage
 from ...stage.stage.utils import STAGE_CREATE_FIELD_CONVERTERS, STAGE_EDIT_FIELD_CONVERTERS
@@ -15,7 +15,7 @@ from ..request_helpers import get_channel_id, get_stage_and_channel_id, get_stag
 
 class ClientCompoundStageEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     
     async def stage_create(self, channel, stage_template = None, *, reason = None, **keyword_parameters):
@@ -97,7 +97,7 @@ class ClientCompoundStageEndpoints(Compound):
         data = build_create_payload(stage_template, STAGE_CREATE_FIELD_CONVERTERS, keyword_parameters)
         data['channel_id'] = channel_id
         
-        stage_data = await self.http.stage_create(data, reason)
+        stage_data = await self.api.stage_create(data, reason)
         return Stage.from_data(stage_data)
     
     
@@ -161,7 +161,7 @@ class ClientCompoundStageEndpoints(Compound):
         data = build_edit_payload(stage, stage_template, STAGE_EDIT_FIELD_CONVERTERS, keyword_parameters)
         
         if data:
-            await self.http.stage_edit(channel_id, data, reason)
+            await self.api.stage_edit(channel_id, data, reason)
             # We receive data, but ignore it, so we can dispatch it.
     
     
@@ -192,7 +192,7 @@ class ClientCompoundStageEndpoints(Compound):
         """
         channel_id = get_stage_channel_id(stage)
         
-        await self.http.stage_delete(channel_id, reason)
+        await self.api.stage_delete(channel_id, reason)
         # We receive no data.
     
     
@@ -218,5 +218,5 @@ class ClientCompoundStageEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_guild_stage)
         
-        data = await self.http.stage_get(channel_id)
+        data = await self.api.stage_get(channel_id)
         return Stage.from_data(data)

@@ -13,7 +13,7 @@ from .guild_thread_base import ChannelMetadataGuildThreadBase
 
 class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
     """
-    Base guild channel metadata type.
+    Guild channel metadata for public threads.
     
     Attributes
     ----------

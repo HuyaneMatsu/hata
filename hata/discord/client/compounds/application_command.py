@@ -12,7 +12,7 @@ from ...application_command.application_command.constants import (
     APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD
 )
 from ...application_command.application_command_permission.constants import APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...oauth2 import Oauth2Access, Oauth2Scope, Oauth2User
 
 from ..request_helpers import (
@@ -116,7 +116,7 @@ def _assert__application_command_permission_edit__access_scope(access):
 class ClientCompoundApplicationCommandEndpoints(Compound):
     
     application: Application
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     async def application_command_global_get(self, application_command):
         """
@@ -148,7 +148,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         application_command, application_command_id = get_application_command_and_id(application_command)
         
-        application_command_data = await self.http.application_command_global_get(
+        application_command_data = await self.api.application_command_global_get(
             application_id,
             application_command_id,
             {'with_localizations': True},
@@ -183,7 +183,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         application_id = self.application.id
         assert _assert__application_id(application_id)
         
-        data = await self.http.application_command_global_get_all(
+        data = await self.api.application_command_global_get_all(
             application_id,
             {'with_localizations': True},
         )
@@ -227,7 +227,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         assert _assert__application_command(application_command)
         
         data = application_command.to_data()
-        data = await self.http.application_command_global_create(application_id, data)
+        data = await self.api.application_command_global_create(application_id, data)
         return ApplicationCommand.from_data(data)
     
     
@@ -275,7 +275,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         if (old_application_command is not None) and (old_application_command.name == data['name']):
             del data['name']
         
-        await self.http.application_command_global_edit(application_id, application_command_id, data)
+        await self.api.application_command_global_edit(application_id, application_command_id, data)
         return ApplicationCommand._from_edit_data(data, application_command_id, application_id)
     
     
@@ -302,7 +302,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         application_command_id = get_application_command_id(application_command)
         
-        await self.http.application_command_global_delete(application_id, application_command_id)
+        await self.api.application_command_global_delete(application_id, application_command_id)
     
     
     async def application_command_global_update_multiple(self, application_commands):
@@ -375,7 +375,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
                 f'{application_command_count!r}; {application_commands!r}.'
             )
         
-        application_command_datas = await self.http.application_command_global_update_multiple(
+        application_command_datas = await self.api.application_command_global_update_multiple(
             application_id, application_command_datas
         )
         
@@ -416,7 +416,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         application_command, application_command_id = get_application_command_and_id(application_command)
         
-        application_command_data = await self.http.application_command_guild_get(
+        application_command_data = await self.api.application_command_guild_get(
             application_id,
             guild_id,
             application_command_id,
@@ -461,7 +461,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         guild_id = get_guild_id(guild)
         
-        data = await self.http.application_command_guild_get_all(
+        data = await self.api.application_command_guild_get_all(
             application_id,
             guild_id,
             {'with_localizations': True},
@@ -508,7 +508,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         guild_id = get_guild_id(guild)
         
         data = application_command.to_data()
-        data = await self.http.application_command_guild_create(application_id, guild_id, data)
+        data = await self.api.application_command_guild_create(application_id, guild_id, data)
         return ApplicationCommand.from_data(data)
     
     
@@ -551,7 +551,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         if (old_application_command is not None) and (old_application_command.name == data['name']):
             del data['name']
         
-        await self.http.application_command_guild_edit(application_id, guild_id, application_command_id, data)
+        await self.api.application_command_guild_edit(application_id, guild_id, application_command_id, data)
     
     
     async def application_command_guild_delete(self, guild, application_command):
@@ -582,7 +582,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         application_command_id = get_application_command_id(application_command)
         
-        await self.http.application_command_guild_delete(application_id, guild_id, application_command_id)
+        await self.api.application_command_guild_delete(application_id, guild_id, application_command_id)
     
     
     async def application_command_guild_update_multiple(self, guild, application_commands):
@@ -656,7 +656,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
                 f'{application_command_count!r}; {application_commands!r}.'
             )
         
-        application_command_datas = await self.http.application_command_guild_update_multiple(
+        application_command_datas = await self.api.application_command_guild_update_multiple(
             application_id, guild_id, application_command_datas
         )
         
@@ -708,7 +708,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         application_command_id = get_application_command_id(application_command)
         
-        permission_data = await self.http.application_command_permission_get(
+        permission_data = await self.api.application_command_permission_get(
             application_id, guild_id, application_command_id
         )
         
@@ -834,7 +834,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         
-        permission_data = await self.http.application_command_permission_edit(
+        permission_data = await self.api.application_command_permission_edit(
             application_id, guild_id, application_command_id, data, headers
         )
         
@@ -871,6 +871,6 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         guild_id = get_guild_id(guild)
         
-        permission_datas = await self.http.application_command_permission_get_all_guild(application_id, guild_id)
+        permission_datas = await self.api.application_command_permission_get_all_guild(application_id, guild_id)
         
         return [ApplicationCommandPermission.from_data(permission_data) for permission_data in permission_datas]

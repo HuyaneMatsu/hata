@@ -52,7 +52,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         The ip to what the voice client's gateway connects.
     _port : `None`, `int`
         The port to what the voice client's gateway connects.
-    _pref_volume : `float`
+    _preferred_volume : `float`
         The preferred volume of the voice client. can be between `0.0` and `2.0`.
     _protocol : `None`, ``DatagramMergerReadProtocol``
         Asynchronous protocol of the voice client to communicate with it's socket.
@@ -126,7 +126,7 @@ class VoiceClient(RichAttributeErrorBaseType):
     """
     __slots__ = (
         '_audio_port', '_audio_source', '_audio_sources', '_audio_streams', '_encoder', '_endpoint', '_endpoint_ip',
-        '_handshake_complete', '_ip', '_port', '_pref_volume', '_protocol', '_reconnecting', '_secret_box',
+        '_handshake_complete', '_ip', '_port', '_preferred_volume', '_protocol', '_reconnecting', '_secret_box',
         '_sequence', '_session_id', '_set_speaking_task', '_socket', '_timestamp', '_token', '_transport',
         '_video_source', '_video_sources', 'call_after', 'channel_id', 'client', 'connected', 'gateway', 'guild_id',
         'lock', 'player', 'queue', 'reader', 'region', 'speaking'
@@ -191,7 +191,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         self._timestamp = 0
         self._audio_source = 0
         self._video_source = 0
-        self._pref_volume = 1.0
+        self._preferred_volume = 1.0
         self._set_speaking_task = None
         self._endpoint = None
         self._port = None
@@ -209,9 +209,11 @@ class VoiceClient(RichAttributeErrorBaseType):
         Task(KOKORO, self._connect(waiter = waiter))
         return waiter
     
+    
     # properties
     def _get_volume(self):
-        return self._pref_volume
+        return self._preferred_volume
+    
     
     def _set_volume(self, value):
         if value < 0.:
@@ -219,7 +221,8 @@ class VoiceClient(RichAttributeErrorBaseType):
         elif value > 2.:
             value = 2.
         
-        self._pref_volume = value
+        self._preferred_volume = value
+    
     
     volume = property(_get_volume,_set_volume)
     del _get_volume,_set_volume
@@ -230,6 +233,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         
         Can be between `0.0` and `2.0`.
         """)
+    
     
     @property
     def source(self):
@@ -245,6 +249,7 @@ class VoiceClient(RichAttributeErrorBaseType):
             return
         
         return player.source
+    
     
     # methods
     async def set_speaking(self, value):
@@ -279,7 +284,8 @@ class VoiceClient(RichAttributeErrorBaseType):
         finally:
             self._set_speaking_task = None
     
-    def listen_to(self, user, **kwargs):
+    
+    def listen_to(self, user, **keyword_parameters):
         """
         Creates an audio stream for the given user.
         
@@ -287,7 +293,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         ----------
         user : ``UserBase``
             The user, who's voice will be captured.
-        **kwargs : Keyword parameters
+        **keyword_parameters : Keyword parameters
             Additional keyword parameters.
         
         Other Parameters
@@ -301,9 +307,10 @@ class VoiceClient(RichAttributeErrorBaseType):
         -------
         audio_stream : ``AudioStream``
         """
-        stream = AudioStream(self, user, **kwargs)
+        stream = AudioStream(self, user, **keyword_parameters)
         self._link_audio_stream(stream)
         return stream
+    
     
     def _link_audio_stream(self, stream):
         """
@@ -344,6 +351,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                     reader_actual_stream.append(stream)
                 else:
                     reader_audio_streams[source] = [reader_actual_stream, stream]
+    
     
     def _unlink_audio_stream(self, audio_stream):
         """
@@ -395,6 +403,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                         if reader_actual_stream is audio_stream:
                             del reader_audio_streams[source]
     
+    
     def _remove_source(self, user_id):
         """
         Un-links the audio and video streams' source listening to the given user (id), causing the affected audio
@@ -429,6 +438,7 @@ class VoiceClient(RichAttributeErrorBaseType):
             del self._video_sources[user_id]
         except KeyError:
             pass
+    
     
     def _update_audio_source(self, user_id, audio_source):
         """
@@ -511,6 +521,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                 
                 reader_audio_streams[audio_source] = reader_new_stream
     
+    
     def _update_video_source(self, user_id, video_source):
         """
         Updates (or adds) an `user-id` - `video-source` relation to the voice client.
@@ -523,6 +534,7 @@ class VoiceClient(RichAttributeErrorBaseType):
             Video source identifier of the user.
         """
         self._video_sources[user_id] = video_source
+    
     
     def get_audio_streams(self):
         """
@@ -545,6 +557,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                     streams.append((user, stream))
         
         return streams
+    
     
     @property
     def voice_state(self):
@@ -651,7 +664,7 @@ class VoiceClient(RichAttributeErrorBaseType):
             'channel_id': self.channel_id
         }
         
-        await self.client.http.voice_state_client_edit(guild_id, data)
+        await self.client.api.voice_state_client_edit(guild_id, data)
     
     
     async def join_audience(self):
@@ -686,7 +699,7 @@ class VoiceClient(RichAttributeErrorBaseType):
             'channel_id': self.channel_id
         }
         
-        await self.client.http.voice_state_client_edit(guild_id, data)
+        await self.client.api.voice_state_client_edit(guild_id, data)
    
     
     def append(self, source):
@@ -859,7 +872,6 @@ class VoiceClient(RichAttributeErrorBaseType):
             A Waiter what's result is set (or is raised to), when the voice client connects (or failed to connect).
         """
         try:
-            await self.gateway.start()
             tries = 0
             while True:
                 if tries == 5:
@@ -1198,7 +1210,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         
         kokoro = self.gateway.kokoro
         if (kokoro is not None):
-            kokoro.terminate()
+            kokoro.stop()
     
     
     async def _create_socket(self, event):

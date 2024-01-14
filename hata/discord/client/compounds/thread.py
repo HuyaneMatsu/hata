@@ -9,7 +9,7 @@ from ...bases import maybe_snowflake, maybe_snowflake_pair
 from ...channel import Channel, ChannelType, create_partial_channel_from_id
 from ...channel.channel.utils import CHANNEL_GUILD_THREAD_FIELD_CONVERTERS
 from ...core import CHANNELS
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...message import Message, MessageFlag
 from ...payload_building import build_create_payload
 from ...sticker import Sticker
@@ -28,7 +28,7 @@ MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppres
 
 class ClientCompoundThreadEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     id: int
     
     
@@ -62,7 +62,7 @@ class ClientCompoundThreadEndpoints(Compound):
         if not guild_id:
             return []
         
-        data = await self.http.guild_thread_get_all_active(guild_id)
+        data = await self.api.guild_thread_get_all_active(guild_id)
         
         thread_channel_datas = data['threads']
         
@@ -198,9 +198,9 @@ class ClientCompoundThreadEndpoints(Compound):
         data = build_create_payload(channel_template, CHANNEL_GUILD_THREAD_FIELD_CONVERTERS, keyword_parameters)
         
         if message_id is None:
-            coroutine = self.http.thread_create(channel_id, data)
+            coroutine = self.api.thread_create(channel_id, data)
         else:
-            coroutine = self.http.thread_create_from_message(channel_id, message_id, data)
+            coroutine = self.api.thread_create_from_message(channel_id, message_id, data)
         channel_data = await coroutine
         
         if channel is None:
@@ -449,7 +449,7 @@ class ClientCompoundThreadEndpoints(Compound):
         
         data['message'] = message_data
         
-        channel_data = await self.http.thread_create(channel_id, data)
+        channel_data = await self.api.thread_create(channel_id, data)
         
         if channel is None:
             guild_id = channel_data.get('guild_id', None)
@@ -491,7 +491,7 @@ class ClientCompoundThreadEndpoints(Compound):
         """
         channel_id = get_channel_id(thread_channel, Channel.is_in_group_thread)
         
-        await self.http.thread_join(channel_id)
+        await self.api.thread_join(channel_id)
     
     
     async def thread_leave(self, thread_channel):
@@ -516,7 +516,7 @@ class ClientCompoundThreadEndpoints(Compound):
         """
         channel_id = get_channel_id(thread_channel, Channel.is_in_group_thread)
         
-        await self.http.thread_leave(channel_id)
+        await self.api.thread_leave(channel_id)
     
     
     async def thread_user_get(self, thread_channel, user):
@@ -550,7 +550,7 @@ class ClientCompoundThreadEndpoints(Compound):
         thread_channel, channel_id = get_channel_and_id(thread_channel, Channel.is_in_group_thread)
         user_id = get_user_id(user)
         
-        thread_user_data = await self.http.thread_user_get(channel_id, user_id, {'with_member': True})
+        thread_user_data = await self.api.thread_user_get(channel_id, user_id, {'with_member': True})
         
         if thread_channel is None:
             thread_channel = create_partial_channel_from_id(channel_id, ChannelType.guild_thread_public, 0)
@@ -588,9 +588,9 @@ class ClientCompoundThreadEndpoints(Compound):
         user_id = get_user_id(user)
         
         if user_id == self.id:
-            coroutine = self.http.thread_join(channel_id)
+            coroutine = self.api.thread_join(channel_id)
         else:
-            coroutine = self.http.thread_user_add(channel_id, user_id)
+            coroutine = self.api.thread_user_add(channel_id, user_id)
         await coroutine
     
     
@@ -621,9 +621,9 @@ class ClientCompoundThreadEndpoints(Compound):
         user_id = get_user_id(user)
         
         if user_id == self.id:
-            coroutine = self.http.thread_leave(channel_id)
+            coroutine = self.api.thread_leave(channel_id)
         else:
-            coroutine = self.http.thread_user_delete(channel_id, user_id)
+            coroutine = self.api.thread_user_delete(channel_id, user_id)
         await coroutine
     
     
@@ -663,7 +663,7 @@ class ClientCompoundThreadEndpoints(Compound):
         users = []
         
         while True:
-            thread_user_datas = await self.http.thread_user_get_chunk(channel_id, data)
+            thread_user_datas = await self.api.thread_user_get_chunk(channel_id, data)
             
             if thread_channel is None:
                 thread_channel = create_partial_channel_from_id(channel_id, ChannelType.guild_thread_public, 0)
@@ -692,7 +692,7 @@ class ClientCompoundThreadEndpoints(Compound):
         async def channel_thread_get_all_active(self, channel):
             guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_threadable)
             return await request_channel_thread_channels(
-                self, guild_id, channel_id, type(self.http).channel_thread_get_chunk_active,
+                self, guild_id, channel_id, type(self.api).channel_thread_get_chunk_active,
             )
     
     set_docs(
@@ -751,7 +751,7 @@ class ClientCompoundThreadEndpoints(Compound):
         """
         guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_threadable)
         return await request_channel_thread_channels(
-            self, guild_id, channel_id, type(self.http).channel_thread_get_chunk_archived_private,
+            self, guild_id, channel_id, type(self.api).channel_thread_get_chunk_archived_private,
         )
     
     
@@ -779,7 +779,7 @@ class ClientCompoundThreadEndpoints(Compound):
         """
         guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_threadable)
         return await request_channel_thread_channels(
-            self, guild_id, channel_id, type(self.http).channel_thread_get_chunk_archived_public,
+            self, guild_id, channel_id, type(self.api).channel_thread_get_chunk_archived_public,
         )
     
     
@@ -807,5 +807,5 @@ class ClientCompoundThreadEndpoints(Compound):
         """
         guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_threadable)
         return await request_channel_thread_channels(
-            self, guild_id, channel_id, type(self.http).channel_thread_get_chunk_self_archived,
+            self, guild_id, channel_id, type(self.api).channel_thread_get_chunk_self_archived,
     )

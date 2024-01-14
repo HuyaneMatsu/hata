@@ -5,7 +5,7 @@ from .guild_thread_base import ChannelMetadataGuildThreadBase
 
 class ChannelMetadataGuildThreadAnnouncements(ChannelMetadataGuildThreadBase):
     """
-    Base guild channel metadata type.
+    Guild channel metadata of announcement threads.
     
     Attributes
     ----------

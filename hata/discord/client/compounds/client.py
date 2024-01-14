@@ -7,7 +7,7 @@ from scarletio import Compound
 from ...application import Application
 from ...application.application.utils import APPLICATION_FIELD_CONVERTERS
 from ...channel import Channel
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...oauth2 import Connection
 from ...payload_building import add_payload_fields_from_keyword_parameters, build_edit_payload
 from ...user.guild_profile.utils import GUILD_PROFILE_SELF_FIELD_CONVERTERS
@@ -20,7 +20,7 @@ from ..request_helpers import get_guild_id, get_channel_guild_id_and_id
 class ClientCompoundClientEndpoints(Compound):
     
     application : Application
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     async def edit(self, **keyword_parameters):
         """
@@ -73,7 +73,7 @@ class ClientCompoundClientEndpoints(Compound):
         add_payload_fields_from_keyword_parameters(USER_SELF_FIELD_CONVERTERS, keyword_parameters, data, True)
         
         if data:
-            await self.http.client_edit(data)
+            await self.api.client_edit(data)
     
     
     async def guild_profile_edit(self, guild, *, reason = None, **keyword_parameters):
@@ -106,6 +106,7 @@ class ClientCompoundClientEndpoints(Compound):
             
             Can be a `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
             `'gif'` as well. By passing `None` you can remove the client's current avatar.
+        
         Raises
         ------
         TypeError
@@ -121,7 +122,7 @@ class ClientCompoundClientEndpoints(Compound):
         add_payload_fields_from_keyword_parameters(GUILD_PROFILE_SELF_FIELD_CONVERTERS, keyword_parameters, data, True)
         
         if data:
-            await self.http.client_guild_profile_edit(guild_id, data, reason)
+            await self.api.client_guild_profile_edit(guild_id, data, reason)
     
     
     async def connection_get_all(self):
@@ -145,7 +146,7 @@ class ClientCompoundClientEndpoints(Compound):
         -----
         For a bot account this request will always return an empty list.
         """
-        data = await self.http.client_connection_get_all()
+        data = await self.api.client_connection_get_all()
         return [Connection.from_data(connection_data) for connection_data in data]
     
     
@@ -171,7 +172,7 @@ class ClientCompoundClientEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        await self.http.guild_leave(guild_id)
+        await self.api.guild_leave(guild_id)
 
 
     async def join_speakers(self, channel, *, request = False):
@@ -210,7 +211,7 @@ class ClientCompoundClientEndpoints(Compound):
             'channel_id': channel_id
         }
         
-        await self.http.voice_state_client_edit(guild_id, data)
+        await self.api.voice_state_client_edit(guild_id, data)
     
     
     async def join_audience(self, channel):
@@ -242,7 +243,7 @@ class ClientCompoundClientEndpoints(Compound):
             'channel_id': channel_id
         }
         
-        await self.http.voice_state_client_edit(guild_id, data)
+        await self.api.voice_state_client_edit(guild_id, data)
     
     
     async def application_edit_own(self, application_template = None, **keyword_parameters):
@@ -309,5 +310,5 @@ class ClientCompoundClientEndpoints(Compound):
         if not data:
             return
         
-        data = await self.http.application_edit_own(data)
+        data = await self.api.application_edit_own(data)
         self.application = application.from_data_own(data)

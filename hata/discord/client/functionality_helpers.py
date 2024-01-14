@@ -729,7 +729,7 @@ async def _message_delete_multiple_private_task(client, channel_id, groups, reas
         If any exception was received from the Discord API.
     """
     for message in _message_delete_multiple_private_task_message_id_iterator(groups):
-        await client.http.message_delete(channel_id, message.id, reason)
+        await client.api.message_delete(channel_id, message.id, reason)
 
 
 async def _message_delete_multiple_task(client, channel_id, groups, reason):
@@ -797,12 +797,12 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
                     if message_count == 1:
                         if (delete_new_task is None):
                             message_id = message_ids[0]
-                            delete_new_task = Task(KOKORO, client.http.message_delete(channel_id, message_id, reason))
+                            delete_new_task = Task(KOKORO, client.api.message_delete(channel_id, message_id, reason))
                             tasks.append(delete_new_task)
                     else:
                         delete_mass_task = Task(
                             KOKORO,
-                            client.http.message_delete_multiple(channel_id, {'messages': message_ids}, reason),
+                            client.api.message_delete_multiple(channel_id, {'messages': message_ids}, reason),
                         )
                         
                         tasks.append(delete_mass_task)
@@ -810,7 +810,7 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
         if delete_old_task is None:
             if message_group_old:
                 message_id = message_group_old.popleft()
-                delete_old_task = Task(KOKORO, client.http.message_delete_b2wo(channel_id, message_id, reason))
+                delete_old_task = Task(KOKORO, client.api.message_delete_b2wo(channel_id, message_id, reason))
                 tasks.append(delete_old_task)
         
         if delete_new_task is None:
@@ -823,7 +823,7 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
             
             if (group is not None):
                 message_id = message_group_old_own.popleft()
-                delete_new_task = Task(KOKORO, client.http.message_delete(channel_id, message_id, reason))
+                delete_new_task = Task(KOKORO, client.api.message_delete(channel_id, message_id, reason))
                 tasks.append(delete_new_task)
         
         if not tasks:
@@ -838,9 +838,9 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
             # We will delete that message with old endpoint if not own, to make
             # Sure it will not block the other endpoint for 2 minutes with any chance.
             if own:
-                delete_new_task = Task(KOKORO, client.http.message_delete(channel_id, message_id, reason))
+                delete_new_task = Task(KOKORO, client.api.message_delete(channel_id, message_id, reason))
             else:
-                delete_old_task = Task(KOKORO, client.http.message_delete_b2wo(channel_id, message_id, reason))
+                delete_old_task = Task(KOKORO, client.api.message_delete_b2wo(channel_id, message_id, reason))
             
             tasks.append(delete_old_task)
         
@@ -905,7 +905,7 @@ async def request_channel_thread_channels(client, guild_id, channel_id, request_
     query_parameters = None
     
     while True:
-        data = await request_function(client.http, channel_id, query_parameters)
+        data = await request_function(client.api, channel_id, query_parameters)
         thread_channel_datas = data['threads']
         
         for thread_channel_data in thread_channel_datas:

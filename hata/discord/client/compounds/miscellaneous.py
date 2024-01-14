@@ -1,13 +1,14 @@
 __all__ = ()
 
 from scarletio import Compound
+from scarletio.http_client import HTTPClient
 
 from ...application import Application, EULA
 from ...bases import maybe_snowflake
 from ...channel import Channel
 from ...core import EULAS
 from ...embed import EmbedImage
-from ...http import DiscordHTTPClient, is_media_url
+from ...http import DiscordApiClient, is_media_url
 from ...message import Attachment
 
 from ..request_helpers import get_channel_id
@@ -39,7 +40,8 @@ def _assert__attachment(attachment):
 
 class ClientCompoundMiscellaneousEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
+    http : HTTPClient
     
 
     async def download_attachment(self, attachment):
@@ -111,7 +113,7 @@ class ClientCompoundMiscellaneousEndpoints(Compound):
             eula = EULAS.get(eula_id, None)
         
         
-        eula_data = await self.http.eula_get(eula_id)
+        eula_data = await self.api.eula_get(eula_id)
         if eula is None:
             eula = EULA.from_data(eula_data)
         else:
@@ -137,7 +139,7 @@ class ClientCompoundMiscellaneousEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        applications_data = await self.http.application_get_all_detectable()
+        applications_data = await self.api.application_get_all_detectable()
         return [Application.from_data_detectable(application_data) for application_data in applications_data]
     
     
@@ -167,7 +169,7 @@ class ClientCompoundMiscellaneousEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_textual)
         
-        await self.http.typing(channel_id)
+        await self.api.typing(channel_id)
     
     
     def keep_typing(self, channel, timeout = 300.0):

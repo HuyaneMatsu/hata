@@ -5,7 +5,7 @@ from scarletio import Compound, Theory
 from ...core import MESSAGES
 from ...emoji import Emoji
 from ...emoji.reaction_mapping.fields import validate_reaction
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...user import ClientUserBase, User
 from ...utils import log_time_converter
 
@@ -15,7 +15,7 @@ from ..request_helpers import get_channel_id_and_message_id, get_reaction_emoji_
 class ClientCompoundReactionEndpoints(Compound):
     
     id: int
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     @Theory
     async def message_get(self, message, *, force_update = False): ...
@@ -48,7 +48,7 @@ class ClientCompoundReactionEndpoints(Compound):
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
         emoji_value, reaction_type = get_reaction_emoji_value_and_type(reaction)
-        await self.http.reaction_add(channel_id, message_id, emoji_value, {'type': reaction_type.value})
+        await self.api.reaction_add(channel_id, message_id, emoji_value, {'type': reaction_type.value})
     
     
     async def reaction_delete(self, message, reaction, user):
@@ -82,9 +82,9 @@ class ClientCompoundReactionEndpoints(Compound):
         user_id = get_user_id(user)
         
         if user_id == self.id:
-            await self.http.reaction_delete_own(channel_id, message_id, emoji_value, reaction_type.value)
+            await self.api.reaction_delete_own(channel_id, message_id, emoji_value, reaction_type.value)
         else:
-            await self.http.reaction_delete(channel_id, message_id, emoji_value, reaction_type.value, user_id)
+            await self.api.reaction_delete(channel_id, message_id, emoji_value, reaction_type.value, user_id)
     
     
     async def reaction_delete_emoji(self, message, emoji):
@@ -121,7 +121,7 @@ class ClientCompoundReactionEndpoints(Compound):
                 f'`emoji` can be `{Emoji.__name__}`, `str`, got {emoji.__class__.__name__}; {emoji!r}.'
             )
         
-        await self.http.reaction_delete_emoji(channel_id, message_id, emoji_value)
+        await self.api.reaction_delete_emoji(channel_id, message_id, emoji_value)
     
     
     async def reaction_delete_own(self, message, reaction):
@@ -149,7 +149,7 @@ class ClientCompoundReactionEndpoints(Compound):
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
         emoji_value, reaction_type = get_reaction_emoji_value_and_type(reaction)
-        await self.http.reaction_delete_own(channel_id, message_id, emoji_value, reaction_type.value)
+        await self.api.reaction_delete_own(channel_id, message_id, emoji_value, reaction_type.value)
     
     
     async def reaction_clear(self, message):
@@ -174,7 +174,7 @@ class ClientCompoundReactionEndpoints(Compound):
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
         
-        await self.http.reaction_clear(channel_id, message_id)
+        await self.api.reaction_clear(channel_id, message_id)
     
     
     async def reaction_user_get_chunk(self, message, reaction, *, limit = None, after = None):
@@ -266,7 +266,7 @@ class ClientCompoundReactionEndpoints(Compound):
         # if (before is not None):
         #     data['before'] = log_time_converter(before)
         
-        data = await self.http.reaction_user_get_chunk(
+        data = await self.api.reaction_user_get_chunk(
             channel_id, message_id, reaction.emoji.as_reaction, query_parameters
         )
         
@@ -341,7 +341,7 @@ class ClientCompoundReactionEndpoints(Compound):
         emoji_value = reaction.emoji.as_reaction
         
         while True:
-            user_datas = await self.http.reaction_user_get_chunk(
+            user_datas = await self.api.reaction_user_get_chunk(
                 channel_id, message_id, emoji_value, query_parameters
             )
             users.extend(User.from_data(user_data) for user_data in user_datas)
@@ -404,7 +404,7 @@ class ClientCompoundReactionEndpoints(Compound):
                 query_parameters['type'] = reaction.type.value
                 
                 while True:
-                    user_datas = await self.http.reaction_user_get_chunk(
+                    user_datas = await self.api.reaction_user_get_chunk(
                         message.channel_id, message.id, emoji_value, query_parameters
                     )
                     users.extend(User.from_data(user_data) for user_data in user_datas)

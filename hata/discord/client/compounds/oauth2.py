@@ -8,7 +8,7 @@ from ...application import Application, ApplicationRoleConnection
 from ...application.application_role_connection.utils import APPLICATION_ROLE_CONNECTION_FIELD_CONVERTERS
 from ...bases import maybe_snowflake
 from ...guild import create_partial_guild_from_data
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...oauth2 import Connection, Oauth2Access, Oauth2Scope, Oauth2User
 from ...oauth2.oauth2_access.fields import (
     put_scopes_into as put_oauth2_scopes_into, validate_scopes as validate_oauth2_scopes
@@ -69,7 +69,7 @@ def _assert__code(code):
 class ClientCompoundOauth2Endpoints(Compound):
     
     application : Application
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     id : int
     secret : str
     
@@ -123,7 +123,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         put_oauth2_scopes_into(scopes, data, True)
         
         
-        data = await self.http.oauth2_token(data, IgnoreCaseMultiValueDictionary())
+        data = await self.api.oauth2_token(data, IgnoreCaseMultiValueDictionary())
         if len(data) == 1:
             return
         
@@ -175,7 +175,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = BasicAuth(str(self.id), self.secret).encode()
-        data = await self.http.oauth2_token(data, headers)
+        data = await self.api.oauth2_token(data, headers)
         return Oauth2Access.from_data(data, '')
     
     
@@ -214,7 +214,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
-        data = await self.http.user_info_get(headers)
+        data = await self.api.user_info_get(headers)
         return Oauth2User.from_data(data, access)
         
     
@@ -250,7 +250,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
-        data = await self.http.user_connection_get_all(headers)
+        data = await self.api.user_connection_get_all(headers)
         return [Connection.from_data(connection_data) for connection_data in data]
     
     
@@ -302,7 +302,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         put_oauth2_scopes_into(access.scopes, data, True)
         
-        data = await self.http.oauth2_token(data, IgnoreCaseMultiValueDictionary())
+        data = await self.api.oauth2_token(data, IgnoreCaseMultiValueDictionary())
         
         access._renew(data)
     
@@ -429,7 +429,7 @@ class ClientCompoundOauth2Endpoints(Compound):
             data['deaf'] = deaf
         
         
-        await self.http.guild_user_add(guild_id, user_id, data)
+        await self.api.guild_user_add(guild_id, user_id, data)
     
     
     async def user_guild_get_all(self, access):
@@ -464,7 +464,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
-        data = await self.http.user_guild_get_all(headers)
+        data = await self.api.user_guild_get_all(headers)
         return [(create_partial_guild_from_data(guild_data), UserGuildPermission(guild_data)) for guild_data in data]
     
     
@@ -501,7 +501,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
-        data = await self.http.user_application_role_connection_get(application_id, headers)
+        data = await self.api.user_application_role_connection_get(application_id, headers)
         return ApplicationRoleConnection.from_data(data)
     
     
@@ -562,5 +562,5 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
-        data = await self.http.user_application_role_connection_edit(application_id, data, headers)
+        data = await self.api.user_application_role_connection_edit(application_id, data, headers)
         return ApplicationRoleConnection.from_data(data)

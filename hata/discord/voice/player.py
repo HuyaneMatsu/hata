@@ -106,7 +106,7 @@ class AudioPlayer:
                 voice_client._sequence = sequence
                 
                 if source.NEEDS_ENCODE:
-                    pref_volume = voice_client._pref_volume
+                    pref_volume = voice_client._preferred_volume
                     if (pref_volume != 1.0):
                         data = audio_mul(data, 2, pref_volume)
                     

@@ -5,7 +5,7 @@ from base64 import b64encode
 
 from scarletio import Compound
 
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...payload_building import build_create_payload, build_edit_payload
 from ...soundboard import SoundboardSound
 from ...soundboard.soundboard_sound.utils import SOUNDBOARD_SOUND_FIELD_CONVERTERS
@@ -17,7 +17,7 @@ from ..request_helpers import (
 
 class ClientCompoundSoundBoardEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     async def soundboard_sound_get_all_default(self):
         """
@@ -36,7 +36,7 @@ class ClientCompoundSoundBoardEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        sound_datas = await self.http.soundboard_sound_get_all_default()
+        sound_datas = await self.api.soundboard_sound_get_all_default()
         return [SoundboardSound.from_data(sound_data) for sound_data in sound_datas]
     
     
@@ -97,7 +97,7 @@ class ClientCompoundSoundBoardEndpoints(Compound):
         data = build_create_payload(soundboard_sound_template, SOUNDBOARD_SOUND_FIELD_CONVERTERS, keyword_parameters)
         data['sound'] = 'data:audio/mp3;base64,' + b64encode(sound).decode('ascii')
         
-        sound_data = await self.http.soundboard_sound_create(guild_id, data, reason)
+        sound_data = await self.api.soundboard_sound_create(guild_id, data, reason)
         return SoundboardSound.from_data(sound_data)
     
     
@@ -152,7 +152,7 @@ class ClientCompoundSoundBoardEndpoints(Compound):
         )
         
         if data:
-            await self.http.soundboard_sound_edit(guild_id, soundboard_sound_id, data, reason)
+            await self.api.soundboard_sound_edit(guild_id, soundboard_sound_id, data, reason)
     
     
     async def soundboard_sound_delete(self, soundboard_sound, *, reason = None):
@@ -179,7 +179,7 @@ class ClientCompoundSoundBoardEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         guild_id, soundboard_sound_id = get_soundboard_sound_guild_id_and_id(soundboard_sound)
-        await self.http.soundboard_sound_delete(guild_id, soundboard_sound_id, reason)
+        await self.api.soundboard_sound_delete(guild_id, soundboard_sound_id, reason)
     
     # Not a thing (yet?)
     '''
@@ -212,7 +212,7 @@ class ClientCompoundSoundBoardEndpoints(Compound):
         """
         soundboard_sound, guild_id, soundboard_sound_id = get_soundboard_sound_and_guild_id_and_id(soundboard_sound)
         
-        soundboard_sound_data = await self.http.soundboard_sound_get(guild_id, soundboard_sound_id)
+        soundboard_sound_data = await self.api.soundboard_sound_get(guild_id, soundboard_sound_id)
         
         if (soundboard_sound is None) or force_update or soundboard_sound.partial:
             soundboard_sound, is_created = SoundboardSound.from_data_is_created(soundboard_sound_data)

@@ -1,6 +1,5 @@
 __all__ = ()
 
-import warnings
 from time import time as time_now
 
 from scarletio import Compound, Future, Theory
@@ -13,10 +12,10 @@ from ...channel import Channel
 from ...core import KOKORO
 from ...events.event_handler_manager import EventHandlerManager
 from ...events.handling_helpers import WaitForHandler
-from ...gateway.client_gateway import (
-    DiscordGateway, PRESENCE as GATEWAY_OPERATION_CODE_PRESENCE,
-    REQUEST_GUILD_USERS as GATEWAY_OPERATION_CODE_REQUEST_GUILD_USERS,
-    REQUEST_SOUNDBOARD_SOUNDS as GATEWAY_OPERATION_REQUEST_SOUNDBOARD_SOUNDS
+from ...gateway.client_base import DiscordGatewayClientBase
+from ...gateway.constants import (
+    GATEWAY_OPERATION_CLIENT_PRESENCE, GATEWAY_OPERATION_CLIENT_REQUEST_GUILD_USERS,
+    GATEWAY_OPERATION_CLIENT_REQUEST_SOUNDBOARD_SOUNDS
 )
 from ...preconverters import preconvert_preinstanced_type
 from ...user import Status
@@ -42,7 +41,7 @@ def _assert__edit_presence__afk(afk):
     """
     if not isinstance(afk, bool):
         raise AssertionError(
-            f'`afk` can be `bool`, got {afk.__class__.__name__}; {afk!r}.'
+            f'`afk` can be `bool`, got {type(afk).__name__}; {afk!r}.'
         )
     
     return True
@@ -65,7 +64,7 @@ def _assert__request_users__limit(limit):
     """
     if not isinstance(limit, int):
         raise AssertionError(
-            f'`limit` can be `int`, got {limit.__class__.__name__}; {limit!r}.'
+            f'`limit` can be `int`, got {type(limit).__name__}; {limit!r}.'
         )
     
     if limit < 1 or limit > 100:
@@ -108,7 +107,7 @@ def _assert__request_users__name(name):
 class ClientCompoundClientGateway(Compound):
     
     events : EventHandlerManager
-    gateway : DiscordGateway
+    gateway : DiscordGatewayClientBase
     bot : bool
     voice_clients : dict
     
@@ -175,7 +174,7 @@ class ClientCompoundClientGateway(Compound):
         
         
         data = {
-            'op': GATEWAY_OPERATION_CODE_PRESENCE,
+            'op': GATEWAY_OPERATION_CLIENT_PRESENCE,
             'd': {
                 'game': activity,
                 'since': since,
@@ -299,7 +298,7 @@ class ClientCompoundClientGateway(Compound):
         
         for gateway, guild_ids_for_gateway in by_gateway.items():
             await gateway.send_as_json({
-                'op': GATEWAY_OPERATION_REQUEST_SOUNDBOARD_SOUNDS,
+                'op': GATEWAY_OPERATION_CLIENT_REQUEST_SOUNDBOARD_SOUNDS,
                 'd': {
                     'guild_ids': guild_ids_for_gateway,
                 }
@@ -354,7 +353,7 @@ class ClientCompoundClientGateway(Compound):
         event_handler.waiters[nonce] = waiter = MassUserChunker()
         
         data = {
-            'op': GATEWAY_OPERATION_CODE_REQUEST_GUILD_USERS,
+            'op': GATEWAY_OPERATION_CLIENT_REQUEST_GUILD_USERS,
             'd': {
                 'guild_id': guild_id,
                 'query': '',
@@ -414,7 +413,7 @@ class ClientCompoundClientGateway(Compound):
         event_handler.waiters[nonce] = waiter = SingleUserChunker()
         
         data = {
-            'op': GATEWAY_OPERATION_CODE_REQUEST_GUILD_USERS,
+            'op': GATEWAY_OPERATION_CLIENT_REQUEST_GUILD_USERS,
             'd': {
                 'guild_id': guild_id,
                 'query': name,
@@ -490,36 +489,3 @@ class ClientCompoundClientGateway(Compound):
             
             if not waiters:
                 self.events.remove(wait_for_handler, name = event_name)
-    
-    
-    async def request_members(self, *position_parameters, **keyword_parameters):
-        """
-        Deprecated and will be removed in 2023 December. Please use ``.request_users`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.request_members` is deprecated and will be removed in 2023 December. '
-                f'Please use `.request_users` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return await self.request_users(*position_parameters, **keyword_parameters)
-    
-    
-    async def request_all_members_of(self, *position_parameters, **keyword_parameters):
-        """
-        Deprecated and will be removed in 2023 December. Please use ``.request_all_users_of`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.request_all_members_of` is deprecated and will be removed in 2023 '
-                f'December. '
-                f'Please use `.request_all_users_of` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return await self.request_all_users_of(*position_parameters, **keyword_parameters)

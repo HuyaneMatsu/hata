@@ -1779,12 +1779,12 @@ def entity_validator_factory(field_name, entity_type, *, include = None):
         
         Parameters
         ----------
-        entity : `None`, `instance<entity_type>`
+        entity : `instance<entity_type>`
             The entity to validate.
         
         Returns
         -------
-        entity : `None`,  `instance<entity_type>`
+        entity : `instance<entity_type>`
         
         Raises
         ------
@@ -1796,7 +1796,7 @@ def entity_validator_factory(field_name, entity_type, *, include = None):
         
         if not isinstance(entity, entity_type):
             raise TypeError(
-                f'`{field_name}` can be `None`, `{entity_type.__name__}`, got {entity.__class__.__name__}; {entity!r}.'
+                f'`{field_name}` can be `{entity_type.__name__}`, got {entity.__class__.__name__}; {entity!r}.'
             )
         
         return entity

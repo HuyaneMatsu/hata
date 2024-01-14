@@ -8,7 +8,7 @@ from scarletio.web_common import Formdata
 
 from ...bases import maybe_snowflake_pair
 from ...core import GUILDS, STICKERS
-from ...http import DiscordHTTPClient, VALID_STICKER_IMAGE_MEDIA_TYPES
+from ...http import DiscordApiClient, VALID_STICKER_IMAGE_MEDIA_TYPES
 from ...sticker import Sticker, StickerPack, StickerType
 from ...sticker.sticker.fields import (
     put_description_into, put_name_into, put_tags_into, validate_description, validate_name, validate_tags
@@ -24,7 +24,7 @@ STICKER_PACK_CACHE = ForceUpdateCache()
 
 class ClientCompoundStickerEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     
     async def sticker_get(self, sticker, *, force_update = False):
@@ -59,7 +59,7 @@ class ClientCompoundStickerEndpoints(Compound):
         if (sticker is not None) and (not sticker.partial) and (not force_update):
             return sticker
         
-        data = await self.http.sticker_get(sticker_id)
+        data = await self.api.sticker_get(sticker_id)
         if (sticker is None):
             sticker = Sticker.from_data(data)
         else:
@@ -96,7 +96,7 @@ class ClientCompoundStickerEndpoints(Compound):
         sticker_pack, sticker_pack_id = get_sticker_pack_and_id(sticker_pack)
         
         if (sticker_pack is None) or force_update:
-            sticker_pack_data = await self.http.sticker_pack_get(sticker_pack_id)
+            sticker_pack_data = await self.api.sticker_pack_get(sticker_pack_id)
             sticker_pack = StickerPack.from_data(sticker_pack_data, force_update = True)
         
         return sticker_pack
@@ -125,7 +125,7 @@ class ClientCompoundStickerEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         if force_update or (not STICKER_PACK_CACHE.synced):
-            data = await self.http.sticker_pack_get_all()
+            data = await self.api.sticker_pack_get_all()
             sticker_pack_datas = data['sticker_packs'] # Discord pls.
             sticker_packs = [
                 StickerPack._create_and_update(sticker_pack_data, force_update = force_update)
@@ -179,7 +179,7 @@ class ClientCompoundStickerEndpoints(Compound):
         if (sticker is not None) and (not sticker.partial) and (not force_update):
             return sticker
         
-        data = await self.http.sticker_get_guild(guild_id, sticker_id)
+        data = await self.api.sticker_get_guild(guild_id, sticker_id)
         if (sticker is None):
             sticker = Sticker.from_data(data)
         else:
@@ -250,10 +250,10 @@ class ClientCompoundStickerEndpoints(Compound):
         form_data.add_field('name', name)
         # If no description is given Discord drops back an unrelated error
         form_data.add_field('description', '' if description is None else description)
-        form_data.add_field('tags', ', '.join(tags))
+        form_data.add_field('tags', '' if tags is None else ', '.join(tags))
         form_data.add_field('file', image, filename = f'file.{extension}', content_type = media_type)
         
-        sticker_data = await self.http.sticker_create(guild_id, form_data, reason)
+        sticker_data = await self.api.sticker_create(guild_id, form_data, reason)
         
         return Sticker.from_data(sticker_data)
     
@@ -317,7 +317,7 @@ class ClientCompoundStickerEndpoints(Compound):
         put_name_into(name, data, True)
         put_tags_into(tags, data, True)
         
-        await self.http.sticker_edit(sticker.guild_id, sticker.id, data, reason)
+        await self.api.sticker_edit(sticker.guild_id, sticker.id, data, reason)
     
     
     async def sticker_delete(self, sticker, *, reason = None):
@@ -351,7 +351,7 @@ class ClientCompoundStickerEndpoints(Compound):
                 f'Standard sticker cannot be deleted, got {sticker!r}.'
             )
         
-        await self.http.sticker_delete(sticker.guild_id, sticker.id, reason)
+        await self.api.sticker_delete(sticker.guild_id, sticker.id, reason)
     
     
     async def sticker_get_all_guild(self, guild):
@@ -381,7 +381,7 @@ class ClientCompoundStickerEndpoints(Compound):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        sticker_datas = await self.http.sticker_get_all_guild(guild_id)
+        sticker_datas = await self.api.sticker_get_all_guild(guild_id)
         
         if guild is None:
             # Do not create a partial guild, because it would have been garbage collected after leaving the function

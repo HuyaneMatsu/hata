@@ -458,9 +458,9 @@ class Integration(DiscordEntity, immortal = True):
     
     @copy_docs(DiscordEntity.__hash__)
     def __hash__(self):
-        id_ = self.id
-        if id_:
-            return id_
+        integration_id = self.id
+        if integration_id:
+            return integration_id
         
         return self._get_hash_partial()
     

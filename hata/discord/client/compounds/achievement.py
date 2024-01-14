@@ -8,7 +8,7 @@ from scarletio.web_common.headers import AUTHORIZATION
 from ....env import API_VERSION
 
 from ...application import Application
-from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES_EXTENDED
+from ...http import DiscordApiClient, VALID_ICON_MEDIA_TYPES_EXTENDED
 from ...localization.helpers import serializable_localized_dictionary_builder
 from ...oauth2 import Achievement, Oauth2Access, Oauth2User
 from ...utils import get_image_media_type, image_to_base64
@@ -216,7 +216,7 @@ def _assert__user_achievement_update__percent_complete(percent_complete):
 class ClientCompoundAchievementEndpoints(Compound):
     
     application : Application
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     
     async def achievement_get_all(self):
@@ -236,7 +236,7 @@ class ClientCompoundAchievementEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        data = await self.http.achievement_get_all(self.application.id)
+        data = await self.api.achievement_get_all(self.application.id)
         return [Achievement(achievement_data) for achievement_data in data]
     
     
@@ -265,7 +265,7 @@ class ClientCompoundAchievementEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         achievement, achievement_id = get_achievement_and_id(achievement)
-        data = await self.http.achievement_get(self.application.id, achievement_id)
+        data = await self.api.achievement_get(self.application.id, achievement_id)
         
         if achievement is None:
             achievement = Achievement(data)
@@ -373,7 +373,7 @@ class ClientCompoundAchievementEndpoints(Compound):
             description_localizations['default'] = description
             data['description'] = description_localizations
         
-        data = await self.http.achievement_create(self.application.id, data)
+        data = await self.api.achievement_create(self.application.id, data)
         
         return Achievement(data)
     
@@ -542,7 +542,7 @@ class ClientCompoundAchievementEndpoints(Compound):
                     data['description'] = description_localizations
         
         
-        data = await self.http.achievement_edit(self.application.id, achievement_id, data)
+        data = await self.api.achievement_edit(self.application.id, achievement_id, data)
         if achievement is None:
             achievement = Achievement(data)
         else:
@@ -573,7 +573,7 @@ class ClientCompoundAchievementEndpoints(Compound):
         """
         achievement_id = get_achievement_id(achievement)
         
-        await self.http.achievement_delete(self.application.id, achievement_id)
+        await self.api.achievement_delete(self.application.id, achievement_id)
     
     
     async def user_achievement_get_all(self, access):
@@ -621,7 +621,7 @@ class ClientCompoundAchievementEndpoints(Compound):
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         
-        data = await self.http.user_achievement_get_all(self.application.id, headers)
+        data = await self.api.user_achievement_get_all(self.application.id, headers)
         return [Achievement(achievement_data) for achievement_data in data]
     
     
@@ -676,4 +676,4 @@ class ClientCompoundAchievementEndpoints(Compound):
             percent_complete = 100
         
         data = {'percent_complete': percent_complete}
-        await self.http.user_achievement_update(user_id, self.application.id, achievement_id, data)
+        await self.api.user_achievement_update(user_id, self.application.id, achievement_id, data)

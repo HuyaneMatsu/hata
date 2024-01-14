@@ -1,9 +1,14 @@
 __all__ = ()
 
+from scarletio.http_client import HTTPClient
+
 from ..activity import Activity, ActivityType
 from ..application import Application
 from ..events import IntentFlag
-from ..field_validators import bool_validator_factory, entity_id_validator_factory, flag_validator_factory
+from ..field_validators import (
+    bool_validator_factory, entity_id_validator_factory, flag_validator_factory, nullable_entity_validator_factory
+)
+from ..http import DiscordApiClient
 from ..user import ClientUserBase
 
 # activity
@@ -105,13 +110,20 @@ def validate_additional_owner_ids(additional_owner_ids):
     
     return additional_owner_ids_validated
 
+# api
+
+validate_api = nullable_entity_validator_factory('api', DiscordApiClient)
+
+
 # application_id
 
 validate_application_id = entity_id_validator_factory('application_id', Application)
 
+
 # client_id
 
 validate_client_id = entity_id_validator_factory('client_id')
+
 
 # extensions
 
@@ -168,6 +180,12 @@ def validate_extensions(extensions):
         extensions_validated.add(extension)
     
     return extensions_validated
+
+
+# http
+
+validate_http = nullable_entity_validator_factory('http', HTTPClient)
+
 
 # http_debug_options
 

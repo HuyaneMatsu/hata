@@ -19,7 +19,7 @@ from .guild_base import ChannelMetadataGuildBase
 
 class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
     """
-    Base guild channel metadata type.
+    Base guild channel metadata fro threads.
     
     Attributes
     ----------

@@ -146,7 +146,7 @@ class RateLimitProxy:
         key = RateLimitHandler(group, limiter_id)
         
         if keep_alive:
-            key = client.http.handlers.set(key)
+            key = client.api.handlers.set(key)
             handler = WeakReferer(key)
         else:
             handler = None
@@ -284,7 +284,7 @@ class RateLimitProxy:
                 return
             
             key = self._key
-            handler = self.client.http.handlers.set(key)
+            handler = self.client.api.handlers.set(key)
             if (handler is not key):
                 self._key = handler
             self._handler = WeakReferer(handler)
@@ -356,7 +356,7 @@ class RateLimitProxy:
             if (handler is not None):
                 return handler
         
-        handler = self.client.http.handlers.get(self._key)
+        handler = self.client.api.handlers.get(self._key)
         if (handler is not None):
             self._handler = WeakReferer(handler)
         
@@ -477,7 +477,7 @@ class RateLimitProxy:
                 if (handler is not None):
                     break
             
-            handler = self.client.http.handlers.get(self._key)
+            handler = self.client.api.handlers.get(self._key)
             if handler is None:
                 return
             

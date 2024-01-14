@@ -1,15 +1,17 @@
 import vampytest
 
 from scarletio import Future
+from scarletio.http_client import HTTPClient
 
 from ...activity import Activity
 from ...application import Application
 from ...bases import Icon, IconType
 from ...color import Color
+from ...core import KOKORO
 from ...events import IntentFlag
 from ...events.event_handler_manager import EventHandlerManager
-from ...gateway.client_gateway import DiscordGateway, DiscordGatewaySharder
-from ...http import DiscordHTTPClient
+from ...gateway.client_base import DiscordGatewayClientBase
+from ...http import DiscordApiClient
 from ...localization import Locale
 from ...user import AvatarDecoration, PremiumType, Status, UserFlag
 
@@ -37,6 +39,7 @@ def _assert_fields_set(client):
     vampytest.assert_instance(client._status, Status)
     vampytest.assert_instance(client._user_chunker_nonce, int)
     vampytest.assert_instance(client.activities, list, nullable = True)
+    vampytest.assert_instance(client.api, DiscordApiClient)
     vampytest.assert_instance(client.application, Application)
     vampytest.assert_instance(client.avatar, Icon)
     vampytest.assert_instance(client.avatar_decoration, AvatarDecoration, nullable = True)
@@ -49,11 +52,11 @@ def _assert_fields_set(client):
     vampytest.assert_instance(client.email_verified, bool)
     vampytest.assert_instance(client.events, EventHandlerManager)
     vampytest.assert_instance(client.flags, UserFlag)
-    vampytest.assert_true(isinstance(client.gateway, (DiscordGateway, DiscordGatewaySharder)))
+    vampytest.assert_instance(client.gateway, DiscordGatewayClientBase)
     vampytest.assert_instance(client.group_channels, dict)
     vampytest.assert_instance(client.guild_profiles, dict)
     vampytest.assert_instance(client.guilds, set)
-    vampytest.assert_instance(client.http, DiscordHTTPClient)
+    vampytest.assert_instance(client.http, HTTPClient)
     vampytest.assert_instance(client.id, int)
     vampytest.assert_instance(client.intents, IntentFlag)
     vampytest.assert_instance(client.locale, Locale)
@@ -73,11 +76,11 @@ def _assert_fields_set(client):
     vampytest.assert_instance(client.voice_clients, dict)
 
 
-def test__Client__new__0():
+def test__Client__new__no_fields():
     """
     Tests whether ``Client.__new__`` works as intended.
     
-    Case: No parameters.
+    Case: No fields given.
     """
     client = Client(
         token = 'token_20230208_0000',
@@ -92,16 +95,9 @@ def test__Client__new__0():
         client = None
 
 
-def test__Client__new__1():
+def test__Client__new__all_fields():
     """
     Tests whether ``Client.__new__`` works as intended.
-    
-    Case: user parameters (excluding activity).
-    """
-
-def test__ClientUserBase__new__1():
-    """
-    Tests whether ``ClientUserBase.__new__`` works as intended.
     
     Case: All fields given.
     """
@@ -121,6 +117,9 @@ def test__ClientUserBase__new__1():
     mfa_enabled = True
     premium_type = PremiumType.nitro_basic
     
+    http = HTTPClient(KOKORO)
+    api = DiscordApiClient(True, 'koishi', http = http)
+    
     client = Client(
         token = 'token_20230208_0001',
         avatar = avatar,
@@ -138,6 +137,9 @@ def test__ClientUserBase__new__1():
         locale = locale,
         mfa_enabled = mfa_enabled,
         premium_type = premium_type,
+        
+        api = api,
+        http = http,
     )
     
     try:
@@ -158,6 +160,9 @@ def test__ClientUserBase__new__1():
         vampytest.assert_is(client.locale, locale)
         vampytest.assert_eq(client.mfa_enabled, mfa_enabled)
         vampytest.assert_is(client.premium_type, premium_type)
+        
+        vampytest.assert_is(client.api, api)
+        vampytest.assert_is(client.http, http)
     
     # Cleanup
     finally:

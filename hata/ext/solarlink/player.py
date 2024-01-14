@@ -591,7 +591,7 @@ class SolarPlayer(SolarPlayerBase):
             'channel_id': self.channel_id
         }
         
-        await node.client.http.voice_state_client_edit(guild_id, data)
+        await node.client.api.voice_state_client_edit(guild_id, data)
     
     
     async def join_audience(self):
@@ -631,4 +631,4 @@ class SolarPlayer(SolarPlayerBase):
             'channel_id': self.channel_id
         }
         
-        await node.client.http.voice_state_client_edit(guild_id, data)
+        await node.client.api.voice_state_client_edit(guild_id, data)

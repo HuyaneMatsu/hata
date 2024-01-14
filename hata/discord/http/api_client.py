@@ -1,141 +1,52 @@
-__all__ = ('DiscordHTTPClient', 'LIBRARY_USER_AGENT',)
-
-import sys
+__all__ = ('DiscordApiClient',)
 
 from scarletio import (
-    CauseGroup, Future, IgnoreCaseMultiValueDictionary, LOOP_TIME, WeakKeyDictionary, WeakMap, call, from_json, sleep,
-    to_json
+    CauseGroup, Future, IgnoreCaseMultiValueDictionary, LOOP_TIME, RichAttributeErrorBaseType, WeakMap, from_json,
+    sleep, to_json
 )
-from scarletio.http_client import HTTPClient, RequestContextManager, TCPConnector
+from scarletio.http_client import HTTPClient, RequestContextManager
 from scarletio.web_common import Formdata, quote
-from scarletio.web_common.headers import (
-    AUTHORIZATION, CONTENT_TYPE, METHOD_DELETE, METHOD_GET, METHOD_PATCH, METHOD_POST, METHOD_PUT, USER_AGENT
-)
-
-from ... import __version__
-from ...env import API_VERSION, LIBRARY_AGENT_APPENDIX, LIBRARY_URL, LIBRARY_VERSION
+from scarletio.web_common.headers import CONTENT_TYPE, METHOD_DELETE, METHOD_GET, METHOD_PATCH, METHOD_POST, METHOD_PUT
 
 from ..core import KOKORO
 from ..exceptions import DiscordException
 
 from . import rate_limit_groups as RATE_LIMIT_GROUPS
-from .headers import AUDIT_LOG_REASON, DEBUG_OPTIONS, RATE_LIMIT_PRECISION
+from .connector_cache import get_connector
+from .headers import AUDIT_LOG_REASON, build_headers
 from .rate_limit import NO_SPECIFIC_RATE_LIMITER, RateLimitHandler, StackedStaticRateLimitHandler
 from .urls import API_ENDPOINT, STATUS_ENDPOINT
 
-
-if LIBRARY_VERSION is None:
-    LIBRARY_VERSION = __version__
-
-LIBRARY_USER_AGENT_BASE = f'DiscordBot ({LIBRARY_URL}, {LIBRARY_VERSION})'
-LIBRARY_USER_AGENT = LIBRARY_USER_AGENT_BASE
 
 NON_JSON_TYPES = (Formdata, bytes, type(None))
 
 REQUEST_RETRY_LIMIT = 5
 
 
-@call
-def generate_user_agent():
+class DiscordApiClient(RichAttributeErrorBaseType):
     """
-    Generates the user agent header used by the wrapper.
-    """
-    global LIBRARY_USER_AGENT
+    Discord api client that adds http information to requests.
     
-    version_list = []
-    version_list.append(LIBRARY_USER_AGENT_BASE),
-    version_list.append(' ')
-    
-    if LIBRARY_AGENT_APPENDIX is None:
-        implement = sys.implementation
-        
-        version_list.append('Python (')
-        version_list.append(implement.name)
-        version_list.append(' ')
-        version_list.append(str(implement.version[0]))
-        version_list.append('.')
-        version_list.append(str(implement.version[1]))
-        
-        if implement.version[3] != 'final':
-            version_list.append(' ')
-            version_list.append(implement.version[3])
-        
-        version_list.append(')')
-    
-    else:
-        version_list.append(LIBRARY_AGENT_APPENDIX)
-    
-    LIBRARY_USER_AGENT = ''.join(version_list)
-
-
-class _ConnectorRefCounter:
-    """
-    Connector reference counter used by ``DiscordHTTPClient`` to limit the connector amount per loop to one.
+    Also can be mocked when testing.
     
     Attributes
     ----------
-    connector : `TCPConnector`
-        The connector of the connector counter.
-    count : `int`
-        The amount of active ``DiscordHTTPClient`` with the specified connector.
-    """
-    __slots__ = ('connector', 'count')
-    
-    def __init__(self, connector):
-        """
-        Creates a new connector reference counter with the given connector.
-        
-        Parameters
-        ----------
-        connector : `TCPConnector`
-            The connector to use on the respective loop.
-        """
-        self.connector = connector
-        self.count = 1
-
-
-class DiscordHTTPClient(HTTPClient):
-    """
-    Http session for Discord clients. Implements low level access to Discord endpoints with their rate limit and
-    re-try handling, but it can also be used as a normal http session.
-    
-    Attributes
-    ----------
-    _debug_options : `None`, `tuple` of `str`
+    debug_options : `None | set<str>`
         Debug options used when requesting towards Discord.
-    connector : ``TCPConnector``
-        TCP connector of the session. Each Discord Http client shares the same.
-    cookie_jar : ``CookieJar``
-        Cookie storage of the session.
+    http : ``HttpClient``
+        The used http client.
     global_rate_limit_expires_at : `float`
         The time when global rate limit will expire in monotonic time.
-    handlers : ``WeakMap`` of ``RateLimitHandler``
+    handlers : `WeakMap<RateLimitHandler>`
         Rate limit handlers of the Discord requests.
-    headers : `IgnoreCaseMultiValueDictionary`
+    headers : ``IgnoreCaseMultiValueDictionary``
         Headers used by every every Discord request.
-    loop : ``EventThread``
-        The event loop of the http session.
-    proxy_auth :  `None`, `str`
-        Proxy authorization.
-    proxy_url : `None`, `str`
-        Proxy url.
-    
-    Class Attributes
-    ----------------
-    CONNECTOR_REFERENCE_COUNTS : ``WeakKeyDictionary`` of (``EventThread``, ``_ConnectorRefCounter``) items
-        Container to store the connector(s) for Discord http clients. One connector is used by each Discord http client
-        running on the same loop.
     """
-    __slots__ = (
-        '_debug_options', 'cookie_jar', 'global_rate_limit_expires_at', 'handlers', 'headers', 'loop', 'proxy_auth',
-        'proxy_url'
-    )
+    __slots__ = ('debug_options', 'http', 'global_rate_limit_expires_at', 'handlers', 'headers')
     
-    CONNECTOR_REFERENCE_COUNTS = WeakKeyDictionary()
-    
-    def __init__(self, bot, token, *, proxy_url = None, proxy_auth = None, debug_options = None):
+    def __new__(cls, bot, token, *, debug_options = None, http = None, proxy_url = None, proxy_auth = None):
         """
-        Creates a new Discord http client.
+        Creates a new Discord api client.
         
         Parameters
         ----------
@@ -143,76 +54,28 @@ class DiscordHTTPClient(HTTPClient):
             Whether the respective client is a bot.
         token : `str`
             The client's token.
-        proxy_auth :  `None`, `str` = `None`, Optional (Keyword only)
-            Proxy authorization for the session's requests.
-        proxy_url : `None`, `str` = `None`, Optional (Keyword only)
-            Proxy url for the session's requests.
-        debug_options: `None`, `set` of `str` = `None`, Optional (Keyword only)
+        debug_options: `None | set<str>` = `None`, Optional (Keyword only)
             Http debug options, like `'canary'` (I don't know more either).
+        proxy_auth :  `None | str` = `None`, Optional (Keyword only)
+            Proxy authorization for the session's requests.
+        http : `None | HTTPClient`` = `None`, Optional (Keyword only)
+            The http client to use instead of creating a new one.
+        proxy_url : `None | str` = `None`, Optional (Keyword only)
+            Proxy url for the session's requests.
         """
-        try:
-            connector_ref_counter = self.CONNECTOR_REFERENCE_COUNTS[KOKORO]
-        except KeyError:
-            connector = TCPConnector(KOKORO)
-            connector_ref_counter = _ConnectorRefCounter(connector)
-            self.CONNECTOR_REFERENCE_COUNTS[KOKORO] = connector_ref_counter
-        else:
-            connector_ref_counter.count += 1
-            connector = connector_ref_counter.connector
+        connector = get_connector()
+        headers = build_headers(bot, token, debug_options)
         
-        HTTPClient.__init__(self, KOKORO, proxy_url, proxy_auth, connector = connector)
+        if http is None:
+            http = HTTPClient(KOKORO, proxy_url, proxy_auth, connector = connector)
         
-        headers = IgnoreCaseMultiValueDictionary()
-        headers[USER_AGENT] = LIBRARY_USER_AGENT
-        headers[AUTHORIZATION] = f'Bot {token}' if bot else token
-        
-        if API_VERSION in (6, 7):
-            headers[RATE_LIMIT_PRECISION] = 'millisecond'
-        
-        if (debug_options is not None):
-            debug_options = tuple(sorted(debug_options))
-            
-            for debug_option in debug_options:
-                headers[DEBUG_OPTIONS] = debug_option
-        
-        self._debug_options = debug_options
-        self.headers = headers
+        self = object.__new__(cls)
+        self.debug_options = debug_options
+        self.http = http
         self.global_rate_limit_expires_at = 0.0
         self.handlers = WeakMap()
-    
-    
-    __aenter__ = None
-    __aexit__ = None
-    
-    async def close(self):
-        """
-        Closes the Discord http Client's connector.
-        
-        This method is a coroutine.
-        """
-        self.__del__()
-    
-    def __del__(self):
-        """Closes the Discord http Client's connector."""
-        connector = self.connector
-        if connector is None:
-            return
-        
-        self.connector = None
-        
-        try:
-            connector_ref_counter = self.CONNECTOR_REFERENCE_COUNTS[self.loop]
-        except KeyError:
-            pass
-        else:
-            connector_ref_counter.count = count = connector_ref_counter.count - 1
-            if count:
-                return
-            
-            del self.CONNECTOR_REFERENCE_COUNTS[self.loop]
-        
-        if not connector.closed:
-            connector.close()
+        self.headers = headers
+        return self
     
     
     async def discord_request(self, handler, method, url, data = None, params = None, headers = None, reason = None):
@@ -282,11 +145,14 @@ class DiscordHTTPClient(HTTPClient):
             await handler.enter()
             with handler.ctx() as lock:
                 try:
-                    async with RequestContextManager(self._request(method, url, headers, data, params)) as response:
+                    async with RequestContextManager(
+                        self.http._request(method, url, headers, data, params)
+                    ) as response:
                         response_data = await response.text(encoding = 'utf-8')
                 except OSError as err:
                     if causes is None:
                         causes = []
+                    
                     causes.append(err)
                     
                     if len(causes) >= REQUEST_RETRY_LIMIT:
@@ -298,7 +164,7 @@ class DiscordHTTPClient(HTTPClient):
                             causes = None
                     
                     # os can not handle more, need to wait for the blocking job to be done. This can happen on Windows.
-                    await sleep(0.1 * len(causes), self.loop)
+                    await sleep(0.1 * len(causes), KOKORO)
                     # Invalid address causes OSError too, but we will let it run 5 times, then raise a ConnectionError
                     continue
                 
@@ -317,7 +183,7 @@ class DiscordHTTPClient(HTTPClient):
                     if 'code' in response_data: # Can happen at the case of rate limit ban
                         try:
                             raise DiscordException(
-                                response, response_data, data, self._debug_options
+                                response, response_data, data, self.debug_options
                             ) from (None if causes is None else CauseGroup(*causes))
                         finally:
                             causes = None
@@ -330,7 +196,7 @@ class DiscordHTTPClient(HTTPClient):
                         KOKORO.call_at(global_rate_limit_expires_at, Future.set_result_if_pending, future, None)
                         await future
                     else:
-                        await sleep(retry_after, self.loop)
+                        await sleep(retry_after, KOKORO)
                     continue
                 
                 if ((causes is None) or (len(causes) < REQUEST_RETRY_LIMIT)) and (status in (500, 502, 503)):
@@ -338,14 +204,14 @@ class DiscordHTTPClient(HTTPClient):
                         causes = []
                     causes.append(DiscordException(response, response_data, None, None))
                     
-                    await sleep(2.0 * len(causes), self.loop)
+                    await sleep(2.0 * len(causes), KOKORO)
                     continue
                 
                 lock.exit(response_headers)
                 
                 try:
                     raise DiscordException(
-                        response, response_data, data, self._debug_options
+                        response, response_data, data, self.debug_options
                     ) from (None if causes is None else CauseGroup(*causes))
                 finally:
                     causes = None
@@ -2474,12 +2340,11 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/applications/{application_id}/entitlements',
             data,
         )
-        
-
+    
+    
     async def entitlement_delete(self, application_id, entitlement_id):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.entitlement_delete, NO_SPECIFIC_RATE_LIMITER),
             METHOD_DELETE,
             f'{API_ENDPOINT}/applications/{application_id}/entitlements/{entitlement_id}',
         )
-        

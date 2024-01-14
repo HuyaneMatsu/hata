@@ -581,7 +581,7 @@ async def wait_for_component_interaction(event_or_message, *, timeout = None, ch
     return await ComponentInteractionWaiter(client, message, check, timeout)
 
 
-async def iter_component_interactions(event_or_message, *, timeout = None, check = None, count=-1):
+async def iter_component_interactions(event_or_message, *, timeout = None, check = None, count = -1):
     """
     Iterates component interactions.
     

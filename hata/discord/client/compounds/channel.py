@@ -14,7 +14,7 @@ from ...channel.channel_metadata.fields import (
     put_status_into as put_channel_status_into, validate_status as validate_channel_status
 )
 from ...guild import Guild, create_partial_guild_from_id
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...payload_building import build_create_payload, build_edit_payload
 from ...webhook import Webhook
 
@@ -66,7 +66,7 @@ def _forum_tag_data_array_sort_key(forum_tag_data):
 
 class ClientCompoundChannelEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     id : int
     bot : bool
     private_channels : dict
@@ -94,7 +94,7 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_private_group)
         
-        await self.http.channel_group_leave(channel_id)
+        await self.api.channel_group_leave(channel_id)
     
     
     async def channel_group_user_add(self, channel, *users):
@@ -128,7 +128,7 @@ class ClientCompoundChannelEndpoints(Compound):
             user_ids.add(user_id)
         
         for user_id in user_ids:
-            await self.http.channel_group_user_add(channel_id, user_id)
+            await self.api.channel_group_user_add(channel_id, user_id)
     
     
     async def channel_group_user_delete(self, channel, *users):
@@ -162,7 +162,7 @@ class ClientCompoundChannelEndpoints(Compound):
             user_ids.add(user_id)
         
         for user_id in user_ids:
-            await self.http.channel_group_user_delete(channel_id, user_id)
+            await self.api.channel_group_user_delete(channel_id, user_id)
     
     
     async def channel_group_edit(self, channel, channel_template = None, **keyword_parameters):
@@ -206,7 +206,7 @@ class ClientCompoundChannelEndpoints(Compound):
         data = build_edit_payload(channel, channel_template, CHANNEL_PRIVATE_GROUP_FIELD_CONVERTERS, keyword_parameters)
 
         if data:
-            await self.http.channel_group_edit(channel_id, data)
+            await self.api.channel_group_edit(channel_id, data)
     
     
     async def channel_group_create(self, *users):
@@ -248,7 +248,7 @@ class ClientCompoundChannelEndpoints(Compound):
         user_ids.add(self.id)
         
         data = {'recipients': user_ids}
-        data = await self.http.channel_group_create(self.id, data)
+        data = await self.api.channel_group_create(self.id, data)
         return Channel.from_data(data, self, 0)
     
     
@@ -283,7 +283,7 @@ class ClientCompoundChannelEndpoints(Compound):
         try:
             channel = self.private_channels[user_id]
         except KeyError:
-            data = await self.http.channel_private_create({'recipient_id': user_id})
+            data = await self.api.channel_private_create({'recipient_id': user_id})
             channel = Channel.from_data(data, self, 0)
         
         return channel
@@ -309,7 +309,7 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         channels = []
         if (not self.bot):
-            data = await self.http.channel_private_get_all()
+            data = await self.api.channel_private_get_all()
             for channel_data in data:
                 channel = Channel.from_data(channel_data, self, 0)
                 channels.append(channel)
@@ -533,7 +533,7 @@ class ClientCompoundChannelEndpoints(Compound):
             if channel_.position != position:
                 data.append({'id': channel_id, 'position': position})
         
-        await self.http.channel_move(guild.id, data, reason)
+        await self.api.channel_move(guild.id, data, reason)
     
     
     async def channel_edit(
@@ -636,7 +636,7 @@ class ClientCompoundChannelEndpoints(Compound):
         data = build_edit_payload(channel, channel_template, CHANNEL_GUILD_FIELD_CONVERTERS, keyword_parameters)
         
         if data:
-            await self.http.channel_edit(channel_id, data, reason)
+            await self.api.channel_edit(channel_id, data, reason)
     
     
     async def channel_edit_status(self, channel, status, *, reason = None):
@@ -667,7 +667,7 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_guild_voice)
         data = put_channel_status_into(validate_channel_status(status), {}, True)
-        await self.http.channel_edit(channel_id, data, reason)
+        await self.api.channel_edit(channel_id, data, reason)
     
     
     async def channel_create(
@@ -771,7 +771,7 @@ class ClientCompoundChannelEndpoints(Compound):
         guild_id = get_guild_id(guild)
         keyword_parameters.setdefault('channel_type', ChannelType.guild_text)
         data = build_create_payload(channel_template, CHANNEL_GUILD_MAIN_FIELD_CONVERTERS, keyword_parameters)
-        channel_data = await self.http.channel_create(guild_id, data, reason)
+        channel_data = await self.api.channel_create(guild_id, data, reason)
         return Channel.from_data(channel_data, self, guild_id)
     
     
@@ -803,7 +803,7 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_guild)
         
-        await self.http.channel_delete(channel_id, reason)
+        await self.api.channel_delete(channel_id, reason)
     
     
     async def channel_follow(self, source_channel, target_channel, *, reason):
@@ -847,7 +847,7 @@ class ClientCompoundChannelEndpoints(Compound):
             'webhook_channel_id': target_channel_id,
         }
         
-        data = await self.http.channel_follow(source_channel_id, data, reason)
+        data = await self.api.channel_follow(source_channel_id, data, reason)
         webhook = await Webhook._from_follow_data(data, source_channel, target_channel_id, self)
         return webhook
     
@@ -896,7 +896,7 @@ class ClientCompoundChannelEndpoints(Compound):
             permission_overwrite, PERMISSION_OVERWRITE_PERMISSION_FIELD_CONVERTERS, keyword_parameters
         )
         
-        await self.http.permission_overwrite_create(channel_id, target_id, data, reason)
+        await self.api.permission_overwrite_create(channel_id, target_id, data, reason)
     
     
     async def permission_overwrite_delete(self, channel, permission_overwrite, *, reason = None):
@@ -928,7 +928,7 @@ class ClientCompoundChannelEndpoints(Compound):
         channel_id = get_channel_id(channel, Channel.is_in_group_guild_sortable)
         target_id = get_permission_overwrite_target_id(permission_overwrite)
         
-        await self.http.permission_overwrite_delete(channel_id, target_id, reason)
+        await self.api.permission_overwrite_delete(channel_id, target_id, reason)
     
     
     async def permission_overwrite_create(
@@ -999,7 +999,7 @@ class ClientCompoundChannelEndpoints(Compound):
                 f'additional context is providable.'
             )
         
-        await self.http.permission_overwrite_create(channel_id, target_id, data, reason)
+        await self.api.permission_overwrite_create(channel_id, target_id, data, reason)
         return PermissionOverwrite.from_data(data)
     
     
@@ -1030,7 +1030,7 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        data = await self.http.guild_channel_get_all(guild_id)
+        data = await self.api.guild_channel_get_all(guild_id)
         if guild is None:
             guild = create_partial_guild_from_id(guild_id)
         
@@ -1096,7 +1096,7 @@ class ClientCompoundChannelEndpoints(Compound):
         channel_id = get_channel_id(forum_channel, Channel.is_in_group_forum)
         data = build_create_payload(forum_tag, FORUM_TAG_FIELD_CONVERTERS, keyword_parameters)
         
-        channel_data = await self.http.forum_tag_create(channel_id, data, reason)
+        channel_data = await self.api.forum_tag_create(channel_id, data, reason)
         
         # Fixing discord bug: Returns channel data instead of forum tag.
         available_tag_data_array = channel_data.get('available_tags', None)
@@ -1185,7 +1185,7 @@ class ClientCompoundChannelEndpoints(Compound):
             if (forum_tag is not None) and ('name' not in data):
                 data['name'] = forum_tag.name
             
-            await self.http.forum_tag_edit(channel_id, forum_tag_id, data, reason)
+            await self.api.forum_tag_edit(channel_id, forum_tag_id, data, reason)
     
     
     async def forum_tag_delete(self, forum_channel, forum_tag, *, reason = None):
@@ -1219,4 +1219,4 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         channel_id = get_channel_id(forum_channel, Channel.is_in_group_forum)
         forum_tag_id = get_forum_tag_id(forum_tag)
-        await self.http.forum_tag_delete(channel_id, forum_tag_id, reason)
+        await self.api.forum_tag_delete(channel_id, forum_tag_id, reason)

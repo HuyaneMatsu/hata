@@ -9,7 +9,7 @@ from ...allowed_mentions import parse_allowed_mentions
 from ...application import Application
 from ...bases import maybe_snowflake
 from ...component import InteractionForm
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...interaction import InteractionEvent, InteractionResponseContext, InteractionResponseType, InteractionType
 
 from ...message import Message, MessageFlag
@@ -187,7 +187,7 @@ def _assert__tts(tts):
 class ClientCompoundInteractionEndpoints(Compound):
     
     application : Application
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     
     async def interaction_application_command_acknowledge(
@@ -234,7 +234,7 @@ class ClientCompoundInteractionEndpoints(Compound):
             data['data'] = {'flags': MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY}
         
         context = InteractionResponseContext(interaction_event, True, show_for_invoking_user_only)
-        coroutine = self.http.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
+        coroutine = self.api.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
         
         if wait:
             async with context:
@@ -289,7 +289,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         }
         
         async with InteractionResponseContext(interaction_event, True, False):
-            await self.http.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
+            await self.api.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
     
     
     async def interaction_form_send(self, interaction_event, form):
@@ -356,7 +356,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         }
         
         async with InteractionResponseContext(interaction_event, False, True):
-            await self.http.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
+            await self.api.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
         
         return None
     
@@ -507,7 +507,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         data['type'] = response_type.value
         
         async with InteractionResponseContext(interaction_event, is_deferring, show_for_invoking_user_only):
-            await self.http.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
+            await self.api.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
         
         # No message data is returned by Discord, return `None`.
         return None
@@ -550,7 +550,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         data = {'type': InteractionResponseType.component.value}
         
         context = InteractionResponseContext(interaction_event, True, False)
-        coroutine = self.http.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
+        coroutine = self.api.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
         
         
         if wait:
@@ -657,7 +657,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         message_data = add_file_to_message_data(message_data, file, True, True)
         
         async with InteractionResponseContext(interaction_event, False, False):
-            await self.http.interaction_response_message_edit(
+            await self.api.interaction_response_message_edit(
                 application_id, interaction_event.id, interaction_event.token, message_data
             )
     
@@ -740,7 +740,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         
         async with InteractionResponseContext(interaction_event, False, False):
-            await self.http.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
+            await self.api.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
     
     
     async def interaction_response_message_delete(self, interaction_event):
@@ -766,7 +766,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         application_id = self.application.id
         assert _assert__application_id(application_id)
         
-        await self.http.interaction_response_message_delete(application_id, interaction_event.id, interaction_event.token)
+        await self.api.interaction_response_message_delete(application_id, interaction_event.id, interaction_event.token)
     
     
     async def interaction_response_message_get(self, interaction_event):
@@ -798,7 +798,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         assert _assert__application_id(application_id)
         
         
-        message_data = await self.http.interaction_response_message_get(
+        message_data = await self.api.interaction_response_message_get(
             application_id, interaction_event.id, interaction_event.token
         )
         
@@ -940,7 +940,7 @@ class ClientCompoundInteractionEndpoints(Compound):
             return
         
         async with InteractionResponseContext(interaction_event, False, show_for_invoking_user_only):
-            message_data = await self.http.interaction_followup_message_create(
+            message_data = await self.api.interaction_followup_message_create(
                 application_id, interaction_event.id, interaction_event.token, message_data
             )
         
@@ -1072,7 +1072,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         async with InteractionResponseContext(interaction_event, False, False):
             # We receive the new message data, but we do not update the message, so dispatch events can get the
             # difference.
-            await self.http.interaction_followup_message_edit(
+            await self.api.interaction_followup_message_edit(
                 application_id, interaction_event.id, interaction_event.token, message_id, message_data
             )
     
@@ -1118,7 +1118,7 @@ class ClientCompoundInteractionEndpoints(Compound):
                     f'`message` can be `{Message.__name__}`, `int`, got {message.__class__.__name__}; {message!r}.'
                 )
         
-        await self.http.interaction_followup_message_delete(
+        await self.api.interaction_followup_message_delete(
             application_id, interaction_event.id, interaction_event.token, message_id
         )
     
@@ -1161,7 +1161,7 @@ class ClientCompoundInteractionEndpoints(Compound):
                 f'`message_id` can be `int`, got {message_id.__class__.__name__}; {message_id!r}.'
             )
         
-        message_data = await self.http.interaction_followup_message_get(
+        message_data = await self.api.interaction_followup_message_get(
             application_id, interaction_event.id, interaction_event.token, message_id
         )
         
@@ -1195,6 +1195,6 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         async with InteractionResponseContext(interaction_event, False, True):
             # Uses the same endpoint as message create
-            await self.http.interaction_response_message_create(
+            await self.api.interaction_response_message_create(
                 interaction_event.id, interaction_event.token, data,
             )

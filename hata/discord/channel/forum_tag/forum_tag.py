@@ -114,10 +114,10 @@ class ForumTag(DiscordEntity, immortal = True):
         repr_parts = ['<', self.__class__.__name__]
         
         # id_
-        id_ = self.id
-        if id_:
+        forum_tag_id = self.id
+        if forum_tag_id:
             repr_parts.append(' id = ')
-            repr_parts.append(repr(id_))
+            repr_parts.append(repr(forum_tag_id))
         else:
             repr_parts.append(' partial')
         

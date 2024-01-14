@@ -578,13 +578,13 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         # system fields: `.id`, `.guild_id`, `.creator_id`
         
         # id
-        id_ = self.id
-        if id_ == 0:
+        rule_id = self.id
+        if rule_id == 0:
             repr_parts.append(' partial')
         
         else:
             repr_parts.append(' id = ')
-            repr_parts.append(repr(id_))
+            repr_parts.append(repr(rule_id))
             
             repr_parts.append(', guild_id = ')
             repr_parts.append(repr(self.guild_id))

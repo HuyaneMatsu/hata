@@ -1,4 +1,28 @@
-## 0.0.49 *\[2023-12-31\]*
+## 1.3.50 *\[2024-01-??\]*
+
+#### Improvements
+
+- Add `Client.api` to separate down the api logic from `Client.http`. `Client.http` is not a general `HttpClient`.
+- Add `DiscordApiClient` to separate the api logic down from `DiscordHTTPClient`.
+- Add `http` parameter to `Client.__new__`.
+- Add `api` parameter to `Client.__new__`.
+- Add `DiscordGatewayBase` as a base type for gateways.
+- Add `DiscordGatewayBase.abort` to instantly abort connections on unexpected shutdown.
+- Add tests for client gateway.
+
+### Bug fixes
+
+- `Client.sticker_create` failed if `tags` were given as `None` or as an empty container.
+- Fix incorrect reconnect attempt on lost internet connection causing a shard to go dormant if sharded.
+- Fix incorrect handling of `GeneratorExit` in `Client._connect`.
+
+### Renames, Deprecations & Removals
+
+- Deprecate `DiscordHTTPClient`, use `DiscordApiClient` instead.
+- Rename `DiscordGatewaySharder` to `DiscordGatewayClientSharder`.
+- Rename `DiscordGateway` to `DiscordGatewayClientShard`.
+
+## 1.3.49 *\[2023-12-31\]*
 
 #### Improvements
 

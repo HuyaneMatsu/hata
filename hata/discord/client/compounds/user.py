@@ -5,7 +5,7 @@ from scarletio import Compound
 from ...channel import Channel
 from ...core import GUILDS
 from ...guild import Guild
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...payload_building import add_payload_fields_from_keyword_parameters
 from ...user import ClientUserBase, User
 from ...user.guild_profile.utils import GUILD_PROFILE_FIELD_CONVERTERS
@@ -68,7 +68,7 @@ def _assert__guild_user_search__limit(limit):
 
 class ClientCompoundUserEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     id : int
     
     async def user_guild_profile_edit(
@@ -154,7 +154,7 @@ class ClientCompoundUserEndpoints(Compound):
         add_payload_fields_from_keyword_parameters(GUILD_PROFILE_FIELD_CONVERTERS, keyword_parameters, data, True)
         
         if data:
-            await self.http.user_guild_profile_edit(guild_id, user_id, data, reason)
+            await self.api.user_guild_profile_edit(guild_id, user_id, data, reason)
     
     
     async def user_role_add(self, user, role, *, reason = None):
@@ -185,7 +185,7 @@ class ClientCompoundUserEndpoints(Compound):
         guild_id, role_id = get_role_guild_id_and_id(role)
         user_id = get_user_id(user)
         
-        await self.http.user_role_add(guild_id, user_id, role_id, reason)
+        await self.api.user_role_add(guild_id, user_id, role_id, reason)
     
     
     async def user_role_delete(self, user, role, *, reason = None):
@@ -216,7 +216,7 @@ class ClientCompoundUserEndpoints(Compound):
         guild_id, role_id = get_role_guild_id_and_id(role)
         user_id = get_user_id(user)
         
-        await self.http.user_role_delete(guild_id, user_id, role_id, reason)
+        await self.api.user_role_delete(guild_id, user_id, role_id, reason)
     
     
     async def user_voice_move(self, user, channel):
@@ -248,7 +248,7 @@ class ClientCompoundUserEndpoints(Compound):
         
         user_id = get_user_id(user)
        
-        await self.http.user_move(guild_id, user_id, {'channel_id': channel_id})
+        await self.api.user_move(guild_id, user_id, {'channel_id': channel_id})
     
     
     async def user_voice_move_to_speakers(self, user, channel):
@@ -285,7 +285,7 @@ class ClientCompoundUserEndpoints(Compound):
             'channel_id': channel_id,
         }
         
-        await self.http.voice_state_user_edit(guild_id, user_id, data)
+        await self.api.voice_state_user_edit(guild_id, user_id, data)
     
     
     async def user_voice_move_to_audience(self, user, channel):
@@ -322,7 +322,7 @@ class ClientCompoundUserEndpoints(Compound):
             'channel_id': channel_id,
         }
         
-        await self.http.voice_state_user_edit(guild_id, user_id, data)
+        await self.api.voice_state_user_edit(guild_id, user_id, data)
     
     
     async def user_voice_kick(self, user, guild):
@@ -351,7 +351,7 @@ class ClientCompoundUserEndpoints(Compound):
         user_id = get_user_id(user)
         guild_id = get_guild_id(guild)
         
-        await self.http.user_move(guild_id, user_id, {'channel_id': None})
+        await self.api.user_move(guild_id, user_id, {'channel_id': None})
     
     
     async def user_get(self, user, *, force_update = False):
@@ -406,7 +406,7 @@ class ClientCompoundUserEndpoints(Compound):
             
             break
         
-        data = await self.http.user_get(user_id)
+        data = await self.api.user_get(user_id)
         return User.from_data(data)
     
     
@@ -441,7 +441,7 @@ class ClientCompoundUserEndpoints(Compound):
         user_id = get_user_id(user)
         guild_id = get_guild_id(guild)
         
-        data = await self.http.guild_user_get(guild_id, user_id)
+        data = await self.api.guild_user_get(guild_id, user_id)
         
         return User.from_data(data['user'], data, guild_id)
     
@@ -494,6 +494,6 @@ class ClientCompoundUserEndpoints(Compound):
         if limit != 1:
             data['limit'] = limit
         
-        datas = await self.http.guild_user_search(guild_id, data)
+        datas = await self.api.guild_user_search(guild_id, data)
         
         return [User.from_data(data['user'], data, guild_id) for data in datas]

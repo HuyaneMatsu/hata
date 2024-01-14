@@ -10,7 +10,7 @@ from ...bases import maybe_snowflake, maybe_snowflake_pair
 from ...channel import Channel, MessageIterator, message_relative_index
 from ...core import CHANNELS, KOKORO, MESSAGES
 from ...exceptions import DiscordException, ERROR_CODES
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...message import Message, MessageFlag
 from ...message.message.utils import process_message_chunk
 from ...permission.permission import PERMISSION_MASK_MANAGE_MESSAGES, PERMISSION_MASK_READ_MESSAGE_HISTORY
@@ -33,7 +33,7 @@ MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppres
 
 class ClientCompoundMessageEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     id : int
     
     async def message_get_chunk(self, channel, limit = 100, *, after = None, around = None, before = None):
@@ -114,7 +114,7 @@ class ClientCompoundMessageEndpoints(Compound):
         if (channel is not None):
             channel._add_message_collection_delay(60.0)
         
-        message_datas = await self.http.message_get_chunk(channel_id, data)
+        message_datas = await self.api.message_get_chunk(channel_id, data)
         return process_message_chunk(message_datas, channel)
     
     
@@ -169,7 +169,7 @@ class ClientCompoundMessageEndpoints(Compound):
             channel._add_message_collection_delay(60.0)
         
         data = {'limit': limit, 'before': now_as_id()}
-        data = await self.http.message_get_chunk(channel_id, data)
+        data = await self.api.message_get_chunk(channel_id, data)
         if data:
             if (channel is not None):
                 # Call this method first, so the channel's messages will be set even if message caching is at 0
@@ -226,7 +226,7 @@ class ClientCompoundMessageEndpoints(Compound):
                     f'got {message.__class__.__name__}; {message!r}.'
                 )
         
-        message_data = await self.http.message_get(channel_id, message_id)
+        message_data = await self.api.message_get(channel_id, message_id)
         
         if (message is None) or force_update or message.partial:
             if message is None:
@@ -504,7 +504,7 @@ class ClientCompoundMessageEndpoints(Compound):
         if message_data is None:
             return
         
-        message_data = await self.http.message_create(channel_id, message_data)
+        message_data = await self.api.message_create(channel_id, message_data)
         if (channel is not None):
             return channel._create_new_message(message_data)
     
@@ -637,7 +637,7 @@ class ClientCompoundMessageEndpoints(Compound):
         if (message_data is None):
             return
         
-        await self.http.message_edit(channel_id, message_id, message_data)
+        await self.api.message_edit(channel_id, message_id, message_data)
     
     
     async def message_delete(self, message, *, reason = None):
@@ -680,9 +680,9 @@ class ClientCompoundMessageEndpoints(Compound):
         
         if (author is self) or (message_id > int((time_now() - 1209590.0) * 1000.0 - DISCORD_EPOCH) << 22):
             # own or new
-            coroutine = self.http.message_delete(channel_id, message_id, reason)
+            coroutine = self.api.message_delete(channel_id, message_id, reason)
         else:
-            coroutine = self.http.message_delete_b2wo(channel_id, message_id, reason)
+            coroutine = self.api.message_delete_b2wo(channel_id, message_id, reason)
         
         await coroutine
         # If the coroutine raises, do not switch `message.deleted` to `True`.
@@ -946,7 +946,7 @@ class ClientCompoundMessageEndpoints(Compound):
                     'before': last_message_id,
                 }
                 
-                get_mass_task = Task(KOKORO, self.http.message_get_chunk(channel_id, request_data))
+                get_mass_task = Task(KOKORO, self.api.message_get_chunk(channel_id, request_data))
                 tasks.append(get_mass_task)
             
             if (delete_mass_task is None):
@@ -980,7 +980,7 @@ class ClientCompoundMessageEndpoints(Compound):
                             own, message_id = message_group_new.popleft()
                             delete_new_task = Task(
                                 KOKORO,
-                                self.http.message_delete(channel_id, message_id, reason),
+                                self.api.message_delete(channel_id, message_id, reason),
                             )
                             tasks.append(delete_new_task)
                     else:
@@ -992,7 +992,7 @@ class ClientCompoundMessageEndpoints(Compound):
                         
                         delete_mass_task = Task(
                             KOKORO,
-                            self.http.message_delete_multiple(channel_id, {'messages': message_ids}, reason),
+                            self.api.message_delete_multiple(channel_id, {'messages': message_ids}, reason),
                         )
                         tasks.append(delete_mass_task)
                     
@@ -1028,13 +1028,13 @@ class ClientCompoundMessageEndpoints(Compound):
                 # Check old own messages only, mass delete speed is pretty good by itself.
                 if message_group_old_own:
                     message_id = message_group_old_own.popleft()
-                    delete_new_task = Task(KOKORO, self.http.message_delete(channel_id, message_id, reason))
+                    delete_new_task = Task(KOKORO, self.api.message_delete(channel_id, message_id, reason))
                     tasks.append(delete_new_task)
             
             if (delete_old_task is None):
                 if message_group_old:
                     message_id = message_group_old.popleft()
-                    delete_old_task = Task(KOKORO, self.http.message_delete_b2wo(channel_id, message_id, reason))
+                    delete_old_task = Task(KOKORO, self.api.message_delete_b2wo(channel_id, message_id, reason))
                     tasks.append(delete_old_task)
             
             if not tasks:
@@ -1049,10 +1049,10 @@ class ClientCompoundMessageEndpoints(Compound):
                 # We will delete that message with old endpoint if not own, to make sure it will not block the other
                 # endpoint for 2 minutes with any chance.
                 if own:
-                    delete_new_task = Task(KOKORO, self.http.message_delete(channel_id, message_id, reason))
+                    delete_new_task = Task(KOKORO, self.api.message_delete(channel_id, message_id, reason))
                     task = delete_new_task
                 else:
-                    delete_old_task = Task(KOKORO, self.http.message_delete_b2wo(channel_id, message_id, reason))
+                    delete_old_task = Task(KOKORO, self.api.message_delete_b2wo(channel_id, message_id, reason))
                     task = delete_old_task
                 
                 tasks.append(task)
@@ -1332,7 +1332,7 @@ class ClientCompoundMessageEndpoints(Compound):
                     'before': last_message_id,
                 }
                 
-                get_mass_task = Task(KOKORO, sharder.client.http.message_get_chunk(channel_id, request_data))
+                get_mass_task = Task(KOKORO, sharder.client.api.message_get_chunk(channel_id, request_data))
                 tasks.append(get_mass_task)
             
             for sharder in sharders:
@@ -1366,7 +1366,7 @@ class ClientCompoundMessageEndpoints(Compound):
                                 if (sub_sharder.can_manage_messages) and (sharder.delete_new_task is None):
                                     # We collected 1 message -> We cannot use mass delete on this.
                                     who_s, message_id = message_group_new.popleft()
-                                    delete_new_task = Task(KOKORO, sub_sharder.client.http.message_delete(channel_id,
+                                    delete_new_task = Task(KOKORO, sub_sharder.client.api.message_delete(channel_id,
                                         message_id, reason = reason))
                                     sub_sharder.delete_new_task = delete_new_task
                                     tasks.append(delete_new_task)
@@ -1378,7 +1378,7 @@ class ClientCompoundMessageEndpoints(Compound):
                                 who_s, message_id = message_group_new.popleft()
                                 message_ids.append(message_id)
                             
-                            delete_mass_task = Task(KOKORO, sharder.client.http.message_delete_multiple(channel_id,
+                            delete_mass_task = Task(KOKORO, sharder.client.api.message_delete_multiple(channel_id,
                                 {'messages': message_ids}, reason))
                             sharder.delete_mass_task = delete_mass_task
                             tasks.append(delete_mass_task)
@@ -1418,7 +1418,7 @@ class ClientCompoundMessageEndpoints(Compound):
                 sharder = sharders[who_s]
                 if sharder.delete_new_task is None:
                     del message_group_old_own[0]
-                    delete_new_task = Task(KOKORO, sharder.client.http.message_delete(channel_id, message_id, reason))
+                    delete_new_task = Task(KOKORO, sharder.client.api.message_delete(channel_id, message_id, reason))
                     sharder.delete_new_task = delete_new_task
                     tasks.append(delete_new_task)
             
@@ -1428,7 +1428,7 @@ class ClientCompoundMessageEndpoints(Compound):
                         message_id = message_group_old.popleft()
                         delete_old_task = Task(
                             KOKORO,
-                            sharder.client.http.message_delete_b2wo(channel_id, message_id, reason),
+                            sharder.client.api.message_delete_b2wo(channel_id, message_id, reason),
                         )
                         sharder.delete_old_task = delete_old_task
                         tasks.append(delete_old_task)
@@ -1450,13 +1450,13 @@ class ClientCompoundMessageEndpoints(Compound):
                 if who_s == -1:
                     for sharder in sharders:
                         if sharder.can_manage_messages:
-                            task = Task(KOKORO, sharder.client.http.message_delete_b2wo(channel_id, message_id, reason))
+                            task = Task(KOKORO, sharder.client.api.message_delete_b2wo(channel_id, message_id, reason))
                             tasks.append(task)
                             sharder.delete_old_task = task
                             break
                 else:
                     sharder = sharders[who_s]
-                    task = Task(KOKORO, sharder.client.http.message_delete(channel_id, message_id, reason))
+                    task = Task(KOKORO, sharder.client.api.message_delete(channel_id, message_id, reason))
                     tasks.append(task)
                     sharder.delete_new_task = task
             
@@ -1608,7 +1608,7 @@ class ClientCompoundMessageEndpoints(Compound):
         else:
             flags &= ~MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
         
-        await self.http.message_edit(channel_id, message_id, {'flags': flags})
+        await self.api.message_edit(channel_id, message_id, {'flags': flags})
     
     
     async def message_crosspost(self, message):
@@ -1633,7 +1633,7 @@ class ClientCompoundMessageEndpoints(Compound):
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
         
-        await self.http.message_crosspost(channel_id, message_id)
+        await self.api.message_crosspost(channel_id, message_id)
     
     
     async def message_pin(self, message):
@@ -1658,7 +1658,7 @@ class ClientCompoundMessageEndpoints(Compound):
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
         
-        await self.http.message_pin(channel_id, message_id)
+        await self.api.message_pin(channel_id, message_id)
     
     
     async def message_unpin(self, message):
@@ -1683,7 +1683,7 @@ class ClientCompoundMessageEndpoints(Compound):
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
         
-        await self.http.message_unpin(channel_id, message_id)
+        await self.api.message_unpin(channel_id, message_id)
     
     
     async def channel_pin_get_all(self, channel):
@@ -1713,7 +1713,7 @@ class ClientCompoundMessageEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_textual)
         
-        data = await self.http.channel_pin_get_all(channel_id)
+        data = await self.api.channel_pin_get_all(channel_id)
         
         return [Message.from_data(message_data) for message_data in data]
     

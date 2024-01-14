@@ -22,8 +22,8 @@ from ..events.handling_helpers import ensure_shutdown_event_handlers, ensure_voi
 from ..exceptions import (
     DiscordException, DiscordGatewayException, INTENT_ERROR_CODES, InvalidToken, RESHARD_ERROR_CODES
 )
-from ..gateway.client_gateway import DiscordGateway, DiscordGatewaySharder
-from ..http import DiscordHTTPClient, RateLimitProxy
+from ..gateway.utils import DiscordGatewayClientBase, create_gateway, reshard_gateway
+from ..http import DiscordApiClient, RateLimitProxy
 from ..localization.utils import LOCALE_DEFAULT
 from ..user import (
     ClientUserBase, ClientUserPBase, PremiumType, RelationshipType, Status, User, UserBase, UserFlag,
@@ -38,9 +38,9 @@ from ..user.user.fields import (
 
 from .compounds import CLIENT_COMPOUNDS
 from .fields import (
-    validate_activity, validate_additional_owner_ids, validate_application_id, validate_client_id, validate_extensions,
-    validate_http_debug_options, validate_intents, validate_secret, validate_should_request_users, validate_shard_count,
-    validate_token
+    validate_activity, validate_additional_owner_ids, validate_api, validate_application_id, validate_client_id,
+    validate_extensions, validate_http, validate_http_debug_options, validate_intents, validate_secret,
+    validate_shard_count, validate_should_request_users, validate_token
 )
 from .functionality_helpers import _check_is_client_duped, try_get_user_id_from_token
 from .ready_state import ReadyState
@@ -68,7 +68,7 @@ class Client(
         Additional users' (as id) to be passed by the ``.is_owner`` check.
     
     _gateway_max_concurrency : `int`
-        The max amount of shards, which can be launched at the same time.
+        The maximal amount of shards that can be launched at the same time.
     
     _gateway_requesting : `bool`
         Whether the client already requests it's gateway.
@@ -98,6 +98,9 @@ class Client(
     
     activities : `None`, `list` of ``Activity``
         A list of the client's activities. Defaults to `None`.
+    
+    api : ``DiscordApiClient``
+        Discord api client for lower level interactions with the Discord API.
     
     application : ``Application``
         The bot account's application. The application data of the client is requested meanwhile it logs in.
@@ -141,9 +144,8 @@ class Client(
     flags : ``UserFlag``
         The client's user flags.
     
-    gateway : ``DiscordGateway``, ``DiscordGatewaySharder``
-        The gateway of the client towards Discord. If the client uses sharding, then ``DiscordGatewaySharder`` is used
-        as gateway.
+    gateway : ``DiscordGatewayClientBase``
+        The gateway of the client towards Discord.
     
     group_channels : `dict` of (`int`, ``Channel``) items
         The group channels of the client. They can be accessed by their id as the key.
@@ -155,9 +157,8 @@ class Client(
     guilds : `set` of ``Guild``
         The guilds, where the client is in.
     
-    http : ``DiscordHTTPClient``
-        The http session of the client. Can be used as a normal http session, or for lower level interactions with the
-        Discord API.
+    http : ``HttpClient``
+        The http session of the client.
     
     id : `int`
         The client's unique identifier number.
@@ -244,9 +245,9 @@ class Client(
     __slots__ = (
         '__dict__', '_activity', '_additional_owner_ids', '_gateway_max_concurrency', '_gateway_requesting',
         '_gateway_time', '_gateway_url', '_gateway_waiter', '_should_request_users', '_status', '_user_chunker_nonce',
-        'application', 'email', 'email_verified', 'events', 'gateway', 'group_channels', 'guilds', 'http', 'intents',
-        'locale', 'mfa_enabled', 'premium_type', 'private_channels', 'ready_state', 'relationships', 'running', 'secret',
-        'shard_count', 'token', 'voice_clients'
+        'api', 'application', 'email', 'email_verified', 'events', 'gateway', 'group_channels', 'guilds', 'http',
+        'intents', 'locale', 'mfa_enabled', 'premium_type', 'private_channels', 'ready_state', 'relationships',
+        'running', 'secret', 'shard_count', 'token', 'voice_clients'
     )
     
     loop = KOKORO
@@ -258,6 +259,7 @@ class Client(
         *,
         activity = ...,
         additional_owners = ...,
+        api = ...,
         application_id = ...,
         avatar = ...,
         avatar_decoration = ...,
@@ -271,9 +273,9 @@ class Client(
         email_verified = ...,
         extensions = ...,
         flags = ...,
+        http = ...,
         http_debug_options = ...,
         intents = ...,
-        is_bot = ...,
         locale = ...,
         mfa_enabled = ...,
         name = ...,
@@ -298,6 +300,9 @@ class Client(
         additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``) \
                 , Optional (Keyword only)
             Additional users to return `True` for by ``.is_owner`.
+        
+        api : `None | DiscordApiClient`, Optional (Keyword only)
+            The api client to use.
         
         application_id : `None`, `int`, `str`, Optional (Keyword only)
             The client's application id. If passed as `str`, will be converted to `int`.
@@ -341,6 +346,9 @@ class Client(
         
         flags : `int`, ``UserFlag``, Optional (Keyword only)
             The user's flags.
+        
+        http : `None | HTTPClient`, Optional (Keyword only)
+            The http client to use.
         
         http_debug_options: `None`, `str`, `iterable` of `str`, Optional (Keyword only)
             Http client debug options for the client.
@@ -412,6 +420,12 @@ class Client(
         else:
             additional_owner_ids = validate_additional_owner_ids(additional_owners)
         
+        # api
+        if api is ...:
+            api = None
+        else:
+            api = validate_api(api)
+        
         # application_id
         if (application_id is ...):
             application_id = 0
@@ -443,18 +457,6 @@ class Client(
             banner_color = None
         else:
             banner_color = validate_banner_color(banner_color)
-        
-        # bot
-        if is_bot is not ...:
-            warnings.warn(
-                (
-                    f'`{cls.__name__}.__new__`\'s `is_bot` parameter is deprecated and will be removed in 2023 August. '
-                    'Please use `bot` parameter instead. sus'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            bot = is_bot
         
         if bot is ...:
             bot = True
@@ -502,6 +504,12 @@ class Client(
             flags = UserFlag()
         else:
             flags = validate_flags(flags)
+        
+        # http
+        if http is ...:
+            http = None
+        else:
+            http = validate_http(http)
         
         # http_debug_options
         if http_debug_options is ...:
@@ -577,6 +585,12 @@ class Client(
             client_id = cls._next_auto_id
             cls._next_auto_id = client_id + 1
         
+        # ---- Api client ----
+        
+        if api is None:
+            api = DiscordApiClient(bot, token, debug_options = http_debug_options, http = http)
+        
+        http = api.http
         
         # ---- Build object ----
         
@@ -599,6 +613,7 @@ class Client(
         self._user_chunker_nonce = 0
         
         self.activities = None
+        self.api = api
         self.application = application
         self.avatar = avatar
         self.avatar_decoration = avatar_decoration
@@ -611,10 +626,11 @@ class Client(
         self.email_verified = email_verified
         self.events = EventHandlerManager(self)
         self.flags = flags
+        self.gateway = DiscordGatewayClientBase()
         self.group_channels = {}
         self.guild_profiles = {}
         self.guilds = set()
-        self.http = DiscordHTTPClient(bot, token, debug_options = http_debug_options)
+        self.http = http
         self.intents = intents
         self.locale = locale
         self.mfa_enabled = mfa_enabled
@@ -632,7 +648,7 @@ class Client(
         self.voice_clients = {}
         
         # These might require other attributes to be set
-        self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
+        self.gateway = create_gateway(self)
         
         # Check whether the client is duped
         if client_id > AUTO_CLIENT_ID_LIMIT:
@@ -877,7 +893,7 @@ class Client(
         """
         while True:
             try:
-                data = await self.http.client_user_get()
+                data = await self.api.client_user_get()
             except DiscordException as err:
                 status = err.status
                 if status == 401:
@@ -912,7 +928,7 @@ class Client(
         This endpoint is available only for bot accounts.
         """
         if self.bot:
-            data = await self.http.application_get_own()
+            data = await self.api.application_get_own()
             application = self.application
             old_application_id = application.id
             application = application.from_data_own(data)
@@ -959,9 +975,9 @@ class Client(
         try:
             while True:
                 if self.bot:
-                    coroutine = self.http.client_gateway_bot()
+                    coroutine = self.api.client_gateway_bot()
                 else:
-                    coroutine = self.http.client_gateway_hooman()
+                    coroutine = self.api.client_gateway_hooman()
                 try:
                     data = await coroutine
                 except DiscordException as err:
@@ -1073,29 +1089,19 @@ class Client(
         self._gateway_time = LOOP_TIME()
         
         old_shard_count = self.shard_count
-        if old_shard_count == 0:
+        if old_shard_count <= 0:
             old_shard_count = 1
         
         new_shard_count = data.get('shards', 1)
+        if new_shard_count <= 0:
+            new_shard_count = 1
         
         # Do we have more shards already?
         if (not force) and (old_shard_count >= new_shard_count):
             return
         
-        if new_shard_count == 1:
-            new_shard_count = 0
-        
         self.shard_count = new_shard_count
-        
-        gateway = self.gateway
-        if type(gateway) is DiscordGateway:
-            if new_shard_count:
-                self.gateway = DiscordGatewaySharder(self)
-        else:
-            if new_shard_count:
-                gateway.reshard()
-            else:
-                self.gateway = DiscordGateway(self)
+        self.gateway = reshard_gateway(self)
     
     
     def start(self):
@@ -1210,7 +1216,6 @@ class Client(
         self._init_on_ready(data)
         
         await self.client_gateway_reshard()
-        await self.gateway.start()
         
         if self.bot:
             task = Task(KOKORO, self.update_application_info())
@@ -1243,26 +1248,19 @@ class Client(
                 
                 try:
                     await self.gateway.run()
-                except (GeneratorExit, CancelledError) as err:
+                except CancelledError as err:
                     # For now only here. These errors occurred randomly for me since I made the wrapper, only once-once,
                     # and it was not the wrapper causing them, so it is time to say STOP.
                     # I also know `GeneratorExit` will show up as RuntimeError, but it is already a RuntimeError.
-                    try:
-                        await write_exception_async(
-                            err,
-                            [
-                                'Ignoring unexpected outer Task or coroutine cancellation at ',
-                                repr(self),
-                                '._connect:\n',
-                            ],
-                            loop = KOKORO,
-                        )
-                    except (GeneratorExit, CancelledError) as err:
-                        sys.stderr.write(
-                            f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as '
-                            f'{err!r} meanwhile rendering an exception for the same reason.\n'
-                            f'The client will reconnect.\n'
-                        )
+                    write_exception_async(
+                        err,
+                        [
+                            'Ignoring unexpected outer Task or coroutine cancellation at ',
+                            repr(self),
+                            '._connect:\n',
+                        ],
+                        loop = KOKORO,
+                    )
                     continue
                 
                 except DiscordGatewayException as err:
@@ -1292,25 +1290,21 @@ class Client(
                                 continue
                             else:
                                 break
-                        except (GeneratorExit, CancelledError) as err:
-                            try:
-                                write_exception_async(
-                                    err,
-                                    [
-                                        'Ignoring unexpected outer Task or coroutine cancellation at ',
-                                        repr(self),
-                                        '._connect:\n',
-                                    ],
-                                    loop = KOKORO,
-                                )
-                            except (GeneratorExit, CancelledError) as err:
-                                sys.stderr.write(
-                                    f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as '
-                                    f'{err!r} meanwhile rendering an exception for the same reason.\n'
-                                    f'The client will reconnect.\n'
-                                )
+                        except CancelledError as err:
+                            write_exception_async(
+                                err,
+                                [
+                                    'Ignoring unexpected outer Task or coroutine cancellation at ',
+                                    repr(self),
+                                    '._connect:\n',
+                                ],
+                                loop = KOKORO,
+                            )
                             continue
+                    
                     continue
+        except GeneratorExit:
+            raise
         except BaseException as err:
             if (
                 isinstance(err, InvalidToken) or
@@ -1343,7 +1337,7 @@ class Client(
         
         finally:
             try:
-                await self.gateway.close()
+                self.gateway.abort()
             finally:
                 unregister_client(self)
                 self.running = False
@@ -1414,45 +1408,16 @@ class Client(
             return
         
         self.running = False
-        shard_count = self.shard_count
-        
-        # cancel shards
-        if shard_count:
-            for gateway in self.gateway.gateways:
-                gateway.kokoro.cancel()
-        else:
-            self.gateway.kokoro.cancel()
         
         await ensure_voice_client_shutdown_event_handlers(self)
         
         # Log off if user account
         if (not self.bot):
-            await self.http.client_logout()
-        
+            await self.api.client_logout()
         
         # Close gateways
-        if shard_count:
-            tasks = []
-            for gateway in self.gateway.gateways:
-                websocket = gateway.websocket
-                if (websocket is not None) and websocket.open:
-                    tasks.append(Task(KOKORO, gateway.close()))
-            
-            if tasks:
-                future = TaskGroup(KOKORO, tasks).wait_all()
-                tasks = None # clear references
-                await future
-                future = None # clear references
-            else:
-                tasks = None # clear references
-            
-        else:
-            websocket = self.gateway.websocket
-            if (websocket is not None) and websocket.open:
-                await self.gateway.close()
-        
-        gateway = None # clear references
-        websocket = None # clear references
+        # cancel shards
+        await self.gateway.cancel()
         
         await ensure_shutdown_event_handlers(self)
     
@@ -1828,14 +1793,9 @@ class Client(
         
         Returns
         -------
-        gateway : ``DiscordGateway``
+        gateway : ``DiscordGatewayClientBase``
         """
-        gateway = self.gateway
-        shard_count = self.shard_count
-        if shard_count:
-            gateway = gateway.gateways[(guild_id >> 22) % shard_count]
-        
-        return gateway
+        return self.gateway.get_gateway(guild_id)
     
     
     @classmethod

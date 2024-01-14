@@ -7,7 +7,7 @@ from scarletio import Compound
 from ...bases import maybe_snowflake, maybe_snowflake_pair
 from ...core import EMOJIS, GUILDS
 from ...emoji import Emoji
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...role import Role
 from ...utils import image_to_base64
 
@@ -19,7 +19,7 @@ _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
 class ClientCompoundEmojiEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     
     async def emoji_get(self, emoji, force_update = False):
@@ -76,7 +76,7 @@ class ClientCompoundEmojiEndpoints(Compound):
         if (emoji is not None) and (not emoji.partial) and (not force_update):
             return emoji
         
-        emoji_data = await self.http.emoji_get(guild_id, emoji_id)
+        emoji_data = await self.api.emoji_get(guild_id, emoji_id)
         
         if (emoji is None):
             emoji = Emoji.from_data(emoji_data, guild_id)
@@ -113,7 +113,7 @@ class ClientCompoundEmojiEndpoints(Compound):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        emoji_datas = await self.http.emoji_guild_get_all(guild_id)
+        emoji_datas = await self.api.emoji_guild_get_all(guild_id)
         
         if guild is None:
             # Do not create a partial guild, because it would have been garbage collected after leaving the function
@@ -216,7 +216,7 @@ class ClientCompoundEmojiEndpoints(Compound):
             'roles': role_ids
         }
         
-        data = await self.http.emoji_create(guild_id, data, reason)
+        data = await self.api.emoji_create(guild_id, data, reason)
         
         emoji = Emoji.from_data(data, guild_id)
         emoji.user = self
@@ -251,7 +251,7 @@ class ClientCompoundEmojiEndpoints(Compound):
         if not guild_id:
             return
         
-        await self.http.emoji_delete(guild_id, emoji_id, reason = reason)
+        await self.api.emoji_delete(guild_id, emoji_id, reason = reason)
     
     
     async def emoji_edit(self, emoji, *, name = ..., roles = ..., reason = None):
@@ -340,4 +340,4 @@ class ClientCompoundEmojiEndpoints(Compound):
             data['roles'] = role_ids
         
         
-        await self.http.emoji_edit(guild_id, emoji_id, data, reason)
+        await self.api.emoji_edit(guild_id, emoji_id, data, reason)

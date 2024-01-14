@@ -4,8 +4,7 @@ from scarletio import Compound, Theory
 
 from ...application import Application
 from ...bases import maybe_snowflake
-from ...core import APPLICATIONS
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...user import ClientUserBase, HypesquadHouse, RelationshipType
 from ...utils import Relationship
 from ..request_helpers import get_user_and_id, get_user_id
@@ -13,7 +12,7 @@ from ..request_helpers import get_user_and_id, get_user_id
 
 class ClientCompoundLockedEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     @Theory
     async def user_get(self, user, *, force_update = False): ...
@@ -56,7 +55,7 @@ class ClientCompoundLockedEndpoints(Compound):
                     f'{relationship.__class__.__name__}; {relationship!r}.'
                 )
         
-        await self.http.relationship_delete(user_id)
+        await self.api.relationship_delete(user_id)
     
     
     async def relationship_create(self, user, relationship_type = None):
@@ -104,7 +103,7 @@ class ClientCompoundLockedEndpoints(Compound):
         if (relationship_type_value is not None):
             data['type'] = relationship_type_value
         
-        await self.http.relationship_create(user_id, data)
+        await self.api.relationship_create(user_id, data)
     
     
     async def relationship_friend_request(self, user):
@@ -140,7 +139,7 @@ class ClientCompoundLockedEndpoints(Compound):
             'discriminator': str(user.discriminator)
         }
         
-        await self.http.relationship_friend_request(data)
+        await self.api.relationship_friend_request(data)
 
 
     async def hypesquad_house_change(self, house):
@@ -179,7 +178,7 @@ class ClientCompoundLockedEndpoints(Compound):
                 f'`house` can be `int`, `{HypesquadHouse.__name__}`, got {house.__class__.__name__}; {house!r}.'
             )
         
-        await self.http.hypesquad_house_change({'house_id': house_id})
+        await self.api.hypesquad_house_change({'house_id': house_id})
     
     
     async def hypesquad_house_leave(self):
@@ -199,7 +198,7 @@ class ClientCompoundLockedEndpoints(Compound):
         -----
         User account only.
         """
-        await self.http.hypesquad_house_leave()
+        await self.api.hypesquad_house_leave()
 
 
     async def application_get(self, application):
@@ -240,5 +239,5 @@ class ClientCompoundLockedEndpoints(Compound):
                     f'{application.__class__.__name__}; {application!r}.'
                 )
         
-        application_data = await self.http.application_get(application_id)
+        application_data = await self.api.application_get(application_id)
         return Application.from_data_own(application_data)

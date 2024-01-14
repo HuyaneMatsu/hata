@@ -3,35 +3,40 @@ import vampytest
 from ..fields import validate_http_debug_options
 
 
-def test__validate_http_debug_options__0():
-    """
-    Tests whether `validate_http_debug_options` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options__passing():
     debug_option_0 = 'youkai'
     debug_option_1 = 'girl'
     
-    for input_value, expected_output in (
-        (None, None),
-        (debug_option_0, {debug_option_0}),
-        ([], None),
-        ([debug_option_0], {debug_option_0}),
-        ([debug_option_0, debug_option_1], {debug_option_0, debug_option_1}),
-    ):
-        output = validate_http_debug_options(input_value)
-        vampytest.assert_eq(output, expected_output)
+    yield None, None
+    yield debug_option_0, {debug_option_0}
+    yield [], None
+    yield [debug_option_0], {debug_option_0}
+    yield [debug_option_0, debug_option_1], {debug_option_0, debug_option_1}
 
 
-def test__validate_http_debug_options__1():
+def _iter_options__type_error():
+    yield 12.6
+    yield [12.6]
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_http_debug_options(input_value):
     """
     Tests whether `validate_http_debug_options` works as intended.
     
-    Case: `TypeError`.
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Returns
+    -------
+    output : `None | set<str>`
+        The validated value.
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-        [12.6],
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_http_debug_options(input_value)
+    return validate_http_debug_options(input_value)

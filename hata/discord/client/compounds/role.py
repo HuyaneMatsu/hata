@@ -5,7 +5,7 @@ from scarletio import Compound, Theory, change_on_switch
 from ...bases import maybe_snowflake_pair
 from ...core import GUILDS, ROLES
 from ...guild import create_partial_guild_from_id
-from ...http import DiscordHTTPClient
+from ...http import DiscordApiClient
 from ...payload_building import build_create_payload, build_edit_payload
 from ...role import Role
 from ...role.role.utils import ROLE_FIELD_CONVERTERS
@@ -16,7 +16,7 @@ from ..request_helpers import get_guild_and_id, get_guild_id, get_role_role_guil
 
 class ClientCompoundRoleEndpoints(Compound):
     
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     @Theory
     async def guild_sync(self, guild): ...
@@ -49,7 +49,7 @@ class ClientCompoundRoleEndpoints(Compound):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        data = await self.http.guild_role_get_all(guild_id)
+        data = await self.api.guild_role_get_all(guild_id)
         if guild is None:
             guild = create_partial_guild_from_id(guild_id)
         
@@ -120,7 +120,7 @@ class ClientCompoundRoleEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         data = build_create_payload(role_template, ROLE_FIELD_CONVERTERS, keyword_parameters)
-        role_data = await self.http.role_create(guild_id, data, reason)
+        role_data = await self.api.role_create(guild_id, data, reason)
         return Role.from_data(role_data, guild_id)
     
     
@@ -187,7 +187,7 @@ class ClientCompoundRoleEndpoints(Compound):
         role, guild_id, role_id = get_role_role_guild_id_and_id(role)
         data = build_edit_payload(role, role_template, ROLE_FIELD_CONVERTERS, keyword_parameters)
         if data:
-            await self.http.role_edit(guild_id, role_id, data, reason)
+            await self.api.role_edit(guild_id, role_id, data, reason)
     
     
     async def role_delete(self, role, *, reason = None):
@@ -214,7 +214,7 @@ class ClientCompoundRoleEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         guild_id, role_id = get_role_guild_id_and_id(role)
-        await self.http.role_delete(guild_id, role_id, reason)
+        await self.api.role_delete(guild_id, role_id, reason)
     
     
     async def role_move(self, role, position, *, reason = None):
@@ -291,7 +291,7 @@ class ClientCompoundRoleEndpoints(Compound):
         if not data:
             return
         
-        await self.http.role_move(guild_id, data, reason)
+        await self.api.role_move(guild_id, data, reason)
     
     
     async def _role_reorder_roles_element_validator(self, item):
@@ -611,4 +611,4 @@ class ClientCompoundRoleEndpoints(Compound):
         if not data:
             return
         
-        await self.http.role_move(guild.id, data, reason)
+        await self.api.role_move(guild.id, data, reason)

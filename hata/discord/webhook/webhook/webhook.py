@@ -570,7 +570,7 @@ class Webhook(WebhookBase):
         guild = source_channel.guild
         if guild is None:
             try:
-                extra_data = await client.http.webhook_get(webhook_id)
+                extra_data = await client.api.webhook_get(webhook_id)
             except DiscordException as err:
                 if err.code == ERROR_CODES.unknown_webhook:
                     # not lucky

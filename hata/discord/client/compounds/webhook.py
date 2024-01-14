@@ -11,7 +11,7 @@ from ...channel import Channel, ChannelType, create_partial_channel_from_id
 from ...channel.channel_metadata.fields import (
     put_applied_tag_ids_into, validate_applied_tag_ids, validate_name as validate_thread_name
 )
-from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES_EXTENDED
+from ...http import DiscordApiClient, VALID_ICON_MEDIA_TYPES_EXTENDED
 from ...message import Message, MessageFlag
 from ...utils import get_image_media_type, image_to_base64
 from ...webhook import Webhook, create_partial_webhook_from_id
@@ -29,7 +29,7 @@ MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppres
 class ClientCompoundWebhookEndpoints(Compound):
     
     application : Application
-    http : DiscordHTTPClient
+    api : DiscordApiClient
     
     
     async def webhook_create(self, channel, name, *, avatar = None):
@@ -98,7 +98,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             
             data['avatar'] = image_to_base64(avatar)
         
-        data = await self.http.webhook_create(channel_id, data)
+        data = await self.api.webhook_create(channel_id, data)
         return Webhook.from_data(data)
     
     
@@ -136,7 +136,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         """
         webhook, webhook_id = get_webhook_and_id(webhook)
         
-        data = await self.http.webhook_get(webhook_id)
+        data = await self.api.webhook_get(webhook_id)
         if webhook is None:
             webhook = Webhook.from_data(data)
         else:
@@ -178,7 +178,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         if (webhook is None):
             webhook = create_partial_webhook_from_id(webhook_id, webhook_token)
         
-        data = await self.http.webhook_get_token(webhook_id, webhook_token)
+        data = await self.api.webhook_get_token(webhook_id, webhook_token)
         webhook._set_attributes(data)
         return webhook
     
@@ -234,7 +234,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_guild_system)
         
-        data = await self.http.webhook_get_all_channel(channel_id)
+        data = await self.api.webhook_get_all_channel(channel_id)
         return [Webhook.from_data(webhook_data) for webhook_data in data]
     
     
@@ -291,7 +291,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        webhook_datas = await self.http.webhook_get_all_guild(guild_id)
+        webhook_datas = await self.api.webhook_get_all_guild(guild_id)
         return [Webhook.from_data(webhook_data) for webhook_data in webhook_datas]
     
     
@@ -321,7 +321,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         """
         webhook_id = get_webhook_id(webhook)
         
-        await self.http.webhook_delete(webhook_id)
+        await self.api.webhook_delete(webhook_id)
     
     
     async def webhook_delete_token(self, webhook):
@@ -351,7 +351,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         """
         webhook_id, webhook_token = get_webhook_id_and_token(webhook)
         
-        await self.http.webhook_delete_token(webhook_id, webhook_token)
+        await self.api.webhook_delete_token(webhook_id, webhook_token)
     
     # later there gonna be more stuff that's why 2 different
     async def webhook_edit(self, webhook, *, name = ..., avatar = ..., channel = ...):
@@ -453,7 +453,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         if not data:
             return # Save 1 request
         
-        data = await self.http.webhook_edit(webhook_id, data)
+        data = await self.api.webhook_edit(webhook_id, data)
         webhook._set_attributes(data)
     
     
@@ -539,7 +539,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         if not data:
             return # Save 1 request
         
-        data = await self.http.webhook_edit_token(webhook_id, webhook_token, data)
+        data = await self.api.webhook_edit_token(webhook_id, webhook_token, data)
         
         if webhook is None:
             webhook = Webhook.from_data(data)
@@ -786,7 +786,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             
             query_parameters['thread_id'] = thread_id
         
-        message_data = await self.http.webhook_message_create(webhook_id, webhook_token, message_data, query_parameters)
+        message_data = await self.api.webhook_message_create(webhook_id, webhook_token, message_data, query_parameters)
         
         if not wait:
             return
@@ -941,7 +941,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         message_data = add_file_to_message_data(message_data, file, True, True)
         
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
-        await self.http.webhook_message_edit(webhook_id, webhook_token, message_id, message_data)
+        await self.api.webhook_message_edit(webhook_id, webhook_token, message_id, message_data)
     
     
     async def webhook_message_delete(self, webhook, message):
@@ -1011,7 +1011,7 @@ class ClientCompoundWebhookEndpoints(Compound):
                     f'{message.__class__.__name__}; {message!r}.'
                 )
         
-        await self.http.webhook_message_delete(webhook_id, webhook_token, message_id)
+        await self.api.webhook_message_delete(webhook_id, webhook_token, message_id)
     
     
     async def webhook_message_get(self, webhook, message_id):
@@ -1056,5 +1056,5 @@ class ClientCompoundWebhookEndpoints(Compound):
                 f'`message_id` can be `int`, got {message_id.__class__.__name__}; {message_id!r}.'
             )
         
-        message_data = await self.http.webhook_message_get(webhook_id, webhook_token, message_id_value)
+        message_data = await self.api.webhook_message_get(webhook_id, webhook_token, message_id_value)
         return Message.from_data(message_data)

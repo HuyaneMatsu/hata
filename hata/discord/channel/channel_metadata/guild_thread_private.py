@@ -9,7 +9,7 @@ from .guild_thread_base import ChannelMetadataGuildThreadBase
 
 class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
     """
-    Base guild channel metadata type.
+    Guild channel metadata for private threads.
     
     Attributes
     ----------

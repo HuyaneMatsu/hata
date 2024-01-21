@@ -20,9 +20,9 @@ from .constants import (
     GATEWAY_ACTION_CONNECT, GATEWAY_ACTION_KEEP_GOING, GATEWAY_ACTION_RESUME, GATEWAY_CONNECT_TIMEOUT,
     GATEWAY_OPERATION_CLIENT_HEARTBEAT, GATEWAY_OPERATION_CLIENT_HEARTBEAT_ACKNOWLEDGE, GATEWAY_OPERATION_CLIENT_HELLO,
     GATEWAY_OPERATION_CLIENT_IDENTIFY, GATEWAY_OPERATION_CLIENT_INVALIDATE_SESSION, GATEWAY_OPERATION_CLIENT_RECONNECT,
-    GATEWAY_OPERATION_CLIENT_RESUME, GATEWAY_OPERATION_CLIENT_VOICE_STATE, POLL_TIMEOUT
+    GATEWAY_OPERATION_CLIENT_RESUME, GATEWAY_OPERATION_CLIENT_VOICE_STATE, LATENCY_DEFAULT, POLL_TIMEOUT 
 )
-from .heartbeat import Kokoro, LATENCY_DEFAULT
+from .heartbeat import Kokoro
 from .rate_limit import GatewayRateLimiter
 
 
@@ -74,7 +74,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
     _decompressor : `ZlibDecompressorType`
         Zlib decompressor used to decompress the received data.
     _should_run : `bool`
-        Whether the gateway should running.
+        Whether the gateway should be running.
     client : ``Client``
         The owner client of the gateway.
     kokoro : `None | Kokoro`
@@ -136,11 +136,8 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
     async def run(self, waiter = None):
         """
         Keeps the gateway receiving message and processing it. If the gateway needs to be reconnected, reconnects
-        itself. If connecting cannot succeed, because there is no internet returns `True`. If the `.client` is
+        itself. If connecting cannot succeed, because there is no internet returns `False`. If the `.client` is
         stopped, then returns `False`.
-        
-        If `True` is returned the respective client stops all other gateways as well and tries to reconnect. When
-        the internet is back the client will launch back the gateway.
         
         This method is a coroutine.
         
@@ -183,6 +180,10 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
                         waiter = None
                     
                     action = await self._keep_polling_and_handling()
+                
+                except GeneratorExit:
+                    self.abort()
+                    raise
                 
                 except ConnectionClosed as exception:
                     code = exception.code
@@ -340,7 +341,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         
         Returns
         -------
-        connected : `bool`
+        gateway_action : `int`
         
         Raises
         ------
@@ -383,7 +384,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         try:
             await self.websocket.ensure_open()
         except ConnectionClosed:
-            # websocket got closed so let's just do a regular IDENTIFY connect.
+            # websocket got closed so let's just do a regular connect.
             self._clear_session()
             self.kokoro.stop()
             self.websocket = None
@@ -604,7 +605,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
             KOKORO,
             client.events.error(
                 client,
-                f'{self.__class__.__name__}._handle_special_operation',
+                f'{type(self).__name__}._handle_special_operation',
                 f'Unknown operation {operation}\nData: {data!r}'
             ),
         )

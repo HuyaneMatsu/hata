@@ -9,12 +9,17 @@
 - Add `DiscordGatewayBase` as a base type for gateways.
 - Add `DiscordGatewayBase.abort` to instantly abort connections on unexpected shutdown.
 - Add tests for client gateway.
+- Do not start `VoiceClient` in `.__new__`, instead add a new `.start` method.
 
 ### Bug fixes
 
 - `Client.sticker_create` failed if `tags` were given as `None` or as an empty container.
 - Fix incorrect reconnect attempt on lost internet connection causing a shard to go dormant if sharded.
 - Fix incorrect handling of `GeneratorExit` in `Client._connect`.
+- Fix incorrect handling of `session_id` in `VoiceClient`.
+- Fix typo in `DiscordGatewayVoice._resume`.
+- Fix incorrect handling of `GeneratorExit` in `VoiceClient._connect`.
+- `VoiceClient._token` was not set in the constructor.
 
 ### Renames, Deprecations & Removals
 

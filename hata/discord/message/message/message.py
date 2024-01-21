@@ -1630,7 +1630,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        line : `None`, `dict` of (``Reaction``, ``ReactionMappingLine``) items
+        removed_reactions : `None`, `dict` of (``Reaction``, ``ReactionMappingLine``) items
         """
         reactions = self.reactions
         if (reactions is not None):

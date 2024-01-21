@@ -44,7 +44,7 @@ class AudioPlayer:
         self.voice_client = voice_client
         
         resumed_waiter = Event(KOKORO)
-        resumed_waiter.set()    # we are not paused
+        resumed_waiter.set() # we are not paused
         self.resumed_waiter = resumed_waiter
         self.should_update = True
         self.done = False
@@ -76,8 +76,10 @@ class AudioPlayer:
                     continue
                 
                 # are we disconnected from voice?
-                if not voice_client.connected.is_set():
-                    await voice_client.connected
+                if not voice_client.is_connected():
+                    if not (await voice_client.wait_connected()):
+                        break
+                    
                     start = perf_counter()
                     loops = 0
                     continue
@@ -250,6 +252,7 @@ class AudioPlayer:
         self.done = True
         task = self.task
         if (task is not None):
+            self.task = None
             task.cancel()
         
         self.should_update = True

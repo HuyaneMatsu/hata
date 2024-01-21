@@ -66,7 +66,7 @@ def setup_ext_commands_v2(client, prefix, **kwargs):
     Parameters
     ----------
     client : ``Client`
-        The client on what the extension will be setuped.
+        The client on what the extension will be set up.
     prefix : `str`, (`tuple`, `list`, `deque`) of `str`, `callable` -> `str`, Optional
         The prefix of the client's command processor.
         

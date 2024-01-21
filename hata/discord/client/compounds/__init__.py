@@ -5,7 +5,7 @@ from .application_role_connection import *
 from .auto_moderation import *
 from .channel import *
 from .client import *
-from .client_gayteway import *
+from .client_gateway import *
 from .discovery import *
 from .emoji import *
 from .guild import *
@@ -36,7 +36,7 @@ __all__ = (
     *auto_moderation.__all__,
     *channel.__all__,
     *client.__all__,
-    *client_gayteway.__all__,
+    *client_gateway.__all__,
     *discovery.__all__,
     *emoji.__all__,
     *guild.__all__,
@@ -67,7 +67,7 @@ from .application_role_connection import ClientCompoundApplicationRoleConnection
 from .auto_moderation import ClientCompoundAutoModerationEndpoints
 from .channel import ClientCompoundChannelEndpoints
 from .client import ClientCompoundClientEndpoints
-from .client_gayteway import ClientCompoundClientGateway
+from .client_gateway import ClientCompoundClientGateway
 from .discovery import ClientCompoundDiscoveryEndpoints
 from .emoji import ClientCompoundEmojiEndpoints
 from .guild import ClientCompoundGuildEndpoints

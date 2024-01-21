@@ -6,7 +6,8 @@ from .constants import *
 from .heartbeat import *
 from .rate_limit import *
 from .utils import *
-from .voice_client_gateway import *
+from .voice import *
+from .voice_base import *
 
 
 __all__ = (
@@ -18,5 +19,6 @@ __all__ = (
     *heartbeat.__all__,
     *rate_limit.__all__,
     *utils.__all__,
-    *voice_client_gateway.__all__,
+    *voice.__all__,
+    *voice_base.__all__,
 )

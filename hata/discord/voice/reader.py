@@ -215,8 +215,7 @@ class AudioReader:
         audio_streams = self.audio_streams
         
         try:
-            if not voice_client.connected.is_set():
-                await voice_client.connected
+            await voice_client.wait_connected()
             
             protocol = voice_client._protocol
             while True:
@@ -224,8 +223,10 @@ class AudioReader:
                 if self.done:
                     break
                 
-                if not voice_client.connected.is_set():
-                    await voice_client.connected
+                if not voice_client.is_connected():
+                    if not (await voice_client.wait_connected()):
+                        break
+                    
                     protocol = voice_client._protocol
                 
                 try:

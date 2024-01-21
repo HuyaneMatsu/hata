@@ -22,6 +22,7 @@ from .stats import Stats
 EXTENSION_USER_AGENT = 'hata.ext.solarlink'
 DEFAULT_PENALTY = 9e30
 
+
 class SolarNode(RichAttributeErrorBaseType):
     """
     Represents a Node connection with Lavalink.
@@ -295,7 +296,7 @@ class SolarNode(RichAttributeErrorBaseType):
                         try:
                             with repeat_timeout(60.0) as loop:
                                 for _ in loop:
-                                    should_reconnect = await self._poll_event()
+                                    should_reconnect = await self._poll_and_handle_received_operation()
                                     if should_reconnect:
                                         break
                         except TimeoutError:
@@ -388,7 +389,7 @@ class SolarNode(RichAttributeErrorBaseType):
                 waiter = None
     
     
-    async def _poll_event(self):
+    async def _poll_and_handle_received_operation(self):
         """
         Polls an event from the gateway and tries to handle it.
         
@@ -409,8 +410,8 @@ class SolarNode(RichAttributeErrorBaseType):
         
         try:
             message = await websocket.receive()
-        except ConnectionClosed as err:
-            raise err
+        except ConnectionClosed:
+            raise
         
         return (await self._received_message(message))
     

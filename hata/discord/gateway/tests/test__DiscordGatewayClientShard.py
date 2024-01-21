@@ -468,7 +468,6 @@ def test__DiscordGatewayClientShard__clear_session():
         client = None
 
 
-
 async def test__DiscordGatewayClientShard__terminate__no_websocket_no_kokoro():
     """
     Tests whether ``DiscordGatewayClientShard.terminate`` works as intended.
@@ -714,7 +713,6 @@ async def test__DiscordGatewayClientShard__send_as_json__sending():
     finally:
         client._delete()
         client = None
-
 
 
 async def test__DiscordGatewayClientShard__beat():
@@ -1493,6 +1491,7 @@ async def test__DiscordGatewayClientShard__handle_special_operation__unknown_ope
         
         vampytest.assert_true(error_event_handler_called)
         vampytest.assert_eq(len(websocket.out_operations), 0)
+    
     finally:
         client._delete()
         client = None

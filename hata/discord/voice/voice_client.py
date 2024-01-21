@@ -5,16 +5,16 @@ from datetime import datetime
 from functools import partial as partial_func
 
 from scarletio import (
-    DOCS_ENABLED, DatagramMergerReadProtocol, Event, Future, Lock, Task, export, RichAttributeErrorBaseType,
-    skip_poll_cycle, sleep
+    DOCS_ENABLED, DatagramMergerReadProtocol, Future, Lock, Task, export, RichAttributeErrorBaseType, skip_poll_cycle
 )
-from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
+from scarletio.web_common import ConnectionClosed
 
 from ..bases import maybe_snowflake
 from ..channel import Channel, ChannelType, create_partial_channel_from_id
 from ..core import GUILDS, KOKORO
-from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE, VOICE_CLIENT_RECONNECT_CLOSE_CODE
-from ..gateway.voice_client_gateway import DiscordGatewayVoice, SecretBox
+from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE
+from ..gateway.voice import DiscordGatewayVoice, SecretBox
+from ..gateway.voice_base import DiscordGatewayVoiceBase
 from ..user import User
 from ..utils import datetime_to_timestamp
 
@@ -32,23 +32,27 @@ class VoiceClient(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    _audio_port : `int`
-        The port, where the voice client should send the audio data.
     _audio_source : `int`
         An identifier sent by Discord what should be sent back with every voice packet.
     _audio_sources : `dict` of (`int`, `int`) items
         `user_id` - `audio_source` mapping used by ``AudioStream``-s.
     _audio_streams : `None`, `dict` of (`int`, (``AudioStream`` or (`list` of ``AudioStream``)) items
         `user_id` - ``AudioStream``(s) mapping for linking ``AudioStream`` to their respective user.
+    _connected : `bool`
+        Whether the voice client is connected.
+    _connected_waiters : `None | set<Future>`
+        Waiter futures waiting for the voice client to be connected again.
     _encoder : ``OpusEncoder``
         Encode not opus encoded audio data.
     _endpoint : `None`, `str`
         The endpoint, where the voice client sends the audio data.
     _endpoint_ip : `None`, `tuple` of `int`
         The ip version of the `._endpoint` attribute.
+    _endpoint_port : `int`
+        The port, where the voice client should send the audio data.
     _handshake_complete : ``Future``
         Used for awaiting the connecting handshake with Discord.
-    _ip : `None`, `tuple` of `int`
+    _ip : `None | str`
         The ip to what the voice client's gateway connects.
     _port : `None`, `int`
         The port to what the voice client's gateway connects.
@@ -56,14 +60,12 @@ class VoiceClient(RichAttributeErrorBaseType):
         The preferred volume of the voice client. can be between `0.0` and `2.0`.
     _protocol : `None`, ``DatagramMergerReadProtocol``
         Asynchronous protocol of the voice client to communicate with it's socket.
-    _reconnecting : `bool`
+    running : `bool`
         Whether the voice client plans to reconnect and it's reader and player should not be stopped.
     _secret_box : `None`, `nacl.secret.SecretBox`
         Data encoder of the voice client.
     _sequence : `int`
         Counter to define the sent data's sequence for Discord.
-    _session_id : `None`, `str`
-        The session id of the voice client's owner client's shard.
     _set_speaking_task : `None`, ``Task``
         Synchronization task for the `.set_speaking` coroutine.
     _socket : `None`, `socket.socket`
@@ -104,8 +106,6 @@ class VoiceClient(RichAttributeErrorBaseType):
         The channel's identifier where the voice client currently is.
     client : ``Client``
         The voice client's owner client.
-    connected : ``Event``
-        Used to communicate with the ``AudioPlayer`` thread.
     gateway : ``DiscordGatewayVoice``
         The gateway through what the voice client communicates with Discord.
     guild_id : `int``
@@ -125,10 +125,10 @@ class VoiceClient(RichAttributeErrorBaseType):
         modified, with the ``.set_speaking``, however it is always adjusted to the voice client's current playing state.
     """
     __slots__ = (
-        '_audio_port', '_audio_source', '_audio_sources', '_audio_streams', '_encoder', '_endpoint', '_endpoint_ip',
-        '_handshake_complete', '_ip', '_port', '_preferred_volume', '_protocol', '_reconnecting', '_secret_box',
-        '_sequence', '_session_id', '_set_speaking_task', '_socket', '_timestamp', '_token', '_transport',
-        '_video_source', '_video_sources', 'call_after', 'channel_id', 'client', 'connected', 'gateway', 'guild_id',
+        '_audio_source', '_audio_sources', '_audio_streams', '_connected', '_connected_waiters', '_encoder',
+        '_endpoint', '_endpoint_ip', '_endpoint_port', '_handshake_complete', '_ip', '_port', '_preferred_volume',
+        '_protocol', 'running', '_secret_box', '_sequence', '_set_speaking_task', '_socket', '_timestamp', '_token',
+        '_transport', '_video_source', '_video_sources', 'call_after', 'channel_id', 'client', 'gateway', 'guild_id',
         'lock', 'player', 'queue', 'reader', 'region', 'speaking'
     )
     
@@ -147,10 +147,6 @@ class VoiceClient(RichAttributeErrorBaseType):
             the guild's identifier, where the the client will connect to.
         channel_id : `int`
             The channel's identifier where the client will connect to.
-        
-        Returns
-        -------
-        waiter : ``Future``
         
         Raises
         ------
@@ -172,19 +168,19 @@ class VoiceClient(RichAttributeErrorBaseType):
         self.guild_id = guild_id
         self.channel_id = channel_id
         self.region = region
-        self.gateway = DiscordGatewayVoice(self)
+        self.gateway = DiscordGatewayVoiceBase()
         self._socket = None
         self._protocol = None
         self._transport = None
         self.client = client
-        self.connected = Event(KOKORO)
+        self._connected = False
+        self._connected_waiters = None
         self.queue = []
         self.player = None
         self.call_after = cls._play_next
         self.speaking = 0
         self.lock = Lock(KOKORO)
         self.reader = None
-        
         self._handshake_complete = Future(KOKORO)
         self._encoder = OpusEncoder()
         self._sequence = 0
@@ -197,16 +193,31 @@ class VoiceClient(RichAttributeErrorBaseType):
         self._port = None
         self._endpoint_ip = None
         self._secret_box = None
-        self._audio_port = None
+        self._endpoint_port = None
         self._ip = None
         self._audio_sources = {}
         self._video_sources = {}
         self._audio_streams = None
-        self._reconnecting = True
+        self.running = False
+        self._token = ''
+        
+        self.gateway = DiscordGatewayVoice(self)
         
         client.voice_clients[guild_id] = self
+        
+        return self
+    
+    
+    def start(self):
+        """
+        Starts the voice client and returns a waiter than can be awaited to wait for connection.
+        
+        Returns
+        -------
+        waiter : `Future<bool>`
+        """
         waiter = Future(KOKORO)
-        Task(KOKORO, self._connect(waiter = waiter))
+        Task(KOKORO, self._run(waiter = waiter))
         return waiter
     
     
@@ -276,7 +287,7 @@ class VoiceClient(RichAttributeErrorBaseType):
 
         self.speaking = value
         
-        task = Task(KOKORO, self.gateway._set_speaking(value))
+        task = Task(KOKORO, self.gateway.set_speaking(value))
         self._set_speaking_task = task
         
         try:
@@ -404,19 +415,19 @@ class VoiceClient(RichAttributeErrorBaseType):
                             del reader_audio_streams[source]
     
     
-    def _remove_source(self, user_id):
+    def _remove_audio_source(self, user_id):
         """
-        Un-links the audio and video streams' source listening to the given user (id), causing the affected audio
-        str-eam(s) to stop receiving audio data at the meanwhile.
+        Un-links the audio streams' source listening to the given user (id), causing the affected audio
+        stream(s) to stop receiving audio data at the meanwhile.
         
         Parameters
         ----------
         user_id : `int`
             The respective user's id.
         """
-        voice_sources = self._audio_sources
+        audio_sources = self._audio_sources
         try:
-            voice_source = voice_sources.pop(user_id)
+            audio_source = audio_sources.pop(user_id)
         except KeyError:
             pass
         else:
@@ -430,10 +441,20 @@ class VoiceClient(RichAttributeErrorBaseType):
                     reader = self.reader
                     if (reader is not None):
                         try:
-                            del reader.audio_streams[voice_source]
+                            del reader.audio_streams[audio_source]
                         except KeyError:
                             pass
         
+        
+    def _remove_video_source(self, user_id):
+        """
+        Un-links a video stream's source.
+        
+        Parameters
+        ----------
+        user_id : `int`
+            The respective user's id.
+        """
         try:
             del self._video_sources[user_id]
         except KeyError:
@@ -452,9 +473,9 @@ class VoiceClient(RichAttributeErrorBaseType):
         audio_source : `int`
             Audio source identifier of the user.
         """
-        voice_sources = self._audio_sources
+        audio_sources = self._audio_sources
         try:
-            old_audio_source = voice_sources.pop(user_id)
+            old_audio_source = audio_sources.pop(user_id)
         except KeyError:
             # Should not happen if it is an update, only if it is an add
             pass
@@ -472,7 +493,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                 except KeyError:
                     pass
         
-        voice_sources[user_id] = audio_source
+        audio_sources[user_id] = audio_source
         
         streams = self._audio_streams
         if streams is None:
@@ -814,7 +835,115 @@ class VoiceClient(RichAttributeErrorBaseType):
         -------
         is_connected : `bool`
         """
-        return self.connected.is_set()
+        return self._connected
+    
+    
+    def clear_connected(self):
+        """
+        Sets the voice client's state to be not connected.
+        """
+        self._connected = False
+    
+    
+    def set_connected(self):
+        """
+        Sets the voice client's state to be connected.
+        """
+        self._connected = True
+        self._set_connected_waiters(True)
+    
+    
+    def _create_connected_waiter(self):
+        """
+        Creates a connected state waiter.
+        
+        Returns
+        -------
+        connected_waiter : ``Future``
+        """
+        connected_waiter = Future(KOKORO)
+        
+        connected_waiters = self._connected_waiters
+        if (connected_waiters is None):
+            connected_waiters = set()
+            self._connected_waiters = connected_waiters
+        
+        connected_waiters.add(connected_waiter)
+        
+        return connected_waiter
+    
+    
+    def _remove_connected_waiter(self, connected_waiter):
+        """
+        Removes the given connected state waiter.
+        
+        Parameters
+        ----------
+        connected_waiter : ``Future``
+            The connection waiter to remove.
+        """
+        connected_waiters = self._connected_waiters
+        if (connected_waiters is not None):
+            try:
+                connected_waiters.remove(connected_waiter)
+            except ValueError:
+                pass
+            else:
+                if not connected_waiters:
+                    self._connected_waiters = None
+    
+    
+    async def wait_connected(self, timeout = None):
+        """
+        Waits until the voice client is connected.
+        
+        Parameters
+        ----------
+        timeout : `None | float`
+            Timeout to apply while waiting for connection.
+        
+        Returns
+        -------
+        connected : `bool`
+            Whether the voice client connected or disconnected before `timeout`.
+        
+        Raises
+        ------
+        TimeoutError
+            - 
+        """
+        if self._connected:
+            return True
+        
+        if not self.running:
+            return False
+        
+        connected_waiter = self._create_connected_waiter()
+        
+        if (timeout is not None):
+            connected_waiter.apply_timeout(timeout)
+        
+        try:
+            return (await connected_waiter)
+        finally:
+            self._remove_connected_waiter(connected_waiter)
+
+    
+    def _set_connected_waiters(self, result):
+        """
+        Sets the connection waiter's result.
+        
+        Parameters
+        ----------
+        result : `bool`
+            The value to set the waiter's result to.
+        """
+        connected_waiters = self._connected_waiters
+        if (connected_waiters is not None):
+            self._connected_waiters = None
+            
+            while connected_waiters:
+                connected_waiters.pop().set_result_if_pending(result)
     
     
     def is_playing(self):
@@ -860,7 +989,7 @@ class VoiceClient(RichAttributeErrorBaseType):
     
     # connection related
     
-    async def _connect(self, waiter = None):
+    async def _run(self, waiter = None):
         """
         Connects the voice client to Discord and keeps receiving the gateway events.
         
@@ -871,116 +1000,80 @@ class VoiceClient(RichAttributeErrorBaseType):
         waiter : `None`, ``Future`` = `None`, Optional
             A Waiter what's result is set (or is raised to), when the voice client connects (or failed to connect).
         """
+        # Are we double started?
+        if self.running:
+            if (waiter is not None):
+                waiter.set_result_if_pending(True)
+                waiter = None
+            return False
+        
+        self.running = True
         try:
-            tries = 0
             while True:
-                if tries == 5:
-                    if (waiter is not None):
-                        waiter.set_exception(TimeoutError())
-                    return
-                
-                self._secret_box = None
+                if not self.running:
+                    return False
                 
                 try:
                     await self._start_handshake()
                 except TimeoutError:
-                    tries += 1
                     continue
-                except:
-                    await self._disconnect(force = True)
+                
+                except GeneratorExit:
                     raise
                 
                 try:
-                    task = Task(KOKORO, self.gateway.connect())
-                    task.apply_timeout(30.0)
-                    await task
+                    await self.gateway.run(waiter)
+                except ConnectionClosed as exception:
+                    self._close_socket()
                     
-                    self.connected.clear()
-                    while True:
-                        task = Task(KOKORO, self.gateway._poll_event())
-                        task.apply_timeout(60.0)
-                        await task
-                        
-                        if self._secret_box is not None:
-                            break
-                        
-                    self.connected.set()
-                
-                except (
-                    OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError,
-                    InvalidHandshake, ValueError
-                ) as err:
-                    self._maybe_close_socket()
-                    
-                    if isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_DISCONNECT_CLOSE_CODE):
+                    if exception.code == VOICE_CLIENT_DISCONNECT_CLOSE_CODE:
                         # If we are getting disconnected and voice region changed, then Discord disconnects us, not
                         # user nor us, so reconnect.
                         if not self._maybe_change_voice_region():
-                            self._reconnecting = False
+                            self.running = False
                             await self._disconnect(force = False)
-                            return
-                    
-                    if not (isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_RECONNECT_CLOSE_CODE)):
-                        await sleep(1 + (tries << 1), KOKORO)
+                            print('step 9')
+                            return False
                     
                     self._maybe_change_voice_region()
-                    
-                    tries += 1
                     await self._terminate_handshake()
                     continue
                 
-                except:
-                    await self._disconnect(force = True)
-                    raise
+                else:
+                    break
                 
-                if (waiter is not None):
-                    waiter.set_result(self)
-                    waiter = None
-                
-                tries = 0
-                while True:
-                    try:
-                        task = Task(KOKORO, self.gateway._poll_event())
-                        task.apply_timeout(60.0)
-                        await task
-                    except (OSError, TimeoutError, ConnectionClosed, WebSocketProtocolError,) as err:
-                        self._maybe_close_socket()
-                        
-                        if isinstance(err, ConnectionClosed):
-                            # If we are getting disconnected and voice region changed, then Discord disconnects us, not
-                            # user nor us, so reconnect.
-                            code = err.code
-                            if code == 1000 or (
-                                 (code == VOICE_CLIENT_DISCONNECT_CLOSE_CODE) and
-                                 (not self._maybe_change_voice_region())
-                            ):
-                                self._reconnecting = False
-                                await self._disconnect(force = False)
-                                return
-                        
-                        self.connected.clear()
-                        
-                        if not (isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_RECONNECT_CLOSE_CODE)):
-                            await sleep(5., KOKORO)
-                        
-                        self._maybe_change_voice_region()
-                        
-                        await self._terminate_handshake()
-                        break
-                    
-                    except:
-                        self._reconnecting = False
-                        await self._disconnect(force = True)
-                        raise
+                finally:
+                    if (waiter is not None) and waiter.is_done():
+                        waiter = None
+        
+        except GeneratorExit:
+            self.running = False
+            self._stop_player_and_reader()
+            self.gateway.abort()
+            raise
+        
+        except:
+            self.running = False
+            await self._disconnect(force = True)
+            raise
+        
         finally:
-            self._reconnecting = False
+            if (waiter is not None):
+                waiter.set_result_if_pending(False)
+                waiter = None
+            
+            self.running = False
             
             try:
                 del self.client.voice_clients[self.guild_id]
             except KeyError:
                 pass
-    
-    
+            
+            self._set_connected_waiters(False)
+        
+        return False
+        
+        
     async def disconnect(self):
         """
         Disconnects the voice client.
@@ -1007,33 +1100,26 @@ class VoiceClient(RichAttributeErrorBaseType):
             Whether it is an internal disconnect. If the Disconnect comes from Discord's side, then `terminate` is
             `False`, what means, we do not need to terminate the gateway handshake.
         """
-        if not (force or self.connected.is_set()):
+        if not (force or self._connected):
             return
         
-        self.queue.clear()
-        
-        if not self._reconnecting:
-            player = self.player
-            if (player is not None):
-                self.player = None
-                player.stop()
-                
-                # skip 1 full loop
-                await skip_poll_cycle(KOKORO)
-            
-            reader = self.reader
-            if (reader is not None):
-                self.reader = None
-                reader.stop()
-        
-        self.connected.clear()
-        
         try:
+            self.queue.clear()
+            
+            self._stop_player_and_reader()
+                    
+            # skip 1 full loop
+            await skip_poll_cycle(KOKORO)
+            
+            self.clear_connected()
+            
             await self.gateway.close()
             if terminate:
                 await self._terminate_handshake()
         finally:
-            self._maybe_close_socket()
+            self.running = False
+            self._close_socket()
+            self.gateway.abort()
     
     
     @classmethod
@@ -1094,20 +1180,20 @@ class VoiceClient(RichAttributeErrorBaseType):
             
             source = queue.pop(0)
             self.player = AudioPlayer(self, source)
-            if self.connected.is_set():
+            if self._connected:
                 Task(KOKORO, self.set_speaking(1))
             
             return
         
         if not queue:
             player.set_source(None)
-            if self.connected.is_set():
+            if self._connected:
                 Task(KOKORO, self.set_speaking(0))
             return
         
         source = queue.pop(0)
         player.set_source(source)
-        if self.connected.is_set():
+        if self._connected:
             Task(KOKORO, self.set_speaking(1))
     
     
@@ -1139,7 +1225,7 @@ class VoiceClient(RichAttributeErrorBaseType):
             # The audio was over.
             player.set_source(last_source)
         
-        if self.connected.is_set():
+        if self._connected:
             Task(KOKORO, self.set_speaking(1))
     
     
@@ -1200,17 +1286,8 @@ class VoiceClient(RichAttributeErrorBaseType):
         This method is a coroutine.
         """
         self._handshake_complete = Future(KOKORO)
-        
         gateway = self.client.gateway_for(self.guild_id)
-        
-        try:
-            await gateway.change_voice_state(self.guild_id, 0, self_mute = True)
-        except ConnectionClosed:
-            pass
-        
-        kokoro = self.gateway.kokoro
-        if (kokoro is not None):
-            kokoro.stop()
+        await gateway.change_voice_state(self.guild_id, 0, self_mute = True)
     
     
     async def _create_socket(self, event):
@@ -1229,11 +1306,8 @@ class VoiceClient(RichAttributeErrorBaseType):
         event : ``VoiceServerUpdateEvent``
             Voice server update event.
         """
-        self.connected.clear()
+        self.clear_connected()
         
-        gateway = self.client.gateway_for(self.guild_id)
-        
-        self._session_id = gateway.session_id
         token = event.token
         self._token = token
         endpoint = event.endpoint
@@ -1243,7 +1317,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         
         self._endpoint = endpoint.replace(':80', '').replace(':443', '')
         
-        self._maybe_close_socket()
+        self._close_socket()
         
         socket = module_socket.socket(module_socket.AF_INET, module_socket.SOCK_DGRAM)
         
@@ -1277,13 +1351,22 @@ class VoiceClient(RichAttributeErrorBaseType):
         """
         transport = self._transport
         if (transport is not None):
-            transport.send_to(packet, (self._endpoint_ip, self._audio_port))
+            transport.send_to(packet, (self._endpoint_ip, self._endpoint_port))
+    
     
     def __del__(self):
         """Stops and unallocates the resources by the voice client, if was not done already."""
         self.stop()
-        self.connected.set()
-        
+        self._set_connected_waiters(False)
+        self._stop_player_and_reader()
+        self._close_socket()
+        self.gateway.abort()
+    
+    
+    def _stop_player_and_reader(self):
+        """
+        Stops the voice client's player and reader.
+        """
         player = self.player
         if (player is not None):
             self.player = None
@@ -1293,11 +1376,9 @@ class VoiceClient(RichAttributeErrorBaseType):
         if (reader is not None):
             self.reader = None
             reader.stop()
-        
-        self._maybe_close_socket()
     
     
-    def _maybe_close_socket(self):
+    def _close_socket(self):
         """
         Closes the voice client's socket and transport if they are set.
         """

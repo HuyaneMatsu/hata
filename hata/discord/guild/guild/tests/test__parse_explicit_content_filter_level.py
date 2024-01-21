@@ -16,7 +16,7 @@ def test__parse_explicit_content_filter_level(input_data):
     
     Parameters
     ----------
-    data : `dict<đtr, object>`
+    data : `dict<str, object>`
         Data to parse from.
     
     Returns

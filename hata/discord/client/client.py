@@ -1417,7 +1417,7 @@ class Client(
         
         # Close gateways
         # cancel shards
-        await self.gateway.cancel()
+        await self.gateway.close()
         
         await ensure_shutdown_event_handlers(self)
     

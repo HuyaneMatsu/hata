@@ -76,7 +76,7 @@ class DiscordException(Exception):
     _message : `None`,  `str`
         Cache of the `.message` property.
     
-    debug_options : `None`, `tuple` of `str`
+    debug_options : `None`, `set` of `str`
         Debug options of the http client.
     
     received_data : `object`
@@ -105,7 +105,7 @@ class DiscordException(Exception):
             Deserialized `json` response data if applicable.
         sent_data : `object`
             Sent data.
-        debug_options : `None`, `tuple` of `str`
+        debug_options : `None`, `set` of `str`
             Debug options of the http client.
         """
         self = Exception.__new__(cls, response, received_data, sent_data, debug_options)
@@ -419,6 +419,8 @@ class DiscordException(Exception):
             return ''
         
         debug_info_parts = ['debug options: ']
+        
+        debug_options = sorted(debug_options)
         
         index = 0
         limit = len(debug_options)

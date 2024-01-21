@@ -166,7 +166,7 @@ class ClientCompoundClientGateway(Compound):
             activity = activity.to_data(user = not self.bot)
         
         if status == 'idle':
-            since = int(time_now() * 1000.)
+            since = int(time_now() * 1000.0)
         else:
             since = 0
         
@@ -233,10 +233,27 @@ class ClientCompoundClientGateway(Compound):
             )
         
         
-        try:
-            voice_client = self.voice_clients[guild_id]
-        except KeyError:
-            voice_client = await VoiceClient(self, guild_id, channel_id)
+        voice_client = self.voice_clients.get(guild_id, None)
+        if voice_client is None:
+            voice_client = VoiceClient(self, guild_id, channel_id)
+            try:
+                waiter = voice_client.start()
+                
+                waiter.apply_timeout(60.0)
+                success = await waiter
+                
+                if success:
+                    success = await voice_client.wait_connected(60.0)
+                
+                if not success:
+                    raise TimeoutError('Voice client failed to connect.')
+            except GeneratorExit:
+                raise
+            
+            except:
+                await voice_client.disconnect()
+                raise
+        
         else:
             if voice_client.channel_id != channel_id:
                 gateway = self.gateway_for(guild_id)

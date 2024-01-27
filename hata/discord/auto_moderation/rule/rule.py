@@ -644,9 +644,9 @@ class AutoModerationRule(DiscordEntity, immortal = True):
             (event_type is not AutoModerationEventType.message_send)
         ):
             repr_parts.append(', event_type = ')
-            event_type.append(repr(event_type.name))
-            event_type.append('~')
-            event_type.append(repr(event_type.value))
+            repr_parts.append(repr(event_type.name))
+            repr_parts.append('~')
+            repr_parts.append(repr(event_type.value))
         
         # excluded_channel_ids
         excluded_channel_ids = self.excluded_channel_ids

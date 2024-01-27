@@ -864,6 +864,11 @@ class MenuType(type):
             if isinstance(attribute_value, Component):
                 components_to_track.append((attribute_name, attribute_value))
                 continue
+            
+            try:
+                del new_attributes[attribute_name]
+            except KeyError:
+                pass
         
         
         for attribute_name, attribute_value in components_to_track:
@@ -1450,64 +1455,68 @@ class Menu(metaclass = MenuType):
     def components(self, raw_components):
         components = None
         
-        if raw_components is None:
-            pass
-        
-        elif isinstance(raw_components, Component):
-            if raw_components.type is ComponentType.row:
-                component = raw_components
-            else:
-                component = create_row(raw_components)
+        if raw_components is not None:
+            if isinstance(raw_components, ComponentDescriptor):
+                raw_components = raw_components.__get__(self, type(self))
             
-            if components is None:
-                components = []
-            
-            components.append(component)
-        
-        elif isinstance(raw_components, (tuple, list)):
-            
-            for raw_sub_component in raw_components:
-                if isinstance(raw_sub_component, Component):
-                    if raw_sub_component.type is ComponentType.row:
-                        component = raw_sub_component
-                    else:
-                        component = create_row(raw_sub_component)
-                
-                elif isinstance(raw_sub_component, (tuple, list)):
-                    component_line = []
-                    for raw_sub_sub_component in raw_sub_component:
-                        if not isinstance(raw_sub_sub_component, Component):
-                            raise TypeError(
-                                f'Double nested component can only be `{Component.__name__}`, got '
-                                f'{raw_sub_sub_component.__class__.__name__}; {raw_sub_sub_component!r}.'
-                            )
-                        
-                        if raw_sub_sub_component.type is ComponentType.row:
-                            raise TypeError(
-                                f'Triple nesting components not allowed, got {raw_sub_sub_component!r}.'
-                            )
-                        
-                        component_line.append(raw_sub_sub_component)
-                    
-                    component = create_row(*component_line)
-                
+            if isinstance(raw_components, Component):
+                if raw_components.type is ComponentType.row:
+                    component = raw_components
                 else:
-                    raise TypeError(
-                        f'`components` contains an element of unexpected type, got '
-                        f'{raw_sub_component.__class__.__name__}; {raw_sub_component!r}; components = {raw_components!r}.'
-                    )
+                    component = create_row(raw_components)
                 
                 if components is None:
                     components = []
                 
                 components.append(component)
-        
-        else:
-            raise TypeError(
-                f'`components` can be `None`, `{Component.__name__}`, (`list`, `tuple`) of repeat, '
-                f'no triple nesting, got {raw_components.__class__.__name__}; {raw_components!r}.'
-            )
-        
+            
+            elif isinstance(raw_components, (tuple, list)):
+                
+                for raw_sub_component in raw_components:
+                    if isinstance(raw_sub_component, ComponentDescriptor):
+                        raw_sub_component = raw_sub_component.__get__(self, type(self))
+                    
+                    if isinstance(raw_sub_component, Component):
+                        if raw_sub_component.type is ComponentType.row:
+                            component = raw_sub_component
+                        else:
+                            component = create_row(raw_sub_component)
+                    
+                    elif isinstance(raw_sub_component, (tuple, list)):
+                        component_line = []
+                        for raw_sub_sub_component in raw_sub_component:
+                            if not isinstance(raw_sub_sub_component, Component):
+                                raise TypeError(
+                                    f'Double nested component can only be `{Component.__name__}`, got '
+                                    f'{raw_sub_sub_component.__class__.__name__}; {raw_sub_sub_component!r}.'
+                                )
+                            
+                            if raw_sub_sub_component.type is ComponentType.row:
+                                raise TypeError(
+                                    f'Triple nesting components not allowed, got {raw_sub_sub_component!r}.'
+                                )
+                            
+                            component_line.append(raw_sub_sub_component)
+                        
+                        component = create_row(*component_line)
+                    
+                    else:
+                        raise TypeError(
+                            f'`components` contains an element of unexpected type, got '
+                            f'{raw_sub_component.__class__.__name__}; {raw_sub_component!r}; components = {raw_components!r}.'
+                        )
+                    
+                    if components is None:
+                        components = []
+                    
+                    components.append(component)
+            
+            else:
+                raise TypeError(
+                    f'`components` can be `None`, `{Component.__name__}`, (`list`, `tuple`) of repeat, '
+                    f'no triple nesting, got {raw_components.__class__.__name__}; {raw_components!r}.'
+                )
+            
         if (components is not None):
             components = tuple(components)
         

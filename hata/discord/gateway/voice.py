@@ -22,7 +22,6 @@ from .rate_limit import GatewayRateLimiter
 from .voice_base import DiscordGatewayVoiceBase
 
 
-
 try:
     import nacl.secret
 except ImportError:

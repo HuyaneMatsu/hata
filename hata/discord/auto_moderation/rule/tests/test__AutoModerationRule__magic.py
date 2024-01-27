@@ -103,7 +103,7 @@ def test__AutoModerationRule__repr():
     
     actions = [AutoModerationAction(duration = 69)]
     enabled = False
-    event_type = AutoModerationEventType.message_send
+    event_type = AutoModerationEventType.user_update
     excluded_channel_ids = [202211180067, 202211180068]
     excluded_role_ids = [202211180069, 202211180070]
     name = 'Border'

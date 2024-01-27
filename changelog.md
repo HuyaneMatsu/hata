@@ -20,6 +20,7 @@
 - Fix typo in `DiscordGatewayVoice._resume`.
 - Fix incorrect handling of `GeneratorExit` in `VoiceClient._connect`.
 - `VoiceClient._token` was not set in the constructor.
+- Fix `AutoModerationRule.__repr__` raised when rendering non-default `.event_type`.
 
 ### Renames, Deprecations & Removals
 

@@ -862,7 +862,9 @@ async def test__DiscordGatewayVoice__handle_operation_client_connect__no_data():
     source_id_0 = 566
     source_id_1 = 533
     
-    data = None
+    message = {
+        'd': None,
+    }
     
     try:
         voice_client = VoiceClient(client, 202401200003, 202401200004)
@@ -872,7 +874,7 @@ async def test__DiscordGatewayVoice__handle_operation_client_connect__no_data():
         
         gateway = DiscordGatewayVoice(voice_client)
         
-        output = await gateway._handle_operation_client_connect(data)
+        output = await gateway._handle_operation_client_connect(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -904,10 +906,12 @@ async def test__DiscordGatewayVoice__handle_operation_client_connect__data_overw
     source_id_2 = 413
     source_id_3 = 369
     
-    data = {
-        'user_id': str(user_id),
-        'audio_ssrc': source_id_2,
-        'video_ssrc': source_id_3,
+    message = {
+        'd': {
+            'user_id': str(user_id),
+            'audio_ssrc': source_id_2,
+            'video_ssrc': source_id_3,
+        },
     }
     
     try:
@@ -918,7 +922,7 @@ async def test__DiscordGatewayVoice__handle_operation_client_connect__data_overw
         
         gateway = DiscordGatewayVoice(voice_client)
         
-        output = await gateway._handle_operation_client_connect(data)
+        output = await gateway._handle_operation_client_connect(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -945,7 +949,9 @@ async def test__DiscordGatewayVoice__handle_operation_session_description__no_da
         client_id = 202401200011,
     )
     
-    data = None
+    message = {
+        'd': None,
+    }
     
     try:
         voice_client = VoiceClient(client, 202401200013, 202401200014)
@@ -954,7 +960,7 @@ async def test__DiscordGatewayVoice__handle_operation_session_description__no_da
         gateway = DiscordGatewayVoice(voice_client)
         gateway.websocket = websocket
         
-        output = await gateway._handle_operation_session_description(data)
+        output = await gateway._handle_operation_session_description(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -985,9 +991,11 @@ async def test__DiscordGatewayVoice__handle_operation_session_description__with_
     mode = 'xsalsa20_poly1305'
     secret_key = b'hey mister' + b'0' * 22
     
-    data = {
-        'mode': mode,
-        'secret_key': [*secret_key]
+    message = {
+        'd': {
+            'mode': mode,
+            'secret_key': [*secret_key]
+        },
     }
     
     def mock_SecretBox(value):
@@ -1008,7 +1016,7 @@ async def test__DiscordGatewayVoice__handle_operation_session_description__with_
             SecretBox = mock_SecretBox,
         )
         
-        output = await mocked(gateway, data)
+        output = await mocked(gateway, message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1050,7 +1058,9 @@ async def test__DiscordGatewayVoice__handle_operation_speaking__no_data():
     user_id = 202401200021
     source_id_0 = 566
     
-    data = None
+    message = {
+        'd': None,
+    }
     
     try:
         voice_client = VoiceClient(client, 202401200022, 202401200023)
@@ -1059,7 +1069,7 @@ async def test__DiscordGatewayVoice__handle_operation_speaking__no_data():
         
         gateway = DiscordGatewayVoice(voice_client)
         
-        output = await gateway._handle_operation_speaking(data)
+        output = await gateway._handle_operation_speaking(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1088,9 +1098,11 @@ async def test__DiscordGatewayVoice__handle_operation_speaking__data_overwrite()
     source_id_0 = 566
     source_id_1 = 533
     
-    data = {
-        'user_id': str(user_id),
-        'ssrc': source_id_1,
+    message = {
+        'd': {
+            'user_id': str(user_id),
+            'ssrc': source_id_1,
+        },
     }
     
     try:
@@ -1100,7 +1112,7 @@ async def test__DiscordGatewayVoice__handle_operation_speaking__data_overwrite()
         
         gateway = DiscordGatewayVoice(voice_client)
         
-        output = await gateway._handle_operation_speaking(data)
+        output = await gateway._handle_operation_speaking(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1128,7 +1140,9 @@ async def test__DiscordGatewayVoice__handle_operation_client_disconnect__no_data
     user_id = 202401200021
     source_id_0 = 566
     
-    data = None
+    message = {
+        'd': None,
+    }
     
     try:
         voice_client = VoiceClient(client, 202401200031, 202401200032)
@@ -1137,7 +1151,7 @@ async def test__DiscordGatewayVoice__handle_operation_client_disconnect__no_data
         
         gateway = DiscordGatewayVoice(voice_client)
         
-        output = await gateway._handle_operation_client_disconnect(data)
+        output = await gateway._handle_operation_client_disconnect(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1166,8 +1180,10 @@ async def test__DiscordGatewayVoice__handle_operation_client_disconnect__with_da
     source_id_0 = 566
     source_id_1 = 533
     
-    data = {
-        'user_id': str(user_id),
+    message = {
+        'd': {
+            'user_id': str(user_id),
+        },
     }
     
     try:
@@ -1178,7 +1194,7 @@ async def test__DiscordGatewayVoice__handle_operation_client_disconnect__with_da
         
         gateway = DiscordGatewayVoice(voice_client)
         
-        output = await gateway._handle_operation_client_disconnect(data)
+        output = await gateway._handle_operation_client_disconnect(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1204,14 +1220,16 @@ async def test__DiscordGatewayVoice__handle_operation_ready__no_data():
         client_id = 202401200038,
     )
     
-    data = None
+    message = {
+        'data': None,
+    }
     
     try:
         voice_client = VoiceClient(client, 202401200039, 202401200040)
         
         gateway = DiscordGatewayVoice(voice_client)
         
-        output = await gateway._handle_operation_ready(data)
+        output = await gateway._handle_operation_ready(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1241,10 +1259,12 @@ async def test__DiscordGatewayVoice__handle_operation_ready__with_data():
     voice_client_ip = 'hey mister'
     voice_client_port = 432
     
-    data = {
-        'ssrc': audio_source,
-        'port': endpoint_port,
-        'ip': endpoint_ip,
+    message = {
+        'd': {
+            'ssrc': audio_source,
+            'port': endpoint_port,
+            'ip': endpoint_ip,
+        },
     }
     
     class mock_transport:
@@ -1299,7 +1319,7 @@ async def test__DiscordGatewayVoice__handle_operation_ready__with_data():
         gateway._create_kokoro()
         gateway.kokoro.start()
         
-        output = await gateway._handle_operation_ready(data)
+        output = await gateway._handle_operation_ready(message)
         
         vampytest.assert_eq(
             voice_client._transport.sent,
@@ -1374,10 +1394,12 @@ async def test__DiscordGatewayVoice__handle_operation_ready__no_kokoro():
     endpoint_port = 123
     endpoint_ip = 'orin'
     
-    data = {
-        'ssrc': audio_source,
-        'port': endpoint_port,
-        'ip': endpoint_ip,
+    message = {
+        'd': {
+            'ssrc': audio_source,
+            'port': endpoint_port,
+            'ip': endpoint_ip,
+        }
     }
     
     try:
@@ -1385,7 +1407,7 @@ async def test__DiscordGatewayVoice__handle_operation_ready__no_kokoro():
         
         gateway = DiscordGatewayVoice(voice_client)
         
-        output = await gateway._handle_operation_ready(data)
+        output = await gateway._handle_operation_ready(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_CONNECT)
@@ -1408,7 +1430,9 @@ async def test__DiscordGatewayVoice__handle_operation_hello__no_kokoro():
         client_id = 202401210005,
     )
     
-    data = None
+    message = {
+        'd': None,
+    }
     
     try:
         voice_client = VoiceClient(client, 202401210006, 202401210007)
@@ -1417,7 +1441,7 @@ async def test__DiscordGatewayVoice__handle_operation_hello__no_kokoro():
         gateway = DiscordGatewayVoice(voice_client)
         gateway.websocket = websocket
         
-        output = await gateway._handle_operation_hello(data)
+        output = await gateway._handle_operation_hello(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1449,7 +1473,9 @@ async def test__DiscordGatewayVoice__handle_operation_hello__with_kokoro():
         client_id = 202401210009,
     )
     
-    data = None
+    message = {
+        'd': None,
+    }
     
     try:
         voice_client = VoiceClient(client, 202401210010, 202401210011)
@@ -1463,7 +1489,7 @@ async def test__DiscordGatewayVoice__handle_operation_hello__with_kokoro():
         # skip 1 cycle to wait for kokoro to come up.
         await skip_ready_cycle()
         
-        output = await gateway._handle_operation_hello(data)
+        output = await gateway._handle_operation_hello(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1495,14 +1521,16 @@ async def test__DiscordGatewayVoice__handle_operation_heartbeat_acknowledge__no_
         client_id = 202401210013,
     )
     
-    data = None
+    message = {
+        'd': None,
+    }
     
     try:
         voice_client = VoiceClient(client, 202401210014, 202401210015)
         
         gateway = DiscordGatewayVoice(voice_client)
         
-        output = await gateway._handle_operation_heartbeat_acknowledge(data)
+        output = await gateway._handle_operation_heartbeat_acknowledge(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1530,7 +1558,9 @@ async def test__DiscordGatewayVoice__handle_operation_heartbeat_acknowledge__wit
         client_id = 202401210017,
     )
     
-    data = None
+    message = {
+        'd': None,
+    }
     
     try:
         voice_client = VoiceClient(client, 202401210018, 202401210019)
@@ -1542,7 +1572,7 @@ async def test__DiscordGatewayVoice__handle_operation_heartbeat_acknowledge__wit
         # skip 1 cycle to wait for kokoro to come up.
         await skip_ready_cycle()
         
-        output = await gateway._handle_operation_heartbeat_acknowledge(data)
+        output = await gateway._handle_operation_heartbeat_acknowledge(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1568,14 +1598,16 @@ async def test__DiscordGatewayVoice__handle_operation_resumed():
         client_id = 202401210021,
     )
     
-    data = None
+    message = {
+        'd': None,
+    }
     
     try:
         voice_client = VoiceClient(client, 202401210022, 202401210023)
         
         gateway = DiscordGatewayVoice(voice_client)
         
-        output = await gateway._handle_operation_resumed(data)
+        output = await gateway._handle_operation_resumed(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1599,23 +1631,24 @@ async def test__DiscordGatewayVoice__handle_received_operation__known_operation(
     )
     
     operation = 999
-    data = {'hey': 'mister'}
     
     message = {
         'op': operation,
-        'd': data,
+        'd': {
+            'hey': 'mister',
+        },
     }
     
     gateway = None
     mock_operation_handler_called = False
     
-    async def mock_operation_handler(parameter_gateway, parameter_data):
+    async def mock_operation_handler(parameter_gateway, parameter_message):
         nonlocal gateway
-        nonlocal data
+        nonlocal message
         nonlocal mock_operation_handler_called
         
         vampytest.assert_is(gateway, parameter_gateway)
-        vampytest.assert_eq(data, parameter_data)
+        vampytest.assert_eq(message, parameter_message)
         mock_operation_handler_called = True
         
         return GATEWAY_ACTION_RESUME
@@ -1735,23 +1768,24 @@ async def test__DiscordGatewayVoice__poll_and_handle_received_operation__with_we
     )
     
     operation = 999
-    data = {'hey': 'mister'}
     
     message = {
         'op': operation,
-        'd': data,
+        'd': {
+            'hey': 'mister',
+        },
     }
     
     gateway = None
     mock_operation_handler_called = False
     
-    async def mock_operation_handler(parameter_gateway, parameter_data):
+    async def mock_operation_handler(parameter_gateway, parameter_message):
         nonlocal gateway
-        nonlocal data
+        nonlocal message
         nonlocal mock_operation_handler_called
         
         vampytest.assert_is(gateway, parameter_gateway)
-        vampytest.assert_eq(data, parameter_data)
+        vampytest.assert_eq(message, parameter_message)
         mock_operation_handler_called = True
         
         return GATEWAY_ACTION_RESUME

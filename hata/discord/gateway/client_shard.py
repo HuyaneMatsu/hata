@@ -20,7 +20,8 @@ from .constants import (
     GATEWAY_ACTION_CONNECT, GATEWAY_ACTION_KEEP_GOING, GATEWAY_ACTION_RESUME, GATEWAY_CONNECT_TIMEOUT,
     GATEWAY_OPERATION_CLIENT_HEARTBEAT, GATEWAY_OPERATION_CLIENT_HEARTBEAT_ACKNOWLEDGE, GATEWAY_OPERATION_CLIENT_HELLO,
     GATEWAY_OPERATION_CLIENT_IDENTIFY, GATEWAY_OPERATION_CLIENT_INVALIDATE_SESSION, GATEWAY_OPERATION_CLIENT_RECONNECT,
-    GATEWAY_OPERATION_CLIENT_RESUME, GATEWAY_OPERATION_CLIENT_VOICE_STATE, LATENCY_DEFAULT, POLL_TIMEOUT 
+    GATEWAY_OPERATION_CLIENT_RESUME, GATEWAY_OPERATION_CLIENT_VOICE_STATE, LATENCY_DEFAULT, POLL_TIMEOUT,
+    GATEWAY_OPERATION_CLIENT_DISPATCH
 )
 from .heartbeat import Kokoro
 from .rate_limit import GatewayRateLimiter
@@ -69,10 +70,14 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
     """
     Gateway of a client representing a shard.
     
+    Attributes
+    ----------
     _buffer : `list<bytes>`
         A buffer used to store not finished received payloads.
     _decompressor : `ZlibDecompressorType`
         Zlib decompressor used to decompress the received data.
+    _operation_handlers : `dict<int, (instance, dict<str, object>) -> int>`
+        Handler for each expected operation.
     _should_run : `bool`
         Whether the gateway should be running.
     client : ``Client``
@@ -94,8 +99,8 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         The websocket client of the gateway.
     """
     __slots__ = (
-        '_buffer', '_decompressor', '_should_run', 'client', 'kokoro', 'rate_limit_handler', 'resume_gateway_url',
-        'sequence', 'session_id', 'shard_id', 'websocket',
+        '_buffer', '_decompressor', '_operation_handlers', '_should_run', 'client', 'kokoro', 'rate_limit_handler',
+        'resume_gateway_url', 'sequence', 'session_id', 'shard_id', 'websocket',
     )
     
     def __new__(cls, client, shard_id):
@@ -109,9 +114,19 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         shard_id : `int`
             The shard id of the gateway.
         """
+        operation_handlers = {
+            GATEWAY_OPERATION_CLIENT_DISPATCH: cls._handle_operation_dispatch,
+            GATEWAY_OPERATION_CLIENT_HELLO: cls._handle_operation_hello,
+            GATEWAY_OPERATION_CLIENT_HEARTBEAT_ACKNOWLEDGE: cls._handle_operation_heartbeat_acknowledge,
+            GATEWAY_OPERATION_CLIENT_HEARTBEAT: cls._handle_operation_heartbeat,
+            GATEWAY_OPERATION_CLIENT_RECONNECT: cls._handle_operation_reconnect,
+            GATEWAY_OPERATION_CLIENT_INVALIDATE_SESSION: cls._handle_operation_invalidate_session,
+        }
+        
         self = object.__new__(cls)
         self._buffer = []
         self._decompressor = None
+        self._operation_handlers = operation_handlers
         self._should_run = False
         self.client = client
         self.kokoro = None
@@ -488,13 +503,147 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
             self.sequence = sequence
         
         operation = message['op']
-        if operation:
-            return await self._handle_special_operation(operation, message)
         
-        return await self._handle_dispatch_operation(message)
+        try:
+            operation_handler = self._operation_handlers[operation]
+        except KeyError:
+            client = self.client
+            Task(
+                KOKORO,
+                client.events.error(
+                    client,
+                    f'{type(self).__name__}._handle_received_operation',
+                    f'Unknown operation: {operation!r}\nMessage: {message!r}'
+                ),
+            )
+            return GATEWAY_ACTION_KEEP_GOING
+        
+        return (await operation_handler(self, message))
     
     
-    async def _handle_dispatch_operation(self, message):
+    async def _handle_operation_hello(self, message):
+        """
+        Handles a hello operation.
+        
+        This function is a coroutine.
+        
+        Parameters
+        ----------
+        message : `dict<str, object>`
+            The received message.
+        
+        Returns
+        -------
+        gateway_action : `int`
+        """
+        kokoro = self.kokoro
+        if kokoro is None:
+            kokoro = Kokoro(self)
+            self.kokoro = kokoro
+        
+        data = message.get('d', None)
+        if (data is not None):
+            interval = data['heartbeat_interval'] / 1000.0
+            # send a heartbeat immediately
+            kokoro.interval = interval
+        
+        await kokoro.beat_now()
+        return GATEWAY_ACTION_KEEP_GOING
+    
+    
+    async def _handle_operation_heartbeat_acknowledge(self, message):
+        """
+        Handles a heartbeat acknowledge operation.
+        
+        This function is a coroutine.
+        
+        Parameters
+        ----------
+        message : `dict<str, object>`
+            The received message.
+        
+        Returns
+        -------
+        gateway_action : `int`
+        """
+        kokoro = self.kokoro
+        if kokoro is None:
+            kokoro = Kokoro(self)
+            self.kokoro = kokoro
+        
+        kokoro.answered()
+        return GATEWAY_ACTION_KEEP_GOING
+    
+    
+    async def _handle_operation_heartbeat(self, message):
+        """
+        Handles a heartbeat operation.
+        
+        This function is a coroutine.
+        
+        Parameters
+        ----------
+        message : `dict<str, object>`
+            The received message.
+        
+        Returns
+        -------
+        gateway_action : `int`
+        """
+        kokoro = self.kokoro
+        if (kokoro is None) or (kokoro.runner is None):
+            return GATEWAY_ACTION_CONNECT
+        
+        await self.beat()
+        return GATEWAY_ACTION_KEEP_GOING
+    
+    
+    async def _handle_operation_reconnect(self, message):
+        """
+        Handles a reconnect operation.
+        
+        This function is a coroutine.
+        
+        Parameters
+        ----------
+        message : `dict<str, object>`
+            The received message.
+        
+        Returns
+        -------
+        gateway_action : `int`
+        """
+        await self.terminate()
+        return GATEWAY_ACTION_RESUME
+    
+    
+    async def _handle_operation_invalidate_session(self, message):
+        """
+        Handles an invalidate session operation.
+        
+        This function is a coroutine.
+        
+        Parameters
+        ----------
+        message : `dict<str, object>`
+            The received message.
+        
+        Returns
+        -------
+        gateway_action : `int`
+        """
+        data = message.get('d', None)
+        if (data is not None) and isinstance(data, bool) and data:
+            # Should sleep between 0 - 5 seconds, but actually dont need to sleep any, derp.
+            # await sleep(5.0, KOKORO)
+            await self.close()
+            return GATEWAY_ACTION_RESUME
+        
+        self._clear_session()
+        return GATEWAY_ACTION_CONNECT
+    
+    
+    async def _handle_operation_dispatch(self, message):
         """
         Handles a dispatch operation.
         
@@ -503,15 +652,12 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         Parameters
         ----------
         message : `dict<str, object>`
-            The received deserialized json data.
+            The received message
         
         Returns
         -------
         gateway_action : `int`
         """
-        # Even tho we are not executing any async here we still keep it like that.
-        # For the case if in the future we want to change it.
-        # It also doesnt matter because coroutines are actually faster.
         data = message.get('d', None)
         event = message['t']
         
@@ -540,76 +686,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
             # pass
         
         return GATEWAY_ACTION_KEEP_GOING
-    
-    
-    async def _handle_special_operation(self, operation, message):
-        """
-        Handles special operations (so everything except `DISPATCH`). Returns `True` if the gateway should reconnect.
         
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        operation : `int`
-            The gateway operation's code what the function will handle.
-        message : `dict<str, object>`
-            The received deserialized json data.
-        
-        Returns
-        -------
-        gateway_action : `int`
-        """
-        data = message.get('d', None)
-        
-        kokoro = self.kokoro
-        if kokoro is None:
-            kokoro = Kokoro(self)
-            self.kokoro = kokoro
-        
-        if operation == GATEWAY_OPERATION_CLIENT_HELLO:
-            if (data is not None):
-                interval = data['heartbeat_interval'] / 1000.0
-                # send a heartbeat immediately
-                kokoro.interval = interval
-            
-            await kokoro.beat_now()
-            return GATEWAY_ACTION_KEEP_GOING
-        
-        if operation == GATEWAY_OPERATION_CLIENT_HEARTBEAT_ACKNOWLEDGE:
-            kokoro.answered()
-            return GATEWAY_ACTION_KEEP_GOING
-        
-        if kokoro.runner is None:
-            return GATEWAY_ACTION_CONNECT
-            
-        if operation == GATEWAY_OPERATION_CLIENT_HEARTBEAT:
-            await self.beat()
-            return GATEWAY_ACTION_KEEP_GOING
-        
-        if operation == GATEWAY_OPERATION_CLIENT_RECONNECT:
-            await self.terminate()
-            return GATEWAY_ACTION_RESUME
-        
-        if operation == GATEWAY_OPERATION_CLIENT_INVALIDATE_SESSION:
-            if (data is not None) and isinstance(data, bool) and data:
-                # Should sleep between 0 - 5 seconds, but actually dont need to sleep any, derp.
-                # await sleep(5.0, KOKORO)
-                await self.close()
-                return GATEWAY_ACTION_RESUME
-            
-            self._clear_session()
-            return GATEWAY_ACTION_CONNECT
-        
-        client = self.client
-        Task(
-            KOKORO,
-            client.events.error(
-                client,
-                f'{type(self).__name__}._handle_special_operation',
-                f'Unknown operation {operation}\nData: {data!r}'
-            ),
-        )
-        return GATEWAY_ACTION_KEEP_GOING    
     
     
     def _clear_session(self):

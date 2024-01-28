@@ -22,6 +22,9 @@
 - `VoiceClient._token` was not set in the constructor.
 - Fix `AutoModerationRule.__repr__` raised when rendering non-default `.event_type`.
 
+#### ext.slash
+- Fix couldnt overwrite `menu.attribute` if attribute was previously set to a component.
+
 ### Renames, Deprecations & Removals
 
 - Deprecate `DiscordHTTPClient`, use `DiscordApiClient` instead.

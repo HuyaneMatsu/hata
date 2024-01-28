@@ -55,7 +55,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
     
     Attributes
     ----------
-    _operation_handlers : `dict<int, (instance, None | dict<str, object>) -> int>`
+    _operation_handlers : `dict<int, (instance, dict<str, object>) -> int>`
         Handler for each expected operation.
     _should_run : `bool`
         Whether the gateway should be running.
@@ -379,7 +379,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         return GATEWAY_ACTION_KEEP_GOING
     
     
-    async def _handle_operation_client_connect(self, data):
+    async def _handle_operation_client_connect(self, message):
         """
         Handles a voice client connect gateway operation.
         Note that not we are connecting, but someone else.
@@ -388,13 +388,14 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         
         Parameters
         ----------
-        data : `None | dict<str, object>`
-            The received data.
+        data : `dict<str, object>`
+            The received message.
         
         Returns
         -------
         gateway_action : `int`
         """
+        data = message.get('d', None)
         if data is None:
             return GATEWAY_ACTION_KEEP_GOING
         
@@ -418,7 +419,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         return GATEWAY_ACTION_KEEP_GOING
     
     
-    async def _handle_operation_session_description(self, data):
+    async def _handle_operation_session_description(self, message):
         """
         Handles a voice session description operation.
         
@@ -426,13 +427,14 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         
         Parameters
         ----------
-        data : `None | dict<str, object>`
-            The received data.
+        message : `dict<str, object>`
+            The received message.
         
         Returns
         -------
         gateway_action : `int`
         """
+        data = message.get('d', None)
         if data is None:
             return GATEWAY_ACTION_KEEP_GOING
         
@@ -450,7 +452,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         return GATEWAY_ACTION_KEEP_GOING
     
     
-    async def _handle_operation_speaking(self, data):
+    async def _handle_operation_speaking(self, message):
         """
         Handles a speaking operation.
         Note that not we are speaking, but someone else.
@@ -459,13 +461,14 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         
         Parameters
         ----------
-        data : `None | dict<str, object>`
-            The received data.
+        data : `dict<str, object>`
+            The received message.
         
         Returns
         -------
         gateway_action : `int`
         """
+        data = message.get('d', None)
         if data is None:
             return GATEWAY_ACTION_KEEP_GOING
         
@@ -475,7 +478,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         return GATEWAY_ACTION_KEEP_GOING
 
     
-    async def _handle_operation_client_disconnect(self, data):
+    async def _handle_operation_client_disconnect(self, message):
         """
         Handles a client disconnect operation.
         Note that not we are disconnecting, but someone else.
@@ -484,13 +487,14 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         
         Parameters
         ----------
-        data : `None | dict<str, object>`
-            The received data.
+        message : `dict<str, object>`
+            The received message.
         
         Returns
         -------
         gateway_action : `int`
         """
+        data = message.get('d', None)
         if data is None:
             return GATEWAY_ACTION_KEEP_GOING
         
@@ -502,7 +506,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         return GATEWAY_ACTION_KEEP_GOING
     
     
-    async def _handle_operation_ready(self, data):
+    async def _handle_operation_ready(self, message):
         """
         Handles a ready operation and selects protocol with `._select_protocol`.
         
@@ -510,13 +514,14 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         
         Parameters
         ----------
-        data : `None | dict<str, object>`
-            Received data from Discord.
+        message : `dict<str, object>`
+            The received message.
         
         Returns
         -------
         gateway_action : `int`
         """
+        data = message.get('d', None)
         if data is None:
             return GATEWAY_ACTION_KEEP_GOING
         
@@ -571,7 +576,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         return GATEWAY_ACTION_KEEP_GOING
     
     
-    async def _handle_operation_hello(self, data):
+    async def _handle_operation_hello(self, message):
         """
         Handles a hello operation.
         
@@ -579,7 +584,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         
         Parameters
         ----------
-        data : `None | dict<str, object>`
+        message : `dict<str, object>`
             The received data.
         
         Returns
@@ -600,7 +605,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         return GATEWAY_ACTION_KEEP_GOING
     
     
-    async def _handle_operation_heartbeat_acknowledge(self, data):
+    async def _handle_operation_heartbeat_acknowledge(self, message):
         """
         Handles a heart beat acknowledge operation.
         
@@ -608,8 +613,8 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         
         Parameters
         ----------
-        data : `None | dict<str, object>`
-            The received data.
+        data : `dict<str, object>`
+            The received message.
         
         Returns
         -------
@@ -627,7 +632,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         return GATEWAY_ACTION_KEEP_GOING
     
     
-    async def _handle_operation_resumed(self, data):
+    async def _handle_operation_resumed(self, message):
         """
         Handles a resumed operation. Called after the gateway was resumed successfully. We do nothing.
         
@@ -635,8 +640,8 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         
         Parameters
         ----------
-        data : `None | dict<str, object>`
-            The received data.
+        message : `dict<str, object>`
+            The received message.
         
         Returns
         -------
@@ -663,7 +668,6 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         message = from_json(message)
         
         operation = message['op']
-        data = message.get('d', None)
         
         try:
             operation_handler = self._operation_handlers[operation]
@@ -674,12 +678,12 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
                 client.events.error(
                     client,
                     f'{type(self).__name__}._handle_received_operation',
-                    f'Unknown operation: {operation!r}\nData: {data!r}'
+                    f'Unknown operation: {operation!r}\nMessage: {message!r}'
                 ),
             )
             return GATEWAY_ACTION_KEEP_GOING
         
-        return (await operation_handler(self, data))
+        return (await operation_handler(self, message))
     
     
     async def _poll_and_handle_received_operation(self):

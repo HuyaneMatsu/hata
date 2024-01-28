@@ -20,7 +20,7 @@ from ..constants import (
     GATEWAY_ACTION_CONNECT, GATEWAY_ACTION_KEEP_GOING, GATEWAY_ACTION_RESUME, GATEWAY_OPERATION_CLIENT_HEARTBEAT,
     GATEWAY_OPERATION_CLIENT_HEARTBEAT_ACKNOWLEDGE, GATEWAY_OPERATION_CLIENT_HELLO, GATEWAY_OPERATION_CLIENT_IDENTIFY,
     GATEWAY_OPERATION_CLIENT_INVALIDATE_SESSION, GATEWAY_OPERATION_CLIENT_RECONNECT, GATEWAY_OPERATION_CLIENT_RESUME,
-    GATEWAY_OPERATION_CLIENT_VOICE_STATE, LATENCY_DEFAULT
+    GATEWAY_OPERATION_CLIENT_VOICE_STATE, LATENCY_DEFAULT, INTERVAL_DEFAULT
 )
 from ..heartbeat import Kokoro
 from ..rate_limit import GatewayRateLimiter
@@ -46,6 +46,8 @@ def _assert_fields_set(gateway):
     vampytest.assert_instance(gateway, DiscordGatewayClientShard)
     vampytest.assert_instance(gateway._buffer, list)
     vampytest.assert_instance(gateway._decompressor, ZlibDecompressorType, nullable = True)
+    vampytest.assert_instance(gateway._operation_handlers, dict)
+    vampytest.assert_instance(gateway._should_run, bool)
     vampytest.assert_instance(gateway.client, Client)
     vampytest.assert_instance(gateway.kokoro, Kokoro, nullable = True)
     vampytest.assert_instance(gateway.rate_limit_handler, GatewayRateLimiter)
@@ -54,7 +56,6 @@ def _assert_fields_set(gateway):
     vampytest.assert_instance(gateway.session_id, str, nullable = True)
     vampytest.assert_instance(gateway.shard_id, int)
     vampytest.assert_instance(gateway.websocket, WebSocketClient, nullable = True)
-    vampytest.assert_instance(gateway._should_run, bool)
 
 
 def test__DiscordGatewayClientShard__new():
@@ -801,9 +802,9 @@ async def test__DiscordGatewayClientShard__change_voice_state():
         client = None
 
 
-async def test__DiscordGatewayClientShard__handle_dispatch_operation__unknown_dispatch_event():
+async def test__DiscordGatewayClientShard__handle_operation_dispatch__unknown_dispatch_event():
     """
-    Tests whether ``DiscordGatewayClientShard._handle_dispatch_operation`` works as intended.
+    Tests whether ``DiscordGatewayClientShard._handle_operation_dispatch`` works as intended.
     
     Case: unknown dispatch event.
     
@@ -834,7 +835,7 @@ async def test__DiscordGatewayClientShard__handle_dispatch_operation__unknown_di
         gateway = DiscordGatewayClientShard(client, shard_id)
         
         mocked = vampytest.mock_globals(
-            type(gateway)._handle_dispatch_operation,
+            type(gateway)._handle_operation_dispatch,
             PARSERS = mock_parsers,
             call_unknown_dispatch_event_event_handler = mock_call_unknown_dispatch_event_event_handler,
         )
@@ -852,9 +853,9 @@ async def test__DiscordGatewayClientShard__handle_dispatch_operation__unknown_di
 
 
 
-async def test__DiscordGatewayClientShard__handle_dispatch_operation__no_data():
+async def test__DiscordGatewayClientShard__handle_operation_dispatch__no_data():
     """
-    Tests whether ``DiscordGatewayClientShard._handle_dispatch_operation`` works as intended.
+    Tests whether ``DiscordGatewayClientShard._handle_operation_dispatch`` works as intended.
     
     Case: No data received.
     
@@ -894,7 +895,7 @@ async def test__DiscordGatewayClientShard__handle_dispatch_operation__no_data():
         gateway = DiscordGatewayClientShard(client, shard_id)
         
         mocked = vampytest.mock_globals(
-            type(gateway)._handle_dispatch_operation,
+            type(gateway)._handle_operation_dispatch,
             PARSERS = mock_parsers,
             call_unknown_dispatch_event_event_handler = mock_call_unknown_dispatch_event_event_handler,
         )
@@ -912,9 +913,9 @@ async def test__DiscordGatewayClientShard__handle_dispatch_operation__no_data():
         client = None
 
 
-async def test__DiscordGatewayClientShard__handle_dispatch_operation__event_parser_call():
+async def test__DiscordGatewayClientShard__handle_operation_dispatch__event_parser_call():
     """
-    Tests whether ``DiscordGatewayClientShard._handle_dispatch_operation`` works as intended.
+    Tests whether ``DiscordGatewayClientShard._handle_operation_dispatch`` works as intended.
     
     Case: event parser called.
     
@@ -958,7 +959,7 @@ async def test__DiscordGatewayClientShard__handle_dispatch_operation__event_pars
         gateway = DiscordGatewayClientShard(client, shard_id)
         
         mocked = vampytest.mock_globals(
-            type(gateway)._handle_dispatch_operation,
+            type(gateway)._handle_operation_dispatch,
             PARSERS = mock_parsers,
             call_unknown_dispatch_event_event_handler = mock_call_unknown_dispatch_event_event_handler,
         )
@@ -976,9 +977,9 @@ async def test__DiscordGatewayClientShard__handle_dispatch_operation__event_pars
         client = None
 
 
-async def test__DiscordGatewayClientShard__handle_dispatch_operation__event_parser_exception():
+async def test__DiscordGatewayClientShard__handle_operation_dispatch__event_parser_exception():
     """
-    Tests whether ``DiscordGatewayClientShard._handle_dispatch_operation`` works as intended.
+    Tests whether ``DiscordGatewayClientShard._handle_operation_dispatch`` works as intended.
     
     Case: event parser raises exception.
     
@@ -1025,7 +1026,7 @@ async def test__DiscordGatewayClientShard__handle_dispatch_operation__event_pars
         gateway = DiscordGatewayClientShard(client, shard_id)
         
         mocked = vampytest.mock_globals(
-            type(gateway)._handle_dispatch_operation,
+            type(gateway)._handle_operation_dispatch,
             PARSERS = mock_parsers,
         )
         
@@ -1042,9 +1043,9 @@ async def test__DiscordGatewayClientShard__handle_dispatch_operation__event_pars
         client = None
 
 
-async def test__DiscordGatewayClientShard__handle_dispatch_operation__ready_event():
+async def test__DiscordGatewayClientShard__handle_operation_dispatch__ready_event():
     """
-    Tests whether ``DiscordGatewayClientShard._handle_dispatch_operation`` works as intended.
+    Tests whether ``DiscordGatewayClientShard._handle_operation_dispatch`` works as intended.
     
     Case: ready event.
     
@@ -1080,7 +1081,7 @@ async def test__DiscordGatewayClientShard__handle_dispatch_operation__ready_even
         gateway = DiscordGatewayClientShard(client, shard_id)
         
         mocked = vampytest.mock_globals(
-            type(gateway)._handle_dispatch_operation,
+            type(gateway)._handle_operation_dispatch,
             PARSERS = mock_parsers,
         )
         
@@ -1098,46 +1099,11 @@ async def test__DiscordGatewayClientShard__handle_dispatch_operation__ready_even
         client = None
 
 
-async def test__DiscordGatewayClientShard__handle_special_operation__no_kokoro():
+async def test__DiscordGatewayClientShard__handle_operation_hello__with_kokoro():
     """
-    Tests whether ``DiscordGatewayClientShard._handle_special_operation`` works as intended.
+    Tests whether ``DiscordGatewayClientShard._handle_operation_hello`` works as intended.
     
-    Case: no kokoro.
-    
-    This function is a coroutine.
-    """
-    client = Client(
-        'token_202301080008',
-        client_id = 202301080009,
-    )
-    
-    shard_id = 2
-    
-    operation = 999
-    
-    message = {}
-    
-    try:
-        websocket = await TestWebSocketClient(KOKORO, '')
-        gateway = DiscordGatewayClientShard(client, shard_id)
-        gateway.websocket = websocket
-        
-        output = await gateway._handle_special_operation(operation, message)
-        
-        vampytest.assert_instance(output, int)
-        vampytest.assert_eq(output, GATEWAY_ACTION_CONNECT)
-        
-        vampytest.assert_eq(websocket.out_operations, [])
-    finally:
-        client._delete()
-        client = None
-
-
-async def test__DiscordGatewayClientShard__handle_special_operation__hello():
-    """
-    Tests whether ``DiscordGatewayClientShard._handle_special_operation`` works as intended.
-    
-    Case: hello.
+    Case: with kokoro.
     
     This function is a coroutine.
     """
@@ -1147,7 +1113,6 @@ async def test__DiscordGatewayClientShard__handle_special_operation__hello():
     )
     
     shard_id = 2
-    operation = GATEWAY_OPERATION_CLIENT_HELLO
     heartbeat_interval = 36.0
     sequence = 12
     
@@ -1164,7 +1129,7 @@ async def test__DiscordGatewayClientShard__handle_special_operation__hello():
         gateway.websocket = websocket
         gateway.sequence = sequence
         
-        output = await gateway._handle_special_operation(operation, message)
+        output = await gateway._handle_operation_hello(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1188,11 +1153,119 @@ async def test__DiscordGatewayClientShard__handle_special_operation__hello():
         client = None
 
 
-async def test__DiscordGatewayClientShard__handle_special_operation__heartbeat_acknowledge():
+async def test__DiscordGatewayClientShard__handle_operation_hello__with_kokoro_no_data():
     """
-    Tests whether ``DiscordGatewayClientShard._handle_special_operation`` works as intended.
+    Tests whether ``DiscordGatewayClientShard._handle_operation_hello`` works as intended.
     
-    Case: heartbeat acknowledge.
+    Case: with kokoro but without data.
+    
+    This function is a coroutine.
+    """
+    client = Client(
+        'token_202301080010',
+        client_id = 202301080011,
+    )
+    
+    shard_id = 2
+    sequence = 12
+    
+    message = {
+        'd': None,
+    }
+    
+    try:
+        websocket = await TestWebSocketClient(KOKORO, '')
+        gateway = DiscordGatewayClientShard(client, shard_id)
+        gateway._create_kokoro()
+        gateway.websocket = websocket
+        gateway.sequence = sequence
+        
+        output = await gateway._handle_operation_hello(message)
+        
+        vampytest.assert_instance(output, int)
+        vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
+        
+        await skip_ready_cycle()
+        
+        vampytest.assert_eq(gateway.kokoro.interval, INTERVAL_DEFAULT)
+        vampytest.assert_eq(len(websocket.out_operations), 1)
+        
+        operation, data = websocket.out_operations[0]
+        vampytest.assert_eq(operation, 'send')
+        vampytest.assert_eq(
+            from_json(data),
+            {   
+                'op': GATEWAY_OPERATION_CLIENT_HEARTBEAT,
+                'd': sequence,
+            },
+        )
+    finally:
+        client._delete()
+        client = None
+
+
+async def test__DiscordGatewayClientShard__handle_operation_hello__no_kokoro():
+    """
+    Tests whether ``DiscordGatewayClientShard._handle_operation_hello`` works as intended.
+    
+    Case: without kokoro.
+    
+    This function is a coroutine.
+    """
+    client = Client(
+        'token_202301280000',
+        client_id = 202301280001,
+    )
+    
+    shard_id = 2
+    heartbeat_interval = 36.0
+    sequence = 12
+    
+    message = {
+        'd': {
+            'heartbeat_interval': heartbeat_interval * 1000.0,
+        },
+    }
+    
+    try:
+        websocket = await TestWebSocketClient(KOKORO, '')
+        gateway = DiscordGatewayClientShard(client, shard_id)
+        gateway.websocket = websocket
+        gateway.sequence = sequence
+        
+        output = await gateway._handle_operation_hello(message)
+        
+        vampytest.assert_instance(output, int)
+        vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
+        
+        await skip_ready_cycle()
+        
+        vampytest.assert_is_not(gateway.kokoro, None)
+        vampytest.assert_is_not(gateway.kokoro.runner, None)
+        
+        vampytest.assert_eq(gateway.kokoro.interval, heartbeat_interval)
+        vampytest.assert_eq(len(websocket.out_operations), 1)
+        
+        operation, data = websocket.out_operations[0]
+        vampytest.assert_eq(operation, 'send')
+        vampytest.assert_eq(
+            from_json(data),
+            {   
+                'op': GATEWAY_OPERATION_CLIENT_HEARTBEAT,
+                'd': sequence,
+            },
+        )
+        
+    finally:
+        client._delete()
+        client = None
+
+
+async def test__DiscordGatewayClientShard__handle_operation_heartbeat_acknowledge__with_kokoro():
+    """
+    Tests whether ``DiscordGatewayClientShard._handle_operation_heartbeat_acknowledge`` works as intended.
+    
+    Case: with kokoro.
     
     This function is a coroutine.
     """
@@ -1202,10 +1275,9 @@ async def test__DiscordGatewayClientShard__handle_special_operation__heartbeat_a
     )
     
     shard_id = 2
-    operation = GATEWAY_OPERATION_CLIENT_HEARTBEAT_ACKNOWLEDGE
     
     message = {
-        'd': {},
+        'd': None,
     }
     
     try:
@@ -1214,7 +1286,7 @@ async def test__DiscordGatewayClientShard__handle_special_operation__heartbeat_a
         gateway._create_kokoro()
         gateway.websocket = websocket
         
-        output = await gateway._handle_special_operation(operation, message)
+        output = await gateway._handle_operation_heartbeat_acknowledge(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1228,11 +1300,50 @@ async def test__DiscordGatewayClientShard__handle_special_operation__heartbeat_a
         client = None
 
 
-async def test__DiscordGatewayClientShard__handle_special_operation__heartbeat():
+async def test__DiscordGatewayClientShard__handle_operation_heartbeat_acknowledge__no_kokoro():
     """
-    Tests whether ``DiscordGatewayClientShard._handle_special_operation`` works as intended.
+    Tests whether ``DiscordGatewayClientShard._handle_operation_heartbeat_acknowledge`` works as intended.
     
-    Case: heartbeat.
+    Case: without kokoro.
+    
+    This function is a coroutine.
+    """
+    client = Client(
+        'token_202301280002',
+        client_id = 202301280003,
+    )
+    
+    shard_id = 2
+    
+    message = {
+        'd': None,
+    }
+    
+    try:
+        websocket = await TestWebSocketClient(KOKORO, '')
+        gateway = DiscordGatewayClientShard(client, shard_id)
+        gateway.websocket = websocket
+        
+        output = await gateway._handle_operation_heartbeat_acknowledge(message)
+        
+        vampytest.assert_instance(output, int)
+        vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
+        
+        await skip_ready_cycle()
+        
+        vampytest.assert_ne(gateway.latency, LATENCY_DEFAULT)
+        vampytest.assert_true(gateway.latency < 0.001)
+        vampytest.assert_eq(len(websocket.out_operations), 0)
+    finally:
+        client._delete()
+        client = None
+
+
+async def test__DiscordGatewayClientShard__handle_operation_heartbeat__with_kokoro():
+    """
+    Tests whether ``DiscordGatewayClientShard._handle_operation_heartbeat`` works as intended.
+    
+    Case: with kokoro.
     
     This function is a coroutine.
     """
@@ -1242,7 +1353,6 @@ async def test__DiscordGatewayClientShard__handle_special_operation__heartbeat()
     )
     
     shard_id = 2
-    operation = GATEWAY_OPERATION_CLIENT_HEARTBEAT
     sequence = 12
     
     message = {
@@ -1257,7 +1367,7 @@ async def test__DiscordGatewayClientShard__handle_special_operation__heartbeat()
         gateway.websocket = websocket
         gateway.sequence = sequence
         
-        output = await gateway._handle_special_operation(operation, message)
+        output = await gateway._handle_operation_heartbeat(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1279,11 +1389,51 @@ async def test__DiscordGatewayClientShard__handle_special_operation__heartbeat()
         client = None
 
 
-async def test__DiscordGatewayClientShard__handle_special_operation__reconnect():
+async def test__DiscordGatewayClientShard__handle_operation_heartbeat__no_kokoro():
     """
-    Tests whether ``DiscordGatewayClientShard._handle_special_operation`` works as intended.
+    Tests whether ``DiscordGatewayClientShard._handle_operation_heartbeat`` works as intended.
     
-    Case: reconnect.
+    Case: without kokoro.
+    
+    This function is a coroutine.
+    """
+    client = Client(
+        'token_202301280004',
+        client_id = 202301280005,
+    )
+    
+    shard_id = 2
+    sequence = 12
+    
+    message = {
+        'd': {},
+    }
+    
+    try:
+        websocket = await TestWebSocketClient(KOKORO, '')
+        gateway = DiscordGatewayClientShard(client, shard_id)
+        gateway.websocket = websocket
+        gateway.sequence = sequence
+        
+        output = await gateway._handle_operation_heartbeat(message)
+        
+        vampytest.assert_instance(output, int)
+        vampytest.assert_eq(output, GATEWAY_ACTION_CONNECT)
+        
+        await skip_ready_cycle()
+        
+        vampytest.assert_eq(len(websocket.out_operations), 0)
+    
+    finally:
+        client._delete()
+        client = None
+
+
+async def test__DiscordGatewayClientShard__handle_operation_reconnect__default():
+    """
+    Tests whether ``DiscordGatewayClientShard._handle_operation_reconnect`` works as intended.
+    
+    Case: default.
     
     This function is a coroutine.
     """
@@ -1293,7 +1443,6 @@ async def test__DiscordGatewayClientShard__handle_special_operation__reconnect()
     )
     
     shard_id = 2
-    operation = GATEWAY_OPERATION_CLIENT_RECONNECT
     
     message = {
         'd': {},
@@ -1306,7 +1455,7 @@ async def test__DiscordGatewayClientShard__handle_special_operation__reconnect()
         gateway.kokoro.start()
         gateway.websocket = websocket
         
-        output = await gateway._handle_special_operation(operation, message)
+        output = await gateway._handle_operation_reconnect(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_RESUME)
@@ -1322,9 +1471,9 @@ async def test__DiscordGatewayClientShard__handle_special_operation__reconnect()
         client = None
 
 
-async def test__DiscordGatewayClientShard__handle_special_operation__invalidate_session__true():
+async def test__DiscordGatewayClientShard__handle_operation_invalidate_session__true():
     """
-    Tests whether ``DiscordGatewayClientShard._handle_special_operation`` works as intended.
+    Tests whether ``DiscordGatewayClientShard._handle_operation_invalidate_session`` works as intended.
     
     Case: invalidate session with true.
     
@@ -1336,7 +1485,6 @@ async def test__DiscordGatewayClientShard__handle_special_operation__invalidate_
     )
     
     shard_id = 2
-    operation = GATEWAY_OPERATION_CLIENT_INVALIDATE_SESSION
     
     message = {
         'd': True,
@@ -1360,10 +1508,10 @@ async def test__DiscordGatewayClientShard__handle_special_operation__invalidate_
         gateway.websocket = websocket
         
         mocked = vampytest.mock_globals(
-            type(gateway)._handle_special_operation,
+            type(gateway)._handle_operation_invalidate_session,
             sleep = mock_sleep,
         )
-        output = await mocked(gateway, operation, message)
+        output = await mocked(gateway, message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_RESUME)
@@ -1382,9 +1530,9 @@ async def test__DiscordGatewayClientShard__handle_special_operation__invalidate_
         client = None
 
 
-async def test__DiscordGatewayClientShard__handle_special_operation__invalidate_session__false():
+async def test__DiscordGatewayClientShard__handle_operation_invalidate_session__false():
     """
-    Tests whether ``DiscordGatewayClientShard._handle_special_operation`` works as intended.
+    Tests whether ``DiscordGatewayClientShard._handle_operation_invalidate_session`` works as intended.
     
     Case: invalidate session with false.
     
@@ -1422,10 +1570,10 @@ async def test__DiscordGatewayClientShard__handle_special_operation__invalidate_
         gateway.session_id = session_id
         
         mocked = vampytest.mock_globals(
-            type(gateway)._handle_special_operation,
+            type(gateway)._handle_operation_invalidate_session,
             sleep = mock_sleep,
         )
-        output = await mocked(gateway, operation, message)
+        output = await mocked(gateway, message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_CONNECT)
@@ -1441,10 +1589,9 @@ async def test__DiscordGatewayClientShard__handle_special_operation__invalidate_
         client = None
 
 
-
-async def test__DiscordGatewayClientShard__handle_special_operation__unknown_operation():
+async def test__DiscordGatewayClientShard__handle_received_operation__unknown_operation():
     """
-    Tests whether ``DiscordGatewayClientShard._handle_special_operation`` works as intended.
+    Tests whether ``DiscordGatewayClientShard._handle_received_operation`` works as intended.
     
     Case: invalidate session with false.
     
@@ -1459,6 +1606,7 @@ async def test__DiscordGatewayClientShard__handle_special_operation__unknown_ope
     operation = 999
     
     message = {
+        'op': operation,
         'd': None,
     }
     
@@ -1482,7 +1630,7 @@ async def test__DiscordGatewayClientShard__handle_special_operation__unknown_ope
         gateway.kokoro.start()
         gateway.websocket = websocket
         
-        output = await gateway._handle_special_operation(operation, message)
+        output = await gateway._handle_received_operation(to_json(message))
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
@@ -1497,7 +1645,7 @@ async def test__DiscordGatewayClientShard__handle_special_operation__unknown_ope
         client = None
 
 
-async def test__DiscordGatewayClientShard__handle_received_operation__heartbeat_acknowledge():
+async def test__DiscordGatewayClientShard__handle_received_operation__known_operation():
     """
     Tests whether ``DiscordGatewayClientShard._handle_received_operation`` works as intended.
     
@@ -1511,7 +1659,7 @@ async def test__DiscordGatewayClientShard__handle_received_operation__heartbeat_
     )
     
     shard_id = 2
-    operation = GATEWAY_OPERATION_CLIENT_HEARTBEAT_ACKNOWLEDGE
+    operation = 999
     sequence = 'koishi'
     
     message = {
@@ -1520,22 +1668,33 @@ async def test__DiscordGatewayClientShard__handle_received_operation__heartbeat_
         'd': {},
     }
     
+    gateway = None
+    mock_operation_handler_called = False
+    
+    async def mock_operation_handler(parameter_gateway, parameter_message):
+        nonlocal gateway
+        nonlocal message
+        nonlocal mock_operation_handler_called
+        
+        vampytest.assert_is(gateway, parameter_gateway)
+        vampytest.assert_eq(message, parameter_message)
+        mock_operation_handler_called = True
+        
+        return GATEWAY_ACTION_RESUME
+    
+    
     try:
         websocket = await TestWebSocketClient(KOKORO, '')
         gateway = DiscordGatewayClientShard(client, shard_id)
-        gateway._create_kokoro()
+        gateway._operation_handlers[operation] = mock_operation_handler
         gateway.websocket = websocket
         
         output = await gateway._handle_received_operation(to_json(message))
         
         vampytest.assert_instance(output, int)
-        vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
-        vampytest.assert_eq(gateway.sequence, sequence)
+        vampytest.assert_eq(output, GATEWAY_ACTION_RESUME)
         
-        await skip_ready_cycle()
-        
-        vampytest.assert_ne(gateway.latency, LATENCY_DEFAULT)
-        vampytest.assert_eq(len(websocket.out_operations), 0)
+        vampytest.assert_true(mock_operation_handler_called)
     finally:
         client._delete()
         client = None

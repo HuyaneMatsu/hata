@@ -1,9 +1,6 @@
 __all__ = ('Menu',)
 
-from collections import OrderedDict
-from types import MemberDescriptorType
-
-from scarletio import CallableAnalyzer, CancelledError, RichAttributeErrorBaseType, Task, copy_docs
+from scarletio import CallableAnalyzer, CancelledError, RichAttributeErrorBaseType, Task
 
 from ....discord.allowed_mentions import AllowedMentionProxy
 from ....discord.channel import Channel
@@ -28,7 +25,7 @@ GUI_STATE_SWITCHING_CONTEXT = 5
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
 
-class ComponentSourceIdentityHasher:
+class ComponentSourceIdentityHasher(RichAttributeErrorBaseType):
     """
     Hasher for components based on their identity.
     
@@ -63,7 +60,7 @@ class ComponentSourceIdentityHasher:
 
 
 
-class ComponentDescriptor:
+class ComponentDescriptor(RichAttributeErrorBaseType):
     """
     Descriptor to proxy class attribute component access for each instance.
     
@@ -430,7 +427,7 @@ def validate_init(init):
         )
 
 
-class MenuStructure:
+class MenuStructure(RichAttributeErrorBaseType):
     """
     A special object to store special methods of a menu.
     
@@ -477,7 +474,7 @@ class MenuStructure:
         +---------------+-----------+
         | Name          | Type      |
         +===============+===========+
-        | timeout       | `int`     |
+        | timeout       | `float`   |
         +---------------+-----------+
     
     close : `None`, `CoroutineFunction`
@@ -490,7 +487,7 @@ class MenuStructure:
         +===========+===========================+
         | self      | ``Menu``                  |
         +-----------+---------------------------+
-        | exception | `None`, `BaseException` |
+        | exception | `None`, `BaseException`   |
         +-----------+---------------------------+
     
     init : `None`, `Function`
@@ -498,17 +495,17 @@ class MenuStructure:
     
         Should accept the following parameters:
         
-        +-------------------+---------------------------+
-        | Name              | Type                      |
-        +===================+===========================+
-        | self              | ``Menu``                  |
-        +-------------------+---------------------------+
-        | interaction_event | ``InteractionEvent``      |
-        +-------------------+---------------------------+
-        | *positional_parameters             | Positional parameters     |
-        +-------------------+---------------------------+
-        | **keyword_parameters          | Keyword parameters        |
-        +-------------------+---------------------------+
+        +---------------------------+---------------------------+
+        | Name                      | Type                      |
+        +===========================+===========================+
+        | self                      | ``Menu``                  |
+        +---------------------------+---------------------------+
+        | interaction_event         | ``InteractionEvent``      |
+        +---------------------------+---------------------------+
+        | *positional_parameters    | Positional parameters     |
+        +---------------------------+---------------------------+
+        | **keyword_parameters      | Keyword parameters        |
+        +---------------------------+---------------------------+
     
     initial_invoke : `None`, `CoroutineFunction`
         Function to generate the default page of the menu.
@@ -898,7 +895,7 @@ class MenuType(type):
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
 
-class Menu(metaclass = MenuType):
+class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
     """
     Base class for custom component based menus.
     

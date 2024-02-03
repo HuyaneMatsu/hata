@@ -5,5 +5,12 @@ __pycache__/
 # Editor
 .idea
 
+# Pip
+*.egg-info
+build/
+dist/
+*.whl
+*.tar.gz
+
 # Hata
 .external

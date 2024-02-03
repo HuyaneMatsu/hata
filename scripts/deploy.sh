@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 LIBRARY_NAME="hata"
 
@@ -24,11 +23,13 @@ fi
 
 function get_and_set_env {
     local env_var_name=$1
+    local help=$2
     local env_var_value
     
     if [ -z ${!env_var_name+x} ] || [ -z ${!env_var_name} ]
     then
         echo "${env_var_name} environmental variable is empty or missing."
+        echo "!!! ${help} !!!"
         echo "Please define your ${env_var_name} environmental variable:"
         
         read -r env_var_value
@@ -36,9 +37,8 @@ function get_and_set_env {
     fi
 }
 
-# get_and_set_env "GITHUB_TOKEN"
-get_and_set_env "TWINE_USERNAME"
-get_and_set_env "TWINE_PASSWORD"
+TWINE_USERNAME="__token__"
+get_and_set_env "TWINE_PASSWORD" "Its called password, but its actually your pypi token."
 
 # Install dependencies
 
@@ -49,7 +49,6 @@ python3 -m pip install setuptools twine
 echo "Deploying"
 python3 setup.py sdist bdist_wheel
 
-set +e
 python3 -m twine upload --disable-progress-bar --skip-existing --non-interactive --repository pypi dist/*
 
 # Remove temporary files

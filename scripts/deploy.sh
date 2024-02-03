@@ -37,7 +37,7 @@ function get_and_set_env {
     fi
 }
 
-TWINE_USERNAME="__token__"
+export TWINE_USERNAME="__token__"
 get_and_set_env "TWINE_PASSWORD" "Its called password, but its actually your pypi token."
 
 # Install dependencies
@@ -60,4 +60,3 @@ rm -r dist
 rm -r "$LIBRARY_NAME.egg-info"
 
 return 0 2>/dev/null || exit 0
-

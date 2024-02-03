@@ -104,8 +104,8 @@ class ClientCompoundInviteEndpoints(Compound):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        invite_data_vanity = await client.api.invite_get_vanity(guild_id)
-        invite_data = await client.api.invite_get(invite_data_vanity['code'], {'with_counts': True})
+        invite_data_vanity = await self.api.invite_get_vanity(guild_id)
+        invite_data = await self.api.invite_get(invite_data_vanity['code'], {'with_counts': True})
         invite_data['uses'] = invite_data_vanity.get('uses', None)
         return Invite.from_data(invite_data)
     
@@ -155,7 +155,7 @@ class ClientCompoundInviteEndpoints(Compound):
         
         vanity_code = validate_code(vanity_code)
         
-        await client.api.invite_edit_vanity(guild_id, {'code': vanity_code}, reason)
+        await self.api.invite_edit_vanity(guild_id, {'code': vanity_code}, reason)
     
     
     async def invite_create(self, channel, invite_template = None, **keyword_parameters):
@@ -228,7 +228,7 @@ class ClientCompoundInviteEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_invitable)
         data = build_create_payload(invite_template, INVITE_GUILD_FIELD_CONVERTERS, keyword_parameters)
-        invite_data = await client.api.invite_create(channel_id, data)
+        invite_data = await self.api.invite_create(channel_id, data)
         return Invite.from_data(invite_data)
     
     
@@ -341,7 +341,7 @@ class ClientCompoundInviteEndpoints(Compound):
             'target_type': InviteTargetType.stream.value,
         }
         
-        data = await client.api.invite_create(voice_state.channel.id, data)
+        data = await self.api.invite_create(voice_state.channel.id, data)
         return Invite.from_data(data)
     
     # Could not find correct application:
@@ -434,7 +434,7 @@ class ClientCompoundInviteEndpoints(Compound):
             'target_type': InviteTargetType.embedded_application.value,
         }
         
-        data = await client.api.invite_create(channel_id, data)
+        data = await self.api.invite_create(channel_id, data)
         return Invite.from_data(data)
     
     
@@ -544,7 +544,7 @@ class ClientCompoundInviteEndpoints(Compound):
                 f'{invite!r}.'
             )
         
-        invite_data = await client.api.invite_get(invite_code, {'with_counts': True})
+        invite_data = await self.api.invite_get(invite_code, {'with_counts': True})
         
         if invite is None:
             invite = Invite.from_data(invite_data)
@@ -580,7 +580,7 @@ class ClientCompoundInviteEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        invite_datas = await client.api.invite_get_all_guild(guild_id)
+        invite_datas = await self.api.invite_get_all_guild(guild_id)
         return [Invite.from_data(invite_data) for invite_data in invite_datas]
     
     
@@ -623,7 +623,7 @@ class ClientCompoundInviteEndpoints(Compound):
                 f'`channel` can be an invitable ``Channel``, `int`, got {channel.__class__.__name__}; {channel!r}.'
             )
         
-        invite_datas = await client.api.invite_get_all_channel(channel_id)
+        invite_datas = await self.api.invite_get_all_channel(channel_id)
         return [Invite.from_data(invite_data) for invite_data in invite_datas]
     
     
@@ -661,7 +661,7 @@ class ClientCompoundInviteEndpoints(Compound):
                 f'`invite`` can be `{Invite.__name__}`, `str`, got {invite.__class__.__name__}; {invite!r}.'
             )
         
-        invite_data = await client.api.invite_delete(invite_code, reason)
+        invite_data = await self.api.invite_delete(invite_code, reason)
         
         if invite is None:
             invite = Invite.from_data(invite_data)

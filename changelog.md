@@ -1,4 +1,4 @@
-## 1.3.50 *\[2024-01-??\]*
+## 1.3.50 *\[2024-02-03\]*
 
 #### Improvements
 
@@ -23,7 +23,7 @@
 - Fix `AutoModerationRule.__repr__` raised when rendering non-default `.event_type`.
 
 #### ext.slash
-- Fix couldnt overwrite `menu.attribute` if attribute was previously set to a component.
+- Fix could not overwrite `menu.attribute` if attribute was previously set to a component.
 
 ### Renames, Deprecations & Removals
 

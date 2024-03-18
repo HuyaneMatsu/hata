@@ -194,7 +194,7 @@ async def test__Client__webhook_message_create__stuffed_webhook():
     
     expected_message_data = {
         'content': content,
-        'name': name,
+        'username': name,
         'avatar_url': avatar_url,
     }
     

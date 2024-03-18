@@ -1,6 +1,12 @@
+## 1.3.52 *\[2024-03-18\]*
+
+### Bug fixes
+
+- Fix `Client.webhook_message_create` incorrectly serialized `name`. (From `1.3.51`)
+
 ## 1.3.51 *\[2024-03-18\]*
 
-#### Improvements
+### Improvements
 
 - Add `Locale.spanish_la`.
 - Add `create_partial_sticker_from_id`.
@@ -35,7 +41,7 @@
 
 ## 1.3.50 *\[2024-02-03\]*
 
-#### Improvements
+### Improvements
 
 - Add `Client.api` to separate down the api logic from `Client.http`. `Client.http` is not a general `HttpClient`.
 - Add `DiscordApiClient` to separate the api logic down from `DiscordHTTPClient`.
@@ -68,7 +74,7 @@
 
 ## 1.3.49 *\[2023-12-31\]*
 
-#### Improvements
+### Improvements
 
 - Use new scarletio in dependencies.
 
@@ -539,7 +545,7 @@
 
 ## 1.3.35 *\[2023-08-11\]*
 
-#### Improvements
+### Improvements
 
 - Add `raise_if_missing_or_empty` parameter to `get_bool_env`.
 - Add `raise_if_missing_or_empty` parameter to `get_int_env`.
@@ -607,7 +613,7 @@
 
 ## 1.3.34 *\[2023-07-22\]*
 
-#### Improvements
+### Improvements
 
 - `Client.guild_get_all` now also updates the guilds' approximate counts.
 - Add `AttachmentFlag`.
@@ -627,7 +633,7 @@
 
 ## 1.3.33 *\[2023-07-15\]*
 
-#### Improvements
+### Improvements
 
 - Add `ChannelFlag.hide_media_download_option`.
 - Add `ChannelFlag.media_channel`.
@@ -664,7 +670,7 @@
 
 ## 1.3.32 *\[2023-07-04\]*
 
-#### Improvements
+### Improvements
 
 - Add support for all the parameters in `Guild.precreate`.
 - When all clients leave a guild its entities such as: channels, roles, users, etc are not cleaned up anymore.
@@ -769,7 +775,7 @@
 
 ## 1.3.31 *\[2023-05-30\]*
 
-#### Improvements
+### Improvements
 
 - Add shortcut to `Client.request_soundboard_sounds` if there is nothing to do.
 - Add `SoundboardSound.is_custom_sound`.
@@ -791,7 +797,7 @@
 
 ## 1.3.30 *\[2023-05-29\]*
 
-#### Improvements
+### Improvements
 
 - Add `--profile` parameter to `run` command.
 - Add `raise_if_missing_or_empty` parameter to `get_str_env`.
@@ -905,7 +911,7 @@
 
 ## 1.3.29 *\[2023-05-08\]*
 
-#### Improvements
+### Improvements
 
 - Add `InteractionEvent.channel_id` replaced with `InteractionEvent.channel`.
 - Add `InteractionEvent.user_id`.
@@ -960,7 +966,7 @@
 
 ## 1.3.28 *\[2023-04-25\]*
 
-#### Improvements
+### Improvements
 
 - Repurpose `MessageInteraction.__init__`, rename to `.from_data`.
 - Add `MessageInteraction.__new__`.
@@ -1024,7 +1030,7 @@
 
 ## 1.3.27 *\[2023-04-14\]*
 
-#### Improvements
+### Improvements
 
 - `.IntegrationMetadataBase.__new__` is now `.from_keyword_parameters`. Add new `.__new__` method.
 - `.IntegrationMetadataBase.copy_with` is now `.copy_with_keyword_parameters`. Add new `.copy_with` method.
@@ -1081,7 +1087,7 @@
 
 ## 1.3.26 *\[2023-04-07\]*
 
-#### Improvements
+### Improvements
 
 - Add `EmbedFieldBase`.
 - Add `EmbedThumbnail.__hash__`.
@@ -1190,7 +1196,7 @@
 
 ## 1.3.25 *\[2023-03-24\]*
 
-#### Improvements
+### Improvements
 
 - Add `Stage.guild_id`.
 - Add `Stage.channel_id`.
@@ -1255,7 +1261,7 @@
 
 ## 1.3.24 *\[2023-03-10\]*
 
-#### Improvements
+### Improvements
 
 - Add `UserBase.get_status_by_platform`.
 - Add `AutoModerationActionMetadataBlock`.
@@ -1271,7 +1277,7 @@
 
 ## 1.3.23 *\[2023-03-02\]*
 
-#### Improvements
+### Improvements
 
 - Add `ApplicationCommandPermission.copy_with`.
 - Add `ApplicationCommandPermission.iter_permission_overwrites`.
@@ -1320,7 +1326,7 @@
 
 ## 1.3.22 *\[2023-02-18\]*
 
-#### Improvements
+### Improvements
 
 - Add `ForumTagUpdate`.
 - Add `ForumTagChange`.
@@ -1375,7 +1381,7 @@
 
 ## 1.3.21 *\[2023-02-11\]*
 
-#### Improvements
+### Improvements
 
 - Add `UserBase.mfa`.
 - Add `Userbase.copy`.
@@ -1453,7 +1459,7 @@
 
 ## 1.3.20 *\[2023-01-22\]*
 
-#### Improvements
+### Improvements
 
 - Add `Channel.application_id`.
 - Add `MessageRoleSubscription`.
@@ -1467,7 +1473,7 @@
 
 ## 1.3.19 *\[2023-01-15\]*
 
-#### Improvements
+### Improvements
 
 - Add `Guild.safety_alerts_channel`.
 - Add `Guild.safety_alerts_channel_id`.
@@ -1485,7 +1491,7 @@
 
 ## 1.3.18 *\[2023-01-15\]*
 
-#### Improvements
+### Improvements
 
 - Add `Emoji.copy`.
 - Add `Sticker.copy`.
@@ -1583,7 +1589,7 @@
 
 ## 1.3.17 *\[2022-12-22\]*
 
-#### Improvements
+### Improvements
 
 - Add `VerificationScreen.copy`.
 - Add `VerificationScreen.__new__`.
@@ -1608,7 +1614,7 @@
 
 ## 1.3.16 *\[2022-12-21\]*
 
-#### Improvements
+### Improvements
 
 - Add `EmojiCounts`.
 - Add `ForumLayout`.
@@ -1737,7 +1743,7 @@
 
 ## 1.3.15 *\[2022-12-13\]*
 
-#### Improvements
+### Improvements
 
 - Add `Channel.threads`.
 - Add `Channel.iter_threads`.
@@ -1767,7 +1773,7 @@
 
 ## 1.3.14 *\[2022-12-03\]*
 
-#### Improvements
+### Improvements
 
 - Repurpose `TeamMember.__init__`. Rename to `.from_data`.
 - Add `TeamMember.to_data`.
@@ -1881,11 +1887,11 @@
 - Deprecate `ActivityParty.__new__`'s `id_` parameter.
 - Deprecate `manage_channel` permission. Please use `manage_channels` instead.
 
-#### Improvements
+### Improvements
 
 ## 1.3.13 *\[2022-11-22\]*
 
-#### Improvements
+### Improvements
 
 - Add `AutoModerationActionMetadataBase.copy_with`.
 - Add `AutoModerationActionMetadataBase.channel_id` (moved up).
@@ -1942,7 +1948,7 @@
 
 ## 1.3.12 *\[2022-11-12\]*
 
-#### Improvements
+### Improvements
 
 - Repurpose `GuildProfile.__init__`. Rename it to `.from_data`.
 - Add `GuildProfile.__new__`.
@@ -2075,7 +2081,7 @@
 
 ## 1.3.11 *\[2022-10-25\]*
 
-#### Improvements
+### Improvements
 
 - Add `Message.iter_components`.
 - Add `Component.button_style`.
@@ -2112,7 +2118,7 @@
 
 ## 1.3.10 *\[2022-10-16\]*
 
-#### Improvements
+### Improvements
 
 - `Role.partial` will now handle correctly if the role is deleted.
 - Add `guild_id` parameter to `create_partial_role_from_id`.
@@ -2218,7 +2224,7 @@
 
 ## 1.3.9 *\[2022-10-03\]*
 
-#### Improvements
+### Improvements
 
 - Add `create_partial_emoji_from_id`.
 - Add `Channel.iter_applied_tag_ids`.
@@ -2252,7 +2258,7 @@
 
 ## 1.3.8 *\[2022-09-20\]*
 
-#### Improvements
+### Improvements
 
 - Partial `ApplicationCommand`-s are now hashable.
 - `ApplicationCommand.__new__` now accepts `options` as any iterable (from list | tuple).
@@ -2368,7 +2374,7 @@
 
 ## 1.3.7 *\[2022-09-04\]*
 
-#### Improvements
+### Improvements
 
 - Add `ApplicationCommand.nsfw`.
 
@@ -2391,7 +2397,7 @@
 
 ## 1.3.6 *\[2022-08-30\]*
 
-#### Improvements
+### Improvements
 
 - Add `NsfwLevel.nsfw`.
 - `Message.guild` now works for invoking user only messages as well. (Gilgamesh#8939)
@@ -2422,7 +2428,7 @@
 
 ## 1.3.4 *\[2022-08-24\]*
 
-#### Improvements
+### Improvements
 
 - Add `Message._create_from_partial_data`.
 - `Message.cross_reference` now can be set only as a `Message` instance (or `None`).
@@ -2464,7 +2470,7 @@
 
 ## 1.3.2 *\[2022-08-13\]*
 
-#### Improvements
+### Improvements
 
 - Add `EntitlementType.premium_purchase`.
 - Add `EntitlementType.application_subscription`.
@@ -2490,7 +2496,7 @@
 
 ## 1.3.1 *\[2022-07-25\]*
 
-#### Improvements
+### Improvements
 
 - The shutdown event handlers will be ensured when a client connection receives a fatal exception.
 - Add `run` command.
@@ -2530,7 +2536,7 @@ CPI interface reworked. Register commands with the `@register` decorator.
 
 Extra features are planned in future updates
 
-#### Improvements
+### Improvements
 
 - Add `GuildFeature.embedded_activities_experiment`.
 - Add `GuildFeature.home_test`.
@@ -2548,7 +2554,7 @@ Extra features are planned in future updates
 
 ## 1.2.19 *\[2022-07-10\]*
 
-#### Improvements
+### Improvements
 
 - Add `ApplicationCommandOption.min_length`.
 - Add `ApplicationCommandOption.max_length`.
@@ -2609,7 +2615,7 @@ Extra features are planned in future updates
 
 ## 1.2.18 *\[2022-06-27\]*
 
-#### Improvements
+### Improvements
 
 - Add `auto_moderation_message` to rich embed fields.
 - Add `ConnectionType`.
@@ -2703,7 +2709,7 @@ Extra features are planned in future updates
 Rename `extension_loader` to `plugin_loader` to make library extensions and extension modules more distinct.
 A change like this was requested for a while...
 
-#### Improvements
+### Improvements
 
 - `hata.ext` directory now handles sub-file imports better.
 - Add `weak` parameter to `bind`.
@@ -2782,7 +2788,7 @@ A change like this was requested for a while...
 
 - Rework slash extension command structure.
 
-#### Improvements
+### Improvements
 
 - Boost level 0 sticker count is now 5.
 - `OA2Access` now support rich attribute errors.
@@ -2856,7 +2862,7 @@ A change like this was requested for a while...
 
 ## 1.2.15 *\[2022-05-21\]*
 
-#### Improvements
+### Improvements
 
 - Allow auto completing `number` and `float` parameters as well.
 - `GuildUserChunkEvent.channel` will not return `None` anymore.
@@ -2896,7 +2902,7 @@ A change like this was requested for a while...
 
 ## 1.2.14 *\[2022-05-05\]*
 
-#### Improvements
+### Improvements
 
 - Add `AuditLog.application_commands`.
 - `AuditLog` now supports rich attribute messages.
@@ -2928,7 +2934,7 @@ A change like this was requested for a while...
 
 ## 1.2.12 *\[2022-04-24\]*
 
-#### Improvements
+### Improvements
 
 - Add `UserBase.has_name_like`.
 - Add `UserBase.has_name_like_at`.
@@ -2947,7 +2953,7 @@ A change like this was requested for a while...
 
 ## 1.2.11 *\[2022-04-18\]*
 
-#### Improvements
+### Improvements
 
 - `Guild.get_channel_like`'s `type` parameter is replaced with `type_checker`.
 - Enable calling `hata` without `python3 -m`. (WizzyGeek#2356)
@@ -2983,7 +2989,7 @@ A change like this was requested for a while...
 
 - Add `hata.ext.solarlink`.
 
-#### Improvements
+### Improvements
 
 - `EventHandlerBase` instances now support rich attribute errors.
 - Define we want to use python3 highlights in md files, because some highlighters still use python2 as default.
@@ -3026,7 +3032,7 @@ A change like this was requested for a while...
 
 ## 1.2.8 *\[2022-04-11\]*
 
-#### Improvements
+### Improvements
 
 - `Message.channel` now always returns a `Channel`. (WizzyGeek#2356)
 
@@ -3042,7 +3048,7 @@ A change like this was requested for a while...
 
 ## 1.2.7 *\[2022-04-10\]*
 
-#### Improvements
+### Improvements
 
 - Add `ERROR_CODES.unknown_tag`.
 - Add `ERROR_CODES.max_pinned_threads_in_forum_channel`.
@@ -3101,7 +3107,7 @@ Channels now have a metadata system, making every channel share the same type.
 
 This fixes a case when a precreated channel could mess up the channel's and other related entities lifecycle.
 
-#### Improvements
+### Improvements
 
 - Add `should_request_users` parameter to `Client` constructor.
 - Add `Channel` type inheriting all methods & properties of the old `ChannelBase`.
@@ -3220,7 +3226,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 
 ## 1.2.5 *\[2022-03-23\]*
 
-#### Improvements
+### Improvements
 
 - `allow_by_default` should not default based on `required_permissions`.
 - Force request application command localizations.
@@ -3242,7 +3248,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 
 ## 1.2.4 *\[2022-03-15\]*
 
-#### Improvements
+### Improvements
 
 - Add `ApplicationCommand.version`.
 - Add `ApplicationCommand.edited_at`.
@@ -3297,7 +3303,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 
 ## 1.2.3 *\[2022-03-08\]*
 
-#### Improvements
+### Improvements
 
 - Change embed author constructor parameter order to `name, icon_url, url` from `icon_url`, `name`, `url`. On this
     way it is more intuitive and matches the footer's parameter order as well. Drop warning if passed in bad order.
@@ -3319,7 +3325,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 
 ## 1.2.2 *\[2022-02-28\]*
 
-#### Improvements
+### Improvements
 
 - Add `User.from_data`. New user constructor, which can bind guild profile even if the guild is uncached.
 - Add `ERROR_CODES.unknown_guild_welcome_screen`.
@@ -3389,7 +3395,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 
 ## 1.2.1 *\[2022-02-22\]*
 
-#### Improvements
+### Improvements
 
 - Add `DiscordException.debug_options`.
 
@@ -3412,7 +3418,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - Message routes accept embeds rather than embed \[x\]
 - Requests to v10 and higher will no longer be supported on discordapp.com \[x\]
 
-#### Improvements
+### Improvements
 - API v10 hype.
 - Add `message_content` intent.
 - Add `create_identifier_custom_id_from_name`.
@@ -3471,7 +3477,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 
 ## 1.1.137 *\[2022-02-15\]*
 
-#### Improvements
+### Improvements
 
 - Add `ERROR_CODES.interaction_already_acknowledged`.
 - Add `AllowedMentionProxy.update` now returns itself.
@@ -3546,7 +3552,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 
 ## 1.1.136 *\[2022-02-09\]*
 
-#### Improvements
+### Improvements
 - Move `ext.asyncio` to `scarletio`.
 
 ### Bug fixes
@@ -3560,7 +3566,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 
 ## 1.1.135 *\[2022-02-08\]*
 
-#### Improvements
+### Improvements
 
 - Add `ScheduledEvent.image_url`.
 - Add `ScheduledEvent.image_url_as`.
@@ -3584,7 +3590,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 
 Rework audit logs once again.
 
-#### Improvements
+### Improvements
 
 - Add `InviteType`.
 - Add `Invite.type`.
@@ -3656,7 +3662,7 @@ Rework audit logs once again.
 
 ## 1.1.133 *\[2022-01-15\]*
 
-#### Improvements
+### Improvements
 
 - Add `wait` parameter to `client.interaction_application_command_acknowledge`.
 - Add `wait` parameter to `client.interaction_component_acknowledge`.
@@ -3671,7 +3677,7 @@ Rework audit logs once again.
 
 ## 1.1.132 *\[2022-01-15\]*
 
-#### Improvements
+### Improvements
 
 - Add `ERROR_CODES.community_and_rules_channel_cannot_be_changed_to_announcement`.
 - Add `seconds_to_id_difference`.
@@ -3693,7 +3699,7 @@ Rework audit logs once again.
 
 ## 1.1.131 *\[2022-01-04\]*
 
-#### Improvements
+### Improvements
 
 - Add `banner` parameter to `Client.channel_edit`.
 - Add `banner` parameter to `client.channel_create`.
@@ -3706,7 +3712,7 @@ Rework audit logs once again.
 
 ## 1.1.130 *\[2022-01-02\]*
 
-#### Improvements
+### Improvements
 
 - Add `GuildPreview.stickers`.
 - Add `ApplicationCommandPermissionOverwriteTargetType.channel`.
@@ -3729,7 +3735,7 @@ Rework audit logs once again.
 
 ## 1.1.129 *\[2021-12-24\]*
 
-#### Improvements
+### Improvements
 
 - Add `bind`. (Forest#2913)
 - Add `ERROR_CODES.invalid_json`.
@@ -3878,7 +3884,7 @@ Rework audit logs once again.
     - `GUILD_SCHEDULED_EVENT_USER_ADD` \[x\]
     - `GUILD_SCHEDULED_EVENT_USER_REMOVE` \[x\]
 
-#### Improvements
+### Improvements
 
 - Add `ERROR_CODES.invalid_guild`.
 - Add `ERROR_CODES.rate_limit_server_send`.
@@ -3920,7 +3926,7 @@ Rework audit logs once again.
 
 ## 1.1.127 *\[2021-12-07\]*
 
-#### Improvements
+### Improvements
 
 - Add `DiscordHTTPClient.sticker_pack_get`.
 - Add `RATE_LIMIT_GROUPS.sticker_pack_get`.
@@ -3932,7 +3938,7 @@ Rework audit logs once again.
 
 ## 1.1.126 *\[2021-12-05\]*
 
-#### Improvements
+### Improvements
 
 - Add missing `EventHandlerManager.__dir__`.
 - Add missing `_EventHandlerManager.__dir__`.
@@ -3960,7 +3966,7 @@ Rework audit logs once again.
 Hata's backend has been moved to it's [repo](https://github.com/HuyaneMatsu/scarletio); This was a common request
 around the board.
 
-#### Improvements
+### Improvements
 
 - Add `ChannelForum`.
 - Add `CHANNEL_TYPES.GROUP_CAN_CONTAIN_THREADS`.
@@ -3977,7 +3983,7 @@ around the board.
 
 ## 1.1.123 *\[2021-11-28\]*
 
-#### Improvements
+### Improvements
 
 ##### ext.asyncio
 - `create_server` now expects and handles `start_serving` parameter. (Forest#2913)
@@ -3993,7 +3999,7 @@ around the board.
 
 ## 1.1.122 *\[2021-11-28\]*
 
-#### Improvements
+### Improvements
 
 - Add `FormSubmitInteraction.get_custom_id_value_relation`.
 - Add `FormSubmitInteraction.get_value_for`.
@@ -4007,7 +4013,7 @@ around the board.
 
 ## 1.1.121 *\[2021-11-28\]*
 
-#### Improvements
+### Improvements
 
 - Add `ERROR_CODES.cannot_update_finished_scheduled_event`.
 - Add `ERROR_CODES.failed_to_create_stage_needed_for_scheduled_event`.
@@ -4074,7 +4080,7 @@ cache.
 
 ## 1.1.120 *\[2021-11-17\]*
 
-#### Improvements
+### Improvements
 
 - Add `GuildFeature.internal_employee_only`.
 - Add `GuildFeature.channel_banners`.
@@ -4121,7 +4127,7 @@ cache.
 
 ## 1.1.119 *\[2021-11-09\]*
 
-#### Improvements
+### Improvements
 
 - Add `UserBase.to_data`.
 - Add `MessageActivity.to_data`.
@@ -4164,7 +4170,7 @@ cache.
 
 Update file uploading system.
 
-#### Improvements
+### Improvements
 
 - Add `ApplicationCommandAutocompleteInteraction.get_value_of`.
 - Add `ApplicationCommandAutocompleteInteractionOption.get_value_of`.
@@ -4183,7 +4189,7 @@ Update file uploading system.
 
 ## 1.1.116 *\[2021-11-01\]*
 
-#### Improvements
+### Improvements
 
 - Add `ApplicationFlag.gateway_message_content`.
 - Add `ApplicationFlag.gateway_message_content_limited`.
@@ -4220,7 +4226,7 @@ Update file uploading system.
 
 ## 1.1.113 *\[2021-10-23\]*
 
-#### Improvements
+### Improvements
 
 - Add `SystemChannelFlag.join_sticker_replies`
 
@@ -4240,7 +4246,7 @@ Update file uploading system.
 
 ## 1.1.112 *\[2021-10-19\]*
 
-#### Improvements
+### Improvements
 
 - Add `UserFlag.spammer`.
 - Add `ApplicationCommandOption.min_value`.
@@ -4263,7 +4269,7 @@ Update file uploading system.
 
 Make `client.events` pluginable.
 
-#### Improvements
+### Improvements
 
 - Add `GuildFeature.animated_banner`.
 - Add `EventHandlerManager.register_plugin`.
@@ -4298,7 +4304,7 @@ Make `client.events` pluginable.
 
 Improve auto completion and error handling of slash extension.
 
-#### Improvements
+### Improvements
 
 - Add `ERROR_CODES.max_scheduled_events`.
 - Add `UserFlag.bot_http_interactions`.
@@ -4348,7 +4354,7 @@ Improve auto completion and error handling of slash extension.
 
 Add unicode emoji support for roles.
 
-#### Improvements
+### Improvements
 
 ##### ext.slash
 - Add `first` parameter to `Slasher.error`.
@@ -4374,7 +4380,7 @@ Add unicode emoji support for roles.
 
 Voice rework to support 3rd party libraries.
 
-#### Improvements
+### Improvements
 
 - Add `VoiceServerUpdateEvent`.
 - Add `Client.events.voice_server_update`.
@@ -4426,7 +4432,7 @@ Voice rework to support 3rd party libraries.
 
 Add auto completion for slash commands.
 
-#### Improvements
+### Improvements
 
 - Add `HATA_MESSAGE_CACHE_SIZE` environmental variable for easier message cache size configuration.
 - Add `InteractionType.application_command_autocomplete`.
@@ -4448,7 +4454,7 @@ Add auto completion for slash commands.
 
 ## 1.1.105 *\[2021-09-21\]*
 
-#### Improvements
+### Improvements
 
 - Add `ApplicationCommandOption.channel_types`.
 - Add `channel_types` parameter to `ApplicationCommandOption.__new__`.
@@ -4473,7 +4479,7 @@ Add auto completion for slash commands.
 
 ## 1.1.104 *\[2021-09-15\]*
 
-#### Improvements
+### Improvements
 
 - Add `client.events.shutdown`.
 - Add `ERROR_CODES.rate_limit_widget_update`.
@@ -4489,7 +4495,7 @@ Add auto completion for slash commands.
 
 ## 1.1.103 *\[2021-09-14\]*
 
-#### Improvements
+### Improvements
 
 - `DiscordHTTPClient.guild_get` now supports query string parameters.
 - Add `Client.guild_get` even tho `Client.guild_sync` exists, just to request guild specific data
@@ -4515,7 +4521,7 @@ Add auto completion for slash commands.
 
 ## 1.1.102 *\[2021-09-??\]*
 
-#### Improvements
+### Improvements
 
 - Add `EmbedThumbnail.copy`.
 - Add `EmbedThumbnail.copy_with`.
@@ -4546,7 +4552,7 @@ Add auto completion for slash commands.
 
 Stop creating functions runtime, but now we remove lambdas.
 
-#### Improvements
+### Improvements
 
 - Add `GuildFeature.new_thread_permissions`.
 - Ignore raised exceptions from `repr(exception)` inside of `render_exc_to_list`.
@@ -4594,7 +4600,7 @@ Fixing bugs.
 
 Use dynamic fields for messages in favor of the incoming message content intent.
 
-#### Improvements
+### Improvements
 
 - `Message.reactions` now defaults to `None` (saves 64 bytes if the message has no reactions, which is like 99% of
     the cases).
@@ -4637,7 +4643,7 @@ Use dynamic fields for messages in favor of the incoming message content intent.
 
 Fixing bugs.
 
-#### Improvements
+### Improvements
 
 - Add `escape_markdown`.
 - Add `invitable` parameter to `Client.thread_create`.
@@ -4652,7 +4658,7 @@ Fixing bugs.
 
 Guild feature rework.
 
-#### Improvements
+### Improvements
 
 - `GuildFeature._from_value` now correctly transforms `.name`.
 - Add `GuildFeature.threads_enabled`.
@@ -4689,7 +4695,7 @@ Guild feature rework.
 
 Add new emojis.
 
-#### Improvements
+### Improvements
 
 - Add `ERROR_CODES.max_stickers`.
 - Add `ERROR_CODES.rate_limit_prune`.
@@ -4759,7 +4765,7 @@ Add new emojis.
 
 Sync slash extension's type names with recent application command target type addition.
 
-#### Improvements
+### Improvements
 
 ##### ext.extension_loaded
 - `Extension.is_loaded` is a method now (from property).
@@ -4796,7 +4802,7 @@ Sync slash extension's type names with recent application command target type ad
 
 Make multiple entities to weakly bound to other ones.
 
-#### Improvements
+### Improvements
 
 - Add `preconvert_float`.
 - Add `message.channel_id` attribute.
@@ -4963,7 +4969,7 @@ Make multiple entities to weakly bound to other ones.
 
 Fix threads a lil bit.
 
-#### Improvements
+### Improvements
 
 - Add `AuditLogEvent.scheduled_event_create`.
 - Add `AuditLogEvent.scheduled_event_update`.
@@ -5063,7 +5069,7 @@ Fix threads a lil bit.
 
 Add rich creation for rich activity and for sub activity types.
 
-#### Improvements
+### Improvements
 
 - Add `is_url`.
 - Add `application_id` parameter to `ActivityRich`.
@@ -5112,7 +5118,7 @@ Add rich creation for rich activity and for sub activity types.
 
 Add float type to slash commands.
 
-#### Improvements
+### Improvements
 
 - Add `ApplicationCommandOptionType.float`.
 - Add `ERROR_CODES.sticker_animation_duration_exceeds_5_second`.
@@ -5177,7 +5183,7 @@ Add float type to slash commands.
 
 Redo guild user syncing.
 
-#### Improvements
+### Improvements
 
 - Add 5 second gateway connect rate limit per batch.
 - Add notification when session start limit reaches low amount.
@@ -5216,7 +5222,7 @@ Redo guild user syncing.
 
 Add guild sticker methods.
 
-#### Improvements
+### Improvements
 
 - Update sticker related rate limits.
 - Add `DiscordHTTPClient.sticker_guild_edit`.
@@ -5264,7 +5270,7 @@ Add guild sticker methods.
 
 Fix a few bugs.
 
-#### Improvements
+### Improvements
 
 - Add `ERROR_CODES.unknown_guild_member_verification_form`.
 - Add `ERROR_CODES.guild_subscription_level_too_low`.
@@ -5302,7 +5308,7 @@ Fix a few bugs.
 
 Regroup many code parts.
 
-#### Improvements
+### Improvements
 
 - Add `ERROR_CODES.name_contains_disallowed_word`.
 - Add `ERROR_CODES.stage_already_open`.
@@ -5404,7 +5410,7 @@ Regroup many code parts.
 
 Add sticker related endpoints and such.
 
-#### Improvements
+### Improvements
 
 - Add `typer.__await__`. (Gilgamesh#8939)
 - Add `GuildProfile.avatar`.
@@ -5477,7 +5483,7 @@ Bug fixes.
 
 Add component commands and expression parser for slash commands.
 
-#### Improvements
+### Improvements
 
 - `Guild.nsfw` is now a property.
 - Include date, method and url in `DiscordException` error message.
@@ -5505,7 +5511,7 @@ Add component commands and expression parser for slash commands.
 
 Fix up components in slash.
 
-#### Improvements
+### Improvements
 
 - Add `UserBase.custom_activity`.
 - Rework `UserBase.custom_activity`.
@@ -5543,7 +5549,7 @@ Fix up components in slash.
 
 Update stickers.
 
-#### Improvements
+### Improvements
 
 - Rework `message.py`.
 - Add `Sticker.sort_value`.
@@ -5574,7 +5580,7 @@ Update stickers.
 
 Add the rest of the thread endpoints to client.
 
-#### Improvements
+### Improvements
 
 - Update discord media sizes.
 - Add `Client.thread_join`.
@@ -5641,7 +5647,7 @@ Add the rest of the thread endpoints to client.
 
 Rework `role.py` and `permission.py`.
 
-#### Improvements
+### Improvements
 
 - Add `NsfwLevel`.
 - Add `Guild.nsfw_level`.
@@ -5679,7 +5685,7 @@ Rework `role.py` and `permission.py`.
 
 Update stages.
 
-#### Improvements
+### Improvements
 
 - Add `Stage.invite_code`.
 - Add `Stage._update`.
@@ -5730,7 +5736,7 @@ Update stages.
 
 Fix some bugs and improve slash command creation.
 
-#### Improvements
+### Improvements
 
 - Add `interaction` parameter to `message.custom`. (Gilgamesh#8939)
 - Increase `content`'s max length to 4k in `message.custom`.
@@ -5775,7 +5781,7 @@ Fix some bugs and improve slash command creation.
 
 Start supporting anyio (all bugs included). (Forest#2913)
 
-#### Improvements
+### Improvements
 
 ##### ext.asyncio
 - Add `asyncio.futures.Task.get_coro`.
@@ -5801,7 +5807,7 @@ Add `extensions` parameter to `Client`'s constructor.
     client. This also means additional keyword parameters are supported to be forwarded to these setup functions.
     (Forest#2913)
 
-#### Improvements
+### Improvements
 
 - Add `ERROR_CODES.max_ban_fetches`.
 - Add `DiscordHTTPClient.thread_create_public`.
@@ -5851,7 +5857,7 @@ Reduce `Message` entity size.
 - `Message.user_mentions` now uses `tuple` instead of `list`.
 - `Message.role_mentions` now uses `tuple` instead of `list`.
 
-#### Improvements
+### Improvements
 
 - Add `ComponentType.select`.
 - Add `ComponentButton`.
@@ -5901,7 +5907,7 @@ Redo error code names, dispatch event parsing and add thread support.
 
 - Use shifted mask instead of shifting and masking for sync-multi-client dispatch event parsers.
 
-#### Improvements
+### Improvements
 
 - Rework `Client.webhook_get_token` to accept `webhook_id-webhook_token` pair.
 - Rework `Client.webhook_delete_token` to accept `webhook_id-webhook_token` pair.
@@ -6013,7 +6019,7 @@ Fix some bugs.
 
 - Add `AllowedMentionProxy`.
 
-#### Improvements
+### Improvements
 
 - `parse_allowed_mentions` is now a standalone function and not a `Client` static method.
 
@@ -6042,7 +6048,7 @@ Channel input and output.
 - Add `get_channel_stdin`. (experimental) (Forest#2913)
 - Add `get_channel_stdout`. (experimental) (Forest#2913)
 
-#### Improvements
+### Improvements
 
 - Update changelog style. (Pichu#0357)
 - Reduce generated data size by badly built `Component` instances.
@@ -6074,7 +6080,7 @@ Split up `ext.extension_loader` to more parts and add `client.extensions`.
 - Add `client.extensions`. (Forest#2913) (ᓚᘏᗢ | NeKo Mancer#1477)
 - Add `EXTENSION_LOADER.get_extension`.
 
-#### Improvements
+### Improvements
 
 ##### ext.slash
 - `Button.default_style` should be `ButtonStyle.violet`. (Gilgamesh#8939)
@@ -6121,7 +6127,7 @@ Improve component usage.
 - Add `Slasher.add_component_interaction_waiter`.
 - Add `Slasher.remove_component_interaction_waiter`.
 
-#### Improvements
+### Improvements
 
 - Add `application_id` keyword to `Message.custom`.
 - Add `COMPONENT_LABEL_LENGTH_MAX`. (Gilgamesh#8939)
@@ -6165,7 +6171,7 @@ Add components.
 - Add `ComponentBase`, base class for `Component`-s for 3rd party support.
 - Add `InteractionResponseTypes.component`.
 
-#### Improvements
+### Improvements
 
 - Add `components` parameter to `Client.message_create`.
 - Add `components` parameter to `Client.message_edit`.
@@ -6235,7 +6241,7 @@ Add components.
 - Add `PaginationBase.is_active`. (Gilgamesh#8939)
 - Add `UserMenuFactory`, `UserMenuRunner`, `UserPagination`. (Gilgamesh#8939)
 
-#### Improvements
+### Improvements
 
 - Add `webhook` type assertion to `Client.webhook_message_create`.
 - Add `webhook` type assertion to `Client.webhook_message_edit`.
@@ -6315,7 +6321,7 @@ Add stage events and endpoints.
 ##### ext.patchouli
 - Add normal link graves.
 
-#### Improvements
+### Improvements
 
 - Add `ClientUserBase`. (base class for clients and users).
 - Add `ClientUserPBase`. (base class for clients and of users if presences are enabled).
@@ -6353,7 +6359,7 @@ Use `export` & `include`.
 
 - Add `Guild.nsfw`.
 
-#### Improvements
+### Improvements
 
 - Mark keyword only parameters as keyword only in docstrings as well. (Gilgamesh#8939)
 - `export` & `include`. (sleep-cult#3040)
@@ -6379,7 +6385,7 @@ Lazy choice definition.
 ##### ext.slash
 - Add lazy interaction choice definition. (Gilgamesh#8939)
 
-#### Improvements
+### Improvements
 
 - Move json conversion to backend.
 - Fix some spacing. (sleep-cult#3040)
@@ -6406,7 +6412,7 @@ Fix duplicable client connections.
 
 - Speed up `dict.get` by passing default value.
 
-#### Improvements
+### Improvements
 
 - `CLIENTS` now uses `dict` type instead of `ClientDictionary`.
 
@@ -6463,7 +6469,7 @@ Sync run-time added commands instantly.
 
 - Speed up multi client dispatch event parsers.
 
-#### Improvements
+### Improvements
 
 ##### ext.slash
 - Add sync-time slash command addition and removal detection and handling.

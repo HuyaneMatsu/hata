@@ -45,7 +45,7 @@ class CONVERSION_NAME(Conversion):
     
     # Serialization
     
-    serializer_key = 'name'
+    serializer_key = 'username'
     
     
     def serializer_optional(value):

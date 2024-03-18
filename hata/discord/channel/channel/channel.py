@@ -24,7 +24,7 @@ from ...user.user.matching import (
 from ...utils import DATETIME_FORMAT_CODE
 
 from ..channel_metadata import ChannelMetadataBase, ChannelMetadataGuildMainBase
-from ..forum_tag import create_forum_tag_from_id
+from ..forum_tag import create_partial_forum_tag_from_id
 from ..message_history import MessageHistory, MessageHistoryCollector, message_relative_index
 
 from .preinstanced import ChannelType
@@ -1772,7 +1772,7 @@ class Channel(DiscordEntity, immortal = True):
         if (applied_tag_ids is None):
             return None
         
-        return tuple(create_forum_tag_from_id(forum_tag_id) for forum_tag_id in applied_tag_ids)
+        return tuple(create_partial_forum_tag_from_id(forum_tag_id) for forum_tag_id in applied_tag_ids)
     
     
     def iter_applied_tag_ids(self):
@@ -1803,7 +1803,7 @@ class Channel(DiscordEntity, immortal = True):
         applied_tag_ids = self.applied_tag_ids
         if (applied_tag_ids is not None):
             for forum_tag_id in applied_tag_ids:
-                yield create_forum_tag_from_id(forum_tag_id)
+                yield create_partial_forum_tag_from_id(forum_tag_id)
     
     
     def iter_available_tags(self):

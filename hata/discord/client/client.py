@@ -5,7 +5,7 @@ from json import JSONDecodeError
 from math import inf
 
 from scarletio import (
-    CancelledError, CompoundMetaType, EventThread, Future, LOOP_TIME, Task, TaskGroup, copy_docs, export, from_json,
+    CancelledError, CompoundMetaType, EventThread, Future, LOOP_TIME, Task, copy_docs, export, from_json,
     methodize, run_coroutine, sleep, write_exception_async
 )
 

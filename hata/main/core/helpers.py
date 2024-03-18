@@ -3,7 +3,7 @@ __all__ = ()
 import sys
 from os import sep as PATH_SEPARATOR
 from os.path import (
-    basename as get_file_name, commonpath as get_common_path, isabs as is_absolute_path, split as split_path
+    basename as get_file_name, commonpath as _get_common_path, isabs as is_absolute_path, split as split_path
 )
 from sys import path as system_paths
 
@@ -78,6 +78,29 @@ def _render_parameters_into(into, parameters):
         continue
 
     return into
+
+
+def get_common_path(paths):
+    """
+    Returns the longest common path.
+    
+    Parameters
+    ----------
+    paths : `iterable<str>`
+        Paths.
+    
+    Returns
+    -------
+    sub_path : `str`
+    """
+    try:
+        return _get_common_path(paths)
+    except ValueError as e:
+        # Ignore if the paths are on a different drive lol.
+        if e.args and e.args[0] == 'Paths don\'t have the same drive':
+            return ''
+        
+        raise
 
 
 def normalize_executed_file(executed_file):

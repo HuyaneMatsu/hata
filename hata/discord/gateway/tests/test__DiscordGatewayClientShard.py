@@ -63,8 +63,8 @@ def test__DiscordGatewayClientShard__new():
     Tests whether ``DiscordGatewayClientShard.__new__`` works as intended.
     """
     client = Client(
-        'token_202301060002',
-        client_id = 202301060003,
+        'token_202401060002',
+        client_id = 202401060003,
     )
     
     shard_id = 2
@@ -86,8 +86,8 @@ def test__DiscordGatewayClientShard__repr():
     Tests whether ``DiscordGatewayClientShard.__repr__`` works as intended.
     """
     client = Client(
-        'token_202301060004',
-        client_id = 202301060005,
+        'token_202401060004',
+        client_id = 202401060005,
         name = 'satori',
     )
     
@@ -116,8 +116,8 @@ def test__DiscordGatewayClientShard__latency__no_kokoro():
     Case: without kokoro.
     """
     client = Client(
-        'token_202301060006',
-        client_id = 202301060007,
+        'token_202401060006',
+        client_id = 202401060007,
     )
     
     shard_id = 2
@@ -141,8 +141,8 @@ def test__DiscordGatewayClientShard__latency__with_kokoro():
     Case: with kokoro.
     """
     client = Client(
-        'token_202301060008',
-        client_id = 202301060009,
+        'token_202401060008',
+        client_id = 202401060009,
     )
     
     shard_id = 2
@@ -168,8 +168,8 @@ def test__DiscordGatewayClientShard__create_kokoro__starting():
     Case: Just starting.
     """
     client = Client(
-        'token_202301070000',
-        client_id = 202301070001,
+        'token_202401070000',
+        client_id = 202401070001,
     )
     
     shard_id = 2
@@ -191,8 +191,8 @@ def test__DiscordGatewayClientShard__create_kokoro__running():
     Case: Already running -> should reset.
     """
     client = Client(
-        'token_202301070002',
-        client_id = 202301070003,
+        'token_202401070002',
+        client_id = 202401070003,
     )
     
     shard_id = 2
@@ -221,8 +221,8 @@ async def test__DiscordGatewayClientShard__send_json__no_websocket():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301070004',
-        client_id = 202301070005,
+        'token_202401070004',
+        client_id = 202401070005,
     )
     
     shard_id = 2
@@ -248,8 +248,8 @@ async def test__DiscordGatewayClientShard__send_json__sending():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301070005',
-        client_id = 202301070006,
+        'token_202401070005',
+        client_id = 202401070006,
     )
     
     shard_id = 2
@@ -281,8 +281,8 @@ async def test__DiscordGatewayClientShard__resume():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301070007',
-        client_id = 202301070008,
+        'token_202401070007',
+        client_id = 202401070008,
     )
     
     shard_id = 2
@@ -332,8 +332,8 @@ async def test__DiscordGatewayClientShard__identify__no_activity_no_shard():
     status = Status.idle
     
     client = Client(
-        'token_202301070009',
-        client_id = 202301070010,
+        'token_202401070009',
+        client_id = 202401070010,
         shard_count = shard_count,
         status = status,
     )
@@ -393,8 +393,8 @@ async def test__DiscordGatewayClientShard__identify__with_activity_with_shard():
     activity = Activity('carting')
     
     client = Client(
-        'token_202301070011',
-        client_id = 202301070012,
+        'token_202401070011',
+        client_id = 202401070012,
         shard_count = shard_count,
         status = status,
         activity = activity,
@@ -447,8 +447,8 @@ def test__DiscordGatewayClientShard__clear_session():
     Tests whether ``DiscordGatewayClientShard._clear_session`` works as intended.
     """
     client = Client(
-        'token_202301070013',
-        client_id = 202301070014,
+        'token_202401070013',
+        client_id = 202401070014,
     )
     
     shard_id = 2
@@ -478,8 +478,8 @@ async def test__DiscordGatewayClientShard__terminate__no_websocket_no_kokoro():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301070015',
-        client_id = 202301070016,
+        'token_202401070015',
+        client_id = 202401070016,
     )
     
     shard_id = 2
@@ -502,8 +502,8 @@ async def test__DiscordGatewayClientShard__terminate__with_websocket_with_kokoro
     This function is a coroutine.
     """
     client = Client(
-        'token_202301070017',
-        client_id = 202301070018,
+        'token_202401070017',
+        client_id = 202401070018,
     )
     
     shard_id = 2
@@ -539,8 +539,8 @@ async def test__DiscordGatewayClientShard__close__no_websocket_no_kokoro():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301070019',
-        client_id = 202301070020,
+        'token_202401070019',
+        client_id = 202401070020,
     )
     
     shard_id = 2
@@ -563,8 +563,8 @@ async def test__DiscordGatewayClientShard__close__with_websocket_with_kokoro():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301070021',
-        client_id = 202301070022,
+        'token_202401070021',
+        client_id = 202401070022,
     )
     
     shard_id = 2
@@ -600,8 +600,8 @@ async def test__DiscordGatewayClientShard__abort__no_websocket_no_kokoro():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301110024',
-        client_id = 202301110025,
+        'token_202401110024',
+        client_id = 202401110025,
     )
     
     shard_id = 2
@@ -626,8 +626,8 @@ async def test__DiscordGatewayClientShard__abort__with_websocket_with_kokoro():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301110026',
-        client_id = 202301110027,
+        'token_202401110026',
+        client_id = 202401110027,
     )
     
     shard_id = 2
@@ -663,8 +663,8 @@ async def test__DiscordGatewayClientShard__send_as_json__no_websocket():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301070023',
-        client_id = 202301070024,
+        'token_202401070023',
+        client_id = 202401070024,
     )
     
     shard_id = 2
@@ -690,8 +690,8 @@ async def test__DiscordGatewayClientShard__send_as_json__sending():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301070025',
-        client_id = 202301070026,
+        'token_202401070025',
+        client_id = 202401070026,
     )
     
     shard_id = 2
@@ -723,8 +723,8 @@ async def test__DiscordGatewayClientShard__beat():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301070027',
-        client_id = 202301070028,
+        'token_202401070027',
+        client_id = 202401070028,
     )
     
     shard_id = 2
@@ -762,14 +762,14 @@ async def test__DiscordGatewayClientShard__change_voice_state():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301070029',
-        client_id = 202301070030,
+        'token_202401070029',
+        client_id = 202401070030,
     )
     
     shard_id = 2
     
-    channel_id = 202301070031
-    guild_id = 202301070032
+    channel_id = 202401070031
+    guild_id = 202401070032
     
     self_deaf = True
     self_mute = True
@@ -811,8 +811,8 @@ async def test__DiscordGatewayClientShard__handle_operation_dispatch__unknown_di
     This function is a coroutine.
     """
     client = Client(
-        'token_202301080000',
-        client_id = 202301080001,
+        'token_202401080000',
+        client_id = 202401080001,
     )
     
     shard_id = 2
@@ -862,8 +862,8 @@ async def test__DiscordGatewayClientShard__handle_operation_dispatch__no_data():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301080002',
-        client_id = 202301080003,
+        'token_202401080002',
+        client_id = 202401080003,
     )
     
     shard_id = 2
@@ -922,8 +922,8 @@ async def test__DiscordGatewayClientShard__handle_operation_dispatch__event_pars
     This function is a coroutine.
     """
     client = Client(
-        'token_202301080004',
-        client_id = 202301080005,
+        'token_202401080004',
+        client_id = 202401080005,
     )
     
     shard_id = 2
@@ -986,8 +986,8 @@ async def test__DiscordGatewayClientShard__handle_operation_dispatch__event_pars
     This function is a coroutine.
     """
     client = Client(
-        'token_202301080006',
-        client_id = 202301080007,
+        'token_202401080006',
+        client_id = 202401080007,
     )
     
     shard_id = 2
@@ -1052,8 +1052,8 @@ async def test__DiscordGatewayClientShard__handle_operation_dispatch__ready_even
     This function is a coroutine.
     """
     client = Client(
-        'token_202301080008',
-        client_id = 202301080009,
+        'token_202401080008',
+        client_id = 202401080009,
     )
     
     shard_id = 2
@@ -1108,8 +1108,8 @@ async def test__DiscordGatewayClientShard__handle_operation_hello__with_kokoro()
     This function is a coroutine.
     """
     client = Client(
-        'token_202301080010',
-        client_id = 202301080011,
+        'token_202401080010',
+        client_id = 202401080011,
     )
     
     shard_id = 2
@@ -1118,7 +1118,7 @@ async def test__DiscordGatewayClientShard__handle_operation_hello__with_kokoro()
     
     message = {
         'd': {
-            'heartbeat_interval': heartbeat_interval * 1000.0,
+            'heartbeat_interval': int(heartbeat_interval * 1000.0),
         },
     }
     
@@ -1162,8 +1162,8 @@ async def test__DiscordGatewayClientShard__handle_operation_hello__with_kokoro_n
     This function is a coroutine.
     """
     client = Client(
-        'token_202301080010',
-        client_id = 202301080011,
+        'token_202401080010',
+        client_id = 202401080011,
     )
     
     shard_id = 2
@@ -1213,8 +1213,8 @@ async def test__DiscordGatewayClientShard__handle_operation_hello__no_kokoro():
     This function is a coroutine.
     """
     client = Client(
-        'token_202301280000',
-        client_id = 202301280001,
+        'token_202401280000',
+        client_id = 202401280001,
     )
     
     shard_id = 2
@@ -1270,8 +1270,8 @@ async def test__DiscordGatewayClientShard__handle_operation_heartbeat_acknowledg
     This function is a coroutine.
     """
     client = Client(
-        'token_202301080012',
-        client_id = 202301080013,
+        'token_202401080012',
+        client_id = 202401080013,
     )
     
     shard_id = 2
@@ -1309,8 +1309,8 @@ async def test__DiscordGatewayClientShard__handle_operation_heartbeat_acknowledg
     This function is a coroutine.
     """
     client = Client(
-        'token_202301280002',
-        client_id = 202301280003,
+        'token_202401280002',
+        client_id = 202401280003,
     )
     
     shard_id = 2
@@ -1348,8 +1348,8 @@ async def test__DiscordGatewayClientShard__handle_operation_heartbeat__with_koko
     This function is a coroutine.
     """
     client = Client(
-        'token_202301080014',
-        client_id = 202301080015,
+        'token_202401080014',
+        client_id = 202401080015,
     )
     
     shard_id = 2
@@ -1398,8 +1398,8 @@ async def test__DiscordGatewayClientShard__handle_operation_heartbeat__no_kokoro
     This function is a coroutine.
     """
     client = Client(
-        'token_202301280004',
-        client_id = 202301280005,
+        'token_202401280004',
+        client_id = 202401280005,
     )
     
     shard_id = 2
@@ -1438,8 +1438,8 @@ async def test__DiscordGatewayClientShard__handle_operation_reconnect__default()
     This function is a coroutine.
     """
     client = Client(
-        'token_202301080016',
-        client_id = 202301080017,
+        'token_202401080016',
+        client_id = 202401080017,
     )
     
     shard_id = 2
@@ -1480,8 +1480,8 @@ async def test__DiscordGatewayClientShard__handle_operation_invalidate_session__
     This function is a coroutine.
     """
     client = Client(
-        'token_202301080018',
-        client_id = 202301080019,
+        'token_202401080018',
+        client_id = 202401080019,
     )
     
     shard_id = 2
@@ -1539,8 +1539,8 @@ async def test__DiscordGatewayClientShard__handle_operation_invalidate_session__
     This function is a coroutine.
     """
     client = Client(
-        'token_202301080020',
-        client_id = 202301080021,
+        'token_202401080020',
+        client_id = 202401080021,
     )
     
     shard_id = 2
@@ -1598,8 +1598,8 @@ async def test__DiscordGatewayClientShard__handle_received_operation__unknown_op
     This function is a coroutine.
     """
     client = Client(
-        'token_202301080022',
-        client_id = 202301080023,
+        'token_202401080022',
+        client_id = 202401080023,
     )
     
     shard_id = 2
@@ -1654,8 +1654,8 @@ async def test__DiscordGatewayClientShard__handle_received_operation__known_oper
     This function is a coroutine.
     """
     client = Client(
-        'token_202301130000',
-        client_id = 202301130001,
+        'token_202401130000',
+        client_id = 202401130001,
     )
     
     shard_id = 2
@@ -1709,8 +1709,8 @@ async def test__DiscordGatewayClientShard__poll_and_handle_received_operation__n
     This function is a coroutine.
     """
     client = Client(
-        'token_202301130002',
-        client_id = 202301130003,
+        'token_202401130002',
+        client_id = 202401130003,
     )
     
     shard_id = 2
@@ -1737,8 +1737,8 @@ async def test__DiscordGatewayClientShard__poll_and_handle_received_operation__c
     This function is a coroutine.
     """
     client = Client(
-        'token_202301130004',
-        client_id = 202301130005,
+        'token_202401130004',
+        client_id = 202401130005,
     )
     
     shard_id = 2
@@ -1773,8 +1773,8 @@ async def test__DiscordGatewayClientShard__poll_and_handle_received_operation__c
     This function is a coroutine.
     """
     client = Client(
-        'token_202301130006',
-        client_id = 202301130007,
+        'token_202401130006',
+        client_id = 202401130007,
     )
     
     shard_id = 2
@@ -1809,8 +1809,8 @@ async def test__DiscordGatewayClientShard__poll_and_handle_received_operation__z
     This function is a coroutine.
     """
     client = Client(
-        'token_202301130008',
-        client_id = 202301130009,
+        'token_202401130008',
+        client_id = 202401130009,
     )
     
     shard_id = 2
@@ -1847,8 +1847,8 @@ async def test__DiscordGatewayClientShard__poll_and_handle_received_operation__h
     This function is a coroutine.
     """
     client = Client(
-        'token_202301130010',
-        client_id = 202301130011,
+        'token_202401130010',
+        client_id = 202401130011,
     )
     
     shard_id = 2
@@ -1897,10 +1897,23 @@ async def test__DiscordGatewayClientShard__connect__unexpected_closes_with_resum
     
     This function is a coroutine.
     """
+    heartbeat_interval = 40.0
+    
+    message_0 = {
+        'op': GATEWAY_OPERATION_CLIENT_HELLO,
+        'd': {
+            'heartbeat_interval': int(heartbeat_interval * 1000.0),
+        },
+    }
+    
+    compressor = create_zlib_compressor()
+    data_0 = compressor.compress(to_json(message_0).encode()) + compressor.flush(Z_SYNC_FLUSH)
+    
     websocket = await TestWebSocketClient(
         KOKORO,
         '',
         in_operations = [
+            ('receive', False, data_0),
             ('ensure_open', True, ConnectionClosed(1000, None)),
         ],
     )
@@ -1908,8 +1921,8 @@ async def test__DiscordGatewayClientShard__connect__unexpected_closes_with_resum
     http = TestHTTPClient(KOKORO, out_websocket = websocket)
     
     client = Client(
-        'token_202301130012',
-        client_id = 202301130013,
+        'token_202401130012',
+        client_id = 202401130013,
         http = http,
     )
     
@@ -1933,9 +1946,18 @@ async def test__DiscordGatewayClientShard__connect__unexpected_closes_with_resum
         vampytest.assert_is_not(match, None)
         vampytest.assert_eq(match.group(1), resume_gateway_url)
         
-        vampytest.assert_eq(len(websocket.out_operations), 1)
-        operation, data = websocket.out_operations[0]
+        vampytest.assert_eq(len(websocket.out_operations), 2)
         
+        operation, data = websocket.out_operations[0]
+        vampytest.assert_eq(operation, 'send')
+        vampytest.assert_eq(
+            from_json(data),
+            {   
+                'op': GATEWAY_OPERATION_CLIENT_HEARTBEAT,
+                'd': sequence,
+            },
+        )
+        operation, data = websocket.out_operations[1]
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(
             from_json(data),
@@ -1969,16 +1991,31 @@ async def test__DiscordGatewayClientShard__connect__success_default():
     
     This function is a coroutine.
     """
+    heartbeat_interval = 40.0
+    
+    message_0 = {
+        'op': GATEWAY_OPERATION_CLIENT_HELLO,
+        'd': {
+            'heartbeat_interval': int(heartbeat_interval * 1000.0),
+        },
+    }
+    
+    compressor = create_zlib_compressor()
+    data_0 = compressor.compress(to_json(message_0).encode()) + compressor.flush(Z_SYNC_FLUSH)
+    
     websocket = await TestWebSocketClient(
         KOKORO,
         '',
+        in_operations = [
+            ('receive', False, data_0),
+        ],
     )
 
     http = TestHTTPClient(KOKORO, out_websocket = websocket)
     
     client = Client(
-        'token_202301130014',
-        client_id = 202301130015,
+        'token_202401130014',
+        client_id = 202401130015,
         http = http,
     )
     
@@ -1989,6 +2026,9 @@ async def test__DiscordGatewayClientShard__connect__success_default():
         
         output = await gateway._connect(False)
         
+        await skip_ready_cycle()
+        await skip_ready_cycle()
+        
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
         
@@ -1996,9 +2036,17 @@ async def test__DiscordGatewayClientShard__connect__success_default():
         vampytest.assert_is_not(match, None)
         vampytest.assert_eq(match.group(1), 'orin')
         
-        vampytest.assert_eq(len(websocket.out_operations), 1)
+        vampytest.assert_eq(len(websocket.out_operations), 2)
         operation, data = websocket.out_operations[0]
+        vampytest.assert_eq(
+            from_json(data),
+            {   
+                'op': GATEWAY_OPERATION_CLIENT_HEARTBEAT,
+                'd': None,
+            },
+        )
         
+        operation, data = websocket.out_operations[1]
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(
             from_json(data),
@@ -2063,8 +2111,8 @@ async def test__DiscordGatewayClientShard__keep_polling_and_handling():
     )
     
     client = Client(
-        'token_202301130016',
-        client_id = 202301130017,
+        'token_202401130016',
+        client_id = 202401130017,
     )
     
     shard_id = 2
@@ -2104,23 +2152,36 @@ async def test__DiscordGatewayClientShard__run__default():
     """
     Tests whether ``DiscordGatewayClientShard.run`` works as intended.
     
-    Case: Only testing a simple case. Feeling tired of writing more tests for this type.
+    Case: Only testing a simple case. Feeling tired of writing so much.
     """
+    heartbeat_interval = 40.0
+    
+    message_0 = {
+        'op': GATEWAY_OPERATION_CLIENT_HELLO,
+        'd': {
+            'heartbeat_interval': int(heartbeat_interval * 1000.0),
+        },
+    }
+    
+    compressor = create_zlib_compressor()
+    data_0 = compressor.compress(to_json(message_0).encode()) + compressor.flush(Z_SYNC_FLUSH)
+    
     exception = RuntimeError('hiss')
     
     websocket = await TestWebSocketClient(
         KOKORO,
         '',
         in_operations = [
-            ('receive', True, exception)
+            ('receive', False, data_0),
+            ('receive', True, exception),
         ],
     )
     
     http = TestHTTPClient(KOKORO, out_websocket = websocket)
     
     client = Client(
-        'token_202301130018',
-        client_id = 202301130019,
+        'token_202401130018',
+        client_id = 202401130019,
         http = http,
     )
     # yep, we are running.

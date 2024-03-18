@@ -74,6 +74,7 @@ CHANNEL_PRIVATE_GROUP_FIELD_CONVERTERS = {
 
 
 CHANNEL_GUILD_THREAD_FIELD_CONVERTERS = {
+    'applied_tags': (validate_applied_tag_ids, put_applied_tag_ids_into),
     'applied_tag_ids': (validate_applied_tag_ids, put_applied_tag_ids_into),
     'auto_archive_after': (
         validate_auto_archive_after, partial_func(put_auto_archive_after_into, flatten_thread_metadata = True)

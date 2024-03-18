@@ -29,7 +29,7 @@ def test__InteractionEvent__is_unanswered():
     vampytest.assert_true(interaction_event.is_unanswered())
     
     interaction_event = InteractionEvent()
-    interaction_event._response_flag |= RESPONSE_FLAG_ACKNOWLEDGING
+    interaction_event._response_flags |= RESPONSE_FLAG_ACKNOWLEDGING
     vampytest.assert_false(interaction_event.is_unanswered())
 
 
@@ -41,7 +41,7 @@ def test__InteractionEvent__is_acknowledging():
     vampytest.assert_false(interaction_event.is_acknowledging())
     
     interaction_event = InteractionEvent()
-    interaction_event._response_flag |= RESPONSE_FLAG_ACKNOWLEDGING
+    interaction_event._response_flags |= RESPONSE_FLAG_ACKNOWLEDGING
     vampytest.assert_true(interaction_event.is_acknowledging())
 
 
@@ -53,7 +53,7 @@ def test__InteractionEvent__is_acknowledged():
     vampytest.assert_false(interaction_event.is_acknowledged())
     
     interaction_event = InteractionEvent()
-    interaction_event._response_flag |= RESPONSE_FLAG_ACKNOWLEDGED
+    interaction_event._response_flags |= RESPONSE_FLAG_ACKNOWLEDGED
     vampytest.assert_true(interaction_event.is_acknowledged())
 
 
@@ -65,11 +65,11 @@ def test__InteractionEvent__is_deferred():
     vampytest.assert_false(interaction_event.is_deferred())
     
     interaction_event = InteractionEvent()
-    interaction_event._response_flag |= RESPONSE_FLAG_DEFERRED
+    interaction_event._response_flags |= RESPONSE_FLAG_DEFERRED
     vampytest.assert_true(interaction_event.is_deferred())
 
     interaction_event = InteractionEvent()
-    interaction_event._response_flag |= RESPONSE_FLAG_DEFERRED | RESPONSE_FLAG_RESPONDED
+    interaction_event._response_flags |= RESPONSE_FLAG_DEFERRED | RESPONSE_FLAG_RESPONDED
     vampytest.assert_false(interaction_event.is_deferred())
 
 
@@ -81,7 +81,7 @@ def test__InteractionEvent__is_responding():
     vampytest.assert_false(interaction_event.is_responding())
     
     interaction_event = InteractionEvent()
-    interaction_event._response_flag |= RESPONSE_FLAG_RESPONDING
+    interaction_event._response_flags |= RESPONSE_FLAG_RESPONDING
     vampytest.assert_true(interaction_event.is_responding())
 
 
@@ -93,7 +93,7 @@ def test__InteractionEvent__is_responded():
     vampytest.assert_false(interaction_event.is_responded())
     
     interaction_event = InteractionEvent()
-    interaction_event._response_flag |= RESPONSE_FLAG_RESPONDED
+    interaction_event._response_flags |= RESPONSE_FLAG_RESPONDED
     vampytest.assert_true(interaction_event.is_responded())
 
 

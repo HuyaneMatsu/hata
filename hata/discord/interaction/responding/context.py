@@ -146,7 +146,7 @@ class InteractionResponseContext:
         interaction_event = self.interaction_event
         await interaction_event._wait_for_async_task_completion()
         
-        response_flag = interaction_event._response_flag
+        response_flag = interaction_event._response_flags
         
         if self.deferring:
             if not (response_flag & RESPONSE_FLAG_ACKNOWLEDGING_OR_ACKNOWLEDGED):
@@ -155,23 +155,23 @@ class InteractionResponseContext:
             if (not response_flag & RESPONSE_FLAG_RESPONDING_OR_RESPONDED):
                 response_flag |= RESPONSE_FLAG_RESPONDING
         
-        interaction_event._response_flag = response_flag
+        interaction_event._response_flags = response_flag
         
         return self
     
     
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exception_type, exception_val, exception_tb):
         """
         Exits the context manager, marking the interaction event as deferred or responded if no exception occurred.
         
         This method is a coroutine.
         """
         interaction_event = self.interaction_event
-        response_flag = interaction_event._response_flag
-        if exc_type is None:
+        response_flag = interaction_event._response_flags
+        if exception_type is None:
             if self.ephemeral:
                 if not response_flag & RESPONSE_FLAG_ACKNOWLEDGED:
-                    response_flag ^= RESPONSE_FLAG_EPHEMERAL
+                    response_flag |= RESPONSE_FLAG_EPHEMERAL
             
             if self.deferring:
                 if response_flag & RESPONSE_FLAG_DEFERRING:
@@ -193,5 +193,5 @@ class InteractionResponseContext:
                 if response_flag & RESPONSE_FLAG_RESPONDING:
                     response_flag ^= RESPONSE_FLAG_RESPONDING
         
-        interaction_event._response_flag = response_flag
+        interaction_event._response_flags = response_flag
         return False

@@ -1,3 +1,38 @@
+## 1.3.51 *\[2024-03-18\]*
+
+#### Improvements
+
+- Add `Locale.spanish_la`.
+- Add `create_partial_sticker_from_id`.
+- `DiscordException.status` is now cached (to enable modifying it).
+- `DiscordException.retry_after` is now cached (to enable modifying it).
+- `DiscordException.code` now supports setting & deleting (resetting).
+- `DiscordException.debug_info` now supports setting & deleting (resetting).
+- `DiscordException.errors` now supports setting & deleting (resetting).
+- `DiscordException.request_info` now supports setting & deleting (resetting).
+- `DiscordException.message` now supports setting & deleting (resetting).
+- `DiscordException.response` now can be `None` (to enable more relaxed constructing).
+- `Client.webhook_message_create` now creates a thread channel as would been intended.
+    Also stores the created message accordingly.
+
+### Bug fixes
+
+- `AllowedMentionProxy.from_data` parsed allowed role ids always as empty.
+- `AllowedMentionProxy.to_data` did not handle nothing is allowed case correctly.
+- `AllowedMentionProxy.__or__` handled `._allow_replied_user` cases incorrectly.
+- `AllowedMentionProxy.__sub__` handled `._allow_replied_user` cases incorrectly.
+- `AllowedMentionProxy.__and__` handled `._allowed_role_ids` cases incorrectly.
+- `AllowedMentionProxy.__and__` handled `._allowed_user_ids` cases incorrectly.
+- `AllowedMentionProxy.__sub__` handled `._allowed_role_ids` cases incorrectly.
+- `AllowedMentionProxy.__sub__` handled `._allowed_user_ids` cases incorrectly.
+- `AllowedMentionProxy.allowed_users.fset` did not accept standalone user instance as expected.
+- `normalize_executed_file` could raise on windows. (al_loiz_icu)
+- `Client.guild_create` required `afk_timeout` parameter as non-default or else it raised. (tari._.)
+
+### Renames, Deprecations & Removals
+
+- Rename `create_forum_tag_from_id` to `create_partial_forum_tag_from_id`.
+
 ## 1.3.50 *\[2024-02-03\]*
 
 #### Improvements

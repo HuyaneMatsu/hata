@@ -1,29 +1,45 @@
 __all__ = ()
 
 from scarletio import Compound, set_docs
+from scarletio.web_common import FormData
 
 from ....env import API_VERSION
 
-from ...allowed_mentions import parse_allowed_mentions
 from ...bases import maybe_snowflake, maybe_snowflake_pair
+from ...builder.serialization import create_serializer
+from ...builder.serialization_configuration import SerializationConfiguration
 from ...channel import Channel, ChannelType, create_partial_channel_from_id
 from ...channel.channel.utils import CHANNEL_GUILD_THREAD_FIELD_CONVERTERS
 from ...core import CHANNELS
 from ...http import DiscordApiClient
-from ...message import Message, MessageFlag
-from ...payload_building import build_create_payload
-from ...sticker import Sticker
+from ...message import Message
+from ...message.message_builder import MessageBuilderForumThreadCreate
+from ...payload_building import add_payload_fields_from_keyword_parameters, build_create_payload
 from ...user import ClientUserBase, create_partial_user_from_id, create_user_from_thread_user_data, thread_user_create
 
 from ..functionality_helpers import request_channel_thread_channels
 from ..request_helpers import (
-    add_file_to_message_data, get_channel_and_id, get_channel_id, get_components_data, get_guild_id,
-    get_channel_guild_id_and_id, get_user_id, validate_content_and_embed,
+    get_channel_and_id, get_channel_id, get_guild_id, get_channel_guild_id_and_id, get_user_id,
 )
 
 
-MESSAGE_FLAG_VALUE_SILENT = MessageFlag().update_by_keys(silent = True)
-MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed = True)
+MESSAGE_SERIALIZER_FORUM_THREAD_CREATE = create_serializer(
+    MessageBuilderForumThreadCreate,
+    SerializationConfiguration(
+        [
+            MessageBuilderForumThreadCreate.allowed_mentions,
+            MessageBuilderForumThreadCreate.attachments,
+            MessageBuilderForumThreadCreate.components,
+            MessageBuilderForumThreadCreate.content,
+            MessageBuilderForumThreadCreate.embeds,
+            MessageBuilderForumThreadCreate.flags,
+            MessageBuilderForumThreadCreate.nonce,
+            MessageBuilderForumThreadCreate.sticker_ids,
+            MessageBuilderForumThreadCreate.tts,
+        ],
+        False,
+    )
+)
 
 
 class ClientCompoundThreadEndpoints(Compound):
@@ -109,8 +125,11 @@ class ClientCompoundThreadEndpoints(Compound):
         
         Other Parameters
         ----------------
-        applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
-             The tags' identifier which have been applied to the thread. Applicable for threads of a forum.
+        applied_tag_ids : `None`, `(list | tuple)<int | ForumTag>`, `int`, `ForumTag`, Optional (Keyword only)
+             The tags' identifier which have been applied to the thread.
+        
+        applied_tags : `None`, `(list | tuple)<int | ForumTag>`, `int`, `ForumTag`, Optional (Keyword only)
+            Alternative for `applied_tag_ids`.
         
         auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
@@ -214,21 +233,7 @@ class ClientCompoundThreadEndpoints(Compound):
     
     
     async def forum_thread_create(
-        self,
-        channel_forum,
-        channel_template = None,
-        content = None,
-        *,
-        allowed_mentions = ...,
-        components = None,
-        embed = None,
-        file = None,
-        nonce = None,
-        silent = False,
-        sticker = None,
-        suppress_embeds = False,
-        tts = False,
-        **keyword_parameters,
+        self, channel_forum, channel_template = None, *positional_parameters, **keyword_parameters,
     ):
         """
         Creates and thread at the given `channel` with the given message fields. If there is nothing to send will
@@ -244,59 +249,51 @@ class ClientCompoundThreadEndpoints(Compound):
         channel_template : `None`, ``Channel`` = `None`, Optional
             (Thread) channel entity to use as a template.
         
-        content : `None`, `str`, ``Embed``, `object` = `None`, Optional
-            The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``Embed`` is given, then will be casted to string.
-            
-            If given as ``Embed``, then is sent as the message's embed.
-        
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
-                , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
-        
-        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
-                ``Component``) = `None`, Optional (Keyword only)
-            Components attached to the message.
-            
-            > `components` do not count towards having any content in the message.
-        
-        embed : ``Embed``, `list` of ``Embed`` = `None`, Optional (Keyword only)
-            The embedded content of the message.
-            
-            If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
-        
-        file : `None`, `object` = `None`, Optional (Keyword only)
-            A file or files to send. Check ``create_file_form`` for details.
-        
-        nonce : `None`, `str` = `None`, Optional (Keyword only)
-            Used for optimistic message sending. Will shop up at the message's data.
-        
-        silent : `bool` = `False`, Optional (Keyword only)
-            Whether the message should be delivered silently.
-        
-        sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`) = `None` \
-                , Optional (Keyword only)
-            Sticker or stickers to send within the message.
-        
-        suppress_embeds : `bool` = `False`, Optional (Keyword only)
-            Whether the message's embeds should be suppressed initially.
-        
-        tts : `bool` = `False`, Optional (Keyword only)
-            Whether the message is text-to-speech.
+        *positional_parameters : Positional parameters
+            Additional parameters to create the message with.
         
         **keyword_parameters : Keyword parameters
-            Additional keyword parameters to create the (thread) channel with.
+            Additional parameters to create the message with.
         
         Other Parameters
         ----------------
-        applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
-             The tags' identifier which have been applied to the thread. Applicable for threads of a forum-like channel.
+        allowed_mentions : `None`,  ``AllowedMentionProxy``, `str`, ``UserBase``, ``Role``, `list` of \
+                (`str`, ``UserBase``, ``Role`` ) , Optional
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
+            for details.
+        
+        applied_tag_ids : `None`, `(list | tuple)<int | ForumTag>`, `int`, `ForumTag`, Optional (Keyword only)
+             The tags' identifier which have been applied to the thread.
+        
+        applied_tags : `None`, `(list | tuple)<int | ForumTag>`, `int`, `ForumTag`, Optional (Keyword only)
+            Alternative for `applied_tag_ids`.
+        
+        attachments : `None`, `object`, Optional (Keyword only)
+            Attachments to send.
         
         auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
         
+        components : `None`, ``Component``, `(tuple | list)<Component, (tuple | list)<Component>>`
+            Components attached to the message.
+        
+        content : `None`, `str`, Optional
+            The message's content if given.
+        
+        embed : `None`, `Embed`, Optional
+            Alternative for `embeds`.
+        
+        embeds : `None`, `list<Embed>`, Optional
+            The new embedded content of the message.
+        
+        file : `None`, `object`, Optional (Keyword only)
+            Alternative for `attachments`.
+        
+        files : `None`, `object`, Optional (Keyword only)
+            Alternative for `attachments`.
+        
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)
-            The channel's flags.
+            The channel's flags. Due to name collision, `message.flags` is not directly supported.
         
         invitable : `bool`, Optional (Keyword only)
             Whether non-moderators can invite other non-moderators to the threads.
@@ -304,11 +301,32 @@ class ClientCompoundThreadEndpoints(Compound):
         name : `str`, Optional (Keyword only)
             The channel's name.
         
+        nonce : `None`, `str`, Optional (Keyword only)
+            Used for optimistic message sending.
+        
         open_ : `bool`, Optional (Keyword only)
-            Whether the thread channel is open.
+            Whether the thread is open.
+        
+        silent : `bool` = `False`, Optional (Keyword only)
+            Whether the message should be delivered silently.
         
         slowmode : `int`, Optional (Keyword only)
             The channel's slowmode.
+        
+        sticker : `None`, ``Sticker``, Optional
+            Alternative for `sticker_ids`.
+        
+        sticker_ids : `None`, `list<int>`, Optional (Keyword only)
+            Sticker(s) to send within the message.
+        
+        stickers : `None`, `list<int | Sticker>`, Optional
+            Alternative for `sticker_ids`.
+        
+        suppress_embeds : `bool` = `False`, Optional (Keyword only)
+            Whether the message's embeds should be suppressed initially.
+        
+        tts : `bool` = `False`, Optional (Keyword only)
+            Whether the message is text-to-speech.
         
         Returns
         -------
@@ -321,8 +339,6 @@ class ClientCompoundThreadEndpoints(Compound):
         ------
         TypeError
             - If a parameter's type is incorrect.
-        ValueError
-            - If a parameter's value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
@@ -335,131 +351,44 @@ class ClientCompoundThreadEndpoints(Compound):
         """
         channel, channel_id = get_channel_and_id(channel_forum, Channel.is_in_group_forum)
         
-        content, embed = validate_content_and_embed(content, embed, False)
-        
-        # Sticker check order:
-        # 1.: None -> None
-        # 2.: Sticker -> [sticker.id]
-        # 3.: int (str) -> [sticker]
-        # 4.: (list, tuple) of (Sticker, int (str)) -> [sticker.id / sticker, ...] / None
-        # 5.: raise
-        
-        if sticker is None:
-            sticker_ids = None
+        # channel_data
+        if (channel_template is None):
+            data = {}
         else:
-            sticker_ids = []
-            if isinstance(sticker, Sticker):
-                sticker_id = sticker.id
-                sticker_ids.append(sticker_id)
-            else:
-                sticker_id = maybe_snowflake(sticker)
-                if sticker_id is None:
-                    if isinstance(sticker, (list, tuple)):
-                        for sticker_element in sticker:
-                            if isinstance(sticker_element, Sticker):
-                                sticker_id = sticker_element.id
-                            else:
-                                sticker_id = maybe_snowflake(sticker_element)
-                                if sticker_id is None:
-                                    raise TypeError(
-                                        f'`sticker` can contain only `{Sticker.__name__}`, `int` elements, '
-                                        f'got {sticker_element.__class__.__name__}; {sticker_element!r}; '
-                                        f'sticker={sticker!r}.'
-                                    )
-                            
-                            sticker_ids.append(sticker_id)
-                        
-                        if not sticker_ids:
-                            sticker_ids = None
-                    else:
-                        raise TypeError(
-                            f'`sticker` can be `None`, `{Sticker.__name__}`, `int`, '
-                            f'(`list`, `tuple`) of (`{Sticker.__name__}`, `int`), got '
-                            f'{sticker.__class__.__name__}; {sticker!r}.'
-                        )
-                else:
-                    sticker_ids.append(sticker_id)
+            data = channel_template.to_data(defaults = False)
         
-        components = get_components_data(components, False)
-        
-        if __debug__:
-            
-            if (nonce is not None) and (not isinstance(nonce, str)):
-                raise AssertionError(
-                    f'`nonce` can be `None`, `str`, got {nonce.__class__.__name__}; {nonce!r}.'
-                )
-            
-            if not isinstance(silent, bool):
-                raise AssertionError(
-                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
-                )
-            
-            if not isinstance(suppress_embeds, bool):
-                raise AssertionError(
-                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
-                )
-        
-            if not isinstance(tts, bool):
-                raise AssertionError(
-                    f'`tts` can be `bool`, got {tts.__class__.__name__}, {tts!r}.'
-                )
-        
-        # Build payload
-        message_data = {}
-        contains_content = False
-        
-        if (content is not None):
-            message_data['content'] = content
-            contains_content = True
-        
-        if (embed is not None):
-            message_data['embeds'] = [embed.to_data() for embed in embed]
-            contains_content = True
-        
-        if (sticker_ids is not None):
-            message_data['sticker_ids'] = sticker_ids
-            contains_content = True
-        
-        if (components is not None):
-            message_data['components'] = components
-        
-        if tts:
-            message_data['tts'] = True
-        
-        if (nonce is not None):
-            message_data['nonce'] = nonce
-        
-        if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
-        
-        flags = (
-            (MESSAGE_FLAG_VALUE_SILENT if silent else 0) |
-            (MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS if suppress_embeds else 0)
+        keyword_parameters = add_payload_fields_from_keyword_parameters(
+            CHANNEL_GUILD_THREAD_FIELD_CONVERTERS, keyword_parameters, data, False, raise_unused = False,
         )
-        if flags:
-            message_data['flags'] = flags
         
-        message_data = add_file_to_message_data(message_data, file, contains_content, False)
-        if message_data is None:
+        if keyword_parameters is None:
+            keyword_parameters = {}
+        
+        message_data = MESSAGE_SERIALIZER_FORUM_THREAD_CREATE(positional_parameters, keyword_parameters)
+        if not message_data:
             return None, None
         
-        data = build_create_payload(
-            channel_template, CHANNEL_GUILD_THREAD_FIELD_CONVERTERS, keyword_parameters
-        )
-        
-        data['message'] = message_data
+        # Nest `message_data` under `data['message']`
+        if isinstance(message_data, FormData):
+            field = message_data.fields[0]
+            data['message'] = field.value
+            field.value = data
+            data = message_data
+        else:
+            data['message'] = message_data
         
         channel_data = await self.api.thread_create(channel_id, data)
         
         if channel is None:
             guild_id = channel_data.get('guild_id', None)
-            if (guild_id is not None):
+            if (guild_id is None):
+                guild_id = 0
+            else:
                 guild_id = int(guild_id)
         else:
             guild_id = channel.guild_id
         
         thread_channel = Channel.from_data(channel_data, self, guild_id)
-        
         message_data = channel_data.get('message', None)
         if (message_data is None):
             message = None

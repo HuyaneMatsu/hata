@@ -11,27 +11,27 @@ from ..invite import _get_preferred_channel_for_invite, _iter_channels_in_prefer
 
 
 def _iter_options__iter_channels_in_preference_order():
-    guild_id = 202309200008
-    channel_id_category = 202309200007
+    guild_id = 202409200008
+    channel_id_category = 202409200007
     
     channel_0 = Channel.precreate(
-        202309200002, channel_type = ChannelType.guild_text, position = 2, guild_id = guild_id
+        202409200002, channel_type = ChannelType.guild_text, position = 2, guild_id = guild_id
     )
     channel_1 = Channel.precreate(
-        202309200003, channel_type = ChannelType.guild_text, position = 3, guild_id = guild_id
+        202409200003, channel_type = ChannelType.guild_text, position = 3, guild_id = guild_id
     )
     channel_2 = Channel.precreate(
-        202309200004, channel_type = ChannelType.guild_text, position = 4, guild_id = guild_id
+        202409200004, channel_type = ChannelType.guild_text, position = 4, guild_id = guild_id
     )
     channel_3 = Channel.precreate(
-        202309200005,
+        202409200005,
         channel_type = ChannelType.guild_text,
         parent_id = channel_id_category,
         position = 1,
         guild_id = guild_id,
     )
     channel_4 = Channel.precreate(
-        202309200006,
+        202409200006,
         channel_type = ChannelType.guild_voice,
         parent_id = channel_id_category,
         position = 2,
@@ -92,12 +92,12 @@ def test__get_preferred_channel_for_invite():
     """
     tests whether ``_get_preferred_channel_for_invite`` works as intended.
     """
-    guild_id = 202309200012
-    client_id = 202309200013
+    guild_id = 202409200012
+    client_id = 202409200013
     
-    channel_0 = Channel.precreate(202309200009, channel_type = ChannelType.guild_text, guild_id = guild_id)
+    channel_0 = Channel.precreate(202409200009, channel_type = ChannelType.guild_text, guild_id = guild_id)
     channel_1 = Channel.precreate(
-        202309200010,
+        202409200010,
         channel_type = ChannelType.guild_text,
         guild_id = guild_id,
         permission_overwrites = [
@@ -108,7 +108,7 @@ def test__get_preferred_channel_for_invite():
             ),
         ],
     )
-    channel_2 = Channel.precreate(202309200011, channel_type = ChannelType.guild_text, guild_id = guild_id)
+    channel_2 = Channel.precreate(202409200011, channel_type = ChannelType.guild_text, guild_id = guild_id)
     
     guild = Guild.precreate(guild_id)
     
@@ -130,7 +130,7 @@ def test__get_preferred_channel_for_invite():
     
     
     client = Client(
-        token = 'token_20230920_0000',
+        token = 'token_20240920_0000',
         client_id = client_id,
     )
     try:

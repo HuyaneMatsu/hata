@@ -84,7 +84,9 @@ def build_create_payload(entity, field_converters, keyword_parameters):
     return data
 
 
-def add_payload_fields_from_keyword_parameters(field_converters, keyword_parameters, data, defaults):
+def add_payload_fields_from_keyword_parameters(
+    field_converters, keyword_parameters, data, defaults, *, raise_unused = True
+):
     """
     Generic payload builder used by ``build_edit_payload`` and by ``build_create_payload``.
     
@@ -102,10 +104,17 @@ def add_payload_fields_from_keyword_parameters(field_converters, keyword_paramet
     defaults : `bool`
         Whether default values should be included.
     
+    raise_unused : `bool` = `True`, Optional (Keyword only)
+        Whether exception should be raised when there are unused keyword parameters.
+    
     Raises
     ------
     TypeError
         - Extra or unused parameter.
+    
+    Returns
+    -------
+    unused : `None | dict<str, object>`
     """
     unused = None
     
@@ -123,7 +132,8 @@ def add_payload_fields_from_keyword_parameters(field_converters, keyword_paramet
         
         putter(validator(field_value), data, defaults)
     
-    if (unused is not None):
+    if raise_unused and (unused is not None):
         raise TypeError(
             f'Unused or extra parameters: {unused!r}.'
         )
+    return unused

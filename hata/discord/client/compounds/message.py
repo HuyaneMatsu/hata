@@ -5,16 +5,17 @@ from time import time as time_now
 
 from scarletio import Compound, Task, TaskGroup
 
-from ...allowed_mentions import parse_allowed_mentions
 from ...bases import maybe_snowflake, maybe_snowflake_pair
+from ...builder.serialization import create_serializer
+from ...builder.serialization_configuration import SerializationConfiguration
 from ...channel import Channel, MessageIterator, message_relative_index
 from ...core import CHANNELS, KOKORO, MESSAGES
 from ...exceptions import DiscordException, ERROR_CODES
 from ...http import DiscordApiClient
 from ...message import Message, MessageFlag
 from ...message.message.utils import process_message_chunk
+from ...message.message_builder import MessageBuilderCreate, MessageBuilderEdit
 from ...permission.permission import PERMISSION_MASK_MANAGE_MESSAGES, PERMISSION_MASK_READ_MESSAGE_HISTORY
-from ...sticker import Sticker
 from ...utils import DISCORD_EPOCH, log_time_converter, now_as_id
 
 from ..functionality_helpers import (
@@ -22,14 +23,48 @@ from ..functionality_helpers import (
 )
 
 from ..request_helpers import (
-    add_file_to_message_data, get_channel_and_id, get_channel_id, get_channel_id_and_message_id, get_components_data,
-    get_message_and_channel_id_and_message_id, validate_content_and_embed, validate_message_to_delete
+    get_channel_and_id, get_channel_id, get_channel_id_and_message_id, get_message_and_channel_id_and_message_id,
+    validate_message_to_delete
 )
 
 
-MESSAGE_FLAG_VALUE_SILENT = MessageFlag().update_by_keys(silent = True)
 MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed = True)
 
+
+MESSAGE_SERIALIZER_CREATE = create_serializer(
+    MessageBuilderCreate,
+    SerializationConfiguration(
+        [
+            MessageBuilderCreate.allowed_mentions,
+            MessageBuilderCreate.attachments,
+            MessageBuilderCreate.components,
+            MessageBuilderCreate.content,
+            MessageBuilderCreate.embeds,
+            MessageBuilderCreate.flags,
+            MessageBuilderCreate.nonce,
+            MessageBuilderCreate.reply_configuration,
+            MessageBuilderCreate.sticker_ids,
+            MessageBuilderCreate.tts,
+        ],
+        False,
+    )
+)
+
+
+MESSAGE_SERIALIZER_EDIT = create_serializer(
+    MessageBuilderEdit,
+    SerializationConfiguration(
+        [
+            MessageBuilderEdit.allowed_mentions,
+            MessageBuilderEdit.attachments,
+            MessageBuilderEdit.components,
+            MessageBuilderEdit.content,
+            MessageBuilderEdit.embeds,
+            MessageBuilderEdit.flags,
+        ],
+        True,
+    )
+)
 
 class ClientCompoundMessageEndpoints(Compound):
     
@@ -39,7 +74,7 @@ class ClientCompoundMessageEndpoints(Compound):
     async def message_get_chunk(self, channel, limit = 100, *, after = None, around = None, before = None):
         """
         Requests messages from the given text channel. The `after`, `around` and the `before` parameters are mutually
-        exclusive and they can be `int`, or as a ``DiscordEntity`` or as a `datetime` object.
+        exclusive and they can be `int`, or as a ``DiscordEntity`` or as a `DateTime` object.
         If there is at least 1 message overlap between the received and the loaded messages, the wrapper will chain
         the channel's message history up. If this happens the channel will get on a queue to have it's messages again
         limited to the default one, but requesting old messages more times, will cause it to extend.
@@ -52,11 +87,11 @@ class ClientCompoundMessageEndpoints(Compound):
             The channel from where we want to request the messages.
         limit : `int` = `100`, Optional
             The amount of messages to request. Can be between 1 and 100.
-        after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
+        after : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
             The timestamp after the requested messages were created.
-        around : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
+        around : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
             The timestamp around the requested messages were created.
-        before : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
+        before : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
             The timestamp before the requested messages were created.
         
         Returns
@@ -244,22 +279,7 @@ class ClientCompoundMessageEndpoints(Compound):
         return message
     
     
-    async def message_create(
-        self,
-        channel,
-        content = None,
-        *,
-        allowed_mentions = ...,
-        components = None,
-        embed = None,
-        file = None,
-        nonce = None,
-        reply_fail_fallback = False,
-        silent = False,
-        sticker = None,
-        suppress_embeds = False,
-        tts = False,
-    ):
+    async def message_create(self, channel, *positional_parameters, **keyword_parameters):
         """
         Creates and returns a message at the given `channel`. If there is nothing to send, then returns `None`.
         
@@ -270,42 +290,65 @@ class ClientCompoundMessageEndpoints(Compound):
         channel : ``Channel``, `int`, ``Message``, `tuple` (`int`, `int`)
             The text channel where the message will be sent, or the message on what you want to reply.
         
-        content : `None`, `str`, ``Embed``, `object` = `None`, Optional
-            The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``Embed`` is given, then will be casted to string.
-            
-            If given as ``Embed``, then is sent as the message's embed.
+        *positional_parameters : Positional parameters
+            Additional parameters to edit the message with.
         
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
-                , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
+        **keyword_parameters : Keyword parameters
+            Additional parameters to edit the message with.
         
-        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
-                ``Component``) = `None`, Optional (Keyword only)
+        Other Parameters
+        ----------------
+        allowed_mentions : `None`,  ``AllowedMentionProxy``, `str`, ``UserBase``, ``Role``, `list` of \
+                (`str`, ``UserBase``, ``Role`` ) , Optional
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
+            for details.
+        
+        attachments : `None`, `object`, Optional (Keyword only)
+            Attachments to send.
+        
+        components : `None`, ``Component``, `(tuple | list)<Component, (tuple | list)<Component>>`
             Components attached to the message.
+        
+        content : `None`, `str`, Optional
+            The message's content if given.
+        
+        embed : `None`, `Embed`, Optional
+            Alternative for `embeds`.
+        
+        embeds : `None`, `list<Embed>`, Optional
+            The new embedded content of the message.
+        
+        file : `None`, `object`, Optional (Keyword only)
+            Alternative for `attachments`.
+        
+        files : `None`, `object`, Optional (Keyword only)
+            Alternative for `attachments`.
+        
+        flags : `int`, ``MessageFlag`, Optional
+            The message's flags.
+        
+        nonce : `None`, `str`, Optional (Keyword only)
+            Used for optimistic message sending.
+        
+        reply_fail_fallback : `bool`, Optional (Keyword only)
+            Whether normal message should be sent if the referenced message is deleted.
+        
+        reply_message_id : `int`, Optional (Keyword only)
+            Which message should the created message be reply to.
             
-            > `components` do not count towards having any content in the message.
-        
-        embed : ``Embed``, `list` of ``Embed`` = `None`, Optional (Keyword only)
-            The embedded content of the message.
-            
-            If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
-        
-        file : `None`, `object` = `None`, Optional (Keyword only)
-            A file or files to send. Check ``create_file_form`` for details.
-        
-        nonce : `None`, `str` = `None`, Optional (Keyword only)
-            Used for optimistic message sending. Will shop up at the message's data.
-        
-        reply_fail_fallback : `bool` = `False`, Optional (Keyword only)
-            Whether normal message should be sent if the referenced message is deleted. Defaults to `False`.
+            Can also be given by passing `channel` as a ``Message``.
         
         silent : `bool` = `False`, Optional (Keyword only)
             Whether the message should be delivered silently.
         
-        sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`) = `None` \
-                , Optional (Keyword only)
-            Sticker or stickers to send within the message.
+        sticker : `None`, ``Sticker``, Optional
+            Alternative for `sticker_ids`.
+        
+        sticker_ids : `None`, `list<int>`, Optional (Keyword only)
+            Sticker(s) to send within the message.
+        
+        stickers : `None`, `list<int | Sticker>`, Optional
+            Alternative for `sticker_ids`.
         
         suppress_embeds : `bool` = `False`, Optional (Keyword only)
             Whether the message's embeds should be suppressed initially.
@@ -321,14 +364,7 @@ class ClientCompoundMessageEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `embed` was not given neither as ``Embed``, (`list`, `tuple`) of ``Embed``-s.
-            - If `allowed_mentions` contains an element of invalid type.
-            - `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
-            - If invalid file type would be sent.
-            - If `channel`'s type is incorrect.
-            - If `sticker` was not given neither as `None`, ``Sticker``, `int`, (`list`, `tuple`) of \
-                (``Sticker``, `int).
-            - If `components` type is incorrect.
+            - If a parameter's type is incorrect.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
@@ -352,7 +388,7 @@ class ClientCompoundMessageEndpoints(Compound):
         while True:
             if isinstance(channel, Channel):
                 if channel.is_in_group_textual() or channel.partial:
-                    message_id = None
+                    message_id = 0
                     channel_id = channel.id
                     break
             
@@ -365,7 +401,7 @@ class ClientCompoundMessageEndpoints(Compound):
             else:
                 channel_id = maybe_snowflake(channel)
                 if (channel_id is not None):
-                    message_id = None
+                    message_id = 0
                     channel = CHANNELS.get(channel_id, None)
                     break
                 
@@ -378,130 +414,14 @@ class ClientCompoundMessageEndpoints(Compound):
             
             raise TypeError(
                 f'`channel` can be a messageable channel, `{Message.__name__}`, `int`, `tuple` (`int`, `int`), '
-                f'got {channel.__class__.__name__}; {channel!r}.'
+                f'got {type(channel).__name__}; {channel!r}.'
             )
-            
         
-        content, embed = validate_content_and_embed(content, embed, False)
+        if message_id:
+            keyword_parameters['reply_message_id'] = message_id
         
-        # Sticker check order:
-        # 1.: None -> None
-        # 2.: Sticker -> [sticker.id]
-        # 3.: int (str) -> [sticker]
-        # 4.: (list, tuple) of (Sticker, int (str)) -> [sticker.id / sticker, ...] / None
-        # 5.: raise
-        
-        if sticker is None:
-            sticker_ids = None
-        else:
-            sticker_ids = []
-            if isinstance(sticker, Sticker):
-                sticker_id = sticker.id
-                sticker_ids.append(sticker_id)
-            else:
-                sticker_id = maybe_snowflake(sticker)
-                if sticker_id is None:
-                    if isinstance(sticker, (list, tuple)):
-                        for sticker_element in sticker:
-                            if isinstance(sticker_element, Sticker):
-                                sticker_id = sticker_element.id
-                            else:
-                                sticker_id = maybe_snowflake(sticker_element)
-                                if sticker_id is None:
-                                    raise TypeError(
-                                        f'`sticker` can contain only `{Sticker.__name__}`, `int` elements, '
-                                        f'got {sticker_element.__class__.__name__}; {sticker_element!r}; '
-                                        f'sticker={sticker!r}.'
-                                    )
-                            
-                            sticker_ids.append(sticker_id)
-                        
-                        if not sticker_ids:
-                            sticker_ids = None
-                    else:
-                        raise TypeError(
-                            f'`sticker` can be `None`, `{Sticker.__name__}`, `int`, '
-                            f'(`list`, `tuple`) of (`{Sticker.__name__}`, `int`), got '
-                            f'{sticker.__class__.__name__}; {sticker!r}.'
-                        )
-                else:
-                    sticker_ids.append(sticker_id)
-        
-        components = get_components_data(components, False)
-        
-        if __debug__:
-            if (nonce is not None) and (not isinstance(nonce, str)):
-                raise AssertionError(
-                    f'`nonce` can be `None`, `str`, got {nonce.__class__.__name__}; {nonce!r}.'
-                )
-            
-            if not isinstance(reply_fail_fallback, bool):
-                raise AssertionError(
-                    f'`reply_fail_fallback` can be `bool`, got {reply_fail_fallback.__class__.__name__}; '
-                    f'{reply_fail_fallback!r}.')
-            
-            if not isinstance(silent, bool):
-                raise AssertionError(
-                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
-                )
-            
-            if not isinstance(suppress_embeds, bool):
-                raise AssertionError(
-                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
-                )
-        
-            if not isinstance(tts, bool):
-                raise AssertionError(
-                    f'`tts` can be `bool`, got {tts.__class__.__name__}, {tts!r}.'
-                )
-        
-        # Build payload
-        message_data = {}
-        contains_content = False
-        
-        if (content is not None):
-            message_data['content'] = content
-            contains_content = True
-        
-        if (embed is not None):
-            message_data['embeds'] = [embed.to_data() for embed in embed]
-            contains_content = True
-        
-        if (sticker_ids is not None):
-            message_data['sticker_ids'] = sticker_ids
-            contains_content = True
-        
-        if (components is not None):
-            message_data['components'] = components
-            contains_content = True
-        
-        if tts:
-            message_data['tts'] = True
-        
-        if (nonce is not None):
-            message_data['nonce'] = nonce
-        
-        if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
-        
-        if (message_id is not None):
-            message_reference_data = {'message_id': message_id}
-            
-            if reply_fail_fallback:
-                message_reference_data['fail_if_not_exists'] = False
-            
-            message_data['message_reference'] = message_reference_data
-        
-        flags = (
-            (MESSAGE_FLAG_VALUE_SILENT if silent else 0) |
-            (MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS if suppress_embeds else 0)
-        )
-        if flags:
-            message_data['flags'] = flags
-        
-        
-        message_data = add_file_to_message_data(message_data, file, contains_content, False)
-        if message_data is None:
+        message_data = MESSAGE_SERIALIZER_CREATE(positional_parameters, keyword_parameters)
+        if not message_data:
             return
         
         message_data = await self.api.message_create(channel_id, message_data)
@@ -509,17 +429,7 @@ class ClientCompoundMessageEndpoints(Compound):
             return channel._create_new_message(message_data)
     
 
-    async def message_edit(
-        self,
-        message,
-        content = ...,
-        *,
-        allowed_mentions = ...,
-        components = ...,
-        embed = ...,
-        file = ...,
-        suppress_embeds = ...
-    ):
+    async def message_edit(self, message, *positional_parameters, **keyword_parameters):
         """
         Edits the given `message`.
         
@@ -529,34 +439,47 @@ class ClientCompoundMessageEndpoints(Compound):
         ----------
         message : ``Message``, `tuple` (`int`, `int`)
             The message to edit.
-        content : `None`, `str`, ``Embed``, `object`, Optional
-            The new content of the message.
-            
-            If given as `str` then the message's content will be edited with it. If given as any non ``Embed``
-            instance, then it will be cased to string first.
-            
-            If given as ``Embed``, then the message's embeds will be edited with it.
         
+        *positional_parameters : Positional parameters
+            Additional parameters to edit the message with.
         
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
-                , Optional (Keyword only)
+        **keyword_parameters : Keyword parameters
+            Additional parameters to edit the message with.
+        
+        Other Parameters
+        ----------------
+        allowed_mentions : `None`,  ``AllowedMentionProxy``, `str`, ``UserBase``, ``Role``, `list` of \
+                (`str`, ``UserBase``, ``Role`` ) , Optional
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
         
-        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
-                ``Component``), Optional (Keyword only)
+        attachments : `None`, `object`, Optional (Keyword only)
+            Attachments to send.
+        
+        components : `None`, ``Component``, `(tuple | list)<Component, (tuple | list)<Component>>`
             Components attached to the message.
             
             Pass it as `None` remove the actual ones.
         
-        embed : `None`, ``Embed``, `list` of ``Embed``, Optional (Keyword only)
-            The new embedded content of the message. By passing it as `None`, you can remove the old.
+        content : `None`, `str`, Optional
+            The new content of the message.
+        
+        embed : `None`, `Embed`, Optional
+            Alternative for `embeds`.
+        
+        embeds : `None`, `list<Embed>`, Optional
+            The new embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``Embed``, then `AssertionError` is
-            raised.
+            By passing it as `None`, you can remove the old.
         
         file : `None`, `object`, Optional (Keyword only)
-            A file or files to send. Check ``create_file_form`` for details.
+            Alternative for `attachments`.
+        
+        files : `None`, `object`, Optional (Keyword only)
+            Alternative for `attachments`.
+        
+        flags : `int`, ``MessageFlag`, Optional
+            The message's new flags.
         
         suppress_embeds : `bool`, Optional (Keyword only)
             Whether the message's embeds should be suppressed or unsuppressed.
@@ -564,22 +487,11 @@ class ClientCompoundMessageEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `embed` was not given neither as ``Embed``, (`list`, `tuple`) of ``Embed``-s.
-            - If `allowed_mentions` contains an element of invalid type.
-            - `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
-            - If `message`'s type is incorrect.
-            - If `components` type is incorrect.
-        ValueError
-            - If `allowed_mentions` contains an element of invalid type.
-            - If more than `10` files would be sent.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `suppress_embeds` was not given as `bool`.
-            - If `embed` contains a non ``Embed`` element.
-            - If both `content` and `embed` fields are embeds.
         
         See Also
         --------
@@ -588,56 +500,13 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Notes
         -----
-        Do not updates he given message object, so dispatch event events can still calculate differences when received.
+        Do not updates the given message object, so dispatch event events can still calculate differences when received.
         """
-        message, channel_id, message_id = get_message_and_channel_id_and_message_id(message)
+        channel_id, message_id = get_channel_id_and_message_id(message)
         
-        content, embed = validate_content_and_embed(content, embed, True)
-        
-        components = get_components_data(components, True)
-        
-        if __debug__:
-            if (suppress_embeds is not ...) and (not isinstance(suppress_embeds, bool)):
-                raise AssertionError(
-                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
-                )
-        
-        # Build payload
-        message_data = {}
-        
-        if (content is not ...):
-            message_data['content'] = content
-        
-        if (embed is not ...):
-            if (embed is not None):
-                embed = [embed.to_data() for embed in embed]
-            
-            message_data['embeds'] = embed
-        
-        if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
-        
-        if (components is not ...):
-            message_data['components'] = components
-        
-        if (suppress_embeds is not ...):
-            if message is None:
-                flags = 0
-            else:
-                flags = message.flags
-            
-            if suppress_embeds:
-                flags |= MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
-            else:
-                flags &= ~MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
-            
-            message_data['flags'] = flags
-        
-        message_data = add_file_to_message_data(message_data, file, True, True)
-        if (message_data is None):
-            return
-        
-        await self.api.message_edit(channel_id, message_id, message_data)
+        message_data = MESSAGE_SERIALIZER_EDIT(positional_parameters, keyword_parameters)
+        if message_data:
+            await self.api.message_edit(channel_id, message_id, message_data)
     
     
     async def message_delete(self, message, *, reason = None):
@@ -819,7 +688,7 @@ class ClientCompoundMessageEndpoints(Compound):
     ):
         """
         Deletes messages between an interval determined by `before` and `after`. They can be `int`, or as
-        a ``DiscordEntity`` or as a `datetime` object.
+        a ``DiscordEntity`` or as a `DateTime` object.
         
         If the client has no `manage_messages` permission at the channel, then returns instantly.
         
@@ -829,9 +698,9 @@ class ClientCompoundMessageEndpoints(Compound):
         ----------
         channel : ``Channel``
             The channel, where the deletion should take place.
-        after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
+        after : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
             The timestamp after the messages were created, which will be deleted.
-        before : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
+        before : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
             The timestamp before the messages were created, which will be deleted.
         limit : `None`, `int` = `None`, Optional (Keyword only)
             The maximal amount of messages to delete.
@@ -1168,7 +1037,7 @@ class ClientCompoundMessageEndpoints(Compound):
     ):
         """
         Deletes messages between an interval determined by `before` and `after`. They can be `int`, or as
-        a ``DiscordEntity`` or as a `datetime` object.
+        a ``DiscordEntity`` or as a `DateTime` object.
         
         Not like ``.message_delete_sequence``, this method uses up all he clients at the respective channel to delete
         messages an not only the one from what it was called from.
@@ -1181,9 +1050,9 @@ class ClientCompoundMessageEndpoints(Compound):
         ----------
         channel : ``Channel``
             The channel, where the deletion should take place.
-        after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
+        after : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
             The timestamp after the messages were created, which will be deleted.
-        before : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
+        before : `None`, `int`, ``DiscordEntity``, `DateTime` = `None`, Optional (Keyword only)
             The timestamp before the messages were created, which will be deleted.
         limit : `None`, `int` = `None`, Optional (Keyword only)
             The maximal amount of messages to delete.
@@ -1582,21 +1451,19 @@ class ClientCompoundMessageEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
+            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
+            - If `suppress` was not given as `bool`.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `suppress` was not given as `bool`.
         """
         message, channel_id, message_id = get_message_and_channel_id_and_message_id(message)
         
-        if __debug__:
-            if not isinstance(suppress_embeds, bool):
-                raise AssertionError(
-                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
-                )
+        if not isinstance(suppress_embeds, bool):
+            raise TypeError(
+                f'`suppress_embeds` can be `bool`, got {type(suppress_embeds).__name__}; {suppress_embeds!r}.'
+            )
         
         if message is None:
             flags = 0

@@ -378,17 +378,17 @@ def create_new_guild_data(
         verification_level = validate_verification_level(verification_level)
     
     data = {}
-    put_name_into(name, data, defaults = True)
-    put_afk_channel_id_into(afk_channel_id, data, defaults = True)
-    put_afk_timeout_into(afk_timeout, data, defaults = True)
-    put_channels_and_channel_datas_into(channels, data, defaults = True)
-    put_explicit_content_filter_level_into(explicit_content_filter_level, data, defaults = True)
+    put_name_into(name, data, True)
+    put_afk_channel_id_into(afk_channel_id, data, True)
+    put_afk_timeout_into(afk_timeout, data, False)
+    put_channels_and_channel_datas_into(channels, data, True)
+    put_explicit_content_filter_level_into(explicit_content_filter_level, data, True)
     GUILD_ICON.put_into(icon, data, defaults = True, as_data = True)
-    put_roles_and_role_datas_into(roles, data, defaults = True)
-    put_default_message_notification_level_into(default_message_notification_level, data, defaults = True)
-    put_system_channel_id_into(system_channel_id, data, defaults = True)
-    put_system_channel_flags_into(system_channel_flags, data, defaults = True)
-    put_verification_level_into(verification_level, data, defaults = True)
+    put_roles_and_role_datas_into(roles, data,  True)
+    put_default_message_notification_level_into(default_message_notification_level, data, True)
+    put_system_channel_id_into(system_channel_id, data, True)
+    put_system_channel_flags_into(system_channel_flags, data, True)
+    put_verification_level_into(verification_level, data, True)
     return data
 
 

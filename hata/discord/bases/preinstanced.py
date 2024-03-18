@@ -69,7 +69,7 @@ class PreinstancedMeta(type):
         
         Returns
         -------
-        type : ``PreinstancedMeta``
+        type : `instance<cls>`
         """
         post_instance = []
         new_class_attributes = {}

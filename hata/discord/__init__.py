@@ -1,9 +1,11 @@
 ﻿from .activity import *
+from .allowed_mentions import *
 from .application import *
 from .application_command import *
 from .audit_logs import *
 from .auto_moderation import *
 from .bases import *
+from .builder import *
 from .channel import *
 from .client import *
 from .component import *
@@ -47,11 +49,13 @@ from .utils import *
 
 __all__ = (
     *activity.__all__,
+    *allowed_mentions.__all__,
     *application.__all__,
     *application_command.__all__,
     *audit_logs.__all__,
     *auto_moderation.__all__,
     *bases.__all__,
+    *builder.__all__,
     *channel.__all__,
     *client.__all__,
     *embed.__all__,
@@ -79,7 +83,6 @@ __all__ = (
     *voice.__all__,
     *webhook.__all__,
     
-    *allowed_mentions.__all__,
     *ansi_format.__all__,
     *core.__all__,
     *field_parsers.__all__,

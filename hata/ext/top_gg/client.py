@@ -583,6 +583,11 @@ class TopGGClient:
             Any exception raised by top.gg api.
         """
         data = await self._get_user_vote({QUERY_KEY_GET_USER_VOTE_USER_ID: user_id})
+        
+        # Api is down?
+        if data is None:
+            return False
+        
         return bool(data[JSON_KEY_VOTED])
     
     

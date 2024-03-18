@@ -5,7 +5,7 @@ from scarletio import (
     sleep, to_json
 )
 from scarletio.http_client import HTTPClient, RequestContextManager
-from scarletio.web_common import Formdata, quote
+from scarletio.web_common import FormData, quote
 from scarletio.web_common.headers import CONTENT_TYPE, METHOD_DELETE, METHOD_GET, METHOD_PATCH, METHOD_POST, METHOD_PUT
 
 from ..core import KOKORO
@@ -18,7 +18,7 @@ from .rate_limit import NO_SPECIFIC_RATE_LIMITER, RateLimitHandler, StackedStati
 from .urls import API_ENDPOINT, STATUS_ENDPOINT
 
 
-NON_JSON_TYPES = (Formdata, bytes, type(None))
+NON_JSON_TYPES = (FormData, bytes, type(None))
 
 REQUEST_RETRY_LIMIT = 5
 
@@ -33,7 +33,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
     ----------
     debug_options : `None | set<str>`
         Debug options used when requesting towards Discord.
-    http : ``HttpClient``
+    http : ``HTTPClient``
         The used http client.
     global_rate_limit_expires_at : `float`
         The time when global rate limit will expire in monotonic time.
@@ -87,7 +87,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         Parameters
         ----------
         handler : ``RateLimitHandler``, ``StackedStaticRateLimitHandler``
-            rate limit handler for the request.
+            Rate limit handler for the request.
         method : `str`
             The method of the request.
         url : `str`

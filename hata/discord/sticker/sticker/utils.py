@@ -1,4 +1,4 @@
-__all__ = ('create_partial_sticker_data', 'create_partial_sticker_from_partial_data')
+__all__ = ('create_partial_sticker_data', 'create_partial_sticker_from_id', 'create_partial_sticker_from_partial_data')
 
 
 from .fields import put_format_into, put_id_into, put_name_into, parse_id, parse_format, parse_name
@@ -16,7 +16,7 @@ def create_partial_sticker_data(sticker):
         The sticker to create the partial data from.
     
     Returns
-    -------
+    ------
     data : `dict` of (`str`, `object`) items
     """
     data = {}
@@ -37,20 +37,42 @@ def create_partial_sticker_from_partial_data(data):
     
     Returns
     -------
-    sticker : `instance<cls>`
+    sticker : ``Sticker``
     """
     sticker_id = parse_id(data)
     
     try:
-        self = STICKERS[sticker_id]
+        sticker = STICKERS[sticker_id]
     except KeyError:
-        self = Sticker._create_empty(sticker_id)
-        STICKERS[sticker_id] = self
+        sticker = Sticker._create_empty(sticker_id)
+        STICKERS[sticker_id] = sticker
     else:
-        if not self.partial:
-            return self
+        if not sticker.partial:
+            return sticker
     
-    self.format = parse_format(data)
-    self.name = parse_name(data)
+    sticker.format = parse_format(data)
+    sticker.name = parse_name(data)
     
-    return self
+    return sticker
+
+
+def create_partial_sticker_from_id(sticker_id):
+    """
+    Creates a sticker from the given identifier.
+    
+    Parameters
+    ----------
+    sticker_id : `int`
+        The identifier to create the sticker for.
+    
+    Returns
+    -------
+    sticker : ``Sticker``
+    """
+    try:
+        sticker = STICKERS[sticker_id]
+    except KeyError:
+        sticker = Sticker._create_empty(sticker_id)
+        STICKERS[sticker_id] = sticker
+    
+    return sticker

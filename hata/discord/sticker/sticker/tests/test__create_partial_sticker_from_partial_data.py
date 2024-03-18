@@ -6,7 +6,7 @@ from ..utils import create_partial_sticker_from_partial_data
 from .test__Sticker__constructor import _assert_fields_set
 
 
-def test__create_partial_sticker_from_partial_data__0():
+def test__create_partial_sticker_from_partial_data__default():
     """
     Tests whether ``create_partial_sticker_from_partial_data`` works as intended.
     
@@ -32,7 +32,7 @@ def test__create_partial_sticker_from_partial_data__0():
     vampytest.assert_eq(sticker.id, sticker_id)
 
 
-def test__create_partial_sticker_from_partial_data__1():
+def test__create_partial_sticker_from_partial_data__caching():
     """
     Tests whether ``create_partial_sticker_from_partial_data`` works as intended.
     

@@ -30,7 +30,7 @@ class Locale(PreinstancedBase):
     Every predefined locale is also stored as a class attribute:
     
     +-----------------------+-------------------------------+-----------+---------------------------------------+
-    | Class attribute name  | Name                          | Value     | Native name                           |
+    | Type attribute name   | Name                          | Value     | Native name                           |
     +=======================+===============================+===========+=======================================+
     | bulgarian             | Bulgarian                     | bg        | български                             |
     +-----------------------+-------------------------------+-----------+---------------------------------------+
@@ -83,6 +83,8 @@ class Locale(PreinstancedBase):
     | russian               | Russian                       | ru        | Pусский                               |
     +-----------------------+-------------------------------+-----------+---------------------------------------+
     | spanish               | Spanish                       | es-ES     | Español                               |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | spanish_la            | Spanish (Latin America)       | es-419    | Español, LATAM                        |
     +-----------------------+-------------------------------+-----------+---------------------------------------+
     | swedish               | Swedish                       | sv-SE     | Svenska                               |
     +-----------------------+-------------------------------+-----------+---------------------------------------+
@@ -170,6 +172,8 @@ class Locale(PreinstancedBase):
     romanian = P('ro', 'Romanian, Romania', 'Română')
     russian = P('ru', 'Russian', 'Pусский')
     spanish = P('es-ES', 'Spanish', 'Español')
+    spanish_la = P('es-419', 'Spanish (Latin America)', 'Español, LATAM')
+    
     swedish = P('sv-SE', 'Swedish', 'Svenska')
     thai = P('th', 'Thai', '\u0e44\u0e17\u0e22')
     turkish = P('tr', 'Turkish', 'Türkçe')

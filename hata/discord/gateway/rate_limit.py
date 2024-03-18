@@ -70,7 +70,7 @@ class GatewayRateLimiter(RichAttributeErrorBaseType):
         -------
         success : `bool`
             Whether the action can be executed.
-            Returns `False` if teh gateway was closed and no action should be executed.
+            Returns `False` if the gateway was closed and no action should be executed.
         """
         now = LOOP_TIME()
         if now >= self.resets_at:

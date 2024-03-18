@@ -3,7 +3,7 @@ __all__ = ()
 from sys import platform as PLATFORM
 from zlib import decompressobj as create_zlib_decompressor, error as ZlibError
 
-from scarletio import Task, copy_docs, from_json, repeat_timeout, sleep, to_json
+from scarletio import Task, copy_docs, from_json, repeat_timeout, skip_ready_cycle, sleep, to_json
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
 from ...env import API_VERSION, CACHE_PRESENCE, LIBRARY_NAME
@@ -389,6 +389,13 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         
         self.websocket = await self.client.http.connect_websocket(gateway_url)
         self.kokoro.start()
+        # skip one loop to wait for kokoro to start up.
+        await skip_ready_cycle()
+        
+        # poll hello
+        gateway_action = await self._poll_and_handle_received_operation()
+        if gateway_action != GATEWAY_ACTION_KEEP_GOING:
+            return gateway_action
         
         if not resume:
             await self._identify()

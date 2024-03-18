@@ -17,7 +17,7 @@ def test__create_new_guild_data__no_fields():
     expected_output = {
         'name': '',
         'afk_channel_id': None,
-        'afk_timeout': 0,
+        # 'afk_timeout': 0,
         'channels': [],
         'explicit_content_filter': 0,
         'icon': None,

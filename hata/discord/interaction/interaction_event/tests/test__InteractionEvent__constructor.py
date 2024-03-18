@@ -28,7 +28,7 @@ def _assert_attributes_set(interaction_event):
     vampytest.assert_instance(interaction_event, InteractionEvent)
     
     vampytest.assert_instance(interaction_event._async_task, Task, nullable = True)
-    vampytest.assert_instance(interaction_event._response_flag, int)
+    vampytest.assert_instance(interaction_event._response_flags, int)
     
     vampytest.assert_instance(interaction_event.application_id, int)
     vampytest.assert_instance(interaction_event.application_permissions, Permission)

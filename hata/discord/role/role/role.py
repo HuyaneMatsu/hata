@@ -597,7 +597,7 @@ class Role(DiscordEntity, immortal = True):
         
         role_id = self.id
         if role_id:
-            repr_parts.append(' role_id = ')
+            repr_parts.append(' id = ')
             repr_parts.append(repr(role_id))
             repr_parts.append(',')
             
@@ -820,7 +820,7 @@ class Role(DiscordEntity, immortal = True):
             return format(self.created_at, DATETIME_FORMAT_CODE)
         
         raise ValueError(
-            f'Unknown format code {code!r} for {self.__class__.__name__}; {self!r}. '
+            f'Unknown format code {code!r} for {type(self).__name__}; {self!r}. '
             f'Available format codes: {""!r}, {"c"!r}, {"m"!r}.'
         )
     

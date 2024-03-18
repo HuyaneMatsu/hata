@@ -73,8 +73,14 @@ class DiscordException(Exception):
     _request_info : `None`, `str`
         Cache of the `.request_info` property.
     
+    _retry_after : `None`, `float`
+        Cache pf the `.retry_after` property.
+    
     _message : `None`,  `str`
         Cache of the `.message` property.
+    
+    _status : `None`, `int`
+        Cache of the `.status` property.
     
     debug_options : `None`, `set` of `str`
         Debug options of the http client.
@@ -89,8 +95,8 @@ class DiscordException(Exception):
         Sent data.
     """
     __slots__ = (
-        '_code', '_debug_info', '_errors', '_request_info', '_message', 'debug_options', 'received_data', 'response',
-        'sent_data',
+        '_code', '_debug_info', '_errors', '_request_info', '_retry_after', '_message', '_status', 'debug_options',
+        'received_data', 'response', 'sent_data',
     )
     
     def __new__(cls, response, received_data, sent_data, debug_options):
@@ -99,7 +105,7 @@ class DiscordException(Exception):
         
         Parameters
         ----------
-        response : ``ClientResponse``
+        response : `None | ClientResponse`
             The http client response, what caused the error.
         received_data : `object`
             Deserialized `json` response data if applicable.
@@ -113,7 +119,9 @@ class DiscordException(Exception):
         self._debug_info = None
         self._errors = None
         self._request_info = None
+        self._retry_after = None
         self._message = None
+        self._status = None
         self.debug_options = debug_options
         self.received_data = received_data
         self.response = response
@@ -124,24 +132,7 @@ class DiscordException(Exception):
     __init__ = object.__init__
     
     
-    @property
-    def message(self):
-        """
-        Returns the error message of the discord exception.
-        
-        Returns
-        -------
-        message : `str`
-        """
-        message = self._message
-        if message is None:
-            message = self._create_message()
-            self._message = message
-        
-        return message
-    
-    
-    def _create_message(self):
+    def _get_message(self):
         """
         Creates the error message of the discord exception.
         
@@ -151,13 +142,14 @@ class DiscordException(Exception):
         """
         message_parts = []
         
-        message_parts.append(self.__class__.__name__)
-        message_parts.append(' ')
+        message_parts.append(type(self).__name__)
         response = self.response
-        message_parts.append(response.reason)
-        message_parts.append(' (')
-        message_parts.append(repr(response.status))
-        message_parts.append(')')
+        if (response is not None):
+            message_parts.append(' ')
+            message_parts.append(response.reason)
+            message_parts.append(' (')
+            message_parts.append(repr(response.status))
+            message_parts.append(')')
         
         code = self.code
         if code:
@@ -180,12 +172,62 @@ class DiscordException(Exception):
             message_parts.append(message_base)
         
         
-        if response.status == 429:
+        if self.status == 429:
             if not message_base.endswith(('.', ',')):
                 message_parts.append(';')
             
             message_parts.append('retry after: ')
             message_parts.append(format(self.retry_after, '.02f'))
+        
+        return ''.join(message_parts)
+    
+    
+    @property
+    def message(self):
+        """
+        Returns the error message of the discord exception.
+        
+        Returns
+        -------
+        message : `str`
+        """
+        message = self._message
+        if message is None:
+            message = self._get_message()
+            self._message = message
+        
+        return message
+    
+    
+    @message.setter
+    def message(self, value):
+        self._message = value
+    
+    
+    @message.deleter
+    def message(self):
+        self._message = None
+    
+    
+    def _get_request_info(self):
+        """
+        Creates additional request information about the exception.
+        
+        Returns
+        -------
+        request_info : `str`
+        """
+        response = self.response
+        if response is None:
+            return ''
+        
+        message_parts = []
+        
+        message_parts.append(format(parse_date_header_to_datetime(response.headers[DATE]), DATETIME_FORMAT_CODE))
+        message_parts.append('; ')
+        message_parts.append(response.method)
+        message_parts.append(' ')
+        message_parts.append(str(response.url))
         
         return ''.join(message_parts)
     
@@ -201,52 +243,23 @@ class DiscordException(Exception):
         """
         request_info = self._request_info
         if request_info is None:
-            request_info = self._create_request_info()
+            request_info = self._get_request_info()
             self._request_info = request_info
         
         return request_info
     
     
-    def _create_request_info(self):
-        """
-        Creates additional request information about the exception.
-        
-        Returns
-        -------
-        request_info : `str`
-        """
-        response = self.response
-        message_parts = []
-        
-        message_parts.append(format(parse_date_header_to_datetime(response.headers[DATE]), DATETIME_FORMAT_CODE))
-        message_parts.append('; ')
-        message_parts.append(response.method)
-        message_parts.append(' ')
-        message_parts.append(str(response.url))
-        
-        return ''.join(message_parts)
+    @request_info.setter
+    def request_info(self, value):
+        self._request_info = value
     
     
-    @property
-    def errors(self):
-        """
-        Returns the errors shipped with the exception.
-        
-        Might return an empty list.
-        
-        Returns
-        -------
-        errors : `list` of `str`
-        """
-        errors = self._errors
-        if errors is None:
-            errors = self._create_errors()
-            self._errors = errors
-        
-        return errors
+    @request_info.deleter
+    def request_info(self):
+        self._request_info = None
     
     
-    def _create_errors(self):
+    def _get_errors(self):
         """
         Creates the errors shipped with the exception.
         
@@ -387,23 +400,32 @@ class DiscordException(Exception):
     
     
     @property
-    def debug_info(self):
+    def errors(self):
         """
-        Returns debug info.
+        Returns the errors shipped with the exception.
         
-        Only displayed within `.messages` when rich discord exceptions are enabled.
+        Might return an empty list.
         
         Returns
         -------
-        debug_info : `str`
+        errors : `list` of `str`
         """
+        errors = self._errors
+        if errors is None:
+            errors = self._get_errors()
+            self._errors = errors
         
-        debug_info = self._debug_info
-        if debug_info is None:
-            debug_info = self._create_debug_info()
-            self._debug_info = debug_info
-        
-        return debug_info
+        return errors
+    
+    
+    @errors.setter
+    def errors(self, value):
+        self._errors = value
+    
+    
+    @errors.deleter
+    def errors(self):
+        self._errors = None
     
     
     def _create_debug_info(self):
@@ -440,6 +462,36 @@ class DiscordException(Exception):
     
     
     @property
+    def debug_info(self):
+        """
+        Returns debug info.
+        
+        Only displayed within `.messages` when rich discord exceptions are enabled.
+        
+        Returns
+        -------
+        debug_info : `str`
+        """
+        
+        debug_info = self._debug_info
+        if debug_info is None:
+            debug_info = self._create_debug_info()
+            self._debug_info = debug_info
+        
+        return debug_info
+    
+    
+    @debug_info.setter
+    def debug_info(self, value):
+        self._debug_info = value
+    
+    
+    @debug_info.deleter
+    def debug_info(self):
+        self._debug_info = None
+    
+    
+    @property
     def messages(self):
         """
         Returns a list of the errors. The 0th element of the list is always a header line, what contains the
@@ -471,22 +523,14 @@ class DiscordException(Exception):
         return messages
     
     
-    @property
-    def code(self):
-        """
-        Returns the Discord's internal exception code, if it is included in the response's data. If not, then returns
-        `0`.
-        
-        Returns
-        -------
-        error_code : `int`
-        """
-        code = self._code
-        if code is None:
-            code = self._get_code()
-            self._code = code
-        
-        return code
+    @messages.setter
+    def messages(self, value):
+        self._messages = value
+    
+    
+    @messages.deleter
+    def messages(self):
+        self._messages = None
     
     
     def _get_code(self):
@@ -508,15 +552,98 @@ class DiscordException(Exception):
     
     
     @property
+    def code(self):
+        """
+        Returns the Discord's internal exception code, if it is included in the response's data. If not, then returns
+        `0`.
+        
+        Returns
+        -------
+        error_code : `int`
+        """
+        code = self._code
+        if code is None:
+            code = self._get_code()
+            self._code = code
+        
+        return code
+    
+    
+    @code.setter
+    def code(self, value):
+        self._code = value
+    
+    
+    @code.deleter
+    def code(self):
+        self._code = None
+    
+    
+    def _get_status(self):
+        """
+        Returns the response's status. Defaults to `0`.
+        
+        Returns
+        -------
+        status : `int`
+        """
+        response = self.response
+        if (response is None):
+            return 0
+        
+        return response.status
+        
+    
+    @property
     def status(self):
         """
         The exception's response's status.
         
         Returns
         -------
-        status_code : `int`
+        status : `int`
         """
-        return self.response.status
+        status = self._status
+        if status is None:
+            status = self._get_status()
+            self._status = status
+        
+        return status
+    
+    
+    @status.setter
+    def status(self, value):
+        self._status = value
+    
+    
+    @status.deleter
+    def status(self):
+        self._status = None
+    
+    
+    def _get_retry_after(self):
+        """
+        Returns after how much seconds the request should be retried. Defaults to `0.0`.
+        
+        Returns
+        -------
+        retry_after : `float`
+        """
+        response = self.response
+        if response is None:
+            return 0.0
+        
+        try:
+            retry_after = response.headers[RETRY_AFTER]
+        except KeyError:
+            return 0.0
+        
+        try:
+            retry_after = float(retry_after)
+        except ValueError:
+            return 0.0
+        
+        return retry_after
     
     
     @property
@@ -529,17 +656,22 @@ class DiscordException(Exception):
         -------
         retry_after : `float`
         """
-        try:
-            retry_after = self.response.headers[RETRY_AFTER]
-        except KeyError:
-            return 0.0
-        
-        try:
-            retry_after = float(retry_after)
-        except ValueError:
-            return 0.0
+        retry_after = self._retry_after
+        if retry_after is None:
+            retry_after = self._get_retry_after()
+            self._retry_after = retry_after
         
         return retry_after
+    
+    
+    @retry_after.setter
+    def retry_after(self, value):
+        self._retry_after = value
+    
+    
+    @retry_after.deleter
+    def retry_after(self):
+        self._retry_after = None
     
     
     def __repr__(self):
@@ -548,6 +680,7 @@ class DiscordException(Exception):
     
     
     __str__ = __repr__
+    
     
     def __format__(self, code):
         """

@@ -67,7 +67,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     _async_task : `None`, ``Task``
         Task set if interaction event is acknowledged asynchronously.
     
-    _response_flag : `int`
+    _response_flags : `int`
         The response order state of ``InteractionEvent``
         
         +-------------------------------+-------+---------------------------------------------------+
@@ -133,7 +133,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     Interaction event instances are weakreferable.
     """
     __slots__ = (
-        '_async_task', '_response_flag', 'application_id', 'application_permissions', 'entitlements', 'channel',
+        '_async_task', '_response_flags', 'application_id', 'application_permissions', 'entitlements', 'channel',
         'guild', 'interaction', 'message', 'token', 'type', 'user', 'user_locale', 'user_permissions'
     )
     
@@ -355,7 +355,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         self = object.__new__(cls)
         self._async_task = None
-        self._response_flag = RESPONSE_FLAG_NONE
+        self._response_flags = RESPONSE_FLAG_NONE
         self.id = 0
         self.application_id = application_id
         self.application_permissions = application_permissions
@@ -405,7 +405,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         self = object.__new__(cls)
         self._async_task = None
-        self._response_flag = RESPONSE_FLAG_NONE
+        self._response_flags = RESPONSE_FLAG_NONE
         self.application_id = application_id
         self.application_permissions = application_permissions
         self.channel = channel
@@ -472,7 +472,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         """
         self = object.__new__(cls)
         self._async_task = None
-        self._response_flag = RESPONSE_FLAG_NONE
+        self._response_flags = RESPONSE_FLAG_NONE
         self.application_id = 0
         self.application_permissions = Permission()
         self.channel = create_partial_channel_from_id(0, ChannelType.unknown, 0)
@@ -688,7 +688,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         """
         new = object.__new__(type(self))
         new._async_task = None
-        new._response_flag = RESPONSE_FLAG_NONE
+        new._response_flags = RESPONSE_FLAG_NONE
         new.id = 0
         new.application_id = self.application_id
         new.application_permissions = self.application_permissions
@@ -930,7 +930,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         # Construct
         new = object.__new__(type(self))
         new._async_task = None
-        new._response_flag = RESPONSE_FLAG_NONE
+        new._response_flags = RESPONSE_FLAG_NONE
         new.id = 0
         new.application_id = application_id
         new.application_permissions = application_permissions
@@ -993,7 +993,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         repr_parts = ['<', self.__class__.__name__]
         
         response_state_names = None
-        response_state = self._response_flag
+        response_state = self._response_flags
         
         if response_state == RESPONSE_FLAG_NONE:
             pass
@@ -1231,7 +1231,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         -------
         is_unanswered : `bool`
         """
-        return True if (self._response_flag == RESPONSE_FLAG_NONE) else False
+        return True if (self._response_flags == RESPONSE_FLAG_NONE) else False
     
     
     def is_acknowledging(self):
@@ -1242,7 +1242,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         -------
         is_acknowledging : `bool`
         """
-        return True if (self._response_flag & RESPONSE_FLAG_ACKNOWLEDGING) else False
+        return True if (self._response_flags & RESPONSE_FLAG_ACKNOWLEDGING) else False
     
     
     def is_acknowledged(self):
@@ -1253,7 +1253,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         -------
         is_acknowledged : `bool`
         """
-        return True if (self._response_flag & RESPONSE_FLAG_ACKNOWLEDGED) else False
+        return True if (self._response_flags & RESPONSE_FLAG_ACKNOWLEDGED) else False
     
     
     def is_deferred(self):
@@ -1264,7 +1264,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         -------
         is_deferred : `bool`
         """
-        response_state = self._response_flag
+        response_state = self._response_flags
         if response_state & RESPONSE_FLAG_RESPONDED:
             return False
         
@@ -1282,7 +1282,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         -------
         is_responding : `bool`
         """
-        return True if (self._response_flag & RESPONSE_FLAG_RESPONDING) else False
+        return True if (self._response_flags & RESPONSE_FLAG_RESPONDING) else False
     
     
     def is_responded(self):
@@ -1293,7 +1293,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         -------
         is_responded : `bool`
         """
-        return True if (self._response_flag & RESPONSE_FLAG_RESPONDED) else False
+        return True if (self._response_flags & RESPONSE_FLAG_RESPONDED) else False
     
     
     def is_expired(self):

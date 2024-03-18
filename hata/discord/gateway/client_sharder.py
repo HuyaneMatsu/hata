@@ -57,7 +57,7 @@ def _create_gateways(client, shard_count, gateways):
 
 async def _close_and_abort_gateway(gateway):
     """
-    Closes and aborts teh gateway.
+    Closes and aborts the gateway.
     
     This function is a coroutine.
     

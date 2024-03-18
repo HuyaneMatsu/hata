@@ -1,4 +1,4 @@
-__all__ = ('create_forum_tag_from_id', )
+__all__ = ('create_partial_forum_tag_from_id', )
 
 from ...core import FORUM_TAGS
 
@@ -15,7 +15,7 @@ FORUM_TAG_FIELD_CONVERTERS = {
 }
 
 
-def create_forum_tag_from_id(forum_tag_id):
+def create_partial_forum_tag_from_id(forum_tag_id):
     """
     Creates a forum tag from the given identifier.
     

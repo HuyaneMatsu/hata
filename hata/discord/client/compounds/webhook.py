@@ -4,26 +4,57 @@ import reprlib
 
 from scarletio import Compound
 
-from ...allowed_mentions import parse_allowed_mentions
 from ...application import Application
 from ...bases import maybe_snowflake
+from ...builder.serialization import create_serializer
+from ...builder.serialization_configuration import SerializationConfiguration
 from ...channel import Channel, ChannelType, create_partial_channel_from_id
-from ...channel.channel_metadata.fields import (
-    put_applied_tag_ids_into, validate_applied_tag_ids, validate_name as validate_thread_name
-)
 from ...http import DiscordApiClient, VALID_ICON_MEDIA_TYPES_EXTENDED
-from ...message import Message, MessageFlag
+from ...message import Message
+from ...message.message_builder import MessageBuilderWebhookCreate, MessageBuilderWebhookEdit
 from ...utils import get_image_media_type, image_to_base64
 from ...webhook import Webhook, create_partial_webhook_from_id
 
 from ..request_helpers import (
-    add_file_to_message_data, get_channel_id, get_components_data, get_guild_id, get_webhook_and_id,
-    get_webhook_and_id_and_token, get_webhook_id, get_webhook_id_and_token, validate_content_and_embed,
+    get_channel_id, get_guild_id, get_webhook_and_id, get_webhook_and_id_and_token, get_webhook_id,
+    get_webhook_id_and_token,
 )
 
 
-MESSAGE_FLAG_VALUE_SILENT = MessageFlag().update_by_keys(silent = True)
-MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed = True)
+MESSAGE_SERIALIZER_WEBHOOK_CREATE = create_serializer(
+    MessageBuilderWebhookCreate,
+    SerializationConfiguration(
+        [
+            MessageBuilderWebhookCreate.allowed_mentions,
+            MessageBuilderWebhookCreate.attachments,
+            MessageBuilderWebhookCreate.applied_tag_ids,
+            MessageBuilderWebhookCreate.avatar_url,
+            MessageBuilderWebhookCreate.components,
+            MessageBuilderWebhookCreate.content,
+            MessageBuilderWebhookCreate.embeds,
+            MessageBuilderWebhookCreate.flags,
+            MessageBuilderWebhookCreate.name,
+            MessageBuilderWebhookCreate.thread_name,
+            MessageBuilderWebhookCreate.tts,
+        ],
+        False,
+    )
+)
+
+MESSAGE_SERIALIZER_WEBHOOK_EDIT = create_serializer(
+    MessageBuilderWebhookEdit,
+    SerializationConfiguration(
+        [
+            MessageBuilderWebhookEdit.allowed_mentions,
+            MessageBuilderWebhookEdit.attachments,
+            MessageBuilderWebhookEdit.components,
+            MessageBuilderWebhookEdit.content,
+            MessageBuilderWebhookEdit.embeds,
+            MessageBuilderWebhookEdit.flags,
+        ],
+        True,
+    )
+)
 
 
 class ClientCompoundWebhookEndpoints(Compound):
@@ -550,23 +581,7 @@ class ClientCompoundWebhookEndpoints(Compound):
     
     
     async def webhook_message_create(
-        self,
-        webhook,
-        content = None,
-        *,
-        allowed_mentions = ...,
-        applied_tag_ids = ...,
-        avatar_url = None,
-        components = None,
-        embed = None,
-        file = None,
-        name = None,
-        thread = None,
-        thread_name = ...,
-        silent = False,
-        suppress_embeds = False,
-        tts = False,
-        wait = False,
+        self, webhook, *positional_parameters, thread = None, wait = False, **keyword_parameters,
     ):
         """
         Sends a message with the given webhook. If there is nothing to send, or if `wait` was not passed as `True`
@@ -579,47 +594,61 @@ class ClientCompoundWebhookEndpoints(Compound):
         webhook : ``Webhook``, `tuple` (`int`, `str`)
             The webhook through what will the message be sent.
         
-        content : `None`, `str`, ``Embed``, `object` = `None`, Optional
-            The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``Embed`` is given, then will be casted to string.
-            
-            If given as ``Embed``, then is sent as the message's embed.
-        
-        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
-                , Optional (Keyword only)
-            
-            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
-        
-        applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
-             The tags' identifier which have been applied to the thread.
-             Applicable for threads of a forum-like channels.
-        
-        avatar_url : `None`, `str` = `None`, Optional (Keyword only)
-            The message's author's avatar's url. Defaults to the webhook's avatar' url by Discord.
-        
-        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
-                ``Component``) = `None`, Optional (Keyword only)
-            Components attached to the message.
-            
-            > `components` do not count towards having any content in the message.
-        
-        embed : `None`, ``Embed``, `list` of ``Embed`` = `None`, Optional (Keyword only)
-            The embedded content of the message.
-            
-            If `embed` and `content` parameters are both given as  ``Embed``, then `AssertionError` is
-            raised.
-        
-        file : `None`, `object` = `None`, Optional (Keyword only)
-            A file or files to send. Check ``create_file_form`` for details.
-        
-        name : `None`, `str` = `None`, Optional (Keyword only)
-            The message's author's new name. Default to the webhook's name by Discord.
+        *positional_parameters : Positional parameters
+            Additional parameters to create the message with.
         
         thread : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
             The thread of the webhook's channel where the message should be sent.
         
-        thread_name : `None`, `str`, Optional (Keyword only)
-            The thread's name to create. Applicable only in forum-like channels.
+        wait : `None`, `bool` = `None`, Optional (Keyword only)
+            Whether we should wait for the message to send and receive it's data as well.
+        
+        **keyword_parameters : Keyword parameters
+            Additional parameters to create the message with.
+        
+        Other Parameters
+        ----------------
+        allowed_mentions : `None`,  ``AllowedMentionProxy``, `str`, ``UserBase``, ``Role``, `list` of \
+                (`str`, ``UserBase``, ``Role`` ) , Optional
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
+            for details.
+        
+        applied_tag_ids : `None`, `(list | tuple)<int | ForumTag>`, `int`, `ForumTag`, Optional (Keyword only)
+             The tags' identifier which have been applied to the thread.
+             Applicable for threads of a forum-like channels.
+        
+        applied_tags : `None`, `(list | tuple)<int | ForumTag>`, `int`, `ForumTag`, Optional (Keyword only)
+            Alternative for `applied_tag_ids`.
+        
+        attachments : `None`, `object`, Optional (Keyword only)
+            Attachments to send.
+        
+        avatar_url : `None`, `str` = `None`, Optional (Keyword only)
+            The message's author's avatar's url. Defaults to the webhook's avatar' url by Discord.
+        
+        components : `None`, ``Component``, `(tuple | list)<Component, (tuple | list)<Component>>`
+            Components attached to the message.
+        
+        content : `None`, `str`, Optional
+            The message's content if given.
+        
+        embed : `None`, `Embed`, Optional
+            Alternative for `embeds`.
+        
+        embeds : `None`, `list<Embed>`, Optional
+            The new embedded content of the message.
+        
+        file : `None`, `object`, Optional (Keyword only)
+            Alternative for `attachments`.
+        
+        files : `None`, `object`, Optional (Keyword only)
+            Alternative for `attachments`.
+        
+        flags : `int`, ``MessageFlag`, Optional
+            The message's flags.
+        
+        name : `None`, `str` = `None`, Optional (Keyword only)
+            The message's author's new name. Default to the webhook's name by Discord.
         
         silent : `bool` = `False`, Optional (Keyword only)
             Whether the message should be delivered silently.
@@ -627,11 +656,11 @@ class ClientCompoundWebhookEndpoints(Compound):
         suppress_embeds : `bool` = `False`, Optional (Keyword only)
             Whether the message's embeds should be suppressed initially.
         
+        thread_name : `None`, `str`, Optional (Keyword only)
+            The thread's name to create. Applicable only in forum-like channels.
+        
         tts : `bool` = `False`, Optional (Keyword only)
             Whether the message is text-to-speech.
-        
-        wait : `None`, `bool` = `None`, Optional (Keyword only)
-            Whether we should wait for the message to send and receive it's data as well.
         
         Returns
         -------
@@ -641,16 +670,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
-            - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``Embed`` nor as `list`, `tuple` of ``Embed``-s.
-            - `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
-            - If invalid file type would be sent.
-            - If `thread` was not given either as `None`, ``Channel`` nor as `int`.
-            - If `components` type is incorrect.
-        ValueError
-            - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
-            - If more than `10` files would be sent.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
@@ -682,95 +702,16 @@ class ClientCompoundWebhookEndpoints(Compound):
             
             raise TypeError(
                 f'`thread` can be `None`, thread channel, `int`, '
-                f'got {thread.__class__.__name__}; {thread!r}.'
+                f'got {type(thread).__name__}; {thread!r}.'
             )
         
-        content, embed = validate_content_and_embed(content, embed, False)
+        if not isinstance(wait, bool):
+            raise TypeError(
+                f'`wait` can be `bool`, got {type(wait).__name__}; {wait!r}.'
+            )
         
-        components = get_components_data(components, False)
-        
-        if __debug__:
-            if not isinstance(tts, bool):
-                raise AssertionError(
-                    f'`tts` can be `bool`, got {tts.__class__.__name__}; {tts!r}.'
-                )
-            
-            if not isinstance(wait, bool):
-                raise AssertionError(
-                    f'`wait` can be `bool`, got {wait.__class__.__name__}; {wait!r}.'
-                )
-            
-            if not isinstance(silent, bool):
-                raise AssertionError(
-                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
-                )
-            
-            if not isinstance(suppress_embeds, bool):
-                raise AssertionError(
-                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
-                )
-        
-        message_data = {}
-        contains_content = False
-        
-        if (content is not None):
-            message_data['content'] = content
-            contains_content = True
-        
-        if (embed is not None):
-            message_data['embeds'] = [embed.to_data() for embed in embed]
-            contains_content = True
-        
-        if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
-        
-        if (components is not None):
-            message_data['components'] = components
-        
-        if tts:
-            message_data['tts'] = True
-        
-        if (applied_tag_ids is not ...):
-            put_applied_tag_ids_into(validate_applied_tag_ids(applied_tag_ids), message_data, True)
-        
-        if (thread_name is not ...):
-            message_data['thread_name'] = validate_thread_name(thread_name)
-        
-        flags = (
-            (MESSAGE_FLAG_VALUE_SILENT if silent else 0) |
-            (MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS if suppress_embeds else 0)
-        )
-        if flags:
-            message_data['flags'] = flags
-        
-        if (avatar_url is not None):
-            if __debug__:
-                if not isinstance(avatar_url, str):
-                    raise AssertionError(
-                        f'`avatar_url` can be `None`, `str`, got {avatar_url.__class__.__name__}; {avatar_url!r}.'
-                    )
-            
-            message_data['avatar_url'] = avatar_url
-        
-        if (name is not None):
-            if __debug__:
-                if not isinstance(name, str):
-                    raise AssertionError(
-                        f'`name` cane be given either as `None`, `str instance, got '
-                        f'{name.__class__.__name__}; {name!r}.'
-                    )
-                
-                name_length = len(name)
-                if name_length > 80:
-                    raise AssertionError(
-                        f'`name` length can be in range [1:80], got {name_length}; {name!r}.'
-                    )
-            
-            if name:
-                message_data['username'] = name
-        
-        message_data = add_file_to_message_data(message_data, file, contains_content, False)
-        if message_data is None:
+        message_data = MESSAGE_SERIALIZER_WEBHOOK_CREATE(positional_parameters, keyword_parameters)
+        if not message_data:
             return
         
         query_parameters = None
@@ -784,30 +725,56 @@ class ClientCompoundWebhookEndpoints(Compound):
             if query_parameters is None:
                 query_parameters = {}
             
-            query_parameters['thread_id'] = thread_id
+            query_parameters['thread_id'] = str(thread_id)
         
-        message_data = await self.api.webhook_message_create(webhook_id, webhook_token, message_data, query_parameters)
+        data = await self.api.webhook_message_create(webhook_id, webhook_token, message_data, query_parameters)
         
         if not wait:
             return
         
         # Use goto
         while True:
+            # Created into thread
+            if thread_id:
+                if thread is not None:
+                    channel = thread
+                    break
+                
+                channel = create_partial_channel_from_id(thread_id, ChannelType.guild_thread_public, 0)
+                break
+            
+            # Created as thread
+            try:
+                thread_data = data['thread']
+            except KeyError:
+                pass
+            else:
+                channel = create_partial_channel_from_id(
+                    int(thread_data['id']),
+                    ChannelType.guild_thread_public,
+                    0,
+                )
+                break
+            
+            # Check webhook.channel
             if (webhook is not None):
                 channel = webhook.channel
                 if (channel is not None):
                     break
             
-            channel_id = int(message_data['channel_id'])
-            channel = create_partial_channel_from_id(channel_id, ChannelType.guild_text, 0)
+            # Create new channel if unknown.
+            # Create thread if `thread_name` is present.
+            channel = create_partial_channel_from_id(
+                int(data['channel_id']),
+                ChannelType.guild_text,
+                0,
+            )
             break
         
-        return channel._create_new_message(message_data)
+        return channel._create_new_message(data)
     
     
-    async def webhook_message_edit(
-        self, webhook, message, content = ..., *, embed = ..., file = ..., allowed_mentions = ..., components = ...
-    ):
+    async def webhook_message_edit(self, webhook, message, *positional_parameters, **keyword_parameters):
         """
         Edits the message sent by the given webhook. The message's author must be the webhook itself.
         
@@ -819,54 +786,58 @@ class ClientCompoundWebhookEndpoints(Compound):
         message : ``Message``, `int`
             The webhook's message to edit.
         
-        content : `None`, `str`, ``Embed``, `object`, Optional
-            The new content of the message.
-            
-            If given as `str` then the message's content will be edited with it. If given as any non ``Embed``
-            instance, then it will be cased to string first.
-            
-            If given as ``Embed``, then the message's embeds will be edited with it.
+        *positional_parameters : Positional parameters
+            Additional parameters to edit the message with.
         
-        embed : `None`, ``Embed``, `list` of ``Embed``, Optional (Keyword only)
-            The new embedded content of the message. By passing it as `None`, you can remove the old.
-            
-            > If `embed` and `content` parameters are both given as  ``Embed``, then `AssertionError` is
-            > raised.
+        **keyword_parameters : Keyword parameters
+            Additional parameters to edit the message with.
         
-        file : `None`, `object`, Optional (Keyword only)
-            A file or files to send. Check ``create_file_form`` for details.
-        
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
-                , Optional (Keyword only)
+        Other Parameters
+        ----------------
+        allowed_mentions : `None`,  ``AllowedMentionProxy``, `str`, ``UserBase``, ``Role``, `list` of \
+                (`str`, ``UserBase``, ``Role`` ) , Optional
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
         
-        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of \
-                ``Component``), Optional (Keyword only)
+        attachments : `None`, `object`, Optional (Keyword only)
+            Attachments to send.
+        
+        components : `None`, ``Component``, `(tuple | list)<Component, (tuple | list)<Component>>`
             Components attached to the message.
+            
+            Pass it as `None` remove the actual ones.
+        
+        content : `None`, `str`, Optional
+            The new content of the message.
+        
+        embed : `None`, `Embed`, Optional
+            Alternative for `embeds`.
+        
+        embeds : `None`, `list<Embed>`, Optional
+            The new embedded content of the message.
+            
+            By passing it as `None`, you can remove the old.
+        
+        file : `None`, `object`, Optional (Keyword only)
+            Alternative for `attachments`.
+        
+        files : `None`, `object`, Optional (Keyword only)
+            Alternative for `attachments`.
+        
+        flags : `int`, ``MessageFlag`, Optional
+            The message's new flags.
+        
+        suppress_embeds : `bool`, Optional (Keyword only)
+            Whether the message's embeds should be suppressed or unsuppressed.
         
         Raises
         ------
         TypeError
-            - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
-            - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``Embed`` nor as `list`, `tuple` of ``Embed``-s.
-            - `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
-            - `message` was given as `None`. Make sure to use ``Client.webhook_message_create`` with `wait = True` and
-                by giving any content to it as well.
-            - `message` was not given neither as ``Message``, `int`.
-            - If `components` type is incorrect.
-        ValueError
-            - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
-            - If more than `10` file would be sent.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `message` was detectably not sent by the `webhook`.
-            - If `embed` contains a non ``Embed`` element.
-            - If both `content` and `embed` fields are embeds.
         
         See Also
         --------
@@ -890,13 +861,14 @@ class ClientCompoundWebhookEndpoints(Compound):
         # 5.: raise
         
         if isinstance(message, Message):
-            if __debug__:
-                if message.author.id != webhook_id:
-                    raise AssertionError(
-                        f'The message was not sent by the webhook, got {message!r}.'
-                    )
+            if message.author.id != webhook_id:
+                raise RuntimeError(
+                    f'The message was not sent by the webhook, got {message!r}; '
+                    f'webhook_id = {webhook_id!r}; message.author.id = {message.author.id!r}.'
+                )
                 
             message_id = message.id
+        
         else:
             message_id = maybe_snowflake(message)
             if (message_id is not None):
@@ -912,33 +884,12 @@ class ClientCompoundWebhookEndpoints(Compound):
             else:
                 raise TypeError(
                     f'`message` can be `{Message.__name__}`, int`, got '
-                    f'{message.__class__.__name__}; {message!r}.'
+                    f'{type(message).__name__}; {message!r}.'
                 )
         
-        content, embed = validate_content_and_embed(content, embed, True)
-        
-        components = get_components_data(components, True)
-        
-        # Build payload
-        message_data = {}
-        
-        # Discord docs say, content can be nullable, but nullable content is just ignored.
-        if (content is not ...):
-            message_data['content'] = content
-        
-        if (embed is not ...):
-            if (embed is not None):
-                embed = [embed.to_data() for embed in embed]
-            
-            message_data['embeds'] = embed
-        
-        if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
-        
-        if (components is not ...):
-            message_data['components'] = components
-        
-        message_data = add_file_to_message_data(message_data, file, True, True)
+        message_data = MESSAGE_SERIALIZER_WEBHOOK_EDIT(positional_parameters, keyword_parameters)
+        if not message_data:
+            return
         
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
         await self.api.webhook_message_edit(webhook_id, webhook_token, message_id, message_data)

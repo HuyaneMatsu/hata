@@ -259,7 +259,7 @@ class AuditLogEntry(DiscordEntity):
         **keyword_parameters : Keyword Parameters
             Additional keyword parameters.
         
-        Other parameters
+        Other Parameters
         ----------------
         entry_type : ``AuditLogEntryType``, `int`, Optional (Keyword only)
             The logged event's type.

@@ -119,10 +119,10 @@ async def test__InteractionResponseContext__context__1():
     )
     
     async with context:
-        vampytest.assert_true(interaction_event._response_flag & RESPONSE_FLAG_RESPONDING)
+        vampytest.assert_true(interaction_event._response_flags & RESPONSE_FLAG_RESPONDING)
         
-    vampytest.assert_true(interaction_event._response_flag & RESPONSE_FLAG_RESPONDED)
-    vampytest.assert_false(interaction_event._response_flag & RESPONSE_FLAG_RESPONDING)
+    vampytest.assert_true(interaction_event._response_flags & RESPONSE_FLAG_RESPONDED)
+    vampytest.assert_false(interaction_event._response_flags & RESPONSE_FLAG_RESPONDING)
 
 
 async def test__InteractionResponseContext__context__2():
@@ -142,11 +142,11 @@ async def test__InteractionResponseContext__context__2():
     )
     
     async with context:
-        vampytest.assert_true(interaction_event._response_flag & RESPONSE_FLAG_DEFERRING)
+        vampytest.assert_true(interaction_event._response_flags & RESPONSE_FLAG_DEFERRING)
         
-    vampytest.assert_true(interaction_event._response_flag & RESPONSE_FLAG_DEFERRED)
-    vampytest.assert_false(interaction_event._response_flag & RESPONSE_FLAG_DEFERRING)
-    vampytest.assert_true(interaction_event._response_flag & RESPONSE_FLAG_EPHEMERAL)
+    vampytest.assert_true(interaction_event._response_flags & RESPONSE_FLAG_DEFERRED)
+    vampytest.assert_false(interaction_event._response_flags & RESPONSE_FLAG_DEFERRING)
+    vampytest.assert_true(interaction_event._response_flags & RESPONSE_FLAG_EPHEMERAL)
 
 
 async def test__InteractionResponseContext__context__3():
@@ -167,8 +167,8 @@ async def test__InteractionResponseContext__context__3():
     
     with vampytest.assert_raises(ValueError):
         async with context:
-            vampytest.assert_true(interaction_event._response_flag & RESPONSE_FLAG_RESPONDING)
+            vampytest.assert_true(interaction_event._response_flags & RESPONSE_FLAG_RESPONDING)
             raise ValueError()
     
-    vampytest.assert_false(interaction_event._response_flag & RESPONSE_FLAG_RESPONDED)
-    vampytest.assert_false(interaction_event._response_flag & RESPONSE_FLAG_RESPONDING)
+    vampytest.assert_false(interaction_event._response_flags & RESPONSE_FLAG_RESPONDED)
+    vampytest.assert_false(interaction_event._response_flags & RESPONSE_FLAG_RESPONDING)

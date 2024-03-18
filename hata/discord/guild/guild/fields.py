@@ -56,7 +56,7 @@ validate_afk_channel_id = entity_id_validator_factory('afk_channel_id', Channel)
 # afk_timeout
 
 parse_afk_timeout = int_parser_factory('afk_timeout', AFK_TIMEOUT_DEFAULT)
-put_afk_timeout_into = int_putter_factory('afk_timeout')
+put_afk_timeout_into = int_optional_putter_factory('afk_timeout', AFK_TIMEOUT_DEFAULT)
 validate_afk_timeout = int_options_validator_factory('afk_timeout', AFK_TIMEOUT_OPTIONS)
 
 # approximate_online_count

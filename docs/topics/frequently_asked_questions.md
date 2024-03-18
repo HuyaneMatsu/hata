@@ -176,7 +176,8 @@ To make a web request you should use a non-blocking library. Hata already requir
 communicate with Discord.
 
 ```py3
-from scarletio import HTTPClient, get_event_loop
+from scarletio import get_event_loop
+from scarletio.http_client import HTTPClient
 
 session = HTTPClient(get_event_loop())
 

@@ -6,8 +6,8 @@ from ..fields import put_integration_types_into
 
 
 def _iter_options():
-    yield None, False, {'integration_types': []}
-    yield None, True, {'integration_types': []}
+    yield None, False, {'integration_types': None}
+    yield None, True, {'integration_types': None}
     yield (
         (ApplicationIntegrationType.user_install, ),
         False,

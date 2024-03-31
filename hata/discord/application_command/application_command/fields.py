@@ -148,7 +148,34 @@ def validate_integration_context_types(integration_context_types):
 # integration_types
 
 parse_integration_types = preinstanced_array_parser_factory('integration_types', ApplicationIntegrationType)
-put_integration_types_into = preinstanced_array_putter_factory('integration_types')
+
+
+def put_integration_types_into(integration_types, data, defaults):
+    """
+    Puts the `integration_types`'s data into the given `data` json serializable object.
+    
+    Parameters
+    ----------
+    integration_types : `None | tuple<ApplicationIntegrationType>`
+        The options where the application command can be integrated to.
+    data : `dict` of (`str`, `object`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `object`) items
+    """
+    if integration_types is None:
+        raw = None
+    else:
+        raw = [preinstanced.value for preinstanced in integration_types]
+    
+    data['integration_types'] = raw
+    return data
+
+
 validate_integration_types = preinstanced_array_validator_factory('integration_types', ApplicationIntegrationType)
 
 

@@ -335,6 +335,7 @@ class OpusEncoder:
         # do we really need to switch from sub-int-type to int-type?
         opus.opus_encoder_control(self._encoder, SET_INBAND_FEC, int(enabled)) 
     
+    
     def set_expected_packet_loss_percent(self, percentage):
         """
         Sets the expected packet loss percentage of the encoder.

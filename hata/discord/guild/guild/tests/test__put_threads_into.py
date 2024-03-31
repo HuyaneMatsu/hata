@@ -5,7 +5,7 @@ from ....channel import Channel, ChannelType
 from ..fields import put_threads_into
 
 
-def iter_options():
+def _iter_options():
     channel_id = 202306130026
     channel_name = 'Koishi'
     
@@ -19,7 +19,7 @@ def iter_options():
     yield {channel_id: channel}, True, {'threads': [channel.to_data(defaults = True, include_internals = True)]}
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__put_threads_into(input_value, defaults):
     """
     Tests whether ``put_threads_into`` works as intended.

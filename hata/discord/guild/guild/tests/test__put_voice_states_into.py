@@ -5,7 +5,7 @@ from ....user import VoiceState
 from ..fields import put_voice_states_into
 
 
-def iter_options():
+def _iter_options():
     user_id = 202306150018
     channel_id = 202306150019
     guild_id = 202306150020
@@ -20,7 +20,7 @@ def iter_options():
     yield {user_id: voice_state}, True, {'voice_states': [voice_state.to_data(defaults = True)]}
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__put_voice_states_into(input_value, defaults):
     """
     Tests whether ``put_voice_states_into`` works as intended.

@@ -583,26 +583,21 @@ del action_name, embed_color
 
 Command specific setting, to overwrite the parent slasher's [delete_commands_on_unload](#delete_commands_on_unload).
 
-### allow_in_dm
+### integration_types
 
-Whether the command can be used in private channels. This parameter is only meaningful for global commands. Can be
-used to *disable* commands in dm.
+Describes for which integration type (guild install or user install) is the command showing up.
+This parameter is only meaningful for global commands.
 
-```py3
-from hata import Embed
+[More about it here.](./integration.md)
 
-@Nitori.interactions(is_global = True, allow_in_dm = False)
-async def guild_features(event):
-    """Shows the guild's features."""
-    guild = event.guild
-    
-    return Embed(
-        f'{guild.name}\'s features',    
-        ', '.join(sorted(feature.name for feature in guild.features)),
-    ).add_thumbnail(
-        guild.icon_url
-    )
-```
+
+### integration_context_types
+
+Describes to which contexts the command is integrated to or with other words where it can be used.
+This parameter is only meaningful for global commands.
+
+[More about it here.](./integration.md)
+
 
 ### required_permissions
 
@@ -1400,5 +1395,5 @@ Removed slash commands may not disappear after they are removed. This can have m
 ----
 
 <p align="right">
-    <a href="./auto_completion.md">Next up: Auto completion</a>
+    <a href="./integration.md">Next up: Integration</a>
 </p>

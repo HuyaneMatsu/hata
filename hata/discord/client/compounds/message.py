@@ -40,6 +40,7 @@ MESSAGE_SERIALIZER_CREATE = create_serializer(
             MessageBuilderCreate.components,
             MessageBuilderCreate.content,
             MessageBuilderCreate.embeds,
+            MessageBuilderCreate.enforce_nonce,
             MessageBuilderCreate.flags,
             MessageBuilderCreate.nonce,
             MessageBuilderCreate.reply_configuration,
@@ -317,6 +318,9 @@ class ClientCompoundMessageEndpoints(Compound):
         
         embeds : `None`, `list<Embed>`, Optional
             The new embedded content of the message.
+        
+        enforce_nonce : `bool`, Optional (Keyword only)
+            Whether Discord should return the same message for the same nonce.
         
         file : `None`, `object`, Optional (Keyword only)
             Alternative for `attachments`.

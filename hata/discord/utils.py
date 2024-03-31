@@ -6,8 +6,9 @@
     'id_difference_to_seconds', 'id_difference_to_timedelta', 'id_to_datetime', 'id_to_unix_time', 'is_id',
     'is_invite_code', 'is_mention', 'is_role_mention', 'is_url', 'is_user_mention', 'mention_channel_by_id',
     'mention_role_by_id', 'mention_user_by_id', 'mention_user_nick_by_id', 'now_as_id', 'parse_message_reference',
-    'parse_rdelta', 'parse_tdelta', 'random_id', 'sanitize_content', 'sanitize_mentions', 'seconds_to_id_difference',
-    'seconds_to_elapsed_time', 'timedelta_to_id_difference', 'unix_time_to_datetime', 'unix_time_to_id'
+    'parse_rdelta', 'parse_signed_url', 'parse_tdelta', 'random_id', 'sanitize_content', 'sanitize_mentions',
+    'seconds_to_id_difference', 'seconds_to_elapsed_time', 'timedelta_to_id_difference', 'unix_time_to_datetime',
+    'unix_time_to_id'
 )
 
 import reprlib, sys
@@ -20,7 +21,8 @@ from random import random
 from re import I as re_ignore_case, U as re_unicode, compile as re_compile
 from time import time as time_now
 
-from scarletio import LOOP_TIME, export, include, modulize
+from scarletio import LOOP_TIME, RichAttributeErrorBaseType, export, include, modulize
+from scarletio.web_common import URL
 
 from .bases import DiscordEntity
 from .core import CHANNELS, ROLES, USERS
@@ -1877,3 +1879,178 @@ def format_unix_time(unix_time, style = None):
         formatted_string = f'<t:{unix_time:.0f}:{style}>'
     
     return formatted_string
+
+
+class SignedUrlParseResult(RichAttributeErrorBaseType):
+    """
+    Represents the result of parsing a signed url.
+    
+    Attributes
+    ----------
+    expires_at : `None | DateTime`
+        When the signature expires.
+    signature : `None | bytes`
+        The signature.
+    signed_at : `None | DateTime`
+        When the signature was taken.
+    url : `str`
+        The unsigned version of the url.
+    """
+    __slots__ = ('expires_at', 'signature', 'signed_at', 'url')
+    
+    def __new__(cls, url, signed_at, expires_at, signature):
+        """
+        Creates a new signed url parse result instance.
+        
+        Parameters
+        ----------
+        url : `str`
+            The unsigned version of the url.
+        signed_at : `None | DateTime`
+            When the signature was taken.
+        expires_at : `None | DateTime`
+            When the signature expires.
+        signature : `None | bytes`
+            The signature.
+        """
+        self = object.__new__(cls)
+        self.expires_at = expires_at
+        self.signature = signature
+        self.signed_at = signed_at
+        self.url = url
+        return self
+    
+    
+    def __repr__(self):
+        """Returns the signed url parse result's representation."""
+        repr_parts = ['<', type(self).__name__]
+        
+        # url
+        repr_parts.append(' url = ')
+        repr_parts.append(repr(self.url))
+        
+        # signed_at
+        signed_at = self.signed_at
+        if (signed_at is not None):
+            repr_parts.append(', signed_at = ')
+            repr_parts.append(repr(signed_at))
+        
+        # expires_at
+        expires_at = self.expires_at
+        if (expires_at is not None):
+            repr_parts.append(', expires_at = ')
+            repr_parts.append(repr(expires_at))
+        
+        # signature
+        signature = self.signature
+        if (signature is not None):
+            repr_parts.append(', signature = ')
+            repr_parts.append(repr(signature))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two signed url parse results are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        # expires_at
+        if self.expires_at != other.expires_at:
+            return False
+        
+        # signature
+        if self.signature != other.signature:
+            return False
+        
+        # signed_at
+        if self.signed_at != other.signed_at:
+            return False
+        
+        # url
+        if self.url != other.url:
+            return False
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the signed url hash value."""
+        hash_value = 0
+        
+        # expires_at
+        expires_at = self.expires_at
+        if (expires_at is not None):
+            hash_value ^= hash(expires_at)
+        
+        # signature
+        signature = self.signature
+        if (signature is not None):
+            hash_value ^= hash(signature)
+        
+        # signed_at
+        signed_at = self.signed_at
+        if (signed_at is not None):
+            hash_value ^= hash(signed_at)
+        
+        # url
+        hash_value ^= hash(self.url)
+        
+        return hash_value
+
+
+def parse_signed_url(signed_url):
+    """
+    Parses a signed url.
+    
+    Parameters
+    ----------
+    signed_url : `str`
+        The signed url to parse.
+    
+    Returns
+    -------
+    parse_result : ``SignedUrlParseResult``
+    """
+    url = URL(signed_url)
+    query = url.query
+    
+    # url
+    url = str(url.with_query(None))
+    
+    # expired_at
+    expires_at_str = query.get('ex', '')
+    if not expires_at_str:
+        expires_at = None
+    else:
+        try:
+            expires_at_int = int(expires_at_str, 16)
+        except ValueError:
+            expires_at = None
+        else:
+            expires_at = unix_time_to_datetime(expires_at_int)
+    
+    # signed_at
+    signed_at_str = query.get('is', '')
+    if not signed_at_str:
+        signed_at = None
+    else:
+        try:
+            signed_at_int = int(signed_at_str, 16)
+        except ValueError:
+            signed_at = None
+        else:
+            signed_at = unix_time_to_datetime(signed_at_int)
+    
+    # signature
+    signature_str = query.get('hm', '')
+    if not signature_str:
+        signature = None
+    else:
+        try:
+            signature = bytes.fromhex(signature_str)
+        except ValueError:
+            signature = None
+    
+    return SignedUrlParseResult(url, signed_at, expires_at, signature)

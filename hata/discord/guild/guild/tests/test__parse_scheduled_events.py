@@ -7,7 +7,7 @@ from ..guild import Guild
 from ..fields import parse_scheduled_events
 
 
-def iter_options():
+def _iter_options():
     scheduled_event_id = 202306110000
     guild_id = 202306110005
     scheduled_event_name = 'Koishi'
@@ -28,7 +28,7 @@ def iter_options():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__parse_scheduled_events(input_value, guild_id):
     """
     Tests whether ``parse_scheduled_events`` works as intended.

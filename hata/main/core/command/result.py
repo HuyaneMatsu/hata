@@ -277,18 +277,16 @@ def command_result_processor_category_requires_parameter(command_category):
     -------
     message : `str`
     """
-    command_full_name = ' '.join(command_category._trace_back_name())
-    sub_command_full_names = {
-        command_function.get_full_name() for command_function in command_category.iter_command_functions()
-    }
+    command_name = command_category.name
+    sub_command_names = {command_function.name for command_function in command_category.iter_command_functions()}
+    sub_command_names.discard(command_name)
     
-    sub_command_full_names.discard(command_full_name)
-    
-    if not sub_command_full_names:
+    if not sub_command_names:
         return command_result_processor_category_empty(command_category)
     
     message_parts = []
     
+    command_full_name = ' '.join(command_category._trace_back_name())
     message_parts = render_error_box_into_multi_line(
         message_parts,
         [
@@ -301,9 +299,9 @@ def command_result_processor_category_requires_parameter(command_category):
         '\nAvailable sub-commands:\n'
     )
     
-    for sub_command_full_name in sub_command_full_names:
+    for sub_command_name in sub_command_names:
         message_parts.append('- ')
-        message_parts.append(sub_command_full_name)
+        message_parts.append(sub_command_name)
         message_parts.append('\n')
     
     return ''.join(message_parts)
@@ -354,7 +352,6 @@ def command_result_processor_command_required():
     message : `str`
     """
     return ''.join(render_error_box_into_single_line([], 'Command name required.'))
-
 
 
 def _ignore_command_call_frame(frame):

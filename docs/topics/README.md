@@ -19,6 +19,7 @@ Hata has tutorials in guides.
 - [slash](slash.md): Creating slash and context commands.
     
     With continuation:
+    - [integration](integration.md): Integration commands with users.
     - [auto-completion](auto_completion.md): Auto-completing slash command parameters.
     - [components](components.md): Using components and interacting with them.
     - [forms](forms.md): Building forms and receiving them.

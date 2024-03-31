@@ -95,7 +95,7 @@ def test__Message__from_data__all_fields():
         'application_id': str(application_id),
         'call': call.to_data(),
         'edited_timestamp': datetime_to_timestamp(edited_at),
-        'interaction': interaction.to_data(include_internals = True),
+        'interaction_metadata': interaction.to_data(include_internals = True),
         'mention_channels': [create_partial_channel_data(channel) for channel in mentioned_channels_cross_guild],
         'mention_everyone': mentioned_everyone,
         'mention_roles': [str(role_id) for role_id in mentioned_role_ids],
@@ -286,7 +286,7 @@ def test__Message__to_data():
         'call': call.to_data(defaults = True),
         'channel_id': str(channel_id),
         'edited_timestamp': datetime_to_timestamp(edited_at),
-        'interaction': interaction.to_data(defaults = True, include_internals = True),
+        'interaction_metadata': interaction.to_data(defaults = True, include_internals = True),
         'mention_channels': [create_partial_channel_data(channel) for channel in mentioned_channels_cross_guild],
         'mention_everyone': mentioned_everyone,
         'mention_roles': [str(role_id) for role_id in mentioned_role_ids],
@@ -604,7 +604,7 @@ def test__message__late_init__not_loading_but_receiving_interaction():
     input_data = {
         'id': str(message_id),
         'call': call.to_data(),
-        'interaction': interaction.to_data(include_internals = True),
+        'interaction_metadata': interaction.to_data(include_internals = True),
     }
     
     message._late_init(input_data)

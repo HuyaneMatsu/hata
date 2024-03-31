@@ -138,7 +138,7 @@ def list_commands(all_):
 
 @register(
     name = 'help',
-    alters = 'h',
+    aliases = 'h',
 )
 def help_(command_name: str = None, *sub_command_names, all_: bool = False):
     """Either lists the available commands, or shows the command's usage."""

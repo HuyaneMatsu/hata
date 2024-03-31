@@ -26,11 +26,11 @@ def test__ApplicationInstallParameters__copy():
     vampytest.assert_is_not(application_install_parameters, copy)
 
 
-def test__ApplicationInstallParameters__copy_with__0():
+def test__ApplicationInstallParameters__copy_with__no_fields():
     """
     Tests whether ``ApplicationInstallParameters.copy`` works as intended.
     
-    Case: No parameters
+    Case: No fields given.
     """
     permissions = Permission(123)
     scopes = [Oauth2Scope.bot, Oauth2Scope.email]
@@ -46,11 +46,11 @@ def test__ApplicationInstallParameters__copy_with__0():
     vampytest.assert_is_not(application_install_parameters, copy)
 
 
-def test__ApplicationInstallParameters__copy_with__1():
+def test__ApplicationInstallParameters__copy_with__all_fields():
     """
     Tests whether ``ApplicationInstallParameters.copy`` works as intended.
     
-    Case: No parameters
+    Case: All fields given.
     """
     old_permissions = Permission(123)
     new_permissions = Permission(333)

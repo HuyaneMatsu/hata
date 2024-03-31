@@ -6,7 +6,7 @@ from ..fields import parse_emojis
 from ..guild import Guild
 
 
-def iter_options():
+def _iter_options():
     emoji_id = 202306090000
     emoji_name = 'Koishi'
     
@@ -24,7 +24,7 @@ def iter_options():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__parse_emojis(input_value):
     """
     Tests whether ``parse_emojis`` works as intended.

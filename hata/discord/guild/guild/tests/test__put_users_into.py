@@ -5,7 +5,7 @@ from ....user import User, GuildProfile
 from ..fields import put_users_into
 
 
-def iter_options():
+def _iter_options():
     user_id = 202306150005
     guild_id = 202306150006
     
@@ -49,7 +49,7 @@ def iter_options():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__put_users_into(users, defaults, guild_id):
     """
     Tests whether ``put_users_into`` works as intended.

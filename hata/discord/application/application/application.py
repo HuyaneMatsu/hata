@@ -11,6 +11,8 @@ from ...http import urls as module_urls
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ZEROUSER
 
+from ..application_integration_type_configuration import ApplicationIntegrationTypeConfiguration
+
 from .constants import (
     BOT_PUBLIC_DEFAULT, BOT_REQUIRES_CODE_GRANT_DEFAULT, HOOK_DEFAULT, INTEGRATION_PUBLIC_DEFAULT,
     INTEGRATION_REQUIRES_CODE_GRANT_DEFAULT, MAX_PARTICIPANTS_DEFAULT, OVERLAY_COMPATIBILITY_HOOK_DEFAULT,
@@ -22,31 +24,33 @@ from .fields import (
     parse_discoverability_state, parse_discovery_eligibility_flags, parse_embedded_activity_configuration,
     parse_eula_id, parse_executables, parse_explicit_content_filter_level, parse_flags, parse_guild_id, parse_hook,
     parse_id, parse_install_parameters, parse_integration_public, parse_integration_requires_code_grant,
-    parse_interaction_endpoint_url, parse_interaction_event_types, parse_interaction_version,
-    parse_internal_guild_restriction, parse_max_participants, parse_monetization_eligibility_flags,
-    parse_monetization_state, parse_monetized, parse_name, parse_overlay, parse_overlay_compatibility_hook,
-    parse_overlay_method_flags, parse_owner, parse_primary_sku_id, parse_privacy_policy_url, parse_publishers,
-    parse_redirect_urls, parse_role_connection_verification_url, parse_rpc_origins, parse_rpc_state, parse_slug,
-    parse_store_state, parse_tags, parse_terms_of_service_url, parse_third_party_skus, parse_type,
-    parse_verification_state, parse_verify_key, put_aliases_into, put_approximate_guild_count_into, put_bot_public_into,
-    put_bot_requires_code_grant_into, put_creator_monetization_state_into, put_custom_install_url_into,
-    put_deeplink_url_into, put_description_into, put_developers_into, put_discoverability_state_into,
-    put_discovery_eligibility_flags_into, put_embedded_activity_configuration_into, put_eula_id_into,
-    put_executables_into, put_explicit_content_filter_level_into, put_flags_into, put_guild_id_into, put_hook_into,
-    put_id_into, put_install_parameters_into, put_integration_public_into, put_integration_requires_code_grant_into,
-    put_interaction_endpoint_url_into, put_interaction_event_types_into, put_interaction_version_into,
-    put_internal_guild_restriction_into, put_max_participants_into, put_monetization_eligibility_flags_into,
-    put_monetization_state_into, put_monetized_into, put_name_into, put_overlay_compatibility_hook_into,
-    put_overlay_into, put_overlay_method_flags_into, put_owner_into, put_primary_sku_id_into,
-    put_privacy_policy_url_into, put_publishers_into, put_redirect_urls_into, put_role_connection_verification_url_into,
-    put_rpc_origins_into, put_rpc_state_into, put_slug_into, put_store_state_into, put_tags_into,
-    put_terms_of_service_url_into, put_third_party_skus_into, put_type_into, put_verification_state_into,
-    put_verify_key_into, validate_aliases, validate_approximate_guild_count, validate_bot_public,
-    validate_bot_requires_code_grant, validate_creator_monetization_state, validate_custom_install_url,
-    validate_deeplink_url, validate_description, validate_developers, validate_discoverability_state,
-    validate_discovery_eligibility_flags, validate_embedded_activity_configuration, validate_eula_id,
-    validate_executables, validate_explicit_content_filter_level, validate_flags, validate_guild_id, validate_hook,
-    validate_id, validate_install_parameters, validate_integration_public, validate_integration_requires_code_grant,
+    parse_integration_types, parse_integration_types_configuration, parse_interaction_endpoint_url,
+    parse_interaction_event_types, parse_interaction_version, parse_internal_guild_restriction, parse_max_participants,
+    parse_monetization_eligibility_flags, parse_monetization_state, parse_monetized, parse_name, parse_overlay,
+    parse_overlay_compatibility_hook, parse_overlay_method_flags, parse_owner, parse_primary_sku_id,
+    parse_privacy_policy_url, parse_publishers, parse_redirect_urls, parse_role_connection_verification_url,
+    parse_rpc_origins, parse_rpc_state, parse_slug, parse_store_state, parse_tags, parse_terms_of_service_url,
+    parse_third_party_skus, parse_type, parse_verification_state, parse_verify_key, put_aliases_into,
+    put_approximate_guild_count_into, put_bot_public_into, put_bot_requires_code_grant_into,
+    put_creator_monetization_state_into, put_custom_install_url_into, put_deeplink_url_into, put_description_into,
+    put_developers_into, put_discoverability_state_into, put_discovery_eligibility_flags_into,
+    put_embedded_activity_configuration_into, put_eula_id_into, put_executables_into,
+    put_explicit_content_filter_level_into, put_flags_into, put_guild_id_into, put_hook_into, put_id_into,
+    put_install_parameters_into, put_integration_public_into, put_integration_requires_code_grant_into,
+    put_integration_types_configuration_into, put_integration_types_into, put_interaction_endpoint_url_into,
+    put_interaction_event_types_into, put_interaction_version_into, put_internal_guild_restriction_into,
+    put_max_participants_into, put_monetization_eligibility_flags_into, put_monetization_state_into, put_monetized_into,
+    put_name_into, put_overlay_compatibility_hook_into, put_overlay_into, put_overlay_method_flags_into, put_owner_into,
+    put_primary_sku_id_into, put_privacy_policy_url_into, put_publishers_into, put_redirect_urls_into,
+    put_role_connection_verification_url_into, put_rpc_origins_into, put_rpc_state_into, put_slug_into,
+    put_store_state_into, put_tags_into, put_terms_of_service_url_into, put_third_party_skus_into, put_type_into,
+    put_verification_state_into, put_verify_key_into, validate_aliases, validate_approximate_guild_count,
+    validate_bot_public, validate_bot_requires_code_grant, validate_creator_monetization_state,
+    validate_custom_install_url, validate_deeplink_url, validate_description, validate_developers,
+    validate_discoverability_state, validate_discovery_eligibility_flags, validate_embedded_activity_configuration,
+    validate_eula_id, validate_executables, validate_explicit_content_filter_level, validate_flags, validate_guild_id,
+    validate_hook, validate_id, validate_install_parameters, validate_integration_public,
+    validate_integration_requires_code_grant, validate_integration_types, validate_integration_types_configuration,
     validate_interaction_endpoint_url, validate_interaction_event_types, validate_interaction_version,
     validate_internal_guild_restriction, validate_max_participants, validate_monetization_eligibility_flags,
     validate_monetization_state, validate_monetized, validate_name, validate_overlay,
@@ -108,6 +112,8 @@ from .preinstanced import (
 # - id
 # - integration_public
 # - integration_requires_code_grant
+# - integration_types
+# - integration_types_configuration
 # - interaction_endpoint_url
 # - interaction_event_types
 # - interaction_version
@@ -226,6 +232,10 @@ from .preinstanced import (
 # | integration_public                  | YES       | NO        | NO            |
 # +-------------------------------------+-----------+-----------+---------------+
 # | integration_requires_code_grant     | YES       | NO        | NO            |
+# +-------------------------------------+-----------+-----------+---------------+
+# | integration_types                   | YES       | NO        | NO            |
+# +-------------------------------------+-----------+-----------+---------------+
+# | integration_types_configuration     | YES       | NO        | NO            |
 # +-------------------------------------+-----------+-----------+---------------+
 # | interaction_endpoint_url            | YES       | NO        | NO            |
 # +-------------------------------------+-----------+-----------+---------------+
@@ -353,6 +363,8 @@ COMMON_CONSTRUCT_FIELDS = {
     'install_parameters': ('install_parameters', validate_install_parameters),
     'integration_public': ('integration_public', validate_integration_public),
     'integration_requires_code_grant': ('integration_requires_code_grant', validate_integration_requires_code_grant),
+    'integration_types': ('integration_types', validate_integration_types),
+    'integration_types_configuration': ('integration_types_configuration', validate_integration_types_configuration),
     'interaction_endpoint_url': ('interaction_endpoint_url', validate_interaction_endpoint_url),
     'interaction_event_types': ('interaction_event_types', validate_interaction_event_types),
     'interaction_version': ('interaction_version', validate_interaction_version),
@@ -492,6 +504,12 @@ class Application(DiscordEntity, immortal = True):
         Whether the application's integration will only be installed when completing the full `oauth2` code grant flow.
         Defaults to `False`.
     
+    integration_types : `None | tuple<ApplicationIntegrationType>`
+        The enabled options where the application can be integrated to.
+    
+    integration_types_configuration : `None | dict<ApplicationIntegrationType, ApplicationIntegrationTypeConfiguration>`
+        Integration type specific configuration for installing the application.
+    
     interaction_endpoint_url : `None`, `str`
         Whether and to which url should interaction events be sent to.
         Defaults to `None`.
@@ -615,16 +633,14 @@ class Application(DiscordEntity, immortal = True):
     __slots__ = (
         'aliases', 'approximate_guild_count', 'bot_public', 'bot_requires_code_grant', 'creator_monetization_state',
         'custom_install_url', 'deeplink_url', 'description', 'developers', 'discoverability_state',
-        'discovery_eligibility_flags', 
-        'embedded_activity_configuration',
-        'eula_id', 'executables', 'explicit_content_filter_level', 'flags', 'guild_id', 'hook',
-        'install_parameters', 'integration_public', 'integration_requires_code_grant',
+        'discovery_eligibility_flags',  'embedded_activity_configuration', 'eula_id', 'executables',
+        'explicit_content_filter_level', 'flags', 'guild_id', 'hook', 'install_parameters', 'integration_public',
+        'integration_requires_code_grant', 'integration_types', 'integration_types_configuration',
         'interaction_endpoint_url', 'interaction_event_types', 'interaction_version', 'internal_guild_restriction',
-        'max_participants', 'monetization_eligibility_flags', 'monetization_state', 'monetized',
-        'name', 'overlay', 'overlay_compatibility_hook', 'overlay_method_flags', 'owner', 'primary_sku_id', 'privacy_policy_url', 'publishers',
-        'redirect_urls', 'role_connection_verification_url', 'rpc_origins', 'rpc_state', 'slug', 'store_state', 'tags',
-        'terms_of_service_url', 'third_party_skus',
-        'type', 'verification_state', 'verify_key'
+        'max_participants', 'monetization_eligibility_flags', 'monetization_state', 'monetized', 'name', 'overlay',
+        'overlay_compatibility_hook', 'overlay_method_flags', 'owner', 'primary_sku_id', 'privacy_policy_url',
+        'publishers', 'redirect_urls', 'role_connection_verification_url', 'rpc_origins', 'rpc_state', 'slug',
+        'store_state', 'tags', 'terms_of_service_url', 'third_party_skus', 'type', 'verification_state', 'verify_key'
     )
     
     cover = APPLICATION_COVER
@@ -674,6 +690,8 @@ class Application(DiscordEntity, immortal = True):
         self.install_parameters = None
         self.integration_public = INTEGRATION_PUBLIC_DEFAULT
         self.integration_requires_code_grant = INTEGRATION_REQUIRES_CODE_GRANT_DEFAULT
+        self.integration_types = None
+        self.integration_types_configuration = None
         self.interaction_endpoint_url = None
         self.interaction_event_types = None
         self.interaction_version = ApplicationInteractionVersion.none
@@ -928,6 +946,8 @@ class Application(DiscordEntity, immortal = True):
         self.install_parameters = parse_install_parameters(data)
         self.integration_public = parse_integration_public(data)
         self.integration_requires_code_grant = parse_integration_requires_code_grant(data)
+        self.integration_types = parse_integration_types(data)
+        self.integration_types_configuration = parse_integration_types_configuration(data)
         self.interaction_endpoint_url = parse_interaction_endpoint_url(data)
         self.interaction_event_types = parse_interaction_event_types(data)
         self.interaction_version = parse_interaction_version(data)
@@ -1115,6 +1135,8 @@ class Application(DiscordEntity, immortal = True):
         put_install_parameters_into(self.install_parameters, data, defaults)
         put_integration_public_into(self.integration_public, data, defaults)
         put_integration_requires_code_grant_into(self.integration_requires_code_grant, data, defaults)
+        put_integration_types_into(self.integration_types, data, defaults)
+        put_integration_types_configuration_into(self.integration_types_configuration, data, defaults)
         put_interaction_endpoint_url_into(self.interaction_endpoint_url, data, defaults)
         put_interaction_event_types_into(self.interaction_event_types, data, defaults)
         put_interaction_version_into(self.interaction_version, data, defaults)
@@ -1279,6 +1301,22 @@ class Application(DiscordEntity, immortal = True):
         
         # integration_requires_code_grant
         hash_value ^= self.integration_requires_code_grant << 9
+        
+        # integration_types
+        integration_types = self.integration_types
+        if (integration_types is not None):
+            hash_value ^= len(integration_types) << 33
+            
+            for integration_type in integration_types:
+                hash_value ^= hash(integration_type)
+        
+        # integration_types_configuration
+        integration_types_configuration = self.integration_types_configuration
+        if (integration_types_configuration is not None):
+            hash_value ^= len(integration_types_configuration) << 34
+            
+            for integration_type, integration_type_configuration in integration_types_configuration.items():
+                hash_value ^= hash(integration_type) & hash(integration_type_configuration)
         
         # interaction_endpoint_url
         interaction_endpoint_url = self.interaction_endpoint_url
@@ -1600,6 +1638,14 @@ class Application(DiscordEntity, immortal = True):
         if self.integration_requires_code_grant != other.integration_requires_code_grant:
             return False
         
+        # integration_types
+        if self.integration_types != other.integration_types:
+            return False
+        
+        # integration_types_configuration
+        if self.integration_types_configuration != other.integration_types_configuration:
+            return False
+        
         # interaction_endpoint_url
         if self.interaction_endpoint_url != other.interaction_endpoint_url:
             return False
@@ -1837,6 +1883,14 @@ class Application(DiscordEntity, immortal = True):
             Whether the application's integration will only be installed when completing the full `oauth2` code
             grant flow.
     
+        integration_types : `None | iterable<ApplicationIntegrationType | int>`, Optional (Keyword only)
+            The enabled options where the application can be integrated to.
+        
+        integration_types_configuration : \
+                `None | dict<ApplicationIntegrationType | int, ApplicationIntegrationTypeConfiguration>` \
+                , Optional (Keyword only)
+            Integration type specific configuration for installing the application.
+        
         interaction_endpoint_url : `None`, `str`, Optional (Keyword only)
             Whether and to which url should interaction events be sent to.
         
@@ -2036,6 +2090,15 @@ class Application(DiscordEntity, immortal = True):
             Whether the application's integration will only be installed when completing the full `oauth2` code
             grant flow.
     
+        integration_types : `None | iterable<ApplicationIntegrationType | int>`, Optional (Keyword only)
+            The enabled options where the application can be integrated to.
+        
+        
+        integration_types_configuration : \
+                `None | dict<ApplicationIntegrationType | int, ApplicationIntegrationTypeConfiguration>` \
+                , Optional (Keyword only)
+            Integration type specific configuration for installing the application.
+        
         interaction_endpoint_url : `None`, `str`, Optional (Keyword only)
             Whether and to which url should interaction events be sent to.
         
@@ -2244,7 +2307,15 @@ class Application(DiscordEntity, immortal = True):
         integration_requires_code_grant : `bool`, Optional (Keyword only)
             Whether the application's integration will only be installed when completing the full `oauth2` code
             grant flow.
-    
+        
+        integration_types : `None | iterable<ApplicationIntegrationType | int>`, Optional (Keyword only)
+            The enabled options where the application can be integrated to.
+        
+        integration_types_configuration : \
+                `None | dict<ApplicationIntegrationType | int, ApplicationIntegrationTypeConfiguration>` \
+                , Optional (Keyword only)
+            Integration type specific configuration for installing the application.
+        
         interaction_endpoint_url : `None`, `str`, Optional (Keyword only)
             Whether and to which url should interaction events be sent to.
         
@@ -2399,6 +2470,18 @@ class Application(DiscordEntity, immortal = True):
         new.install_parameters = install_parameters
         new.integration_public = self.integration_public
         new.integration_requires_code_grant = self.integration_requires_code_grant
+        integration_types = self.integration_types
+        if (integration_types is not None):
+            integration_types = (*integration_types,)
+        new.integration_types = integration_types
+        integration_types_configuration = self.integration_types_configuration
+        if (integration_types_configuration is not None):
+            integration_types_configuration = {
+                integration_type : integration_type_configuration.copy()
+                for integration_type, integration_type_configuration
+                in integration_types_configuration.items()
+            }
+        new.integration_types_configuration = integration_types_configuration
         new.interaction_endpoint_url = self.interaction_endpoint_url
         interaction_event_types = self.interaction_event_types
         if (interaction_event_types is not None):
@@ -2640,3 +2723,59 @@ class Application(DiscordEntity, immortal = True):
         redirect_urls = self.redirect_urls
         if (redirect_urls is not None):
             yield from redirect_urls
+    
+    
+    def has_integration_type(self, integration_type):
+        """
+        Returns whether the application has the given integration type enabled.
+        
+        Parameters
+        ----------
+        integration_type : `int`, ``ApplicationIntegrationType``
+            The integration type to check.
+        
+        Returns
+        -------
+        hash_integration_type : `bool`
+        """
+        integration_types = self.integration_types
+        if integration_types is None:
+            return False
+        
+        return integration_type in integration_types
+    
+    
+    def iter_integration_types(self):
+        """
+        Iterates over the integration types that the application has enabled.
+        
+        Yields
+        ------
+        integration_type : ``ApplicationIntegrationType``
+        """
+        integration_types = self.integration_types
+        if (integration_types is not None):
+            yield from integration_types
+    
+    
+    def get_integration_type_configuration(self, integration_type):
+        """
+        Returns the application's configuration for the given integration type.
+        
+        Parameters
+        ----------
+        integration_type : `int`, ``ApplicationIntegrationType``
+            The integration type to get configuration for.
+        
+        Returns
+        -------
+        configuration : ``ApplicationIntegrationTypeConfiguration``
+        """
+        integration_types_configuration = self.integration_types_configuration
+        if (integration_types_configuration is not None):
+            try:
+                return integration_types_configuration[integration_type]
+            except KeyError:
+                pass
+        
+        return ApplicationIntegrationTypeConfiguration._create_empty()

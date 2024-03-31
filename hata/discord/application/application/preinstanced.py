@@ -1,7 +1,8 @@
 __all__ = (
-    'ApplicationDiscoverabilityState', 'ApplicationExplicitContentFilterLevel', 'ApplicationInteractionEventType',
-    'ApplicationInteractionVersion', 'ApplicationInternalGuildRestriction', 'ApplicationMonetizationState',
-    'ApplicationRPCState', 'ApplicationStoreState', 'ApplicationType', 'ApplicationVerificationState' 
+    'ApplicationDiscoverabilityState', 'ApplicationExplicitContentFilterLevel', 'ApplicationIntegrationType',
+    'ApplicationInteractionEventType', 'ApplicationInteractionVersion', 'ApplicationInternalGuildRestriction',
+    'ApplicationMonetizationState', 'ApplicationRPCState', 'ApplicationStoreState', 'ApplicationType',
+    'ApplicationVerificationState' 
 )
 
 from ...bases import Preinstance as P, PreinstancedBase
@@ -99,6 +100,47 @@ class ApplicationExplicitContentFilterLevel(PreinstancedBase):
     # predefined
     none = P(0, 'none')
     filtered = P(1, 'filtered')
+
+
+class ApplicationIntegrationType(PreinstancedBase):
+    """
+    Represents how an application can be integrated.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the application integration type.
+    value : `int`
+        The Discord side identifier value of the application integration type.
+        
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``ApplicationIntegrationType``) items
+        Stores the created application integration type instances. This container is accessed when translating a
+        Discord application integration type's value to it's representation.
+    VALUE_TYPE : `type` = `int`
+        The application integration types' values' type.
+    DEFAULT_NAME : `str` = `'Undefined'`
+        The default name of the application integration types.
+    
+    Every predefined application integration type can be accessed as class attribute as well:
+    
+    +---------------------------+---------------------------+-------+
+    | Class attribute name      | name                      | value |
+    +===========================+===========================+=======+
+    | guild_install             | guild install             | 0     |
+    +---------------------------+---------------------------+-------+
+    | user_install              | user install              | 1     |
+    +---------------------------+---------------------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    
+    __slots__ = ()
+    
+    # predefined
+    guild_install = P(0, 'guild install')
+    user_install = P(1, 'user install')
 
 
 class ApplicationInteractionEventType(PreinstancedBase):

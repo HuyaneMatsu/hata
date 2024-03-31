@@ -1,8 +1,8 @@
 __all__ = ('EvaluationError', 'evaluate_text', )
 
-import math, warnings
+import math
 
-from scarletio import copy_docs
+from scarletio import RichAttributeErrorBaseType, copy_docs
 
 from ...discord.utils import sanitize_content
 
@@ -2119,7 +2119,7 @@ JUST_PARSE = ParserAny([
 ])
 
 
-class HighlightGroup:
+class HighlightGroup(RichAttributeErrorBaseType):
     """
     Highlight group to mention a part of a text inside of exception.
     
@@ -2149,21 +2149,64 @@ class HighlightGroup:
         """
         self = object.__new__(cls)
         self.end = end
-        self.start = start
         self.primary = primary
+        self.start = start
         return self
     
     
     def __repr__(self):
         """Returns the highlight group's representation."""
-        repr_parts = [
-            '<', self.__class__.__name__,
-            ' start = ', repr(self.start),
-            ', end = ', repr(self.end),
-            ', primary = ', repr(self.primary),
-        ]
+        repr_parts = ['<', type(self).__name__]
         
+        # start
+        repr_parts.append(' start = ')
+        repr_parts.append(repr(self.start))
+        
+        # end
+        repr_parts.append(', end = ')
+        repr_parts.append(repr(self.end))
+        
+        # primary
+        repr_parts.append(', primary = ')
+        repr_parts.append(repr(self.primary))
+        
+        repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two highlight groups are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        # end
+        if self.end != other.end:
+            return False
+        
+        # primary
+        if self.primary != other.primary:
+            return False
+        
+        # start
+        if self.start != other.start:
+            return False
+        
+        return True
+    
+    
+    def __hash__(self):
+        hash_value = 0
+        
+        # end
+        hash_value ^= self.end << (1 + 16)
+        
+        # primary
+        hash_value ^= self.primary
+        
+        # start
+        hash_value ^= self.start << 1
+        
+        return hash_value
 
 
 def get_highlight_group_range(highlight_groups):
@@ -2280,8 +2323,6 @@ class EvaluationError(SlasherCommandError):
     ----------
     _pretty_repr : `None`, `str`
         generated pretty representation of the exception.
-    _repr : `None`, `str`
-        The generated error message.
     array : `tuple` of `int`
         Source parsed array.
     highlight_groups : `list` of ``HighlightGroup``
@@ -2289,7 +2330,9 @@ class EvaluationError(SlasherCommandError):
     message : `str`
         Additional message to forward.
     """
-    def __init__(self, array, highlight_groups, message):
+    __slots__ = ('_pretty_repr', 'array', 'highlight_groups', 'message')
+    
+    def __new__(cls, array, highlight_groups, message):
         """
         Creates a new ``EvaluationError`` from the given parameters.
         
@@ -2302,99 +2345,44 @@ class EvaluationError(SlasherCommandError):
         message : `str`
             Additional message to forward.
         """
+        self = BaseException.__new__(cls, array, highlight_groups, message)
         self.array = array
         self.highlight_groups = highlight_groups
         self.message = message
-        self._repr = None
         self._pretty_repr = None
-        Exception.__init__(self, array, highlight_groups, message)
+        return self
     
     
     @property
-    def start_(self):
-        warnings.warn(
-            f'`{self.__class__.__name__}.start` is deprecated.',
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        lowest_value = -1
-        for highlight_group in self.highlight_groups:
-            if lowest_value == -1:
-                lowest_value = highlight_group.start
-                continue
-            
-            start = highlight_group.start
-            if start < lowest_value:
-                lowest_value = start
-                continue
-            
-            # No other cases
-        
-        if lowest_value == -1:
-            lowest_value = 0
-        
-        return lowest_value
-    
-    
-    @property
-    def end_(self):
-        warnings.warn(
-            f'`{self.__class__.__name__}.end` is deprecated.',
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        highest_value = -1
-        for highlight_group in self.highlight_groups:
-            if highest_value == -1:
-                highest_value = highlight_group.start
-                continue
-            
-            start = highlight_group.start
-            if start < highest_value:
-                highest_value = start
-                continue
-            
-            # No other cases
-        
-        if highest_value == -1:
-            highest_value = len(self.array)
-        
-        return highest_value
-    
-    
-    def __repr__(self):
-        """Returns the representation of the syntax error."""
-        repr_ = self._repr
-        if repr_ is None:
-            repr_ = self._create_repr()
-        
-        return repr_
-    
-    
-    def _create_repr(self):
+    def text(self):
         """
-        Creates the representation of the parsing syntax error.
+        Returns the text equivalent of `.array`.
         
         Returns
         -------
-        repr_ : `str`
-            The representation of the syntax error.
+        text : `str`
         """
-        repr_parts = [self.__class__.__name__, '\n']
-        for character in self.array:
-            repr_parts.append(chr(character))
+        return ''.join([chr(character) for character in self.array])
+    
+    
+    @copy_docs(SlasherCommandError.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', type(self).__name__]
         
-        repr_parts.append('\n')
+        # array / text
+        repr_parts.append(' text = ')
+        repr_parts.append(repr(self.text))
         
-        render_highlight_groups_within_range_into(self.highlight_groups, 0, len(self.array), repr_parts)
+        # highlight_groups
+        repr_parts.append(', highlight_groups = ')
+        repr_parts.append(repr(self.highlight_groups))
         
-        repr_parts.append('\n')
-        repr_parts.append(self.message)
-        repr_ = ''.join(repr_parts)
-        self._repr = repr_
-        return repr_
+        # message
+        repr_parts.append(', message = ')
+        repr_parts.append(repr(self.message))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     
     @property
@@ -2403,6 +2391,7 @@ class EvaluationError(SlasherCommandError):
         pretty_repr = self._pretty_repr
         if pretty_repr is None:
             pretty_repr = self._create_pretty_repr()
+            self._pretty_repr = pretty_repr
         
         return pretty_repr
     
@@ -2557,9 +2546,47 @@ class EvaluationError(SlasherCommandError):
         
         repr_parts.append('\n```')
         
-        pretty_repr = ''.join(repr_parts)
-        self._pretty_repr = pretty_repr
-        return pretty_repr
+        return ''.join(repr_parts)
+    
+    
+    @copy_docs(SlasherCommandError.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return False
+        
+        # array
+        if self.array != other.array:
+            return False
+        
+        # highlight_groups
+        if self.highlight_groups != other.highlight_groups:
+            return False
+        
+        # message
+        if self.message != other.message:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(SlasherCommandError.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        # array / text
+        hash_value ^= hash(self.text)
+        
+        # highlight_groups
+        highlight_groups = self.highlight_groups
+        hash_value ^= len(highlight_groups)
+        
+        for highlight_group in highlight_groups:
+            hash_value ^= hash(highlight_group)
+        
+        # message
+        hash_value ^= hash(self.message)
+        
+        return True
 
 
 class Token:
@@ -2942,8 +2969,8 @@ def check_followance(state):
             raise EvaluationError(
                 token.array,
                 [
+                    HighlightGroup(last_token.start, last_token.end, False),
                     HighlightGroup(token.start, token.end, True),
-                    HighlightGroup(last_token.start, last_token.end, True),
                 ],
                 f'{TOKEN_NAMES[last_token_id]} cannot be followed by {TOKEN_NAMES[token_id]}.',
             )

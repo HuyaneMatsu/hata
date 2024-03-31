@@ -6,7 +6,7 @@ from ..fields import parse_voice_states
 from ..guild import Guild
 
 
-def iter_options():
+def _iter_options():
     user_id = 202306150015
     channel_id = 202306150016
     guild_id = 202306150017
@@ -27,7 +27,7 @@ def iter_options():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__parse_voice_states(input_data, guild_id):
     """
     Tests whether ``parse_voice_states`` works as intended.

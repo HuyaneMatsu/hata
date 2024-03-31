@@ -1,10 +1,14 @@
 __all__ = ()
 
+from .....discord.application import ApplicationIntegrationType
 from .....discord.guild import Guild
 from .....discord.application_command.application_command.constants import (
     APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN
 )
 from .....discord.application_command.application_command.fields import validate_nsfw as _validate_nsfw
+from .....discord.application_command.application_command.preinstanced import (
+    APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL, ApplicationCommandIntegrationContextType
+)
 from .....discord.permission import Permission
 from .....discord.preconverters import preconvert_bool, preconvert_flag, preconvert_snowflake
 
@@ -259,3 +263,236 @@ def _validate_required_permissions(required_permissions):
         required_permissions = preconvert_flag(required_permissions, 'required_permissions', Permission)
     
     return required_permissions
+
+
+APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_BY_ATTRIBUTE_NAME = {
+    integration_context_type.name.replace(' ', '_'): integration_context_type
+    for integration_context_type
+    in ApplicationCommandIntegrationContextType.INSTANCES.values()
+}
+
+
+APPLICATION_INTEGRATION_TYPES_BY_ATTRIBUTE_NAME = {
+    integration_type.name.replace(' ', '_'): integration_type
+    for integration_type
+    in ApplicationIntegrationType.INSTANCES.values()
+    
+}
+
+
+def _fail_preinstanced_array_validation_single(field_name, preinstanced_type, string_resolution_table, value):
+    """
+    Fails preinstanced array validation when checking for a single instance.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    preinstanced_type : `type<PreinstancedBase>`
+        The preinstanced type we are validating for.
+    string_resolution_table : `dict<str, PreinstancedBase>`
+        String resolution table for the preinstanced type.
+    value : `object`
+        The value that failed on validation.
+    
+    Raises
+    ------
+    TypeError
+    """
+    allowed_strings_string = ', '.join(sorted(repr(string) for string in string_resolution_table.keys()))
+    
+    raise TypeError(
+        f'`{field_name}` can be `None`, `{preinstanced_type.__name__}`, `int`, '
+        f'`str` (any of: {allowed_strings_string!s}), or `iterable`, got '
+        f'{type(value).__name__}; {value!r}.'
+    )
+
+
+def _fail_preinstanced_array_validation_element(
+    field_name, preinstanced_type, string_resolution_table, preinstanced_array, value
+):
+    """
+    Fails preinstanced array validation when checking for an element.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    preinstanced_type : `type<PreinstancedBase>`
+        The preinstanced type we are validating for.
+    string_resolution_table : `dict<str, PreinstancedBase>`
+        String resolution table for the preinstanced type.
+    preinstanced_array : `object`
+        The given value to validate.
+    value : `object`
+        The value that failed on validation.
+    
+    Raises
+    ------
+    TypeError
+    """
+    allowed_strings_string = ', '.join(sorted(repr(string) for string in string_resolution_table.keys()))
+    
+    raise TypeError(
+        f'`{field_name}` elements can be `{preinstanced_type.__name__}`, `int`, '
+        f'`str` (any of: {allowed_strings_string!s}), or `iterable`, got '
+        f'got {type(value).__name__}; {value!r}; preinstanced_array = {preinstanced_array!r}'
+    )
+
+
+def _pre_validate_preinstanced_array(field_name, preinstanced_type, string_resolution_table, preinstanced_array):
+    """
+    Validates the given preinstanced array.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    preinstanced_type : `type<PreinstancedBase>`
+        The preinstanced type we are validating for.
+    string_resolution_table : `dict<str, preinstanced_type>`
+        String resolution table for the preinstanced type.
+    preinstanced_array : `object`
+        The given value to validate.
+    
+    Returns
+    -------
+    preinstanced_array : `None | tuple<preinstanced_type>`
+    
+    Raises
+    ------
+    TypeError
+    """
+    if preinstanced_array is None:
+        return None
+    
+    if isinstance(preinstanced_array, preinstanced_type):
+        return (preinstanced_array,)
+    
+    if isinstance(preinstanced_array, str):
+        preinstanced = string_resolution_table.get(preinstanced_array, None)
+        if preinstanced is None:
+            _fail_preinstanced_array_validation_single(
+                field_name, preinstanced_type, string_resolution_table, preinstanced_array
+            )
+        
+        return (preinstanced,)
+    
+    if isinstance(preinstanced_array, int):
+        return (ApplicationCommandIntegrationContextType.get(preinstanced_array),)
+    
+    if getattr(preinstanced_array, '__iter__', None) is None:
+        _fail_preinstanced_array_validation_single(
+            field_name, preinstanced_type, string_resolution_table, preinstanced_array
+        )
+    
+    unique_elements = None
+    
+    for preinstanced in preinstanced_array:
+        if isinstance(preinstanced, preinstanced_type):
+            pass
+        
+        elif isinstance(preinstanced, str):
+            preinstanced = string_resolution_table.get(preinstanced, None)
+            if preinstanced is None:
+                _fail_preinstanced_array_validation_element(
+                    field_name, preinstanced_type, string_resolution_table, preinstanced_array, preinstanced
+                )
+            
+        elif isinstance(preinstanced, int):
+            preinstanced = preinstanced_type.get(preinstanced)
+        
+        else:
+            _fail_preinstanced_array_validation_element(
+                field_name, preinstanced_type, string_resolution_table, preinstanced_array, preinstanced
+            )
+        
+        if unique_elements is None:
+            unique_elements = set()
+        
+        unique_elements.add(preinstanced)
+    
+    if unique_elements is None:
+        return None
+    
+    return tuple(sorted(unique_elements))
+
+
+def _validate_integration_context_types(integration_context_types):
+    """
+    Validates the given `integration_context_types` value.
+    
+    Parameters
+    ----------
+    integration_context_types : `None`, ``ApplicationCommandIntegrationContextType``, `int`, `str`, \
+            `iterable<ApplicationCommandIntegrationContextType | int | str>`
+        The places where the application command shows up. `None` means all.
+    
+    Returns
+    -------
+    integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
+    
+    Raises
+    ------
+    TypeError
+    """
+    integration_context_types = _pre_validate_preinstanced_array(
+        'integration_context_types',
+        ApplicationCommandIntegrationContextType,
+        APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_BY_ATTRIBUTE_NAME,
+        integration_context_types,
+    )
+    if (
+        (integration_context_types is not None) and
+        (integration_context_types == APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL)
+    ):
+        integration_context_types = None
+    
+    return integration_context_types
+
+
+def _validate_integration_types(integration_types):
+    """
+    Validates the given `integration_types` value.
+    
+    Parameters
+    ----------
+    integration_types : `None`, ``ApplicationIntegrationType``, `int`, `str`, \
+            `iterable<ApplicationIntegrationType | int | str>`
+        The options where the application command can be integrated to.
+    
+    Returns
+    -------
+    integration_types : `None | tuple<ApplicationIntegrationType>`
+    
+    Raises
+    ------
+    TypeError
+    """
+    integration_types = _pre_validate_preinstanced_array(
+        'integration_types',
+        ApplicationIntegrationType,
+        APPLICATION_INTEGRATION_TYPES_BY_ATTRIBUTE_NAME,
+        integration_types,
+    )
+    if (integration_types is None):
+        integration_types = (ApplicationIntegrationType.guild_install,)
+    
+    return integration_types
+
+
+def _maybe_exclude_dm_from_integration_context_types(allow_in_dm, integration_context_types):
+    """
+    Excludes private channels from `integration_context_types` if `allow_in_dm` is false.
+    
+    Parameters
+    ----------
+    allow_in_dm : `bool`
+        Whether the command should be allowed in private channels.
+    integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
+        The places where the application command shows up. `None` means all.
+    """
+    if (allow_in_dm is None) or allow_in_dm:
+        return integration_context_types
+    
+    return (ApplicationCommandIntegrationContextType.guild,)

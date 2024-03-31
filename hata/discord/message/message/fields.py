@@ -242,52 +242,32 @@ validate_id = entity_id_validator_factory('message_id')
 
 # interaction
 
-def parse_interaction(data, guild_id = 0):
+# Old messages use `interaction` instead of `interaction_metadata`.
+def parse_interaction(data):
     """
-    Parses the message's interaction from its data.
+    Parses message interaction from the given data.
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
-        Message data.
-    guild_id : `int` = `0`, Optional
-        The guild's id where the message was created at.
+    data : `dict<str, object>`
+        Data to parse from.
     
     Returns
     -------
-    interaction : `None`, ``MessageInteraction``
+    interaction : `None | MessageInteraction`
     """
-    message_interaction_data = data.get('interaction', None)
-    if (message_interaction_data is not None):
-        return MessageInteraction.from_data(message_interaction_data, guild_id)
+    try:
+        interaction_data = data['interaction_metadata']
+    except KeyError:
+        interaction_data = data.get('interaction', None)
+    
+    if (interaction_data is not None):
+        return MessageInteraction.from_data(interaction_data)
 
 
-def put_interaction_into(interaction, data, defaults, *, guild_id = 0):
-    """
-    Puts the message interaction's data into the given `data` json serializable object.
-    
-    Parameters
-    ----------
-    interaction : `None`, ``MessageInteraction``
-        Message interaction.
-    data : `dict` of (`str`, `object`) items
-        Json serializable dictionary.
-    defaults : `bool`
-        Whether default values should be included as well.
-    guild_id : `int` = `0`, Optional (Keyword only)
-        The guild's id where the message was created at.
-    
-    Returns
-    -------
-    data : `dict` of (`str`, `object`) items
-    """
-    if (interaction is not None):
-        data['interaction'] = interaction.to_data(defaults = defaults, include_internals = True, guild_id = guild_id)
-    elif defaults:
-        data['interaction'] = None
-    
-    return data
-
+put_interaction_into = nullable_entity_optional_putter_factory(
+    'interaction_metadata', MessageInteraction, force_include_internals = True
+)
 validate_interaction = nullable_entity_validator_factory('interaction', MessageInteraction)
 
 # mentioned_channels_cross_guild

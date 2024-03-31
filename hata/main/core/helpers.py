@@ -1,7 +1,7 @@
 __all__ = ()
 
 import sys
-from os import sep as PATH_SEPARATOR
+from os import geteuid as get_effective_user_id, sep as PATH_SEPARATOR
 from os.path import (
     basename as get_file_name, commonpath as _get_common_path, isabs as is_absolute_path, split as split_path
 )
@@ -159,6 +159,9 @@ def render_main_call_into(into, with_parameters = False):
     -------
     into : `list` of `str`
     """
+    if get_effective_user_id() == 0:
+        into.append('sudo ')
+    
     system_parameters = sys.argv
     if len(system_parameters) < 1:
         into = _render_default_main_call_into(into)

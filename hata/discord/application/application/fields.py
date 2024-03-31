@@ -25,6 +25,7 @@ from ...user import ClientUserBase, User, ZEROUSER
 from ..application_entity import ApplicationEntity
 from ..application_executable import ApplicationExecutable
 from ..application_install_parameters import ApplicationInstallParameters
+from ..application_integration_type_configuration import ApplicationIntegrationTypeConfiguration
 from ..embedded_activity_configuration import EmbeddedActivityConfiguration
 from ..eula import EULA
 from ..team import Team
@@ -40,9 +41,10 @@ from .flags import (
     ApplicationOverlayMethodFlags
 )
 from .preinstanced import (
-    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationInteractionEventType,
-    ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
-    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
+    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationIntegrationType,
+    ApplicationInteractionEventType, ApplicationInteractionVersion, ApplicationInternalGuildRestriction,
+    ApplicationMonetizationState, ApplicationRPCState, ApplicationStoreState, ApplicationType,
+    ApplicationVerificationState
 )
 
 # aliases
@@ -218,6 +220,134 @@ put_integration_requires_code_grant_into = bool_optional_putter_factory(
 validate_integration_requires_code_grant = bool_validator_factory(
     'integration_requires_code_grant', INTEGRATION_REQUIRES_CODE_GRANT_DEFAULT
 )
+
+# integration_types
+
+parse_integration_types = preinstanced_array_parser_factory('integration_types', ApplicationIntegrationType)
+put_integration_types_into = preinstanced_array_putter_factory('integration_types')
+validate_integration_types = preinstanced_array_validator_factory('integration_types', ApplicationIntegrationType)
+
+
+# integration_types_configuration
+
+def parse_integration_types_configuration(data):
+    """
+    Parses application integration types configuration.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    integration_types_configuration : `None | dict<ApplicationIntegrationType, ApplicationIntegrationTypeConfiguration>`
+    """
+    configurations_data = data.get('integration_types_config', None)
+    if (configurations_data is None) or (not configurations_data):
+        return None
+    
+    integration_types_configuration = {}
+    for key, value in configurations_data.items():
+        integration_type = ApplicationIntegrationType.get(ApplicationIntegrationType.VALUE_TYPE(key))
+        integration_type_configuration = ApplicationIntegrationTypeConfiguration.from_data(value)
+        integration_types_configuration[integration_type] = integration_type_configuration
+    
+    return integration_types_configuration
+
+
+def put_integration_types_configuration_into(integration_types_configuration, data, defaults):
+    """
+    Puts the application's owner data into the given `data` json serializable object.
+    
+    Parameters
+    ----------
+    integration_types_configuration : `None | dict<ApplicationIntegrationType, ApplicationIntegrationTypeConfiguration>`
+        Integration types configuration to serialize.
+    data : `dict` of (`str`, `object`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `object`) items
+    """
+    configurations_data = {}
+    
+    if (integration_types_configuration is not None):
+        for integration_type, integration_type_configuration in integration_types_configuration.items():
+            key = str(integration_type.value)
+            value = integration_type_configuration.to_data(defaults = defaults)
+            configurations_data[key] = value 
+    
+    data['integration_types_config'] = configurations_data
+    return data
+
+
+def validate_integration_types_configuration(integration_types_configuration):
+    """
+    Validates the given `integration_types_configuration` value.
+    
+    Parameters
+    ----------
+    integration_types_configuration : \
+            `None | dict<ApplicationIntegrationType | int, ApplicationIntegrationTypeConfiguration>`
+        Integration types configuration to validate.
+    
+    Returns
+    -------
+    integration_types_configuration : `None | dict<ApplicationIntegrationType, ApplicationIntegrationTypeConfiguration>`
+    
+    Raises
+    ------
+    TypeError
+        - If `integration_types_configuration`'s type is invalid.
+    """
+    if integration_types_configuration is None:
+        return None
+    
+    if not isinstance(integration_types_configuration, dict):
+        raise TypeError(
+            f'`integration_types_configuration` can be `None`,'
+            f'`dict<{ApplicationIntegrationType.__name__} | {ApplicationIntegrationType.VALUE_TYPE.__name__}, '
+            f'{ApplicationIntegrationTypeConfiguration.__name__}`, got '
+            f'{type(integration_types_configuration).__name__}; {integration_types_configuration!r}.'
+        )
+    
+    if not integration_types_configuration:
+        return None
+    
+    validated_integration_types_configuration = {}
+    
+    for key, value in integration_types_configuration.items():
+        if isinstance(key, ApplicationIntegrationType):
+            integration_type = key
+        
+        elif isinstance(key, ApplicationIntegrationType.VALUE_TYPE):
+            integration_type = ApplicationIntegrationType.get(key)
+        
+        else:
+            raise TypeError(
+                f'`integration_types_configuration` keys can be '
+                f'`{ApplicationIntegrationType.__name__}`, `{ApplicationIntegrationType.VALUE_TYPE.__name__}`, '
+                f'got {type(key).__name__}; {key!r}; '
+                f'integration_types_configuration = {integration_types_configuration!r}.'
+            )
+        
+        if isinstance(value, ApplicationIntegrationTypeConfiguration):
+            integration_type_configuration = value
+        
+        else:
+            raise TypeError(
+                f'`integration_types_configuration` values can be `{ApplicationIntegrationTypeConfiguration.__name__}`, '
+                f'got {type(value).__name__}; {value!r}; '
+                f'integration_types_configuration = {integration_types_configuration!r}.'
+            )
+        
+        validated_integration_types_configuration[integration_type] = integration_type_configuration
+    
+    return validated_integration_types_configuration
 
 
 # interaction_endpoint_url

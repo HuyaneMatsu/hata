@@ -35,6 +35,7 @@ setup(
         'hata.discord.application.application_entity',
         'hata.discord.application.application_executable',
         'hata.discord.application.application_install_parameters',
+        'hata.discord.application.application_integration_type_configuration',
         'hata.discord.application.application_role_connection',
         'hata.discord.application.application_role_connection_metadata',
         'hata.discord.application.client_platform_configuration',

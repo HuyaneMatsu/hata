@@ -7,7 +7,7 @@ from ..guild import Guild
 from ..fields import parse_stages
 
 
-def iter_options():
+def _iter_options():
     stage_id = 202306110008
     guild_id = 202306110009
     stage_topic = 'Koishi'
@@ -28,7 +28,7 @@ def iter_options():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__parse_stages(input_value, guild_id):
     """
     Tests whether ``parse_stages`` works as intended.

@@ -1,21 +1,158 @@
 __all__ = ()
 
+from ...application import ApplicationIntegrationType
 from ...application_command.application_command.constants import (
     APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN
 )
-from ...field_parsers import entity_id_parser_factory, preinstanced_parser_factory
-from ...field_putters import entity_id_putter_factory, preinstanced_putter_factory
+from ...field_parsers import entity_id_parser_factory, nullable_entity_parser_factory, preinstanced_parser_factory
+from ...field_putters import (
+    entity_id_optional_putter_factory, entity_id_putter_factory, nullable_entity_optional_putter_factory,
+    preinstanced_putter_factory
+)
 from ...field_validators import (
-    default_entity_validator_factory, entity_id_validator_factory, force_string_validator_factory,
+    entity_id_validator_factory, force_string_validator_factory, nullable_entity_validator_factory,
     nullable_string_array_validator_factory, preinstanced_validator_factory
 )
-from ...user import ClientUserBase, User, ZEROUSER
+from ...user import ClientUserBase
+
+
+# authorizer_user_ids
+
+def parse_authorizer_user_ids(data):
+    """
+    Parses authorizer user identifiers.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    authorizer_user_ids : `None | dict<ApplicationIntegrationType, int>`
+    """
+    authorizer_user_ids_data = data.get('authorizing_integration_owners', None)
+    if (authorizer_user_ids_data is None) or (not authorizer_user_ids_data):
+        return None
+    
+    authorizer_user_ids = {}
+    
+    for key, value in authorizer_user_ids_data.items():
+        integration_type = ApplicationIntegrationType.get(ApplicationIntegrationType.VALUE_TYPE(key))
+        user_id = int(value)
+        authorizer_user_ids[integration_type] = user_id
+    
+    return authorizer_user_ids
+
+
+def put_authorizer_user_ids_into(authorizer_user_ids, data, defaults):
+    """
+    Serializes the authorizer user identifiers.
+    
+    Parameters
+    ----------
+    authorizer_user_ids : `None | dict<ApplicationIntegrationType, int>`
+        The identifiers of the authorizer users.
+    data : `dict` of (`str`, `object`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `object`) items
+    """
+    authorizer_user_ids_data = {}
+    
+    if (authorizer_user_ids is not None):
+        for integration_type, user_id in authorizer_user_ids.items():
+            key = str(integration_type.value)
+            value = str(user_id)
+            authorizer_user_ids_data[key] = value
+    
+    data['authorizing_integration_owners'] = authorizer_user_ids_data
+    return data
+
+
+def validate_authorizer_user_ids(authorizer_user_ids):
+    """
+    Validates the authorizer user identifiers.
+    
+    Parameters
+    ----------
+    authorizer_user_ids : `None | dict<ApplicationIntegrationType | int, int, ClientUserBase | int>`
+        Authorizer user identifiers to validate.
+    
+    Returns
+    -------
+    authorizer_user_ids : `None | dict<ApplicationIntegrationType, int>`
+    
+    Raises
+    ------
+    TypeError
+        - Value of invalid type given.
+    """
+    if authorizer_user_ids is None:
+        return None
+    
+    if not isinstance(authorizer_user_ids, dict):
+        raise TypeError(
+            f'`authorizer_user_ids` can be `None`,'
+            f'`dict<{ApplicationIntegrationType.__name__} | {ApplicationIntegrationType.VALUE_TYPE.__name__}, '
+            f'int | {ClientUserBase.__name__}, got '
+            f'{type(authorizer_user_ids).__name__}; {authorizer_user_ids!r}.'
+        )
+    
+    if not authorizer_user_ids:
+        return None
+    
+    validated_authorizer_user_ids = {}
+    
+    for key, value in authorizer_user_ids.items():
+        if isinstance(key, ApplicationIntegrationType):
+            integration_type = key
+        
+        elif isinstance(key, ApplicationIntegrationType.VALUE_TYPE):
+            integration_type = ApplicationIntegrationType.get(key)
+        
+        else:
+            raise TypeError(
+                f'`authorizer_user_ids` keys can be '
+                f'`{ApplicationIntegrationType.__name__}`, `{ApplicationIntegrationType.VALUE_TYPE.__name__}`, '
+                f'got {type(key).__name__}; {key!r}; '
+                f'authorizer_user_ids = {authorizer_user_ids!r}.'
+            )
+        
+        if isinstance(value, int):
+            user_id = value
+        
+        elif isinstance(value, ClientUserBase):
+            user_id = value.id
+        
+        else:
+            raise TypeError(
+                f'`authorizer_user_ids` values can be `int`, `{ClientUserBase.__name__}`, '
+                f'got {type(value).__name__}; {value!r}; '
+                f'authorizer_user_ids = {authorizer_user_ids!r}.'
+            )
+        
+        validated_authorizer_user_ids[integration_type] = user_id
+    
+    return validated_authorizer_user_ids
+
 
 # id
 
 parse_id = entity_id_parser_factory('id')
 put_id_into = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('message_interaction_id')
+
+
+# interacted_message_id
+
+parse_interacted_message_id = entity_id_parser_factory('interacted_message_id')
+put_interacted_message_id_into = entity_id_optional_putter_factory('interacted_message_id')
+validate_interacted_message_id = entity_id_validator_factory('interacted_message_id', NotImplemented, include = 'Message')
 
 
 # name & sub_command_name_stack
@@ -93,6 +230,26 @@ validate_name = force_string_validator_factory(
 
 validate_sub_command_name_stack = nullable_string_array_validator_factory('sub_command_name_stack', ordered = False)
 
+
+# response_message_id
+
+parse_response_message_id = entity_id_parser_factory('original_response_message_id')
+put_response_message_id_into = entity_id_optional_putter_factory('original_response_message_id')
+validate_response_message_id = entity_id_validator_factory('response_message_id', NotImplemented, include = 'Message')
+
+
+# triggering_interaction
+
+parse_triggering_interaction = nullable_entity_parser_factory(
+    'triggering_interaction_metadata', NotImplemented, include = 'MessageInteraction'
+)
+put_triggering_interaction_into = nullable_entity_optional_putter_factory(
+    'triggering_interaction_metadata', NotImplemented, can_include_internals = True, include = 'MessageInteraction',
+)
+validate_triggering_interaction = nullable_entity_validator_factory(
+    'triggering_interaction', NotImplemented, include = 'MessageInteraction'
+)
+
 # type
 
 parse_type = preinstanced_parser_factory(
@@ -103,60 +260,37 @@ put_type_into = preinstanced_putter_factory('type')
 
 validate_type = preinstanced_validator_factory('type', NotImplemented, include = 'InteractionType')
 
-# user
 
-def parse_user(data, guild_id = 0):
+# user_id
+
+# old messages do not have the new data, so we default back to the old one.
+def parse_user_id(data):
     """
-    Parses out a user from the given reaction create or delete event data.
+    Parses out the user identifier from the given data.
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
-        Reaction event data.
-    guild_id : `int` = `0`, Optional
-        The guild's identifier where the event is from.
+    data : `dict<str, object>`
+        Data to parse from.
     
     Returns
     -------
-    user : ``ClientUserBase``
+    user_id : `int`
     """
-    user_data = data.get('user', None)
-    if user_data is None:
-        return ZEROUSER
+    try:
+        user_id = data['user_id']
+    except KeyError:
+        user_data = data.get('user', None)
+        if user_data is None:
+            return 0
+        
+        user_id = user_data.get('id', None)
     
-    return User.from_data(user_data, data.get('member', None), guild_id)
+    if user_id is None:
+        return 0
+    
+    return int(user_id)
 
 
-def put_user_into(user, data, defaults, *, guild_id = 0):
-    """
-    Puts the given user's representation into the given reaction event data.
-    
-    Parameters
-    ----------
-    user : ``ClientUserBase``
-        The user to serialize.
-    data : `dict` of (`str`, `object`) items
-        Reaction event data.
-    defaults : `bool`
-        Whether fields with their default values should be included as well.
-    guild_id : `int` = `0`, Optional (Keyword only)
-        The guild's identifier where the event is from.
-    
-    Returns
-    -------
-    data : `dict` of (`str`, `object`) items
-    """
-    data['user'] =  user.to_data(defaults = defaults, include_internals = True)
-    
-    if guild_id:
-        try:
-            guild_profile = user.guild_profiles[guild_id]
-        except KeyError:
-            pass
-        else:
-            data['member'] = guild_profile.to_data(defaults = defaults, include_internals = True)
-    
-    return data
-
-
-validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)
+put_user_id_into = entity_id_putter_factory('user_id')
+validate_user_id = entity_id_validator_factory('user_id', ClientUserBase)

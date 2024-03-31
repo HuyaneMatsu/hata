@@ -1,11 +1,13 @@
 import vampytest
 
+from ....application import ApplicationIntegrationType
 from ....localization import Locale
 from ....permission import Permission
 
-from ..application_command import ApplicationCommand
 from ...application_command_option import ApplicationCommandOption, ApplicationCommandOptionType
-from ..preinstanced import ApplicationCommandTargetType
+
+from ..application_command import ApplicationCommand
+from ..preinstanced import ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
 
 
 def _assert_fields_set(application_command):
@@ -18,12 +20,13 @@ def _assert_fields_set(application_command):
         The application command to check.
     """
     vampytest.assert_instance(application_command, ApplicationCommand)
-    vampytest.assert_instance(application_command.allow_in_dm, bool)
     vampytest.assert_instance(application_command.application_id, int)
     vampytest.assert_instance(application_command.description, str, nullable = True)
     vampytest.assert_instance(application_command.description_localizations, dict, nullable = True)
     vampytest.assert_instance(application_command.guild_id, int)
     vampytest.assert_instance(application_command.id, int)
+    vampytest.assert_instance(application_command.integration_context_types, tuple, nullable = True)
+    vampytest.assert_instance(application_command.integration_types, tuple, nullable = True)
     vampytest.assert_instance(application_command.name, str)
     vampytest.assert_instance(application_command.name_localizations, dict, nullable = True)
     vampytest.assert_instance(application_command.nsfw, bool)
@@ -46,6 +49,7 @@ def test__ApplicationCommand__new__no_fields():
     _assert_fields_set(application_command)
     
     vampytest.assert_eq(application_command.name, name)
+    vampytest.assert_eq(application_command.integration_types, None)
 
 
 def test__ApplicationCommand__new__all_fields():
@@ -54,11 +58,15 @@ def test__ApplicationCommand__new__all_fields():
     """
     name = 'owo'
     description = 'description'
-    allow_in_dm = True
     description_localizations = {
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
+    integration_context_types = [
+        ApplicationCommandIntegrationContextType.guild,
+        ApplicationCommandIntegrationContextType.any_private_channel,
+    ]
+    integration_types = [ApplicationIntegrationType.user_install]
     name_localizations = {
         Locale.thai: 'nay',
         Locale.czech: 'lay',
@@ -78,8 +86,9 @@ def test__ApplicationCommand__new__all_fields():
     application_command = ApplicationCommand(
         name,
         description,
-        allow_in_dm = allow_in_dm,
         description_localizations = description_localizations,
+        integration_context_types = integration_context_types,
+        integration_types = integration_types,
         name_localizations = name_localizations,
         nsfw = nsfw,
         options = options,
@@ -90,8 +99,9 @@ def test__ApplicationCommand__new__all_fields():
     
     vampytest.assert_eq(application_command.name, name)
     vampytest.assert_eq(application_command.description, description)
-    vampytest.assert_eq(application_command.allow_in_dm, allow_in_dm)
     vampytest.assert_eq(application_command.description_localizations, description_localizations)
+    vampytest.assert_eq(application_command.integration_context_types, tuple(integration_context_types))
+    vampytest.assert_eq(application_command.integration_types, tuple(integration_types))
     vampytest.assert_eq(application_command.name_localizations, name_localizations)
     vampytest.assert_eq(application_command.nsfw, nsfw)
     vampytest.assert_eq(application_command.options, tuple(options))
@@ -114,6 +124,7 @@ def test__ApplicationCommand__precreate__no_fields():
     _assert_fields_set(application_command)
     
     vampytest.assert_eq(application_command.id, application_command_id)
+    vampytest.assert_eq(application_command.integration_types, None)
 
 
 def test__ApplicationCommand__precreate__caching():
@@ -148,11 +159,15 @@ def test__ApplicationCommand__precreate__all_fields():
     
     name = 'owo'
     description = 'description'
-    allow_in_dm = True
     description_localizations = {
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
+    integration_context_types = [
+        ApplicationCommandIntegrationContextType.guild,
+        ApplicationCommandIntegrationContextType.any_private_channel,
+    ]
+    integration_types = [ApplicationIntegrationType.user_install]
     name_localizations = {
         Locale.thai: 'nay',
         Locale.czech: 'lay',
@@ -176,8 +191,9 @@ def test__ApplicationCommand__precreate__all_fields():
         version = version,
         name = name,
         description = description,
-        allow_in_dm = allow_in_dm,
         description_localizations = description_localizations,
+        integration_context_types = integration_context_types,
+        integration_types = integration_types,
         name_localizations = name_localizations,
         nsfw = nsfw,
         options = options,
@@ -194,8 +210,9 @@ def test__ApplicationCommand__precreate__all_fields():
     
     vampytest.assert_eq(application_command.name, name)
     vampytest.assert_eq(application_command.description, description)
-    vampytest.assert_eq(application_command.allow_in_dm, allow_in_dm)
     vampytest.assert_eq(application_command.description_localizations, description_localizations)
+    vampytest.assert_eq(application_command.integration_context_types, tuple(integration_context_types))
+    vampytest.assert_eq(application_command.integration_types, tuple(integration_types))
     vampytest.assert_eq(application_command.name_localizations, name_localizations)
     vampytest.assert_eq(application_command.nsfw, nsfw)
     vampytest.assert_eq(application_command.options, tuple(options))
@@ -214,15 +231,6 @@ def test__ApplicationCommand__create_empty():
     application_command = ApplicationCommand._create_empty(application_command_id, application_id)
     _assert_fields_set(application_command)
     
-    vampytest.assert_instance(application_command.name, str)
-    vampytest.assert_instance(application_command.description, str, nullable = True)
-    vampytest.assert_instance(application_command.allow_in_dm, bool)
-    vampytest.assert_instance(application_command.description_localizations, dict, nullable = True)
-    vampytest.assert_instance(application_command.name_localizations, dict, nullable = True)
-    vampytest.assert_instance(application_command.nsfw, bool)
-    vampytest.assert_instance(application_command.options, list, nullable = True)
-    vampytest.assert_instance(application_command.required_permissions, Permission)
-    vampytest.assert_instance(application_command.target_type, ApplicationCommandTargetType)
-    
     vampytest.assert_eq(application_command.id, application_command_id)
     vampytest.assert_eq(application_command.application_id, application_id)
+    vampytest.assert_eq(application_command.integration_types, None)

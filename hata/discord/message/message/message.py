@@ -817,7 +817,7 @@ class Message(DiscordEntity, immortal = True):
         self.edited_at = parse_edited_at(data)
         self.embeds = parse_embeds(data)
         self.flags = parse_flags(data)
-        self.interaction = interaction = parse_interaction(data, guild_id)
+        self.interaction = interaction = parse_interaction(data)
         self.mentioned_channels_cross_guild = parse_mentioned_channels_cross_guild(data)
         self.mentioned_everyone = parse_mentioned_everyone(data)
         self.mentioned_role_ids = parse_mentioned_role_ids(data)
@@ -861,7 +861,7 @@ class Message(DiscordEntity, immortal = True):
             return
         
         if self.interaction is None:
-            interaction = parse_interaction(data, self.guild_id)
+            interaction = parse_interaction(data)
             if (interaction is not None):
                 self.interaction = interaction
                 try_resolve_interaction_message(self, interaction)
@@ -1670,7 +1670,7 @@ class Message(DiscordEntity, immortal = True):
             put_application_id_into(self.application_id, data, defaults)
             put_call_into(self.call, data, defaults)
             put_edited_at_into(self.edited_at, data, defaults)
-            put_interaction_into(self.interaction, data, defaults, guild_id = self.guild_id)
+            put_interaction_into(self.interaction, data, defaults)
             put_mentioned_channels_cross_guild_into(self.mentioned_channels_cross_guild, data, defaults)
             put_mentioned_everyone_into(self.mentioned_everyone, data, defaults)
             put_mentioned_role_ids_into(self.mentioned_role_ids, data, defaults)

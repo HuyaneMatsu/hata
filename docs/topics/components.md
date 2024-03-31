@@ -613,7 +613,7 @@ async def waifu():
 @Nitori.interactions(custom_id = WAIFU_CUSTOM_ID)
 async def handle_waifu_select(client, event):
     # We filter out 3rd party users based on original and current invoking user.
-    if event.message.interaction.user is not event.user:
+    if event.message.interaction.user_id != event.user_id:
         return
     
     # Second we filter out incorrect selected values.

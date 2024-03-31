@@ -401,7 +401,7 @@ def parse_parameters_into(parameter_values, start_index, command_parameters, pos
         
         
         if parameter_value.startswith('-'):
-            parameter_name = re_normalise_parameter_name(parameter_value)
+            parameter_name = re_normalize_parameter_name(parameter_value)
             parameter_result = find_satisfiable_keyword_parameter_result_for(
                 parameter_results,
                 parameter_name,
@@ -424,7 +424,6 @@ def parse_parameters_into(parameter_values, start_index, command_parameters, pos
                 return command_result
             
             continue
-        
         
         parameter_result = find_next_satisfiable_positional_parameter_result(parameter_results)
         if (parameter_result is None):
@@ -450,14 +449,14 @@ def parse_parameters_into(parameter_values, start_index, command_parameters, pos
     return None
 
 
-def re_normalise_parameter_name(parameter_name):
+def re_normalize_parameter_name(parameter_name):
     """
     Re-normalises parameter name.
     
     Parameters
     ----------
     parameter_name : `str`
-        The parameter name to normalise.
+        The parameter name to normalize.
     
     Returns
     -------
@@ -482,7 +481,7 @@ def parse_modifier_parameter_name(parameter_name):
     output_value : `bool`
         The set value to the parameter.
     """
-    parameter_name = re_normalise_parameter_name(parameter_name)
+    parameter_name = re_normalize_parameter_name(parameter_name)
     if parameter_name.startswith('no-'):
         output_value = False
         output_name = parameter_name[len('no-'):]

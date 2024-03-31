@@ -38,6 +38,7 @@ async def test__Client__message_create__stuffed():
     components = Component(ComponentType.button, label = 'koishi', custom_id = 'satori')
     content = 'suika'
     embeds = [Embed('orin')]
+    enforce_nonce = True
     nonce = 'okuu'
     stickers = [sticker]
     silent = True
@@ -47,6 +48,7 @@ async def test__Client__message_create__stuffed():
     expected_message_data.add_json(
         'payload_json',
         {
+            'enforce_nonce': enforce_nonce,
             'nonce': nonce,
             'tts': True,
             'content': content,
@@ -105,6 +107,7 @@ async def test__Client__message_create__stuffed():
             components = components,
             content = content,
             embeds = embeds,
+            enforce_nonce = enforce_nonce,
             nonce = nonce,
             stickers = stickers,
             silent = silent,

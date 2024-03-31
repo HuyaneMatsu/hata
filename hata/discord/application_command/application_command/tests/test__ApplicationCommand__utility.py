@@ -1,12 +1,13 @@
 import vampytest
 
+from ....application import ApplicationIntegrationType
 from ....localization import Locale
 from ....permission import Permission
 
 from ...application_command_option import ApplicationCommandOption, ApplicationCommandOptionType
 
 from ..application_command import ApplicationCommand
-from ..preinstanced import ApplicationCommandTargetType
+from ..preinstanced import ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
 
 from .test__ApplicationCommand__constructor import _assert_fields_set
 
@@ -15,13 +16,17 @@ def test__ApplicationCommand__copy():
     """
     Tests whether ``ApplicationCommand.copy`` works as intended.
     """
-    name = 'owo'
     description = 'description'
-    allow_in_dm = True
     description_localizations = {
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
+    integration_context_types = [
+        ApplicationCommandIntegrationContextType.guild,
+        ApplicationCommandIntegrationContextType.any_private_channel,
+    ]
+    integration_types = [ApplicationIntegrationType.user_install]
+    name = 'owo'
     name_localizations = {
         Locale.thai: 'nay',
         Locale.czech: 'lay',
@@ -41,8 +46,9 @@ def test__ApplicationCommand__copy():
     application_command = ApplicationCommand(
         name,
         description,
-        allow_in_dm = allow_in_dm,
         description_localizations = description_localizations,
+        integration_context_types = integration_context_types,
+        integration_types = integration_types,
         name_localizations = name_localizations,
         nsfw = nsfw,
         options = options,
@@ -57,19 +63,23 @@ def test__ApplicationCommand__copy():
     vampytest.assert_eq(application_command, copy)
 
 
-def test__ApplicationCommand__copy_with__0():
+def test__ApplicationCommand__copy_with__no_fields():
     """
     Tests whether ``ApplicationCommand.copy_with`` works as intended.
     
     Case: No fields given.
     """
-    name = 'owo'
     description = 'description'
-    allow_in_dm = True
     description_localizations = {
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
+    integration_context_types = [
+        ApplicationCommandIntegrationContextType.guild,
+        ApplicationCommandIntegrationContextType.any_private_channel,
+    ]
+    integration_types = [ApplicationIntegrationType.user_install]
+    name = 'owo'
     name_localizations = {
         Locale.thai: 'nay',
         Locale.czech: 'lay',
@@ -89,8 +99,9 @@ def test__ApplicationCommand__copy_with__0():
     application_command = ApplicationCommand(
         name,
         description,
-        allow_in_dm = allow_in_dm,
         description_localizations = description_localizations,
+        integration_context_types = integration_context_types,
+        integration_types = integration_types,
         name_localizations = name_localizations,
         nsfw = nsfw,
         options = options,
@@ -105,19 +116,24 @@ def test__ApplicationCommand__copy_with__0():
     vampytest.assert_eq(application_command, copy)
 
 
-def test__ApplicationCommand__copy_with__1():
+def test__ApplicationCommand__copy_with__all_fields():
     """
     Tests whether ``ApplicationCommand.copy_with`` works as intended.
     
     Case: No fields given.
     """
-    old_name = 'owo'
+
     old_description = 'description'
-    old_allow_in_dm = True
     old_description_localizations = {
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
+    old_integration_context_types = [
+        ApplicationCommandIntegrationContextType.guild,
+        ApplicationCommandIntegrationContextType.any_private_channel,
+    ]
+    old_integration_types = [ApplicationIntegrationType.user_install]
+    old_name = 'hey'
     old_name_localizations = {
         Locale.thai: 'nay',
         Locale.czech: 'lay',
@@ -134,23 +150,27 @@ def test__ApplicationCommand__copy_with__1():
     old_required_permissions = Permission().update_by_keys(administrator = True)
     old_target_type = ApplicationCommandTargetType.chat
     
-    new_name = 'aya'
-    new_description = 'keine'
-    new_allow_in_dm = True
+    new_description = 'mars'
     new_description_localizations = {
-        Locale.thai: 'suika',
-        Locale.czech: 'yuugi',
+        Locale.dutch: 'aya',
+        Locale.greek: 'yya',
     }
+    new_integration_context_types = [
+        ApplicationCommandIntegrationContextType.guild,
+        ApplicationCommandIntegrationContextType.bot_private_channel,
+    ]
+    new_integration_types = [ApplicationIntegrationType.guild_install, ApplicationIntegrationType.user_install]
+    new_name = 'mister'
     new_name_localizations = {
-        Locale.thai: 'ibuki',
-        Locale.czech: 'komeiji',
+        Locale.dutch: 'aya',
+        Locale.greek: 'yya',
     }
-    new_nsfw = True
+    new_nsfw = False
     new_options = [
         ApplicationCommandOption(
-            'koishi',
-            'satori',
-            ApplicationCommandOptionType.string,
+            'hello',
+            'hell',
+            ApplicationCommandOptionType.float,
 
         )
     ]
@@ -160,8 +180,9 @@ def test__ApplicationCommand__copy_with__1():
     application_command = ApplicationCommand(
         old_name,
         old_description,
-        allow_in_dm = old_allow_in_dm,
         description_localizations = old_description_localizations,
+        integration_context_types = old_integration_context_types,
+        integration_types = old_integration_types,
         name_localizations = old_name_localizations,
         nsfw = old_nsfw,
         options = old_options,
@@ -170,10 +191,11 @@ def test__ApplicationCommand__copy_with__1():
     )
     
     copy = application_command.copy_with(
-        name = new_name,
         description = new_description,
-        allow_in_dm = new_allow_in_dm,
         description_localizations = new_description_localizations,
+        integration_context_types = new_integration_context_types,
+        integration_types = new_integration_types,
+        name = new_name,
         name_localizations = new_name_localizations,
         nsfw = new_nsfw,
         options = new_options,
@@ -183,8 +205,9 @@ def test__ApplicationCommand__copy_with__1():
     
     vampytest.assert_eq(copy.name, new_name)
     vampytest.assert_eq(copy.description, new_description)
-    vampytest.assert_eq(copy.allow_in_dm, new_allow_in_dm)
     vampytest.assert_eq(copy.description_localizations, new_description_localizations)
+    vampytest.assert_eq(copy.integration_context_types, tuple(new_integration_context_types))
+    vampytest.assert_eq(copy.integration_types, tuple(new_integration_types))
     vampytest.assert_eq(copy.name_localizations, new_name_localizations)
     vampytest.assert_eq(copy.nsfw, new_nsfw)
     vampytest.assert_eq(copy.options, tuple(new_options))

@@ -4,7 +4,7 @@ from scarletio import RichAttributeErrorBaseType, WeakReferer
 
 from ..constants import REGISTERED_COMMANDS, REGISTERED_COMMANDS_BY_NAME
 
-from .helpers import normalize_alters, normalize_command_name
+from .helpers import normalize_aliases, normalize_command_name
 from .category import CommandCategory
 from .result import COMMAND_RESULT_CODE_COMMAND_UNINITIALIZED, CommandResult
 
@@ -19,16 +19,16 @@ class Command(RichAttributeErrorBaseType):
         Command category of the command.
     _self_reference : `None`, ``WeakReferer``
         Reference to itself.
-    alters : `None`, `set` of `str`
+    aliases : `None`, `set` of `str`
         Alternative names for the command.
     available : `bool`
         Whether the command is available.
     name : `str`
         The command's name.
     """
-    __slots__ = ('__weakref__', '_command_category', '_self_reference', 'alters', 'available', 'name')
+    __slots__ = ('__weakref__', '_command_category', '_self_reference', 'aliases', 'available', 'name')
     
-    def __new__(cls, name, alters, available):
+    def __new__(cls, name, aliases, available):
         """
         Creates a new command line command.
         
@@ -36,7 +36,7 @@ class Command(RichAttributeErrorBaseType):
         ----------
         name : `str`
             The command's name.
-        alters : `None`, `str`, `iterable` of `str`
+        aliases : `None`, `str`, `iterable` of `str`
             Alternative names for the command.
         available : `bool`
             Whether the command is available.
@@ -44,14 +44,14 @@ class Command(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            Type of `alters` is unaccepted.
+            Type of `aliases` is unaccepted.
         """
         name = normalize_command_name(name)
-        alters = normalize_alters(alters, name)
+        aliases = normalize_aliases(aliases, name)
         
         self = object.__new__(cls)
         self._command_category = None
-        self.alters = alters
+        self.aliases = aliases
         self.available = available
         self.name = name
         self._self_reference = None
@@ -62,8 +62,8 @@ class Command(RichAttributeErrorBaseType):
         REGISTERED_COMMANDS.add(self)
         
         names = [name]
-        if (alters is not None):
-            names.extend(alters)
+        if (aliases is not None):
+            names.extend(aliases)
         
         for name_ in names:
             
@@ -247,9 +247,9 @@ class Command(RichAttributeErrorBaseType):
         REGISTERED_COMMANDS.discard(self)
         
         names = [self.name]
-        alters = self.alters
-        if (alters is not None):
-            names.extend(alters)
+        aliases = self.aliases
+        if (aliases is not None):
+            names.extend(aliases)
         
         for name in names:
             if REGISTERED_COMMANDS_BY_NAME.get(name) is self:
@@ -268,11 +268,11 @@ class Command(RichAttributeErrorBaseType):
         if REGISTERED_COMMANDS_BY_NAME.get(name) is self:
             del REGISTERED_COMMANDS_BY_NAME[name]
         
-        alters = self.alters
+        aliases = self.aliases
         try:
-            alters.remove(name)
+            aliases.remove(name)
         except KeyError:
             pass
         else:
-            if not alters:
-                self.alters = None
+            if not aliases:
+                self.aliases = None

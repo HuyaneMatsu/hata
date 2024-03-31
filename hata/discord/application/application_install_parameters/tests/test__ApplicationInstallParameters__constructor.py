@@ -20,7 +20,7 @@ def _assert_fields_set(application_install_parameters):
 
 
 
-def test__ApplicationInstallParameters__new__0():
+def test__ApplicationInstallParameters__new__no_fields():
     """
     Tests whether ``ApplicationInstallParameters.__new__`` works as intended.
     
@@ -30,7 +30,7 @@ def test__ApplicationInstallParameters__new__0():
     _assert_fields_set(application_install_parameters)
 
 
-def test__ApplicationInstallParameters__new__1():
+def test__ApplicationInstallParameters__new__all_fields():
     """
     Tests whether ``ApplicationInstallParameters.__new__`` works as intended.
     

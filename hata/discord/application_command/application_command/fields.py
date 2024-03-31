@@ -2,20 +2,22 @@ __all__ = ()
 
 from functools import partial as partial_func
 
-from ...application import Application
+from ...application import Application, ApplicationIntegrationType
 from ...field_parsers import (
     bool_parser_factory, entity_id_parser_factory, flag_parser_factory, force_string_parser_factory,
     nullable_functional_parser_factory, nullable_object_array_parser_factory, nullable_string_parser_factory,
-    preinstanced_parser_factory
+    preinstanced_array_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
     force_string_putter_factory, nullable_entity_array_optional_putter_factory,
-    nullable_functional_optional_putter_factory, nullable_string_putter_factory, preinstanced_putter_factory
+    nullable_functional_optional_putter_factory, nullable_string_putter_factory, preinstanced_array_putter_factory,
+    preinstanced_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, flag_validator_factory,
-    nullable_object_array_validator_factory, nullable_string_validator_factory, preinstanced_validator_factory
+    nullable_object_array_validator_factory, nullable_string_validator_factory, preinstanced_array_validator_factory,
+    preinstanced_validator_factory
 )
 from ...guild import Guild
 from ...localization.helpers import localized_dictionary_builder
@@ -29,12 +31,13 @@ from .constants import (
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
     APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_OPTIONS_MAX
 )
-from .preinstanced import ApplicationCommandTargetType
+from .preinstanced import (
+    APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL, ApplicationCommandIntegrationContextType,
+    ApplicationCommandTargetType
+)
 
 # allow_in_dm
 
-parse_allow_in_dm = bool_parser_factory('dm_permission', True)
-put_allow_in_dm_into = bool_optional_putter_factory('dm_permission', True)
 validate_allow_in_dm = bool_validator_factory('allow_in_dm', True)
 
 # application_id
@@ -75,7 +78,81 @@ parse_id = entity_id_parser_factory('id')
 put_id_into = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('id')
 
-# name 
+# integration_context_types
+
+parse_integration_context_types = preinstanced_array_parser_factory(
+    'contexts', ApplicationCommandIntegrationContextType
+)
+
+
+def put_integration_context_types_into(integration_context_types, data, defaults):
+    """
+    Puts the `integration_context_types`'s data into the given `data` json serializable object.
+    
+    Parameters
+    ----------
+    integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
+        The places where the application command shows up. `None` means all.
+    data : `dict` of (`str`, `object`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `object`) items
+    """
+    if integration_context_types is None:
+        raw = None
+    else:
+        raw = [preinstanced.value for preinstanced in integration_context_types]
+    
+    data['contexts'] = raw
+    return data
+
+
+_validate_integration_context_types = preinstanced_array_validator_factory(
+    'integration_context_types', ApplicationCommandIntegrationContextType
+)
+
+
+def validate_integration_context_types(integration_context_types):
+    """
+    Validates whether the given `integration_context_types` are valid and returns the validated version.
+    
+    Parameters
+    ----------
+    integration_context_types : `None`, ``ApplicationCommandIntegrationContextType``, `int`, \
+            `iterable<ApplicationCommandIntegrationContextType | int>`
+        Value to validate.
+    
+    Returns
+    -------
+    integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
+    
+    Raises
+    ------
+    TypeError
+        - If `integration_context_types` type is invalid.
+    """
+    integration_context_types = _validate_integration_context_types(integration_context_types)
+    if (
+        (integration_context_types is not None) and
+        (integration_context_types == APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL)
+    ):
+        integration_context_types = None
+    
+    return integration_context_types
+
+
+# integration_types
+
+parse_integration_types = preinstanced_array_parser_factory('integration_types', ApplicationIntegrationType)
+put_integration_types_into = preinstanced_array_putter_factory('integration_types')
+validate_integration_types = preinstanced_array_validator_factory('integration_types', ApplicationIntegrationType)
+
+
+# name
 
 parse_name = force_string_parser_factory('name')
 put_name_into = force_string_putter_factory('name')
@@ -107,7 +184,7 @@ def validate_name(name):
     
     if not isinstance(name, str):
         raise TypeError(
-            f'`name` can be `None`, `str`, got {name.__class__.__name__} ;{name!r}.'
+            f'`name` can be `None`, `str`, got {type(name).__name__} ;{name!r}.'
         )
     
     name_length = len(name)

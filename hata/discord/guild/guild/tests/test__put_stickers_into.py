@@ -5,7 +5,7 @@ from ....sticker import Sticker
 from ..fields import put_stickers_into
 
 
-def iter_options():
+def _iter_options():
     sticker_id = 202306140001
     sticker_name = 'Koishi'
     
@@ -18,7 +18,7 @@ def iter_options():
     yield {sticker_id: sticker}, True, {'stickers': [sticker.to_data(defaults = True, include_internals = True)]}
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__put_stickers_into(input_value, defaults):
     """
     Tests whether ``put_stickers_into`` works as intended.

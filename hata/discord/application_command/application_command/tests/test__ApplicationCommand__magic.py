@@ -1,15 +1,16 @@
 import vampytest
 
+from ....application import ApplicationIntegrationType
 from ....localization import Locale
 from ....permission import Permission
 
 from ...application_command_option import ApplicationCommandOption, ApplicationCommandOptionType
 
 from ..application_command import ApplicationCommand
-from ..preinstanced import ApplicationCommandTargetType
+from ..preinstanced import ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
 
 
-def test__ApplicationCommand__len__0():
+def test__ApplicationCommand__len__no_description():
     """
     Tests whether ``ApplicationCommand.__len__`` works as intended if the minimal amount of fields are given at
     creation.
@@ -25,7 +26,7 @@ def test__ApplicationCommand__len__0():
     return len(application_command)
 
 
-def test__ApplicationCommand__len__1():
+def test__ApplicationCommand__len__all_fields():
     """
     Tests whether ``ApplicationCommand.__len__`` works as intended if the maximal amount of fields are given at
     creation.
@@ -33,11 +34,15 @@ def test__ApplicationCommand__len__1():
     application_command = ApplicationCommand(
         'owo',
         'description',
-        allow_in_dm = True,
         description_localizations = {
             Locale.thai: 'ayy',
             Locale.czech: 'yay',
         },
+        integration_context_types = [
+            ApplicationCommandIntegrationContextType.guild,
+            ApplicationCommandIntegrationContextType.any_private_channel,
+        ],
+        integration_types = [ApplicationIntegrationType.user_install],
         name_localizations = {
             Locale.thai: 'nay',
             Locale.czech: 'lay',
@@ -59,7 +64,7 @@ def test__ApplicationCommand__len__1():
 
 
 
-def test__ApplicationCommand__len__2():
+def test__ApplicationCommand__len__longest_in_localization():
     """
     Tests whether ``ApplicationCommand.__len__`` only counts the longest description's length and not all's together.
     
@@ -87,7 +92,7 @@ def test__ApplicationCommand__len__2():
     vampytest.assert_eq(len(application_command), expected_length,)
 
 
-def test__ApplicationCommand__len__3():
+def test__ApplicationCommand__len__longest_description():
     """
     Tests whether ``ApplicationCommand.__len__`` only counts the longest description's length and not all's together.
     
@@ -115,7 +120,7 @@ def test__ApplicationCommand__len__3():
     vampytest.assert_eq(len(application_command), expected_length,)
 
 
-def test__ApplicationCommand__len__4():
+def test__ApplicationCommand__len__longest_localized_description():
     """
     Tests whether ``ApplicationCommand.__len__`` only counts the longest name's length and not all's together.
     
@@ -142,7 +147,7 @@ def test__ApplicationCommand__len__4():
     vampytest.assert_eq(len(application_command), expected_length,)
 
 
-def test__ApplicationCommand__len__5():
+def test__ApplicationCommand__len__longest_is_name():
     """
     Tests whether ``ApplicationCommand.__len__`` only counts the longest name's length and not all's together.
     
@@ -176,7 +181,6 @@ def test__ApplicationCommand__repr():
     application_command = ApplicationCommand(
         'owo',
         'description',
-        allow_in_dm = True,
         description_localizations = {
             Locale.thai: 'ayy',
             Locale.czech: 'yay',
@@ -185,6 +189,11 @@ def test__ApplicationCommand__repr():
             Locale.thai: 'nay',
             Locale.czech: 'lay',
         },
+        integration_context_types = [
+            ApplicationCommandIntegrationContextType.guild,
+            ApplicationCommandIntegrationContextType.any_private_channel,
+        ],
+        integration_types = [ApplicationIntegrationType.user_install],
         nsfw = True,
         options = [
             ApplicationCommandOption(
@@ -205,30 +214,22 @@ def test__ApplicationCommand__eq():
     """
     Tests whether ``ApplicationCommand.__eq__`` works as intended.
     """
-    old_name = 'owo'
-    new_name = 'uwu'
     old_description = 'description'
-    new_description = 'mars'
-    old_allow_in_dm = True
-    new_allow_in_dm = False
     old_description_localizations = {
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
-    new_description_localizations = {
-        Locale.dutch: 'aya',
-        Locale.greek: 'yya',
-    }
+    old_integration_context_types = [
+        ApplicationCommandIntegrationContextType.guild,
+        ApplicationCommandIntegrationContextType.any_private_channel,
+    ]
+    old_integration_types = [ApplicationIntegrationType.user_install]
+    old_name = 'hey'
     old_name_localizations = {
         Locale.thai: 'nay',
         Locale.czech: 'lay',
     }
-    new_name_localizations = {
-        Locale.dutch: 'aya',
-        Locale.greek: 'yya',
-    }
     old_nsfw = True
-    new_nsfw = False
     old_options = [
         ApplicationCommandOption(
             'option',
@@ -237,6 +238,25 @@ def test__ApplicationCommand__eq():
 
         )
     ]
+    old_required_permissions = Permission().update_by_keys(administrator = True)
+    old_target_type = ApplicationCommandTargetType.chat
+    
+    new_description = 'mars'
+    new_description_localizations = {
+        Locale.dutch: 'aya',
+        Locale.greek: 'yya',
+    }
+    new_integration_context_types = [
+        ApplicationCommandIntegrationContextType.guild,
+        ApplicationCommandIntegrationContextType.bot_private_channel,
+    ]
+    new_integration_types = [ApplicationIntegrationType.guild_install, ApplicationIntegrationType.user_install]
+    new_name = 'mister'
+    new_name_localizations = {
+        Locale.dutch: 'aya',
+        Locale.greek: 'yya',
+    }
+    new_nsfw = False
     new_options = [
         ApplicationCommandOption(
             'hello',
@@ -245,15 +265,20 @@ def test__ApplicationCommand__eq():
 
         )
     ]
+    new_required_permissions = Permission().update_by_keys(kick_users = True)
+    new_target_type = ApplicationCommandTargetType.message
     
     old_fields = {
-        'name': old_name,
         'description': old_description,
-        'allow_in_dm': old_allow_in_dm,
         'description_localizations': old_description_localizations,
+        'integration_context_types': old_integration_context_types,
+        'integration_types': old_integration_types,
+        'name': old_name,
         'name_localizations': old_name_localizations,
         'nsfw': old_nsfw,
-        'options': old_options
+        'options': old_options,
+        'required_permissions': old_required_permissions,
+        'target_type': old_target_type,
     }
     
     vampytest.assert_eq(
@@ -262,13 +287,16 @@ def test__ApplicationCommand__eq():
     )
     
     for field_name, field_value in (
-        ('name', new_name),
         ('description', new_description),
-        ('allow_in_dm', new_allow_in_dm),
         ('description_localizations', new_description_localizations),
+        ('integration_context_types', new_integration_context_types),
+        ('integration_types', new_integration_types),
+        ('name', new_name),
         ('name_localizations', new_name_localizations),
         ('nsfw', new_nsfw),
         ('options', new_options),
+        ('required_permissions', new_required_permissions),
+        ('target_type', new_target_type),
     ):
         vampytest.assert_eq(
             ApplicationCommand(**old_fields),
@@ -284,11 +312,15 @@ def test__ApplicationCommand__hash():
     application_command = ApplicationCommand(
         'owo',
         'description',
-        allow_in_dm = True,
         description_localizations = {
             Locale.thai: 'ayy',
             Locale.czech: 'yay',
         },
+        integration_context_types = [
+            ApplicationCommandIntegrationContextType.guild,
+            ApplicationCommandIntegrationContextType.any_private_channel,
+        ],
+        integration_types = [ApplicationIntegrationType.user_install],
         name_localizations = {
             Locale.thai: 'nay',
             Locale.czech: 'lay',
@@ -313,13 +345,17 @@ def test__ApplicationCommand__format():
     """
     Tests whether ``ApplicationCommand.__format__`` works as intended.
     """
-    name = 'owo'
     description = 'description'
-    allow_in_dm = True
     description_localizations = {
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
+    integration_context_types = [
+        ApplicationCommandIntegrationContextType.guild,
+        ApplicationCommandIntegrationContextType.any_private_channel,
+    ]
+    integration_types = [ApplicationIntegrationType.user_install]
+    name = 'owo'
     name_localizations = {
         Locale.thai: 'nay',
         Locale.czech: 'lay',
@@ -337,9 +373,10 @@ def test__ApplicationCommand__format():
     target_type = ApplicationCommandTargetType.chat
     
     application_command = ApplicationCommand(
-        allow_in_dm = allow_in_dm,
         description = description,
         description_localizations = description_localizations,
+        integration_context_types = integration_context_types,
+        integration_types = integration_types,
         name = name,
         name_localizations = name_localizations,
         nsfw = nsfw,

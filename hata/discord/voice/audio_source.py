@@ -1,7 +1,9 @@
 __all__ = ('AudioSource', 'DownloadError', 'LocalAudio', 'RawAudio', 'YTAudio')
 
-import os, shlex, subprocess
+import os, subprocess
+from os.path import isfile as is_file
 from pathlib import Path
+from shlex import split
 
 from scarletio import CancelledError, Task, alchemy_incendiary, copy_docs
 
@@ -268,10 +270,11 @@ class LocalAudio(AudioSource):
         ValueError
             - Executable as not found.
             - Popen failed.
+            - File does not exist.
         """
         if pipe:
             try:
-                fileno_function = source.__class__.fileno
+                fileno_function = type(source).fileno
             except AttributeError as err:
                 raise TypeError(
                     f'The given `source` not supports `.fileno()` method, got {source!r}.'
@@ -283,7 +286,7 @@ class LocalAudio(AudioSource):
                     f'The given `source` not supports `.fileno()` method, got {source!r}.'
                 ) from err
         else:
-            source_type = source.__class__
+            source_type = type(source)
             if source_type is str:
                 pass
             elif issubclass(source_type, Path):
@@ -294,12 +297,18 @@ class LocalAudio(AudioSource):
                 raise TypeError(
                     f'`source` can be `str`, `Path`, got {source_type.__name__}; {source!r}.'
                 )
+            
+            if not is_file(source):
+                raise ValueError(
+                    f'`source` is not a file. Got: {source!r}',
+                )
+        
         
         args = []
         
         if (before_options is not None):
             if isinstance(before_options, str):
-                before_options = shlex.split(before_options)
+                before_options = split(before_options)
             
             args.extend(before_options)
         
@@ -318,7 +327,7 @@ class LocalAudio(AudioSource):
         
         if (options is not None):
             if isinstance(options, str):
-                options = shlex.split(options)
+                options = split(options)
             
             args.extend(options)
         

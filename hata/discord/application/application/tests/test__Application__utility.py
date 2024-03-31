@@ -7,6 +7,7 @@ from ....user import User
 from ...application_entity import ApplicationEntity
 from ...application_executable import ApplicationExecutable
 from ...application_install_parameters import ApplicationInstallParameters
+from ...application_integration_type_configuration import ApplicationIntegrationTypeConfiguration
 from ...embedded_activity_configuration import EmbeddedActivityConfiguration
 from ...third_party_sku import ThirdPartySKU
 
@@ -16,9 +17,10 @@ from ..flags import (
     ApplicationOverlayMethodFlags
 )
 from ..preinstanced import (
-    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationInteractionEventType,
-    ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
-    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
+    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationIntegrationType,
+    ApplicationInteractionEventType, ApplicationInteractionVersion, ApplicationInternalGuildRestriction,
+    ApplicationMonetizationState, ApplicationRPCState, ApplicationStoreState, ApplicationType,
+    ApplicationVerificationState
 )
 
 from .test__Application__constructor import _assert_fields_set
@@ -50,6 +52,15 @@ def test__Application__copy():
     install_parameters = ApplicationInstallParameters(permissions = 8)
     integration_public = True
     integration_requires_code_grant = True
+    integration_types = [ApplicationIntegrationType.user_install]
+    integration_types_configuration = {
+        ApplicationIntegrationType.user_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 8),
+        ),
+        ApplicationIntegrationType.guild_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 123),
+        ),
+    }
     interaction_endpoint_url = 'https://orindance.party/'
     interaction_event_types = [ApplicationInteractionEventType.none]
     interaction_version = ApplicationInteractionVersion.every
@@ -105,6 +116,8 @@ def test__Application__copy():
         install_parameters = install_parameters,
         integration_public = integration_public,
         integration_requires_code_grant = integration_requires_code_grant,
+        integration_types = integration_types,
+        integration_types_configuration = integration_types_configuration,
         interaction_endpoint_url = interaction_endpoint_url,
         interaction_event_types = interaction_event_types,
         interaction_version = interaction_version,
@@ -169,6 +182,15 @@ def test__Application__copy_with__no_fields():
     install_parameters = ApplicationInstallParameters(permissions = 8)
     integration_public = True
     integration_requires_code_grant = True
+    integration_types = [ApplicationIntegrationType.user_install]
+    integration_types_configuration = {
+        ApplicationIntegrationType.user_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 8),
+        ),
+        ApplicationIntegrationType.guild_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 123),
+        ),
+    }
     interaction_endpoint_url = 'https://orindance.party/'
     interaction_event_types = [ApplicationInteractionEventType.none]
     interaction_version = ApplicationInteractionVersion.selective
@@ -224,6 +246,8 @@ def test__Application__copy_with__no_fields():
         install_parameters = install_parameters,
         integration_public = integration_public,
         integration_requires_code_grant = integration_requires_code_grant,
+        integration_types = integration_types,
+        integration_types_configuration = integration_types_configuration,
         interaction_endpoint_url = interaction_endpoint_url,
         interaction_event_types = interaction_event_types,
         interaction_version = interaction_version,
@@ -290,6 +314,15 @@ def test__Application__copy_with__all_fields():
     old_install_parameters = ApplicationInstallParameters(permissions = 8)
     old_integration_public = True
     old_integration_requires_code_grant = True
+    old_integration_types = [ApplicationIntegrationType.user_install]
+    old_integration_types_configuration = {
+        ApplicationIntegrationType.user_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 8),
+        ),
+        ApplicationIntegrationType.guild_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 123),
+        ),
+    }
     old_interaction_endpoint_url = 'https://orindance.party/'
     old_interaction_event_types = None
     old_interaction_version = ApplicationInteractionVersion.selective
@@ -343,6 +376,12 @@ def test__Application__copy_with__all_fields():
     new_install_parameters = ApplicationInstallParameters(permissions = 16)
     new_integration_public = False
     new_integration_requires_code_grant = False
+    new_integration_types = [ApplicationIntegrationType.guild_install, ApplicationIntegrationType.user_install]
+    new_integration_types_configuration = {
+        ApplicationIntegrationType.user_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 16),
+        ),
+    }
     new_interaction_endpoint_url = 'https://www.astil.dev/project/hata/'
     new_interaction_event_types = [ApplicationInteractionEventType.none]
     new_interaction_version = ApplicationInteractionVersion.every
@@ -397,6 +436,8 @@ def test__Application__copy_with__all_fields():
         install_parameters = old_install_parameters,
         integration_public = old_integration_public,
         integration_requires_code_grant = old_integration_requires_code_grant,
+        integration_types = old_integration_types,
+        integration_types_configuration = old_integration_types_configuration,
         interaction_endpoint_url = old_interaction_endpoint_url,
         interaction_event_types = old_interaction_event_types,
         interaction_version = old_interaction_version,
@@ -452,6 +493,8 @@ def test__Application__copy_with__all_fields():
         install_parameters = new_install_parameters,
         integration_public = new_integration_public,
         integration_requires_code_grant = new_integration_requires_code_grant,
+        integration_types = new_integration_types,
+        integration_types_configuration = new_integration_types_configuration,
         interaction_endpoint_url = new_interaction_endpoint_url,
         interaction_event_types = new_interaction_event_types,
         interaction_version = new_interaction_version,
@@ -508,6 +551,8 @@ def test__Application__copy_with__all_fields():
     vampytest.assert_eq(copy.install_parameters, new_install_parameters)
     vampytest.assert_eq(copy.integration_public, new_integration_public)
     vampytest.assert_eq(copy.integration_requires_code_grant, new_integration_requires_code_grant)
+    vampytest.assert_eq(copy.integration_types, tuple(new_integration_types))
+    vampytest.assert_eq(copy.integration_types_configuration, new_integration_types_configuration)
     vampytest.assert_eq(copy.interaction_endpoint_url, new_interaction_endpoint_url)
     vampytest.assert_eq(copy.interaction_event_types, tuple(new_interaction_event_types))
     vampytest.assert_is(copy.interaction_version, new_interaction_version)
@@ -815,3 +860,106 @@ def test__Application__iter_redirect_urls(input_value):
     application = Application(redirect_urls = input_value)
     return [*application.iter_redirect_urls()]
 
+
+def _iter_options__has_integration_type():
+    integration_type_0 = ApplicationIntegrationType.guild_install
+    integration_type_1 = ApplicationIntegrationType.user_install
+    
+    yield None, integration_type_0, False
+    yield [integration_type_0], integration_type_0, True
+    yield [integration_type_0], integration_type_1, False
+    yield [integration_type_0, integration_type_1], integration_type_1, True
+    
+    yield [integration_type_0.value], integration_type_0, True
+    yield [integration_type_0.value], integration_type_1, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_integration_type()).returning_last())
+def test__Application__has_integration_type(input_value, integration_type):
+    """
+    Tests whether ``Application.has_integration_type`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<ApplicationIntegrationType>`
+        Application integration types to create the application with.
+    integration_type : `int | ApplicationIntegrationType`
+        Integration type to check for.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    application = Application(integration_types = input_value)
+    return application.has_integration_type(integration_type)
+
+
+def _iter_options__iter_integration_types():
+    integration_type_0 = ApplicationIntegrationType.guild_install
+    integration_type_1 = ApplicationIntegrationType.user_install
+    
+    yield None, []
+    yield [integration_type_0], [integration_type_0]
+    yield [integration_type_0, integration_type_1], [integration_type_0, integration_type_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_integration_types()).returning_last())
+def test__Application__iter_integration_types(input_value):
+    """
+    Tests whether ``Application.iter_integration_types`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<ApplicationIntegrationType>`
+        Application integration types to create the application with.
+    
+    Returns
+    -------
+    output : `list<ApplicationIntegrationType>`
+    """
+    application = Application(integration_types = input_value)
+    return [*application.iter_integration_types()]
+
+
+def _iter_options__get_integration_type_configuration():
+    integration_type_0 = ApplicationIntegrationType.guild_install
+    integration_type_1 = ApplicationIntegrationType.user_install
+    
+    configuration_0 = ApplicationIntegrationTypeConfiguration(
+        install_parameters = ApplicationInstallParameters(permissions = 8),
+    )
+    configuration_1 = ApplicationIntegrationTypeConfiguration(
+        install_parameters = ApplicationInstallParameters(permissions = 123),
+    )
+    
+    yield None, integration_type_0, ApplicationIntegrationTypeConfiguration()
+    yield {integration_type_0: configuration_0}, integration_type_0, configuration_0
+    yield {integration_type_0: configuration_0}, integration_type_1, ApplicationIntegrationTypeConfiguration()
+    yield (
+        {integration_type_0: configuration_0, integration_type_1: configuration_1},
+        integration_type_1,
+        configuration_1,
+    )
+    
+    yield {integration_type_0: configuration_0}, integration_type_0.value, configuration_0
+    yield {integration_type_0: configuration_0}, integration_type_1.value, ApplicationIntegrationTypeConfiguration()
+
+
+@vampytest._(vampytest.call_from(_iter_options__get_integration_type_configuration()).returning_last())
+def test__Application__get_integration_type_configuration(input_value, integration_type):
+    """
+    Tests whether ``Application.get_integration_type_configuration`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<ApplicationIntegrationType>`
+        Application integration types to create the application with.
+    integration_type : `int | ApplicationIntegrationType`
+        Integration type to check for.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    application = Application(integration_types_configuration = input_value)
+    return application.get_integration_type_configuration(integration_type)

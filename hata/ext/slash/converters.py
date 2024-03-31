@@ -2953,7 +2953,7 @@ class SlashCommandParameterConverter(ParameterConverter):
             self.name,
             value,
             ANNOTATION_TYPE_TO_REPRESENTATION.get(self.type, '???'),
-            None if choices is None else list(choices.keys()),
+            None if choices is None else [*choices.keys()],
         )
     
     @copy_docs(ParameterConverter.__repr__)

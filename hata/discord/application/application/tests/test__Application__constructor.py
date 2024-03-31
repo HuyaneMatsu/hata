@@ -6,6 +6,7 @@ from ....user import User
 from ...application_entity import ApplicationEntity
 from ...application_executable import ApplicationExecutable
 from ...application_install_parameters import ApplicationInstallParameters
+from ...application_integration_type_configuration import ApplicationIntegrationTypeConfiguration
 from ...embedded_activity_configuration import EmbeddedActivityConfiguration
 from ...third_party_sku import ThirdPartySKU
 
@@ -15,9 +16,10 @@ from ..flags import (
     ApplicationOverlayMethodFlags
 )
 from ..preinstanced import (
-    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationInteractionEventType,
-    ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
-    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
+    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationIntegrationType,
+    ApplicationInteractionEventType, ApplicationInteractionVersion, ApplicationInternalGuildRestriction,
+    ApplicationMonetizationState, ApplicationRPCState, ApplicationStoreState, ApplicationType,
+    ApplicationVerificationState
 )
 
 def _assert_fields_set(application):
@@ -56,6 +58,8 @@ def _assert_fields_set(application):
     vampytest.assert_instance(application.install_parameters, ApplicationInstallParameters, nullable = True)
     vampytest.assert_instance(application.integration_public, bool)
     vampytest.assert_instance(application.integration_requires_code_grant, bool)
+    vampytest.assert_instance(application.integration_types, tuple, nullable = True)
+    vampytest.assert_instance(application.integration_types_configuration, dict, nullable = True)
     vampytest.assert_instance(application.interaction_endpoint_url, str, nullable = True)
     vampytest.assert_instance(application.interaction_event_types, tuple, nullable = True)
     vampytest.assert_instance(application.interaction_version, ApplicationInteractionVersion)
@@ -126,6 +130,15 @@ def test__Application__new__all_fields():
     install_parameters = ApplicationInstallParameters(permissions = 8)
     integration_public = True
     integration_requires_code_grant = True
+    integration_types = [ApplicationIntegrationType.user_install]
+    integration_types_configuration = {
+        ApplicationIntegrationType.user_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 8),
+        ),
+        ApplicationIntegrationType.guild_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 123),
+        ),
+    }
     interaction_endpoint_url = 'https://orindance.party/'
     interaction_event_types = [ApplicationInteractionEventType.none]
     interaction_version = ApplicationInteractionVersion.selective
@@ -180,6 +193,8 @@ def test__Application__new__all_fields():
         install_parameters = install_parameters,
         integration_public = integration_public,
         integration_requires_code_grant = integration_requires_code_grant,
+        integration_types = integration_types,
+        integration_types_configuration = integration_types_configuration,
         interaction_endpoint_url = interaction_endpoint_url,
         interaction_event_types = interaction_event_types,
         interaction_version = interaction_version,
@@ -235,6 +250,8 @@ def test__Application__new__all_fields():
     vampytest.assert_eq(application.install_parameters, install_parameters)
     vampytest.assert_eq(application.integration_public, integration_public)
     vampytest.assert_eq(application.integration_requires_code_grant, integration_requires_code_grant)
+    vampytest.assert_eq(application.integration_types, tuple(integration_types))
+    vampytest.assert_eq(application.integration_types_configuration, integration_types_configuration)
     vampytest.assert_eq(application.interaction_endpoint_url, interaction_endpoint_url)
     vampytest.assert_eq(application.interaction_event_types, tuple(interaction_event_types))
     vampytest.assert_is(application.interaction_version, interaction_version)
@@ -309,6 +326,15 @@ def test__Application__precreate__all_fields():
     install_parameters = ApplicationInstallParameters(permissions = 8)
     integration_public = True
     integration_requires_code_grant = True
+    integration_types = [ApplicationIntegrationType.user_install]
+    integration_types_configuration = {
+        ApplicationIntegrationType.user_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 8),
+        ),
+        ApplicationIntegrationType.guild_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 123),
+        ),
+    }
     interaction_endpoint_url = 'https://orindance.party/'
     interaction_event_types = [ApplicationInteractionEventType.none]
     interaction_version = ApplicationInteractionVersion.selective
@@ -364,6 +390,8 @@ def test__Application__precreate__all_fields():
         install_parameters = install_parameters,
         integration_public = integration_public,
         integration_requires_code_grant = integration_requires_code_grant,
+        integration_types = integration_types,
+        integration_types_configuration = integration_types_configuration,
         interaction_endpoint_url = interaction_endpoint_url,
         interaction_event_types = interaction_event_types,
         interaction_version = interaction_version,
@@ -420,6 +448,8 @@ def test__Application__precreate__all_fields():
     vampytest.assert_eq(application.install_parameters, install_parameters)
     vampytest.assert_eq(application.integration_public, integration_public)
     vampytest.assert_eq(application.integration_requires_code_grant, integration_requires_code_grant)
+    vampytest.assert_eq(application.integration_types, tuple(integration_types))
+    vampytest.assert_eq(application.integration_types_configuration, integration_types_configuration)
     vampytest.assert_eq(application.interaction_endpoint_url, interaction_endpoint_url)
     vampytest.assert_eq(application.interaction_event_types, tuple(interaction_event_types))
     vampytest.assert_is(application.interaction_version, interaction_version)

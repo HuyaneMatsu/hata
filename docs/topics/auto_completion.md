@@ -350,7 +350,7 @@ async def get_sticker_id(
 ----
 
 <p align="left">
-    <a href="./slash.md">Previously: Slash & Context commands</a>
+    <a href="./integration.md">Previously: Integration</a>
 </p>
 
 <p align="right">

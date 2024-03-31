@@ -9,6 +9,7 @@ from ....user import User
 from ...application_entity import ApplicationEntity
 from ...application_executable import ApplicationExecutable
 from ...application_install_parameters import ApplicationInstallParameters
+from ...application_integration_type_configuration import ApplicationIntegrationTypeConfiguration
 from ...embedded_activity_configuration import EmbeddedActivityConfiguration
 from ...third_party_sku import ThirdPartySKU
 
@@ -18,9 +19,10 @@ from ..flags import (
     ApplicationOverlayMethodFlags
 )
 from ..preinstanced import (
-    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationInteractionEventType,
-    ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
-    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
+    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationIntegrationType,
+    ApplicationInteractionEventType, ApplicationInteractionVersion, ApplicationInternalGuildRestriction,
+    ApplicationMonetizationState, ApplicationRPCState, ApplicationStoreState, ApplicationType,
+    ApplicationVerificationState
 )
 
 from .test__Application__constructor import _assert_fields_set
@@ -178,6 +180,15 @@ def test__Application__from_data_own__attributes():
     install_parameters = ApplicationInstallParameters(permissions = 8)
     integration_public = True
     integration_requires_code_grant = True
+    integration_types = [ApplicationIntegrationType.user_install]
+    integration_types_configuration = {
+        ApplicationIntegrationType.user_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 8),
+        ),
+        ApplicationIntegrationType.guild_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 123),
+        ),
+    }
     interaction_endpoint_url = 'https://orindance.party/'
     interaction_event_types = [ApplicationInteractionEventType.none]
     interaction_version = ApplicationInteractionVersion.selective
@@ -224,6 +235,12 @@ def test__Application__from_data_own__attributes():
         'install_params': install_parameters.to_data(defaults = True),
         'integration_public': integration_public,
         'integration_require_code_grant': integration_requires_code_grant,
+        'integration_types': [integration_type.value for integration_type in integration_types],
+        'integration_types_config': {
+            str(integration_type.value) : integration_type_configuration.to_data()
+            for integration_type, integration_type_configuration
+            in integration_types_configuration.items()
+        },
         'interactions_endpoint_url': interaction_endpoint_url,
         'interactions_event_types': [
             interaction_event_type.value for interaction_event_type in interaction_event_types
@@ -267,6 +284,8 @@ def test__Application__from_data_own__attributes():
     vampytest.assert_eq(application.install_parameters, install_parameters)
     vampytest.assert_eq(application.integration_public, integration_public)
     vampytest.assert_eq(application.integration_requires_code_grant, integration_requires_code_grant)
+    vampytest.assert_eq(application.integration_types, tuple(integration_types))
+    vampytest.assert_eq(application.integration_types_configuration, integration_types_configuration)
     vampytest.assert_eq(application.interaction_endpoint_url, interaction_endpoint_url)
     vampytest.assert_eq(application.interaction_event_types, tuple(interaction_event_types))
     vampytest.assert_is(application.interaction_version, interaction_version)
@@ -699,6 +718,15 @@ def test__Application__to_data_own():
     install_parameters = ApplicationInstallParameters(permissions = 8)
     integration_public = True
     integration_requires_code_grant = True
+    integration_types = [ApplicationIntegrationType.user_install]
+    integration_types_configuration = {
+        ApplicationIntegrationType.user_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 8),
+        ),
+        ApplicationIntegrationType.guild_install: ApplicationIntegrationTypeConfiguration(
+            install_parameters = ApplicationInstallParameters(permissions = 123),
+        ),
+    }
     interaction_endpoint_url = 'https://orindance.party/'
     interaction_event_types = [ApplicationInteractionEventType.none]
     interaction_version = ApplicationInteractionVersion.selective
@@ -736,6 +764,8 @@ def test__Application__to_data_own():
         install_parameters = install_parameters,
         integration_public = integration_public,
         integration_requires_code_grant = integration_requires_code_grant,
+        integration_types = integration_types,
+        integration_types_configuration = integration_types_configuration,
         interaction_endpoint_url = interaction_endpoint_url,
         interaction_event_types = interaction_event_types,
         interaction_version = interaction_version,
@@ -791,6 +821,12 @@ def test__Application__to_data_own():
         'install_params': install_parameters.to_data(defaults = True),
         'integration_public': integration_public,
         'integration_require_code_grant': integration_requires_code_grant,
+        'integration_types': [integration_type.value for integration_type in integration_types],
+        'integration_types_config': {
+            str(integration_type.value) : integration_type_configuration.to_data(defaults = True)
+            for integration_type, integration_type_configuration
+            in integration_types_configuration.items()
+        },
         'interactions_endpoint_url': interaction_endpoint_url,
         'interactions_event_types': [
             interaction_event_type.value for interaction_event_type in interaction_event_types

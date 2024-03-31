@@ -6,7 +6,7 @@ from ..fields import parse_client_guild_profile__cache_presence, parse_client_gu
 from ..guild import Guild
 
 
-def iter_options__cache_presence():
+def _iter_options__cache_presence():
     user_id_0 = 202306160002
     user_id_1 = 202306160007
     
@@ -56,7 +56,7 @@ def iter_options__cache_presence():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options__cache_presence()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__cache_presence()).returning_last())
 def test__parse_client_guild_profile__cache_presence(input_data, user_in_cache):
     """
     Tests whether ``parse_client_guild_profile__cache_presence`` works as intended.
@@ -80,7 +80,7 @@ def test__parse_client_guild_profile__cache_presence(input_data, user_in_cache):
     return parse_client_guild_profile__cache_presence(input_data, guild.users, guild_id)
 
 
-def iter_options__no_cache_presence():
+def _iter_options__no_cache_presence():
     user_id_0 = 202306160004
     user_id_1 = 202306160006
     
@@ -130,7 +130,7 @@ def iter_options__no_cache_presence():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options__no_cache_presence()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__no_cache_presence()).returning_last())
 def test__parse_client_guild_profile__no_cache_presence(input_data, user_in_cache):
     """
     Tests whether ``parse_client_guild_profile__no_cache_presence`` works as intended.

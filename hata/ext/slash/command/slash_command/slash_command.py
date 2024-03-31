@@ -25,10 +25,10 @@ from ...wrappers import CommandWrapper, get_parameter_configurers
 
 from ..command_base_application_command import CommandBaseApplicationCommand
 from ..command_base_application_command.helpers import (
-    _reset_application_command_schema, _validate_allow_in_dm, _validate_delete_on_unload,
-    _validate_guild, _validate_is_global, _validate_name, _validate_nsfw, _validate_required_permissions
+    _maybe_exclude_dm_from_integration_context_types, _reset_application_command_schema, _validate_allow_in_dm,
+    _validate_delete_on_unload, _validate_guild, _validate_integration_context_types, _validate_integration_types,
+    _validate_is_global, _validate_name, _validate_nsfw, _validate_required_permissions
 )
-
 
 from .helpers import _generate_description_from, _validate_is_default
 from .slash_command_category import SlashCommandCategory
@@ -83,9 +83,6 @@ class SlashCommand(
         | UNLOADING_BEHAVIOUR_INHERIT   | 2     |
         +-------------------------------+-------+
     
-    allow_in_dm : `None`, `bool`
-        Whether the command can be used in private channels (dm).
-    
     global_ : `bool`
         Whether the command is a global command.
         
@@ -93,6 +90,12 @@ class SlashCommand(
     
     guild_ids : `None`, `set` of `int`
         The ``Guild``'s id to which the command is bound to.
+    
+    integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
+        The places where the application command shows up. `None` means all.
+    
+    integration_types : `None | tuple<ApplicationIntegrationType>`
+        The options where the application command can be integrated to.
     
     nsfw : `None,` bool`
         Whether the application command is only allowed in nsfw channels.
@@ -160,9 +163,11 @@ class SlashCommand(
         guild = None,
         is_default = None,
         delete_on_unload = None,
-        allow_in_dm = None,
+        allow_in_dm = ...,
         required_permissions = None,
         nsfw = None,
+        integration_context_types = None,
+        integration_types = None,
         **keyword_parameters,
     ):
         """
@@ -194,15 +199,19 @@ class SlashCommand(
         delete_on_unload : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
             Whether the command should be deleted from Discord when removed.
         
-        allow_in_dm : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
-            Whether the command can be used in private channels (dm).
-        
         required_permissions : `None`, `int`, ``Permission``, `tuple` of (`None`, `int`, ``Permission``,
                 `Ellipsis`) = `None`, Optional
             The required permissions to use the application command inside of a guild.
         
         nsfw : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
             Whether the application command is only allowed in nsfw channels.
+        
+        integration_context_types : `None`, ``ApplicationCommandIntegrationContextType``, `int`, `str`, \
+                `iterable<ApplicationCommandIntegrationContextType | int | str>`, Optional
+        
+        integration_types : `None`, ``ApplicationIntegrationType``, `int`, `str`, \
+                `iterable<ApplicationIntegrationType | int | str>`, Optional
+            The options where the application command can be integrated to.
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters.
@@ -234,6 +243,16 @@ class SlashCommand(
             command = func
             wrappers = None
         
+        if allow_in_dm is not ...:
+            warn(
+                (
+                    '`allow_in_dm` parameter is deprecated and will be removed in 2024 November. '
+                    'Please use `integration_context_types` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 5,
+            )
+        
         # Check for routing
         
         route_to = 0
@@ -245,10 +264,21 @@ class SlashCommand(
         unloading_behaviour, route_to = _check_maybe_route(
             'delete_on_unload', delete_on_unload, route_to, _validate_delete_on_unload
         )
-        allow_in_dm, route_to = _check_maybe_route('allow_in_dm', allow_in_dm, route_to, _validate_allow_in_dm)
+        allow_in_dm, route_to = _check_maybe_route(
+            'allow_in_dm',
+            None if allow_in_dm is ... else allow_in_dm,
+            route_to,
+            _validate_allow_in_dm,
+        )
         nsfw, route_to = _check_maybe_route('nsfw', nsfw, route_to, _validate_nsfw)
         required_permissions, route_to = _check_maybe_route(
             'required_permissions', required_permissions, route_to, _validate_required_permissions
+        )
+        integration_context_types, route_to = _check_maybe_route(
+            'integration_context_types', integration_context_types, route_to, _validate_integration_context_types,
+        )
+        integration_types, route_to = _check_maybe_route(
+            'integration_types', integration_types, route_to, _validate_integration_types,
         )
         
         if route_to:
@@ -263,6 +293,8 @@ class SlashCommand(
             allow_in_dm = route_value(allow_in_dm, route_to)
             nsfw = route_value(nsfw, route_to)
             required_permissions = route_value(required_permissions, route_to)
+            integration_context_types = route_value(integration_context_types, route_to)
+            integration_types = route_value(integration_types, route_to)
             
             description = [
                 (
@@ -301,10 +333,10 @@ class SlashCommand(
             
             for (
                 name, description, is_global, guild_ids, is_default, unloading_behaviour,
-                nsfw, required_permissions, allow_in_dm
+                nsfw, required_permissions, allow_in_dm, integration_context_types, integration_types
             ) in zip(
                 name, description, is_global, guild_ids, is_default, unloading_behaviour,
-                nsfw, required_permissions, allow_in_dm
+                nsfw, required_permissions, allow_in_dm, integration_context_types, integration_types
             ):
                 
                 if is_global and (guild_ids is not None):
@@ -312,6 +344,14 @@ class SlashCommand(
                         f'`is_global` and `guild` contradict each other, got is_global = {is_global!r}, '
                         f'guild = {guild!r}.'
                     )
+                
+                integration_context_types = _maybe_exclude_dm_from_integration_context_types(
+                    allow_in_dm, integration_context_types
+                )
+                
+                if not is_global:
+                    integration_types = None
+                    integration_context_types = None
                 
                 if (command is None):
                     command_function = None
@@ -333,7 +373,6 @@ class SlashCommand(
                 self._registered_application_command_ids = None
                 self.default = is_default
                 self._unloading_behaviour = unloading_behaviour
-                self.allow_in_dm = allow_in_dm
                 self.nsfw = nsfw
                 self.required_permissions = required_permissions
                 self._permission_overwrites = None
@@ -341,6 +380,8 @@ class SlashCommand(
                 self._exception_handlers = None
                 self._parent_reference = None
                 self._self_reference = None
+                self.integration_context_types = integration_context_types
+                self.integration_types = integration_types
                 
                 if (command_function is not None):
                     command_function._parent_reference = self.get_self_reference()
@@ -365,8 +406,16 @@ class SlashCommand(
             if is_global and (guild_ids is not None):
                 raise TypeError(
                     f'`is_global` and `guild` contradict each other, got is_global = {is_global!r}, '
-                    f'guild={guild!r}.'
+                    f'guild = {guild!r}.'
                 )
+            
+            integration_context_types = _maybe_exclude_dm_from_integration_context_types(
+                allow_in_dm, integration_context_types
+            )
+            
+            if not is_global:
+                integration_types = None
+                integration_context_types = None
             
             if (command is None):
                 sub_commands = {}
@@ -388,7 +437,6 @@ class SlashCommand(
             self._registered_application_command_ids = None
             self.default = is_default
             self._unloading_behaviour = unloading_behaviour
-            self.allow_in_dm = allow_in_dm
             self.nsfw = nsfw
             self.required_permissions = required_permissions
             self._permission_overwrites = None
@@ -396,6 +444,8 @@ class SlashCommand(
             self._exception_handlers = None
             self._parent_reference = None
             self._self_reference = None
+            self.integration_context_types = integration_context_types
+            self.integration_types = integration_types
             
             if (command_function is not None):
                 command_function._parent_reference = self.get_self_reference()
@@ -448,7 +498,7 @@ class SlashCommand(
                 None,
                 option.name,
                 'sub-command',
-                list(self._sub_commands.keys()),
+                [*self._sub_commands.keys()],
             )
         )
         return

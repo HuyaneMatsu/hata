@@ -7,7 +7,7 @@ from ..guild import Guild
 from ..fields import parse_stickers
 
 
-def iter_options():
+def _iter_options():
     sticker_id = 202306140002
     sticker_name = 'Koishi'
     
@@ -25,7 +25,7 @@ def iter_options():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__parse_stickers(input_value):
     """
     Tests whether ``parse_stickers`` works as intended.

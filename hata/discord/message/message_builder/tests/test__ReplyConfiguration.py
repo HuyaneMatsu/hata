@@ -5,7 +5,7 @@ from ..reply_configuration import ReplyConfiguration
 
 def _assert_fields_set(reply_configuration):
     """
-    Asserts whether every fields are set of teh reply configuration.
+    Asserts whether every fields are set of the reply configuration.
     
     Parameters
     ----------

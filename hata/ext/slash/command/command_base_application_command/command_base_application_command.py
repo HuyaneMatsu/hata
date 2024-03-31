@@ -65,6 +65,12 @@ class CommandBaseApplicationCommand(CommandBase):
     guild_ids : `None`, `set` of `int`
         The ``Guild``'s id to which the command is bound to.
     
+    integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
+        The places where the application command shows up. `None` means all.
+    
+    integration_types : `None | tuple<ApplicationIntegrationType>`
+        The options where the application command can be integrated to.
+    
     nsfw : `None`, `bool`
         Whether the application command is only allowed in nsfw channels.
     
@@ -84,7 +90,8 @@ class CommandBaseApplicationCommand(CommandBase):
     """
     __slots__ = (
         '_permission_overwrites', '_registered_application_command_ids', '_schema', '_unloading_behaviour',
-        'allow_in_dm', 'default', 'global_', 'guild_ids', 'nsfw', 'required_permissions'
+        'default', 'global_', 'guild_ids', 'integration_context_types', 'integration_types', 'nsfw',
+        'required_permissions'
     )
     
     COMMAND_PARAMETER_NAMES = (
@@ -156,8 +163,20 @@ class CommandBaseApplicationCommand(CommandBase):
         # _unloading_behaviour
         new._unloading_behaviour = self._unloading_behaviour
         
-        # allow_in_dm
-        new.allow_in_dm = self.allow_in_dm
+        # default
+        new.default = self.default
+        
+        # integration_context_types
+        integration_context_types = self.integration_context_types
+        if (integration_context_types is not None):
+            integration_context_types = (*integration_context_types,)
+        new.integration_context_types = integration_context_types
+        
+        # integration_types
+        integration_types = self.integration_types
+        if (integration_types is not None):
+            integration_types = (*integration_types,)
+        new.integration_types = integration_types
         
         # guild_ids
         guild_ids = self.guild_ids
@@ -196,6 +215,23 @@ class CommandBaseApplicationCommand(CommandBase):
         # _unloading_behaviour
         hash_value ^= (self._unloading_behaviour + 1) << 12
         
+        # default
+        hash_value ^= self.default << 3
+        
+        # integration_context_types
+        integration_context_types = self.integration_context_types
+        if (integration_context_types is not None):
+            hash_value ^= len(integration_context_types) << 9
+            for integration_context_type in integration_context_types:
+                hash_value ^= integration_context_type.value << 13
+        
+        # integration_types
+        integration_types = self.integration_types
+        if (integration_types is not None):
+            hash_value ^= len(integration_types) << 7
+            for integration_type in integration_types:
+                hash_value ^= integration_type.value << 11
+        
         # guild_ids
         guild_ids = self.guild_ids
         if (guild_ids is not None):
@@ -233,8 +269,16 @@ class CommandBaseApplicationCommand(CommandBase):
         if self._unloading_behaviour != other._unloading_behaviour:
             return False
         
-        # allow_in_dm
-        if self.allow_in_dm != other.allow_in_dm:
+        # default
+        if self.default != other.default:
+            return False
+        
+        # integration_context_types
+        if self.integration_context_types != other.integration_context_types:
+            return False
+        
+        # integration_types
+        if self.integration_types != other.integration_types:
             return False
         
         # guild_ids
@@ -274,10 +318,23 @@ class CommandBaseApplicationCommand(CommandBase):
         
         yield repr_parts
         
-        allow_in_dm = self.allow_in_dm
-        if (allow_in_dm is not None):
-            repr_parts.append(', allow_in_dm = ')
-            repr_parts.append(repr(allow_in_dm))
+        # default
+        default = self.default
+        if default:
+            repr_parts.append(', default = ')
+            repr_parts.append(repr(default))
+        
+        # integration_context_types
+        integration_context_types = self.integration_context_types
+        if (integration_context_types is not None):
+            repr_parts.append(', integration_context_types = ')
+            repr_parts.append(repr(integration_context_types))
+        
+        # integration_types
+        integration_types = self.integration_types
+        if (integration_types is not None):
+            repr_parts.append(', integration_types = ')
+            repr_parts.append(repr(integration_types))
         
         nsfw = self.nsfw
         if (nsfw is not None):
@@ -466,6 +523,7 @@ class CommandBaseApplicationCommand(CommandBase):
         real_command_count: `int`
         """
         return 1
+    
     
     @property
     def interactions(self):
@@ -747,7 +805,8 @@ class CommandBaseApplicationCommand(CommandBase):
         schema = ApplicationCommand(
             self.name,
             self.description,
-            allow_in_dm = self.allow_in_dm,
+            integration_context_types = self.integration_context_types,
+            integration_types = self.integration_types,
             options = self._get_schema_options(),
             nsfw = self.nsfw,
             required_permissions = self.required_permissions,

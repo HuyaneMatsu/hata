@@ -3,7 +3,7 @@ import vampytest
 from ..fields import put_owner_id_into
 
 
-def iter_options():
+def _iter_options():
     owner_id = 202306100001
     
     yield 0, False, {'owner_id': None}
@@ -11,7 +11,7 @@ def iter_options():
     yield owner_id, False, {'owner_id': str(owner_id)}
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__put_owner_id_into(input_value, defaults):
     """
     Tests whether ``put_owner_id_into`` works as intended.

@@ -1,5 +1,7 @@
 __all__ = ('ApplicationCommand',)
 
+from warnings import warn
+
 from ...bases import DiscordEntity
 from ...core import APPLICATION_COMMANDS, GUILDS
 from ...localization.helpers import get_localized_length
@@ -11,16 +13,20 @@ from ...utils import DATETIME_FORMAT_CODE, id_to_datetime
 from ..helpers import with_translation
 
 from .fields import (
-    parse_allow_in_dm, parse_application_id, parse_description, parse_description_localizations, parse_guild_id,
-    parse_id, parse_name, parse_name_localizations, parse_nsfw, parse_options, parse_required_permissions,
-    parse_target_type, parse_version, put_allow_in_dm_into, put_application_id_into, put_description_into,
-    put_description_localizations_into, put_guild_id_into, put_id_into, put_name_into, put_name_localizations_into,
+    parse_application_id, parse_description, parse_description_localizations, parse_guild_id,
+    parse_id, parse_integration_context_types, parse_integration_types, parse_name, parse_name_localizations,
+    parse_nsfw, parse_options, parse_required_permissions, parse_target_type, parse_version,
+    put_application_id_into, put_description_into, put_description_localizations_into, put_guild_id_into, put_id_into,
+    put_integration_context_types_into, put_integration_types_into, put_name_into, put_name_localizations_into,
     put_nsfw_into, put_options_into, put_required_permissions_into, put_target_type_into, put_version_into,
     validate_allow_in_dm, validate_application_id, validate_description, validate_description_localizations,
-    validate_guild_id, validate_id, validate_name, validate_name_localizations, validate_nsfw, validate_options,
-    validate_required_permissions, validate_target_type, validate_version
+    validate_guild_id, validate_id, validate_integration_context_types, validate_integration_types, validate_name,
+    validate_name_localizations, validate_nsfw, validate_options, validate_required_permissions, validate_target_type,
+    validate_version
 )
-from .preinstanced import APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommandTargetType
+from .preinstanced import (
+    APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
+)
 
 
 PRECREATE_FIELDS = {
@@ -31,6 +37,8 @@ PRECREATE_FIELDS = {
     'description_localizations': ('description_localizations', validate_description_localizations),
     'guild': ('guild_id', validate_guild_id),
     'guild_id': ('guild_id', validate_guild_id),
+    'integration_context_types': ('integration_context_types', validate_integration_context_types),
+    'integration_types': ('integration_types', validate_integration_types),
     'name': ('name', validate_name),
     'name_localizations': ('name_localizations', validate_name_localizations),
     'nsfw': ('nsfw', validate_nsfw),
@@ -47,9 +55,6 @@ class ApplicationCommand(DiscordEntity, immortal = True):
     
     Attributes
     ----------
-    allow_in_dm : `bool`
-        Whether the command can be used in private (dm) channels.
-    
     application_id : `int`
         The application command's application's id.
     
@@ -70,6 +75,12 @@ class ApplicationCommand(DiscordEntity, immortal = True):
     
     id : `int`
         The application command's id.
+    
+    integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
+        The places where the application command shows up. `None` means all.
+    
+    integration_types : `None | tuple<ApplicationIntegrationType>`
+        The options where the application command can be integrated to.
     
     name : `str`
         The name of the command. It's length can be in range [1:32].
@@ -98,8 +109,9 @@ class ApplicationCommand(DiscordEntity, immortal = True):
     Application command instances are weakreferable.
     """
     __slots__ = (
-        'allow_in_dm', 'application_id', 'description', 'description_localizations', 'guild_id', 'name',
-        'name_localizations', 'nsfw', 'options', 'required_permissions', 'target_type', 'version'
+        'application_id', 'description', 'description_localizations', 'guild_id',
+        'integration_context_types', 'integration_types', 'name', 'name_localizations', 'nsfw', 'options',
+        'required_permissions', 'target_type', 'version'
     )
     
     def __new__(
@@ -109,6 +121,8 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         *,
         allow_in_dm = ...,
         description_localizations = ...,
+        integration_context_types = ...,
+        integration_types = ...,
         name_localizations = ...,
         nsfw = ...,
         options = ...,
@@ -128,16 +142,18 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             
             Defaults to the `name` parameter if not given.
         
-        allow_in_dm : `None`, `bool`, Optional (Keyword only)
-            Whether the command can be used in private channels (dm).
-            
-            Defaults to `True`
-        
         description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
                 (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
             Localized descriptions of the application command.
         
-        name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
+        integration_context_types : `None | iterable<ApplicationCommandIntegrationContextType | int>` \
+                , Optional (Keyword only)
+            The places where the application command shows up. `None` means all.
+        
+        integration_types : `None | iterable<ApplicationIntegrationType | int>`, Optional (Keyword only)
+            The options where the application command can be integrated to.
+        
+        name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items, \
                 (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
             Localized names of the application command.
         
@@ -162,10 +178,18 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # allow_in_dm
+        # Deprecations
         if allow_in_dm is ...:
             allow_in_dm = True
         else:
+            warn(
+                (
+                    f'`{cls}.allow_in_dm` is deprecated and will be removed in 2024 November. '
+                    f'Please use `integration_context_types` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
             allow_in_dm = validate_allow_in_dm(allow_in_dm)
         
         # description
@@ -176,6 +200,18 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             description_localizations = None
         else:
             description_localizations = validate_description_localizations(description_localizations)
+        
+        # integration_context_types
+        if integration_context_types is ...:
+            integration_context_types = None
+        else:
+            integration_context_types = validate_integration_context_types(integration_context_types)
+        
+        # integration_types
+        if integration_types is ...:
+            integration_types = None
+        else:
+            integration_types = validate_integration_types(integration_types)
         
         # name
         name = validate_name(name)
@@ -223,17 +259,22 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             if (description is None):
                 description = validate_description(name)
         
+        # Apply deprecations
+        if not allow_in_dm:
+            integration_types = (ApplicationCommandIntegrationContextType.guild,)
+        
         # Construct
         self = object.__new__(cls)
         self.application_id = 0
+        self.description = description
+        self.description_localizations = description_localizations
+        self.id = 0
+        self.integration_context_types = integration_context_types
+        self.integration_types = integration_types
+        self.guild_id = 0
         self.name = name
         self.name_localizations = name_localizations
         self.nsfw = nsfw
-        self.description = description
-        self.description_localizations = description_localizations
-        self.guild_id = 0
-        self.id = 0
-        self.allow_in_dm = allow_in_dm
         self.options = options
         self.required_permissions = required_permissions
         self.target_type = target_type
@@ -256,11 +297,6 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
-        allow_in_dm : `None`, `bool`, Optional (Keyword only)
-            Whether the command can be used in private channels (dm).
-            
-            Defaults to `True`
-        
         application : `int`, ``Application``, Optional (Keyword only)
             Alternative for `application_id`.
         
@@ -279,6 +315,13 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild's identifier to which the command is bound to.
+        
+        integration_context_types : `None | iterable<ApplicationCommandIntegrationContextType | int>` \
+                , Optional (Keyword only)
+            The places where the application command shows up. `None` means all.
+        
+        integration_types : `None | iterable<ApplicationIntegrationType | int>`, Optional (Keyword only)
+            The options where the application command can be integrated to.
         
         name : `str`
             The name of the command. It's length can be in range [1:32].
@@ -351,11 +394,12 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         """
         self = object.__new__(cls)
         self.id = application_command_id
-        self.allow_in_dm = True
         self.application_id = application_id
         self.description = None
         self.description_localizations = None
         self.guild_id = 0
+        self.integration_context_types = None
+        self.integration_types = None
         self.name = ''
         self.name_localizations = None
         self.nsfw = False
@@ -426,7 +470,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         return self
     
     
-    def to_data(self, * , defaults = False, include_internals = True):
+    def to_data(self, * , defaults = False, include_internals = False):
         """
         Converts the application command to a json serializable object.
         
@@ -444,9 +488,10 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         """
         data = {}
         
-        put_allow_in_dm_into(self.allow_in_dm, data, defaults)
         put_description_into(self.description, data, defaults)
         put_description_localizations_into(self.description_localizations, data, defaults)
+        put_integration_context_types_into(self.integration_context_types, data, defaults)
+        put_integration_types_into(self.integration_types, data, defaults)
         put_name_into(self.name, data, defaults)
         put_name_localizations_into(self.name_localizations, data, defaults)
         put_nsfw_into(self.nsfw, data, defaults)
@@ -472,9 +517,10 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         data : `dict` of (`str`, `object`) items
             Received application command data.
         """
-        self.allow_in_dm = parse_allow_in_dm(data)
         self.description = parse_description(data)
         self.description_localizations = parse_description_localizations(data)
+        self.integration_context_types = parse_integration_context_types(data)
+        self.integration_types = parse_integration_types(data)
         self.name = parse_name(data)
         self.name_localizations = parse_name_localizations(data)
         self.nsfw = parse_nsfw(data)
@@ -501,37 +547,33 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             
             Every item in the returned dict is optional and can contain the following ones:
             
-            +---------------------------+---------------------------------------------------+
-            | Keys                      | Values                                            |
-            +===========================+===================================================+
-            | description               | `None`, `str`                                     |
-            +---------------------------+---------------------------------------------------+
-            | description_localizations | `None`, `dict` of (``Locale``, `str`) items       |
-            +---------------------------+---------------------------------------------------+
-            | allow_in_dm               | `bool`                                            |
-            +---------------------------+---------------------------------------------------+
-            | name                      | `str`                                             |
-            +---------------------------+---------------------------------------------------+
-            | name_localizations        | `None`, `dict` of (``Locale``, `str`) items       |
-            +---------------------------+---------------------------------------------------+
-            | nsfw                      | `bool`                                            |
-            +---------------------------+---------------------------------------------------+
-            | options                   | `None`, `list` of ``ApplicationCommandOption``    |
-            +---------------------------+---------------------------------------------------+
-            | required_permissions      | ``Permission``                                    |
-            +---------------------------+---------------------------------------------------+
-            | target_type               | ``ApplicationCommandTargetType``                  |
-            +---------------------------+---------------------------------------------------+
-            | version                   | `int`                                             |
-            +---------------------------+---------------------------------------------------+
+            +---------------------------+-------------------------------------------------------------------+
+            | Keys                      | Values                                                            |
+            +===========================+===================================================================+
+            | description               | `None`, `str`                                                     |
+            +---------------------------+-------------------------------------------------------------------+
+            | description_localizations | `None`, `dict` of (``Locale``, `str`) items                       |
+            +---------------------------+-------------------------------------------------------------------+
+            | integration_context_types | `None`, `tuple` of ``ApplicationCommandIntegrationContextType``   |
+            +---------------------------+-------------------------------------------------------------------+
+            | integration_types         | `None`, `tuple` of ``ApplicationIntegrationType``                 |
+            +---------------------------+-------------------------------------------------------------------+
+            | name                      | `str`                                                             |
+            +---------------------------+-------------------------------------------------------------------+
+            | name_localizations        | `None`, `dict` of (``Locale``, `str`) items                       |
+            +---------------------------+-------------------------------------------------------------------+
+            | nsfw                      | `bool`                                                            |
+            +---------------------------+-------------------------------------------------------------------+
+            | options                   | `None`, `list` of ``ApplicationCommandOption``                    |
+            +---------------------------+-------------------------------------------------------------------+
+            | required_permissions      | ``Permission``                                                    |
+            +---------------------------+-------------------------------------------------------------------+
+            | target_type               | ``ApplicationCommandTargetType``                                  |
+            +---------------------------+-------------------------------------------------------------------+
+            | version                   | `int`                                                             |
+            +---------------------------+-------------------------------------------------------------------+
         """
         old_attributes = {}
-        
-        # allow_in_dm
-        allow_in_dm = parse_allow_in_dm(data)
-        if self.allow_in_dm != allow_in_dm:
-            old_attributes['allow_in_dm'] = self.allow_in_dm
-            self.allow_in_dm = allow_in_dm
         
         # description
         description = parse_description(data)
@@ -544,6 +586,18 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         if self.description_localizations != description_localizations:
             old_attributes['description_localizations'] = self.description_localizations
             self.description_localizations = description_localizations
+        
+        # integration_context_types
+        integration_context_types = parse_integration_context_types(data)
+        if self.integration_context_types != integration_context_types:
+            old_attributes['integration_context_types'] = self.integration_context_types
+            self.integration_context_types = integration_context_types
+        
+        # integration_types
+        integration_types = parse_integration_types(data)
+        if self.integration_types != integration_types:
+            old_attributes['integration_types'] = self.integration_types
+            self.integration_types = integration_types
         
         # name
         name = parse_name(data)
@@ -628,8 +682,8 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             repr_parts.append(repr(target_type.value))
             repr_parts.append(')')
         
-        # Extra fields: `.description`, `.options`, `.allow_in_dm`, `.required_permissions`, `.nsfw`,
-        # `.name_localizations`, `.description_localizations`
+        # Extra fields: `.description`, `.options`, `.required_permissions`, `.nsfw`,
+        # `.name_localizations`, `.description_localizations`, `.integration_context_types`, `.integration_types`
         
         # description
         description = self.description
@@ -637,10 +691,19 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             repr_parts.append(', description = ')
             repr_parts.append(repr(self.description))
         
-        # allow_in_dm
-        if not self.allow_in_dm:
-            repr_parts.append(', allow_in_dm = False')
+        # integration_context_types
+        integration_context_types = self.integration_context_types
+        if (integration_context_types is not None):
+            repr_parts.append(', integration_context_types = ')
+            repr_parts.append(repr(integration_context_types))
         
+        # integration_types
+        integration_types = self.integration_types
+        if (integration_types is not None):
+            repr_parts.append(', integration_types = ')
+            repr_parts.append(repr(integration_types))
+        
+        # required_permissions
         required_permissions = self.required_permissions
         if required_permissions:
             repr_parts.append(', required_permissions = ')
@@ -712,9 +775,6 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         # id
         # non-partial field
         
-        # allow_in_dm
-        hash_value ^= self.allow_in_dm << 1
-        
         # application_id
         # non-partial field
         
@@ -732,6 +792,20 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         # guild_id
         # non-partial field
+        
+        # integration_context_types
+        integration_context_types = self.integration_context_types
+        if (integration_context_types is not None):
+            hash_value ^= len(integration_context_types) << 9
+            for integration_context_type in integration_context_types:
+                hash_value ^= integration_context_type.value << 13
+        
+        # integration_types
+        integration_types = self.integration_types
+        if (integration_types is not None):
+            hash_value ^= len(integration_types) << 7
+            for integration_type in integration_types:
+                hash_value ^= integration_type.value << 11
         
         # name
         hash_value ^= hash(self.name)
@@ -806,16 +880,20 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             
             return False
         
-        # allow_in_dm
-        if self.allow_in_dm != other.allow_in_dm:
-            return False
-        
         # description
         if self.description != other.description:
             return False
         
         # description_localizations
         if self.description_localizations != other.description_localizations:
+            return False
+        
+        # integration_context_types
+        if self.integration_context_types != other.integration_context_types:
+            return False
+        
+        # integration_types
+        if self.integration_types != other.integration_types:
             return False
         
         # name
@@ -950,9 +1028,6 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         """
         new = object.__new__(type(self))
         
-        # allow_in_dm
-        new.allow_in_dm = self.allow_in_dm
-        
         # application_id
         new.application_id = 0
         
@@ -970,6 +1045,18 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         # id
         new.id = 0
+        
+        # integration_context_types
+        integration_context_types = self.integration_context_types
+        if (integration_context_types is not None):
+            integration_context_types = (*integration_context_types,)
+        new.integration_context_types = integration_context_types
+        
+        # integration_types
+        integration_types = self.integration_types
+        if (integration_types is not None):
+            integration_types = (*integration_types,)
+        new.integration_types = integration_types
         
         # name
         new.name = self.name
@@ -1007,6 +1094,8 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         allow_in_dm = ...,
         description = ...,
         description_localizations = ...,
+        integration_context_types = ...,
+        integration_types = ...,
         name = ...,
         name_localizations = ...,
         nsfw = ...,
@@ -1018,16 +1107,19 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         Copies the application command with the given fields.
         
         Parameters
-        ----------
-        allow_in_dm : `None`, `bool`, Optional (Keyword only)
-            Whether the command can be used in private channels (dm).
-        
         description : `None`, `str` = `None`, Optional
             The command's description. It's length can be in range [2:100].
         
         description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
                 (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
             Localized descriptions of the application command.
+        
+        integration_context_types : `None | iterable<ApplicationCommandIntegrationContextType | int>` \
+                , Optional (Keyword only)
+            The places where the application command shows up. `None` means all.
+        
+        integration_types : `None | iterable<ApplicationIntegrationType | int>`, Optional (Keyword only)
+            The options where the application command can be integrated to.
         
         name : `str`, Optional (Keyword only)
             The name of the command. It's length can be in range [1:32].
@@ -1059,10 +1151,18 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # allow_in_dm
+        # Deprecations
         if allow_in_dm is ...:
-            allow_in_dm = self.allow_in_dm
+            allow_in_dm = True
         else:
+            warn(
+                (
+                    f'`{type(self)}.allow_in_dm` is deprecated and will be removed in 2024 November. '
+                    f'Please use `integration_context_types` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
             allow_in_dm = validate_allow_in_dm(allow_in_dm)
         
         # description
@@ -1078,6 +1178,22 @@ class ApplicationCommand(DiscordEntity, immortal = True):
                 description_localizations = description_localizations.copy()
         else:
             description_localizations = validate_description_localizations(description_localizations)
+        
+        # integration_context_types
+        if integration_context_types is ...:
+            integration_context_types = self.integration_context_types
+            if (integration_context_types is not None):
+                integration_context_types = (*integration_context_types,)
+        else:
+            integration_context_types = validate_integration_context_types(integration_context_types)
+        
+        # integration_types
+        if integration_types is ...:
+            integration_types = self.integration_types
+            if (integration_types is not None):
+                integration_types = (*integration_types,)
+        else:
+            integration_types = validate_integration_types(integration_types)
         
         # name
         if name is ...:
@@ -1132,6 +1248,10 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             if (description is None):
                 description = validate_description(name)
     
+        # Apply deprecations
+        if not allow_in_dm:
+            integration_types = (ApplicationCommandIntegrationContextType.guild,)
+        
         # Construct
         new = object.__new__(type(self))
         new.application_id = 0
@@ -1142,7 +1262,8 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         new.description_localizations = description_localizations
         new.guild_id = 0
         new.id = 0
-        new.allow_in_dm = allow_in_dm
+        new.integration_context_types = integration_context_types
+        new.integration_types = integration_types
         new.options = options
         new.required_permissions = required_permissions
         new.target_type = target_type
@@ -1336,3 +1457,105 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         options = self.options
         if (options is not None):
             yield from options
+    
+    
+    def has_integration_type(self, integration_type):
+        """
+        Returns whether the application command is allowed the given integration type.
+        
+        Parameters
+        ----------
+        integration_type : `int`, ``ApplicationIntegrationType``
+            The integration type to check.
+        
+        Returns
+        -------
+        hash_integration_type : `bool`
+        """
+        integration_types = self.integration_types
+        if integration_types is None:
+            return False
+        
+        return integration_type in integration_types
+    
+    
+    def iter_integration_types(self):
+        """
+        Iterates over the integration types that the application command is allowed for.
+        
+        Yields
+        ------
+        integration_type : ``ApplicationIntegrationType``
+        """
+        integration_types = self.integration_types
+        if (integration_types is not None):
+            yield from integration_types
+
+
+    def has_integration_context_type(self, integration_context_type):
+        """
+        Returns whether the application command is allowed the given integration context type.
+        
+        Parameters
+        ----------
+        integration_context_type : `int`, ``ApplicationCommandIntegrationContextType``
+            The integration_context type to check.
+        
+        Returns
+        -------
+        hash_integration_context_type : `bool`
+        """
+        integration_context_types = self.integration_context_types
+        if integration_context_types is None:
+            return True
+        
+        return integration_context_type in integration_context_types
+    
+    
+    def iter_integration_context_types(self):
+        """
+        Iterates over the integration context types that the application command is allowed for.
+        
+        Yields
+        ------
+        integration_context_type : ``ApplicationCommandIntegrationContextType``
+        """
+        integration_context_types = self.integration_context_types
+        if (integration_context_types is not None):
+            yield from integration_context_types
+    
+    
+    @property
+    def allow_in_dm(self):
+        """
+        Whether the command can be used in private (dm) channels.
+        
+        Deprecated and will be removed in 2024 November.
+        """
+        warn(
+            (
+                f'`{type(self)}.allow_in_dm` is deprecated and will be removed in 2024 November. '
+                f'Please do either: '
+                f'`.has_integration_context_type(ApplicationCommandIntegrationContextType.bot_private_channel)` or '
+                f'`.has_integration_context_type(ApplicationCommandIntegrationContextType.any_private_channel)` or '
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return (
+            self.has_integration_context_type(ApplicationCommandIntegrationContextType.bot_private_channel) or
+            self.has_integration_context_type(ApplicationCommandIntegrationContextType.any_private_channel)
+        )
+    
+    
+    @allow_in_dm.setter
+    def allow_in_dm(self, value):
+        warn(
+            (
+                f'`{type(self)}.allow_in_dm` is deprecated and will be removed in 2024 November. '
+                f'Please use `integration_context_types` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )

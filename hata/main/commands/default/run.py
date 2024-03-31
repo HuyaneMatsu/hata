@@ -342,20 +342,52 @@ def _check_profiling_available():
         return False
     
     PROFILING_LIBRARY = yappi
-    yappi.set_clock_type('cpu')
     return True
 
 
-def _begin_profiling():
+def _begin_profiling(profile_clock_type):
     """
     Begins profiling if available.
     
     Should be called after ``_check_profiling_available``.
+    
+    Parameters
+    ----------
+    profile_clock_type : `str`
+        Profile clock type to use.
     """
     if PROFILING_LIBRARY is None:
         return
     
+    PROFILING_LIBRARY.set_clock_type(profile_clock_type)
     PROFILING_LIBRARY.start(builtins = True)
+
+
+def _validate_profile_clock_type(profile_clock_type):
+    """
+    Validates profile clock type.
+    
+    Parameters
+    ----------
+    profile_clock_type : `str`
+        Profile clock type to validate.
+    
+    Returns
+    -------
+    profile_clock_type : `str`
+    message : `None | str`
+    """
+    output = profile_clock_type.casefold()
+    if not output:
+        output = 'wall'
+        message = None
+    elif output in {'wall', 'cpu'}:
+        message = None
+    else:
+        output = ''
+        message = f'Profile clock type can be either `cpu` or `wall`. Got: {profile_clock_type!r}\n'
+    
+    return output, message
 
 
 def _stop_profiling():
@@ -384,8 +416,8 @@ def _stop_profiling():
     file_path_history = join_paths(directory_path, f'{DateTime.utcnow():%Y_%m_%d_%H_%M_%S}.prof')
     
     try:
-        stats.dump_stats(file_path_latest)
-        copy_file(file_path_latest, file_path_history)
+        stats.dump_stats(file_path_history)
+        copy_file(file_path_history, file_path_latest)
     except FileNotFoundError:
         # No need to panic.
         pass
@@ -396,9 +428,10 @@ def _stop_profiling():
 )
 def run(
     *,
-    console: bool = False,
-    log: bool = True,
-    profile: bool = False,
+    console : bool = False,
+    log : bool = True,
+    profile : bool = False,
+    profile_clock_type : str = '',
 ):
     """
     Starts the created Discord bots.
@@ -410,11 +443,16 @@ def run(
     When `--profile` is defined a `.prof` file will be created on exit under the `.prof` directory.
     To open the latest profile file use `snakeviz .profiles/latest.prof` (example).
     """
-    if profile and (not _check_profiling_available()):
-        return f'Profiling library not available. Please install `yappi`.\n'
+    if profile:
+        if not _check_profiling_available():
+            return f'Profiling library not available. Please install `yappi`.\n'
+        
+        profile_clock_type, message = _validate_profile_clock_type(profile_clock_type)
+        if (message is not None):
+            return message
     
     try:
-        _begin_profiling()
+        _begin_profiling(profile_clock_type)
         
         connected_count = KOKORO.run(_connect_clients(log))
         

@@ -58,7 +58,7 @@ def collect_variables():
 
 
 @register(
-    alters = 'i',
+    aliases = 'i',
     description =  f'Runs asynchronous python interpreter through scarletio.\n{AWAIT_NOTE}',
 )
 def interpreter():

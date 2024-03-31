@@ -144,58 +144,58 @@ def get_function_description(function, description):
     return normalize_command_description(description)
 
 
-def normalize_alters(alters, name):
+def normalize_aliases(aliases, name):
     """
     Tries to normalize the given
     
     Parameters
     ----------
-    alters : `None`, `str`, `iterable` of `str`
+    aliases : `None`, `str`, `iterable` of `str`
         Alternative names for the command.
     name : `str`
         The command's name.
     
     Returns
     -------
-    normalized_alters : `None`, `str` of `str`
+    normalized_aliases : `None`, `str` of `str`
     """
-    if alters is None:
+    if aliases is None:
         return None
     
     
-    if isinstance(alters, str):
-        alter = normalize_command_name(alters)
+    if isinstance(aliases, str):
+        alter = normalize_command_name(aliases)
         if alter == name:
             return None
         
         return {alter}
     
     
-    iterator = getattr(alters, '__iter__', None)
+    iterator = getattr(aliases, '__iter__', None)
     if iterator is None:
         raise TypeError(
-            f'`alters` can be `None`, `str`, `iterable` of `str`, got {alters.__class__.__name__}; {alters!r}.'
+            f'`aliases` can be `None`, `str`, `iterable` of `str`, got {aliases.__class__.__name__}; {aliases!r}.'
         )
     
-    normalized_alters = None
+    normalized_aliases = None
     
-    for alter in alters:
+    for alter in aliases:
         if not isinstance(alter, str):
             raise TypeError(
-                f'`alters` elements can be `str`, got {alter.__class__.__name__}; {alter!r}; alters={alters!r}.'
+                f'`aliases` elements can be `str`, got {alter.__class__.__name__}; {alter!r}; aliases={aliases!r}.'
             )
         
-        alter = normalize_command_name(alters)
+        alter = normalize_command_name(aliases)
         if alter == name:
             continue
         
-        if (normalized_alters is None):
-            normalized_alters = set()
+        if (normalized_aliases is None):
+            normalized_aliases = set()
         
-        normalized_alters.add(alter)
+        normalized_aliases.add(alter)
     
     
-    return normalized_alters
+    return normalized_aliases
 
 
 def command_sort_key(command):

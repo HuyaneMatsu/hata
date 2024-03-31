@@ -1,3 +1,64 @@
+## 1.3.53 *\[2024-03-31\]*
+
+### Improvements
+
+- Rename `alters` parameter to `aliases` in `register`.
+- Add `ConnectionType.bungie`.
+- `LocalAudio` now raises if the given `source` is not a file.
+- Add `enforce_nonce` parameter to `Client.message_create`.
+- Add `parse_signed_url`.
+- Add `ApplicationIntegrationType`.
+- Add `Application.integration_types`.
+- Add `ApplicationIntegrationTypeConfiguration`.
+- Add `Application.integration_types_configuration`.
+- Add `Application.has_integration_type`.
+- Add `Application.iter_integration_types`.
+- Add `Application.get_integration_type_configuration`.
+- Add `MessageInteraction.user_id` replacing old `.user`. Add `.user` property.
+- Add `MessageInteraction.response_message_id`.
+- Add `MessageInteraction.interacted_message_id`.
+- Add `MessageInteraction.authorizer_user_ids`.
+- Add `MessageInteraction.triggering_interaction`.
+- Add `MessageInteraction.get_authorizer_user_id`.
+- Add `MessageInteraction.get_authorizer_user`.
+- Add `ApplicationCommand.integration_types`.
+- Add `ApplicationCommand.has_integration_type`.
+- Add `ApplicationCommand.iter_integration_types`.
+- Add `ApplicationCommandIntegrationContextType`.
+- Add `ApplicationCommand.integration_context_types`.
+- Add `ApplicationCommand.has_integration_context_type`.
+- Add `ApplicationCommand.iter_integration_context_types`.
+
+#### ext.slash
+
+- Add `SlasherCommandError.__repr__`
+- Add `SlasherCommandError.__eq__`.
+- Add `SlashCommandParameterConversionError.__eq__`.
+- Add `HighlightGroup.__eq__`.
+- Add `SlasherCommandError.__hash__`.
+- Add `SlashCommandParameterConversionError.__hash__`.
+- Add `HighlightGroup.__hash__`.
+- Add `EvaluationError.text`.
+- Add `EvaluationError.__eq__`.
+- Add `EvaluationError.__hash__`.
+- Add `CommandBaseApplicationCommand.integration_context_types`.
+- Add `CommandBaseApplicationCommand.integration_types`.
+
+### Bug fixes
+
+#### ext.slash
+
+- Fix evaluating `10(20)` pointed its error location at wrong position(s).
+- `ApplicationCommand.to_data` had `include_internals` as `True` by default (instead of `False`) 
+    resulting bigger payloads.
+
+### Renames, Deprecations & Removals
+
+- Deprecate `MessageInteraction.__new__`'s `user` parameter. Use `.user_id` instead.
+- Deprecate `MessageInteraction.copy_with`'s `user` parameter. Use `.user_id` instead.
+- Deprecate `ApplicationCommand.allow_in_dm`.
+- Remove `CommandBaseApplicationCommand.allow_in_dm` and deprecate it where accepted as parameter.
+
 ## 1.3.52 *\[2024-03-18\]*
 
 ### Bug fixes

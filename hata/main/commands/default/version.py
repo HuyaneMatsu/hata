@@ -11,7 +11,7 @@ from ...core import register
 
 
 @register(
-    alters = 'v'
+    aliases = 'v'
 )
 def version():
     """Prints out hata\'s version."""

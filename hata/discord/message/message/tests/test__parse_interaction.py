@@ -1,52 +1,33 @@
 import vampytest
 
-from ....user import GuildProfile, User
-
 from ...message_interaction import MessageInteraction
 
 from ..fields import parse_interaction
 
 
-def test__parse_interaction__0():
-    """
-    Tests whether ``parse_interaction`` works as intended.
-    
-    Case: No guild identifier.
-    """
+def _iter_options():
     interaction_id = 202304300003
     interaction = MessageInteraction.precreate(interaction_id, name = 'orin')
     
-    for input_data, expected_output in (
-        ({}, None),
-        ({'interaction': None}, None),
-        ({'interaction': interaction.to_data(include_internals = True)}, interaction),
-    ):
-        output = parse_interaction(input_data)
-        vampytest.assert_eq(output, expected_output)
+    yield {}, None
+    yield {'interaction_metadata': None}, None
+    yield {'interaction_metadata': interaction.to_data(include_internals = True)}, interaction
+    yield {'interaction': None}, None
+    yield {'interaction': interaction.to_data(include_internals = True)}, interaction
 
 
-def test__parse_interaction__1():
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_interaction(input_data):
     """
     Tests whether ``parse_interaction`` works as intended.
     
-    Case: With guild identifier.
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    interaction : `None | MessageInteraction`
     """
-    user_id = 202304300007
-    interaction_id = 202304300008
-    guild_id = 202304300009
-    
-    user = User.precreate(user_id, name = 'Hell')
-    guild_profile = GuildProfile(nick = 'Rose')
-    
-    data = {
-        'interaction': {
-            'id': str(interaction_id),
-            'user': user.to_data(include_internals = True),
-            'member': guild_profile.to_data(include_internals = True),
-        }
-    }
-    output = parse_interaction(data, guild_id)
-    vampytest.assert_instance(output, MessageInteraction)
-    
-    vampytest.assert_is(output.user, user)
-    vampytest.assert_eq(output.user.guild_profiles, {guild_id: guild_profile})
+    return parse_interaction(input_data)

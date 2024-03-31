@@ -7,7 +7,7 @@ from ...embedded_activity_state import EmbeddedActivityState
 from ..fields import put_embedded_activity_states_into
 
 
-def iter_options():
+def _iter_options():
     activity = Activity('tsuki', activity_type = ActivityType.competing, application_id = 202306160020)
     channel_id = 202306160021
     guild_id = 202306160022
@@ -31,7 +31,7 @@ def iter_options():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__put_embedded_activity_states_into(input_value, defaults):
     """
     Tests whether ``put_embedded_activity_states_into`` works as intended.

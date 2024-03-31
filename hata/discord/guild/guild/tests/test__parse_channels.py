@@ -7,7 +7,7 @@ from ..guild import Guild
 from ..fields import parse_channels
 
 
-def iter_options():
+def _iter_options():
     channel_id = 202306080003
     channel_name = 'Koishi'
     
@@ -26,7 +26,7 @@ def iter_options():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__parse_channels(input_value):
     """
     Tests whether ``parse_channels`` works as intended.

@@ -6,7 +6,7 @@ from .command import Command, CommandCategory, CommandFunction
 from .command.helpers import get_function_description, get_function_name
 
 
-def register(func = ..., *, available = True, alters = None, description = None, into = None, name = None):
+def register(func = ..., *, available = True, aliases = None, description = None, into = None, name = None):
     """
     Registers the given command.
     
@@ -14,7 +14,7 @@ def register(func = ..., *, available = True, alters = None, description = None,
     ----------
     func : `None`, `FunctionType`
         The function to register.
-    alters : `None`, `str`, `iterable` of `str` = `None`, Optional (Keyword only)
+    aliases : `None`, `str`, `iterable` of `str` = `None`, Optional (Keyword only)
         Alternative names for the command.
     available : `bool` = `True`, Optional (Keyword only)
         Whether the command is available.
@@ -39,14 +39,14 @@ def register(func = ..., *, available = True, alters = None, description = None,
     """
     if func is ...:
         return partial_func(
-            register, alters = alters, available = available, description = description, into = into, name = name
+            register, aliases = aliases, available = available, description = description, into = into, name = name
         )
     
     name = get_function_name(func, name)
     description = get_function_description(func, description)
     
     if (into is None):
-        command = Command(name, alters, available)
+        command = Command(name, aliases, available)
     
     elif isinstance(into, Command):
         command = into

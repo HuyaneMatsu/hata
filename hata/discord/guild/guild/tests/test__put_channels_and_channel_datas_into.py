@@ -5,7 +5,7 @@ from ....channel import Channel, ChannelType
 from ..fields import put_channels_and_channel_datas_into
 
 
-def iter_options():
+def _iter_options():
     channel_id = 202306290002
     channel_name = 'Koishi'
     
@@ -27,7 +27,7 @@ def iter_options():
     )
     
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__put_channels_and_channel_datas_into(input_value, defaults):
     """
     Tests whether ``put_channels_and_channel_datas_into`` works as intended.

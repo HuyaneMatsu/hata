@@ -9,7 +9,7 @@ from ..guild import Guild
 
 
 
-def iter_options():
+def _iter_options():
     activity = Activity('tsuki', activity_type = ActivityType.competing, application_id = 202306160015)
     channel_id = 202306160016
     guild_id = 202306160017
@@ -32,7 +32,7 @@ def iter_options():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__parse_embedded_activity_states(input_value, guild_id):
     """
     Tests whether ``parse_embedded_activity_states`` works as intended.

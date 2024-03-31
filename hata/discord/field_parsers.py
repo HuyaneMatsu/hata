@@ -765,7 +765,7 @@ def nullable_entity_array_parser_factory(field_key, entity_type, *, include = No
     return parser
 
 
-def nullable_entity_parser_factory(field_key, entity_type):
+def nullable_entity_parser_factory(field_key, entity_type, *, include = None):
     """
     Returns an nullable entity parser.
     
@@ -773,17 +773,21 @@ def nullable_entity_parser_factory(field_key, entity_type):
     ----------
     field_key : `str`
         The field's key used in payload.
+    
     entity_type : `type` with `{from_data}`
         Entity's type.
+    
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The `entity_type`'s name to include.. Should be used when `entity_type` cannot be resolved initially.
     
     Returns
     -------
     parser : `FunctionType`
     """
-    return default_entity_parser_factory(field_key, entity_type, default = None)
+    return default_entity_parser_factory(field_key, entity_type, default = None, include = include)
 
 
-def default_entity_parser_factory(field_key, entity_type, *, default = ..., default_factory = ...):
+def default_entity_parser_factory(field_key, entity_type, *, default = ..., default_factory = ..., include = None):
     """
     Returns an entity parser with default return value.
     
@@ -848,6 +852,13 @@ def default_entity_parser_factory(field_key, entity_type, *, default = ..., defa
                 entity = entity_type.from_data(entity_data)
             
             return entity
+    
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal entity_type
+            entity_type = value
     
     
     set_docs(

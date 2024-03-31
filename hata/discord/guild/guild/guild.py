@@ -477,10 +477,12 @@ class Guild(DiscordEntity, immortal = True):
     -----
     When a guild is loaded first time, some of it's attributes might not reflect their real value.
     These are the following:
+    
     - ``.max_presences``
     - ``.max_users``
     - ``.widget_channel_id``
     - ``.widget_enabled``
+    - ``.inventory_settings``.
     """
     __slots__ = (
         '_cache_boosters', '_cache_permission', '_state', 'afk_channel_id', 'afk_timeout', 'approximate_online_count',

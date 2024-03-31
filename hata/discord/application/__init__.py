@@ -1,6 +1,7 @@
 from .application import *
 from .application_executable import *
 from .application_install_parameters import *
+from .application_integration_type_configuration import *
 from .application_role_connection import *
 from .application_role_connection_metadata import *
 from .client_platform_configuration import *

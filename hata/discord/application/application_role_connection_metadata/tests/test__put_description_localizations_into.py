@@ -5,7 +5,7 @@ from ....localization import Locale
 from ..fields import put_description_localizations_into
 
 
-def iter_options():
+def _iter_options():
     yield None, False, {}
     yield None, True, {'description_localizations': None}
     yield (
@@ -32,7 +32,7 @@ def iter_options():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__put_description_localizations_into(input_value, defaults):
     """
     Tests whether ``put_description_localizations_into`` works as intended.

@@ -6,7 +6,7 @@ from ..getters import (
 )
 
     
-def iter_options__get_env():
+def _iter_options__get_env():
     yield (
         'koishi',
         None,
@@ -150,7 +150,7 @@ def iter_options__get_env():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options__get_env()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__get_env()).returning_last())
 def test__get_env(
     name, default, accepted_type_name, accepted_processor, raise_if_missing_or_empty, warn_if_empty, value
 ):

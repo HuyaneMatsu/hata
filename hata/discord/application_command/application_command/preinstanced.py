@@ -1,4 +1,7 @@
-__all__ = ('ApplicationCommandTargetType', 'APPLICATION_COMMAND_CONTEXT_TARGET_TYPES')
+__all__ = (
+    'APPLICATION_COMMAND_CONTEXT_TARGET_TYPES', 'APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL',
+    'ApplicationCommandIntegrationContextType', 'ApplicationCommandTargetType',
+)
 
 from ...bases import Preinstance as P, PreinstancedBase
 
@@ -57,4 +60,53 @@ APPLICATION_COMMAND_CONTEXT_TARGET_TYPES = frozenset((
     ApplicationCommandTargetType.user,
     ApplicationCommandTargetType.message,
     ApplicationCommandTargetType.channel
+))
+
+
+class ApplicationCommandIntegrationContextType(PreinstancedBase):
+    """
+    Represents an application command's integration's context's type or in other words, where it can be used.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the application command integration context.
+    value : `int`
+        The identifier value the application command integration context.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``ApplicationCommandIntegrationContextType``) items
+        Stores the predefined ``ApplicationCommandIntegrationContextType``-s. These can be accessed with their
+        `value` as key.
+    VALUE_TYPE : `type` = `int`
+        The application command integration contexts' values' type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the application command integration contexts.
+    
+    Every predefined application command integration context can be accessed as class attribute as well:
+    
+    +-----------------------+-------------------+-------+
+    | Class attribute name  | Name              | Value |
+    +=======================+===================+=======+
+    | guild                 | guild             | 0     |
+    +-----------------------+-------------------+-------+
+    | bot_private_channel   | chat              | 1     |
+    +-----------------------+-------------------+-------+
+    | any_private_channel   | user              | 2     |
+    +-----------------------+-------------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    guild = P(0, 'guild',)
+    bot_private_channel = P(1, 'bot private channel',)
+    any_private_channel = P(2, 'any private channel',)
+
+
+APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL = tuple(sorted(
+    ApplicationCommandIntegrationContextType.INSTANCES.values()
 ))

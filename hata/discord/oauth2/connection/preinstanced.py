@@ -34,6 +34,8 @@ class ConnectionType(PreinstancedBase):
     +=======================+=======================+===================+
     | battlenet             | Battle.net            | battlenet         |
     +-----------------------+-----------------------+-------------------+
+    | bungie                | Bungie.net            | bungie            |
+    +-----------------------+-----------------------+-------------------+
     | crunchyroll           | Crunchyroll           | crunchyroll       |
     +-----------------------+-----------------------+-------------------+
     | domain                | Domain                | domain            |
@@ -86,6 +88,7 @@ class ConnectionType(PreinstancedBase):
     __slots__ = ()
     
     battlenet = P('battlenet', 'Battle.net')
+    bungie = P('bungie', 'Bungie.net')
     crunchyroll = P('crunchyroll', 'Crunchyroll')
     domain = P('domain', 'Domain')
     ebay = P('ebay', 'eBay')

@@ -3,7 +3,7 @@ import vampytest
 from ..fields import put_afk_channel_id_into
 
 
-def iter_options():
+def _iter_options():
     afk_channel_id = 202306080001
     
     yield 0, False, {}
@@ -11,7 +11,7 @@ def iter_options():
     yield afk_channel_id, False, {'afk_channel_id': str(afk_channel_id)}
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__put_afk_channel_id_into(input_value, defaults):
     """
     Tests whether ``put_afk_channel_id_into`` works as intended.

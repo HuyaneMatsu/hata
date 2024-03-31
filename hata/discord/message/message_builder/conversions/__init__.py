@@ -7,6 +7,7 @@ from .components import *
 from .content import *
 from .embed import *
 from .embeds import *
+from .enforce_nonce import *
 from .flags import *
 from .instance import *
 from .name import *

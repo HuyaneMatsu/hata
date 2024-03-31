@@ -5,7 +5,7 @@ from ....stage import Stage
 from ..fields import put_stages_into
 
 
-def iter_options():
+def _iter_options():
     stage_id = 202306110007
     stage_topic = 'Koishi'
     
@@ -23,7 +23,7 @@ def iter_options():
     )
 
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__put_stages_into(input_value, defaults):
     """
     Tests whether ``put_stages_into`` works as intended.

@@ -5,7 +5,7 @@ from ....role import Role
 from ..fields import put_roles_and_role_datas_into
 
 
-def iter_options():
+def _iter_options():
     role_id = 202306290003
     role_name = 'Koishi'
     
@@ -26,7 +26,7 @@ def iter_options():
     )
     
 
-@vampytest._(vampytest.call_from(iter_options()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
 def test__put_roles_and_role_datas_into(input_value, defaults):
     """
     Tests whether ``put_roles_and_role_datas_into`` works as intended.

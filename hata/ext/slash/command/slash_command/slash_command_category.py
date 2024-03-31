@@ -133,7 +133,7 @@ class SlashCommandCategory(
                 None,
                 option.name,
                 'sub-command',
-                list(self._sub_commands.keys()),
+                [*self._sub_commands.keys()],
             )
         )
         return

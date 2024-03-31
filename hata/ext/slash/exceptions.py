@@ -2,7 +2,7 @@ __all__ = ('SlashCommandParameterConversionError', 'SlasherCommandError', 'Slash
 
 from random import choice
 
-from scarletio import CallableAnalyzer, include
+from scarletio import CallableAnalyzer, RichAttributeErrorBaseType, include
 from scarletio import copy_docs
 
 from ...discord.exceptions import DiscordException, ERROR_CODES
@@ -12,12 +12,24 @@ from ...discord.interaction import InteractionType
 SlashCommand = include('SlashCommand')
 Slasher = include('Slasher')
 
-class SlasherCommandError(Exception):
+
+class SlasherCommandError(Exception, RichAttributeErrorBaseType):
     """
     Base class for slash command internal errors.
     """
-    pass
-
+    __slots__ = ()
+    __init__ = object.__init__
+    
+    
+    def __new__(cls):
+        return Exception.__new__(cls)
+    
+    
+    def __repr__(self):
+        """Returns the exception's representation."""
+        return ''.join(['<', type(self).__name__, '>'])
+    
+    
     @property
     def pretty_repr(self):
         """
@@ -28,6 +40,18 @@ class SlasherCommandError(Exception):
         representation : `str`
         """
         return ''
+    
+    
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return True
+
+    
+    def __hash__(self):
+        """Returns the exception's hash value."""
+        return 0
 
 
 class SlashCommandParameterConversionError(SlasherCommandError):
@@ -38,8 +62,6 @@ class SlashCommandParameterConversionError(SlasherCommandError):
     ----------
     _pretty_repr : `None`, `str`
         generated pretty representation of the exception.
-    _repr : `None`, `str`
-        The generated error message.
     parameter_name : `None`, `str`
         The parameter's name, which failed to be parsed.
     received_value : `None`, `str`
@@ -49,9 +71,11 @@ class SlashCommandParameterConversionError(SlasherCommandError):
     expected_values : `None`, `list` of `object`
         Expected values.
     """
-    def __init__(self, parameter_name, received_value, excepted_type, expected_values):
+    __slots__ = ('_pretty_repr', 'excepted_type', 'expected_values', 'parameter_name', 'received_value')
+    
+    def __new__(cls, parameter_name, received_value, excepted_type, expected_values):
         """
-        Creates a new ``SlashCommandParameterConversionError`` with the given parameters.
+        Creates a new parameter conversion error with the given parameters.
         
         Parameters
         ----------
@@ -64,80 +88,62 @@ class SlashCommandParameterConversionError(SlasherCommandError):
         expected_values : `None`, `list` of `object`
             Expected values.
         """
+        self = Exception.__new__(cls, parameter_name, received_value, excepted_type, expected_values)
         self.parameter_name = parameter_name
         self.received_value = received_value
         self.excepted_type = excepted_type
         self.expected_values = expected_values
-        self._repr = None
         self._pretty_repr = None
-        Exception.__init__(self, parameter_name, received_value, excepted_type, expected_values)
+        return self
     
+    
+    @copy_docs(SlasherCommandError.__repr__)
     def __repr__(self):
-        """Returns the representation of the parameter conversion error."""
-        repr_ = self._repr
-        if repr_ is None:
-            repr_ = self._create_repr()
+        repr_parts = ['<', type(self).__name__]
         
-        return repr_
-
-    def _create_repr(self):
-        """
-        Creates the representation of the parsing syntax error.
+        field_added = False
         
-        Returns
-        -------
-        repr_ : `str`
-            The representation of the syntax error.
-        """
-        repr_parts = [self.__class__.__name__]
-        
+        # parameter_name
         parameter_name = self.parameter_name
         if (parameter_name is not None):
-            repr_parts.append('\n')
-            repr_parts.append('parameter name: ')
+            field_added = True
+            
+            repr_parts.append(' parameter_name = ')
             repr_parts.append(repr(parameter_name))
         
+        # excepted_type
         excepted_type = self.excepted_type
         if (excepted_type is not None):
-            repr_parts.append(
-                '\n'
-                'expected type: '
-            )
-            repr_parts.append(excepted_type)
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' excepted_type = ')
+            repr_parts.append(repr(excepted_type))
         
+        # expected_values
         expected_values = self.expected_values
         if (expected_values is not None):
-            repr_parts.append(
-                '\n'
-                'expected value(s):'
-            )
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
             
-            index = 0
-            limit = len(expected_values)
-            while True:
-                value = expected_values[index]
-                index += 1
-                
-                repr_parts.append(repr(value))
-                if index == limit:
-                    break
-                
-                repr_parts.append(', ')
-                continue
+            repr_parts.append(' expected_values = ')
+            repr_parts.append(repr(expected_values))
         
-        repr_parts.append(
-            '\n'
-            'received value: '
-        )
-        received_value = self.received_value
-        if (received_value is None):
-            repr_parts.append('N/A')
+        # received_value
+        if field_added:
+            repr_parts.append(',')
         else:
-            repr_parts.append(repr(received_value))
+            field_added = True
         
-        repr_ = ''.join(repr_parts)
-        self._repr = repr_
-        return repr_
+        repr_parts.append(' received_value = ')
+        repr_parts.append(repr(self.received_value))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     
     @property
@@ -146,6 +152,7 @@ class SlashCommandParameterConversionError(SlasherCommandError):
         pretty_repr = self._pretty_repr
         if pretty_repr is None:
             pretty_repr = self._create_pretty_repr()
+            self._pretty_repr = pretty_repr
         
         return pretty_repr
     
@@ -202,10 +209,61 @@ class SlashCommandParameterConversionError(SlasherCommandError):
             repr_parts.append(repr(received_value))
             repr_parts.append('`')
         
-        pretty_repr = ''.join(repr_parts)
-        self._pretty_repr = pretty_repr
-        return pretty_repr
-
+        return ''.join(repr_parts)
+    
+    
+    @copy_docs(SlasherCommandError.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        # parameter_name
+        if self.parameter_name != other.parameter_name:
+            return False
+        
+        # received_value
+        if self.received_value != other.received_value:
+            return False
+        
+        # expected_type
+        if self.excepted_type != other.excepted_type:
+            return False
+        
+        # expected_values
+        if self.expected_values != other.expected_values:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(SlasherCommandError.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        # parameter_name
+        parameter_name = self.parameter_name
+        if (parameter_name is not None):
+            hash_value ^= hash(parameter_name)
+        
+        # received_value
+        received_value = self.received_value
+        if (received_value is not None):
+            hash_value ^= hash(received_value)
+        
+        # excepted_type
+        excepted_type = self.excepted_type
+        if (excepted_type is not None):
+            hash_value ^= hash(excepted_type)
+        
+        # expected_values
+        expected_values = self.expected_values
+        if (expected_values is not None):
+            hash_value ^= len(expected_values)
+            
+            for expected_value in expected_values:
+                hash_value ^= hash(expected_value)
+        
+        return hash_value
 
 
 ERROR_MESSAGES = [

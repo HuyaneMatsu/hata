@@ -3,7 +3,7 @@ __all__ = ('ContextCommand',)
 from warnings import warn
 
 from scarletio import copy_docs
-
+4
 from .....discord.events.handling_helpers import Router, check_name, route_name, route_value
 
 from ...converters import get_context_command_parameter_converters
@@ -16,8 +16,9 @@ from ...wrappers import CommandWrapper
 
 from ..command_base_application_command import CommandBaseApplicationCommand
 from ..command_base_application_command.helpers import (
-    _validate_allow_in_dm, _validate_delete_on_unload, _validate_guild, _validate_is_global, _validate_name,
-    _validate_nsfw, _validate_required_permissions
+    _maybe_exclude_dm_from_integration_context_types, _validate_allow_in_dm, _validate_delete_on_unload,
+    _validate_guild, _validate_integration_context_types, _validate_integration_types, _validate_is_global,
+    _validate_name, _validate_nsfw, _validate_required_permissions
 )
 from ..helpers import validate_application_target_type
 
@@ -74,6 +75,12 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
     guild_ids : `None`, `set` of `int`
         The ``Guild``'s id to which the command is bound to.
     
+    integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
+        The places where the application command shows up. `None` means all.
+    
+    integration_types : `None | tuple<ApplicationIntegrationType>`
+        The options where the application command can be integrated to.
+    
     nsfw : `None`, `bool`
         Whether the application command is only allowed in nsfw channels.
     
@@ -117,10 +124,12 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         guild = None,
         is_default = None,
         delete_on_unload = None,
-        allow_in_dm = None,
+        allow_in_dm = ...,
         required_permissions = None,
         target = None,
         nsfw = None,
+        integration_context_types = None,
+        integration_types = None,
         **keyword_parameters,
     ):
         """
@@ -149,9 +158,6 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         delete_on_unload : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
             Whether the command should be deleted from Discord when removed.
         
-        allow_in_dm : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
-            Whether the command can be used in private channels (dm).
-        
         required_permissions : `None`, `int`, ``Permission``, `tuple` of (`None`, `int`, ``Permission``,
                 `Ellipsis`) = `None`, Optional
             The required permissions to use the application command inside of a guild.
@@ -162,6 +168,14 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         nsfw : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
             Whether the application command is only allowed in nsfw channels.
         
+        integration_context_types : `None`, ``ApplicationCommandIntegrationContextType``, `int`, `str`, \
+                `iterable<ApplicationCommandIntegrationContextType | int | str>`, Optional
+        
+        integration_types : `None`, ``ApplicationIntegrationType``, `int`, `str`, \
+                `iterable<ApplicationIntegrationType | int | str>`, Optional
+            The options where the application command can be integrated to.
+        
+        The places where the application command shows up. `None` means all.
         **keyword_parameters : Keyword parameters
             Additional keyword parameters.
         
@@ -197,6 +211,16 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
                 f'For context commands `command` parameter is required (cannot be `None` either).'
             )
         
+        if allow_in_dm is not ...:
+            warn(
+                (
+                    '`allow_in_dm` parameter is deprecated and will be removed in 2024 November. '
+                    'Please use `integration_context_types` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 5,
+            )
+        
         target = validate_application_target_type(target)
         
         # Check for routing
@@ -208,10 +232,21 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         unloading_behaviour, route_to = _check_maybe_route(
             'delete_on_unload', delete_on_unload, route_to, _validate_delete_on_unload
         )
-        allow_in_dm, route_to = _check_maybe_route('allow_in_dm', allow_in_dm, route_to, _validate_allow_in_dm)
+        allow_in_dm, route_to = _check_maybe_route(
+            'allow_in_dm',
+            None if allow_in_dm is ... else allow_in_dm,
+            route_to,
+            _validate_allow_in_dm,
+        )
         nsfw, route_to = _check_maybe_route('nsfw', nsfw, route_to, _validate_nsfw)
         required_permissions, route_to = _check_maybe_route(
-            'required_permissions', required_permissions, route_to, _validate_required_permissions
+            'required_permissions', required_permissions, route_to, _validate_required_permissions,
+        )
+        integration_context_types, route_to = _check_maybe_route(
+            'integration_context_types', integration_context_types, route_to, _validate_integration_context_types,
+        )
+        integration_types, route_to = _check_maybe_route(
+            'integration_types', integration_types, route_to, _validate_integration_types,
         )
         
         if route_to:
@@ -225,6 +260,8 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
             nsfw = route_value(nsfw, route_to)
             required_permissions = route_value(required_permissions, route_to)
             target = route_value(target, route_to)
+            integration_context_types = route_value(integration_context_types, route_to)
+            integration_types = route_value(integration_types, route_to)
         
         else:
             name = check_name(command, name)
@@ -247,9 +284,11 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
             router = []
             
             for (
-                name, is_global, guild_ids, unloading_behaviour, nsfw, required_permissions, allow_in_dm
+                name, is_global, guild_ids, unloading_behaviour, nsfw, required_permissions, allow_in_dm,
+                integration_context_types, integration_types
             ) in zip(
-                name, is_global, guild_ids, unloading_behaviour, nsfw, required_permissions, allow_in_dm
+                name, is_global, guild_ids, unloading_behaviour, nsfw, required_permissions, allow_in_dm,
+                integration_context_types, integration_types
             ):
                 
                 if is_global and (guild_ids is not None):
@@ -258,6 +297,14 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
                         f'guild = {guild!r}.'
                     )
                 
+                integration_context_types = _maybe_exclude_dm_from_integration_context_types(
+                    allow_in_dm, integration_context_types
+                )
+                
+                if not is_global:
+                    integration_types = None
+                    integration_context_types = None
+                
                 self = object.__new__(cls)
                 self.guild_ids = guild_ids
                 self.global_ = is_global
@@ -265,7 +312,6 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
                 self._schema = None
                 self._registered_application_command_ids = None
                 self._unloading_behaviour = unloading_behaviour
-                self.allow_in_dm = allow_in_dm
                 self.nsfw = nsfw
                 self.required_permissions = required_permissions
                 self._permission_overwrites = None
@@ -275,6 +321,8 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
                 self._parameter_converters = parameter_converters
                 self._command_function = command
                 self.response_modifier = response_modifier
+                self.integration_context_types = integration_context_types
+                self.integration_types = integration_types
                 
                 if (wrappers is not None):
                     for wrapper in wrappers:
@@ -300,6 +348,14 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
                     f'guild = {guild!r}.'
                 )
             
+            integration_context_types = _maybe_exclude_dm_from_integration_context_types(
+                allow_in_dm, integration_context_types
+            )
+            
+            if not is_global:
+                integration_types = None
+                integration_context_types = None
+            
             self = object.__new__(cls)
             self.guild_ids = guild_ids
             self.global_ = is_global
@@ -307,7 +363,6 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
             self._schema = None
             self._registered_application_command_ids = None
             self._unloading_behaviour = unloading_behaviour
-            self.allow_in_dm = allow_in_dm
             self.nsfw = nsfw
             self.required_permissions = required_permissions
             self._permission_overwrites = None
@@ -317,6 +372,8 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
             self._parameter_converters = parameter_converters
             self._command_function = command
             self.response_modifier = response_modifier
+            self.integration_context_types = integration_context_types
+            self.integration_types = integration_types
             
             if (wrappers is not None):
                 for wrapper in wrappers:

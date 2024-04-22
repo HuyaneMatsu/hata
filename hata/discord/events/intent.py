@@ -24,6 +24,9 @@ INTENT_SHIFT_MESSAGE_CONTENT = 15
 INTENT_SHIFT_GUILD_SCHEDULED_EVENTS = 16
 INTENT_SHIFT_AUTO_MODERATION_CONFIGURATION = 20
 INTENT_SHIFT_AUTO_MODERATION_EXECUTION = 21
+INTENT_SHIFT_GUILD_POLLS = 24
+INTENT_SHIFT_DIRECT_POLLS = 25
+
 
 INTENT_MASK_GUILDS = 1 << INTENT_SHIFT_GUILDS
 INTENT_MASK_GUILD_USERS = 1 << INTENT_SHIFT_GUILD_USERS
@@ -44,6 +47,9 @@ INTENT_MASK_MESSAGE_CONTENT = 1 << INTENT_SHIFT_MESSAGE_CONTENT
 INTENT_MASK_GUILD_SCHEDULED_EVENTS = 1 << INTENT_SHIFT_GUILD_SCHEDULED_EVENTS
 INTENT_MASK_AUTO_MODERATION_CONFIGURATION = 1 << INTENT_SHIFT_AUTO_MODERATION_CONFIGURATION
 INTENT_MASK_AUTO_MODERATION_EXECUTION = 1 << INTENT_SHIFT_AUTO_MODERATION_EXECUTION
+INTENT_MASK_GUILD_POLLS = 1 << INTENT_SHIFT_GUILD_POLLS
+INTENT_MASK_DIRECT_POLLS = 1 << INTENT_SHIFT_DIRECT_POLLS
+
 
 INTENT_SHIFT_EVENTS = {
     INTENT_SHIFT_GUILDS: (
@@ -162,7 +168,15 @@ INTENT_SHIFT_EVENTS = {
     ),
     INTENT_SHIFT_AUTO_MODERATION_EXECUTION: (
         'AUTO_MODERATION_ACTION_EXECUTION',
-    )
+    ),
+    INTENT_SHIFT_GUILD_POLLS: (
+        'MESSAGE_POLL_VOTE_ADD',
+        'MESSAGE_POLL_VOTE_REMOVE',
+    ),
+    INTENT_SHIFT_DIRECT_POLLS: (
+        'MESSAGE_POLL_VOTE_ADD',
+        'MESSAGE_POLL_VOTE_REMOVE',
+    ),
 }
 
 GLOBAL_INTENT_SHIFT_EVENTS = (
@@ -332,6 +346,12 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
     | INTENT_SHIFT_AUTO_MODERATION_EXECUTION        | 21    | auto_moderation_execution     | AUTO_MODERATION_ACTION_EXECUTION            |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
+    | INTENT_SHIFT_GUILD_POLLS                      | 24    | guild_polls                   | MESSAGE_POLL_VOTE_ADD,                      |
+    |                                               |       |                               | MESSAGE_POLL_VOTE_REMOVE                    |
+    +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
+    | INTENT_SHIFT_DIRECT_POLLS                     | 25    | direct_polls                  | MESSAGE_POLL_VOTE_ADD,                      |
+    |                                               |       |                               | MESSAGE_POLL_VOTE_REMOVE                    |
+    +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
     """
     __keys__ = {
         'guilds': INTENT_SHIFT_GUILDS,
@@ -353,10 +373,8 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
         'guild_scheduled_events': INTENT_SHIFT_GUILD_SCHEDULED_EVENTS,
         'auto_moderation_configuration': INTENT_SHIFT_AUTO_MODERATION_CONFIGURATION,
         'auto_moderation_execution': INTENT_SHIFT_AUTO_MODERATION_EXECUTION,
-    }
-    
-    __deprecated_keys__ = {
-        'guild_emojis_and_stickers': (INTENT_SHIFT_GUILD_MODERATION, '2023 Dec', 'guild_expressions'),
+        'guild_polls': INTENT_SHIFT_GUILD_POLLS,
+        'direct_polls': INTENT_SHIFT_DIRECT_POLLS,
     }
     
     def __new__(cls, integer = -1):

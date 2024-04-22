@@ -34,6 +34,7 @@ MESSAGE_SERIALIZER_WEBHOOK_CREATE = create_serializer(
             MessageBuilderWebhookCreate.embeds,
             MessageBuilderWebhookCreate.flags,
             MessageBuilderWebhookCreate.name,
+            MessageBuilderWebhookCreate.poll,
             MessageBuilderWebhookCreate.thread_name,
             MessageBuilderWebhookCreate.tts,
         ],
@@ -649,6 +650,9 @@ class ClientCompoundWebhookEndpoints(Compound):
         
         name : `None`, `str` = `None`, Optional (Keyword only)
             The message's author's new name. Default to the webhook's name by Discord.
+        
+        poll : `None`, ``Poll``, Optional
+            The message's poll.
         
         silent : `bool` = `False`, Optional (Keyword only)
             Whether the message should be delivered silently.

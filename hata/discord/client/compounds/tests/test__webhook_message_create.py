@@ -5,6 +5,7 @@ from ....channel import Channel, ChannelType, ForumTag
 from ....component import Component, ComponentType, create_row
 from ....embed import Embed
 from ....message import Message, MessageFlag, MessageType
+from ....poll import Poll, PollAnswer
 from ....webhook import Webhook, WebhookRepr
 
 from ...client import Client
@@ -39,6 +40,7 @@ async def test__Client__webhook_message_create__stuffed_message():
     components = Component(ComponentType.button, label = 'koishi', custom_id = 'satori')
     content = 'suika'
     embeds = [Embed('orin')]
+    poll = Poll(answers = [PollAnswer(text = 'sister')], duration = 3600)
     silent = True
     tts = True
     
@@ -49,6 +51,7 @@ async def test__Client__webhook_message_create__stuffed_message():
             'tts': True,
             'content': content,
             'embeds': [embed.to_data() for embed in embeds],
+            'poll': poll.to_data(),
             'components': [create_row(components).to_data()],
             'allowed_mentions' : {'parse': ['everyone']},
             'flags': MessageFlag().update_by_keys(silent = True),
@@ -72,6 +75,7 @@ async def test__Client__webhook_message_create__stuffed_message():
         'components': [create_row(components).to_data()],
         'content': content,
         'embeds': [embed.to_data() for embed in embeds],
+        'poll': poll.to_data(),
         'flags': int(MessageFlag().update_by_keys(silent = True)),
         'tts': tts,
         'type': MessageType.default.value,
@@ -102,6 +106,7 @@ async def test__Client__webhook_message_create__stuffed_message():
             components = components,
             content = content,
             embeds = embeds,
+            poll = poll,
             silent = silent,
             tts = tts,
             wait = True,
@@ -119,6 +124,7 @@ async def test__Client__webhook_message_create__stuffed_message():
         vampytest.assert_eq(output.components[0], create_row(components))
         vampytest.assert_eq(output.content, content)
         vampytest.assert_eq(output.embeds, tuple(embeds))
+        vampytest.assert_eq(output.poll, poll)
         vampytest.assert_eq(output.flags, MessageFlag().update_by_keys(silent = True))
         vampytest.assert_eq(output.tts, tts)
         vampytest.assert_is(output.type, MessageType.default)

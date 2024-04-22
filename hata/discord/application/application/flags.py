@@ -171,7 +171,7 @@ class ApplicationMonetizationEligibilityFlags(FlagBase):
     +-----------------------------------+-------------------+
     | user_birth_date_defined           | 12                |
     +-----------------------------------+-------------------+
-    | user_2fa_enabled                  | 13                |
+    | user_mfa_enabled                  | 13                |
     +-----------------------------------+-------------------+
     | user_email_verified               | 14                |
     +-----------------------------------+-------------------+
@@ -200,13 +200,20 @@ class ApplicationMonetizationEligibilityFlags(FlagBase):
         'user_localization_supported': 10,
         'user_legal_adult': 11,
         'user_birth_date_defined': 12,
-        'user_2fa_enabled': 13,
+        'user_mfa_enabled': 13,
         'user_email_verified': 14,
         'team_members_email_verified': 15,
         'team_members_mfa_enabled': 16,
         'no_blocking_issues': 17,
         'valid_payout_status': 18,
         'eligible': 19,
+    }
+    
+    
+    __deprecated_keys__ = {
+        'user_2fa_enabled': (
+            13, '2024 December', 'user_mfa_enabled'
+        ),
     }
 
 

@@ -6,6 +6,7 @@ from ...discord.client import Client
 from ...discord.component import InteractionForm
 from ...discord.embed import Embed
 from ...discord.interaction import InteractionType
+from ...discord.poll import Poll
 
 from .response_modifier import (
     get_show_for_invoking_user_only_from, get_show_for_invoking_user_only_of, get_wait_for_acknowledgement_of,
@@ -111,7 +112,7 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     # wait for async acknowledgement if applicable
     await interaction_event._wait_for_async_task_completion()
     
-    if isinstance(response, (str, Embed)) or is_only_embed(response):
+    if isinstance(response, (str, Embed, Poll)) or is_only_embed(response):
         async for request_coroutine in _get_request_coroutines_from_value(
             client,
             interaction_event,
@@ -417,6 +418,7 @@ class InteractionResponse:
         - `'components'`
         - `'embed'`
         - `'file'`
+        - `'poll'`
         - `'show_for_invoking_user_only'`
         - '`silent`'
         - `'suppress_embeds'`
@@ -434,6 +436,7 @@ class InteractionResponse:
         event = None,
         file = ...,
         message = ...,
+        poll = ...,
         show_for_invoking_user_only = ..., 
         silent = ...,
         suppress_embeds = ...,
@@ -472,6 +475,9 @@ class InteractionResponse:
         message : `None`, ``Message``, Optional (Keyword only)
             Whether the interaction's message should be edited.
         
+        poll : `None`, ``Poll``, Optional (Keyword only)
+            Poll to reply with.
+        
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to the value passed when
             adding the command.
@@ -504,6 +510,9 @@ class InteractionResponse:
         
         if (file is not ...):
             parameters['file'] = file
+        
+        if (poll is not ...):
+            parameters['poll'] = poll
         
         if (show_for_invoking_user_only is not ...):
             parameters['show_for_invoking_user_only'] = show_for_invoking_user_only
@@ -593,6 +602,7 @@ class InteractionResponse:
             message = self._message
             if message is not ...:
                 
+                # Note: here we cannot put `poll` on the message.
                 response_parameters = self._get_response_parameters((
                     'allowed_mentions', 'content', 'components', 'embed', 'file'
                 ))
@@ -626,8 +636,8 @@ class InteractionResponse:
                 )
             
             response_parameters = self._get_response_parameters((
-                'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only', 'silent',
-                'suppress_embeds', 'tts'
+                'allowed_mentions', 'content', 'components', 'embed', 'file', 'poll', 'show_for_invoking_user_only',
+                'silent', 'suppress_embeds', 'tts'
             ))
             if (response_modifier is not None):
                 response_modifier.apply_to_creation(response_parameters)
@@ -659,8 +669,8 @@ class InteractionResponse:
                     yield client.interaction_component_acknowledge(interaction_event)
                 
                 response_parameters = self._get_response_parameters((
-                    'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only',
-                    'silent', 'suppress_embeds', 'tts'
+                    'allowed_mentions', 'content', 'components', 'embed', 'file', 'poll',
+                    'show_for_invoking_user_only', 'silent', 'suppress_embeds', 'tts'
                 ))
                 if (response_modifier is not None):
                     response_modifier.apply_to_creation(response_parameters)
@@ -678,6 +688,7 @@ class InteractionResponse:
                         interaction_event,
                     )
                 
+                # Note: here we cannot put `poll` on the message.
                 response_parameters = self._get_response_parameters((
                     'allowed_mentions', 'content', 'components', 'embed', 'file'
                 ))
@@ -697,6 +708,8 @@ class InteractionResponse:
                     )
             
             elif interaction_event.is_deferred():
+                
+                # Note: here we cannot put `poll` on the message.
                 response_parameters = self._get_response_parameters((
                     'allowed_mentions', 'content', 'components', 'embed', 'file'
                 ))
@@ -705,8 +718,8 @@ class InteractionResponse:
             
             elif interaction_event.is_responded():
                 response_parameters = self._get_response_parameters((
-                    'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only',
-                    'silent', 'suppress_embeds', 'tts'
+                    'allowed_mentions', 'content', 'components', 'embed', 'file', 'poll',
+                    'show_for_invoking_user_only', 'silent', 'suppress_embeds', 'tts'
                 ))
                 if (response_modifier is not None):
                     response_modifier.apply_to_creation(response_parameters)
@@ -720,8 +733,8 @@ class InteractionResponse:
                 yield client.interaction_application_command_autocomplete(interaction_event, None)
             
             response_parameters = self._get_response_parameters((
-                'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only', 'silent',
-                'suppress_embeds', 'tts'
+                'allowed_mentions', 'content', 'components', 'embed', 'file', 'poll', 'show_for_invoking_user_only',
+                'silent', 'suppress_embeds', 'tts'
             ))
             if (response_modifier is not None):
                 response_modifier.apply_to_creation(response_parameters)
@@ -857,6 +870,7 @@ def abort(
     event = None,
     file = ...,
     message = ...,
+    poll = ...,
     show_for_invoking_user_only = True,
     silent = ...,
     suppress_embeds = ...,
@@ -897,6 +911,9 @@ def abort(
     
     message : `None`, ``Message``, Optional (Keyword only)
         Whether the interaction's message should be edited.
+        
+    poll : `None`, ``Poll``, Optional (Keyword only)
+        Poll to reply with.
     
     show_for_invoking_user_only : `bool` = `True`, Optional (Keyword only)
         Whether the sent message should only be shown to the invoking user.
@@ -928,6 +945,7 @@ def abort(
             event = event,
             file = file,
             message = message,
+            poll = poll,
             show_for_invoking_user_only = show_for_invoking_user_only,
             silent = silent,
             suppress_embeds = suppress_embeds,

@@ -1,7 +1,9 @@
 # This example shows basic interaction with voice channels.
 # We can join `VoiceClient`-s to them and play or capture audio.
 #
-# We're using `commands_v2` extension since it provides an easy API to access user voice state or the local voice client
+# We're using `slash` extension.
+#
+# If you are using mac-os and opus is not working, please install asahi linux on your device.
 #
 # The example will showcase the following actions:
 # => Connecting to voice channel.
@@ -30,8 +32,8 @@ MY_GUILD = Guild.precreate(12345)
 @Sakuya.interactions(guild = MY_GUILD)
 async def join(client, event):
     """Joins to voice channel."""
-    # Getting the author voice state
-    voice_state = event.voice_state
+    # Getting the invoking user's voice state
+    voice_state = event.guild.voice_states.get(event.user_id, None)
     if voice_state is None:
         return 'You are not at a voice channel!'
     

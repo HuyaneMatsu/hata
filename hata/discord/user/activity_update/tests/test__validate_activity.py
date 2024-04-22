@@ -5,30 +5,34 @@ from ....activity import Activity, ActivityType
 from ..fields import validate_activity
 
 
-def test__validate_activity__0():
-    """
-    Tests whether ``validate_activity`` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options__passing():
     activity = Activity('tsuki', activity_type = ActivityType.competing)
     
-    for input_value, expected_output in (
-        (activity, activity),
-    ):
-        output = validate_activity(input_value)
-        vampytest.assert_eq(output, expected_output)
+    yield activity, activity
 
 
-def test__validate_activity__1():
+def _iter_options__type_error():
+    yield 12.6
+    yield None
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_activity__passing(input_value):
     """
-    Tests whether ``validate_activity`` works as intended.
+    Tests whether `validate_activity` works as intended.
     
-    Case: `TypeError`.
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to test with.
+    
+    Returns
+    -------
+    output : ``Activity``
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.5,
-        None,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_activity(input_value)
+    return validate_activity(input_value)

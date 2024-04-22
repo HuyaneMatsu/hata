@@ -5,25 +5,32 @@ from ....user import User
 from ..fields import validate_users
 
 
-def _iter_options():
-    user_id_1 = 202209150002
-    user_id_2 = 202209150003
+def _iter_options__passing():
+    user_id_0 = 202404160002
+    user_id_1 = 202404160003
     
+    user_0 = User.precreate(user_id_0)
     user_1 = User.precreate(user_id_1)
-    user_2 = User.precreate(user_id_2)
-    
-    yield ([], [])
-    yield ([user_id_1], [user_1])
-    yield ([user_1], [user_1])
-    yield ([user_2, user_1], [user_1, user_2])
+
+    yield None, []
+    yield [], []
+    yield [user_0], [user_0]
+    yield [user_0, user_0], [user_0]
+    yield [user_1, user_0], [user_0, user_1]
+    yield [user_0, user_1], [user_0, user_1]
 
 
-@vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_users__passing(input_value):
+
+def _iter_options__type_error():
+    yield 12.6
+    yield [12.6]
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_users(input_value):
     """
     Validates whether ``validate_users`` works as intended.
-    
-    Case: passing.
     
     Parameters
     ----------
@@ -33,25 +40,9 @@ def test__validate_users__passing(input_value):
     Returns
     -------
     output : `list<ClientUserBase>`
-    """
-    return validate_users(input_value)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-def test__validate_users__type_error(input_value):
-    """
-    Validates whether ``validate_users`` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        The value to validate.
     
     Raises
     ------
     TypeError
     """
-    validate_users(input_value)
+    return validate_users(input_value)

@@ -494,7 +494,7 @@ class ReactionMapping(dict):
     
     def remove(self, reaction, user):
         """
-        Removes a user to the reactors.
+        Removes a user from the reactors.
         
         Parameters
         ----------

@@ -13,8 +13,10 @@ class ActivityChange(RichAttributeErrorBaseType):
     ----------
     added : `None`, `list` of ``Activity``
         The added activities to the respective user. Defaults to `None`.
+    
     removed: `None`, `list` of ``Activity``
         The removed activities from the respective user. Defaults to `None`.
+    
     updated : `None`, `list` of ``ActivityUpdate``
         The updated activities of the respective user. Defaults to `None`.
     """
@@ -28,8 +30,10 @@ class ActivityChange(RichAttributeErrorBaseType):
         ----------
         added : `None`, `iterable` of ``Activity``, Optional (Keyword only)
             The added activities to the user.
+        
         removed: `None`, `iterable` of ``Activity``, Optional (Keyword only)
             The removed activities from the user.
+        
         updated : `None`, `iterable` of ``ActivityUpdate``, Optional (Keyword only)
             The updated activities of the user.
         
@@ -153,6 +157,7 @@ class ActivityChange(RichAttributeErrorBaseType):
     
     
     def __eq__(self, other):
+        """Returns whether the two activity changes are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -264,8 +269,10 @@ class ActivityChange(RichAttributeErrorBaseType):
         ----------
         added : `None`, `iterable` of ``Activity``, Optional (Keyword only)
             The added activities to the user.
+        
         removed: `None`, `iterable` of ``Activity``, Optional (Keyword only)
             The removed activities from the user.
+        
         updated : `None`, `iterable` of ``ActivityUpdate``, Optional (Keyword only)
             The updated activities of the user.
         

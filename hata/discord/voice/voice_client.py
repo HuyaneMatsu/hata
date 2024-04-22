@@ -1032,7 +1032,6 @@ class VoiceClient(RichAttributeErrorBaseType):
                         if not self._maybe_change_voice_region():
                             self.running = False
                             await self._disconnect(force = False)
-                            print('step 9')
                             return False
                     
                     self._maybe_change_voice_region()

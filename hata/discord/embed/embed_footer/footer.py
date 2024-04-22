@@ -99,7 +99,7 @@ class EmbedFooter(EmbedFieldBase):
         if text is not None:
             field_added = True
             repr_parts.append(' text = ')
-            repr_parts.append(repr(self.text))
+            repr_parts.append(repr(text))
         
         icon_url = self.icon_url
         if icon_url is not None:
@@ -137,7 +137,6 @@ class EmbedFooter(EmbedFieldBase):
         if self.text != other.text:
             return False
         
-
         return True
     
     

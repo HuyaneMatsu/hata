@@ -24,6 +24,7 @@ from .message import *
 from .oauth2 import *
 from .onboarding import *
 from .permission import *
+from .poll import *
 from .scheduled_event import *
 from .soundboard import *
 from .role import *
@@ -74,6 +75,7 @@ __all__ = (
     *oauth2.__all__,
     *onboarding.__all__,
     *permission.__all__,
+    *poll.__all__,
     *role.__all__,
     *scheduled_event.__all__,
     *soundboard.__all__,

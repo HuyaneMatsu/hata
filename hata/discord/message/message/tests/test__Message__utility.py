@@ -9,6 +9,7 @@ from ....embed import EmbedAuthor, Embed, EmbedField, EmbedFooter, EmbedProvider
 from ....emoji import Reaction, ReactionMapping, ReactionType
 from ....guild import Guild
 from ....interaction import Resolved
+from ....poll import Poll, PollAnswer, PollQuestion, PollResult
 from ....role import Role
 from ....sticker import Sticker
 from ....user import User
@@ -27,7 +28,7 @@ from ..preinstanced import MessageType
 from .test__Message__contructor import _assert_fields_set
 
 
-def test__Message__iter_contents__0():
+def test__Message__iter_contents__all_contents():
     """
     Tests whether ``Message.iter_contents`` works as intended.
     
@@ -44,6 +45,9 @@ def test__Message__iter_contents__0():
     embed_0_footer_text = 'okina'
     embed_0_provider_name = 'hecatia'
     embed_1_title = 'reimu'
+    poll_question_text = 'marisa'
+    poll_answer_0_text = 'junko'
+    poll_answer_1_text = 'clown'
     
     embed_0 = Embed(title = embed_0_title, description = embed_0_description)
     embed_0.author = EmbedAuthor(embed_0_author_name)
@@ -56,19 +60,24 @@ def test__Message__iter_contents__0():
     
     embed_1 = Embed(title = embed_1_title)
     
-    message = Message(content = message_content, embeds = [embed_0, embed_1])
+    poll = Poll(
+        answers = [PollAnswer(text = poll_answer_0_text), PollAnswer(text = poll_answer_1_text)],
+        question = PollQuestion(text = poll_question_text),
+    )
+    
+    message = Message(content = message_content, embeds = [embed_0, embed_1], poll = poll)
     
     
     contents = {
         embed_0_title, embed_0_author_name, embed_0_description, embed_0_field_0_name, embed_0_field_0_value,
         embed_0_field_1_name, embed_0_field_1_value, embed_0_footer_text, embed_0_provider_name,
-        message_content, embed_1_title
+        message_content, embed_1_title, poll_question_text, poll_answer_0_text, poll_answer_1_text
     }
     
     vampytest.assert_eq({*message.iter_contents()}, contents)
 
 
-def test__Message__iter_contents__1():
+def test__Message__iter_contents__no_contents():
     """
     Tests whether ``Embed.iter_contents`` works as intended.
     
@@ -95,6 +104,9 @@ def test__Message__contents__all_contents():
     embed_0_footer_text = 'okina'
     embed_0_provider_name = 'hecatia'
     embed_1_title = 'reimu'
+    poll_question_text = 'marisa'
+    poll_answer_0_text = 'junko'
+    poll_answer_1_text = 'clown'
     
     embed_0 = Embed(title = embed_0_title, description = embed_0_description)
     embed_0.author = EmbedAuthor(embed_0_author_name)
@@ -107,12 +119,17 @@ def test__Message__contents__all_contents():
     
     embed_1 = Embed(title = embed_1_title)
     
-    message = Message(content = message_content, embeds = [embed_0, embed_1])
+    poll = Poll(
+        answers = [PollAnswer(text = poll_answer_0_text), PollAnswer(text = poll_answer_1_text)],
+        question = PollQuestion(text = poll_question_text),
+    )
+    
+    message = Message(content = message_content, embeds = [embed_0, embed_1], poll = poll)
     
     contents = {
         embed_0_title, embed_0_author_name, embed_0_description, embed_0_field_0_name, embed_0_field_0_value,
         embed_0_field_1_name, embed_0_field_1_value, embed_0_footer_text, embed_0_provider_name,
-        message_content, embed_1_title
+        message_content, embed_1_title, poll_question_text, poll_answer_0_text, poll_answer_1_text
     }
     
     output = message.contents
@@ -223,6 +240,7 @@ def test__Message__copy():
     message_type = MessageType.call
     nonce = 'Sakuya'
     pinned = True
+    poll = Poll(expires_at = DateTime(2016, 5, 14))
     reactions = ReactionMapping({
         BUILTIN_EMOJIS['x']: [None, None],
     })
@@ -257,6 +275,7 @@ def test__Message__copy():
         message_type = message_type,
         nonce = nonce,
         pinned = pinned,
+        poll = poll,
         reactions = reactions,
         referenced_message = referenced_message,
         resolved = resolved,
@@ -313,6 +332,7 @@ def test__Message__copy_with__no_fields():
     message_type = MessageType.call
     nonce = 'Sakuya'
     pinned = True
+    poll = Poll(expires_at = DateTime(2016, 5, 14))
     reactions = ReactionMapping({
         BUILTIN_EMOJIS['x']: [None, None],
     })
@@ -347,6 +367,7 @@ def test__Message__copy_with__no_fields():
         message_type = message_type,
         nonce = nonce,
         pinned = pinned,
+        poll = poll,
         reactions = reactions,
         referenced_message = referenced_message,
         resolved = resolved,
@@ -403,6 +424,7 @@ def test__Message__copy_with__all_fields():
     old_message_type = MessageType.call
     old_nonce = 'Sakuya'
     old_pinned = True
+    old_poll = Poll(expires_at = DateTime(2016, 5, 14))
     old_reactions = ReactionMapping({
         BUILTIN_EMOJIS['x']: [None, None],
     })
@@ -450,6 +472,7 @@ def test__Message__copy_with__all_fields():
     new_message_type = MessageType.user_add
     new_nonce = 'Maid'
     new_pinned = False
+    new_poll = Poll(expires_at = DateTime(2016, 5, 15))
     new_reactions = ReactionMapping({
         BUILTIN_EMOJIS['heart']: [None],
     })
@@ -483,6 +506,7 @@ def test__Message__copy_with__all_fields():
         message_type = old_message_type,
         nonce = old_nonce,
         pinned = old_pinned,
+        poll = old_poll,
         reactions = old_reactions,
         referenced_message = old_referenced_message,
         resolved = old_resolved,
@@ -512,6 +536,7 @@ def test__Message__copy_with__all_fields():
         message_type = new_message_type,
         nonce = new_nonce,
         pinned = new_pinned,
+        poll = new_poll,
         reactions = new_reactions,
         referenced_message = new_referenced_message,
         resolved = new_resolved,
@@ -543,6 +568,7 @@ def test__Message__copy_with__all_fields():
     vampytest.assert_eq(copy.mentioned_users, tuple(new_mentioned_users))
     vampytest.assert_eq(copy.nonce, new_nonce)
     vampytest.assert_eq(copy.pinned, new_pinned)
+    vampytest.assert_eq(copy.poll, new_poll)
     vampytest.assert_eq(copy.reactions, new_reactions)
     vampytest.assert_eq(copy.referenced_message, new_referenced_message)
     vampytest.assert_eq(copy.resolved, new_resolved)
@@ -715,21 +741,36 @@ def test__Message__did_react(message, reaction_or_emoji, user):
     return output
 
 
-def test__Message__guild():
-    """
-    Tests whether ``Message.guild`` works as intended.
-    """
+def _iter_options__guild():
     guild_id_0 = 202305050000
     guild_id_1 = 202305050001
     guild_0 = Guild.precreate(guild_id_0)
     
-    for message_id, input_value, expected_output in (
-        (202305050002, 0, None),
-        (202305050003, guild_id_0, guild_0),
-        (202305050004, guild_id_1, None),
-    ):
-        output = Message.precreate(message_id, guild_id = input_value).guild
-        vampytest.assert_is(output, expected_output)
+    yield 202305050002, 0, None
+    yield 202305050003, guild_id_0, guild_0
+    yield 202305050004, guild_id_1, None
+
+
+@vampytest._(vampytest.call_from(_iter_options__guild()).returning_last())
+def test__Message__guild(message_id, input_value):
+    """
+    Tests whether ``Message.guild`` works as intended.
+    
+    Parameters
+    ----------
+    message_id : `int`
+        Message identifier to create the instance with.
+    input_value : `int`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `None | Guild`
+    """
+    message = Message.precreate(message_id, guild_id = input_value)
+    output = message.guild
+    vampytest.assert_instance(output, Guild, nullable = True)
+    return output
 
 
 def test__Message__channel():
@@ -748,7 +789,7 @@ def test__Message__channel():
     vampytest.assert_eq(output.guild_id, guild_id)
 
 
-def test__Message__clean_content__0():
+def test__Message__clean_content__default():
     """
     Tests whether Message.clean_content`` works as intended.
     
@@ -763,7 +804,7 @@ def test__Message__clean_content__0():
     vampytest.assert_eq(output, content)
 
 
-def test__Message__clean_content__1():
+def test__Message__clean_content__non_default():
     """
     Tests whether Message.clean_content`` works as intended.
     
@@ -829,38 +870,60 @@ def test__Message__clean_embeds():
     )
 
 
-def test__Message__mentioned_channels():
+def _iter_options__mentioned_channels():
+    channel_0 = Channel.precreate(202305050012)
+    channel_1 = Channel.precreate(202305050057)
+    
+    yield None, None
+    yield channel_0.mention, (channel_0, )
+    yield channel_0.mention + channel_1.mention, (channel_0, channel_1)
+
+
+@vampytest._(vampytest.call_from(_iter_options__mentioned_channels()).returning_last())
+def test__Message__mentioned_channels(input_value):
     """
     Tests whether ``Message.mentioned_channels`` works as intended.
-    """
-    channel_id = 202305050012
-    channel = Channel.precreate(channel_id)
     
-    for input_value, expected_output in (
-        (None, None),
-        (channel.mention, (channel,)),
-    ):
-        message = Message(content = input_value)
-        output = message.mentioned_channels
-        vampytest.assert_instance(output, tuple, nullable = True)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `None | str`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `None | tuple<Channel>`
+    """
+    message = Message(content = input_value)
+    return message.mentioned_channels
 
 
-def test__Message__mentioned_roles():
+def _iter_options__mentioned_roles():
+    role_id_0 = 202305050013
+    role_id_1 = 202305050056
+    role_0 = Role.precreate(role_id_0)
+    role_1 = Role.precreate(role_id_1)
+    
+    yield None, None
+    yield [role_id_0], (role_0,)
+    yield [role_id_0, role_id_1], (role_0, role_1)
+
+
+@vampytest._(vampytest.call_from(_iter_options__mentioned_roles()).returning_last())
+def test__Message__mentioned_roles(input_value):
     """
     Tests whether ``Message.mentioned_roles`` works as intended.
-    """
-    role_id = 202305050013
-    role = Role.precreate(role_id)
     
-    for input_value, expected_output in (
-        (None, None),
-        ([role_id], (role,)),
-    ):
-        message = Message(mentioned_role_ids = input_value)
-        output = message.mentioned_roles
-        vampytest.assert_instance(output, tuple, nullable = True)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `None | list<int>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `None | tuple<Role>`
+    """
+    message = Message(mentioned_role_ids = input_value)
+    return message.mentioned_roles
 
 
 def test__Message__deleted():
@@ -925,630 +988,1360 @@ def test__Message__partial__from_data():
     vampytest.assert_false(output)
 
 
-def test__Message__attachment():
-    """
-    Tests whether ``Message.attachment`` works as intended.
-    """
+def _iter_options__attachment():
     attachment_0 = Attachment.precreate(202305050016, name = 'Koishi')
     attachment_1 = Attachment.precreate(202305050017, name = 'Satori')
     
-    for input_value, expected_output in (
-        (None, None),
-        ([attachment_1], attachment_1),
-        ([attachment_0, attachment_1], attachment_0),
-    ):
-        message = Message(attachments = input_value)
-        output = message.attachment
-        vampytest.assert_eq(output, expected_output)
+    yield None, None
+    yield [attachment_1], attachment_1
+    yield [attachment_0, attachment_1], attachment_0
 
 
-def test__Message__embed():
+@vampytest._(vampytest.call_from(_iter_options__attachment()).returning_last())
+def test__Message__attachment(input_value):
     """
-    Tests whether ``message.embed`` works as intended.
+    Tests whether ``Message.attachment`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<Attachment>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `NNone | Attachment`
     """
+    message = Message(attachments = input_value)
+    output = message.attachment
+    vampytest.assert_instance(output, Attachment, nullable = True)
+    return output
+
+
+def _iter_options__embed():
     embed_0 = Embed('Koishi')
     embed_1 = Embed('Satori')
     
-    for input_value, expected_output in (
-        (None, None),
-        ([embed_1], embed_1),
-        ([embed_0, embed_1], embed_0),
-    ):
-        message = Message(embeds = input_value)
-        output = message.embed
-        vampytest.assert_eq(output, expected_output)
+    yield None, None
+    yield [embed_1], embed_1
+    yield [embed_0, embed_1], embed_0
 
 
-def test__Message__sticker():
+@vampytest._(vampytest.call_from(_iter_options__embed()).returning_last())
+def test__Message__embed(input_value):
     """
-    Tests whether ``Message.sticker`` works as intended.
+    Tests whether ``Message.embed`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<Embed>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `NNone | Embed`
     """
+    message = Message(embeds = input_value)
+    output = message.embed
+    vampytest.assert_instance(output, Embed, nullable = True)
+    return output
+
+
+def _iter_options__sticker():
     sticker_0 = Sticker.precreate(202305050018, name = 'Koishi')
     sticker_1 = Sticker.precreate(202305050019, name = 'Satori')
     
-    for input_value, expected_output in (
-        (None, None),
-        ([sticker_1], sticker_1),
-        ([sticker_0, sticker_1], sticker_0),
-    ):
-        message = Message(stickers = input_value)
-        output = message.sticker
-        vampytest.assert_eq(output, expected_output)
+    yield None, None
+    yield [sticker_1], sticker_1
+    yield [sticker_0, sticker_1], sticker_0
 
 
-def test__Message__iter_attachments():
+@vampytest._(vampytest.call_from(_iter_options__sticker()).returning_last())
+def test__Message__sticker(input_value):
     """
-    Tests whether ``Message.iter_attachments`` works as intended.
+    Tests whether ``Message.sticker`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<Sticker>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `NNone | Sticker`
     """
+    message = Message(stickers = input_value)
+    output = message.sticker
+    vampytest.assert_instance(output, Sticker, nullable = True)
+    return output
+
+
+def _iter_options__iter_attachments():
     attachment_0 = Attachment.precreate(202305050020, name = 'Koishi')
     attachment_1 = Attachment.precreate(202305050021, name = 'Satori')
     
-    for input_value, expected_output in (
-        (None, []),
-        ([attachment_1], [attachment_1]),
-        ([attachment_0, attachment_1], [attachment_0, attachment_1]),
-    ):
-        message = Message(attachments = input_value)
-        output = [*message.iter_attachments()]
-        vampytest.assert_eq(output, expected_output)
+    yield None, []
+    yield [attachment_0], [attachment_0]
+    yield [attachment_0, attachment_1], [attachment_0, attachment_1]
 
 
-def test__Message__iter_components():
+@vampytest._(vampytest.call_from(_iter_options__iter_attachments()).returning_last())
+def test__Message__iter_attachments(input_value):
     """
-    Tests whether ``Message.iter_components`` works as intended.
+    Tests whether ``Message.iter_attachments`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<Attachment>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<Attachment>`
     """
+    message = Message(attachments = input_value)
+    return [*message.iter_attachments()]
+
+
+def _iter_options__iter_components():
     component_0 = Component(ComponentType.button, label = 'Koishi')
     component_1 = Component(ComponentType.button, label = 'Satori')
     
-    for input_value, expected_output in (
-        (None, []),
-        ([component_1], [component_1]),
-        ([component_0, component_1], [component_0, component_1]),
-    ):
-        message = Message(components = input_value)
-        output = [*message.iter_components()]
-        vampytest.assert_eq(output, expected_output)
+    yield None, []
+    yield [component_0], [component_0]
+    yield [component_0, component_1], [component_0, component_1]
 
 
-def test__Message__iter_embeds():
+@vampytest._(vampytest.call_from(_iter_options__iter_components()).returning_last())
+def test__Message__iter_components(input_value):
     """
-    Tests whether ``Message.iter_embeds`` works as intended.
+    Tests whether ``Message.iter_components`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<Component>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<Component>`
     """
+    message = Message(components = input_value)
+    return [*message.iter_components()]
+
+
+def _iter_options__iter_embeds():
     embed_0 = Embed('Koishi')
     embed_1 = Embed('Satori')
     
-    for input_value, expected_output in (
-        (None, []),
-        ([embed_1], [embed_1]),
-        ([embed_0, embed_1], [embed_0, embed_1]),
-    ):
-        message = Message(embeds = input_value)
-        output = [*message.iter_embeds()]
-        vampytest.assert_eq(output, expected_output)
+    yield None, []
+    yield [embed_0], [embed_0]
+    yield [embed_0, embed_1], [embed_0, embed_1]
 
 
-def test__Message__iter_mentioned_channels():
+@vampytest._(vampytest.call_from(_iter_options__iter_embeds()).returning_last())
+def test__Message__iter_embeds(input_value):
+    """
+    Tests whether ``Message.iter_embeds`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<Embed>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<Embed>`
+    """
+    message = Message(embeds = input_value)
+    return [*message.iter_embeds()]
+
+
+def _iter_options__iter_mentioned_channels():
+    channel_0 = Channel.precreate(202305050022)
+    channel_1 = Channel.precreate(202305050023)
+    
+    yield None, []
+    yield channel_0.mention, [channel_0]
+    yield channel_0.mention + channel_1.mention, [channel_0, channel_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_mentioned_channels()).returning_last())
+def test__Message__iter_mentioned_channels(input_value):
     """
     Tests whether ``Message.iter_mentioned_channels`` works as intended.
-    """
-    channel_id_0 = 202305050022
-    channel_id_1 = 202305050023
-    channel_0 = Channel.precreate(channel_id_0)
-    channel_1 = Channel.precreate(channel_id_1)
     
-    for input_value, expected_output in (
-        (None, []),
-        (channel_1.mention, [channel_1,]),
-        (channel_0.mention + channel_1.mention, [channel_0, channel_1]),
-    ):
-        message = Message(content = input_value)
-        output = [*message.iter_mentioned_channels()]
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `None | str`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<Channel>`
+    """
+    message = Message(content = input_value)
+    return [*message.iter_mentioned_channels()]
 
 
-def test__Message__iter_mentioned_channels_cross_guild():
+def _iter_options__iter_mentioned_channels_cross_guild():
+    channel_0 = Channel.precreate(202305050024)
+    channel_1 = Channel.precreate(202305050025)
+    
+    yield None, []
+    yield [channel_0], [channel_0]
+    yield [channel_0, channel_1], [channel_0, channel_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_mentioned_channels_cross_guild()).returning_last())
+def test__Message__iter_mentioned_channels_cross_guild(input_value):
     """
     Tests whether ``Message.iter_mentioned_channels_cross_guild`` works as intended.
-    """
-    channel_id_0 = 202305050024
-    channel_id_1 = 202305050025
-    channel_0 = Channel.precreate(channel_id_0)
-    channel_1 = Channel.precreate(channel_id_1)
     
-    for input_value, expected_output in (
-        (None, []),
-        ([channel_1], [channel_1,]),
-        ([channel_0, channel_1], [channel_0, channel_1]),
-    ):
-        message = Message(mentioned_channels_cross_guild = input_value)
-        output = [*message.iter_mentioned_channels_cross_guild()]
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `None | list<Channel>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<Channel>`
+    """
+    message = Message(mentioned_channels_cross_guild = input_value)
+    return [*message.iter_mentioned_channels_cross_guild()]
 
 
-def test__Message__iter_mentioned_role_ids():
-    """
-    Tests whether ``Message.iter_mentioned_role_ids`` works as intended.
-    """
+def _iter_options__iter_mentioned_role_ids():
     role_id_0 = 202305050026
     role_id_1 = 202305050027
     
-    for input_value, expected_output in (
-        (None, []),
-        ([role_id_1], [role_id_1,]),
-        ([role_id_0, role_id_1], [role_id_0, role_id_1]),
-    ):
-        message = Message(mentioned_role_ids = input_value)
-        output = [*message.iter_mentioned_role_ids()]
-        vampytest.assert_eq(output, expected_output)
+    yield None, []
+    yield [role_id_0], [role_id_0]
+    yield [role_id_0, role_id_1], [role_id_0, role_id_1]
 
 
-def test__Message__iter_mentioned_roles():
+@vampytest._(vampytest.call_from(_iter_options__iter_mentioned_role_ids()).returning_last())
+def test__Message__iter_mentioned_role_ids(input_value):
     """
-    Tests whether ``Message.iter_mentioned_roles`` works as intended.
+    Tests whether ``Message.iter_mentioned_role_ids`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<int>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<int>`
     """
+    message = Message(mentioned_role_ids = input_value)
+    return [*message.iter_mentioned_role_ids()]
+
+
+def _iter_options__iter_mentioned_roles():
     role_id_0 = 202305050028
     role_id_1 = 202305050029
     role_0 = Role.precreate(role_id_0)
     role_1 = Role.precreate(role_id_1)
     
-    for input_value, expected_output in (
-        (None, []),
-        ([role_id_1], [role_1,]),
-        ([role_id_0, role_id_1], [role_0, role_1]),
-    ):
-        message = Message(mentioned_role_ids = input_value)
-        output = [*message.iter_mentioned_roles()]
-        vampytest.assert_eq(output, expected_output)
+    yield None, []
+    yield [role_id_0], [role_0]
+    yield [role_id_0, role_id_1], [role_0, role_1]
 
 
-def test__Message__iter_mentioned_users():
+@vampytest._(vampytest.call_from(_iter_options__iter_mentioned_roles()).returning_last())
+def test__Message__iter_mentioned_roles(input_value):
+    """
+    Tests whether ``Message.iter_mentioned_roles`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<int>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<Role>`
+    """
+    message = Message(mentioned_role_ids = input_value)
+    return [*message.iter_mentioned_roles()]
+
+
+def _iter_options__iter_mentioned_users():
+    user_0 = User.precreate(202305050030)
+    user_1 = User.precreate(202305050031)
+    
+    yield None, []
+    yield [user_0], [user_0]
+    yield [user_0, user_1], [user_0, user_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_mentioned_users()).returning_last())
+def test__Message__iter_mentioned_users(input_value):
     """
     Tests whether ``Message.iter_mentioned_users`` works as intended.
-    """
-    user_id_0 = 202305050030
-    user_id_1 = 202305050031
-    user_0 = User.precreate(user_id_0)
-    user_1 = User.precreate(user_id_1)
     
-    for input_value, expected_output in (
-        (None, []),
-        ([user_1], [user_1,]),
-        ([user_0, user_1], [user_0, user_1]),
-    ):
-        message = Message(mentioned_users = input_value)
-        output = [*message.iter_mentioned_users()]
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `None | list<ClientUserBase>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<ClientUserBase>`
+    """
+    message = Message(mentioned_users = input_value)
+    return [*message.iter_mentioned_users()]
 
 
-def test__Message__iter_stickers():
+def _iter_options__iter_stickers():
+    sticker_0 = Sticker.precreate(202305050032)
+    sticker_1 = Sticker.precreate(202305050033)
+    
+    yield None, []
+    yield [sticker_0], [sticker_0]
+    yield [sticker_0, sticker_1], [sticker_0, sticker_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_stickers()).returning_last())
+def test__Message__iter_stickers(input_value):
     """
     Tests whether ``Message.iter_stickers`` works as intended.
-    """
-    sticker_id_0 = 202305050032
-    sticker_id_1 = 202305050033
-    sticker_0 = Sticker.precreate(sticker_id_0)
-    sticker_1 = Sticker.precreate(sticker_id_1)
     
-    for input_value, expected_output in (
-        (None, []),
-        ([sticker_1], [sticker_1,]),
-        ([sticker_0, sticker_1], [sticker_0, sticker_1]),
-    ):
-        message = Message(stickers = input_value)
-        output = [*message.iter_stickers()]
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `None | list<Sticker>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<Sticker>`
+    """
+    message = Message(stickers = input_value)
+    return [*message.iter_stickers()]
 
 
-def test__Message__has_activity():
-    """
-    Tests whether ``Message.has_activity`` works as intended.
-    """
+def _iter_options__has_activity():
     activity = MessageActivity(party_id = 'Remilia')
     
-    for input_value, expected_output in (
-        (None, False),
-        (activity, True),
-    ):
-        message = Message(activity = input_value)
-        output = message.has_activity()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield activity, True
 
 
-def test__Message__has_application():
+@vampytest._(vampytest.call_from(_iter_options__has_activity()).returning_last())
+def test__Message__has_activity(input_value):
     """
-    Tests whether ``Message.has_application`` works as intended.
+    Tests whether ``Message.has_activity`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | MessageActivity`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(activity = input_value)
+    output = message.has_activity()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+
+def _iter_options__has_application():
     application = MessageApplication.precreate(202305050034, name = 'Flandre')
     
-    for input_value, expected_output in (
-        (None, False),
-        (application, True),
-    ):
-        message = Message(application = input_value)
-        output = message.has_application()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield application, True
 
 
-def test__Message__has_application_id():
+@vampytest._(vampytest.call_from(_iter_options__has_application()).returning_last())
+def test__Message__has_application(input_value):
     """
-    Tests whether ``Message.has_application_id`` works as intended.
+    Tests whether ``Message.has_application`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | MessageApplication`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(application = input_value)
+    output = message.has_application()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_application_id():
     application_id = 202305050035
     
-    for input_value, expected_output in (
-        (None, False),
-        (application_id, True),
-    ):
-        message = Message(application_id = input_value)
-        output = message.has_application_id()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield 0, False
+    yield application_id, True
 
 
-def test__Message__has_attachments():
+@vampytest._(vampytest.call_from(_iter_options__has_application_id()).returning_last())
+def test__Message__has_application_id(input_value):
     """
-    Tests whether ``Message.has_attachments`` works as intended.
+    Tests whether ``Message.has_application_id`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `int`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(application_id = input_value)
+    output = message.has_application_id()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_attachments():
     attachments = [
         Attachment.precreate(202305050036, name = 'Koishi'),
         Attachment.precreate(202305050037, name = 'Komeiji'),
     ]
     
-    for input_value, expected_output in (
-        (None, False),
-        (attachments, True),
-    ):
-        message = Message(attachments = input_value)
-        output = message.has_attachments()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield attachments, True
 
 
-def test__Message__has_components():
+@vampytest._(vampytest.call_from(_iter_options__has_attachments()).returning_last())
+def test__Message__has_attachments(input_value):
     """
-    Tests whether ``Message.has_components`` works as intended.
+    Tests whether ``Message.has_attachments`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<Attachment>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(attachments = input_value)
+    output = message.has_attachments()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_components():
     components = [
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Okuu')]),
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Parsee')]),
     ]
     
-    for input_value, expected_output in (
-        (None, False),
-        (components, True),
-    ):
-        message = Message(components = input_value)
-        output = message.has_components()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield components, True
 
 
-def test__Message__has_content():
+@vampytest._(vampytest.call_from(_iter_options__has_components()).returning_last())
+def test__Message__has_components(input_value):
+    """
+    Tests whether ``Message.has_components`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<Component>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(components = input_value)
+    output = message.has_components()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_content():
+    content = 'sakuya'
+    
+    yield None, False
+    yield content, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_content()).returning_last())
+def test__Message__has_content(input_value):
     """
     Tests whether ``Message.has_content`` works as intended.
-    """
-    content = 'Satori'
     
-    for input_value, expected_output in (
-        (None, False),
-        (content, True),
-    ):
-        message = Message(content = input_value)
-        output = message.has_content()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `None | str`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(content = input_value)
+    output = message.has_content()
+    vampytest.assert_instance(output, bool)
+    return output
 
 
-def test__Message__has_edited_at():
-    """
-    Tests whether ``Message.has_edited_at`` works as intended.
-    """
+def _iter_options__has_edited_at():
     edited_at = DateTime(2016, 5, 14)
     
-    for input_value, expected_output in (
-        (None, False),
-        (edited_at, True),
-    ):
-        message = Message(edited_at = input_value)
-        output = message.has_edited_at()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield edited_at, True
 
 
-def test__Message__has_embeds():
+@vampytest._(vampytest.call_from(_iter_options__has_edited_at()).returning_last())
+def test__Message__has_edited_at(input_value):
     """
-    Tests whether ``Message.has_embeds`` works as intended.
+    Tests whether ``Message.has_edited_at`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | DateTime`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(edited_at = input_value)
+    output = message.has_edited_at()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_embeds():
     embeds = [
         Embed('Yakumo'),
         Embed('Yukari'),
     ]
     
-    for input_value, expected_output in (
-        (None, False),
-        (embeds, True),
-    ):
-        message = Message(embeds = input_value)
-        output = message.has_embeds()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield embeds, True
 
 
-def test__Message__has_flags():
+@vampytest._(vampytest.call_from(_iter_options__has_embeds()).returning_last())
+def test__Message__has_embeds(input_value):
     """
-    Tests whether ``Message.has_flags`` works as intended.
+    Tests whether ``Message.has_embeds`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<Embed>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(embeds = input_value)
+    output = message.has_embeds()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_flags():
     flags = MessageFlag(15)
     
-    for input_value, expected_output in (
-        (None, False),
-        (flags, True),
-    ):
-        message = Message(flags = input_value)
-        output = message.has_flags()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield 0, False
+    yield flags, True
 
 
-def test__Message__has_interaction():
+@vampytest._(vampytest.call_from(_iter_options__has_flags()).returning_last())
+def test__Message__has_flags(input_value):
     """
-    Tests whether ``Message.has_interaction`` works as intended.
+    Tests whether ``Message.has_flags`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | int`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(flags = input_value)
+    output = message.has_flags()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_interaction():
     interaction = MessageInteraction.precreate(202305050038, name = 'Ran')
     
-    for input_value, expected_output in (
-        (None, False),
-        (interaction, True),
-    ):
-        message = Message(interaction = input_value)
-        output = message.has_interaction()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield interaction, True
 
 
-def test__Message__has_mentioned_channels():
+@vampytest._(vampytest.call_from(_iter_options__has_interaction()).returning_last())
+def test__Message__has_interaction(input_value):
+    """
+    Tests whether ``Message.has_interaction`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | MessageInteraction`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(interaction = input_value)
+    output = message.has_interaction()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_mentioned_channels():
+    channel_0 = Channel.precreate(202305050039, channel_type = ChannelType.guild_text, name = 'Chen')
+    channel_1 = Channel.precreate(202404180000, channel_type = ChannelType.guild_text, name = 'Chen')
+    
+    yield None, None, False
+    yield channel_0.mention, None, False
+    yield channel_1.mention, [channel_1], True
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_mentioned_channels()).returning_last())
+def test__Message__has_mentioned_channels(input_value, cache):
     """
     Tests whether ``Message.has_mentioned_channels`` works as intended.
-    """
-    channel_0 = Channel.precreate(202305050039, channel_type = ChannelType.guild_text, name = 'Chen')
     
-    for input_value, expected_output in (
-        (None, False),
-        (channel_0.mention, True),
-    ):
-        message = Message(content = input_value)
-        output = message.has_mentioned_channels()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `None | str`
+        Value to test with.
+    cache : `None | list<object>`
+        Objects to keep in cache.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(content = input_value)
+    output = message.has_mentioned_channels()
+    vampytest.assert_instance(output, bool)
+    return output
 
 
-def test__Message__has_mentioned_channels_cross_guild():
-    """
-    Tests whether ``Message.has_mentioned_channels_cross_guild`` works as intended.
-    """
+def _iter_options__has_mentioned_channels_cross_guild():
     mentioned_channels_cross_guild = [
         Channel.precreate(202305050041, channel_type = ChannelType.guild_text, name = 'Chen'),
         Channel.precreate(202305050042, channel_type = ChannelType.guild_text, name = 'Yuugi'),
     ]
     
-    for input_value, expected_output in (
-        (None, False),
-        (mentioned_channels_cross_guild, True),
-    ):
-        message = Message(mentioned_channels_cross_guild = input_value)
-        output = message.has_mentioned_channels_cross_guild()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield mentioned_channels_cross_guild, True
 
 
-def test__Message__has_mentioned_everyone():
+@vampytest._(vampytest.call_from(_iter_options__has_mentioned_channels_cross_guild()).returning_last())
+def test__Message__has_mentioned_channels_cross_guild(input_value):
+    """
+    Tests whether ``Message.has_mentioned_channels_cross_guild`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<Channel>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(mentioned_channels_cross_guild = input_value)
+    output = message.has_mentioned_channels_cross_guild()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_mentioned_everyone():
+    yield False, False
+    yield True, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_mentioned_everyone()).returning_last())
+def test__Message__has_mentioned_everyone(input_value):
     """
     Tests whether ``Message.has_mentioned_everyone`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `bool`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
-    for input_value, expected_output in (
-        (False, False),
-        (True, True),
-    ):
-        message = Message(mentioned_everyone = input_value)
-        output = message.has_mentioned_everyone()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    message = Message(mentioned_everyone = input_value)
+    output = message.has_mentioned_everyone()
+    vampytest.assert_instance(output, bool)
+    return output
 
 
-def test__Message__has_mentioned_role_ids():
-    """
-    Tests whether ``Message.has_mentioned_role_ids`` works as intended.
-    """
+def _iter_options__has_mentioned_role_ids():
     mentioned_role_ids = [202305050043, 202305050044]
     
-    for input_value, expected_output in (
-        (None, False),
-        (mentioned_role_ids, True),
-    ):
-        message = Message(mentioned_role_ids = input_value)
-        output = message.has_mentioned_role_ids()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield mentioned_role_ids, True
 
 
-def test__Message__has_mentioned_roles():
+@vampytest._(vampytest.call_from(_iter_options__has_mentioned_role_ids()).returning_last())
+def test__Message__has_mentioned_role_ids(input_value):
     """
-    Tests whether ``Message.has_mentioned_roles`` works as intended.
+    Tests whether ``Message.has_mentioned_role_ids`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<int>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(mentioned_role_ids = input_value)
+    output = message.has_mentioned_role_ids()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_mentioned_roles():
     mentioned_role_ids = [202305050045, 202305050046]
     
-    for input_value, expected_output in (
-        (None, False),
-        (mentioned_role_ids, True),
-    ):
-        message = Message(mentioned_role_ids = input_value)
-        output = message.has_mentioned_roles()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield mentioned_role_ids, True
 
 
-def test__Message__has_mentioned_users():
+@vampytest._(vampytest.call_from(_iter_options__has_mentioned_roles()).returning_last())
+def test__Message__has_mentioned_roles(input_value):
     """
-    Tests whether ``Message.has_mentioned_users`` works as intended.
+    Tests whether ``Message.has_mentioned_roles`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<int>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(mentioned_role_ids = input_value)
+    output = message.has_mentioned_roles()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_mentioned_users():
     mentioned_users = [
         User.precreate(202305050047, name = 'Scarlet'),
         User.precreate(202305050048, name = 'Izaoyi'),
     ]
     
-    for input_value, expected_output in (
-        (None, False),
-        (mentioned_users, True),
-    ):
-        message = Message(mentioned_users = input_value)
-        output = message.has_mentioned_users()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield mentioned_users, True
 
 
-def test__Message__has_nonce():
+@vampytest._(vampytest.call_from(_iter_options__has_mentioned_users()).returning_last())
+def test__Message__has_mentioned_users(input_value):
+    """
+    Tests whether ``Message.has_mentioned_users`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<ClientUserBase>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(mentioned_users = input_value)
+    output = message.has_mentioned_users()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_nonce():
+    nonce = 'sakuya'
+    
+    yield None, False
+    yield nonce, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_nonce()).returning_last())
+def test__Message__has_nonce(input_value):
     """
     Tests whether ``Message.has_nonce`` works as intended.
-    """
-    nonce = 'Sakuya'
     
-    for input_value, expected_output in (
-        (None, False),
-        (nonce, True),
-    ):
-        message = Message(nonce = input_value)
-        output = message.has_nonce()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `None | str`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(nonce = input_value)
+    output = message.has_nonce()
+    vampytest.assert_instance(output, bool)
+    return output
 
 
-def test__Message__has_pinned():
+def _iter_options__has_pinned():
+    yield False, False
+    yield True, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_pinned()).returning_last())
+def test__Message__has_pinned(input_value):
     """
     Tests whether ``Message.has_pinned`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `bool`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
-    for input_value, expected_output in (
-        (False, False),
-        (True, True),
-    ):
-        message = Message(pinned = input_value)
-        output = message.has_pinned()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    message = Message(pinned = input_value)
+    output = message.has_pinned()
+    vampytest.assert_instance(output, bool)
+    return output
 
 
-def test__Message__has_reactions():
+def _iter_options__has_poll():
+    poll = Poll(expires_at = DateTime(2016, 5, 14))
+    
+    yield None, False
+    yield poll, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_poll()).returning_last())
+def test__Message__has_poll(input_value):
     """
-    Tests whether ``Message.has_reactions`` works as intended.
+    Tests whether ``Message.has_poll`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | Poll`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(poll = input_value)
+    output = message.has_poll()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_reactions():
     reactions = ReactionMapping({
         BUILTIN_EMOJIS['x']: [None, None],
     })
     
-    for input_value, expected_output in (
-        (None, False),
-        (ReactionMapping(), False),
-        (reactions, True),
-    ):
-        message = Message(reactions = input_value)
-        output = message.has_reactions()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield ReactionMapping(), False,
+    yield reactions, True
 
 
-def test__Message__has_referenced_message():
+@vampytest._(vampytest.call_from(_iter_options__has_reactions()).returning_last())
+def test__Message__has_reactions(input_value):
     """
-    Tests whether ``Message.has_referenced_message`` works as intended.
+    Tests whether ``Message.has_reactions`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | ReactionMapping`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(reactions = input_value)
+    output = message.has_reactions()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_referenced_message():
     referenced_message = Message.precreate(202305050049, content = 'Patchouli')
     
-    for input_value, expected_output in (
-        (None, False),
-        (referenced_message, True),
-    ):
-        message = Message(referenced_message = input_value)
-        output = message.has_referenced_message()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield referenced_message, True
 
 
-def test__Message__has_role_subscription():
+@vampytest._(vampytest.call_from(_iter_options__has_referenced_message()).returning_last())
+def test__Message__has_referenced_message(input_value):
     """
-    Tests whether ``Message.has_role_subscription`` works as intended.
+    Tests whether ``Message.has_referenced_message`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | Message`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(referenced_message = input_value)
+    output = message.has_referenced_message()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_role_subscription():
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
     
-    for input_value, expected_output in (
-        (None, False),
-        (role_subscription, True),
-    ):
-        message = Message(role_subscription = input_value)
-        output = message.has_role_subscription()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield role_subscription, True
 
 
-def test__Message__has_stickers():
+@vampytest._(vampytest.call_from(_iter_options__has_role_subscription()).returning_last())
+def test__Message__has_role_subscription(input_value):
     """
-    Tests whether ``Message.has_stickers`` works as intended.
+    Tests whether ``Message.has_role_subscription`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | MessageRoleSubscription`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(role_subscription = input_value)
+    output = message.has_role_subscription()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_stickers():
     stickers = [
         Sticker.precreate(202305050050, name = 'Kirisame'),
         Sticker.precreate(202305050051, name = 'Marisa'),
     ]
     
-    for input_value, expected_output in (
-        (None, False),
-        (stickers, True),
-    ):
-        message = Message(stickers = input_value)
-        output = message.has_stickers()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield stickers, True
 
 
-def test__Message__has_thread():
+@vampytest._(vampytest.call_from(_iter_options__has_stickers()).returning_last())
+def test__Message__has_stickers(input_value):
     """
-    Tests whether ``Message.has_thread`` works as intended.
+    Tests whether ``Message.has_stickers`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<Sticker>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    message = Message(stickers = input_value)
+    output = message.has_stickers()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_thread():
     thread = Channel.precreate(202305050052, channel_type = ChannelType.guild_thread_private, name = 'Yuyuko')
     
-    for input_value, expected_output in (
-        (None, False),
-        (thread, True),
-    ):
-        message = Message(thread = input_value)
-        output = message.has_thread()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    yield None, False
+    yield thread, True
 
 
-def test__Message__has_tts():
+@vampytest._(vampytest.call_from(_iter_options__has_thread()).returning_last())
+def test__Message__has_thread(input_value):
+    """
+    Tests whether ``Message.has_thread`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | Channel`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(thread = input_value)
+    output = message.has_thread()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_tts():
+    yield False, False
+    yield True, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_tts()).returning_last())
+def test__Message__has_tts(input_value):
     """
     Tests whether ``Message.has_tts`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `bool`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
     """
-    for input_value, expected_output in (
-        (False, False),
-        (True, True),
-    ):
-        message = Message(tts = input_value)
-        output = message.has_tts()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    message = Message(tts = input_value)
+    output = message.has_tts()
+    vampytest.assert_instance(output, bool)
+    return output
 
 
-def test__Message__has_type():
+def _iter_options__has_type():
+    yield MessageType.default, False
+    yield MessageType.call, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_type()).returning_last())
+def test__Message__has_type(input_value):
     """
     Tests whether ``Message.has_type`` works as intended.
-    """
-    message_type = MessageType.call
     
-    for input_value, expected_output in (
-        (None, False),
-        (message_type, True),
-    ):
-        message = Message(message_type = input_value)
-        output = message.has_type()
-        vampytest.assert_instance(output, bool)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `MessageType`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(message_type = input_value)
+    output = message.has_type()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__add_poll_vote():
+    answer_id_0 = 202404200008
+    user_0 = User.precreate(202404200010)
+    user_1 = User.precreate(202404200011)
+    
+    yield (
+        None,
+        answer_id_0,
+        user_0,
+        (
+            True,
+            Poll(results = [PollResult(answer_id = answer_id_0, count = 1, users = [user_0])]),
+        )
+    )
+    
+    yield (
+        Poll(results = [PollResult(answer_id = answer_id_0, count = 1, users = [user_1])]),
+        answer_id_0,
+        user_0,
+        (
+            True,
+            Poll(results = [PollResult(answer_id = answer_id_0, count = 2, users = [user_0, user_1])]),
+        )
+    )
+    
+    yield (
+        Poll(results = [PollResult(answer_id = answer_id_0, count = 1, users = [user_0])]),
+        answer_id_0,
+        user_0,
+        (
+            False,
+            Poll(results = [PollResult(answer_id = answer_id_0, count = 1, users = [user_0])]),
+        )
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__add_poll_vote()).returning_last())
+def test__Message__add_poll_vote(poll, answer_id, user):
+    """
+    Tests whether ``Message._add_poll_vote`` works as intended.
+    
+    Parameters
+    ----------
+    poll : `None | Poll`
+        Poll to create the message with.
+    answer_id : `int`
+        The answer's identifier.
+    user : ``ClientUserBase``
+        The user who added their vote.
+    
+    Returns
+    -------
+    output : `(int, None | Poll)`
+    """
+    if (poll is not None):
+        poll.copy()
+    
+    message = Message(poll = poll)
+    output = message._add_poll_vote(answer_id, user)
+    vampytest.assert_instance(output, bool)
+    return output, message.poll
+
+
+def _iter_options__remove_poll_vote():
+    answer_id_0 = 2024042000012
+    user_0 = User.precreate(202404200014)
+    user_1 = User.precreate(202404200015)
+    
+    yield (
+        None,
+        answer_id_0,
+        user_0,
+        (
+            False,
+            None,
+        )
+    )
+    
+    yield (
+        Poll(results = [PollResult(answer_id = answer_id_0, count = 1, users = [user_1])]),
+        answer_id_0,
+        user_0,
+        (
+            False,
+            Poll(results = [PollResult(answer_id = answer_id_0, count = 1, users = [user_1])]),
+        )
+    )
+    
+    yield (
+        Poll(results = [PollResult(answer_id = answer_id_0, count = 2, users = [user_0, user_1])]),
+        answer_id_0,
+        user_0,
+        (
+            True,
+            Poll(results = [PollResult(answer_id = answer_id_0, count = 1, users = [user_1])]),
+        )
+    )
+    
+    yield (
+        Poll(results = [PollResult(answer_id = answer_id_0, count = 1, users = [user_0])]),
+        answer_id_0,
+        user_0,
+        (
+            True,
+            Poll(results = [PollResult(answer_id = answer_id_0, count = 0, users = [])]),
+        )
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__remove_poll_vote()).returning_last())
+def test__Message__remove_poll_vote(poll, answer_id, user):
+    """
+    Tests whether ``Message._remove_poll_vote`` works as intended.
+    
+    Parameters
+    ----------
+    poll : `None | Poll`
+        Poll to create the message with.
+    answer_id : `int`
+        The answer's identifier.
+    user : ``ClientUserBase``
+        The user who removed their vote.
+    
+    Returns
+    -------
+    output : `(int, None | Poll)`
+    """
+    if (poll is not None):
+        poll.copy()
+    
+    message = Message(poll = poll)
+    output = message._remove_poll_vote(answer_id, user)
+    vampytest.assert_instance(output, bool)
+    return output, message.poll
+
+
+def _iter_options__did_vote():
+    answer_id_0 = 2024042000016
+    answer_id_1 = 202404200017
+    user_0 = User.precreate(202404200018)
+    user_1 = User.precreate(202404200019)
+    
+    yield (
+        None,
+        PollAnswer.precreate(answer_id_0),
+        user_0,
+        False,
+    )
+    
+    yield (
+        Poll(results = [PollResult(answer_id = answer_id_0, count = 1, users = [user_1])]),
+        PollAnswer.precreate(answer_id_0),
+        user_0,
+        False,
+    )
+    
+    yield (
+        Poll(results = [PollResult(answer_id = answer_id_0, count = 2, users = [user_0, user_1])]),
+        PollAnswer.precreate(answer_id_0),
+        user_0,
+        True,
+    )
+    
+    yield (
+        Poll(results = [PollResult(answer_id = answer_id_0, count = 1, users = [user_0])]),
+        PollAnswer.precreate(answer_id_0),
+        user_0,
+        True
+    )
+    
+    yield (
+        Poll(
+            answers = [
+                PollAnswer.precreate(answer_id_0, text = 'mister'),
+                PollAnswer.precreate(answer_id_1, text = 'sister'),
+            ],
+            results = [
+                PollResult(answer_id = answer_id_0, count = 1, users = [user_0]),
+                PollResult(answer_id = answer_id_1, count = 1, users = [user_0]),
+            ],
+        ),
+        PollAnswer(text = 'mister'),
+        user_0,
+        True
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__did_vote()).returning_last())
+def test__Message__did_vote(poll, answer, user):
+    """
+    Tests whether ``Message.did_vote`` works as intended.
+    
+    Parameters
+    ----------
+    poll : `None | Poll`
+        Poll to create the message with.
+    answer : ``PollAnswer``
+        The answer to check for.
+    user : ``ClientUserBase``
+        The user to check.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    if (poll is not None):
+        poll.copy()
+    
+    message = Message(poll = poll)
+    output = message.did_vote(answer, user)
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_any_content_field():
+    # non-rich types automatically count as they have content.
+    yield {'message_type': MessageType.call}, True
+    
+    yield {}, False
+    
+    yield {'activity': MessageActivity(party_id = 'Remilia')}, False
+    yield {'application': MessageApplication.precreate(202404200022, name = 'Flandre')}, False
+    yield {'application_id': 202404200023}, False
+    yield (
+        {
+            'attachments': [
+                Attachment.precreate(202404200024, name = 'Koishi'),
+            ],
+        },
+        True,
+    )
+    yield {'author': User.precreate(202404200025, name = 'Orin')}, False
+    yield {'call': MessageCall(ended_at = DateTime(2045, 3, 4))}, False
+    yield (
+        {
+            'components': [
+                Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Okuu')])
+            ]
+        },
+        True,
+    )
+    yield {'content': 'Satori'}, True
+    yield {'edited_at': DateTime(2016, 5, 14)}, False
+    yield {'embeds': [Embed('Yakumo')]}, True
+    yield {'flags': MessageFlag(15)}, False
+    yield {'interaction': MessageInteraction.precreate(202404200026, name = 'Ran')}, False
+    yield (
+        {
+            'mentioned_channels_cross_guild': [
+                Channel.precreate(202404200027, channel_type = ChannelType.guild_text, name = 'Chen'),
+            ],
+        },
+        False,
+    )
+    yield {'mentioned_everyone': True}, False
+    yield {'mentioned_role_ids': [202404200028]}, False
+    yield (
+        {
+            'mentioned_users': [
+                User.precreate(202404200029, name = 'Scarlet'),
+            ],
+        },
+        False,
+    )
+    yield {'message_type': MessageType.default}, False
+    yield {'nonce': 'Sakuya'}, False
+    yield {'pinned': True}, False
+    yield {'poll': Poll(expires_at = DateTime(2016, 5, 14))}, True
+    yield {'reactions': ReactionMapping({BUILTIN_EMOJIS['x']: [None, None]})}, False
+    yield {'referenced_message': Message.precreate(202404200030, content = 'Patchouli')}, False
+    yield {'resolved': Resolved(attachments = [Attachment.precreate(202404200031)])}, False
+    yield {'role_subscription': MessageRoleSubscription(tier_name = 'Knowledge')}, False
+    yield (
+        {
+            'stickers': [
+                Sticker.precreate(202404200032, name = 'Kirisame'),
+            ]
+        },
+        False,
+    )
+    yield (
+        {'thread': Channel.precreate(202404200033, channel_type = ChannelType.guild_thread_private, name = 'Yuyuko')},
+        False,
+    )
+    yield {'tts': True}, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_any_content_field()).returning_last())
+def test__Message__has_any_content_field(keyword_parameters):
+    """
+    Tests whether ``Message.has_any_content_field`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the message with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(**keyword_parameters)
+    output = message.has_any_content_field()
+    vampytest.assert_instance(output, bool)
+    return output

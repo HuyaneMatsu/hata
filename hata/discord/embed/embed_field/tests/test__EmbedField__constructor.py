@@ -5,7 +5,7 @@ from ..field import EmbedField
 
 def _assert_fields_set(field):
     """
-    Checks whether every fields of the given activity field are set.
+    Checks whether every fields of the given embed field are set.
     
     Parameters
     ----------
@@ -18,7 +18,7 @@ def _assert_fields_set(field):
     vampytest.assert_instance(field.value, str, nullable = True)
 
 
-def test__EmbedField__new__0():
+def test__EmbedField__new__no_fields():
     """
     Tests whether ``EmbedField.__new__`` works as intended.
     
@@ -28,7 +28,7 @@ def test__EmbedField__new__0():
     _assert_fields_set(field)
 
 
-def test__EmbedField__new__1():
+def test__EmbedField__new__all_fields():
     """
     Tests whether ``EmbedField.__new__`` works as intended.
     
@@ -46,7 +46,7 @@ def test__EmbedField__new__1():
     vampytest.assert_eq(field.value, value)
 
 
-def test__EmbedField__new__2():
+def test__EmbedField__new__string_conversion():
     """
     Tests whether ``EmbedField.__new__`` works as intended.
     

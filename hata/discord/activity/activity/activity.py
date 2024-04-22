@@ -241,6 +241,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returned Data Structure
         -----------------------
+        
         +-------------------+-----------------------------------+
         | Keys              | Values                            |
         +===================+===================================+

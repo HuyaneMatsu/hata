@@ -151,7 +151,7 @@ def test__Embed__copy():
     vampytest.assert_eq(embed, copy)
 
 
-def test__Embed__copy_with__0():
+def test__Embed__copy_with__no_fields():
     """
     Tests whether ``Embed.copy_with`` works as intended.
     
@@ -194,7 +194,7 @@ def test__Embed__copy_with__0():
     vampytest.assert_eq(embed, copy)
 
 
-def test__Embed__copy_with__1():
+def test__Embed__copy_with__all_fields():
     """
     Tests whether ``Embed.copy_with`` works as intended.
     
@@ -277,7 +277,7 @@ def test__Embed__copy_with__1():
     vampytest.assert_eq(copy.video, new_video)
 
 
-def test__Embed__iter_contents__0():
+def test__Embed__iter_contents__all():
     """
     Tests whether ``Embed.iter_contents`` works as intended.
     
@@ -334,7 +334,7 @@ def test__Embed__iter_contents__0():
     vampytest.assert_eq({*embed.iter_contents()}, expected_output)
 
 
-def test__Embed__iter_contents__1():
+def test__Embed__iter_contents__none():
     """
     Tests whether ``Embed.iter_contents`` works as intended.
     
@@ -344,7 +344,7 @@ def test__Embed__iter_contents__1():
     vampytest.assert_eq({*embed.iter_contents()}, set())
 
 
-def test__Embed__contents__0():
+def test__Embed__contents__all():
     """
     Tests whether ``Embed.contents`` works as intended.
     
@@ -403,7 +403,7 @@ def test__Embed__contents__0():
     vampytest.assert_eq({*output}, expected_output)
 
 
-def test__Embed__contents__1():
+def test__Embed__contents__none():
     """
     Tests whether ``Embed.contents`` works as intended.
     
@@ -416,20 +416,32 @@ def test__Embed__contents__1():
     vampytest.assert_eq({*output}, set())
 
 
-def test__Embed__iter_fields():
-    """
-    Tests whether ``Embed.iter_fields`` works as intended.
-    """
+
+def _iter_options__iter_fields():
     field_0 = EmbedField('komeiji', 'koishi')
     field_1 = EmbedField('komeiji', 'satori', inline = True)
     
-    for input_value, expected_output in (
-        (None, []),
-        ([field_0], [field_0]),
-        ([field_0, field_1], [field_0, field_1]),
-    ):
-        embed = Embed(fields = input_value)
-        vampytest.assert_eq([*embed.iter_fields()], expected_output)
+    yield None, []
+    yield [field_0], [field_0]
+    yield [field_0, field_1], [field_0, field_1]
+    
+
+@vampytest._(vampytest.call_from(_iter_options__iter_fields()).returning_last())
+def test__Embed__iter_fields(input_fields):
+    """
+    Tests whether ``Embed.iter_fields`` works as intended.
+    
+    Parameters
+    ----------
+    input_fields : `dict<str, object>`
+        Fields to create the embed with.
+    
+    Returns
+    -------
+    output : `list<EmbedField>`
+    """
+    embed = Embed(fields = input_fields)
+    return [*embed.iter_fields()]
 
 
 def test__Embed__get_short_repr():

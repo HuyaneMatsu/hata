@@ -5,28 +5,34 @@ from ....user import User
 from ..fields import validate_users
 
 
-def _iter_options():
-    user_id = 202211050022
-    user_name = 'Faker'
+def _iter_options__passing():
+    user_id_0 = 202404160006
+    user_id_1 = 202404160007
     
-    user = User.precreate(
-        user_id,
-        name = user_name,
-    )
-    
-    yield (None, None)
-    yield ([], None)
-    yield ({}, None)
-    yield ([user], {user_id: user})
-    yield ({user_id: user}, {user_id: user})
+    user_0 = User.precreate(user_id_0)
+    user_1 = User.precreate(user_id_1)
+
+    yield None, None
+    yield [], None
+    yield {}, None
+    yield [user_0], {user_id_0: user_0}
+    yield [user_0, user_0], {user_id_0: user_0}
+    yield [user_1, user_0], {user_id_0: user_0, user_id_1: user_1}
+    yield [user_0, user_1], {user_id_0: user_0, user_id_1: user_1}
+    yield {user_id_0: user_0}, {user_id_0: user_0}
 
 
-@vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_users__passing(input_value):
+def _iter_options__type_error():
+    yield 12.6
+    yield [12.6]
+    yield {12.6: 12.6}
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_users(input_value):
     """
-    Tests whether ``validate_users`` works as intended.
-    
-    Case: passing.
+    Validates whether ``validate_users`` works as intended.
     
     Parameters
     ----------
@@ -36,27 +42,9 @@ def test__validate_users__passing(input_value):
     Returns
     -------
     output : `None | dict<int, ClientUserBase>`
-    """
-    return validate_users(input_value)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-@vampytest.call_with([12.6])
-@vampytest.call_with({12.6: 12.6})
-def test__validate_users__type_error(input_value):
-    """
-    Tests whether ``validate_users`` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        The value to validate.
     
     Raises
     ------
     TypeError
     """
-    validate_users(input_value)
+    return validate_users(input_value)

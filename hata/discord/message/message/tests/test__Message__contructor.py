@@ -8,6 +8,7 @@ from ....core import BUILTIN_EMOJIS
 from ....embed import Embed
 from ....emoji import ReactionMapping
 from ....interaction import Resolved
+from ....poll import Poll
 from ....sticker import Sticker
 from ....user import User, UserBase
 
@@ -56,11 +57,12 @@ def _assert_fields_set(message):
     vampytest.assert_instance(message.mentioned_role_ids, tuple, nullable = True)
     vampytest.assert_instance(message.mentioned_users, tuple, nullable = True)
     vampytest.assert_instance(message.nonce, str, nullable = True)
+    vampytest.assert_instance(message.pinned, bool)
+    vampytest.assert_instance(message.poll, Poll, nullable = True)
     vampytest.assert_instance(message.reactions, ReactionMapping, nullable = True)
     vampytest.assert_instance(message.referenced_message, Message, nullable = True)
     vampytest.assert_instance(message.resolved, Resolved, nullable = True)
     vampytest.assert_instance(message.role_subscription, MessageRoleSubscription, nullable = True)
-    vampytest.assert_instance(message.pinned, bool)
     vampytest.assert_instance(message.stickers, tuple, nullable = True)
     vampytest.assert_instance(message.thread, Channel, nullable = True)
     vampytest.assert_instance(message.tts, bool)
@@ -117,6 +119,7 @@ def test__Message__new__all_fields():
     message_type = MessageType.call
     nonce = 'Sakuya'
     pinned = True
+    poll = Poll(expires_at = DateTime(2016, 5, 14))
     reactions = ReactionMapping({
         BUILTIN_EMOJIS['x']: [None, None],
     })
@@ -151,6 +154,7 @@ def test__Message__new__all_fields():
         message_type = message_type,
         nonce = nonce,
         pinned = pinned,
+        poll = poll,
         reactions = reactions,
         referenced_message = referenced_message,
         resolved = resolved,
@@ -180,6 +184,7 @@ def test__Message__new__all_fields():
     vampytest.assert_eq(message.mentioned_users, tuple(mentioned_users))
     vampytest.assert_eq(message.nonce, nonce)
     vampytest.assert_eq(message.pinned, pinned)
+    vampytest.assert_eq(message.poll, poll)
     vampytest.assert_eq(message.reactions, reactions)
     vampytest.assert_eq(message.referenced_message, referenced_message)
     vampytest.assert_eq(message.resolved, resolved)
@@ -262,6 +267,7 @@ def test__Message__precreate__all_fields():
     message_type = MessageType.call
     nonce = 'Sakuya'
     pinned = True
+    poll = Poll(expires_at = DateTime(2016, 5, 14))
     reactions = ReactionMapping({
         BUILTIN_EMOJIS['x']: [None, None],
     })
@@ -303,6 +309,7 @@ def test__Message__precreate__all_fields():
         message_type = message_type,
         nonce = nonce,
         pinned = pinned,
+        poll = poll,
         reactions = reactions,
         referenced_message = referenced_message,
         resolved = resolved,
@@ -332,6 +339,7 @@ def test__Message__precreate__all_fields():
     vampytest.assert_eq(message.mentioned_users, tuple(mentioned_users))
     vampytest.assert_eq(message.nonce, nonce)
     vampytest.assert_eq(message.pinned, pinned)
+    vampytest.assert_eq(message.poll, poll)
     vampytest.assert_eq(message.reactions, reactions)
     vampytest.assert_eq(message.referenced_message, referenced_message)
     vampytest.assert_eq(message.resolved, resolved)

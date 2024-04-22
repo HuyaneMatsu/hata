@@ -1,15 +1,29 @@
 import vampytest
 
+from ..constants import DURATION_DEFAULT
 from ..fields import parse_duration
 
 
-def test__parse_duration():
+def _iter_options():
+    yield {}, DURATION_DEFAULT
+    yield {'duration_sec': None}, DURATION_DEFAULT
+    yield {'duration_sec': 1.0}, 1.0
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_duration(input_data):
     """
     Tests whether ``parse_duration`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `float`
     """
-    for input_data, expected_output in (
-        ({}, 0.0),
-        ({'duration_sec': 1.0}, 1.0),
-    ):
-        output = parse_duration(input_data)
-        vampytest.assert_eq(output, expected_output)
+    output = parse_duration(input_data)
+    vampytest.assert_instance(output, float)
+    return output

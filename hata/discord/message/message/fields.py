@@ -26,6 +26,7 @@ from ...field_validators import (
     nullable_entity_array_validator_factory, nullable_entity_validator_factory, nullable_object_array_validator_factory,
     nullable_string_validator_factory, preinstanced_validator_factory
 )
+from ...poll import Poll
 from ...role import Role
 from ...sticker import Sticker, create_partial_sticker_data, create_partial_sticker_from_partial_data
 from ...user import ClientUserBase, User, UserBase, ZEROUSER
@@ -37,6 +38,8 @@ from ..message_application import MessageApplication
 from ..message_call import MessageCall
 from ..message_interaction import MessageInteraction
 from ..message_role_subscription import MessageRoleSubscription
+from ..poll_change import PollChange
+from ..poll_update import PollUpdate
 
 from .constants import CONTENT_LENGTH_MAX, NONCE_LENGTH_MAX
 from .flags import MessageFlag
@@ -427,6 +430,80 @@ validate_nonce = nullable_string_validator_factory('nonce', 0, NONCE_LENGTH_MAX)
 parse_pinned = bool_parser_factory('pinned', False)
 put_pinned_into = bool_optional_putter_factory('pinned', False)
 validate_pinned = bool_validator_factory('pinned', False)
+
+
+# poll
+
+def parse_poll(data, old_poll = None):
+    """
+    Parses the message's polls.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    old_poll : `None | Poll` = `None`, Optional
+        The old poll of the message.
+    
+    Returns
+    -------
+    poll : `Non | Poll`
+    """
+    poll_data = data.get('poll', None)
+    if poll_data is None:
+        poll = None
+    else:
+        if old_poll is None:
+            poll = Poll.from_data(poll_data)
+        else:
+            poll = old_poll
+            old_poll._update_attributes(poll_data)
+            
+    return poll
+
+
+def parse_poll_and_change(data, old_poll):
+    """
+    Parses the poll and returns the difference.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    old_poll : `None | Poll` = `None`, Optional
+        The old poll of the message.
+    
+    Returns
+    -------
+    poll : `Non | Poll`
+    change : `None | PollChange`
+    """
+    poll_data = data.get('poll', None)
+    if poll_data is None:
+        if old_poll is None:
+            poll = None
+            change = None
+        else:
+            poll = None
+            change = PollChange.from_fields(None, None, old_poll)
+    else:
+        if old_poll is None:
+            poll = Poll.from_data(poll_data)
+            change = PollChange.from_fields(poll, None, None)
+        
+        else:
+            poll = old_poll
+            old_attributes = poll._difference_update_attributes(poll_data)
+            if old_attributes:
+                change = PollChange.from_fields(None, PollUpdate.from_fields(poll, old_attributes), None)
+            else:
+                change = None
+    
+    return poll, change
+
+
+put_poll_into = nullable_entity_optional_putter_factory('poll', Poll)
+validate_poll = nullable_entity_validator_factory('poll', Poll)
 
 # reactions
 

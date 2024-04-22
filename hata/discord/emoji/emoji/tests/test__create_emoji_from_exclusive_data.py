@@ -6,37 +6,37 @@ from ..emoji import Emoji
 from ..utils import create_emoji_from_exclusive_data
 
 
-def test__create_emoji_from_exclusive_data__0():
+def test__create_emoji_from_exclusive_data__unicode_emoji():
     """
     Tests whether ``create_emoji_from_exclusive_data`` works as intended.
     
-    Case: builtin emoji.
+    Case: unicode emoji.
     """
     emoji = BUILTIN_EMOJIS['heart']
     
-    data = {'emoji_name': emoji.unicode}
+    data = {'name': emoji.unicode}
     
     output_emoji = create_emoji_from_exclusive_data(data)
     
     vampytest.assert_is(emoji, output_emoji)
 
 
-def test__create_emoji_from_exclusive_data__1():
+def test__create_emoji_from_exclusive_data__custom_emoji():
     """
     Tests whether ``create_emoji_from_exclusive_data`` works as intended.
     
     Case: Custom emoji.
     """
-    emoji = Emoji.precreate(202209110001)
+    emoji = Emoji.precreate(202404130000)
     
-    data = {'emoji_id': str(emoji.id)}
+    data = {'id': str(emoji.id)}
     
     output_emoji = create_emoji_from_exclusive_data(data)
     
     vampytest.assert_is(emoji, output_emoji)
 
 
-def test__create_emoji_from_exclusive_data__2():
+def test__create_emoji_from_exclusive_data__no_emoji():
     """
     Tests whether ``create_emoji_from_exclusive_data`` works as intended.
     
@@ -49,14 +49,16 @@ def test__create_emoji_from_exclusive_data__2():
     vampytest.assert_is(None, output_emoji)
 
 
-def test__create_emoji_from_exclusive_data__3():
+def test__create_emoji_from_exclusive_data__no_overwrite():
     """
-    Issue: `create_emoji_from_exclusive_data` overwrote emoji name & animated.
+    Tests whether ``create_emoji_from_exclusive_data`` works as intended.
+    
+    Case: Do not overwrite name & animated when created from id.
     """
-    emoji_id = 202209250000
+    emoji_id = 202404130001
     emoji_name = 'warning'
     emoji_animated = True
-    guild_id = 202209250001
+    guild_id = 202404130002
     
     # Keep it for the cache, dont be dumb!
     original_emoji = Emoji.from_data(
@@ -68,7 +70,7 @@ def test__create_emoji_from_exclusive_data__3():
         guild_id,
     )
     
-    data = {'emoji_id': str(emoji_id)}
+    data = {'id': str(emoji_id)}
     
     emoji = create_emoji_from_exclusive_data(data)
     

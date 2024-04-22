@@ -44,7 +44,7 @@ def test__EmbedField__copy():
     vampytest.assert_eq(field, copy)
 
 
-def test__EmbedField__copy_with__0():
+def test__EmbedField__copy_with__no_fields():
     """
     Tests whether ``EmbedField.copy_with`` works as intended.
     
@@ -62,7 +62,7 @@ def test__EmbedField__copy_with__0():
     vampytest.assert_eq(field, copy)
 
 
-def test__EmbedField__copy_with__1():
+def test__EmbedField__copy_with__all_fields():
     """
     Tests whether ``EmbedField.copy_with`` works as intended.
     
@@ -90,45 +90,69 @@ def test__EmbedField__copy_with__1():
     vampytest.assert_eq(copy.value, new_value)
 
 
-def test__EmbedField__contents():
+def _iter_options__contents():
+    inline = True
+    value = 'okuu'
+    name = 'yuuka'
+    
+    yield {}, set()
+    yield {'name': name}, {name}
+    yield {'value': value}, {value}
+    yield {'name': name, 'value': value}, {name, value}
+    yield {'inline': inline}, set()
+    yield {'inline': inline, 'name': name}, {name}
+    yield {'inline': inline, 'value': value}, {value}
+    yield {'inline': inline, 'name': name, 'value': value}, {name, value}
+
+
+@vampytest._(vampytest.call_from(_iter_options__contents()).returning_last())
+def test__EmbedField__contents(keyword_parameters):
     """
     Tests whether ``EmbedField.contents`` works as intended.
-    """
-    inline = True
-    name = 'orin'
-    value = 'okuu'
     
-    for field, expected_output in (
-        (EmbedField(), set()),
-        (EmbedField(name = name), {name}),
-        (EmbedField(inline = inline), set()),
-        (EmbedField(value = value), {value}),
-        (EmbedField(name = name, inline = inline), {name}),
-        (EmbedField(name = name, value = value,), {name, value}),
-        (EmbedField(value = value, inline = inline), {value}),
-        (EmbedField(name = name, value = value, inline = inline), {name, value}),
-    ):
-        output = field.contents
-        vampytest.assert_instance(output, list)
-        vampytest.assert_eq({*output}, expected_output)
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed field with.
+    
+    Returns
+    -------
+    output : `set<str>`
+    """
+    field = EmbedField(**keyword_parameters)
+    output = field.contents
+    vampytest.assert_instance(output, list)
+    return {*output}
 
 
-def test__EmbedField__iter_contents():
+def _iter_options__iter_contents():
+    inline = True
+    value = 'okuu'
+    name = 'yuuka'
+    
+    yield {}, set()
+    yield {'name': name}, {name}
+    yield {'value': value}, {value}
+    yield {'name': name, 'value': value}, {name, value}
+    yield {'inline': inline}, set()
+    yield {'inline': inline, 'name': name}, {name}
+    yield {'inline': inline, 'value': value}, {value}
+    yield {'inline': inline, 'name': name, 'value': value}, {name, value}
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_contents()).returning_last())
+def test__EmbedField__iter_contents(keyword_parameters):
     """
     Tests whether ``EmbedField.iter_contents`` works as intended.
-    """
-    inline = True
-    name = 'orin'
-    value = 'okuu'
     
-    for field, expected_output in (
-        (EmbedField(), set()),
-        (EmbedField(name = name), {name}),
-        (EmbedField(inline = inline), set()),
-        (EmbedField(value = value), {value}),
-        (EmbedField(name = name, inline = inline), {name}),
-        (EmbedField(name = name, value = value,), {name, value}),
-        (EmbedField(value = value, inline = inline), {value}),
-        (EmbedField(name = name, value = value, inline = inline), {name, value}),
-    ):
-        vampytest.assert_eq({*field.iter_contents()}, expected_output)
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed field with.
+    
+    Returns
+    -------
+    output : `set<str>`
+    """
+    field = EmbedField(**keyword_parameters)
+    return {*field.iter_contents()}

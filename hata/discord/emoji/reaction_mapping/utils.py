@@ -1,5 +1,6 @@
 __all__ = ('merge_update_reaction_mapping',)
 
+
 def merge_update_reaction_mapping(old_reactions, new_reactions):
     """
     Merges the two reaction mapping, so values wont be overwritten if not required.

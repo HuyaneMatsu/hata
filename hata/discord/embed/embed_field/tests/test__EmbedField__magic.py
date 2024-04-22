@@ -55,43 +55,71 @@ def test__EmbedField__eq():
         vampytest.assert_ne(field, test_field)
 
 
-def test__EmbedField__bool():
+def _iter_options__bool():
+    inline = True
+    value = 'okuu'
+    name = 'yuuka'
+    
+    yield {}, False
+    yield {'name': name}, True
+    yield {'value': value}, True
+    yield {'name': name, 'value': value}, True
+    yield {'inline': inline}, False
+    yield {'inline': inline, 'name': name}, True
+    yield {'inline': inline, 'value': value}, True
+    yield {'inline': inline, 'name': name, 'value': value}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__bool()).returning_last())
+def test__EmbedField__bool(keyword_parameters):
     """
     Tests whether ``EmbedField.__bool__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed field with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    field = EmbedField(**keyword_parameters)
+    output = bool(field)
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__len():
     inline = True
     value = 'okuu'
-    name = 'orin'
+    name = 'yuuka'
     
-    for field, expected_output in (
-        (EmbedField(), False),
-        (EmbedField(name = name), True),
-        (EmbedField(inline = inline), False),
-        (EmbedField(name = name, inline = inline), True),
-        (EmbedField(value = value), True),
-        (EmbedField(value = value, name = name), True),
-        (EmbedField(value = value, inline = inline), True),
-        (EmbedField(value = value, name = name, inline = inline), True),
-    ):
-        vampytest.assert_eq(bool(field), expected_output)
+    yield {}, 0
+    yield {'name': name}, len(name)
+    yield {'value': value}, len(value)
+    yield {'name': name, 'value': value}, len(name) + len(value)
+    yield {'inline': inline}, 0
+    yield {'inline': inline, 'name': name}, len(name)
+    yield {'inline': inline, 'value': value}, len(value)
+    yield {'inline': inline, 'name': name, 'value': value}, len(name) + len(value)
 
 
-def test__EmbedField__len():
+@vampytest._(vampytest.call_from(_iter_options__len()).returning_last())
+def test__EmbedField__len(keyword_parameters):
     """
     Tests whether ``EmbedField.__len__`` works as intended.
-    """
-    inline = True
-    value = 'okuu'
-    name = 'orin'
     
-    for field, expected_output in (
-        (EmbedField(), 0),
-        (EmbedField(name = name), len(name)),
-        (EmbedField(inline = inline), 0),
-        (EmbedField(name = name, inline = inline), len(name)),
-        (EmbedField(value = value), len(value)),
-        (EmbedField(value = value, name = name), len(name) + len(value)),
-        (EmbedField(value = value, inline = inline), len(value)),
-        (EmbedField(value = value, name = name, inline = inline), len(name) + len(value)),
-    ):
-        vampytest.assert_eq(len(field), expected_output)
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed field with.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    field = EmbedField(**keyword_parameters)
+    output = len(field)
+    vampytest.assert_instance(output, int)
+    return output

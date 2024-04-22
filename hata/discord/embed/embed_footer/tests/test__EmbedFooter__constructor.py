@@ -5,7 +5,7 @@ from ..footer import EmbedFooter
 
 def _assert_fields_set(field):
     """
-    Checks whether every fields of the given activity field are set.
+    Checks whether every fields of the given embed footer are set.
     
     Parameters
     ----------
@@ -18,7 +18,7 @@ def _assert_fields_set(field):
     vampytest.assert_instance(field.text, str, nullable = True)
 
 
-def test__EmbedFooter__new__0():
+def test__EmbedFooter__new__no_fields():
     """
     Tests whether ``EmbedFooter.__new__`` works as intended.
     
@@ -28,7 +28,7 @@ def test__EmbedFooter__new__0():
     _assert_fields_set(field)
 
 
-def test__EmbedFooter__new__1():
+def test__EmbedFooter__new__all_field():
     """
     Tests whether ``EmbedFooter.__new__`` works as intended.
     
@@ -44,7 +44,7 @@ def test__EmbedFooter__new__1():
     vampytest.assert_eq(field.text, text)
 
 
-def test__EmbedFooter__new__2():
+def test__EmbedFooter__new__string_conversion():
     """
     Tests whether ``EmbedFooter.__new__`` works as intended.
     

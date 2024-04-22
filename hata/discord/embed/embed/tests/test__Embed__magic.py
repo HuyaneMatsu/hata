@@ -75,59 +75,50 @@ def test__Embed__len():
     vampytest.assert_eq(output, expected_output)
 
 
-def test__Embed__bool__0():
+
+def _iter_options__bool():
+    yield {}, False
+    yield {'author': EmbedAuthor('author name')}, True
+    yield {'color': Color(123)}, True
+    yield {'description': 'embed description'}, True
+    yield {'fields': [EmbedField('komeiji', 'koishi'), EmbedField('komeiji', 'satori', inline = True)]}, True
+    yield {'footer': EmbedFooter('footer text')}, True
+    yield {'image': EmbedImage('attachment://image')}, True
+    yield {'provider': EmbedProvider('provider name')}, True
+    yield {'thumbnail': EmbedThumbnail('attachment://thumbnail')}, True
+    yield {'timestamp': DateTime(2016, 5, 5)}, True
+    yield {'title': 'embed title'}, True
+    yield {'url': 'https://orindance.party/'}, True
+    yield {'video': EmbedVideo('attachment://video')}, True
+
+    yield {'embed_type': EmbedType.video}, False
+    yield {'author': EmbedAuthor()}, False
+    yield {'fields': [EmbedField(), EmbedField(inline = True)]}, False
+    yield {'footer': EmbedFooter()}, False
+    yield {'image': EmbedImage()}, False
+    yield {'provider': EmbedProvider()}, False
+    yield {'thumbnail': EmbedThumbnail()}, False
+    yield {'video': EmbedVideo()}, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__bool()).returning_last())
+def test__Embed__bool(keyword_parameters):
     """
     Tests whether ``Embed.__bool__`` works as intended.
     
-    Case: Empty embed.
-    """
-    embed = Embed()
-    vampytest.assert_false(embed)
-
-
-def test__Embed__bool__1():
-    """
-    Tests whether ``Embed.__bool__`` works as intended.
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword Parameters to edit.
     
-    Case: true embed.
+    Returns
+    -------
+    output : `bool`
     """
-    for field_name, field_value in (
-        ('author', EmbedAuthor('author name')),
-        ('color', Color(123)),
-        ('description', 'embed description'),
-        # ('embed_type', EmbedType.video), # not applicable for type
-        ('fields', [EmbedField('komeiji', 'koishi'), EmbedField('komeiji', 'satori', inline = True)]),
-        ('footer', EmbedFooter('footer text')),
-        ('image', EmbedImage('attachment://image')),
-        ('provider', EmbedProvider('provider name')),
-        ('thumbnail', EmbedThumbnail('attachment://thumbnail')),
-        ('timestamp', DateTime(2016, 5, 5)),
-        ('title', 'embed title'),
-        ('url', 'https://orindance.party/'),
-        ('video', EmbedVideo('attachment://video')),
-    ):
-        embed = Embed(**{field_name: field_value})
-        vampytest.assert_true(embed)
-
-
-def test__Embed__bool__2():
-    """
-    Tests whether ``Embed.__bool__`` works as intended.
-    
-    Case: false embed.
-    """
-    for field_name, field_value in (
-        ('author', EmbedAuthor()),
-        ('embed_type', EmbedType.video),
-        ('fields', [EmbedField(), EmbedField(inline = True)]),
-        ('footer', EmbedFooter()),
-        ('image', EmbedImage()),
-        ('provider', EmbedProvider()),
-        ('thumbnail', EmbedThumbnail()),
-        ('video', EmbedVideo()),
-    ):
-        embed = Embed(**{field_name: field_value})
-        vampytest.assert_false(embed)
+    embed = Embed(**keyword_parameters)
+    output = bool(embed)
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def test__Embed__repr():

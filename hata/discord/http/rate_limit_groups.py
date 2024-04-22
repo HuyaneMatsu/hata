@@ -415,14 +415,6 @@ Group Details
     - Resets after : `OPT`
     - Notes : Untested.
 
-- channel_edit_status
-    - Endpoint : `/channels/{channel_id}/voice-status`
-    - Method : `PUT`
-    - Required auth : `bot`
-    - Limiter : `UNLIMITED`
-    - Limit : `N/A`
-    - Resets after : `N/A`
-
 - channel_directory_counts
     - Endpoint : `/channels/{channel_id}/directory-entries/counts`
     - Method : `GET`
@@ -679,6 +671,22 @@ Group Details
     - Limit : `5`
     - Resets after : `4`
 
+- poll_result_user_get_chunk
+    - Endpoint : `/channels/{channel_id}/polls/{message_id}/answers/{answer_id}`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
+
+- poll_finalize
+    - Endpoint : `/channels/{channel_id}/polls/{message_id}/expire`
+    - Method : `POST`
+    - Required auth : `bot`
+    - Limiter : `message_id`
+    - Limit : `1000`
+    - Resets after : `1.0`
+
 - channel_group_user_get_all
     - Endpoint : `/channels/{channel_id}/recipients/`
     - Method : `GET`
@@ -833,6 +841,14 @@ Group Details
 - channel_thread_get_chunk_self_archived
     - Endpoint : `/channels/{channel_id}/users/@me/threads/archived/private`
     - Method : `POST`
+    - Required auth : `bot`
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
+
+- channel_edit_status
+    - Endpoint : `/channels/{channel_id}/voice-status`
+    - Method : `PUT`
     - Required auth : `bot`
     - Limiter : `UNLIMITED`
     - Limit : `N/A`
@@ -2078,7 +2094,8 @@ Group Details
 __all__ = ()
 
 from .rate_limit import (
-    LIMITER_CHANNEL, LIMITER_GUILD, LIMITER_INTERACTION, LIMITER_WEBHOOK, RateLimitGroup, StaticRateLimitGroup
+    LIMITER_CHANNEL, LIMITER_GUILD, LIMITER_INTERACTION, LIMITER_MESSAGE, LIMITER_WEBHOOK, RateLimitGroup,
+    StaticRateLimitGroup
 )
 
 
@@ -2131,7 +2148,6 @@ channel_delete = RateLimitGroup.unlimited()
 channel_group_leave = RateLimitGroup.unlimited() # untested; same as channel_delete?
 channel_edit = RateLimitGroup(LIMITER_CHANNEL)
 channel_group_edit = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?
-channel_edit_status = RateLimitGroup.unlimited()
 channel_directory_counts = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?
 channel_directory_get_all = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?
 channel_directory_search = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?
@@ -2163,6 +2179,8 @@ channel_pin_get_all = RateLimitGroup()
 channel_pin_ack = RateLimitGroup(optimistic = True) # untested
 message_unpin = GROUP_PIN_MODIFY
 message_pin = GROUP_PIN_MODIFY
+poll_result_user_get_chunk = RateLimitGroup.unlimited()
+poll_finalize = RateLimitGroup(LIMITER_MESSAGE)
 channel_group_user_get_all = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested
 channel_group_user_delete = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested
 channel_group_user_add = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested
@@ -2182,6 +2200,7 @@ channel_thread_get_chunk_active = RateLimitGroup.unlimited()
 channel_thread_get_chunk_archived_private = RateLimitGroup.unlimited()
 channel_thread_get_chunk_archived_public = RateLimitGroup.unlimited()
 channel_thread_get_chunk_self_archived = RateLimitGroup.unlimited()
+channel_edit_status = RateLimitGroup.unlimited()
 webhook_get_all_channel = RateLimitGroup(LIMITER_CHANNEL, optimistic = True)
 webhook_create = RateLimitGroup(LIMITER_CHANNEL, optimistic = True)
 discovery_category_get_all = RateLimitGroup()

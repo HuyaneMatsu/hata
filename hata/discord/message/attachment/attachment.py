@@ -3,6 +3,7 @@ __all__ = ('Attachment', )
 from ...bases import DiscordEntity
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
+from .constants import DURATION_DEFAULT
 from .fields import (
     parse_content_type, parse_description, parse_duration, parse_flags, parse_height, parse_id, parse_name,
     parse_proxy_url, parse_size, parse_temporary, parse_url, parse_waveform, parse_width, put_content_type_into,
@@ -169,7 +170,7 @@ class Attachment(DiscordEntity):
         
         # duration
         if duration is ...:
-            duration = 0.0
+            duration = DURATION_DEFAULT
         else:
             duration = validate_duration(duration)
         
@@ -702,6 +703,13 @@ class Attachment(DiscordEntity):
         Returns
         -------
         self : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         """
         attachment_id = validate_id(attachment_id)
         
@@ -716,7 +724,7 @@ class Attachment(DiscordEntity):
         self = object.__new__(cls)
         self.content_type = None
         self.description = None
-        self.duration = 0.0
+        self.duration = DURATION_DEFAULT
         self.flags = AttachmentFlag()
         self.height = 0
         self.id = attachment_id

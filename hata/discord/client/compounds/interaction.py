@@ -34,6 +34,7 @@ MESSAGE_SERIALIZER_INTERACTION_FOLLOWUP_CREATE = create_serializer(
             MessageBuilderInteractionFollowupCreate.content,
             MessageBuilderInteractionFollowupCreate.embeds,
             MessageBuilderInteractionFollowupCreate.flags,
+            MessageBuilderInteractionFollowupCreate.poll,
             MessageBuilderInteractionFollowupCreate.show_for_invoking_user_only,
             MessageBuilderInteractionFollowupCreate.tts,
         ],
@@ -80,6 +81,7 @@ MESSAGE_SERIALIZER_INTERACTION_RESPONSE_CREATE = create_serializer(
             MessageBuilderInteractionResponseCreate.content,
             MessageBuilderInteractionResponseCreate.embeds,
             MessageBuilderInteractionResponseCreate.flags,
+            MessageBuilderInteractionResponseCreate.poll,
             MessageBuilderInteractionResponseCreate.tts,
         ],
         True,
@@ -333,7 +335,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         ):
             raise RuntimeError(
                 f'Only `application_command` and `message_component` interactions can be answered with '
-                f'form, got `{interaction_event.type.name}`; {interaction_event!r}; form={form!r}.'
+                f'form, got `{interaction_event.type.name}`; {interaction_event!r}; form = {form!r}.'
             )
         
         # Build payload
@@ -394,6 +396,9 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         flags : `int`, ``MessageFlag`, Optional
             The message's flags.
+        
+        poll : `None`, ``Poll``, Optional
+            The message's poll.
         
         show_for_invoking_user_only : `bool` = `False`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user.
@@ -766,6 +771,11 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         content : `None`, `str`, Optional
             The message's content if given.
+        
+        poll : `None`, ``Poll``, Optional
+            The message's poll.
+            
+            > Response message must be created or else discord will ignore the `poll` field.
         
         embed : `None`, `Embed`, Optional
             Alternative for `embeds`.

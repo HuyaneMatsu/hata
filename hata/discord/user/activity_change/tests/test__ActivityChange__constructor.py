@@ -22,7 +22,7 @@ def _assert_fields_set(activity_change):
     vampytest.assert_instance(activity_change.removed, list, nullable = True)
 
 
-def test__ActivityChange__new__0():
+def test__ActivityChange__new__no_fields():
     """
     Tests whether ``ActivityChange.__new__`` works as intended.
     
@@ -32,7 +32,7 @@ def test__ActivityChange__new__0():
     _assert_fields_set(activity_change)
 
 
-def test__ActivityChange__new__1():
+def test__ActivityChange__new__all_fields():
     """
     Tests whether ``ActivityChange.__new__`` works as intended.
     

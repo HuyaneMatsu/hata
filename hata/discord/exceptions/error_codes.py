@@ -233,6 +233,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | channels_too_large                                                | 30061     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| max_published_product_listing                                     | 30065     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | rate_limit_resource                                               | 31002     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | unauthorized                                                      | 40001     | -         |
@@ -447,6 +449,12 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | cannot_send_voice_message_to_this_channel                         | 50173     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| invalid_sku_attachment_no_archives                                | 50186     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| invalid_gift_redemption_incorrect_user                            | 50194     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| invalid_activity_launch_incorrect_guild_size                      | 50209     | 25        |
++-------------------------------------------------------------------+-----------+-----------+
 | mfa_enabled                                                       | 60001     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | mfa_disabled                                                      | 60002     | -         |
@@ -463,7 +471,11 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | mfa_invalid_session                                               | 60009     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| mfa_required_for_creator_monetization                             | 60015     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | phone_number_unable_to_send                                       | 70003     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| phone_carrier_type_not_mobile                                     | 70005     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | phone_verification_required                                       | 70007     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -577,15 +589,75 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | auto_moderation_invalid_regex                                     | 200002    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| monetization_terms_not_accepted                                   | 210003    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| mfa_not_enabled                                                   | 210011    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| guild_product_listing_cannot_publish_without_benefit              | 210021    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| creator_monetization_payment_team_required                        | 210026    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| creator_monetization_payment_account_verification_required        | 210027    | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | webhook_can_create_thread_only_in_forum_channel                   | 220003    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | harmful_link_message_blocked                                      | 240000    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | clyde_consent_required                                            | 310000    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| user_limited_access_default                                       | 340000    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| user_limited_access_friend_request                                | 340007    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| user_limited_access_max                                           | 349999    | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | cannot_enable_onboarding_requirements_not_met                     | 350000    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | cannot_update_onboarding_requirements_not_met                     | 350001    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| guild_limited_access_default                                      | 400000    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| guild_limited_access_upload                                       | 400001    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| guild_limited_access_invite                                       | 400003    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| guild_limited_access_max                                          | 409999    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| partner_promotions_user_claimed_promotion                         | 420002    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| partner_promotions_max_claims                                     | 420003    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| partner_promotions_gift_claimed                                   | 420004    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| partner_promotions_previous_purchase_error                        | 420005    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| partner_promotions_new_subscription_required                      | 420006    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| partner_promotions_unknown_gift                                   | 420007    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| poll_voting_blocked                                               | 520000    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| poll_finalized                                                    | 520001    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| poll_creation_invalid_channel_type                                | 520002    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| cannot_edit_poll_message                                          | 520003    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| cannot_use_emoji_included_within_poll                             | 520004    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| cannot_expire_non_poll_message                                    | 520006    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| poll_expired                                                      | 520007    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| dsa_rsl_report_not_found                                          | 521001    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| dsa_rsl_already_requested                                         | 521002    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| dsa_rsl_limited_time                                              | 521003    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| dsa_rsl_report_ineligible                                         | 521004    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| dsa_appeal_request_deflection                                     | 522001    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 """
 unknown_account = 10001
@@ -691,6 +763,7 @@ max_premium_emoji = 30056
 max_webhooks_of_guilds = 30058
 max_blocked_users = 30059
 channels_too_large = 30061
+max_published_product_listing = 30065
 rate_limit_resource = 31002
 
 unauthorized = 40001
@@ -800,6 +873,9 @@ cannot_delete_guild_subscription_integration = 50163
 new_owner_ineligible_for_subscription = 50164
 activity_launch_age_gated = 50165
 cannot_send_voice_message_to_this_channel = 50173
+invalid_sku_attachment_no_archives = 50186
+invalid_gift_redemption_incorrect_user = 50194
+invalid_activity_launch_incorrect_guild_size = 50209
 
 mfa_enabled = 60001
 mfa_disabled = 60002
@@ -809,8 +885,10 @@ mfa_invalid_secret = 60005
 mfa_invalid_ticket = 60006
 mfa_invalid_code = 60008
 mfa_invalid_session = 60009
+mfa_required_for_creator_monetization = 60015
 
 phone_number_unable_to_send = 70003
+phone_carrier_type_not_mobile = 70005
 phone_verification_required = 70007
 
 relationship_incoming_disabled = 80000
@@ -880,15 +958,50 @@ auto_moderation_message_blocked = 200000
 auto_moderation_title_blocked = 200001
 auto_moderation_invalid_regex = 200002
 
+monetization_terms_not_accepted = 210003
+mfa_not_enabled = 210011
+guild_product_listing_cannot_publish_without_benefit = 210021
+creator_monetization_payment_team_required = 210026
+creator_monetization_payment_account_verification_required = 210027
+
 webhook_can_create_thread_only_in_forum_channel = 220003
 
 harmful_link_message_blocked = 240000
 
 clyde_consent_required = 310000
 
+user_limited_access_default = 340000
+user_limited_access_friend_request = 340007
+user_limited_access_max = 349999
+
 cannot_enable_onboarding_requirements_not_met = 350000
 cannot_update_onboarding_requirements_not_met = 350001
 
+guild_limited_access_default = 400000
+guild_limited_access_upload = 400001
+guild_limited_access_invite = 400003
+guild_limited_access_max = 409999
+
+partner_promotions_user_claimed_promotion = 420002
+partner_promotions_max_claims = 420003
+partner_promotions_gift_claimed = 420004
+partner_promotions_previous_purchase_error = 420005
+partner_promotions_new_subscription_required = 420006
+partner_promotions_unknown_gift = 420007
+
+poll_voting_blocked = 520000
+poll_finalized = 520001
+poll_creation_invalid_channel_type = 520002
+cannot_edit_poll_message = 520003
+cannot_use_emoji_included_within_poll = 520004
+cannot_expire_non_poll_message = 520006
+poll_expired  = 520007
+
+dsa_rsl_report_not_found = 521001
+dsa_rsl_already_requested = 521002
+dsa_rsl_limited_time = 521003
+dsa_rsl_report_ineligible = 521004
+dsa_appeal_request_deflection = 522001
 
 
 __deprecations__ = {

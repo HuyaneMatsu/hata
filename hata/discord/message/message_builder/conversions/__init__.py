@@ -12,6 +12,7 @@ from .flags import *
 from .instance import *
 from .name import *
 from .nonce import *
+from .poll import *
 from .reply_configuration import *
 from .reply_fail_fallback import *
 from .reply_message_id import *

@@ -51,6 +51,8 @@ def _validate_entity_list(entity_list_name, entity_type, entity_list):
     return entities_validated
 
 
+# added
+
 def validate_added(added):
     """
     Validates the `added` field of an activity change.
@@ -72,6 +74,8 @@ def validate_added(added):
     return _validate_entity_list('added', Activity, added)
 
 
+# updated
+
 def validate_updated(updated):
     """
     Validates the `updated` field of an activity change.
@@ -92,6 +96,8 @@ def validate_updated(updated):
     """
     return _validate_entity_list('updated', ActivityUpdate, updated)
 
+
+# removed
 
 def validate_removed(removed):
     """

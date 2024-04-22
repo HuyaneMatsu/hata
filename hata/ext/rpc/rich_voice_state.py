@@ -58,7 +58,7 @@ class RichVoiceState:
         
         Returns
         -------
-        self : ``RichVoiceState``
+        self : `instance<cls>`
         """
         self = object.__new__(cls)
         self.audio_balance = AudioBalance.from_data(data['pan'])

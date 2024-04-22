@@ -2,9 +2,9 @@ import vampytest
 
 from ....activity import Activity
 
-from ..activity_change import ActivityChange
-
 from ...activity_update import ActivityUpdate
+
+from ..activity_change import ActivityChange
 
 from .test__ActivityChange__constructor import _assert_fields_set
 
@@ -29,7 +29,7 @@ def test__ActivityChange__copy():
     vampytest.assert_eq(activity_change, copy)
 
 
-def test__ActivityChange__copy_with__0():
+def test__ActivityChange__copy_with__no_fields():
     """
     Tests whether ``ActivityChange.copy_with`` works as intended.
     
@@ -52,7 +52,7 @@ def test__ActivityChange__copy_with__0():
 
 
 
-def test__ActivityChange__copy_with__1():
+def test__ActivityChange__copy_with__all_fields():
     """
     Tests whether ``ActivityChange.copy_with`` works as intended.
     
@@ -85,58 +85,92 @@ def test__ActivityChange__copy_with__1():
     vampytest.assert_eq(copy.removed, new_removed)
 
 
-def test__ActivityChange__iter_added():
+
+def _iter_options__iter_added():
+    activity_0 = Activity('hello')
+    activity_1 = Activity('hell')
+    
+    yield None, []
+    yield [activity_0], [activity_0]
+    yield [activity_0, activity_1], [activity_0, activity_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_added()).returning_last())
+def test__ActivityChange__iter_added(input_value):
     """
     Tests whether ``ActivityChange.iter_added`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<Activity>`
+        Added activities to test with.
+    
+    Returns
+    -------
+    output : `list<Activity>
     """
+    activity_change = ActivityChange(
+        added = input_value,
+    )
+    
+    return [*activity_change.iter_added()]
+
+
+def _iter_options__iter_removed():
     activity_0 = Activity('hello')
     activity_1 = Activity('hell')
     
-    for input_value, expected_output in (
-        (None, []),
-        ([activity_0], [activity_0]),
-        ([activity_0, activity_1], [activity_0, activity_1]),
-    ):
-        activity_change = ActivityChange(
-            added = input_value,
-        )
-        
-        vampytest.assert_eq([*activity_change.iter_added()], expected_output)
+    yield None, []
+    yield [activity_0], [activity_0]
+    yield [activity_0, activity_1], [activity_0, activity_1]
 
 
-def test__ActivityChange__iter_removed():
+@vampytest._(vampytest.call_from(_iter_options__iter_removed()).returning_last())
+def test__ActivityChange__iter_removed(input_value):
     """
     Tests whether ``ActivityChange.iter_removed`` works as intended.
-    """
-    activity_0 = Activity('hello')
-    activity_1 = Activity('hell')
     
-    for input_value, expected_output in (
-        (None, []),
-        ([activity_0], [activity_0]),
-        ([activity_0, activity_1], [activity_0, activity_1]),
-    ):
-        activity_change = ActivityChange(
-            removed = input_value,
-        )
-        
-        vampytest.assert_eq([*activity_change.iter_removed()], expected_output)
+    Parameters
+    ----------
+    input_value : `None | list<Activity>`
+        Added activities to test with.
+    
+    Returns
+    -------
+    output : `list<Activity>
+    """
+    activity_change = ActivityChange(
+        removed = input_value,
+    )
+    
+    return [*activity_change.iter_removed()]
 
 
-def test__ActivityChange__iter_updated():
-    """
-    Tests whether ``ActivityChange.iter_updated`` works as intended.
-    """
+def _iter_options__iter_updated():
     activity_update_0 = ActivityUpdate(activity = Activity('hello'))
     activity_update_1 = ActivityUpdate(activity = Activity('hell'))
+
+    yield None, []
+    yield [activity_update_0], [activity_update_0]
+    yield [activity_update_0, activity_update_1], [activity_update_0, activity_update_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_updated()).returning_last())
+def test__ActivityChange__iter_updated(input_value):
+    """
+    Tests whether ``ActivityChange.iter_updated`` works as intended.
     
-    for input_value, expected_output in (
-        (None, []),
-        ([activity_update_0], [activity_update_0]),
-        ([activity_update_0, activity_update_1], [activity_update_0, activity_update_1]),
-    ):
-        activity_change = ActivityChange(
-            updated = input_value,
-        )
-        
-        vampytest.assert_eq([*activity_change.iter_updated()], expected_output)
+    Parameters
+    ----------
+    input_value : `None | list<ActivityUpdate>`
+        Added activities to test with.
+    
+    Returns
+    -------
+    output : `list<ActivityUpdate>
+    """
+    activity_change = ActivityChange(
+        updated = input_value,
+    )
+    
+    return [*activity_change.iter_updated()]

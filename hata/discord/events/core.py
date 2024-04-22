@@ -19,6 +19,7 @@ EVENT_HANDLER_NAMES = set()
 REGISTERED_CLIENTS = WeakSet()
 PARSER_SETTINGS = {}
 
+
 async def DEFAULT_EVENT_HANDLER(*args):
     """
     Default event handler what is set under events if there is no specified event handler to use.
@@ -283,6 +284,8 @@ add_event_handler('soundboard_sound_update', 3, ('GUILD_SOUNDBOARD_SOUND_UPDATE'
 add_event_handler('entitlement_create', 2, 'ENTITLEMENT_CREATE',)
 add_event_handler('entitlement_update', 3, 'ENTITLEMENT_UPDATE',)
 add_event_handler('entitlement_delete', 2, 'ENTITLEMENT_DELETE',)
+add_event_handler('poll_vote_add', 2, 'MESSAGE_POLL_VOTE_ADD',)
+add_event_handler('poll_vote_delete', 2, 'MESSAGE_POLL_VOTE_REMOVE',)
 
 
 class ParserSettingOption:
@@ -623,6 +626,7 @@ def add_parser(name, parser_cal_sc, parser_cal_mc, parser_opt_sc, parser_opt_mc)
         PARSERS[name] = parser_opt_sc
     
     return parser_setting
+
 
 def maybe_ensure_launch(client):
     """

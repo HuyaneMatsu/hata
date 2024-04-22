@@ -195,6 +195,7 @@ class EmbedField(EmbedFieldBase):
         new.value = sanitize_mentions(self.value, guild)
         return new
     
+    
     @copy_docs(EmbedFieldBase.copy)
     def copy(self):
         new = object.__new__(type(self))

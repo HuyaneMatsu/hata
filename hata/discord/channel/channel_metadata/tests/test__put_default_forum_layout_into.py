@@ -4,14 +4,27 @@ from ..fields import put_default_forum_layout_into
 from ..preinstanced import ForumLayout
 
 
-def test__put_default_forum_layout_into():
+def _iter_options():
+    yield ForumLayout.none, False, {}
+    yield ForumLayout.none, True, {'default_forum_layout': ForumLayout.none.value}
+    yield ForumLayout.list, False, {'default_forum_layout': ForumLayout.list.value}
+    yield ForumLayout.list, True, {'default_forum_layout': ForumLayout.list.value}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_default_forum_layout_into(input_value, defaults):
     """
     Tests whether ``put_default_forum_layout_into`` is working as intended.
+    
+    Parameters
+    ----------
+    input_value : ``ForumLayout``
+        Value to serialize.
+    defaults : `bool`
+        Whether fields with their default value should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
     """
-    for input_value, defaults, expected_output in (
-        (ForumLayout.none, False, {}),
-        (ForumLayout.none, True, {'default_forum_layout': ForumLayout.none.value}),
-        (ForumLayout.list, False, {'default_forum_layout': ForumLayout.list.value}),
-    ):
-        data = put_default_forum_layout_into(input_value, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    return put_default_forum_layout_into(input_value, {}, defaults)

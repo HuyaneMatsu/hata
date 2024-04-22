@@ -280,6 +280,7 @@ class ReactionMappingLine(set):
         
         return NotImplemented
     
+    
     def _is_equal_same_type(self, other):
         """
         Returns whether self equals to other. `other` must be same type as self.

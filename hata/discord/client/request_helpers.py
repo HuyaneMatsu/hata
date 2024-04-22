@@ -14,6 +14,7 @@ from ..guild import Guild
 from ..message import Message
 from ..oauth2 import Achievement, Oauth2Access, Oauth2User
 from ..role import Role
+from ..poll import PollAnswer
 from ..scheduled_event import ScheduledEvent
 from ..soundboard import SoundboardSound
 from ..stage import Stage
@@ -1601,3 +1602,35 @@ def get_entitlement_id(entitlement):
             )
     
     return entitlement_id
+
+
+def get_poll_answer_and_id(poll_answer):
+    """
+    Gets the poll answer and its identifier.
+    
+    Parameters
+    ----------
+    poll_answer : ``PollAnswer``, `int`
+        The poll answer to get its identifier.
+    
+    Returns
+    -------
+    poll_answer : `None`, ``PollAnswer``
+    poll_answer_id : `int`
+    
+    Raises
+    ------
+    TypeError
+        - If `poll_answer` type is incorrect.
+    """
+    if isinstance(poll_answer, PollAnswer):
+        return poll_answer, poll_answer.id
+    
+    poll_answer_id = maybe_snowflake(poll_answer)
+    if poll_answer_id is None:
+        raise TypeError(
+            f'`poll_answer` can be `{PollAnswer.__name__}, `int`, '
+            f'got {poll_answer.__class__.__name__}; {poll_answer!r}.'
+        )
+    
+    return None, poll_answer_id

@@ -226,7 +226,7 @@ class ReactionAddEvent(EventBase):
         hash_value = 0
         
         # emoji
-        hash_value = hash(self.emoji)
+        hash_value ^= hash(self.emoji)
         
         # message
         hash_value ^= hash(self.message)

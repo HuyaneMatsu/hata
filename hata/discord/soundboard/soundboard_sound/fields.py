@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...emoji import Emoji, create_emoji_from_exclusive_data, put_exclusive_emoji_data_into
+from ...emoji import Emoji, create_emoji_from_exclusive_inline_data, put_exclusive_emoji_inline_data_into
 from ...field_parsers import (
     bool_parser_factory, entity_id_parser_factory, float_parser_factory, force_string_parser_factory,
     nullable_entity_parser_factory
@@ -43,7 +43,7 @@ def parse_emoji(data):
     -------
     emoji : `None`, ``Emoji``
     """
-    return create_emoji_from_exclusive_data(data)
+    return create_emoji_from_exclusive_inline_data(data)
 
 
 
@@ -65,7 +65,7 @@ def put_emoji_into(emoji, data, defaults):
     data : `dict` of (`str`, `object`) items
     """
     if defaults or (emoji is not None):
-        put_exclusive_emoji_data_into(emoji, data)
+        put_exclusive_emoji_inline_data_into(emoji, data)
     
     return data
 

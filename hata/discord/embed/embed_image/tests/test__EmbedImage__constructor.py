@@ -5,7 +5,7 @@ from ..image import EmbedImage
 
 def _assert_fields_set(field):
     """
-    Checks whether every fields of the given activity field are set.
+    Checks whether every fields of the given embed image are set.
     
     Parameters
     ----------

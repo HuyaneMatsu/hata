@@ -130,7 +130,7 @@ def test__Embed__to_data():
 
 
 
-def test__Embed__update_sizes__0():
+def test__Embed__update_sizes__no_change():
     """
     Tests whether ``Embed._update_sizes`` works as intended.
     
@@ -142,7 +142,7 @@ def test__Embed__update_sizes__0():
     vampytest.assert_eq(output, 0)
 
 
-def test__Embed__update_sises__1():
+def test__Embed__update_sises__all_change():
     """
     Tests whether ``Embed._update_sizes`` works as intended.
     
@@ -208,7 +208,7 @@ def test__Embed__update_sises__1():
     vampytest.assert_eq(embed.video.width, video_width)
     
 
-def test__Embed__set_sises__0():
+def test__Embed__set_sises__all_change():
     """
     Tests whether ``Embed._set_sizes`` works as intended.
     

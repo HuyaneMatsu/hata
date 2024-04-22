@@ -406,7 +406,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
     async def user_application_role_connection_edit(self, application_id, data, headers):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.user_application_role_connection_edit, NO_SPECIFIC_RATE_LIMITER),
-            METHOD_PUT  ,
+            METHOD_PUT,
             f'{API_ENDPOINT}/users/@me/applications/{application_id}/role-connection',
             data,
             headers = headers,
@@ -630,7 +630,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             METHOD_POST,
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/suppress-embeds',
             data,
-    )
+        )
     
     
     async def message_crosspost(self, channel_id, message_id):
@@ -638,7 +638,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             RateLimitHandler(RATE_LIMIT_GROUPS.message_crosspost, channel_id),
             METHOD_POST,
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/crosspost',
-    )
+        )
     
     
     async def message_pin(self, channel_id, message_id):
@@ -646,7 +646,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             RateLimitHandler(RATE_LIMIT_GROUPS.message_pin, channel_id),
             METHOD_PUT,
             f'{API_ENDPOINT}/channels/{channel_id}/pins/{message_id}',
-    )
+        )
     
     
     async def message_unpin(self, channel_id, message_id):
@@ -654,7 +654,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             RateLimitHandler(RATE_LIMIT_GROUPS.message_unpin, channel_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/channels/{channel_id}/pins/{message_id}',
-    )
+        )
     
     
     async def channel_pin_get_all(self, channel_id):
@@ -670,6 +670,23 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             RateLimitHandler(RATE_LIMIT_GROUPS.channel_pin_ack, channel_id),
             METHOD_POST,
             f'{API_ENDPOINT}/channels/{channel_id}/pins/ack',
+        )
+    
+    # poll
+    
+    async def poll_finalize(self, channel_id, message_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.poll_finalize, message_id),
+            METHOD_POST,
+            f'{API_ENDPOINT}/channels/{channel_id}/polls/{message_id}/expire',
+        )
+    
+    async def poll_result_user_get_chunk(self, channel_id, message_id, answer_id, query_parameters):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.poll_result_user_get_chunk, message_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/channels/{channel_id}/polls/{message_id}/answers/{answer_id}',
+            params = query_parameters,
         )
     
     # channel directory

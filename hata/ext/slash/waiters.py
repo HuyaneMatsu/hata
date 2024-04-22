@@ -382,6 +382,7 @@ class ComponentInteractionIterator:
         else:
             self.cancel()
     
+    
     def __await__(self):
         """Awaits the iterator's next result."""
         future = self._future

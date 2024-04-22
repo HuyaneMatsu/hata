@@ -1478,7 +1478,7 @@ def nullable_entity_set_validator_factory(field_name, entity_type, *, include = 
             if not isinstance(entity, entity_type):
                 raise TypeError(
                     f'`{field_name}` can contain `{entity_type.__name__}` elements, got '
-                    f'{entity.__class__.__name__}; {entity!r}; entity_array = {entity_array!r}.'
+                    f'{entity.__class__.__name__}; {entity!r}; {field_name!s} = {entity_array!r}.'
                 )
             
             if (entity_set_processed is None):

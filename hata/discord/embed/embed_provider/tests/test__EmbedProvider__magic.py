@@ -50,34 +50,62 @@ def test__EmbedProvider__eq():
         vampytest.assert_ne(field, test_field)
 
 
-def test__EmbedProvider__bool():
+
+def _iter_options__bool():
+    url = 'https://orindance.party/'
+    name = 'orin'
+    
+    yield {}, False
+    yield {'name': name}, True
+    yield {'url': url}, True
+    yield {'name': name, 'url': url}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__bool()).returning_last())
+def test__EmbedProvider__bool(keyword_parameters):
     """
     Tests whether ``EmbedProvider.__bool__`` works as intended.
-    """
-    name = 'orin'
-    url = 'https://orindance.party/'
     
-    for field, expected_output in (
-        (EmbedProvider(), False),
-        (EmbedProvider(name = name), True),
-        (EmbedProvider(url = url), True),
-        (EmbedProvider(name = name, url = url), True),
-    ):
-        vampytest.assert_eq(bool(field), expected_output)
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed provider with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    field = EmbedProvider(**keyword_parameters)
+    output = bool(field)
+    vampytest.assert_instance(output, bool)
+    return output
 
 
+def _iter_options__len():
+    url = 'https://orindance.party/'
+    name = 'orin'
+    
+    yield {}, 0
+    yield {'name': name}, len(name)
+    yield {'url': url}, 0
+    yield {'name': name, 'url': url}, len(name)
 
-def test__EmbedProvider__len():
+
+@vampytest._(vampytest.call_from(_iter_options__len()).returning_last())
+def test__EmbedProvider__len(keyword_parameters):
     """
     Tests whether ``EmbedProvider.__len__`` works as intended.
-    """
-    name = 'orin'
-    url = 'https://orindance.party/'
     
-    for field, expected_output in (
-        (EmbedProvider(), 0),
-        (EmbedProvider(name = name), len(name)),
-        (EmbedProvider(url = url), 0),
-        (EmbedProvider(name = name, url = url), len(name)),
-    ):
-        vampytest.assert_eq(len(field), expected_output)
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed provider with.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    field = EmbedProvider(**keyword_parameters)
+    output = len(field)
+    vampytest.assert_instance(output, int)
+    return output

@@ -36,21 +36,40 @@ def test__EmbedFieldBase__eq():
         vampytest.assert_ne(field, test_field)
 
 
-def test__EmbedFieldBase__bool():
+def _iter_options__bool():
+    yield {}, False
+
+
+@vampytest._(vampytest.call_from(_iter_options__bool()).returning_last())
+def test__EmbedFieldBase__bool(keyword_parameters):
     """
     Tests whether ``EmbedFieldBase.__bool__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed field with.
+    
+    Returns
+    -------
+    output : `bool`
     """
-    for field, expected_output in (
-        (EmbedFieldBase(), False),
-    ):
-        vampytest.assert_eq(bool(field), expected_output)
+    field = EmbedFieldBase(**keyword_parameters)
+    output = bool(field)
+    vampytest.assert_instance(output, bool)
+    return output
 
 
-def test__EmbedFieldBase__len():
+def _iter_options__len():
+    yield {}, 0
+
+
+@vampytest._(vampytest.call_from(_iter_options__len()).returning_last())
+def test__EmbedFieldBase__len(keyword_parameters):
     """
     Tests whether ``EmbedFieldBase.__len__`` works as intended.
     """
-    for field, expected_output in (
-        (EmbedFieldBase(), 0),
-    ):
-        vampytest.assert_eq(len(field), expected_output)
+    field = EmbedFieldBase(**keyword_parameters)
+    output = len(field)
+    vampytest.assert_instance(output, int)
+    return output

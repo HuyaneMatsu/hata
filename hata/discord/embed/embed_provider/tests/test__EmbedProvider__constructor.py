@@ -5,7 +5,7 @@ from ..provider import EmbedProvider
 
 def _assert_fields_set(field):
     """
-    Checks whether every fields of the given activity field are set.
+    Checks whether every fields of the given embed provider are set.
     
     Parameters
     ----------
@@ -17,7 +17,7 @@ def _assert_fields_set(field):
     vampytest.assert_instance(field.url, str, nullable = True)
 
 
-def test__EmbedProvider__new__0():
+def test__EmbedProvider__new__no_fields():
     """
     Tests whether ``EmbedProvider.__new__`` works as intended.
     
@@ -27,7 +27,7 @@ def test__EmbedProvider__new__0():
     _assert_fields_set(field)
 
 
-def test__EmbedProvider__new__1():
+def test__EmbedProvider__new__all_fields():
     """
     Tests whether ``EmbedProvider.__new__`` works as intended.
     
@@ -43,7 +43,7 @@ def test__EmbedProvider__new__1():
     vampytest.assert_eq(field.url, url)
 
 
-def test__EmbedProvider__new__2():
+def test__EmbedProvider__new__string_conversion():
     """
     Tests whether ``EmbedProvider.__new__`` works as intended.
     

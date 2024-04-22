@@ -40,7 +40,7 @@ def test__EmbedProvider__copy():
     vampytest.assert_eq(field, copy)
 
 
-def test__EmbedProvider__copy_with__0():
+def test__EmbedProvider__copy_with__no_fields():
     """
     Tests whether ``EmbedProvider.copy_with`` works as intended.
     
@@ -57,7 +57,7 @@ def test__EmbedProvider__copy_with__0():
     vampytest.assert_eq(field, copy)
 
 
-def test__EmbedProvider__copy_with__1():
+def test__EmbedProvider__copy_with__all_fields():
     """
     Tests whether ``EmbedProvider.copy_with`` works as intended.
     
@@ -81,35 +81,59 @@ def test__EmbedProvider__copy_with__1():
     vampytest.assert_eq(copy.url, new_url)
 
 
-def test__EmbedProvider__contents():
+def _iter_options__contents():
+    url = 'https://orindance.party/'
+    name = 'orin'
+    
+    yield {}, set()
+    yield {'name': name}, {name}
+    yield {'url': url}, set()
+    yield {'name': name, 'url': url}, {name}
+
+
+@vampytest._(vampytest.call_from(_iter_options__contents()).returning_last())
+def test__EmbedProvider__contents(keyword_parameters):
     """
     Tests whether ``EmbedProvider.contents`` works as intended.
-    """
-    name = 'orin'
-    url = 'https://orindance.party/'
     
-    for field, expected_output in (
-        (EmbedProvider(), set()),
-        (EmbedProvider(name = name), {name}),
-        (EmbedProvider(url = url), set()),
-        (EmbedProvider(name = name, url = url), {name}),
-    ):
-        output = field.contents
-        vampytest.assert_instance(output, list)
-        vampytest.assert_eq({*output}, expected_output)
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed provider with.
+    
+    Returns
+    -------
+    output : `set<str>`
+    """
+    field = EmbedProvider(**keyword_parameters)
+    output = field.contents
+    vampytest.assert_instance(output, list)
+    return {*output}
 
 
-def test__EmbedProvider__iter_contents():
+def _iter_options__iter_contents():
+    url = 'https://orindance.party/'
+    name = 'orin'
+    
+    yield {}, set()
+    yield {'name': name}, {name}
+    yield {'url': url}, set()
+    yield {'name': name, 'url': url}, {name}
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_contents()).returning_last())
+def test__EmbedProvider__iter_contents(keyword_parameters):
     """
     Tests whether ``EmbedProvider.iter_contents`` works as intended.
-    """
-    name = 'orin'
-    url = 'https://orindance.party/'
     
-    for field, expected_output in (
-        (EmbedProvider(), set()),
-        (EmbedProvider(name = name), {name}),
-        (EmbedProvider(url = url), set()),
-        (EmbedProvider(name = name, url = url), {name}),
-    ):
-        vampytest.assert_eq({*field.iter_contents()}, expected_output)
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed provider with.
+    
+    Returns
+    -------
+    output : `set<str>`
+    """
+    field = EmbedProvider(**keyword_parameters)
+    return {*field.iter_contents()}

@@ -1,14 +1,13 @@
 __all__ = ('Message',)
 
-import warnings
-
-from scarletio import BaseMethodDescriptor, export, include
+from scarletio import export, include
 
 from ...bases import DiscordEntity, id_sort_key
 from ...core import CHANNELS, GUILDS, MESSAGES
 from ...embed import EXTRA_EMBED_TYPES, Embed
 from ...emoji import ReactionMapping
 from ...http import urls as module_urls
+from ...poll import Poll
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...role import create_partial_role_from_id
 from ...user import ClientUserBase, UserBase, ZEROUSER
@@ -23,18 +22,19 @@ from .fields import (
     parse_activity, parse_application, parse_application_id, parse_attachments, parse_author, parse_call,
     parse_channel_id, parse_components, parse_content, parse_edited_at, parse_embeds, parse_flags, parse_guild_id,
     parse_id, parse_interaction, parse_mentioned_channels_cross_guild, parse_mentioned_everyone,
-    parse_mentioned_role_ids, parse_mentioned_users, parse_message_id, parse_nonce, parse_pinned, parse_reactions,
-    parse_referenced_message, parse_resolved, parse_role_subscription, parse_stickers, parse_thread, parse_tts,
-    parse_type, put_activity_into, put_application_id_into, put_application_into, put_attachments_into, put_author_into,
-    put_call_into, put_channel_id_into, put_components_into, put_content_into, put_edited_at_into, put_embeds_into,
-    put_flags_into, put_guild_id_into, put_id_into, put_interaction_into, put_mentioned_channels_cross_guild_into,
-    put_mentioned_everyone_into, put_mentioned_role_ids_into, put_mentioned_users_into, put_message_id_into,
-    put_nonce_into, put_pinned_into, put_reactions_into, put_referenced_message_into, put_resolved_into,
-    put_role_subscription_into, put_stickers_into, put_thread_into, put_tts_into, put_type_into, validate_activity,
-    validate_application, validate_application_id, validate_attachments, validate_author, validate_call,
-    validate_channel_id, validate_components, validate_content, validate_edited_at, validate_embeds, validate_flags,
-    validate_guild_id, validate_id, validate_interaction, validate_mentioned_channels_cross_guild,
-    validate_mentioned_everyone, validate_mentioned_role_ids, validate_mentioned_users, validate_nonce, validate_pinned,
+    parse_mentioned_role_ids, parse_mentioned_users, parse_message_id, parse_nonce, parse_pinned, parse_poll,
+    parse_poll_and_change, parse_reactions, parse_referenced_message, parse_resolved, parse_role_subscription,
+    parse_stickers, parse_thread, parse_tts, parse_type, put_activity_into, put_application_id_into,
+    put_application_into, put_attachments_into, put_author_into, put_call_into, put_channel_id_into,
+    put_components_into, put_content_into, put_edited_at_into, put_embeds_into, put_flags_into, put_guild_id_into,
+    put_id_into, put_interaction_into, put_mentioned_channels_cross_guild_into, put_mentioned_everyone_into,
+    put_mentioned_role_ids_into, put_mentioned_users_into, put_message_id_into, put_nonce_into, put_pinned_into,
+    put_poll_into, put_reactions_into, put_referenced_message_into, put_resolved_into, put_role_subscription_into,
+    put_stickers_into, put_thread_into, put_tts_into, put_type_into, validate_activity, validate_application,
+    validate_application_id, validate_attachments, validate_author, validate_call, validate_channel_id,
+    validate_components, validate_content, validate_edited_at, validate_embeds, validate_flags, validate_guild_id,
+    validate_id, validate_interaction, validate_mentioned_channels_cross_guild, validate_mentioned_everyone,
+    validate_mentioned_role_ids, validate_mentioned_users, validate_nonce, validate_pinned, validate_poll,
     validate_reactions, validate_referenced_message, validate_resolved, validate_role_subscription, validate_stickers,
     validate_thread, validate_tts, validate_type
 )
@@ -52,42 +52,6 @@ MESSAGE_TYPE_VALUES_WITH_CONTENT_FIELDS = frozenset((
     for message_type in MessageType.INSTANCES.values()
     if message_type.converter is MESSAGE_DEFAULT_CONVERTER
 ))
-
-
-def _create_deprecated_precreate_field_validator(name, new_name, removed_at, validator):
-    """
-    Creates a deprecated field validator.
-    
-    Parameters
-    ----------
-    name : `str`
-        The field's name.
-    new_name : `str`
-        The new field to suggest.
-    removed_at : `str`
-        When the field will be removed.
-    validator : `FunctionType`
-        Validator function to use.
-    
-    Returns
-    -------
-    deprecated_validator : `FunctionType`
-    """
-    def deprecated_validator(value):
-        nonlocal name, removed_at, new_name, validator
-        
-        warnings.warn(
-            (
-                f'`{name}` parameter is deprecated and will be removed in {removed_at}. '
-                f'Please use `{new_name}` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        return deprecated_validator(value)
-    
-    return validator
 
 
 PRECREATE_FIELDS = {
@@ -115,6 +79,7 @@ PRECREATE_FIELDS = {
     'message_type': ('type', validate_type),
     'nonce': ('nonce', validate_nonce),
     'reactions': ('reactions', validate_reactions),
+    'poll': ('poll', validate_poll),
     'referenced_message': ('referenced_message', validate_referenced_message),
     'resolved': ('resolved', validate_resolved),
     'role_subscription': ('role_subscription', validate_role_subscription),
@@ -122,38 +87,6 @@ PRECREATE_FIELDS = {
     'stickers': ('stickers', validate_stickers),
     'thread': ('thread', validate_thread),
     'tts': ('tts', validate_tts),
-    
-    # Deprecated :
-    'everyone_mention': (
-        'mentioned_everyone',
-        _create_deprecated_precreate_field_validator(
-            'everyone_mention', 'mentioned_everyone', '2023 November', validate_mentioned_everyone
-        ),
-    ),
-    'role_mentions': (
-        'mentioned_roles',
-        _create_deprecated_precreate_field_validator(
-            'role_mentions', 'mentioned_roles', '2023 November', validate_mentioned_role_ids
-        ),
-    ),
-    'type': (
-        'type',
-        _create_deprecated_precreate_field_validator(
-            'type', 'message_type', '2023 November', validate_type
-        ),
-    ),
-    'user_mentions': (
-        'mentioned_users',
-        _create_deprecated_precreate_field_validator(
-            'user_mentions', 'mentioned_users', '2023 November', validate_mentioned_users
-        ),
-    ),
-    'cross_mentions': (
-        'mentioned_channels_cross_guild',
-        _create_deprecated_precreate_field_validator(
-            'cross_mentions', 'mentioned_channels_cross_guild', '2023 November', validate_mentioned_channels_cross_guild
-        ),
-    ),
 }
 
 
@@ -242,6 +175,12 @@ class Message(DiscordEntity, immortal = True):
         A nonce that is used for optimistic message sending. If a message is created with a nonce, then it should
         be shown up at the message's received payload as well. Defaults to `None`.
     
+    pinned : `bool`
+        Whether the message is pinned. Defaults to `False`.
+    
+    poll : `None`, ``Poll``
+        The poll of the message. Defaults to `None`.
+    
     reactions : `None`, ``ReactionMapping``
         A dictionary like object that contains the reactions on the message. Defaults to `None`.
         
@@ -261,9 +200,6 @@ class Message(DiscordEntity, immortal = True):
     
     role_subscription : `None`, ``MessageRoleSubscription``
         Additional role subscription information attached to the message. Defaults to `None`.
-    
-    pinned : `bool`
-        Whether the message is pinned. Defaults to `False`.
     
     stickers : `None`, `tuple` of ``Sticker``
         The stickers sent with the message. Defaults to `None`.
@@ -287,8 +223,8 @@ class Message(DiscordEntity, immortal = True):
         '_cache_mentioned_channels', '_state', 'activity', 'application', 'application_id', 'attachments', 'author',
         'call', 'channel_id', 'components', 'content', 'edited_at', 'embeds', 'flags', 'guild_id', 'interaction',
         'mentioned_channels_cross_guild', 'mentioned_everyone', 'mentioned_role_ids', 'mentioned_users', 'nonce',
-        'pinned', 'reactions', 'referenced_message', 'resolved', 'role_subscription', 'stickers', 'thread', 'tts',
-        'type'
+        'pinned', 'poll', 'reactions', 'referenced_message', 'resolved', 'role_subscription', 'stickers', 'thread',
+        'tts', 'type'
     )
     
     
@@ -314,6 +250,7 @@ class Message(DiscordEntity, immortal = True):
         message_type = ...,
         nonce = ...,
         pinned = ...,
+        poll = ...,
         reactions = ...,
         referenced_message = ...,
         resolved = ...,
@@ -382,6 +319,12 @@ class Message(DiscordEntity, immortal = True):
             A nonce that is used for optimistic message sending. If a message is created with a nonce, then it should
             be shown up at the message's received payload as well.
         
+        pinned : `bool`, Optional (Keyword only)
+            Whether the message is pinned.
+        
+        poll : `None`, ``Poll``, Optional (Keyword only)
+            The poll of the message.
+        
         reactions : `None`, ``ReactionMapping`` (or compatible), Optional (Keyword only)
             A dictionary like object that contains the reactions on the message
         
@@ -393,9 +336,6 @@ class Message(DiscordEntity, immortal = True):
         
         role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
-        
-        pinned : `bool`, Optional (Keyword only)
-            Whether the message is pinned.
         
         stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
             The stickers sent with the message.
@@ -515,6 +455,18 @@ class Message(DiscordEntity, immortal = True):
         else:
             nonce = validate_nonce(nonce)
         
+        # pinned
+        if pinned is ...:
+            pinned = False
+        else:
+            pinned = validate_pinned(pinned)
+        
+        # poll
+        if poll is ...:
+            poll = None
+        else:
+            poll = validate_poll(poll)
+        
         # reactions
         if reactions is ...:
             reactions = None
@@ -538,12 +490,6 @@ class Message(DiscordEntity, immortal = True):
             role_subscription = None
         else:
             role_subscription = validate_role_subscription(role_subscription)
-        
-        # pinned
-        if pinned is ...:
-            pinned = False
-        else:
-            pinned = validate_pinned(pinned)
         
         # stickers
         if stickers is ...:
@@ -594,11 +540,12 @@ class Message(DiscordEntity, immortal = True):
         self.mentioned_role_ids = mentioned_role_ids
         self.mentioned_users = mentioned_users
         self.nonce = nonce
+        self.pinned = pinned
+        self.poll = poll
         self.reactions = reactions
         self.referenced_message = referenced_message
         self.resolved = resolved
         self.role_subscription = role_subscription
-        self.pinned = pinned
         self.stickers = stickers
         self.thread = thread
         self.tts = tts
@@ -824,6 +771,7 @@ class Message(DiscordEntity, immortal = True):
         self.mentioned_users = parse_mentioned_users(data, guild_id)
         self.nonce = parse_nonce(data)
         self.pinned = parse_pinned(data)
+        self.poll = parse_poll(data, (None if creation else self.poll))
         self.reactions = parse_reactions(data, (None if creation else self.reactions))
         self.referenced_message = parse_referenced_message(data)
         self.resolved = parse_resolved(data, guild_id = guild_id)
@@ -869,20 +817,20 @@ class Message(DiscordEntity, immortal = True):
     
     def __repr__(self):
         """Returns the representation of the message."""
-        repr_parts = [
-            '<',
-            self.__class__.__name__,
-        ]
+        repr_parts = ['<', type(self).__name__,]
         
         if self.deleted:
-            repr_parts.append(' deleted')
+            repr_parts.append(' (deleted)')
         
         repr_parts.append(' id = ')
         repr_parts.append(repr(self.id))
+        
         repr_parts.append(', length = ')
         repr_parts.append(repr(len(self)))
+        
         repr_parts.append(', author = ')
         repr_parts.append(repr(self.author))
+        
         repr_parts.append('>')
         
         return ''.join(repr_parts)
@@ -1065,6 +1013,10 @@ class Message(DiscordEntity, immortal = True):
         if self.pinned != other.pinned:
             return False
         
+        # poll
+        if self.poll != other.poll:
+            return False
+        
         # reactions
         if self.reactions != other.reactions:
             return False
@@ -1217,6 +1169,11 @@ class Message(DiscordEntity, immortal = True):
         # pinned
         hash_value ^= self.pinned << 29
         
+        # poll
+        poll = self.poll
+        if (poll is not None):
+            hash_value ^= hash(poll)
+        
         # reactions
         reactions = self.reactions
         if (reactions is not None):
@@ -1280,6 +1237,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returned Data Structure
         -----------------------
+        
         +-----------------------------------+-----------------------------------------------------------------------+
         | Keys                              | Values                                                                |
         +===================================+=======================================================================+
@@ -1306,6 +1264,8 @@ class Message(DiscordEntity, immortal = True):
         | mentioned_users                   | `None`, `tuple` of ``ClientUserBase``                                 |
         +-----------------------------------+-----------------------------------------------------------------------+
         | pinned                            | `bool`                                                                |
+        +-----------------------------------+-----------------------------------------------------------------------+
+        | poll                              | ``PollChange``                                                        |
         +-----------------------------------+-----------------------------------------------------------------------+
         | resolved                          | `None`, ``Resolved``                                                  |
         +-----------------------------------+-----------------------------------------------------------------------+
@@ -1374,6 +1334,11 @@ class Message(DiscordEntity, immortal = True):
             old_attributes['pinned'] = self.pinned
             self.pinned = pinned
         
+        poll, change = parse_poll_and_change(data, self.poll)
+        if (change is not None):
+            old_attributes['poll'] = change
+            self.poll = poll
+        
         resolved = parse_resolved(data)
         if self.resolved != resolved:
             old_attributes['resolved'] = self.resolved
@@ -1419,6 +1384,7 @@ class Message(DiscordEntity, immortal = True):
         self.components = parse_components(data)
         self.content = parse_content(data)
         self.embeds = parse_embeds(data)
+        self.poll = parse_poll(data, self.poll)
     
     
     def _clear_cache(self):
@@ -1584,6 +1550,51 @@ class Message(DiscordEntity, immortal = True):
         self.embeds = embeds
     
     
+    def _add_poll_vote(self, answer_id, user):
+        """
+        Adds a poll vote to the message.
+        
+        Parameters
+        ----------
+        answer_id : `int`
+            The answer's identifier.
+        user : ``ClientUserBase``
+            The user who voted.
+        
+        Returns
+        -------
+        success : `bool`
+        """
+        poll = self.poll
+        if poll is None:
+            poll = Poll._create_empty()
+            self.poll = poll
+        
+        return poll._add_vote(answer_id, user)
+    
+    
+    def _remove_poll_vote(self, answer_id, user):
+        """
+        Removes a poll vote from the message.
+        
+        Parameters
+        ----------
+        answer_id : `int`
+            The answer's identifier.
+        user : ``ClientUserBase``
+            The user who removed their vote.
+        
+        Returns
+        -------
+        success : `bool`
+        """
+        poll = self.poll
+        if poll is None:
+            return False
+            
+        return poll._remove_vote(answer_id, user)
+    
+    
     def _add_reaction(self, reaction, user):
         """
         Adds a reaction to the message.
@@ -1594,6 +1605,10 @@ class Message(DiscordEntity, immortal = True):
             The reaction.
         user : ``ClientUserBase``
             The reactor user.
+        
+        Returns
+        -------
+        success : `bool`
         """
         reactions = self.reactions
         if reactions is None:
@@ -1613,10 +1628,16 @@ class Message(DiscordEntity, immortal = True):
             The reaction.
         user : ``ClientUserBase``
             The user who removed their reaction.
+        
+        Returns
+        -------
+        success : `bool`
         """
         reactions = self.reactions
-        if (reactions is not None):
-            return reactions.remove(reaction, user)
+        if reactions is None:
+            return False
+            
+        return reactions.remove(reaction, user)
     
     
     def _remove_reaction_emoji(self, emoji):
@@ -1691,6 +1712,7 @@ class Message(DiscordEntity, immortal = True):
         put_embeds_into(self.embeds, data, defaults, include_internals = include_internals)
         put_flags_into(self.flags, data, defaults)
         put_nonce_into(self.nonce, data, defaults)
+        put_poll_into(self.poll, data, defaults, include_internals = include_internals)
         put_tts_into(self.tts, data, defaults)
         
         return data
@@ -1752,11 +1774,12 @@ class Message(DiscordEntity, immortal = True):
         self.mentioned_role_ids = None
         self.mentioned_users = None
         self.nonce = None
+        self.pinned = False
+        self.poll = None
         self.reactions = None
         self.referenced_message = None
         self.resolved = None
         self.role_subscription = None
-        self.pinned = False
         self.stickers = None
         self.thread = None
         self.tts = False
@@ -1854,6 +1877,12 @@ class Message(DiscordEntity, immortal = True):
             A nonce that is used for optimistic message sending. If a message is created with a nonce, then it should
             be shown up at the message's received payload as well.
         
+        pinned : `bool`, Optional (Keyword only)
+            Whether the message is pinned.
+        
+        poll : `None`, ``Poll``, Optional (Keyword only)
+            The poll of the message.
+        
         reactions : `None`, ``ReactionMapping`` (or compatible), Optional (Keyword only)
             A dictionary like object that contains the reactions on the message
         
@@ -1865,9 +1894,6 @@ class Message(DiscordEntity, immortal = True):
         
         role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
-        
-        pinned : `bool`, Optional (Keyword only)
-            Whether the message is pinned.
         
         stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
             The stickers sent with the message.
@@ -1892,19 +1918,6 @@ class Message(DiscordEntity, immortal = True):
         message_id = validate_id(message_id)
         
         if keyword_parameters:
-            try:
-                del keyword_parameters['deleted']
-            except KeyError:
-                pass
-            else:
-                warnings.warn(
-                    (
-                        f'`deleted` parameter is deprecated and will be removed in 2023 November. '
-                    ),
-                    FutureWarning,
-                    stacklevel = 2,
-                )
-            
             processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
             
         else:
@@ -2004,6 +2017,12 @@ class Message(DiscordEntity, immortal = True):
         new.mentioned_users = mentioned_users
         
         new.nonce = self.nonce
+        new.pinned = self.pinned
+        
+        poll = self.poll
+        if (poll is not None):
+            poll = poll.copy()
+        new.poll = poll
         
         reactions = self.reactions
         if (reactions is not None):
@@ -2021,8 +2040,6 @@ class Message(DiscordEntity, immortal = True):
         if (role_subscription is not None):
             role_subscription = role_subscription.copy()
         new.role_subscription = role_subscription
-        
-        new.pinned = self.pinned
         
         stickers = self.stickers
         if (stickers is not None):
@@ -2058,6 +2075,7 @@ class Message(DiscordEntity, immortal = True):
         message_type = ...,
         nonce = ...,
         pinned = ...,
+        poll = ...,
         reactions = ...,
         referenced_message = ...,
         resolved = ...,
@@ -2126,6 +2144,12 @@ class Message(DiscordEntity, immortal = True):
             A nonce that is used for optimistic message sending. If a message is created with a nonce, then it should
             be shown up at the message's received payload as well.
         
+        pinned : `bool`, Optional (Keyword only)
+            Whether the message is pinned.
+        
+        poll : `None`, ``Poll``, Optional (Keyword only)
+            The poll of the message.
+        
         reactions : `None`, ``ReactionMapping`` (or compatible), Optional (Keyword only)
             A dictionary like object that contains the reactions on the message
         
@@ -2137,9 +2161,6 @@ class Message(DiscordEntity, immortal = True):
         
         role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
-        
-        pinned : `bool`, Optional (Keyword only)
-            Whether the message is pinned.
         
         stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
             The stickers sent with the message.
@@ -2283,6 +2304,20 @@ class Message(DiscordEntity, immortal = True):
         else:
             nonce = validate_nonce(nonce)
         
+        # pinned
+        if pinned is ...:
+            pinned = self.pinned
+        else:
+            pinned = validate_pinned(pinned)
+        
+        # poll
+        if poll is ...:
+            poll = self.poll
+            if (poll is not None):
+                poll = poll.copy()
+        else:
+            poll = validate_poll(poll)
+        
         # reactions
         if reactions is ...:
             reactions = self.reactions
@@ -2312,12 +2347,6 @@ class Message(DiscordEntity, immortal = True):
                 role_subscription = role_subscription.copy()
         else:
             role_subscription = validate_role_subscription(role_subscription)
-        
-        # pinned
-        if pinned is ...:
-            pinned = self.pinned
-        else:
-            pinned = validate_pinned(pinned)
         
         # stickers
         if stickers is ...:
@@ -2370,11 +2399,12 @@ class Message(DiscordEntity, immortal = True):
         new.mentioned_role_ids = mentioned_role_ids
         new.mentioned_users = mentioned_users
         new.nonce = nonce
+        new.pinned = pinned
+        new.poll = poll
         new.reactions = reactions
         new.referenced_message = referenced_message
         new.resolved = resolved
         new.role_subscription = role_subscription
-        new.pinned = pinned
         new.stickers = stickers
         new.thread = thread
         new.tts = tts
@@ -2402,6 +2432,36 @@ class Message(DiscordEntity, immortal = True):
             return False
         
         return True
+    
+    
+    def did_vote(self, answer, user):
+        """
+        Returns whether the given user voted with the given answer on the message.
+        
+        Parameters
+        ----------
+        answer : ``VoteAnswer``
+            The answer.
+        user : ``ClientUserBase``
+            The voter.
+        
+        Returns
+        -------
+        did_vote : `bool`
+        
+        Raises
+        ------
+        TypeError
+        """
+        poll = self.poll
+        if (poll is None):
+            return False
+        
+        result = poll[answer]
+        if result is None:
+            return False
+        
+        return user in result
     
     
     def did_react(self, reaction, user):
@@ -2731,6 +2791,10 @@ class Message(DiscordEntity, immortal = True):
         
         for embed in self.iter_embeds():
             yield from embed.iter_contents()
+        
+        poll = self.poll
+        if (poll is not None):
+            yield from poll.iter_contents()
     
     
     def iter_embeds(self):
@@ -3038,6 +3102,17 @@ class Message(DiscordEntity, immortal = True):
         return self.pinned
     
     
+    def has_poll(self):
+        """
+        Returns whether the message has ``.poll`` set as its non-default value.
+        
+        Returns
+        -------
+        has_poll : `bool`
+        """
+        return self.poll is not None
+    
+    
     def has_reactions(self):
         """
         Returns whether the message has any reactions.
@@ -3163,302 +3238,7 @@ class Message(DiscordEntity, immortal = True):
         if self.components is not None:
             return True
         
+        if self.poll is not None:
+            return True
+        
         return False
-    
-    # Deprecated
-
-    @property
-    def user_mentions(self):
-        """
-        Returns whether the message has ``.user_mentions`` set as its non-default value.
-        
-        Defaults to `None`.
-        
-        Returns
-        -------
-        user_mentions : `None`, `tuple` of ``UserBase``
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.user_mentions` is deprecated and will be removed in 2023 November. '
-                f'Please use `.mentioned_users` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.mentioned_users
-    
-    
-    def has_user_mentions(self):
-        """
-        Deprecated and will be removed in 2023 November.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.has_user_mentions` is deprecated and will be removed in 2023 November. '
-                f'Please use `.has_mentioned_users` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.has_mentioned_users()
-    
-    
-    def has_role_mentions(self):
-        """
-        Deprecated and will be removed in 2023 November.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.has_role_mentions` is deprecated and will be removed in 2023 November. '
-                f'Please use `.has_mentioned_roles` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.has_mentioned_roles()
-    
-    
-    @property
-    def role_mentions(self):
-        """
-        Deprecated and will be removed in 2023 November.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.role_mentions` is deprecated and will be removed in 2023 November. '
-                f'Please use `.mentioned_roles` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.mentioned_roles
-    
-    
-    @property
-    def role_mention_ids(self):
-        """
-        Deprecated and will be removed in 2023 November.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.role_mention_ids` is deprecated and will be removed in 2023 November. '
-                f'Please use `.mentioned_role_ids` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.mentioned_role_ids
-    
-    
-    def has_role_mention_ids(self):
-        """
-        Deprecated and will be removed in 2023 November.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.has_role_mention_ids` is deprecated and will be removed in 2023 November. '
-                f'Please use `.has_mentioned_role_ids` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.has_mentioned_role_ids()
-    
-    
-    def has_partial(self):
-        """
-        Deprecated and will be removed in 2023 November.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.has_partial` is deprecated and will be removed in 2023 November. '
-                f'Please use `.partial` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.partial
-    
-    
-    @property
-    def everyone_mention(self):
-        """
-        Deprecated and will be removed in 2023 November.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.everyone_mention` is deprecated and will be removed in 2023 November. '
-                f'Please use `.mentioned_everyone` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.mentioned_everyone
-    
-    
-    def has_everyone_mention(self):
-        """
-        Deprecated and will be removed in 2023 November.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.has_everyone_mention` is deprecated and will be removed in 2023 November. '
-                f'Please use `.has_mentioned_everyone` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.has_mentioned_everyone()
-    
-    
-    def has_deleted(self):
-        """
-        Deprecated and will be removed in 2023 November.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.has_deleted` is deprecated and will be removed in 2023 November. '
-                f'Please use `.deleted` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.deleted
-    
-    
-    @property
-    def cross_mentions(self):
-        """
-        Deprecated and will be removed in 2023 November.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.cross_mentions` is deprecated and will be removed in 2023 November. '
-                f'Please use `.mentioned_channels_cross_guild` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.mentioned_channels_cross_guild
-    
-    
-    def has_cross_mentions(self):
-        """
-        Deprecated and will be removed in 2023 November.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.has_cross_mentions` is deprecated and will be removed in 2023 November. '
-                f'Please use `.has_mentioned_channels_cross_guild` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.has_mentioned_channels_cross_guild()
-    
-    
-    def has_channel_mentions(self):
-        """
-        Deprecated and will be removed in 2023 November.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.has_channel_mentions` is deprecated and will be removed in 2023 November. '
-                f'Please use `.has_mentioned_channels` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.has_mentioned_channels()
-    
-    
-    @property
-    def channel_mentions(self):
-        """
-        Deprecated and will be removed in 2023 November.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.has_channel_mentions` is deprecated and will be removed in 2023 November. '
-                f'Please use `.has_mentioned_channels` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.mentioned_channels
-
-    
-    @BaseMethodDescriptor
-    def custom(cls, base, validate = True, **keyword_parameters):
-        """
-        Deprecated and will be removed in 2024 April.
-        """
-        warnings.warn(
-            (
-                f'`{cls.__name__}.custom` is deprecated and will removed in 2024 April. '
-                f'Please use any of: `.precreate`, `.__new__`, `.copy_with` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        if (base is not None) and (type(base) is not cls):
-            raise TypeError(f'`base` can be `None`, or type `{cls.__name__}`, got `{base!r}`')
-        
-        # Delete unused
-        for key in ('deleted',):
-            try:
-                del keyword_parameters[key]
-            except KeyError:
-                pass
-        
-        # Redirect deprecated
-        for old_key, new_key in (
-            ('cross_mentions', 'mentioned_channels_cross_guild'),
-            ('everyone_mention', 'mentioned_everyone'),
-            ('role_mentions', 'mentioned_role_ids'),
-            ('user_mentions', 'mentioned_users'),
-            ('type_', 'message_type'),
-            ('type', 'message_type'),
-        ):
-            try:
-                value = keyword_parameters.pop(old_key)
-            except KeyError:
-                pass
-            else:
-                keyword_parameters[new_key] = value
-        
-        # poll
-        message_id = 0
-        for key in ('message_id', 'id', 'id_'):
-            try:
-                message_id = keyword_parameters.pop(key)
-            except KeyError:
-                continue
-            else:
-                message_id = validate_id(message_id)
-        
-        
-        if base is None:
-            new = cls._create_empty(0, 0, 0)
-            new._state = MESSAGE_STATE_MASK_TEMPLATE
-        else:
-            new = base.copy()
-            new.id = base.id
-            new.channel_id = base.channel_id
-            new.guild_id = base.guild_id
-        
-        if message_id:
-            new.id = message_id
-        
-        processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
-        if (processed is not None):
-            for item in processed:
-                setattr(new, *item)
-        
-        return new

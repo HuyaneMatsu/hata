@@ -15,7 +15,7 @@ from ...field_validators import (
     url_optional_validator_factory, url_required_validator_factory
 )
 
-from .constants import DESCRIPTION_LENGTH_MAX
+from .constants import DESCRIPTION_LENGTH_MAX, DURATION_DEFAULT
 from .flags import AttachmentFlag
 
 # content_type
@@ -32,11 +32,11 @@ validate_description = nullable_string_validator_factory('description', 0, DESCR
 
 # duration
 
-parse_duration = float_parser_factory('duration_sec', 0.0)
-put_duration_into = float_optional_putter_factory('duration_sec', 0.0)
+parse_duration = float_parser_factory('duration_sec', DURATION_DEFAULT)
+put_duration_into = float_optional_putter_factory('duration_sec', DURATION_DEFAULT)
 validate_duration = float_conditional_validator_factory(
     'duration',
-    0.0,
+    DURATION_DEFAULT,
     lambda duration : duration >= 0.0,
     '>= 0.0',
 )

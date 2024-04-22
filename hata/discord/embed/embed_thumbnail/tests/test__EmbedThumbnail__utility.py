@@ -33,7 +33,7 @@ def test__EmbedThumbnail__copy():
     vampytest.assert_eq(field, copy)
 
 
-def test__EmbedThumbnail__copy_with__0():
+def test__EmbedThumbnail__copy_with__no_fields():
     """
     Tests whether ``EmbedThumbnail.copy_with`` works as intended.
     
@@ -49,7 +49,7 @@ def test__EmbedThumbnail__copy_with__0():
     vampytest.assert_eq(field, copy)
 
 
-def test__EmbedThumbnail__copy_with__1():
+def test__EmbedThumbnail__copy_with__all_fields():
     """
     Tests whether ``EmbedThumbnail.copy_with`` works as intended.
     
@@ -69,27 +69,53 @@ def test__EmbedThumbnail__copy_with__1():
     vampytest.assert_eq(copy.url, new_url)
 
 
-def test__EmbedThumbnail__contents():
+def _iter_options__contents():
+    url = 'https://orindance.party/'
+    
+    yield {}, set()
+    yield {'url': url}, set()
+
+
+@vampytest._(vampytest.call_from(_iter_options__contents()).returning_last())
+def test__EmbedThumbnail__contents(keyword_parameters):
     """
     Tests whether ``EmbedThumbnail.contents`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed thumbnail with.
+    
+    Returns
+    -------
+    output : `set<str>`
     """
+    field = EmbedThumbnail(**keyword_parameters)
+    output = field.contents
+    vampytest.assert_instance(output, list)
+    return {*output}
+
+
+def _iter_options__iter_contents():
     url = 'https://orindance.party/'
     
-    for field, expected_output in (
-        (EmbedThumbnail(url), set()),
-    ):
-        output = field.contents
-        vampytest.assert_instance(output, list)
-        vampytest.assert_eq({*output}, expected_output)
+    yield {}, set()
+    yield {'url': url}, set()
 
 
-def test__EmbedThumbnail__iter_contents():
+@vampytest._(vampytest.call_from(_iter_options__iter_contents()).returning_last())
+def test__EmbedThumbnail__iter_contents(keyword_parameters):
     """
     Tests whether ``EmbedThumbnail.iter_contents`` works as intended.
-    """
-    url = 'https://orindance.party/'
     
-    for field, expected_output in (
-        (EmbedThumbnail(url), set()),
-    ):
-        vampytest.assert_eq({*field.iter_contents()}, expected_output)
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed thumbnail with.
+    
+    Returns
+    -------
+    output : `set<str>`
+    """
+    field = EmbedThumbnail(**keyword_parameters)
+    return {*field.iter_contents()}

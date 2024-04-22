@@ -20,7 +20,6 @@ def test__EmbedFooter__hash():
     """
     icon_url = 'attachment://orin.png'
     text = 'orin'
-    url = 'https://orindance.party/'
     
     field = EmbedFooter(text = text, icon_url = icon_url)
     vampytest.assert_instance(hash(field), int)
@@ -51,34 +50,61 @@ def test__EmbedFooter__eq():
         vampytest.assert_ne(field, test_field)
 
 
-def test__EmbedFooter__bool():
+def _iter_options__bool():
+    icon_url = 'attachment://orin.png'
+    text = 'orin'
+    
+    yield {}, False
+    yield {'text': text}, True
+    yield {'icon_url': icon_url}, True
+    yield {'text': text, 'icon_url': icon_url}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__bool()).returning_last())
+def test__EmbedFooter__bool(keyword_parameters):
     """
     Tests whether ``EmbedFooter.__bool__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed footer with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    field = EmbedFooter(**keyword_parameters)
+    output = bool(field)
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__len():
     icon_url = 'attachment://orin.png'
     text = 'orin'
     
-    for field, expected_output in (
-        (EmbedFooter(), False),
-        (EmbedFooter(text = text), True),
-        (EmbedFooter(icon_url = icon_url), True),
-        (EmbedFooter(icon_url = icon_url, text = text), True),
-    ):
-        vampytest.assert_eq(bool(field), expected_output)
+    yield {}, 0
+    yield {'text': text}, len(text)
+    yield {'icon_url': icon_url}, 0
+    yield {'text': text, 'icon_url': icon_url}, len(text)
 
 
-
-def test__EmbedFooter__len():
+@vampytest._(vampytest.call_from(_iter_options__len()).returning_last())
+def test__EmbedFooter__len(keyword_parameters):
     """
     Tests whether ``EmbedFooter.__len__`` works as intended.
-    """
-    icon_url = 'attachment://orin.png'
-    text = 'orin'
     
-    for field, expected_output in (
-        (EmbedFooter(), 0),
-        (EmbedFooter(text = text), len(text)),
-        (EmbedFooter(icon_url = icon_url), 0),
-        (EmbedFooter(icon_url = icon_url, text = text), len(text)),
-    ):
-        vampytest.assert_eq(len(field), expected_output)
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed footer with.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    field = EmbedFooter(**keyword_parameters)
+    output = len(field)
+    vampytest.assert_instance(output, int)
+    return output

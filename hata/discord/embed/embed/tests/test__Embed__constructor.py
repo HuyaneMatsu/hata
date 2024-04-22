@@ -40,7 +40,7 @@ def _assert_fields_set(embed):
     vampytest.assert_instance(embed.video, EmbedVideo, nullable = True)
 
 
-def test__Embed__new__0():
+def test__Embed__new__no_fields():
     """
     Tests whether ``Embed.__new__`` works as intended.
     
@@ -50,7 +50,7 @@ def test__Embed__new__0():
     _assert_fields_set(embed)
 
 
-def test__Embed__new__1():
+def test__Embed__new__all_fields():
     """
     Tests whether ``Embed.__new__`` works as intended.
     
@@ -102,7 +102,7 @@ def test__Embed__new__1():
     vampytest.assert_eq(embed.video, video)
 
 
-def test__Embed__new__2():
+def test__Embed__new__conversion_check():
     """
     Tests whether ``Embed.__new__`` works as intended.
     

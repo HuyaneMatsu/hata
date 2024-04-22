@@ -4,30 +4,37 @@ from ..constants import TEXT_LENGTH_MAX
 from ..fields import validate_text
 
 
-def test__validate_text__0():
+def _iter_options__passing():
+    yield None, None
+    yield '', None
+    yield 'a', 'a'
+    yield 1, '1'
+
+
+def _iter_options__value_error():
+    yield 'a' * (TEXT_LENGTH_MAX + 1)
+    
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_text(input_value):
     """
     Tests whether `validate_text` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (None, None),
-        ('', None),
-        ('a', 'a'),
-        (1, '1'),
-    ):
-        output = validate_text(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_text__1():
-    """
-    Tests whether `validate_text` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    Case: `ValueError`.
+    Returns
+    -------
+    output : `None | str`
+    
+    Raises
+    ------
+    TypeError
+    ValueError
     """
-    for input_value in (
-        'a' * (TEXT_LENGTH_MAX + 1),
-    ):
-        with vampytest.assert_raises(ValueError):
-            validate_text(input_value)
+    output = validate_text(input_value)
+    vampytest.assert_instance(output, str, nullable = True)
+    return output

@@ -175,6 +175,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returned Data Structure
         -----------------------
+        
         +-------------------+-----------------------------------+
         | Keys              | Values                            |
         +===================+===================================+

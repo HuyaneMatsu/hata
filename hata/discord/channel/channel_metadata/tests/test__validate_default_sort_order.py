@@ -4,29 +4,35 @@ from ..fields import validate_default_sort_order
 from ..preinstanced import SortOrder
 
 
-def test__validate_default_sort_order__0():
+def _iter_options__passing():
+    yield None, SortOrder.latest_activity
+    yield SortOrder.creation_date, SortOrder.creation_date
+    yield SortOrder.creation_date.value, SortOrder.creation_date
+
+
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_default_sort_order(input_value):
     """
     Validates whether ``validate_default_sort_order`` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (None, SortOrder.latest_activity),
-        (SortOrder.creation_date, SortOrder.creation_date),
-        (SortOrder.creation_date.value, SortOrder.creation_date)
-    ):
-        output = validate_default_sort_order(input_value)
-        vampytest.assert_is(output, expected_output)
-
-
-def test__validate_default_sort_order__1():
-    """
-    Validates whether ``validate_default_sort_order`` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    Case: `TypeError`.
+    Returns
+    -------
+    output : ``SortOrder``
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_default_sort_order(input_value)
+    output = validate_default_sort_order(input_value)
+    vampytest.assert_instance(output, SortOrder)
+    return output

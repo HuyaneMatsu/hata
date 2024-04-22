@@ -91,7 +91,7 @@ def _get_event_deprecation_state(name):
     # if name == 'stuff':
     #    warnings.warn(
     #        (
-    #            '`Client.events.stuff` is deprecated and will be removed in 2222 yay.\n'
+    #            '`Client.events.stuff` is deprecated and will be removed in 2022 jan.\n'
     #            'Please use `Client.events.stiff(client, event)` instead.'
     #        ),
     #        FutureWarning,
@@ -911,6 +911,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------------------+-----------------------------------------------------------------------+
         | pinned                            | `bool`                                                                |
         +-----------------------------------+-----------------------------------------------------------------------+
+        | poll                              | ``PollChange``                                                        |
+        +-----------------------------------+-----------------------------------------------------------------------+
         | resolved                          | `None`, ``Resolved``                                                  |
         +-----------------------------------+-----------------------------------------------------------------------+
         
@@ -919,6 +921,12 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         `old_attributes` might contain also `embeds`.
         
         > If the message is partial (usually when it is not cached), `old_attributes` is passed as `None`.
+    
+    poll_vote_add(client : ``Client``, event : ``PollVoteAddEvent``):
+        Called when a user votes on a poll.
+    
+    poll_vote_delete(client : ``Client``, event : ``PollVoteDeleteEvent``):
+        Called when a user removes their vote from a poll.
     
     reaction_add(client: ``Client``, event: ``ReactionAddEvent``):
         Called when a user reacts on a message with the given emoji.

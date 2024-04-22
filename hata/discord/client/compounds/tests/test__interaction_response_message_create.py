@@ -7,6 +7,7 @@ from ....interaction.responding.constants import (
     RESPONSE_FLAG_DEFERRED, RESPONSE_FLAG_DEFERRING, RESPONSE_FLAG_EPHEMERAL, RESPONSE_FLAG_RESPONDED,
     RESPONSE_FLAG_RESPONDING
 )
+from ....poll import Poll, PollAnswer
 from ....message import MessageFlag
 
 from ...client import Client
@@ -40,6 +41,7 @@ async def test__Client__interaction_response_message_create__stuffed():
     components = Component(ComponentType.button, label = 'koishi', custom_id = 'satori')
     content = 'suika'
     embeds = [Embed('orin')]
+    poll = Poll(answers = [PollAnswer(text = 'sister')], duration = 3600)
     silent = True
     tts = True
     show_for_invoking_user_only = True
@@ -49,6 +51,7 @@ async def test__Client__interaction_response_message_create__stuffed():
             'tts': True,
             'content': content,
             'embeds': [embed.to_data() for embed in embeds],
+            'poll': poll.to_data(),
             'components': [create_row(components).to_data()],
             'allowed_mentions' : {'parse': ['everyone']},
             'flags': MessageFlag().update_by_keys(silent = True, invoking_user_only = True),
@@ -81,6 +84,7 @@ async def test__Client__interaction_response_message_create__stuffed():
             components = components,
             content = content,
             embeds = embeds,
+            poll = poll,
             silent = silent,
             tts = tts,
             show_for_invoking_user_only = show_for_invoking_user_only,

@@ -3,7 +3,7 @@ __all__ = ()
 from scarletio import include
 
 from ...bases import maybe_snowflake
-from ...emoji import Emoji, create_emoji_from_exclusive_data, put_exclusive_emoji_data_into
+from ...emoji import Emoji, create_emoji_from_exclusive_inline_data, put_exclusive_emoji_inline_data_into
 from ...field_parsers import (
     bool_parser_factory, entity_id_array_parser_factory, entity_id_parser_factory, flag_parser_factory,
     force_string_parser_factory, int_parser_factory, int_postprocess_parser_factory,
@@ -366,7 +366,7 @@ def parse_default_thread_reaction_emoji(data):
     if (default_thread_reaction_emoji_data is None):
         default_thread_reaction_emoji = None
     else:
-        default_thread_reaction_emoji = create_emoji_from_exclusive_data(default_thread_reaction_emoji_data)
+        default_thread_reaction_emoji = create_emoji_from_exclusive_inline_data(default_thread_reaction_emoji_data)
     
     return default_thread_reaction_emoji
 
@@ -392,7 +392,7 @@ def put_default_thread_reaction_emoji_into(default_thread_reaction_emoji, data, 
         if default_thread_reaction_emoji is None:
             emoji_data = None
         else:
-            emoji_data = put_exclusive_emoji_data_into(default_thread_reaction_emoji, {})
+            emoji_data = put_exclusive_emoji_inline_data_into(default_thread_reaction_emoji, {})
         
         data['default_reaction_emoji'] = emoji_data
     
@@ -784,7 +784,7 @@ def validate_users(users):
     
     Parameters
     ----------
-    users : `iterable` of (``ClientUserBase``, `int`)
+    users : `iterable` of (``ClientUserBase`` | `int`)
         The users in the channel.
     
     Returns
@@ -796,10 +796,13 @@ def validate_users(users):
     TypeError
         - If `users` is not `list` of (``ClientUserBase``, `int`).
     """
+    if users is None:
+        return []
+    
     if (getattr(users, '__iter__', None) is None):
         raise TypeError(
-            f'`users` can be `None`, `iterable` of (`int`, `{ClientUserBase.__name__}`), '
-            f'got {users.__class__.__name__}; {users!r}.'
+            f'`users` can be `None`, `iterable` of (`int` | `{ClientUserBase.__name__}`), '
+            f'got {type(users).__name__}; {users!r}.'
         )
     
     users_processed = set()
@@ -810,7 +813,7 @@ def validate_users(users):
             if user_id is None:
                 raise TypeError(
                     f'`users` can contain `int`, `{ClientUserBase.__name__}` elements, got '
-                    f'{user.__class__.__name__}; {user!r}; users={users!r}.'
+                    f'{type(user).__name__}; {user!r}; users = {users!r}.'
                 )
             
             user = create_partial_user_from_id(user_id)

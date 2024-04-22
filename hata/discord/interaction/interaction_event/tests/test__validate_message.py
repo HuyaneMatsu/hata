@@ -5,32 +5,34 @@ from ....message import Message
 from ..fields import validate_message
 
 
-def test__validate_message__0():
+def _iter_options__passing():
+    message = Message.precreate(202210280007)
+    
+    yield None, None
+    yield message, message
+
+
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_message(input_value):
     """
     Tests whether ``validate_message`` works as intended.
     
-    Case: Passing.
-    """
-    message_id = 202210280007
-    channel_id = 202210280014
-    message = Message.precreate(message_id, channel_id = channel_id)
+    Parameters
+    ----------
+    input_value : ``Message``
+        Value to validate.
     
+    Returns
+    -------
+    output : `None`, ``Message``
     
-    for input_value in (
-        None,
-        message,
-    ):
-        validate_message(input_value)
-
-
-def test__validate_message__1():
+    Raises
+    ------
+    TypeError
     """
-    Tests whether ``validate_message`` works as intended.
-    
-    Case: `TypeError`.
-    """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_message(input_value)
+    return validate_message(input_value)

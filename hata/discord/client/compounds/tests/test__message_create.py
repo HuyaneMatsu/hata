@@ -5,6 +5,7 @@ from ....channel import Channel
 from ....component import Component, ComponentType, create_row
 from ....embed import Embed
 from ....message import Message, MessageFlag, MessageType
+from ....poll import Poll, PollAnswer
 from ....sticker import Sticker, create_partial_sticker_data
 
 from ...client import Client
@@ -40,6 +41,7 @@ async def test__Client__message_create__stuffed():
     embeds = [Embed('orin')]
     enforce_nonce = True
     nonce = 'okuu'
+    poll = Poll(answers = [PollAnswer(text = 'sister')], duration = 3600)
     stickers = [sticker]
     silent = True
     tts = True
@@ -50,6 +52,7 @@ async def test__Client__message_create__stuffed():
         {
             'enforce_nonce': enforce_nonce,
             'nonce': nonce,
+            'poll': poll.to_data(),
             'tts': True,
             'content': content,
             'embeds': [embed.to_data() for embed in embeds],
@@ -78,6 +81,7 @@ async def test__Client__message_create__stuffed():
         'content': content,
         'embeds': [embed.to_data() for embed in embeds],
         'nonce': nonce,
+        'poll': poll.to_data(),
         'sticker_items': [
             create_partial_sticker_data(sticker) for sticker in stickers
         ],
@@ -109,6 +113,7 @@ async def test__Client__message_create__stuffed():
             embeds = embeds,
             enforce_nonce = enforce_nonce,
             nonce = nonce,
+            poll = poll,
             stickers = stickers,
             silent = silent,
             tts = tts,
@@ -127,6 +132,7 @@ async def test__Client__message_create__stuffed():
         vampytest.assert_eq(output.content, content)
         vampytest.assert_eq(output.embeds, tuple(embeds))
         vampytest.assert_eq(output.nonce, nonce)
+        vampytest.assert_eq(output.poll, poll)
         vampytest.assert_eq(output.stickers, tuple(stickers))
         vampytest.assert_eq(output.flags, MessageFlag().update_by_keys(silent = True))
         vampytest.assert_eq(output.tts, tts)

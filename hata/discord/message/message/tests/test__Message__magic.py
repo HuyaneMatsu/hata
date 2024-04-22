@@ -5,9 +5,10 @@ import vampytest
 from ....channel import Channel, ChannelType
 from ....component import Component, ComponentType
 from ....core import BUILTIN_EMOJIS
-from ....embed import Embed
+from ....embed import EmbedAuthor, Embed, EmbedField, EmbedFooter, EmbedProvider, EmbedType
 from ....emoji import ReactionMapping
 from ....interaction import Resolved
+from ....poll import Poll, PollAnswer, PollQuestion
 from ....sticker import Sticker
 from ....user import User
 
@@ -61,6 +62,7 @@ def test__Message__repr():
     message_type = MessageType.call
     nonce = 'Sakuya'
     pinned = True
+    poll = Poll(expires_at = DateTime(2016, 5, 14))
     reactions = ReactionMapping({
         BUILTIN_EMOJIS['x']: [None, None],
     })
@@ -94,6 +96,7 @@ def test__Message__repr():
         'message_type': message_type,
         'nonce': nonce,
         'pinned': pinned,
+        'poll': poll,
         'reactions': reactions,
         'referenced_message': referenced_message,
         'resolved': resolved,
@@ -161,6 +164,7 @@ def test__Message__hash():
     message_type = MessageType.call
     nonce = 'Sakuya'
     pinned = True
+    poll = Poll(expires_at = DateTime(2016, 5, 14))
     reactions = ReactionMapping({
         BUILTIN_EMOJIS['x']: [None, None],
     })
@@ -194,6 +198,7 @@ def test__Message__hash():
         'message_type': message_type,
         'nonce': nonce,
         'pinned': pinned,
+        'poll': poll,
         'reactions': reactions,
         'referenced_message': referenced_message,
         'resolved': resolved,
@@ -283,6 +288,7 @@ def test__Message__eq():
     old_message_type = MessageType.call
     old_nonce = 'Sakuya'
     old_pinned = True
+    old_poll = Poll(expires_at = DateTime(2016, 5, 14))
     old_reactions = ReactionMapping({
         BUILTIN_EMOJIS['x']: [None, None],
     })
@@ -330,6 +336,7 @@ def test__Message__eq():
     new_message_type = MessageType.user_add
     new_nonce = 'Maid'
     new_pinned = False
+    new_poll = Poll(expires_at = DateTime(2016, 5, 15))
     new_reactions = ReactionMapping({
         BUILTIN_EMOJIS['heart']: [None],
     })
@@ -363,6 +370,7 @@ def test__Message__eq():
         'message_type': old_message_type,
         'nonce': old_nonce,
         'pinned': old_pinned,
+        'poll': old_poll,
         'reactions': old_reactions,
         'referenced_message': old_referenced_message,
         'resolved': old_resolved,
@@ -392,6 +400,7 @@ def test__Message__eq():
         ('message_type', new_message_type),
         ('nonce', new_nonce),
         ('pinned', new_pinned),
+        ('poll', new_poll),
         ('reactions', new_reactions),
         ('referenced_message', new_referenced_message),
         ('resolved', new_resolved),
@@ -422,3 +431,68 @@ def test__Message__eq():
     for field_name, field_value in new_fields:
         test_message = Message(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(message, test_message)
+
+
+def test__Message__len__all_contents():
+    """
+    Tests whether ``Message.__len__`` works as intended.
+    
+    Case: All contents.
+    """
+    message_content = 'okuu'
+    embed_0_title = 'orin'
+    embed_0_author_name = 'riverside'
+    embed_0_description = 'relief'
+    embed_0_field_0_name = 'shiki'
+    embed_0_field_0_value = 'yukari'
+    embed_0_field_1_name = 'ran'
+    embed_0_field_1_value = 'chen'
+    embed_0_footer_text = 'okina'
+    embed_0_provider_name = 'hecatia'
+    embed_1_title = 'reimu'
+    poll_question_text = 'marisa'
+    poll_answer_0_text = 'junko'
+    poll_answer_1_text = 'clown'
+    
+    embed_0 = Embed(title = embed_0_title, description = embed_0_description)
+    embed_0.author = EmbedAuthor(embed_0_author_name)
+    embed_0.fields = [
+        EmbedField(embed_0_field_0_name, embed_0_field_0_value),
+        EmbedField(embed_0_field_1_name, embed_0_field_1_value),
+    ]
+    embed_0.footer = EmbedFooter(embed_0_footer_text)
+    embed_0.provider = EmbedProvider(embed_0_provider_name)
+    
+    embed_1 = Embed(title = embed_1_title)
+    
+    poll = Poll(
+        answers = [PollAnswer(text = poll_answer_0_text), PollAnswer(text = poll_answer_1_text)],
+        question = PollQuestion(text = poll_question_text),
+    )
+    
+    message = Message(content = message_content, embeds = [embed_0, embed_1], poll = poll)
+    
+    length = sum(
+        len(value) for value in (
+            embed_0_title, embed_0_author_name, embed_0_description, embed_0_field_0_name, embed_0_field_0_value,
+            embed_0_field_1_name, embed_0_field_1_value, embed_0_footer_text, embed_0_provider_name,
+            message_content, embed_1_title, poll_question_text, poll_answer_0_text, poll_answer_1_text
+        )
+    )
+    
+    output = len(message)
+    vampytest.assert_instance(output, int)
+    vampytest.assert_eq(output, length)
+
+
+def test__Message__len__no_contents():
+    """
+    Tests whether ``Message.__len__`` works as intended.
+    
+    Case: No contents.
+    """
+    message = Message()
+    
+    output = len(message)
+    vampytest.assert_instance(output, int)
+    vampytest.assert_eq(output, 0)

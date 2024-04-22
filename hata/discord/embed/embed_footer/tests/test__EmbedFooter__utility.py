@@ -81,36 +81,59 @@ def test__EmbedFooter__copy_with__1():
     vampytest.assert_eq(copy.text, new_text)
 
 
-def test__EmbedFooter__contents():
+def _iter_options__contents():
+    icon_url = 'attachment://orin.png'
+    text = 'orin'
+    
+    yield {}, set()
+    yield {'text': text}, {text}
+    yield {'icon_url': icon_url}, set()
+    yield {'text': text, 'icon_url': icon_url}, {text}
+
+
+@vampytest._(vampytest.call_from(_iter_options__contents()).returning_last())
+def test__EmbedFooter__contents(keyword_parameters):
     """
     Tests whether ``EmbedFooter.contents`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed footer with.
+    
+    Returns
+    -------
+    output : `set<str>`
     """
+    field = EmbedFooter(**keyword_parameters)
+    output = field.contents
+    vampytest.assert_instance(output, list)
+    return {*output}
+
+
+def _iter_options__iter_contents():
     icon_url = 'attachment://orin.png'
     text = 'orin'
-    url = 'https://orindance.party/'
     
-    for field, expected_output in (
-        (EmbedFooter(), set()),
-        (EmbedFooter(text = text), {text}),
-        (EmbedFooter(icon_url = icon_url), set()),
-        (EmbedFooter(text = text, icon_url = icon_url), {text}),
-    ):
-        output = field.contents
-        vampytest.assert_instance(output, list)
-        vampytest.assert_eq({*output}, expected_output)
+    yield {}, set()
+    yield {'text': text}, {text}
+    yield {'icon_url': icon_url}, set()
+    yield {'text': text, 'icon_url': icon_url}, {text}
 
 
-def test__EmbedFooter__iter_contents():
+@vampytest._(vampytest.call_from(_iter_options__iter_contents()).returning_last())
+def test__EmbedFooter__iter_contents(keyword_parameters):
     """
     Tests whether ``EmbedFooter.iter_contents`` works as intended.
-    """
-    icon_url = 'attachment://orin.png'
-    text = 'orin'
     
-    for field, expected_output in (
-        (EmbedFooter(), set()),
-        (EmbedFooter(text = text), {text}),
-        (EmbedFooter(icon_url = icon_url), set()),
-        (EmbedFooter(text = text, icon_url = icon_url), {text}),
-    ):
-        vampytest.assert_eq({*field.iter_contents()}, expected_output)
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed footer with.
+    
+    Returns
+    -------
+    output : `set<str>`
+    """
+    field = EmbedFooter(**keyword_parameters)
+    return {*field.iter_contents()}

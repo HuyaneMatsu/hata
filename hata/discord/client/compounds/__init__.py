@@ -17,6 +17,7 @@ from .locked import *
 from .message import *
 from .oauth2 import *
 from .miscellaneous import *
+from .poll import *
 from .reaction import *
 from .role import *
 from .scheduled_event import *
@@ -48,6 +49,7 @@ __all__ = (
     *message.__all__,
     *miscellaneous.__all__,
     *oauth2.__all__,
+    *poll.__all__,
     *reaction.__all__,
     *role.__all__,
     *scheduled_event.__all__,
@@ -79,6 +81,7 @@ from .locked import ClientCompoundLockedEndpoints
 from .message import ClientCompoundMessageEndpoints
 from .miscellaneous import ClientCompoundMiscellaneousEndpoints
 from .oauth2 import ClientCompoundOauth2Endpoints
+from .poll import ClientCompoundPollEndpoints
 from .reaction import ClientCompoundReactionEndpoints
 from .role import ClientCompoundRoleEndpoints
 from .scheduled_event import ClientCompoundScheduledEventEndpoints
@@ -110,6 +113,7 @@ CLIENT_COMPOUNDS = (
     ClientCompoundMessageEndpoints,
     ClientCompoundMiscellaneousEndpoints,
     ClientCompoundOauth2Endpoints,
+    ClientCompoundPollEndpoints,
     ClientCompoundReactionEndpoints,
     ClientCompoundRoleEndpoints,
     ClientCompoundScheduledEventEndpoints,

@@ -24,7 +24,7 @@ def test__Embed__add_author():
     vampytest.assert_eq(embed.author, EmbedAuthor(text, icon_url, url))
 
 
-def test__Embed__add_field__0():
+def test__Embed__add_field__none():
     """
     Tests whether ``Embed.add_field`` works as intended.
     
@@ -39,7 +39,7 @@ def test__Embed__add_field__0():
     vampytest.assert_eq(embed.fields, [field_0])
 
 
-def test__Embed__add_field__1():
+def test__Embed__add_field__has():
     """
     Tests whether ``Embed.add_field`` works as intended.
     
@@ -55,7 +55,7 @@ def test__Embed__add_field__1():
     vampytest.assert_eq(embed.fields, [field_0, field_1])
 
 
-def test__Embed__insert_field__0():
+def test__Embed__insert_field__none():
     """
     Tests whether ``Embed.insert_field`` works as intended.
     
@@ -70,7 +70,7 @@ def test__Embed__insert_field__0():
     vampytest.assert_eq(embed.fields, [field_0])
 
 
-def test__Embed__insert_field__1():
+def test__Embed__insert_field__has():
     """
     Tests whether ``Embed.insert_field`` works as intended.
     
@@ -86,137 +86,167 @@ def test__Embed__insert_field__1():
     vampytest.assert_eq(embed.fields, [field_1, field_0])
 
 
-def test__Embed__get_field__0():
-    """
-    Tests whether ``Embed.get_field`` works as intended.
-    
-    Case: `IndexError`.
-    """
-    field_0 = EmbedField('komeiji', 'satori', inline = True)
-    
-    for input_value, index in (
-        (None, 0),
-        (None, 2),
-        ([field_0], 2),
-    ):
-        embed = Embed(fields = input_value)
-        
-        with vampytest.assert_raises(IndexError):
-            embed.get_field(index)
-
-
-def test__Embed__get_field__1():
-    """
-    Tests whether ``Embed.get_field`` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options__get_field__passing():
     field_0 = EmbedField('komeiji', 'koishi')
     field_1 = EmbedField('komeiji', 'satori', inline = True)
     
-    embed = Embed(fields = [field_0, field_1])
+    yield [field_0, field_1], 0, field_0
+    yield [field_0, field_1], 1, field_1
+    yield [field_0, field_1], -2, field_0
+
+
+def _iter_options__get_field__index_error():
+    field_0 = EmbedField('komeiji', 'satori', inline = True)
     
-    for index, expected_output in (
-        (0, field_0),
-        (1, field_1),
-        (-2, field_0),
-    ):
-        output = embed.get_field(index)
-        vampytest.assert_eq(output, expected_output)
+    yield None, 0
+    yield None, -1
+    yield None, 2
+    yield [field_0], 2
 
 
-def test__Embed__append_field():
+@vampytest._(vampytest.call_from(_iter_options__get_field__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__get_field__index_error()).raising(IndexError))
+def test__Embed__get_field(input_fields, index):
+    """
+    Tests whether ``Embed.get_field`` works as intended.
+    
+    Parameters
+    ----------
+    input_fields : `None | list<EmbedField>`
+        Fields to create the embed with.
+    index : `int`
+        The index to get the field at.
+    
+    Returns
+    -------
+    output : ``EmbedField``
+    
+    Raising
+    -------
+    IndexError
+    """
+    embed = Embed(fields = input_fields)
+    output = embed.get_field(index)
+    vampytest.assert_instance(output, EmbedField)
+    return output
+
+
+def _iter_options__append_field():
+    field_0 = EmbedField('komeiji', 'koishi')
+    field_1 = EmbedField('komeiji', 'satori', inline = True)
+    
+    yield None, field_1, [field_1]
+    yield [field_0], field_0, [field_0, field_0]
+    yield [field_0], field_1, [field_0, field_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__append_field()).returning_last())
+def test__Embed__append_field(input_fields, field):
     """
     Tests whether ``Embed.append_field`` works as intended.
+    
+    Parameters
+    ----------
+    input_fields : `None | list<EmbedField>`
+        Fields to create the embed with.
+    field : ``EmbedField``
+        Field to add.
+    
+    Returns
+    -------
+    output : `None | list<EmbedField>`
     """
+    embed = Embed(fields = input_fields)
+    embed.append_field(field)
+    return embed.fields
+
+
+def _iter_options__set_field__passing():
     field_0 = EmbedField('komeiji', 'koishi')
     field_1 = EmbedField('komeiji', 'satori', inline = True)
     
-    for input_field, input_fields, expected_fields in (
-        (field_1, None, [field_1]),
-        (field_0, [field_0], [field_0, field_0]),
-        (field_1, [field_0], [field_0, field_1]),
-    ):
-        embed = Embed(fields = input_fields)
-        embed.append_field(input_field)
-        vampytest.assert_eq(embed.fields, expected_fields)
+    yield [field_0, field_1], 0, field_1, [field_1, field_1]
+    yield [field_0, field_1], 1, field_0, [field_0, field_0]
+    yield [field_0, field_1], -2, field_1, [field_1, field_1]
 
 
-def test__Embed__set_field__0():
+def _iter_options__set_field__index_error():
+    field_0 = EmbedField('komeiji', 'koishi')
+    
+    yield None, 0, field_0
+    yield None, 2, field_0,
+    yield [field_0], 2, field_0
+
+
+@vampytest._(vampytest.call_from(_iter_options__set_field__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__set_field__index_error()).raising(IndexError))
+def test__Embed__set_field(input_fields, index, field):
     """
     Tests whether ``Embed.set_field`` works as intended.
     
-    Case: `IndexError`.
-    """
-    field_0 = EmbedField('komeiji', 'satori', inline = True)
+    Parameters
+    ----------
+    input_fields : `None | list<EmbedField>`
+        Fields to create the embed with.
+    index : `int`
+        The index to set the field at.
+    field : ``EmbedField``
+        Field to set.
     
-    for input_fields, index in (
-        (None, 0),
-        (None, 2),
-        ([field_0], 2),
-    ):
-        embed = Embed(fields = input_fields)
-        
-        with vampytest.assert_raises(IndexError):
-            embed.set_field(index, field_0)
+    Returns
+    -------
+    fields : `None | list<EmbedField>`
+    
+    Raises
+    ------
+    IndexError
+    """
+    embed = Embed(fields = input_fields)
+    embed.set_field(index, field)
+    return embed.fields
 
 
-def test__Embed__set_field__1():
-    """
-    Tests whether ``Embed.set_field`` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options__del_field_passing():
     field_0 = EmbedField('komeiji', 'koishi')
     field_1 = EmbedField('komeiji', 'satori', inline = True)
     
-    for index, input_field, expected_fields in (
-        (0, field_1, [field_1, field_1]),
-        (1, field_0, [field_0, field_0]),
-        (-2, field_1, [field_1, field_1]),
-    ):
-        embed = Embed(fields = [field_0, field_1])
-        embed.set_field(index, input_field)
-        vampytest.assert_eq(embed.fields, expected_fields)
-
-
-def test__Embed__del_field__0():
-    """
-    Tests whether ``Embed.del_field`` works as intended.
+    yield [field_0, field_1], 0, [field_1]
+    yield [field_0, field_1], 1, [field_0]
+    yield [field_0, field_1], -2, [field_1]
     
-    Case: `IndexError`.
-    """
+
+def _iter_options__del_field__index_error():
     field_0 = EmbedField('komeiji', 'satori', inline = True)
     
-    for input_value, index in (
-        (None, 0),
-        (None, 2),
-        ([field_0], 2),
-    ):
-        embed = Embed(fields = input_value)
-        
-        with vampytest.assert_raises(IndexError):
-            embed.del_field(index)
+    yield None, 0
+    yield None, 2
+    yield [field_0], 2
 
 
-def test__Embed__del_field__1():
+@vampytest._(vampytest.call_from(_iter_options__del_field_passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__del_field__index_error()).raising(IndexError))
+def test__Embed__del_field(input_fields, index):
     """
     Tests whether ``Embed.del_field`` works as intended.
     
-    Case: passing.
-    """
-    field_0 = EmbedField('komeiji', 'koishi')
-    field_1 = EmbedField('komeiji', 'satori', inline = True)
+    Parameters
+    ----------
+    input_fields : `None | list<EmbedField>`
+        Fields to create the embed with.
+    index : `int`
+        The index to set the field at.
     
-    for index, expected_fields in (
-        (0, [field_1]),
-        (1, [field_0]),
-        (-2, [field_1]),
-    ):
-        embed = Embed(fields = [field_0, field_1])
-        
-        embed.del_field(index)
-        vampytest.assert_eq(embed.fields, expected_fields)
+    Returns
+    -------
+    fields : `None | list<EmbedField>`
+    
+    Raises
+    ------
+    IndexError
+    """
+    embed = Embed(fields = input_fields)
+    embed.del_field(index)
+    return embed.fields
 
 
 def test__Embed__remove_field():

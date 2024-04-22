@@ -4,6 +4,7 @@ from scarletio import is_coroutine_generator
 
 from ...discord.embed import Embed
 from ...discord.exceptions import DiscordException, ERROR_CODES
+from ...discord.poll import Poll
 
 
 def is_only_embed(maybe_embeds):
@@ -55,6 +56,9 @@ async def send_response(command_context, response):
         
     if isinstance(response, Embed) or is_only_embed(response) and response:
         return await command_context.client.message_create(command_context.channel, embed = response)
+    
+    if isinstance(response, Poll):
+        return await command_context.client.message_create(command_context.channel, poll = response)
     
     if is_coroutine_generator(response):
         return await process_command_coroutine_generator(command_context, response)

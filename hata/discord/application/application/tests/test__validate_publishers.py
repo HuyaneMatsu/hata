@@ -5,32 +5,36 @@ from ...application_entity import ApplicationEntity
 from ..fields import validate_publishers
 
 
-def test__validate_publishers_0():
+def _iter_options__passing():
+    application_entity_0 = ApplicationEntity.precreate(202404140008)
+    application_entity_1 = ApplicationEntity.precreate(202404140009)
+    
+    yield None, None
+    yield [], None
+    yield [application_entity_0], (application_entity_0,)
+    yield [application_entity_0, application_entity_0], (application_entity_0, )
+    yield [application_entity_0, application_entity_1], (application_entity_0, application_entity_1)
+    yield [application_entity_1, application_entity_0], (application_entity_0, application_entity_1)
+
+
+def _iter_options__type_error():
+    yield 2.3
+    yield [2.3]
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_publishers(input_value):
     """
     Tests whether ``validate_publishers`` works as intended.
     
-    Case: Passing.
-    """
-    application_entity = ApplicationEntity.precreate(202211270026)
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    for input_parameter, expected_output in (
-        (None, None),
-        ([], None),
-        ([application_entity], (application_entity, ))
-    ):
-        output = validate_publishers(input_parameter)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_publishers__1():
+    Returns
+    -------
+    output : `None | tuple<ApplicationEntity>`
     """
-    Tests whether ``validate_publishers`` works as intended.
-    
-    Case: `TypeError`.
-    """
-    for input_value in (
-        2.3,
-        [2.3],
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_publishers(input_value)
+    return validate_publishers(input_value)

@@ -55,44 +55,71 @@ def test__EmbedAuthor__eq():
         vampytest.assert_ne(field, test_field)
 
 
-def test__EmbedAuthor__bool():
+def _iter_options__bool():
+    icon_url = 'attachment://orin.png'
+    name = 'orin'
+    url = 'https://orindance.party/'
+    
+    yield {}, False
+    yield {'name': name}, True
+    yield {'url': url}, True
+    yield {'name': name, 'url': url}, True
+    yield {'icon_url': icon_url}, True
+    yield {'icon_url': icon_url, 'name': name}, True
+    yield {'icon_url': icon_url, 'url': url}, True
+    yield {'icon_url': icon_url, 'name': name, 'url': url}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__bool()).returning_last())
+def test__EmbedAuthor__bool(keyword_parameters):
     """
     Tests whether ``EmbedAuthor.__bool__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed author with.
+    
+    Returns
+    -------
+    output : `bool`
     """
+    field = EmbedAuthor(**keyword_parameters)
+    output = bool(field)
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__len():
     icon_url = 'attachment://orin.png'
     name = 'orin'
     url = 'https://orindance.party/'
     
-    for field, expected_output in (
-        (EmbedAuthor(), False),
-        (EmbedAuthor(name = name), True),
-        (EmbedAuthor(url = url), True),
-        (EmbedAuthor(name = name, url = url), True),
-        (EmbedAuthor(icon_url = icon_url), True),
-        (EmbedAuthor(icon_url = icon_url, name = name), True),
-        (EmbedAuthor(icon_url = icon_url, url = url), True),
-        (EmbedAuthor(icon_url = icon_url, name = name, url = url), True),
-    ):
-        vampytest.assert_eq(bool(field), expected_output)
+    yield {}, 0
+    yield {'name': name}, len(name)
+    yield {'url': url}, 0
+    yield {'name': name, 'url': url}, len(name)
+    yield {'icon_url': icon_url}, 0
+    yield {'icon_url': icon_url, 'name': name}, len(name)
+    yield {'icon_url': icon_url, 'url': url}, 0
+    yield {'icon_url': icon_url, 'name': name, 'url': url}, len(name)
 
 
-
-def test__EmbedAuthor__len():
+@vampytest._(vampytest.call_from(_iter_options__len()).returning_last())
+def test__EmbedAuthor__len(keyword_parameters):
     """
     Tests whether ``EmbedAuthor.__len__`` works as intended.
-    """
-    icon_url = 'attachment://orin.png'
-    name = 'orin'
-    url = 'https://orindance.party/'
     
-    for field, expected_output in (
-        (EmbedAuthor(), 0),
-        (EmbedAuthor(name = name), len(name)),
-        (EmbedAuthor(url = url), 0),
-        (EmbedAuthor(name = name, url = url), len(name)),
-        (EmbedAuthor(icon_url = icon_url), 0),
-        (EmbedAuthor(icon_url = icon_url, name = name), len(name)),
-        (EmbedAuthor(icon_url = icon_url, url = url), 0),
-        (EmbedAuthor(icon_url = icon_url, name = name, url = url), len(name)),
-    ):
-        vampytest.assert_eq(len(field), expected_output)
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed author with.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    field = EmbedAuthor(**keyword_parameters)
+    output = len(field)
+    vampytest.assert_instance(output, int)
+    return output

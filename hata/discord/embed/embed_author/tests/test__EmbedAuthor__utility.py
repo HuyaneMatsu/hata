@@ -43,7 +43,7 @@ def test__EmbedAuthor__copy():
     vampytest.assert_eq(field, copy)
 
 
-def test__EmbedAuthor__copy_with__0():
+def test__EmbedAuthor__copy_with__no_fields():
     """
     Tests whether ``EmbedAuthor.copy_with`` works as intended.
     
@@ -61,7 +61,7 @@ def test__EmbedAuthor__copy_with__0():
     vampytest.assert_eq(field, copy)
 
 
-def test__EmbedAuthor__copy_with__1():
+def test__EmbedAuthor__copy_with__all_fields():
     """
     Tests whether ``EmbedAuthor.copy_with`` works as intended.
     
@@ -89,43 +89,69 @@ def test__EmbedAuthor__copy_with__1():
     vampytest.assert_eq(copy.url, new_url)
 
 
-def test__EmbedAuthor__contents():
+def _iter_options__contents():
+    icon_url = 'attachment://orin.png'
+    name = 'orin'
+    url = 'https://orindance.party/'
+    
+    yield {}, set()
+    yield {'name': name}, {name}
+    yield {'url': url}, set()
+    yield {'name': name, 'url': url}, {name}
+    yield {'icon_url': icon_url}, set()
+    yield {'icon_url': icon_url, 'name': name}, {name}
+    yield {'icon_url': icon_url, 'url': url}, set()
+    yield {'icon_url': icon_url, 'name': name, 'url': url}, {name}
+
+
+@vampytest._(vampytest.call_from(_iter_options__contents()).returning_last())
+def test__EmbedAuthor__contents(keyword_parameters):
     """
     Tests whether ``EmbedAuthor.contents`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed author with.
+    
+    Returns
+    -------
+    output : `set<str>`
     """
+    field = EmbedAuthor(**keyword_parameters)
+    output = field.contents
+    vampytest.assert_instance(output, list)
+    return {*output}
+
+
+def _iter_options__iter_contents():
     icon_url = 'attachment://orin.png'
     name = 'orin'
     url = 'https://orindance.party/'
     
-    for field, expected_output in (
-        (EmbedAuthor(), set()),
-        (EmbedAuthor(name = name), {name}),
-        (EmbedAuthor(url = url), set()),
-        (EmbedAuthor(name = name, url = url), {name}),
-        (EmbedAuthor(name = name, icon_url = icon_url,), {name}),
-        (EmbedAuthor(icon_url = icon_url, url = url), set()),
-        (EmbedAuthor(name = name, icon_url = icon_url, url = url), {name}),
-    ):
-        output = field.contents
-        vampytest.assert_instance(output, list)
-        vampytest.assert_eq({*output}, expected_output)
+    yield {}, set()
+    yield {'name': name}, {name}
+    yield {'url': url}, set()
+    yield {'name': name, 'url': url}, {name}
+    yield {'icon_url': icon_url}, set()
+    yield {'icon_url': icon_url, 'name': name}, {name}
+    yield {'icon_url': icon_url, 'url': url}, set()
+    yield {'icon_url': icon_url, 'name': name, 'url': url}, {name}
 
 
-def test__EmbedAuthor__iter_contents():
+@vampytest._(vampytest.call_from(_iter_options__iter_contents()).returning_last())
+def test__EmbedAuthor__iter_contents(keyword_parameters):
     """
     Tests whether ``EmbedAuthor.iter_contents`` works as intended.
-    """
-    icon_url = 'attachment://orin.png'
-    name = 'orin'
-    url = 'https://orindance.party/'
     
-    for field, expected_output in (
-        (EmbedAuthor(), set()),
-        (EmbedAuthor(name = name), {name}),
-        (EmbedAuthor(url = url), set()),
-        (EmbedAuthor(name = name, url = url), {name}),
-        (EmbedAuthor(name = name, icon_url = icon_url,), {name}),
-        (EmbedAuthor(icon_url = icon_url, url = url), set()),
-        (EmbedAuthor(name = name, icon_url = icon_url, url = url), {name}),
-    ):
-        vampytest.assert_eq({*field.iter_contents()}, expected_output)
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed author with.
+    
+    Returns
+    -------
+    output : `set<str>`
+    """
+    field = EmbedAuthor(**keyword_parameters)
+    return {*field.iter_contents()}

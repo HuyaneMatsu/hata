@@ -552,7 +552,7 @@ def log_time_converter(value):
     
     Parameters
     ----------
-    value : `int`, ``DiscordEntity``, `DateTime`
+    value : `None`, `int`, ``DiscordEntity``, `DateTime`
         If the value is given as `int`, returns it. If given as a ``DiscordEntity``, then returns it's id and if it
         is given as a `DateTime` object, then converts that to snowflake then returns it.
     
@@ -565,6 +565,9 @@ def log_time_converter(value):
     TypeError
         If the given `value`'s type is not any of the expected ones.
     """
+    if value is None:
+        return 0
+    
     if isinstance(value, int):
         return value
     
@@ -575,7 +578,7 @@ def log_time_converter(value):
         return datetime_to_id(value)
     
     raise TypeError(
-        f'Expected `int`, `{DiscordEntity.__name__}`, `DateTime`, got '
+        f'Expected `None`, `int`, `{DiscordEntity.__name__}`, `DateTime`, got '
         f'{value.__class__.__name__}; {value!r}.'
     )
 

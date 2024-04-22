@@ -41,6 +41,10 @@ from ..integration import Integration
 from ..interaction import InteractionEvent
 from ..invite import Invite, create_partial_invite_from_data
 from ..message import EMBED_UPDATE_NONE, Message
+from ..poll import PollVoteAddEvent, PollVoteDeleteEvent
+from ..poll.poll_events.fields import (
+    parse_answer_id as parse_poll_vote_event_answer_id, parse_user as parse_poll_vote_event_user
+)
 from ..role import Role, create_partial_role_from_id
 from ..scheduled_event import ScheduledEvent, ScheduledEventSubscribeEvent, ScheduledEventUnsubscribeEvent
 from ..scheduled_event.scheduled_event.fields import (
@@ -64,9 +68,10 @@ from .filters import (
 )
 from .guild_sync import check_channel, guild_sync
 from .intent import (
-    INTENT_MASK_AUTO_MODERATION_CONFIGURATION, INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_REACTIONS,
-    INTENT_MASK_GUILDS, INTENT_MASK_GUILD_EXPRESSIONS, INTENT_MASK_GUILD_MESSAGES, INTENT_MASK_GUILD_PRESENCES,
-    INTENT_MASK_GUILD_REACTIONS, INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_VOICE_STATES, INTENT_SHIFT_GUILD_USERS
+    INTENT_MASK_AUTO_MODERATION_CONFIGURATION, INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_POLLS,
+    INTENT_MASK_DIRECT_REACTIONS, INTENT_MASK_GUILDS, INTENT_MASK_GUILD_EXPRESSIONS, INTENT_MASK_GUILD_MESSAGES,
+    INTENT_MASK_GUILD_POLLS, INTENT_MASK_GUILD_PRESENCES, INTENT_MASK_GUILD_REACTIONS, INTENT_MASK_GUILD_USERS,
+    INTENT_MASK_GUILD_VOICE_STATES, INTENT_SHIFT_GUILD_USERS
 )
 
 
@@ -703,7 +708,7 @@ del MESSAGE_REACTION_REMOVE_ALL__CAL_SC, \
 
 def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
     event = ReactionDeleteEvent.from_data(data)
-    event.message._remove_reaction(event.emoji, event.user)
+    event.message._remove_reaction(event.reaction, event.user)
     
     Task(KOKORO, client.events.reaction_delete(client, event))
 
@@ -724,7 +729,7 @@ def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
             return
     
     event = ReactionDeleteEvent.from_data(data)
-    event.message._remove_reaction(event.emoji, event.user)
+    event.message._remove_reaction(event.reaction, event.user)
     
     if clients is None:
         event_handler = client.events.reaction_delete
@@ -4748,3 +4753,147 @@ add_parser(
     ENTITLEMENT_UPDATE__OPT)
 del ENTITLEMENT_UPDATE__CAL, \
     ENTITLEMENT_UPDATE__OPT
+
+
+
+def MESSAGE_POLL_VOTE_ADD__CAL_SC(client, data):
+    event = PollVoteAddEvent.from_data(data)
+    event.message._add_poll_vote(event.answer_id, event.user)
+    
+    Task(KOKORO, client.events.poll_vote_add(client, event))
+
+
+def MESSAGE_POLL_VOTE_ADD__CAL_MC(client, data):
+    channel = CHANNELS.get(int(data['channel_id']), None)
+    if channel is None:
+        clients = None
+    else:
+        clients = filter_clients(
+            channel.clients,
+            INTENT_MASK_GUILD_POLLS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_POLLS,
+            client,
+        )
+        if clients.send(None) is not client:
+            clients.close()
+            return
+    
+    event = PollVoteAddEvent.from_data(data)
+    event.message._add_poll_vote(event.answer_id, event.user)
+    
+    if clients is None:
+        event_handler = client.events.poll_vote_add
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(KOKORO, event_handler(client, event))
+    else:
+        for client_ in clients:
+            event_handler = client_.events.poll_vote_add
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(KOKORO, event_handler(client_, event))
+
+
+def MESSAGE_POLL_VOTE_ADD__OPT_SC(client, data):
+    message = MESSAGES.get(int(data['message_id']), None)
+    if message is None:
+        return
+    
+    message._add_poll_vote(parse_poll_vote_event_answer_id(data), parse_poll_vote_event_user(data))
+
+
+def MESSAGE_POLL_VOTE_ADD__OPT_MC(client, data):
+    message = MESSAGES.get(int(data['message_id']), None)
+    if message is None:
+        return
+    
+    channel = message.channel
+    if first_client(
+        channel.clients,
+        INTENT_MASK_GUILD_POLLS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_POLLS,
+        client,
+    ) is not client:
+        return
+    
+    message._add_poll_vote(parse_poll_vote_event_answer_id(data), parse_poll_vote_event_user(data))
+
+
+add_parser(
+    'MESSAGE_POLL_VOTE_ADD',
+    MESSAGE_POLL_VOTE_ADD__CAL_SC,
+    MESSAGE_POLL_VOTE_ADD__CAL_MC,
+    MESSAGE_POLL_VOTE_ADD__OPT_SC,
+    MESSAGE_POLL_VOTE_ADD__OPT_MC)
+del MESSAGE_POLL_VOTE_ADD__CAL_SC, \
+    MESSAGE_POLL_VOTE_ADD__CAL_MC, \
+    MESSAGE_POLL_VOTE_ADD__OPT_SC, \
+    MESSAGE_POLL_VOTE_ADD__OPT_MC
+
+
+def MESSAGE_POLL_VOTE_REMOVE__CAL_SC(client, data):
+    event = PollVoteDeleteEvent.from_data(data)
+    event.message._remove_poll_vote(event.answer_id, event.user)
+    
+    Task(KOKORO, client.events.poll_vote_delete(client, event))
+
+
+def MESSAGE_POLL_VOTE_REMOVE__CAL_MC(client, data):
+    channel = CHANNELS.get(int(data['channel_id']), None)
+    if channel is None:
+        clients = None
+    
+    else:
+        clients = filter_clients(
+            channel.clients,
+            INTENT_MASK_GUILD_POLLS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_POLLS,
+            client,
+        )
+        if clients.send(None) is not client:
+            clients.close()
+            return
+    
+    event = PollVoteDeleteEvent.from_data(data)
+    event.message._remove_poll_vote(event.answer_id, event.user)
+    
+    if clients is None:
+        event_handler = client.events.poll_vote_delete
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(KOKORO, event_handler(client, event))
+    else:
+        for client_ in clients:
+            event_handler = client_.events.poll_vote_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(KOKORO, event_handler(client_, event))
+
+
+def MESSAGE_POLL_VOTE_REMOVE__OPT_SC(client, data):
+    message = MESSAGES.get(int(data['message_id']), None)
+    if message is None:
+        return
+    
+    message._remove_poll_vote(parse_poll_vote_event_answer_id(data), parse_poll_vote_event_user(data))
+
+
+def MESSAGE_POLL_VOTE_REMOVE__OPT_MC(client, data):
+    message = MESSAGES.get(int(data['message_id']), None)
+    if message is None:
+        return
+    
+    channel = message.channel
+    if first_client(
+        channel.clients,
+        INTENT_MASK_GUILD_POLLS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_POLLS,
+        client,
+    ) is not client:
+        return
+    
+    message._remove_poll_vote(parse_poll_vote_event_answer_id(data), parse_poll_vote_event_user(data))
+
+
+add_parser(
+    'MESSAGE_POLL_VOTE_REMOVE',
+    MESSAGE_POLL_VOTE_REMOVE__CAL_SC,
+    MESSAGE_POLL_VOTE_REMOVE__CAL_MC,
+    MESSAGE_POLL_VOTE_REMOVE__OPT_SC,
+    MESSAGE_POLL_VOTE_REMOVE__OPT_MC)
+del MESSAGE_POLL_VOTE_REMOVE__CAL_SC, \
+    MESSAGE_POLL_VOTE_REMOVE__CAL_MC, \
+    MESSAGE_POLL_VOTE_REMOVE__OPT_SC, \
+    MESSAGE_POLL_VOTE_REMOVE__OPT_MC

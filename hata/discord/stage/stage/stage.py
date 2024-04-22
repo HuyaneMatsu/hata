@@ -239,6 +239,7 @@ class Stage(DiscordEntity, immortal = True):
         
         Returned Data Structure
         -----------------------
+        
         +---------------+-----------------------+
         | Keys          | Values                |
         +===============+=======================+

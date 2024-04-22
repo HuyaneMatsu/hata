@@ -1,3 +1,99 @@
+## 1.3.54 *\[2024-04-??\]*
+
+### Improvements
+
+- Add `ERROR_CODES.max_published_product_listing`.
+- Add `ERROR_CODES.invalid_gift_redemption_incorrect_user`.
+- Add `ERROR_CODES.invalid_sku_attachment_no_archives`.
+- Add `ERROR_CODES.invalid_activity_launch_incorrect_guild_size`.
+- Add `ERROR_CODES.mfa_required_for_creator_monetization`.
+- Add `ERROR_CODES.phone_carrier_type_not_mobile`.
+- Add `ERROR_CODES.monetization_terms_not_accepted`.
+- Add `ERROR_CODES.mfa_not_enabled`.
+- Add `ERROR_CODES.guild_product_listing_cannot_publish_without_benefit`.
+- Add `ERROR_CODES.creator_monetization_payment_team_required`.
+- Add `ERROR_CODES.creator_monetization_payment_account_verification_required`.
+- Add `ERROR_CODES.user_limited_access_default`.
+- Add `ERROR_CODES.user_limited_access_friend_request`.
+- Add `ERROR_CODES.user_limited_access_max`.
+- Add `ERROR_CODES.guild_limited_access_default`.
+- Add `ERROR_CODES.guild_limited_access_upload`.
+- Add `ERROR_CODES.guild_limited_access_invite`.
+- Add `ERROR_CODES.guild_limited_access_max`.
+- Add `ERROR_CODES.partner_promotions_user_claimed_promotion`.
+- Add `ERROR_CODES.partner_promotions_max_claims`.
+- Add `ERROR_CODES.partner_promotions_gift_claimed`.
+- Add `ERROR_CODES.partner_promotions_previous_purchase_error`.
+- Add `ERROR_CODES.partner_promotions_new_subscription_required`.
+- Add `ERROR_CODES.partner_promotions_unknown_gift`.
+- Add `ERROR_CODES.dsa_rsl_report_not_found`.
+- Add `ERROR_CODES.dsa_rsl_already_requested`.
+- Add `ERROR_CODES.dsa_rsl_limited_time`.
+- Add `ERROR_CODES.dsa_rsl_report_ineligible`.
+- Add `ERROR_CODES.dsa_appeal_request_deflection`.
+- Add `ERROR_CODES.poll_voting_blocked`.
+- Add `ERROR_CODES.poll_expired`.
+- Add `ERROR_CODES.poll_creation_invalid_channel_type`.
+- Add `ERROR_CODES.cannot_edit_poll_message`.
+- Add `ERROR_CODES.cannot_use_emoji_included_within_poll`.
+- Add `ERROR_CODES.cannot_expire_non_poll_message`.
+- Add `ERROR_CODES.poll_finalized`.
+- Add `PollVoteAddEvent`.
+- Add `PollVoteDeleteEvent`.
+- Add `PollResult`.
+- `reconstruct_payload` now respects terminal width and has general overflow protection.
+- Add `PollLayout`.
+- Add new `create_emoji_from_exclusive_data`.
+- Add new `put_exclusive_emoji_data_into`.
+- Add `PollAnswer`.
+- Add `Poll`.
+- Add `PollChange`.
+- Add `PollUpdate`.
+- Add `Message.poll`.
+- Add `send_polls` `Permission`.
+- Add `guild_polls` `IntentFlag`.
+- Add `direct_polls` `IntentFlag`.
+- Add `EventHandlerManager.poll_vote_add`.
+- Add `EventHandlerManager.poll_vote_delete`.
+- Add `Message.has_poll`.
+- Handle `MESSAGE_POLL_VOTE_ADD` dispatch event.
+- Handle `MESSAGE_POLL_VOTE_REMOVE` dispatch event.
+- Add `poll` parameter to `Client.message_create`.
+- Add `Message.did_vote`.
+- Add `poll` parameter to `Client.webhook_message_create`.
+- Add `poll` parameter to `Client.interaction_response_message_create`.
+- Add `poll` parameter to `Client.interaction_followup_message_create`.
+- Add `Client.poll_finalize`.
+- Add `RATE_LIMIT_GROUPS.poll_finalize`.
+- Add `RateLimitProxy.is_limited_by_message`.
+- Add `DiscordApiClient.poll_finalize˙.
+- Add `RATE_LIMIT_GROUPS.poll_result_user_get_chunk`.
+- Add `RateLimitProxy.poll_result_user_get_chunk`.
+- Add `Client.poll_result_user_get_chunk`.
+- Add `Client.poll_result_user_get_all`.
+- Add `Client.poll_result_get_all`.
+
+#### ext.commands_v2
+
+- `Poll` now can be returned from commands.
+
+#### ext.slash
+
+- Add `poll` parameter to `abort`.
+- Add `poll` parameter to `InteractionResponse`.
+- `Poll` now can be returned from interactions.
+
+### Bug fixes
+
+- Fix `reconstruct_payload` failing for form datas. (since 1.3.51)
+- Fix `MESSAGE_REACTION_REMOVE` could not remove burst reactions.
+
+### Renames, Deprecations & Removals
+
+- Rename `ApplicationMonetizationEligibilityFlags.user_2fa_enabled` to `.user_mfa_enabled`.
+- Rename `create_emoji_from_exclusive_data` to `create_emoji_from_exclusive_inline_data`
+- Rename `put_exclusive_emoji_data_into` to `put_exclusive_emoji_inline_data_into`.
+
 ## 1.3.53 *\[2024-03-31\]*
 
 ### Improvements

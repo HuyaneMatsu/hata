@@ -23,8 +23,10 @@ LIMITER_CHANNEL = 'channel_id'
 LIMITER_GUILD = 'guild_id'
 LIMITER_WEBHOOK = 'webhook_id'
 LIMITER_INTERACTION = 'interaction_id'
+LIMITER_MESSAGE = 'message_id'
 LIMITER_GLOBAL = 'global'
 LIMITER_UNLIMITED = 'unlimited'
+
 
 class RateLimitGroup:
     """
@@ -48,6 +50,8 @@ class RateLimitGroup:
         | LIMITER_WEBHOOK       | `'webhook_id'`        |
         +-----------------------+-----------------------+
         | LIMITER_INTERACTION   | `'interaction_id'`    |
+        +-----------------------+-----------------------+
+        | LIMITER_MESSAGE       | `'message_id'`        |
         +-----------------------+-----------------------+
         | LIMITER_GLOBAL        | `'global'`            |
         +-----------------------+-----------------------+
@@ -107,6 +111,8 @@ class RateLimitGroup:
             | LIMITER_WEBHOOK       | `'webhook_id'`        |
             +-----------------------+-----------------------+
             | LIMITER_INTERACTION   | `'interaction_id'`    |
+            +-----------------------+-----------------------+
+            | LIMITER_MESSAGE       | `'message_id'`        |
             +-----------------------+-----------------------+
             | LIMITER_GLOBAL        | `'global'`            |
             +-----------------------+-----------------------+
@@ -484,10 +490,7 @@ class RateLimitHandler:
     
     def __repr__(self):
         """Returns the representation of the rate limit handler."""
-        repr_parts = [
-            '<',
-            self.__class__.__name__,
-        ]
+        repr_parts = ['<', type(self).__name__]
         
         limiter = self.parent.limiter
         if limiter is LIMITER_UNLIMITED:

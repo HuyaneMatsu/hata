@@ -4,14 +4,27 @@ from ..fields import put_default_sort_order_into
 from ..preinstanced import SortOrder
 
 
-def test__put_default_sort_order_into():
+def _iter_options():
+    yield SortOrder.latest_activity, False, {}
+    yield SortOrder.latest_activity, True, {'default_sort_order': SortOrder.latest_activity.value}
+    yield SortOrder.creation_date, False, {'default_sort_order': SortOrder.creation_date.value}
+    yield SortOrder.creation_date, True, {'default_sort_order': SortOrder.creation_date.value}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_default_sort_order_into(input_value, defaults):
     """
     Tests whether ``put_default_sort_order_into`` is working as intended.
+    
+    Parameters
+    ----------
+    input_value : ``SortOrder``
+        Value to serialize.
+    defaults : `bool`
+        Whether fields with their default value should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
     """
-    for input_, defaults, expected_output in (
-        (SortOrder.latest_activity, False, {}),
-        (SortOrder.latest_activity, True, {'default_sort_order': SortOrder.latest_activity.value}),
-        (SortOrder.creation_date, False, {'default_sort_order': SortOrder.creation_date.value}),
-    ):
-        data = put_default_sort_order_into(input_, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    return put_default_sort_order_into(input_value, {}, defaults)

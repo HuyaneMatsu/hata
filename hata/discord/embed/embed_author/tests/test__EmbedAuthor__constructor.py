@@ -5,7 +5,7 @@ from ..author import EmbedAuthor
 
 def _assert_fields_set(field):
     """
-    Checks whether every fields of the given activity field are set.
+    Checks whether every fields of the given embed author are set.
     
     Parameters
     ----------
@@ -19,7 +19,7 @@ def _assert_fields_set(field):
     vampytest.assert_instance(field.url, str, nullable = True)
 
 
-def test__EmbedAuthor__new__0():
+def test__EmbedAuthor__new__no_fields():
     """
     Tests whether ``EmbedAuthor.__new__`` works as intended.
     
@@ -29,7 +29,7 @@ def test__EmbedAuthor__new__0():
     _assert_fields_set(field)
 
 
-def test__EmbedAuthor__new__1():
+def test__EmbedAuthor__new__all_fields():
     """
     Tests whether ``EmbedAuthor.__new__`` works as intended.
     
@@ -47,11 +47,11 @@ def test__EmbedAuthor__new__1():
     vampytest.assert_eq(field.url, url)
 
 
-def test__EmbedAuthor__new__2():
+def test__EmbedAuthor__new__string_conversion():
     """
     Tests whether ``EmbedAuthor.__new__`` works as intended.
     
-    Case: name conversion check.
+    Case: string conversion check.
     """
     name = 123
     

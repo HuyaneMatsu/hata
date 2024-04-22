@@ -4,14 +4,28 @@ from ..fields import validate_id
 
 
 def _iter_options__passing():
-    guild_widget_id = 10
+    user_id = 23
     
     yield 0, 0
-    yield guild_widget_id, guild_widget_id
+    yield user_id, user_id
+
+
+def _iter_options__type_error():
+    yield 12.6
+    yield '23'
+    yield '-1'
+    yield '1111111111111111111111'
+
+
+def _iter_options__value_error():
+    yield -1
+    yield 1111111111111111111111
 
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
-def test__validate_id__passing(input_value):
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_id(input_value):
     """
     Tests whether `validate_id` works as intended.
     
@@ -23,51 +37,12 @@ def test__validate_id__passing(input_value):
     Returns
     -------
     output : `int`
-    """
-    return validate_id(input_value)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-@vampytest.call_with('-1')
-@vampytest.call_with('10')
-@vampytest.call_with('1111111111111111111111')
-def test__validate_id__type_error(input_value):
-    """
-    Tests whether `validate_id` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Input value to validate.
     
     Raises
     ------
     TypeError
-        The occurred exception.
-    """
-    validate_id(input_value)
-
-
-@vampytest.raising(ValueError)
-@vampytest.call_with(-1)
-@vampytest.call_with(1111111111111111111111)
-def test__validate_id__value_error(input_value):
-    """
-    Tests whether `validate_id` works as intended.
-    
-    Case: `ValueError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Input value to validate.
-    
-    Raises
-    ------
     ValueError
-        The occurred exception.
     """
-    validate_id(input_value)
+    output = validate_id(input_value)
+    vampytest.assert_instance(output, int)
+    return output

@@ -328,6 +328,7 @@ class VoiceState(RichAttributeErrorBaseType):
         
         Returned Data Structure
         -----------------------
+        
         +-----------------------+-----------------------+
         | Keys                  | Values                |
         +=======================+=======================+

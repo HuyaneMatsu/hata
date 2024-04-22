@@ -8,6 +8,7 @@ from ....interaction import InteractionEvent, InteractionType
 from ....interaction.responding.constants import (
     RESPONSE_FLAG_DEFERRED, RESPONSE_FLAG_RESPONDED, RESPONSE_FLAG_RESPONDING
 )
+from ....poll import Poll, PollAnswer
 from ....message import Message, MessageFlag, MessageType
 
 from ...client import Client
@@ -49,6 +50,7 @@ async def test__Client__interaction_followup_message_create__stuffed():
     components = Component(ComponentType.button, label = 'koishi', custom_id = 'satori')
     content = 'suika'
     embeds = [Embed('orin')]
+    poll = Poll(answers = [PollAnswer(text = 'sister')], duration = 3600)
     silent = True
     tts = True
     show_for_invoking_user_only = True
@@ -60,6 +62,7 @@ async def test__Client__interaction_followup_message_create__stuffed():
             'tts': True,
             'content': content,
             'embeds': [embed.to_data() for embed in embeds],
+            'poll': poll.to_data(),
             'components': [create_row(components).to_data()],
             'allowed_mentions' : {'parse': ['everyone']},
             'flags': MessageFlag().update_by_keys(silent = True, invoking_user_only = True),
@@ -83,6 +86,7 @@ async def test__Client__interaction_followup_message_create__stuffed():
         'components': [create_row(components).to_data()],
         'content': content,
         'embeds': [embed.to_data() for embed in embeds],
+        'poll': poll.to_data(),
         'flags': int(MessageFlag().update_by_keys(silent = True, invoking_user_only = True)),
         'tts': tts,
         'type': MessageType.default.value,
@@ -117,6 +121,7 @@ async def test__Client__interaction_followup_message_create__stuffed():
             components = components,
             content = content,
             embeds = embeds,
+            poll = poll,
             silent = silent,
             tts = tts,
             show_for_invoking_user_only = show_for_invoking_user_only,
@@ -135,6 +140,7 @@ async def test__Client__interaction_followup_message_create__stuffed():
         vampytest.assert_eq(output.components[0], create_row(components))
         vampytest.assert_eq(output.content, content)
         vampytest.assert_eq(output.embeds, tuple(embeds))
+        vampytest.assert_eq(output.poll, poll)
         vampytest.assert_eq(output.flags, MessageFlag().update_by_keys(silent = True, invoking_user_only = True))
         vampytest.assert_eq(output.tts, tts)
         vampytest.assert_is(output.type, MessageType.default)

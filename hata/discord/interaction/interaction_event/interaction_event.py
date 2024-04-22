@@ -1427,6 +1427,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         return voice_client
     
+    
     @property
     def locale(self):
         """

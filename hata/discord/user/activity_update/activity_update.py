@@ -17,6 +17,7 @@ class ActivityUpdate(RichAttributeErrorBaseType):
     ----------
     activity : ``Activity``
         The updated activity.
+    
     old_attributes : `dict` of (`str`, `object`) items
         The changed attributes of the activity in `attribute-name` - `old-value` relation. Can contain any of the
         following items:
@@ -55,7 +56,7 @@ class ActivityUpdate(RichAttributeErrorBaseType):
     """
     __slots__ = ('activity', 'old_attributes',)
     
-    def __new__(cls, activity = ..., old_attributes = ...):
+    def __new__(cls, *, activity = ..., old_attributes = ...):
         """
         Creates a new activity change instance with the given fields.
         
@@ -63,6 +64,7 @@ class ActivityUpdate(RichAttributeErrorBaseType):
         ----------
         activity : ``Activity``, Optional (Keyword only)
             The updated activity.
+        
         old_attributes : `None`, `dict` of (`str`, `object`) items, Optional (Keyword only)
             The changed attributes of the activity.
         
@@ -114,7 +116,16 @@ class ActivityUpdate(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the representation of the activity update."""
-        return f'<{self.__class__.__name__} changes: {len(self.old_attributes)!r}, activity = {self.activity!r}>'
+        repr_parts = ['<', type(self).__name__]
+        
+        repr_parts.append(' activity = ')
+        repr_parts.append(repr(self.activity))
+        
+        repr_parts.append(', old_attributes = ')
+        repr_parts.append(repr(self.old_attributes))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     
     def __hash__(self):
@@ -135,6 +146,7 @@ class ActivityUpdate(RichAttributeErrorBaseType):
     
     
     def __eq__(self, other):
+        """Returns whether the two activity updates are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -184,6 +196,7 @@ class ActivityUpdate(RichAttributeErrorBaseType):
         ----------
         activity : ``Activity``, Optional (Keyword only)
             The updated activity.
+        
         old_attributes : `None`, `dict` of (`str`, `object`) items, Optional (Keyword only)
             The changed attributes of the activity.
         

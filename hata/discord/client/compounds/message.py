@@ -43,6 +43,7 @@ MESSAGE_SERIALIZER_CREATE = create_serializer(
             MessageBuilderCreate.enforce_nonce,
             MessageBuilderCreate.flags,
             MessageBuilderCreate.nonce,
+            MessageBuilderCreate.poll,
             MessageBuilderCreate.reply_configuration,
             MessageBuilderCreate.sticker_ids,
             MessageBuilderCreate.tts,
@@ -332,7 +333,12 @@ class ClientCompoundMessageEndpoints(Compound):
             The message's flags.
         
         nonce : `None`, `str`, Optional (Keyword only)
-            Used for optimistic message sending.
+            Used for optimistic message sending. The sent nonce with be present as `Message.nonce`,
+            but be careful, if the message is requested later nonce wnt show up on it, so it cannot be used
+            store information on the message.
+        
+        poll : `None`, ``Poll``, Optional
+            The message's poll.
         
         reply_fail_fallback : `bool`, Optional (Keyword only)
             Whether normal message should be sent if the referenced message is deleted.

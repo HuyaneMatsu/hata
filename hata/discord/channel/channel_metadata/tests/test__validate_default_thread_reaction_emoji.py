@@ -5,30 +5,36 @@ from ....emoji import Emoji
 from ..fields import validate_default_thread_reaction_emoji
 
 
-def test__validate_default_thread_reaction_emoji__0():
-    """
-    Tests whether ``validate_default_thread_reaction_emoji`` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options__passing():
     emoji = Emoji.precreate(202209140019)
     
-    for input_parameter, expected_output in (
-        (None, None),
-        (emoji, emoji),
-    ):
-        output = validate_default_thread_reaction_emoji(input_parameter)
-        vampytest.assert_is(output, expected_output)
+    yield None, None
+    yield emoji, emoji
 
 
-def test__validate_default_thread_reaction_emoji__1():
+def _iter_options__type_error():
+    yield 12.56
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_default_thread_reaction_emoji(input_value):
     """
     Tests whether ``validate_default_thread_reaction_emoji`` works as intended.
     
-    Case: `TypeError`.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Returns
+    -------
+    output : `None | Emoji`
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_parameter in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_default_thread_reaction_emoji(input_parameter)
+    output = validate_default_thread_reaction_emoji(input_value)
+    vampytest.assert_instance(output, Emoji, nullable = True)
+    return output

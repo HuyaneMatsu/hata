@@ -5,8 +5,8 @@ from threading import current_thread
 from scarletio import Future, LOOP_TIME, WeakReferer, include
 
 from .rate_limit import (
-    LIMITER_CHANNEL, LIMITER_GLOBAL, LIMITER_GUILD, LIMITER_INTERACTION, LIMITER_UNLIMITED, LIMITER_WEBHOOK,
-    RateLimitGroup, RateLimitHandler, UNLIMITED_SIZE_VALUE
+    LIMITER_CHANNEL, LIMITER_GLOBAL, LIMITER_GUILD, LIMITER_INTERACTION, LIMITER_MESSAGE, LIMITER_UNLIMITED,
+    LIMITER_WEBHOOK, RateLimitGroup, RateLimitHandler, UNLIMITED_SIZE_VALUE
 )
 
 
@@ -62,9 +62,11 @@ class RateLimitProxy:
             +-----------------------+-----------------------------------------------------------------------+
             | LIMITER_INTERACTION   | ``InteractionEvent``                                                  |
             +-----------------------+-----------------------------------------------------------------------+
-            | LIMITER_GLOBAL        | `object`                                                                 |
+            | LIMITER_MESSAGE       | ``Message``                                                           |
             +-----------------------+-----------------------------------------------------------------------+
-            | LIMITER_UNLIMITED     | `object`                                                                 |
+            | LIMITER_GLOBAL        | `object`                                                              |
+            +-----------------------+-----------------------------------------------------------------------+
+            | LIMITER_UNLIMITED     | `object`                                                              |
             +-----------------------+-----------------------------------------------------------------------+
             
             Note that at the case of `LIMITER_GUILD` partial objects will yield `.guild` as `None` so `ValueError`
@@ -134,6 +136,13 @@ class RateLimitProxy:
                     if isinstance(limiter, InteractionEvent):
                         limiter_id = limiter.id
                         break
+            
+            elif group_limiter is LIMITER_MESSAGE:
+                if (limiter is not None):
+                    if isinstance(limiter, Message):
+                        limiter_id = limiter.id
+                        break
+                    
             else:
                 raise RuntimeError(
                     f'`{group!r}.limiter` is not any of the defined limit groups.'
@@ -201,6 +210,17 @@ class RateLimitProxy:
         is_limited_by_interaction : `bool`
         """
         return (self.group.limiter is LIMITER_INTERACTION)
+    
+    
+    def is_limited_by_message(self):
+        """
+        Returns whether the represented rate limit group is limited by message id.
+        
+        Returns
+        -------
+        is_limited_by_message : `bool`
+        """
+        return (self.group.limiter is LIMITER_MESSAGE)
     
     
     def is_limited_globally(self):

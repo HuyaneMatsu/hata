@@ -27,7 +27,7 @@ def test__EmbedFieldBase__copy():
     vampytest.assert_eq(field, copy)
 
 
-def test__EmbedFieldBase__copy_with__0():
+def test__EmbedFieldBase__copy_with__no_fields():
     """
     Tests whether ``EmbedFieldBase.copy_with`` works as intended.
     
@@ -41,23 +41,47 @@ def test__EmbedFieldBase__copy_with__0():
     vampytest.assert_eq(field, copy)
 
 
-def test__EmbedFieldBase__contents():
+def _iter_options__contents():
+    yield {}, set()
+
+
+@vampytest._(vampytest.call_from(_iter_options__contents()).returning_last())
+def test__EmbedFieldBase__contents(keyword_parameters):
     """
     Tests whether ``EmbedFieldBase.contents`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed field with.
+    
+    Returns
+    -------
+    output : `set<str>`
     """
-    for field, expected_output in (
-        (EmbedFieldBase(), set()),
-    ):
-        output = field.contents
-        vampytest.assert_instance(output, list)
-        vampytest.assert_eq({*output}, expected_output)
+    field = EmbedFieldBase(**keyword_parameters)
+    output = field.contents
+    vampytest.assert_instance(output, list)
+    return {*output}
 
 
-def test__EmbedFieldBase__iter_contents():
+def _iter_options__iter_contents():
+    yield {}, set()
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_contents()).returning_last())
+def test__EmbedFieldBase__iter_contents(keyword_parameters):
     """
     Tests whether ``EmbedFieldBase.iter_contents`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create the embed field with.
+    
+    Returns
+    -------
+    output : `set<str>`
     """
-    for field, expected_output in (
-        (EmbedFieldBase(), set()),
-    ):
-        vampytest.assert_eq({*field.iter_contents()}, expected_output)
+    field = EmbedFieldBase(**keyword_parameters)
+    return {*field.iter_contents()}

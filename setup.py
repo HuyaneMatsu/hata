@@ -165,6 +165,7 @@ setup(
         'hata.discord.onboarding.onboarding_prompt_option',
         'hata.discord.onboarding.onboarding_screen',
         'hata.discord.permission',
+        'hata.discord.poll',
         'hata.discord.poll.poll',
         'hata.discord.poll.poll_answer',
         'hata.discord.poll.poll_events',

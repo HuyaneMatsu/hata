@@ -29,7 +29,8 @@ LAYOUT_DESCRIPTIONS = {
         '    │   ├─ { bot_names[n] }.py\n'
         '    │   └─ ...\n'
         '    └─ plugins\n'
-        '        └─ __init__.py\n'
+        '        ├─ __init__.py\n'
+        '        └─ ping.py\n'
         '```\n'
     )
 }

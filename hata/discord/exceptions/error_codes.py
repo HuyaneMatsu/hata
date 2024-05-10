@@ -635,6 +635,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | partner_promotions_unknown_gift                                   | 420007    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| failed_to_ban_users                                               | 500000    | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | poll_voting_blocked                                               | 520000    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | poll_finalized                                                    | 520001    | -         |
@@ -988,6 +990,8 @@ partner_promotions_gift_claimed = 420004
 partner_promotions_previous_purchase_error = 420005
 partner_promotions_new_subscription_required = 420006
 partner_promotions_unknown_gift = 420007
+
+failed_to_ban_users = 500000
 
 poll_voting_blocked = 520000
 poll_finalized = 520001

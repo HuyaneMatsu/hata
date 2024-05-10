@@ -3,29 +3,35 @@ import vampytest
 from ..fields import validate_duration
 
 
-def test__validate_duration__0():
+def _iter_options__passing():
+    yield None, 0
+    yield 0, 0
+    yield 1, 1
+    yield 12.6, 13
+
+
+def _iter_options__type_error():
+    yield 'hello'
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_duration(input_value):
     """
     Tests whether `validate_duration` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (1, 1),
-        (12.6, 13),
-        (None, 0),
-    ):
-        output = validate_duration(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_duration__1():
-    """
-    Tests whether `validate_duration` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        Input value to test with.
     
-    Case: `TypeError`.
+    Returns
+    -------
+    output : `float`
+    
+    Raises
+    ------
+    TypeError
+    ValueError
     """
-    for input_value in (
-        'hello',
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_duration(input_value)
+    return validate_duration(input_value)

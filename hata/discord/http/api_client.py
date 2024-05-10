@@ -676,7 +676,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
     
     async def poll_finalize(self, channel_id, message_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.poll_finalize, message_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.poll_finalize, NO_SPECIFIC_RATE_LIMITER),
             METHOD_POST,
             f'{API_ENDPOINT}/channels/{channel_id}/polls/{message_id}/expire',
         )
@@ -826,7 +826,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
     
     async def guild_user_delete(self, guild_id, user_id, reason):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.guild_user_delete, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_user_delete, NO_SPECIFIC_RATE_LIMITER),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}',
             reason = reason,
@@ -835,7 +835,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
     
     async def guild_ban_add(self, guild_id, user_id, data, reason):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.guild_ban_add, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_ban_add, NO_SPECIFIC_RATE_LIMITER),
             METHOD_PUT,
             f'{API_ENDPOINT}/guilds/{guild_id}/bans/{user_id}',
             data,
@@ -843,9 +843,19 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         )
     
     
+    async def guild_ban_add_multiple(self, guild_id, data, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_ban_add_multiple, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_POST,
+            f'{API_ENDPOINT}/guilds/{guild_id}/bulk-ban',
+            data,
+            reason = reason,
+        )
+    
+    
     async def guild_ban_delete(self, guild_id, user_id, reason):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.guild_ban_delete, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_ban_delete, NO_SPECIFIC_RATE_LIMITER),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/bans/{user_id}',
             reason = reason,
@@ -2364,4 +2374,12 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             RateLimitHandler(RATE_LIMIT_GROUPS.entitlement_delete, NO_SPECIFIC_RATE_LIMITER),
             METHOD_DELETE,
             f'{API_ENDPOINT}/applications/{application_id}/entitlements/{entitlement_id}',
+        )
+    
+    
+    async def entitlement_consume(self, application_id, entitlement_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.entitlement_consume, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_POST,
+            f'{API_ENDPOINT}/applications/{application_id}/entitlements/{entitlement_id}/consume',
         )

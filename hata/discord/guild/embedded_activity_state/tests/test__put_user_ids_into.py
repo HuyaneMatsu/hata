@@ -3,16 +3,29 @@ import vampytest
 from ..fields import put_user_ids_into
 
 
-def test__put_user_ids_into():
+def _iter_options():
+    user_id_0 = 202212250009
+    
+    yield set(), False, {'users': []}
+    yield set(), True, {'users': []}
+    yield {user_id_0}, False, {'users': [str(user_id_0)]}
+    yield {user_id_0}, True, {'users': [str(user_id_0)]}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_user_ids_into(input_value, defaults):
     """
     Tests whether ``put_user_ids_into`` is working as intended.
-    """
-    user_id_1 = 202212250009
     
-    for input_value, defaults, expected_output in (
-        (set(), False, {'users': []}),
-        (set(), True, {'users': []}),
-        ({user_id_1}, False, {'users': [str(user_id_1)]}),
-    ):
-        data = put_user_ids_into(input_value, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    Parameters
+    ----------
+    input_value : `set<int>`
+        Value to serialize.
+    defaults : `bool`
+        Whether values as their default value should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
+    """
+    return put_user_ids_into(input_value, {}, defaults)

@@ -97,8 +97,8 @@ def create_pyproject_toml_file(directory_path, project_name):
             f'name = \'{project_name}\'\n'
             f'\n'
             f'dependencies = [\n'
-            f'    \'{PACKAGE_NAME}\',\n'
-            f'    \'{PACKAGE_NAME}[all]\',\n'
+            f'    \'{PACKAGE_NAME!s}\',\n'
+            f'    \'{PACKAGE_NAME!s}[all]\',\n'
             f']\n'
             f'readme = \'README.md\'\n'
             f'requires-python = \'>=3.6\'\n'
@@ -181,16 +181,16 @@ def create_cli_file(directory_path):
             f'\n'
             f'def main():\n'
             f'    try:\n'
-            f'        from {PACKAGE_NAME}.main import execute_command_from_system_parameters\n'
+            f'        from {PACKAGE_NAME!s}.main import execute_command_from_system_parameters\n'
             f'    except ImportError as err:\n'
             f'        raise ImportError(\n'
-            f'            \'Couldn\\\'t import {PACKAGE_NAME}. \'\n'
+            f'            \'Couldn\\\'t import {PACKAGE_NAME!s}. \'\n'
             f'            \'Are you sure it\\\'s installed and available on your PYTHONPATH environment variable? \'\n'
             f'            \'Did you forget to activate a virtual environment?\'\n'
             f'        ) from err\n'
             f'\n'
-            f'    from {PACKAGE_NAME}.ext.plugin_auto_reloader import start_auto_reloader, warn_auto_reloader_availability\n'
-            f'    from {PACKAGE_NAME}.ext.plugin_loader import load_all_plugin, frame_filter, register_plugin\n'
+            f'    from {PACKAGE_NAME!s}.ext.plugin_auto_reloader import start_auto_reloader, warn_auto_reloader_availability\n'
+            f'    from {PACKAGE_NAME!s}.ext.plugin_loader import load_all_plugin, frame_filter, register_plugin\n'
             f'    from scarletio import get_event_loop, write_exception_sync\n'
             f'\n'
             f'    from . import bots\n'
@@ -355,13 +355,14 @@ def create_bot_file(directory_path, bot_name):
         (
             f'__all__ = (\'{bot_variable_name}\',)\n'
             f'\n'
-            f'from {PACKAGE_NAME} import Client\n'
+            f'from {PACKAGE_NAME!s} import Client\n'
             f'\n'
             f'from ..constants import {bot_constant_name}_TOKEN\n'
             f'\n'
             f'\n'
             f'{bot_variable_name} = Client(\n'
             f'    {bot_constant_name}_TOKEN,\n'
+            f'    extensions = [\'slash\'],'
             f')\n'
         ),
     )
@@ -380,9 +381,42 @@ def create_plugins_init_file(directory_path):
         directory_path,
         '__init__.py',
         (
-            f'from {PACKAGE_NAME}.ext.plugin_loader import mark_as_plugin_root_directory\n'
+            f'from {PACKAGE_NAME!s}.ext.plugin_loader import mark_as_plugin_root_directory\n'
             f'\n'
             f'mark_as_plugin_root_directory()\n'
+        ),
+    )
+
+
+def create_plugins_ping_command_file(directory_path):
+    """
+    Creates a `/{project_name}/plugins/ping.py` file.
+    
+    Parameters
+    ----------
+    directory_path : `str`
+        Path to the file's directory.
+    """
+    create_file(
+        directory_path,
+        'ping.py',
+        (
+            f'from time import perf_counter\n'
+            f'\n'
+            f'from {PACKAGE_NAME!s} import ClientWrapper\n'
+            f'\n'
+            f'\n'
+            f'\nALL = ClientWrapper()\n'
+            f'\n'
+            f'\n'
+            f'@ALL.interactions(is_global = True, wait_for_acknowledgement = True)\n'
+            f'async def ping():\n'
+            f'    \"\"\"HTTP ping-pong.\"\"\"\n'
+            f'    start = perf_counter()\n'
+            f'    yield\n'
+            f'    delay = (perf_counter() - start) * 1000.0\n'
+            f'\n'
+            f'    yield f\'{{delay:.0f}} ms\'\n'
         ),
     )
 
@@ -430,3 +464,4 @@ def create_project_structure(root_directory_path, project_name, bot_names):
     create_directory(plugins_directory_path)
     
     create_plugins_init_file(plugins_directory_path)
+    create_plugins_ping_command_file(plugins_directory_path)

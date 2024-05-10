@@ -84,5 +84,6 @@ def test__create_project_structure():
             
             ('d', join_paths(input_root_directory_path, input_project_name, 'plugins')),
             ('f', join_paths(input_root_directory_path, input_project_name, 'plugins', '__init__.py')),
+            ('f', join_paths(input_root_directory_path, input_project_name, 'plugins', 'ping.py')),
         },
     )

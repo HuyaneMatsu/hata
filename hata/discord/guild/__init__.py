@@ -1,3 +1,5 @@
+from .ban_add_multiple_result import *
+from .ban_entry import *
 from .discovery import *
 from .discovery_category import *
 from .embedded_activity_state import *
@@ -19,6 +21,8 @@ from .welcome_screen_channel import *
 
 
 __all__ = (
+    *ban_add_multiple_result.__all__,
+    *ban_entry.__all__,
     *discovery.__all__,
     *discovery_category.__all__,
     *embedded_activity_state.__all__,

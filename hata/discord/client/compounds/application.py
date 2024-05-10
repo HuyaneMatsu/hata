@@ -304,6 +304,35 @@ class ClientCompoundApplicationEndpoints(Compound):
         return [Entitlement.from_data(entitlement_data) for entitlement_data in entitlement_datas]
     
     
+    async def entitlement_consume(self, entitlement):
+        """
+        Marks the one-time usage entitlement as consumed.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        entitlement : ``Entitlement``, `int`
+            The entitlement to consume.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        application_id = self.application.id
+        assert _assert__application_id(application_id)
+        
+        entitlement_id = get_entitlement_id(entitlement)
+        await self.api.entitlement_consume(application_id, entitlement_id)
+    
+    
     async def sku_get_all(self):
         """
         Requests the client's application's stock keeping unit.

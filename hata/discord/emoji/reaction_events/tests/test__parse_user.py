@@ -5,7 +5,7 @@ from ....user import ClientUserBase, GuildProfile, User
 from ..fields import parse_user
 
 
-def test__parse_user__0():
+def test__parse_user__user_id():
     """
     Tests whether ``parse_user`` works as intended.
     
@@ -24,7 +24,7 @@ def test__parse_user__0():
     vampytest.assert_eq(user.guild_profiles, {})
 
 
-def test__parse_user__1():
+def test__parse_user__user_id_and_guild_id():
     """
     Tests whether ``parse_user`` works as intended.
     
@@ -44,7 +44,7 @@ def test__parse_user__1():
     vampytest.assert_eq(user.guild_profiles, {})
 
 
-def test__parse_user__2():
+def test__parse_user__user_id_and_guild_id_and_member():
     """
     Tests whether ``parse_user`` works as intended.
     
@@ -77,7 +77,7 @@ def test__parse_user__2():
     vampytest.assert_eq(user.guild_profiles, {guild_id: guild_profile})
 
 
-def test__parse_user__3():
+def test__parse_user__user_id_and_member():
     """
     Tests whether ``parse_user`` works as intended.
     

@@ -3,34 +3,14 @@ __all__ = ()
 from scarletio import Compound
 
 from ...http import DiscordApiClient
+from ...guild import BanAddMultipleResult, BanEntry
+from ...guild.ban_add_multiple_result.fields import (
+    put_delete_message_duration_into, put_user_ids_into, validate_delete_message_duration, validate_user_ids
+)
 from ...user import User
 from ...utils import log_time_converter
 
 from ..request_helpers import get_guild_id, get_user_id
-from ..utils import BanEntry
-
-
-def _assert__guild_ban_add__delete_message_duration(delete_message_duration):
-    """
-    Asserts the `delete_message_duration` parameter of ``Client.guild_ban_add`` method.
-    
-    Parameters
-    ----------
-    delete_message_duration : `int`
-        How much seconds back the user's messages should be deleted. Can be in range [0:604800].
-    
-    Raises
-    ------
-    AssertionError
-        - If `delete_message_duration` was not given as `int`.
-    """
-    if not isinstance(delete_message_duration, int):
-        raise AssertionError(
-            f'`delete_message_duration` can be `int`, '
-            f'got {delete_message_duration.__class__.__name__}; {delete_message_duration!r}.'
-        )
-    
-    return True
 
 
 def _assert__guild_ban_get_chunk__limit(limit):
@@ -60,7 +40,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
     api : DiscordApiClient
     
     
-    async def guild_ban_add(self, guild, user, *, delete_message_duration = 0, reason = None):
+    async def guild_ban_add(self, guild, user, *, delete_message_duration = ..., reason = None):
         """
         Bans the given user from the guild.
         
@@ -74,6 +54,47 @@ class ClientCompoundGuildBanEndpoints(Compound):
         user : ``ClientUserBase``, `int`
             The user to ban from the guild.
         
+        delete_message_duration : `int`, Optional (Keyword only)
+            How much seconds back the user's messages should be deleted. Can be in range [0:604800].
+        
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the guild's audit logs.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild_id = get_guild_id(guild)
+        user_id = get_user_id(user)
+        
+        data = {}
+        
+        # delete_message_duration
+        if (delete_message_duration is not ...):
+            put_delete_message_duration_into(validate_delete_message_duration(delete_message_duration), data, False)
+        
+        await self.api.guild_ban_add(guild_id, user_id, data, reason)
+    
+    
+    async def guild_ban_add_multiple(self, guild, user_ids, *, delete_message_duration = 0, reason = None):
+        """
+        Bans the given users from the guild.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild from where the user will be banned.
+        
+        user_ids : `None`, `iterable` of `int`, `iterable` of ``ClientUserBase``
+            The user to ban from the guild.
+        
         delete_message_duration : `int` = `0`, Optional (Keyword only)
             How much seconds back the user's messages should be deleted. Can be in range [0:604800].
         
@@ -83,28 +104,25 @@ class ClientCompoundGuildBanEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` was not given neither as ``Guild`` nor `int`.
-            - If `user` was not given neither as ``ClientUserBase``, nor `int`.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
         guild_id = get_guild_id(guild)
-        user_id = get_user_id(user)
-        
-        assert _assert__guild_ban_add__delete_message_duration(delete_message_duration)
         
         data = {}
         
-        # Silently limit the values. 
-        if delete_message_duration > 0:
-            if delete_message_duration > 604800:
-                delete_message_duration = 604800
-            data['delete_message_seconds'] = delete_message_duration
+        # delete_message_duration
+        if (delete_message_duration is not ...):
+            put_delete_message_duration_into(validate_delete_message_duration(delete_message_duration), data, False)
         
+        # user_ids
+        put_user_ids_into(validate_user_ids(user_ids), data, False)
         
-        await self.api.guild_ban_add(guild_id, user_id, data, reason)
+        data = await self.api.guild_ban_add_multiple(guild_id, data, reason)
+        return BanAddMultipleResult.from_data(data)
     
     
     async def guild_ban_delete(self, guild, user, *, reason = None):
@@ -194,8 +212,8 @@ class ClientCompoundGuildBanEndpoints(Compound):
         if (before is not None):
             query_parameters['before'] = log_time_converter(before)
         
-        ban_datas = await self.api.guild_ban_get_chunk(guild_id, query_parameters)
-        return [BanEntry(User.from_data(ban_data['user']), ban_data.get('reason', None)) for ban_data in ban_datas]
+        ban_entry_datas = await self.api.guild_ban_get_chunk(guild_id, query_parameters)
+        return [BanEntry.from_data(ban_entry_data) for  ban_entry_data in ban_entry_datas]
     
     
     async def guild_ban_get_all(self, guild):
@@ -237,12 +255,10 @@ class ClientCompoundGuildBanEndpoints(Compound):
         ban_entries = []
         
         while True:
-            ban_datas = await self.api.guild_ban_get_chunk(guild_id, query_parameters)
+            ban_entry_datas = await self.api.guild_ban_get_chunk(guild_id, query_parameters)
+            ban_entries.extend(BanEntry.from_data(ban_entry_data) for  ban_entry_data in ban_entry_datas)
             
-            for ban_data in ban_datas:
-                ban_entries.append(BanEntry(User.from_data(ban_data['user']), ban_data.get('reason', None)))
-            
-            if len(ban_datas) < 1000:
+            if len(ban_entry_datas) < 1000:
                 break
             
             query_parameters['after'] = ban_entries[-1].user.id

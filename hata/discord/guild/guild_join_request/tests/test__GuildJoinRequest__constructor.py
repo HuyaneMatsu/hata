@@ -12,7 +12,7 @@ from ..preinstanced import GuildJoinRequestStatus
 
 def _assert_fields_set(event):
     """
-    Checks whether every attribute is set of the given guild join request delete event.
+    Checks whether every attribute is set of the given guild join request event.
     
     Parameters
     ----------

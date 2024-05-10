@@ -128,6 +128,8 @@ def render_readme_section_structure_into(into, project_name, bot_names):
     render_readme_section_structure_plugins(into, project_name)
     into.append('\n')
     render_readme_section_structure_plugins_init(into, project_name)
+    into.append('\n')
+    render_readme_section_structure_plugins_ping(into, project_name)
     
     return into
 
@@ -179,7 +181,8 @@ def render_readme_section_structure_directory_into(into, project_name, bot_names
         into.append('.py\n')
     into.append(
         '    └─ plugins\n'
-        '        └─ __init__.py\n'
+        '        ├─ __init__.py\n'
+        '        └─ ping.py\n'
         '```\n'
     )
     
@@ -605,6 +608,31 @@ def render_readme_section_structure_plugins_init(into, project_name):
     
     return into
 
+
+def render_readme_section_structure_plugins_ping(into, project_name):
+    """
+    Renders the `README.md`'s `structure ./{project_name}/bots/plugins/ping.py` section.
+    
+    Parameters
+    ----------
+    into : `list` of `str`
+        Content parts to render into.
+    
+    Returns
+    -------
+    into : `list` of `str`
+    """
+    into.append('### ./')
+    into.append(project_name)
+    into.append(
+        '/plugins/ping.py\n'
+        '\n'
+        'An example single-file plugin.\n'
+        '\n'
+        'Registers a `/ping` command into every client.\n'
+    )
+    
+    return into
 
 
 def render_readme_section_install(into):

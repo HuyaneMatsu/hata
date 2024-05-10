@@ -1,3 +1,29 @@
+## 1.3.55 *\[2024-05-10\]*
+
+### Improvements
+
+- Add `Client.entitlement_consume`.
+- Add `RATE_LIMIT_GROUPS.entitlement_consume`.
+- Add `DiscordApiClient.entitlement_consume˙.
+- Add `RATE_LIMIT_GROUPS.guild_ban_add_multiple`.
+- Add `DiscordApiClient.guild_ban_add_multiple`.
+- Add `ERROR_CODES.failed_to_ban_users`.
+- `BanEntry` now supports rich attribute exceptions.
+- Add `BanEntry.from_data`.
+- Add `BanEntry.to_data`.
+- Add `BanEntry.__hash__`.
+- Add `BanEntry.copy`.
+- Add `BanEntry.copy_with`.
+- Add `BanEntry.__eq__`.
+- Add `BanAddMultipleResult`.
+- Add `Client.guild_ban_add_multiple`.
+- Add `hata scaffold ...` now creates a new `{project_name}/plugins/ping.py` example plugin file.
+- `Client.message_get_at_index` now returns `None` instead of raising `IndexError`.
+
+### Bug fixes
+
+- `Client.message_get_at_index` raised `IndexError` even when it should not have.
+
 ## 1.3.54 *\[2024-04-28\]*
 
 ### Improvements

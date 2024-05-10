@@ -21,7 +21,7 @@ def test__GuildProfile__copy():
     joined_at = DateTime(2016, 5, 15)
     nick = 'Ayumi'
     pending = False
-    role_ids = [2022100023, 2022100024]
+    role_ids = [202211110023, 202211110024]
     timed_out_until = DateTime(2016, 5, 20)
     
     
@@ -54,7 +54,7 @@ def test__GuildProfile__copy_with__0():
     joined_at = DateTime(2016, 5, 15)
     nick = 'Ayumi'
     pending = False
-    role_ids = [2022100023, 2022100024]
+    role_ids = [202211110023, 202211110024]
     timed_out_until = DateTime(2016, 5, 20)
     
     
@@ -91,8 +91,8 @@ def test__GuildProfile__copy_with__1():
     new_nick = 'Necrophantasia'
     old_pending = False
     new_pending = True
-    old_role_ids = [2022100025, 2022100026]
-    new_role_ids = [2022100027, 2022100028]
+    old_role_ids = [202211110025, 202211110026]
+    new_role_ids = [202211110027, 202211110028]
     old_timed_out_until = DateTime(2016, 5, 20)
     new_timed_out_until = DateTime(2017, 5, 20)
     old_flags = GuildProfileFlag(3)
@@ -154,8 +154,8 @@ def test__GuildProfile__get_top_role__1():
     
     Case: actually has top role.
     """
-    role_id_1 = 2022100028
-    role_id_2 = 2022100029
+    role_id_1 = 202211110028
+    role_id_2 = 202211110029
     
     role_1 = Role.precreate(role_id_1, position = 10)
     role_2 = Role.precreate(role_id_2, position = 8)
@@ -174,8 +174,8 @@ def test__GuildProfile__get_top_role__2():
     
     Case: no roles cached.
     """
-    role_id_1 = 2022100030
-    role_id_2 = 2022100031
+    role_id_1 = 202211110030
+    role_id_2 = 202211110031
     
     role_ids = [role_id_1, role_id_2]
     
@@ -185,42 +185,73 @@ def test__GuildProfile__get_top_role__2():
     vampytest.assert_eq(top_role.id, role_id_2)
 
 
-def test__GuildProfile__iter_role_ids():
-    """
-    Tests whether ``GuildProfile.get_top_role`` works as intended.
-    """
-    for input_role_ids, expected_output in (
-        (None, []),
-        ([2022100032, 2022100033], [2022100032, 2022100033]),
-    ):
-        guild_profile = GuildProfile(role_ids = input_role_ids)
-        output_role_ids = [*guild_profile.iter_role_ids()]
-        vampytest.assert_eq(output_role_ids, expected_output)
+def _iter_options__iter_role_ids():
+    role_id_0 = 202211110032
+    role_id_1 = 202211110033
+    
+    yield None, []
+    yield [role_id_0], [role_id_0]
+    yield [role_id_0, role_id_1], [role_id_0, role_id_1]
 
 
-def test__GuildProfile__iter_roles():
+@vampytest._(vampytest.call_from(_iter_options__iter_role_ids()).returning_last())
+def test__GuildProfile__iter_role_ids(input_role_ids):
     """
-    Tests whether ``GuildProfile.get_top_role`` works as intended.
+    Tests whether ``GuildProfile.iter_role_ids`` works as intended.
+    
+    Parameters
+    ----------
+    input_role_ids : `None | list<int>`
+        Role identifiers to create the guild profile with.
+    
+    Returns
+    -------
+    output : `list<int>`
     """
-    for input_role_ids, expected_output in (
-        (None, []),
-        ([2022100034, 2022100035], [Role.precreate(2022100034), Role.precreate(2022100035)]),
-    ):
-        guild_profile = GuildProfile(role_ids = input_role_ids)
-        output_roles = [*guild_profile.iter_roles()]
-        vampytest.assert_eq(output_roles, expected_output)
+    guild_profile = GuildProfile(role_ids = input_role_ids)
+    return [*guild_profile.iter_role_ids()]
+
+
+def _iter_options__iter_roles():
+    role_id_0 = 202211110034
+    role_id_1 = 202211110035
+    
+    role_0 = Role.precreate(role_id_0)
+    role_1 = Role.precreate(role_id_1)
+    
+    yield None, []
+    yield [role_id_0], [role_0]
+    yield [role_id_0, role_id_1], [role_0, role_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_roles()).returning_last())
+def test__GuildProfile__iter_roles(input_role_ids):
+    """
+    Tests whether ``GuildProfile.iter_roles`` works as intended.
+    
+    Parameters
+    ----------
+    input_role_ids : `None | list<int>`
+        Role identifiers to create the guild profile with.
+    
+    Returns
+    -------
+    output : `list<Role>`
+    """
+    guild_profile = GuildProfile(role_ids = input_role_ids)
+    return [*guild_profile.iter_roles()]
 
 
 def test__GuildProfile__roles():
     """
-    Tests whether ``GuildProfile.get_top_role`` works as intended.
+    Tests whether ``GuildProfile.roles`` works as intended.
     """
     for input_role_ids, expected_output in (
         (None, None),
-        ([2022100036, 2022100037], [Role.precreate(2022100036), Role.precreate(2022100037)]),
+        ([202211110036, 202211110037], [Role.precreate(202211110036), Role.precreate(202211110037)]),
         (
-            [2022100038, 2022100039],
-            [Role.precreate(2022100039, position = 0), Role.precreate(2022100038, position = 1)]
+            [202211110038, 202211110039],
+            [Role.precreate(202211110039, position = 0), Role.precreate(202211110038, position = 1)]
         ),
     ):
         guild_profile = GuildProfile(role_ids = input_role_ids)
@@ -232,8 +263,8 @@ def test__GuildProfile__color():
     """
     Tests whether ``GuildProfile.color`` works as intended.
     """
-    role_1 = Role.precreate(2022100040, position = 0, color = 12345)
-    role_2 = Role.precreate(2022100041, position = 2, color = 23456)
+    role_1 = Role.precreate(202211110040, position = 0, color = 12345)
+    role_2 = Role.precreate(202211110041, position = 2, color = 23456)
     
     for input_role_ids, expected_output in (
         (None, 0),

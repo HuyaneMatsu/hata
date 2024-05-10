@@ -12,8 +12,6 @@ async def test__Client__poll_finalize__stuffed():
     """
     Tests whether ``Client.poll_finalize`` works as intended.
     
-    Case: stuffed message.
-    
     This function is a coroutine.
     """
     client_id = 202404210033

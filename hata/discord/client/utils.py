@@ -1,5 +1,5 @@
 __all__ = (
-    'BanEntry', 'Typer', 'run_console_till_interruption', 'start_clients', 'stop_clients', 'wait_for_interruption'
+    'Typer', 'run_console_till_interruption', 'start_clients', 'stop_clients', 'wait_for_interruption'
 )
 
 import sys
@@ -130,50 +130,6 @@ def run_console_till_interruption():
         callback = _exit_callback,
         stop_on_interruption = True,
     )
-
-
-class BanEntry:
-    """
-    A ban entry.
-    
-    Attributes
-    ----------
-    user : ``ClientUserBase``
-        The banned user.
-    reason : `None`, `str`
-        The ban reason if applicable.
-    """
-    __slots__ = ('user', 'reason')
-    
-    def __init__(self, user, reason):
-        """
-        Creates a new ban entry instance.
-        
-        Parameters
-        ----------
-        user : ``ClientUserBase``
-            The banned user.
-        reason : `None`, `str`
-            The ban reason if applicable.
-        """
-        self.user = user
-        self.reason = reason
-    
-    
-    def __repr__(self):
-        """Returns the ban entry's representation."""
-        return f'<{self.__class__.__name__} user = {self.user!r}, reason = {self.reason!r}>'
-    
-    
-    def __len__(self):
-        """Helper for unpacking."""
-        return 2
-    
-    
-    def __iter__(self):
-        """Unpacks the ban entry."""
-        yield self.user
-        yield self.reason
 
 
 class UserGuildPermission:

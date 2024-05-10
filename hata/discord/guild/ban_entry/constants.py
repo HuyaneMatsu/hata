@@ -1,0 +1,4 @@
+__all__ = ()
+
+REASON_LENGTH_MIN = 0
+REASON_LENGTH_MAX = 512

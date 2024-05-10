@@ -110,6 +110,8 @@ setup(
         'hata.discord.exceptions',
         'hata.discord.gateway',
         'hata.discord.guild',
+        'hata.discord.guild.ban_add_multiple_result',
+        'hata.discord.guild.ban_entry',
         'hata.discord.guild.discovery',
         'hata.discord.guild.discovery_category',
         'hata.discord.guild.embedded_activity_state',

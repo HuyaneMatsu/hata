@@ -1,55 +1,24 @@
-__all__ = ('PollResult',)
+__all__ = ('ReactionMappingLine',)
 
 from scarletio import RichAttributeErrorBaseType
 
-from .fields import (
-    parse_answer_id, parse_count, put_answer_id_into, put_count_into, validate_answer_id, validate_count, validate_users
-)
+from .fields import validate_count, validate_users
 
 
-class PollResult(RichAttributeErrorBaseType):
+class ReactionMappingLine(RichAttributeErrorBaseType):
     """
-    Represents a poll's result for an answer.
+    Contains who reaction with a represented reaction.
     
     Attributes
     ----------
-    answer_id : `int`
-        The represented answer's identifier.
     count : `int`
-        The amount of votes.
+        The total number of users who reacted.
     users : `None | set<ClientUserBase>`
-        The known voters.
+        The known reactors.
     """
-    __slots__ = ('answer_id', 'count', 'users')
+    __slots__ = ('count', 'users')
     
-    def __new__(cls, *, answer_id = ..., count = ..., users = ...,):
-        """
-        Creates a poll result instance.
-        
-        Parameters
-        ----------
-        answer_id : `int`, Optional (Keyword only)
-            The represented answer's identifier.
-        
-        count : `int`, Optional (Keyword only)
-            The amount of votes.
-        
-        users : `None`, `iterable` of ``ClientUserBase``, Optional (Keyword only)
-            The known voters.
-        
-        Raises
-        ------
-        TypeError
-            - If a parameter's type is incorrect.
-        ValueError
-            - If a parameter's value is incorrect.
-        """
-        # answer_id
-        if answer_id is ...:
-            answer_id = 0
-        else:
-            answer_id = validate_answer_id(answer_id)
-        
+    def __new__(cls, *, count = ..., users = ...):
         # count
         if count is ...:
             count = 0
@@ -62,61 +31,45 @@ class PollResult(RichAttributeErrorBaseType):
         else:
             users = validate_users(users)
         
-        # post-checks
+        # postprocess
         if (users is not None) and (len(users) > count):
             count = len(users)
         
         # Construct
         self = object.__new__(cls)
-        self.answer_id = answer_id
         self.count = count
         self.users = users
         return self
     
     
-    @classmethod
-    def from_data(cls, data):
-        """
-        Creates a new poll result with the given data.
+    def __len__(self):
+        """Returns the amount of known users."""
+        users = self.users
+        if users is None:
+            return 0
         
-        Parameters
-        ----------
-        data : `dict<str, object>`
-            Executable data.
-        """
-        self = object.__new__(cls)
-        self.answer_id = parse_answer_id(data)
-        self.count = parse_count(data)
-        self.users = None
-        return self
+        return len(users)
     
     
-    def to_data(self, *, defaults = False):
-        """
-        Converts the poll result to json serializable object.
+    def __iter__(self):
+        """Iterates over the known users."""
+        users = self.users
+        if (users is not None):
+            yield from users
+    
+    
+    def __contains__(self, user):
+        """Returns whether the given user is in the known ones."""
+        users = self.users
+        if (users is None):
+            return False
         
-        Parameters
-        ----------
-        defaults : `bool` = `False`, Optional (Keyword only)
-            Whether fields with their default value should be included as well.
-        
-        Returns
-        -------
-        data : `dict<str, object>`
-        """
-        data = {}
-        put_answer_id_into(self.answer_id, data, defaults)
-        put_count_into(self.count, data, defaults)
-        return data
+        return user in users
     
     
     def __repr__(self):
-        """Returns the count's representation."""
+        """Returns the representation of the container."""
         repr_parts = ['<', type(self).__name__]
-        
-        # answer_od
-        repr_parts.append(' answer_id = ')
-        repr_parts.append(repr(self.answer_id))
         
         # count
         repr_parts.append(', count = ')
@@ -135,10 +88,6 @@ class PollResult(RichAttributeErrorBaseType):
         if type(self) is not type(other):
             return NotImplemented
         
-        # answer_id
-        if self.answer_id != other.answer_id:
-            return False
-        
         # count
         if self.count != other.count:
             return False
@@ -155,9 +104,6 @@ class PollResult(RichAttributeErrorBaseType):
         """Returns the count's hash."""
         hash_value = 0
         
-        # answer_id
-        hash_value ^= self.answer_id
-        
         # count
         hash_value ^= self.count
         
@@ -169,110 +115,6 @@ class PollResult(RichAttributeErrorBaseType):
                 hash_value ^= hash(user)
         
         return hash_value
-    
-    
-    def copy(self):
-        """
-        Copies the poll result.
-        
-        Returns
-        -------
-        new : `instance<type<self>>`
-        """
-        new = object.__new__(type(self))
-        
-        new.answer_id = self.answer_id
-        new.count = self.count
-        
-        users = self.users
-        if (users is not None):
-            users = users.copy()
-        new.users = users
-        
-        return new
-    
-    
-    def copy_with(self, *, answer_id = ..., count = ..., users = ...):
-        """
-        Copies the poll result with the given fields.
-        
-        Parameters
-        ----------
-        answer_id : `int`, Optional (Keyword only)
-            The represented answer's identifier.
-        
-        count : `int`, Optional (Keyword only)
-            The amount of votes.
-        
-        users : `None`, `iterable` of ``ClientUserBase``, Optional (Keyword only)
-            The known voters.
-        
-        Returns
-        -------
-        new : `instance<type<self>>`
-        
-        Raises
-        ------
-        TypeError
-            - If a parameter's type is incorrect.
-        ValueError
-            - If a parameter's value is incorrect.
-        """
-        # answer_id
-        if answer_id is ...:
-            answer_id = self.answer_id
-        else:
-            answer_id = validate_answer_id(answer_id)
-        
-        # count
-        if count is ...:
-            count = self.count
-        else:
-            count = validate_count(count)
-        
-        # users
-        if users is ...:
-            users = self.users
-            if (users is not None):
-                users = users.copy()
-        else:
-            users = validate_users(users)
-        
-        # post-checks
-        if (users is not None) and len(users) > count:
-            count = len(users)
-        
-        # Construct
-        new = object.__new__(type(self))
-        new.answer_id = answer_id
-        new.count = count
-        new.users = users
-        return new
-    
-    
-    def __len__(self):
-        """Returns the amount of known voters."""
-        users = self.users
-        if users is None:
-            return 0
-        
-        return len(users)
-    
-    
-    def __iter__(self):
-        """Iterates over the known voters."""
-        users = self.users
-        if (users is not None):
-            yield from users
-    
-    
-    def __contains__(self, user):
-        """Returns whether the given user is in the known votes."""
-        users = self.users
-        if (users is None):
-            return False
-        
-        return user in users
     
     
     def _merge_with(self, other):
@@ -310,34 +152,101 @@ class PollResult(RichAttributeErrorBaseType):
     
     
     @classmethod
-    def _create_empty(cls, answer_id):
+    def _create_empty(cls):
         """
-        Creates an empty poll result.
+        Creates a new reaction mapping line.
         
         Parameters
         ----------
-        answer_id : `int`
-            The represented answer's identifier.
+        count : `int`
+            The amount of reactions to create with.
         
         Returns
         -------
-        self : `instance<cls>`
+        self : instance<cls>
         """
         self = object.__new__(cls)
-        self.answer_id = answer_id
         self.count = 0
         self.users = None
         return self
     
     
-    def _add_vote(self, user):
+    def copy(self):
         """
-        Adds a voter.
+        Copies the reaction mapping line.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        new = object.__new__(type(self))
+        
+        new.count = self.count
+        
+        users = self.users
+        if (users is not None):
+            users = users.copy()
+        new.users = users
+        
+        return new
+    
+    
+    def copy_with(self, *, count = ..., users = ...):
+        """
+        Copies the reaction mapping line with the given fields.
+        
+        Parameters
+        ----------
+        count : `int`, Optional (Keyword only)
+            The amount of reactors.
+        
+        users : `None`, `iterable` of ``ClientUserBase``, Optional (Keyword only)
+            The known users.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # count
+        if count is ...:
+            count = self.count
+        else:
+            count = validate_count(count)
+        
+        # users
+        if users is ...:
+            users = self.users
+            if (users is not None):
+                users = users.copy()
+        else:
+            users = validate_users(users)
+        
+        # post-checks
+        if (users is not None) and (len(users) > count):
+            count = len(users)
+        
+        # Construct
+        new = object.__new__(type(self))
+        new.count = count
+        new.users = users
+        return new
+    
+    
+    def _add_reaction(self, user):
+        """
+        Adds a user.
         
         Parameters
         ----------
         user : ``ClientUserBase``
-            The user who voted.
+            The user who reacted.
         
         Returns
         -------
@@ -359,14 +268,14 @@ class PollResult(RichAttributeErrorBaseType):
         return True
     
     
-    def _fill_some_votes(self, some_users):
+    def _fill_some_reactions(self, some_users):
         """
-        Fills out some voters.
+        Fills out some users.
         
         Parameters
         ----------
         some_users : `list` of ``ClientUserBase``
-            The users who voted.
+            The users who reacted.
         """
         users = self.users
         if users is None:
@@ -381,14 +290,14 @@ class PollResult(RichAttributeErrorBaseType):
             self.count = len(users)
     
     
-    def _fill_all_votes(self, all_users):
+    def _fill_all_reactions(self, all_users):
         """
-        Fills out all voters.
+        Fills out all users.
         
         Parameters
         ----------
         all_users : `list` of ``ClientUserBase``
-            The users who voted.
+            The users who reacted.
         """
         users = self.users
         if users is None:
@@ -405,14 +314,14 @@ class PollResult(RichAttributeErrorBaseType):
             self.count = user_count
     
     
-    def _remove_vote(self, user):
+    def _remove_reaction(self, user):
         """
-        Removes a voter.
+        Removes a user.
         
         Parameters
         ----------
         user : ``ClientUserBase``
-            The user who removed their vote.
+            The user who removed their reaction.
         
         Returns
         -------
@@ -449,7 +358,7 @@ class PollResult(RichAttributeErrorBaseType):
     @property
     def unknown(self):
         """
-        Returns the amount of unknown voters.
+        Returns the amount of unknown users.
         
         Returns
         -------
@@ -465,7 +374,7 @@ class PollResult(RichAttributeErrorBaseType):
     
     def filter_after(self, limit, after):
         """
-        If we know all the voters, then instead of executing a Discord API request we filter the voters locally
+        If we know all the users, then instead of executing a Discord API request we filter the users locally
         using this method.
         
         Parameters
@@ -487,3 +396,12 @@ class PollResult(RichAttributeErrorBaseType):
         filtered_users.sort()
         del filtered_users[limit:]
         return filtered_users
+    
+    
+    def clear(self):
+        """
+        Clears the reaction mapping line's users.
+        """
+        users = self.users
+        if (users is not None):
+            users.clear()

@@ -36,18 +36,18 @@ def test__InteractionMetadataApplicationCommandAutocomplete__new__1():
     
     Case: All fields given.
     """
-    id_ = 202211060001
+    application_command_id = 202211060001
     name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
     
     interaction_metadata = InteractionMetadataApplicationCommandAutocomplete(
-        id = id_,
+        application_command_id = application_command_id,
         name = name,
         options = options,
     )
     _check_is_all_field_set(interaction_metadata)
     
-    vampytest.assert_eq(interaction_metadata.id, id_)
+    vampytest.assert_eq(interaction_metadata.id, application_command_id)
     vampytest.assert_eq(interaction_metadata.name, name)
     vampytest.assert_eq(interaction_metadata.options, tuple(options))
     

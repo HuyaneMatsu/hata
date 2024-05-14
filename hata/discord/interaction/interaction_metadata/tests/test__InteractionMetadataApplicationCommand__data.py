@@ -52,7 +52,7 @@ def test__InteractionMetadataApplicationCommand__to_data():
     target_id = 202211060021
     
     interaction_metadata = InteractionMetadataApplicationCommand(
-        id = application_command_id,
+        application_command_id = application_command_id,
         name = name,
         options = options,
         resolved = resolved,

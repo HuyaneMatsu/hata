@@ -21,55 +21,19 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
     """
     __slots__ = ()
     
-    def __new__(cls, **keyword_parameters):
+    def __new__(cls):
         """
         Creates a new interaction metadata from the given parameters.
-        
-        Parameters
-        ----------
-        **keyword_parameters : Keyword parameters
-            Keyword parameters defining how should the fields be set.
-        
-        Other Parameters
-        ----------------
-        component_type : ``ComponentType``, Optional (Keyword only)
-            The used component's type.
-        
-        components : `None`, `tuple` of ``InteractionComponent``, Optional (Keyword only)
-            Submitted component values of a form submit interaction.
-        
-        custom_id : `None`, `str`, Optional (Keyword only)
-            Component or form interaction's custom identifier.
-        
-        id : `int`, Optional (Keyword only)
-            The represented application command's identifier number.
-        
-        name : `str`, Optional (Keyword only)
-            The represented application command's name.
-        
-        options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
-            Application command option representations. Like sub-command or parameter.
-        
-        resolved : `None`, ``Resolved``, Optional (Keyword only)
-            Contains the received entities.
-        
-        target_id : `int`, Optional (Keyword only)
-            The interaction's target's identifier. Applicable for context commands.
-        
-        values : `None`, `tuple` of `str`, Optional (Keyword only)
-            Values selected by the user. Applicable for component interactions.
         
         Raises
         ------
         TypeError
             - If a parameter's type is incorrect.
-            - Extra or unused parameters.
         ValueError
-            - If a field's value is incorrect.
+            - If a parameter's value is incorrect.
         """
-        self = cls._create_empty()
-        if keyword_parameters:
-            self._set_attributes_from_keyword_parameters(keyword_parameters)
+        # Construct
+        self = object.__new__(cls)
         return self
     
     
@@ -87,7 +51,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
     
     def copy(self):
         """
-        Copies the integration option.
+        Copies the interaction metadata.
         
         Returns
         -------
@@ -96,43 +60,9 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         return object.__new__(type(self))
     
     
-    def copy_with(self, **keyword_parameters):
+    def copy_with(self):
         """
-        Copies the integration with replacing the defined fields.
-        
-        Parameters
-        ----------
-        **keyword_parameters : Keyword parameters
-            Keyword parameters defining which fields and how should be set.
-        
-        Other Parameters
-        ----------------
-        component_type : ``ComponentType``, Optional (Keyword only)
-            The used component's type.
-        
-        components : `None`, `tuple` of ``InteractionComponent``, Optional (Keyword only)
-            Submitted component values of a form submit interaction.
-        
-        custom_id : `None`, `str`, Optional (Keyword only)
-            Component or form interaction's custom identifier.
-        
-        id : `int`, Optional (Keyword only)
-            The represented application command's identifier number.
-        
-        name : `str`, Optional (Keyword only)
-            The represented application command's name.
-        
-        options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
-            Application command option representations. Like sub-command or parameter.
-        
-        resolved : `None`, ``Resolved``, Optional (Keyword only)
-            Contains the received entities.
-        
-        target_id : `int`, Optional (Keyword only)
-            The interaction's target's identifier. Applicable for context commands.
-        
-        values : `None`, `tuple` of `str`, Optional (Keyword only)
-            Values selected by the user. Applicable for component interactions.
+        Copies the interaction metadata with the given fields.
         
         Returns
         -------
@@ -141,37 +71,13 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            - If a field's type is incorrect.
-            - Extra or unused fields given.
+            - If a parameter's type is incorrect.
         ValueError
-            - If a field's value is incorrect.
+            - If a parameter's value is incorrect.
         """
-        self = self.copy()
-        if keyword_parameters:
-            self._set_attributes_from_keyword_parameters(keyword_parameters)
-        return self
-    
-    
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        """
-        Sets the integration's attributes from the given keyword parameters.
-        
-        Parameters
-        keyword_parameters : Keyword parameters
-            A dictionary of keyword parameters defining which fields and how should be set.
-        
-        Raises
-        ------
-        TypeError
-            - If a field's type is incorrect.
-            - Extra or unused fields given.
-        ValueError
-            - If a field's value is incorrect.
-        """
-        if keyword_parameters:
-            raise TypeError(
-                f'Extra or unused keyword parameters: {keyword_parameters!r}.'
-            )
+        # Construct
+        new = object.__new__(type(self))
+        return new
     
     
     @classmethod
@@ -217,7 +123,7 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         """Returns the interaction's representation."""
         repr_parts = []
         repr_parts.append('<')
-        repr_parts.append(self.__class__.__name__)
+        repr_parts.append(type(self).__name__)
         
         self._put_attribute_representations_into(repr_parts)
         

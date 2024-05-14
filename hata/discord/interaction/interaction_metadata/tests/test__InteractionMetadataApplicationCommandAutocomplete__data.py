@@ -40,7 +40,7 @@ def test__InteractionMetadataApplicationCommandAutocomplete__to_data():
     options = [InteractionOption(name = 'Rem')]
     
     interaction_metadata = InteractionMetadataApplicationCommandAutocomplete(
-        id = application_command_id,
+        application_command_id = application_command_id,
         name = name,
         options = options,
     )

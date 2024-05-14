@@ -238,7 +238,7 @@ class EmbedFooter(EmbedFieldBase):
         """
         warnings.warn(
             (
-                f'`{type(self).__text__}.proxy_icon_url` is deprecated and will be removed in 2023 august. '
+                f'`{type(self).__name__}.proxy_icon_url` is deprecated and will be removed in 2023 august. '
                 f'Please use `.icon_proxy_url` instead.'
             ),
             FutureWarning,

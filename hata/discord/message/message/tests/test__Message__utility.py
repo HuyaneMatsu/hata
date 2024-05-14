@@ -6,7 +6,7 @@ from ....channel import Channel, ChannelType
 from ....component import Component, ComponentType
 from ....core import BUILTIN_EMOJIS
 from ....embed import EmbedAuthor, Embed, EmbedField, EmbedFooter, EmbedProvider, EmbedType
-from ....emoji import Reaction, ReactionMapping, ReactionType
+from ....emoji import Reaction, ReactionMapping, ReactionMappingLine, ReactionType
 from ....guild import Guild
 from ....interaction import Resolved
 from ....poll import Poll, PollAnswer, PollQuestion, PollResult
@@ -159,10 +159,22 @@ def test__Message__add_reaction():
     user_1 = User.precreate(202305040099)
     
     message = Message()
-    message._add_reaction(reaction_0, user_0)
-    message._add_reaction(reaction_0, user_1)
+    output = message._add_reaction(reaction_0, user_0)
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
     
-    vampytest.assert_eq(message.reactions, {reaction_0: [user_0, user_1]})
+    message._add_reaction(reaction_0, user_1)
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
+    
+    vampytest.assert_eq(
+        message.reactions,
+        ReactionMapping(
+            lines = {
+                reaction_0: ReactionMappingLine(count = 2, users = [user_0, user_1]),
+            },
+        ),
+    )
 
 
 def test__Message__remove_reaction():
@@ -175,9 +187,15 @@ def test__Message__remove_reaction():
     
     message = Message()
     message._add_reaction(reaction_0, user_0)
-    message._remove_reaction(reaction_0, user_0)
     
-    vampytest.assert_eq(message.reactions, {})
+    output = message._remove_reaction(reaction_0, user_0)
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
+    
+    vampytest.assert_eq(
+        message.reactions,
+        ReactionMapping(),
+    )
 
 
 def test__Message__remove_reaction_emoji():
@@ -193,11 +211,15 @@ def test__Message__remove_reaction_emoji():
     message._add_reaction(reaction_0, user_0)
     output = message._remove_reaction_emoji(emoji_0)
     
-    vampytest.assert_eq(message.reactions, {})
+    vampytest.assert_eq(
+        message.reactions,
+        ReactionMapping(),
+    )
+    
     vampytest.assert_eq(
         output,
         {
-            reaction_0: [user_0]
+            reaction_0: ReactionMappingLine(count = 1, users = [user_0]),
         },
     )
 
@@ -241,9 +263,11 @@ def test__Message__copy():
     nonce = 'Sakuya'
     pinned = True
     poll = Poll(expires_at = DateTime(2016, 5, 14))
-    reactions = ReactionMapping({
-        BUILTIN_EMOJIS['x']: [None, None],
-    })
+    reactions = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
+        },
+    )
     referenced_message = Message.precreate(202305040107, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110034)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
@@ -333,9 +357,11 @@ def test__Message__copy_with__no_fields():
     nonce = 'Sakuya'
     pinned = True
     poll = Poll(expires_at = DateTime(2016, 5, 14))
-    reactions = ReactionMapping({
-        BUILTIN_EMOJIS['x']: [None, None],
-    })
+    reactions = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
+        },
+    )
     referenced_message = Message.precreate(202305040133, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110035)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
@@ -425,9 +451,11 @@ def test__Message__copy_with__all_fields():
     old_nonce = 'Sakuya'
     old_pinned = True
     old_poll = Poll(expires_at = DateTime(2016, 5, 14))
-    old_reactions = ReactionMapping({
-        BUILTIN_EMOJIS['x']: [None, None],
-    })
+    old_reactions = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
+        },
+    )
     old_referenced_message = Message.precreate(202305040149, content = 'Patchouli')
     old_resolved = Resolved(attachments = [Attachment.precreate(202310110036)])
     old_role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
@@ -473,9 +501,11 @@ def test__Message__copy_with__all_fields():
     new_nonce = 'Maid'
     new_pinned = False
     new_poll = Poll(expires_at = DateTime(2016, 5, 15))
-    new_reactions = ReactionMapping({
-        BUILTIN_EMOJIS['heart']: [None],
-    })
+    new_reactions = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): ReactionMappingLine(count = 1),
+        },
+    )
     new_referenced_message = Message.precreate(202305040164, content = 'Book')
     new_resolved = Resolved(attachments = [Attachment.precreate(202310110036)])
     new_role_subscription = MessageRoleSubscription(tier_name = 'Big brain')
@@ -1850,9 +1880,11 @@ def test__Message__has_poll(input_value):
 
 
 def _iter_options__has_reactions():
-    reactions = ReactionMapping({
-        BUILTIN_EMOJIS['x']: [None, None],
-    })
+    reactions = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
+        },
+    )
     
     yield None, False
     yield ReactionMapping(), False,
@@ -2308,7 +2340,16 @@ def _iter_options__has_any_content_field():
     yield {'nonce': 'Sakuya'}, False
     yield {'pinned': True}, False
     yield {'poll': Poll(expires_at = DateTime(2016, 5, 14))}, True
-    yield {'reactions': ReactionMapping({BUILTIN_EMOJIS['x']: [None, None]})}, False
+    yield (
+        {
+            'reactions': ReactionMapping(
+                lines = {
+                    Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
+                },
+            )
+        },
+        False,
+    )
     yield {'referenced_message': Message.precreate(202404200030, content = 'Patchouli')}, False
     yield {'resolved': Resolved(attachments = [Attachment.precreate(202404200031)])}, False
     yield {'role_subscription': MessageRoleSubscription(tier_name = 'Knowledge')}, False

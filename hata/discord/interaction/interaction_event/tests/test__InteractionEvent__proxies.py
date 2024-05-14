@@ -45,7 +45,7 @@ def test__InteractionEvent__proxies_application_command():
     
     Case: application command.
     """
-    id_ = 202211100014
+    application_command_id = 202211100014
     name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
     resolved = Resolved(attachments = [Attachment.precreate(202211100015)])
@@ -54,7 +54,7 @@ def test__InteractionEvent__proxies_application_command():
     interaction_event = InteractionEvent(
         interaction_type = InteractionType.application_command,
         interaction = InteractionMetadataApplicationCommand(
-            id = id_,
+            application_command_id = application_command_id,
             name = name,
             options = options,
             resolved = resolved,
@@ -62,7 +62,7 @@ def test__InteractionEvent__proxies_application_command():
         ),
     )
     
-    vampytest.assert_eq(interaction_event.application_command_id, id_)
+    vampytest.assert_eq(interaction_event.application_command_id, application_command_id)
     vampytest.assert_eq(interaction_event.application_command_name, name)
     vampytest.assert_eq(interaction_event.options, tuple(options))
     vampytest.assert_eq(interaction_event.resolved, resolved)
@@ -75,20 +75,20 @@ def test__InteractionEvent__proxies_application_command_autocomplete():
     
     Case: application command autocomplete.
     """
-    id_ = 202211100017
+    application_command_id = 202211100017
     name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
     
     interaction_event = InteractionEvent(
         interaction_type = InteractionType.application_command_autocomplete,
         interaction = InteractionMetadataApplicationCommandAutocomplete(
-            id = id_,
+            application_command_id = application_command_id,
             name = name,
             options = options,
         ),
     )
     
-    vampytest.assert_eq(interaction_event.application_command_id, id_)
+    vampytest.assert_eq(interaction_event.application_command_id, application_command_id)
     vampytest.assert_eq(interaction_event.application_command_name, name)
     vampytest.assert_eq(interaction_event.options, tuple(options))
 
@@ -223,7 +223,7 @@ def test__InteractionEvent__get_value_of():
     interaction_option_1 = InteractionOption(name = 'fumo', value = 'friday')
     interaction_option_2 = InteractionOption(
         name = 'maou',
-        type_ = ApplicationCommandOptionType.sub_command,
+        option_type = ApplicationCommandOptionType.sub_command,
         options = [interaction_option_1],
         value = 'day',
     )
@@ -247,7 +247,7 @@ def test__InteractionEvent__value():
     interaction_event = InteractionEvent(
         interaction_type = InteractionType.message_component,
         interaction = InteractionMetadataMessageComponent(
-            values = [value]
+            values = [value],
         ),
     )
     

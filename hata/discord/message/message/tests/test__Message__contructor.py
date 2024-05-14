@@ -6,7 +6,7 @@ from ....channel import Channel, ChannelType
 from ....component import Component, ComponentType
 from ....core import BUILTIN_EMOJIS
 from ....embed import Embed
-from ....emoji import ReactionMapping
+from ....emoji import Reaction, ReactionMapping, ReactionMappingLine, ReactionType
 from ....interaction import Resolved
 from ....poll import Poll
 from ....sticker import Sticker
@@ -120,9 +120,11 @@ def test__Message__new__all_fields():
     nonce = 'Sakuya'
     pinned = True
     poll = Poll(expires_at = DateTime(2016, 5, 14))
-    reactions = ReactionMapping({
-        BUILTIN_EMOJIS['x']: [None, None],
-    })
+    reactions = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
+        },
+    )
     referenced_message = Message.precreate(202305030012, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110006)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
@@ -268,9 +270,11 @@ def test__Message__precreate__all_fields():
     nonce = 'Sakuya'
     pinned = True
     poll = Poll(expires_at = DateTime(2016, 5, 14))
-    reactions = ReactionMapping({
-        BUILTIN_EMOJIS['x']: [None, None],
-    })
+    reactions = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
+        },
+    )
     referenced_message = Message.precreate(202305030032, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110007)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')

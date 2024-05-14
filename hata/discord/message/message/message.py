@@ -1615,7 +1615,7 @@ class Message(DiscordEntity, immortal = True):
             reactions = ReactionMapping()
             self.reactions = reactions
         
-        return reactions.add(reaction, user)
+        return reactions._add_reaction(reaction, user)
     
     
     def _remove_reaction(self, reaction, user):
@@ -1637,7 +1637,7 @@ class Message(DiscordEntity, immortal = True):
         if reactions is None:
             return False
             
-        return reactions.remove(reaction, user)
+        return reactions._remove_reaction(reaction, user)
     
     
     def _remove_reaction_emoji(self, emoji):
@@ -1655,7 +1655,7 @@ class Message(DiscordEntity, immortal = True):
         """
         reactions = self.reactions
         if (reactions is not None):
-            return reactions.remove_emoji(emoji)
+            return reactions._remove_reaction_emoji(emoji)
     
     
     def to_data(self, *, defaults = False, include_internals = False, recursive = True):
@@ -2483,9 +2483,8 @@ class Message(DiscordEntity, immortal = True):
         if (reactions is None):
             return False
         
-        try:
-            reactors = reactions[reaction]
-        except KeyError:
+        reactors = reactions[reaction]
+        if reactors is None:
             return False
         
         return (user in reactors)

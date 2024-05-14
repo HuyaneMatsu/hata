@@ -50,8 +50,9 @@ def test__InteractionMetadataFormSubmit__copy_with__1():
     Case: All fields given.
     """
     old_custom_id = 'Inaba'
-    new_custom_id = 'Reisen'
     old_components = [InteractionComponent(custom_id = 'Rem')]
+    
+    new_custom_id = 'Reisen'
     new_components = [InteractionComponent(custom_id = 'Diablo')]
     
     interaction_metadata = InteractionMetadataFormSubmit(

@@ -14,14 +14,14 @@ def test__InteractionOption__from_data():
     focused = True
     name = 'Worldly'
     options = [InteractionOption(name = 'flower')]
-    type_ = ApplicationCommandOptionType.sub_command
+    option_type = ApplicationCommandOptionType.sub_command
     value = 'flower land'
     
     data = {
         'focused': focused,
         'name': name,
         'options': [option.to_data() for option in options],
-        'type': type_.value,
+        'type': option_type.value,
         'value': value,
     }
     
@@ -31,7 +31,7 @@ def test__InteractionOption__from_data():
     vampytest.assert_eq(interaction_option.focused, focused)
     vampytest.assert_eq(interaction_option.name, name)
     vampytest.assert_eq(interaction_option.options, tuple(options))
-    vampytest.assert_is(interaction_option.type, type_)
+    vampytest.assert_is(interaction_option.type, option_type)
     vampytest.assert_eq(interaction_option.value, value)
 
 
@@ -44,14 +44,14 @@ def test__InteractionOption__to_data():
     focused = True
     name = 'Worldly'
     options = [InteractionOption(name = 'flower')]
-    type_ = ApplicationCommandOptionType.sub_command
+    option_type = ApplicationCommandOptionType.sub_command
     value = 'flower land'
     
     interaction_option = InteractionOption(
         focused = focused,
         name = name,
         options = options,
-        type_ = type_,
+        option_type = option_type,
         value = value,
     )
     
@@ -63,7 +63,7 @@ def test__InteractionOption__to_data():
             'focused': focused,
             'name': name,
             'options': [option.to_data(defaults = True) for option in options],
-            'type': type_.value,
+            'type': option_type.value,
             'value': value,
         },
     )

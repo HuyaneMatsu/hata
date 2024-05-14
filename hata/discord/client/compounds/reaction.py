@@ -273,7 +273,7 @@ class ClientCompoundReactionEndpoints(Compound):
         users = [User.from_data(user_data) for user_data in data]
         
         if (reactions is not None):
-            reactions._update_some_users(reaction, users)
+            reactions._fill_some_reactions(reaction, users)
         
         return users
     
@@ -352,7 +352,7 @@ class ClientCompoundReactionEndpoints(Compound):
             query_parameters['after'] = users[-1].id
         
         if (reactions is not None):
-            reactions._update_all_users(reaction, users)
+            reactions._fill_all_reactions(reaction, users)
         
         return users
     
@@ -395,7 +395,7 @@ class ClientCompoundReactionEndpoints(Compound):
                 'limit': 100,
             }
             
-            for reaction, line in reactions.items():
+            for reaction, line in reactions.iter_items():
                 if not line.unknown:
                     continue
                 
@@ -414,7 +414,7 @@ class ClientCompoundReactionEndpoints(Compound):
                     
                     query_parameters['after'] = users[-1].id
                 
-                reactions._update_all_users(reaction, users)
+                reactions._fill_all_reactions(reaction, users)
                 users.clear()
         
         return message

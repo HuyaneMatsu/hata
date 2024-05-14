@@ -8,7 +8,7 @@ from ...reaction import Reaction, ReactionType
 from ..fields import validate_reaction
 
 
-def _iter_options():
+def _iter_options__passing():
     emoji_0 = BUILTIN_EMOJIS['heart']
     emoji_1 = Emoji.precreate(202309090002, name = 'met')
     
@@ -22,8 +22,19 @@ def _iter_options():
     yield Reaction.from_fields(emoji_1, ReactionType.burst), Reaction.from_fields(emoji_1, ReactionType.burst)
 
 
-@vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_reaction__passing(input_value):
+def _iter_options__type_error():
+    yield None
+    yield 12
+
+
+def _iter_options__value_error():
+    yield 'x'
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_reaction(input_value):
     """
     Tests whether ``validate_reaction`` works as intended.
     
@@ -37,49 +48,13 @@ def test__validate_reaction__passing(input_value):
     Returns
     -------
     output : ``Reaction``
+    
+    Raises
+    ------
+    TypeError
+    ValueError
     """
     output = validate_reaction(input_value)
     # Check type as well, since `Reaction == Emoji` is supported
     vampytest.assert_instance(output, Reaction)
     return output
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12)
-@vampytest.call_with(None)
-def test__validate_reaction__type_error(input_value):
-    """
-    Tests whether ``validate_reaction`` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Value to validate.
-    
-    Raises
-    ------
-    TypeError
-    """
-    validate_reaction(input_value)
-
-
-@vampytest.raising(ValueError)
-@vampytest.call_with('x')
-def test__validate_reaction__value_error(input_value):
-    """
-    Tests whether ``validate_reaction`` works as intended.
-    
-    Case: `ValueError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Value to validate.
-    
-    Raises
-    ------
-    ValueError
-    """
-    validate_reaction(input_value)

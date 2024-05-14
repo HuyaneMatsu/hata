@@ -1,5 +1,7 @@
 __all__ = ('InteractionMetadataApplicationCommandAutocomplete',)
 
+from warnings import warn
+
 from scarletio import copy_docs
 
 from .base import InteractionMetadataBase
@@ -26,6 +28,76 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
     """
     __slots__ = ('id', 'name', 'options')
     
+    
+    def __new__(
+        cls,
+        *,
+        application_command_id = ...,
+        id = ...,
+        name = ...,
+        options = ...,
+    ):
+        """
+        Creates a new interaction metadata from the given parameters.
+        
+        Parameters
+        ----------
+        application_command_id : `int`, Optional (Keyword only)
+            The represented application command's identifier number.
+        
+        name : `str`, Optional (Keyword only)
+            The represented application command's name.
+        
+        options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
+            Application command option representations. Like sub-command or parameter.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # id - Deprecated
+        if id is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\' `id` parameter is deprecated '
+                    f'and will be removed in 2024 December. '
+                    f'Please use `application_command_id` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            application_command_id = id
+        
+        # application_command_id
+        if application_command_id is ...:
+            application_command_id = 0
+        else:
+            application_command_id = validate_id(application_command_id)
+        
+        # name
+        if name is ...:
+            name = ''
+        else:
+            name = validate_name(name)
+        
+        # options
+        if options is ...:
+            options = None
+        else:
+            options = validate_options(options)
+        
+        # Construct
+        self = object.__new__(cls)
+        self.id = application_command_id
+        self.name = name
+        self.options = options
+        return self
+    
+    
     @classmethod
     @copy_docs(InteractionMetadataBase._create_empty)
     def _create_empty(cls):
@@ -44,40 +116,85 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
         
         options = self.options
         if (options is not None):
-            options = tuple(option.copy() for option in options)
+            options = (*(option.copy() for option in options),)
         new.options = options
         
         return new
     
     
-    @copy_docs(InteractionMetadataBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        # id
-        try:
-            application_command_id = keyword_parameters.pop('id')
-        except KeyError:
-            pass
+    def copy_with(
+        self,
+        *,
+        application_command_id = ...,
+        id = ...,
+        name = ...,
+        options = ...,
+    ):
+        """
+        Copies the interaction metadata with the given fields.
+        
+        Parameters
+        ----------
+        application_command_id : `int`, Optional (Keyword only)
+            The represented application command's identifier number.
+        
+        name : `str`, Optional (Keyword only)
+            The represented application command's name.
+        
+        options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
+            Application command option representations. Like sub-command or parameter.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # id - Deprecated
+        if id is not ...:
+            warn(
+                (
+                    f'`{type(self).__name__}.copy_with`\' `id` parameter is deprecated '
+                    f'and will be removed in 2024 December. '
+                    f'Please use `application_command_id` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            application_command_id = id
+        
+        # application_command_id
+        if application_command_id is ...:
+            application_command_id = self.id
         else:
-            self.id = validate_id(application_command_id)
+            application_command_id = validate_id(application_command_id)
         
         # name
-        try:
-            application_command_name = keyword_parameters.pop('name')
-        except KeyError:
-            pass
+        if name is ...:
+            name = self.name
         else:
-            self.name = validate_name(application_command_name)
+            name = validate_name(name)
         
         # options
-        try:
-            options = keyword_parameters.pop('options')
-        except KeyError:
-            pass
+        if options is ...:
+            options = self.options
+            if (options is not None):
+                options = (*(option.copy() for option in options),)
         else:
-            self.options = validate_options(options)
+            options = validate_options(options)
         
-        
-        InteractionMetadataBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
+        # Construct
+        new = object.__new__(type(self))
+        new.id = application_command_id
+        new.name = name
+        new.options = options
+        return new
     
     
     @classmethod

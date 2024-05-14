@@ -1,49 +1,27 @@
 import vampytest
 
 from ....core import BUILTIN_EMOJIS
-from ....emoji import ReactionMapping
+from ....emoji import Reaction, ReactionMapping, ReactionMappingLine, ReactionType
 from ....user import User
 
 from ..fields import validate_reactions
 
 
-def test__validate_reactions__0():
-    """
-    Tests whether ``validate_reactions`` works as intended.
-    
-    Case: passing.
-    """
+
+def _iter_options__passing():
     reactions = ReactionMapping()
     
-    for input_value, expected_output in (
-        (None, None),
-        (reactions, reactions),
-    ):
-        output = validate_reactions(input_value)
-        vampytest.assert_is(output, expected_output)
-
-
-def test__validate_reactions__1():
-    """
-    Tests whether ``validate_reactions`` works as intended.
+    yield None, None
+    yield reactions, reactions
     
-    Case: `TypeError`.
-    """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_reactions(input_value)
+
+def _iter_options__type_error():
+    yield 12.6
 
 
-def test__validate_reactions__2():
-    """
-    Tests whether ``validate_reactions`` works as intended.
-    
-    Case: Successful conversion.
-    """
-    emoji_1 = BUILTIN_EMOJIS['heart']
-    emoji_2 = BUILTIN_EMOJIS['x']
+def _iter_options__conversion():
+    emoji_0 = BUILTIN_EMOJIS['heart']
+    emoji_1 = BUILTIN_EMOJIS['x']
     
     user_id_0 = 202305010021
     user_id_1 = 202305010022
@@ -51,11 +29,40 @@ def test__validate_reactions__2():
     user_0 = User.precreate(user_id_0)
     user_1 = User.precreate(user_id_1)
     
-    input_value = {
-        emoji_1: [user_0, user_1],
-        emoji_2: [user_1]
-    }
-    expected_output = ReactionMapping(input_value)
+    yield (
+        {
+            emoji_0: ReactionMappingLine(count = 2, users = [user_0, user_1]),
+            emoji_1: ReactionMappingLine(count = 1, users = [user_1]),
+        },
+        ReactionMapping(
+            lines = {
+                Reaction.from_fields(emoji_0, ReactionType.standard): ReactionMappingLine(count = 2, users = [user_0, user_1]),
+                Reaction.from_fields(emoji_1, ReactionType.standard): ReactionMappingLine(count = 1, users = [user_1]),
+            }
+        )
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__conversion()).returning_last())
+def test__validate_reactions(input_value):
+    """
+    Tests whether ``validate_reactions`` works as intended.
     
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Returns
+    -------
+    output : ``ReactionMapping``
+    
+    Raises
+    ------
+    TypeError
+    """
     output = validate_reactions(input_value)
-    vampytest.assert_eq(output, expected_output)
+    vampytest.assert_instance(output, ReactionMapping, nullable = True)
+    return output

@@ -22,6 +22,49 @@ class InteractionMetadataFormSubmit(InteractionMetadataBase):
     """
     __slots__ = ('components', 'custom_id')
     
+    def __new__(
+        cls,
+        *,
+        components = ...,
+        custom_id = ...,
+    ):
+        """
+        Creates a new interaction metadata from the given parameters.
+        
+        Parameters
+        ----------
+        components : `None`, `tuple` of ``InteractionComponent``, Optional (Keyword only)
+            Submitted component values of a form submit interaction.
+        
+        custom_id : `None`, `str`, Optional (Keyword only)
+            Component or form interaction's custom identifier.
+
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # components
+        if components is ...:
+            components = None
+        else:
+            components = validate_components(components)
+        
+        # custom_id
+        if custom_id is ...:
+            custom_id = None
+        else:
+            custom_id = validate_custom_id(custom_id)
+        
+        # Construct
+        self = object.__new__(cls)
+        self.components = components
+        self.custom_id = custom_id
+        return self
+    
+    
     @classmethod
     @copy_docs(InteractionMetadataBase._create_empty)
     def _create_empty(cls):
@@ -36,7 +79,7 @@ class InteractionMetadataFormSubmit(InteractionMetadataBase):
         new = object.__new__(type(self))
         components = self.components
         if (components is not None):
-            components = tuple(option.copy() for option in components)
+            components = (*(option.copy() for option in components),)
         new.components = components
         
         new.custom_id = self.custom_id
@@ -44,25 +87,54 @@ class InteractionMetadataFormSubmit(InteractionMetadataBase):
         return new
     
     
-    @copy_docs(InteractionMetadataBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+    
+    def copy_with(
+        self,
+        *,
+        components = ...,
+        custom_id = ...,
+    ):
+        """
+        Copies the interaction metadata with the given fields.
+        
+        Parameters
+        ----------
+        components : `None`, `tuple` of ``InteractionComponent``, Optional (Keyword only)
+            Submitted component values of a form submit interaction.
+        
+        custom_id : `None`, `str`, Optional (Keyword only)
+            Component or form interaction's custom identifier.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # components
-        try:
-            components = keyword_parameters.pop('components')
-        except KeyError:
-            pass
+        if components is ...:
+            components = self.components
+            if (components is not None):
+                components = (*(option.copy() for option in components),)
         else:
-            self.components = validate_components(components)
+            components = validate_components(components)
         
         # custom_id
-        try:
-            custom_id = keyword_parameters.pop('custom_id')
-        except KeyError:
-            pass
+        if custom_id is ...:
+            custom_id = self.custom_id
         else:
-            self.custom_id = validate_custom_id(custom_id)
+            custom_id = validate_custom_id(custom_id)
         
-        InteractionMetadataBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
+        # Construct
+        new = object.__new__(type(self))
+        new.components = components
+        new.custom_id = custom_id
+        return new
     
     
     @classmethod

@@ -528,7 +528,7 @@ def parse_reactions(data, old_reactions = None):
     else:
         new_reactions = ReactionMapping.from_data(reactions_data)
     
-    return merge_update_reaction_mapping(old_reactions, new_reactions)
+    return merge_update_reaction_mapping(new_reactions, old_reactions)
 
 
 def put_reactions_into(reactions, data, defaults):
@@ -580,7 +580,7 @@ def validate_reactions(reactions):
     if isinstance(reactions, ReactionMapping):
         return reactions
     
-    return ReactionMapping(reactions)
+    return ReactionMapping(lines = reactions)
 
 # referenced_message
 

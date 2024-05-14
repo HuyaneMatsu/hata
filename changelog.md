@@ -1,3 +1,20 @@
+## 1.3.56 *\[2024-05-??\]*
+
+### Improvements
+
+- `ReactionMapping` is no longer `dict` sub-type, contains `dict` as `.lines` now. Constructors changed.
+- `ReactionMappingLine` is no longer `set` sub-type. Contains `set` as `.users` now. Constructors changed.
+
+### Renames, Deprecations & Removals
+
+- Deprecate and rename `ReactionMapping.keys` to `.iter_reactions`.
+- Deprecate and rename `ReactionMapping.values` to `.iter_lines`.
+- Deprecate and rename `ReactionMapping.items` to `.iter_items`.
+- Deprecate `id` parameters in `InteractionMetadataBase.__new__` and `InteractionMetadataBase.copy_with`.
+    Use `application_command_id` instead.
+- Deprecate `type_` parameters in `InteractionOption.__new__`. and `InteractionOption.copy_with`.
+    Use `option_type` instead.
+
 ## 1.3.55 *\[2024-05-10\]*
 
 ### Improvements

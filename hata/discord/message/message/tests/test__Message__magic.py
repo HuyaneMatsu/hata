@@ -6,7 +6,7 @@ from ....channel import Channel, ChannelType
 from ....component import Component, ComponentType
 from ....core import BUILTIN_EMOJIS
 from ....embed import EmbedAuthor, Embed, EmbedField, EmbedFooter, EmbedProvider, EmbedType
-from ....emoji import ReactionMapping
+from ....emoji import Reaction, ReactionMapping, ReactionMappingLine, ReactionType
 from ....interaction import Resolved
 from ....poll import Poll, PollAnswer, PollQuestion
 from ....sticker import Sticker
@@ -63,9 +63,11 @@ def test__Message__repr():
     nonce = 'Sakuya'
     pinned = True
     poll = Poll(expires_at = DateTime(2016, 5, 14))
-    reactions = ReactionMapping({
-        BUILTIN_EMOJIS['x']: [None, None],
-    })
+    reactions = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
+        },
+    )
     referenced_message = Message.precreate(202305040032, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110030)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
@@ -165,9 +167,11 @@ def test__Message__hash():
     nonce = 'Sakuya'
     pinned = True
     poll = Poll(expires_at = DateTime(2016, 5, 14))
-    reactions = ReactionMapping({
-        BUILTIN_EMOJIS['x']: [None, None],
-    })
+    reactions = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
+        },
+    )
     referenced_message = Message.precreate(202305040050, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110031)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
@@ -289,9 +293,11 @@ def test__Message__eq():
     old_nonce = 'Sakuya'
     old_pinned = True
     old_poll = Poll(expires_at = DateTime(2016, 5, 14))
-    old_reactions = ReactionMapping({
-        BUILTIN_EMOJIS['x']: [None, None],
-    })
+    old_reactions = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
+        },
+    )
     old_referenced_message = Message.precreate(202305040072, content = 'Patchouli')
     old_resolved = Resolved(attachments = [Attachment.precreate(202310110032)])
     old_role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
@@ -337,9 +343,11 @@ def test__Message__eq():
     new_nonce = 'Maid'
     new_pinned = False
     new_poll = Poll(expires_at = DateTime(2016, 5, 15))
-    new_reactions = ReactionMapping({
-        BUILTIN_EMOJIS['heart']: [None],
-    })
+    new_reactions = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): ReactionMappingLine(count = 1),
+        },
+    )
     new_referenced_message = Message.precreate(202305040088, content = 'Book')
     new_resolved = Resolved(attachments = [Attachment.precreate(202310110033)])
     new_role_subscription = MessageRoleSubscription(tier_name = 'Big brain')

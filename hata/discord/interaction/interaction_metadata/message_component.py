@@ -31,6 +31,71 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
     """
     __slots__ = ('component_type', 'custom_id', 'resolved', 'values')
     
+    def __new__(
+        cls,
+        *,
+        component_type = ...,
+        custom_id = ...,
+        resolved = ...,
+        values = ...,
+    ):
+        """
+        Creates a new interaction metadata from the given parameters.
+        
+        Parameters
+        ----------
+        component_type : ``ComponentType``, Optional (Keyword only)
+            The used component's type.
+        
+        custom_id : `None`, `str`, Optional (Keyword only)
+            Component or form interaction's custom identifier.
+        
+        resolved : `None`, ``Resolved``, Optional (Keyword only)
+            Contains the received entities.
+        
+        values : `None`, `tuple` of `str`, Optional (Keyword only)
+            Values selected by the user. Applicable for component interactions.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # component_type
+        if component_type is ...:
+            component_type = ComponentType.none
+        else:
+            component_type = validate_component_type(component_type)
+        
+        # custom_id
+        if custom_id is ...:
+            custom_id = None
+        else:
+            custom_id = validate_custom_id(custom_id)
+        
+        # resolved
+        if resolved is ...:
+            resolved = None
+        else:
+            resolved = validate_resolved(resolved)
+        
+        # values
+        if values is ...:
+            values = None
+        else:
+            values = validate_values(values)
+        
+        # Construct
+        self = object.__new__(cls)
+        self.component_type = component_type
+        self.custom_id = custom_id
+        self.resolved = resolved
+        self.values = values
+        return self
+    
+    
     @classmethod
     @copy_docs(InteractionMetadataBase._create_empty)
     def _create_empty(cls):
@@ -60,43 +125,77 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
         
         return new
     
-    
-    @copy_docs(InteractionMetadataBase._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+    def copy_with(
+        self,
+        *,
+        component_type = ...,
+        custom_id = ...,
+        resolved = ...,
+        values = ...,
+    ):
+        """
+        Copies the interaction metadata with the given fields.
+        
+        Parameters
+        ----------
+        component_type : ``ComponentType``, Optional (Keyword only)
+            The used component's type.
+        
+        custom_id : `None`, `str`, Optional (Keyword only)
+            Component or form interaction's custom identifier.
+        
+        resolved : `None`, ``Resolved``, Optional (Keyword only)
+            Contains the received entities.
+        
+        values : `None`, `tuple` of `str`, Optional (Keyword only)
+            Values selected by the user. Applicable for component interactions.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # component_type
-        try:
-            component_type = keyword_parameters.pop('component_type')
-        except KeyError:
-            pass
+        if component_type is ...:
+            component_type = self.component_type
         else:
-            self.component_type = validate_component_type(component_type)
+            component_type = validate_component_type(component_type)
         
         # custom_id
-        try:
-            custom_id = keyword_parameters.pop('custom_id')
-        except KeyError:
-            pass
+        if custom_id is ...:
+            custom_id = self.custom_id
         else:
-            self.custom_id = validate_custom_id(custom_id)
+            custom_id = validate_custom_id(custom_id)
         
         # resolved
-        try:
-            resolved = keyword_parameters.pop('resolved')
-        except KeyError:
-            pass
+        if resolved is ...:
+            resolved = self.resolved
+            if (resolved is not None):
+                resolved = resolved.copy()
         else:
-            self.resolved = validate_resolved(resolved)
+            resolved = validate_resolved(resolved)
         
         # values
-        try:
-            values = keyword_parameters.pop('values')
-        except KeyError:
-            pass
+        if values is ...:
+            values = self.values
+            if (values is not None):
+                values = (*values,)
         else:
-            self.values = validate_values(values)
+            values = validate_values(values)
         
-        
-        InteractionMetadataBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
+        # Construct
+        new = object.__new__(type(self))
+        new.component_type = component_type
+        new.custom_id = custom_id
+        new.resolved = resolved
+        new.values = values
+        return new
     
     
     @classmethod

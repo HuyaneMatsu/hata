@@ -1,8 +1,6 @@
 __all__ = ('AuditLogEntryType', 'AuditLogEntryTargetType')
 
-from warnings import warn
-
-from scarletio import class_property, copy_docs, export
+from scarletio import copy_docs, export
 
 from ...bases import Preinstance as P, PreinstancedBase
 
@@ -670,145 +668,9 @@ class AuditLogEntryType(PreinstancedBase):
     @copy_docs(PreinstancedBase.__repr__)
     def __repr__(self):
         return (
-            f'<{self.__class__.__name__} '
+            f'{type(self).__name__} '
             f'name = {self.name!r}, '
             f'value = {self.value!r}, '
             f'target_type = {self.target_type.name!r}'
             '>'
         )
-    
-    
-    @class_property
-    def member_kick(cls):
-        """
-        Deprecated and will be removed in 2023 August. Please use `.member_kick` instead.
-        """
-        warn(
-            (
-                f'`{cls.__name__}.member_kick` is deprecated and will be removed in 2024 March. '
-                f'Please use `.user_kick` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        return cls.user_kick
-    
-    
-    @class_property
-    def member_prune(cls):
-        """
-        Deprecated and will be removed in 2023 August. Please use `.member_prune` instead.
-        """
-        warn(
-            (
-                f'`{cls.__name__}.member_prune` is deprecated and will be removed in 2024 March. '
-                f'Please use `.user_prune` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        return cls.user_prune
-
-
-    @class_property
-    def member_ban_add(cls):
-        """
-        Deprecated and will be removed in 2023 August. Please use `.member_ban_add` instead.
-        """
-        warn(
-            (
-                f'`{cls.__name__}.member_ban_add` is deprecated and will be removed in 2024 March. '
-                f'Please use `.user_ban_add` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        return cls.user_ban_add
-
-
-    @class_property
-    def member_ban_remove(cls):
-        """
-        Deprecated and will be removed in 2023 August. Please use `.member_ban_remove` instead.
-        """
-        warn(
-            (
-                f'`{cls.__name__}.member_ban_remove` is deprecated and will be removed in 2024 March. '
-                f'Please use `.user_ban_remove` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        return cls.user_ban_remove
-
-
-    @class_property
-    def member_update(cls):
-        """
-        Deprecated and will be removed in 2023 August. Please use `.member_update` instead.
-        """
-        warn(
-            (
-                f'`{cls.__name__}.member_update` is deprecated and will be removed in 2024 March. '
-                f'Please use `.user_update` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        return cls.user_update
-
-
-    @class_property
-    def member_role_update(cls):
-        """
-        Deprecated and will be removed in 2023 August. Please use `.member_role_update` instead.
-        """
-        warn(
-            (
-                f'`{cls.__name__}.member_role_update` is deprecated and will be removed in 2024 March. '
-                f'Please use `.user_role_update` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        return cls.user_role_update
-
-
-    @class_property
-    def member_move(cls):
-        """
-        Deprecated and will be removed in 2023 August. Please use `.member_move` instead.
-        """
-        warn(
-            (
-                f'`{cls.__name__}.member_move` is deprecated and will be removed in 2024 March. '
-                f'Please use `.user_move` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        return cls.user_move
-
-
-    @class_property
-    def member_disconnect(cls):
-        """
-        Deprecated and will be removed in 2023 August. Please use `.user_disconnect` instead.
-        """
-        warn(
-            (
-                f'`{cls.__name__}.member_disconnect` is deprecated and will be removed in 2024 March. '
-                f'Please use `.user_disconnect` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        return cls.user_disconnect

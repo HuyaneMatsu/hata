@@ -2,7 +2,6 @@ __all__ = ('Slasher', )
 
 import warnings
 from datetime import datetime, timedelta
-from functools import partial as partial_func
 
 from scarletio import (
     RichAttributeErrorBaseType, Task, TaskGroup, WeakKeyDictionary, WeakReferer, copy_docs, export, run_coroutine

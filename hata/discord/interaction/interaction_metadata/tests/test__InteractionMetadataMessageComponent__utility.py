@@ -61,12 +61,13 @@ def test__InteractionMetadataMessageComponent__copy_with__1():
     Case: All fields given.
     """
     old_component_type = ComponentType.button
-    new_component_type = ComponentType.row
     old_custom_id = 'Inaba'
-    new_custom_id = 'Reisen'
     old_resolved = Resolved(attachments = [Attachment.precreate(202211060055)])
-    new_resolved = Resolved(messages = [Message.precreate(202211060056)])
     old_values = ['black', 'rock', 'shooter']
+    
+    new_component_type = ComponentType.row
+    new_custom_id = 'Reisen'
+    new_resolved = Resolved(messages = [Message.precreate(202211060056)])
     new_values = ['Empress']
     
     interaction_metadata = InteractionMetadataMessageComponent(

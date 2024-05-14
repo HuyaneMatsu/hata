@@ -9,12 +9,12 @@ def test__InteractionMetadataApplicationCommandAutocomplete__repr():
     """
     Tests whether ``InteractionMetadataApplicationCommandAutocomplete.__repr__`` works as intended.
     """
-    id_ = 202211060005
+    application_command_id = 202211060005
     name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
     
     interaction_metadata = InteractionMetadataApplicationCommandAutocomplete(
-        id = id_,
+        application_command_id = application_command_id,
         name = name,
         options = options,
     )
@@ -25,12 +25,12 @@ def test__InteractionMetadataApplicationCommandAutocomplete__hash():
     """
     Tests whether ``InteractionMetadataApplicationCommandAutocomplete.__hash__`` works as intended.
     """
-    id_ = 202211060006
+    application_command_id = 202211060006
     name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
     
     interaction_metadata = InteractionMetadataApplicationCommandAutocomplete(
-        id = id_,
+        application_command_id = application_command_id,
         name = name,
         options = options,
     )
@@ -41,12 +41,12 @@ def test__InteractionMetadataApplicationCommandAutocomplete__eq():
     """
     Tests whether ``InteractionMetadataApplicationCommandAutocomplete.__eq__`` works as intended.
     """
-    id_ = 202211060007
+    application_command_id = 202211060007
     name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
     
     keyword_parameters = {
-        'id': id_,
+        'application_command_id': application_command_id,
         'name': name,
         'options': options,
     }
@@ -57,7 +57,7 @@ def test__InteractionMetadataApplicationCommandAutocomplete__eq():
     vampytest.assert_ne(interaction_metadata, object())
     
     for field_name, field_value in (
-        ('id', 202211060008),
+        ('application_command_id', 202211060008),
         ('name', 'Reisen'),
         ('options', None),
     ):

@@ -14,14 +14,14 @@ def test__InteractionMetadataApplicationCommand__copy():
     """
     Tests whether ``InteractionMetadataApplicationCommand.copy`` works as intended.
     """
-    id_ = 202211060034
+    application_command_id = 202211060034
     name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
     resolved = Resolved(attachments = [Attachment.precreate(202211060035)])
     target_id = 202211060036
     
     interaction_metadata = InteractionMetadataApplicationCommand(
-        id = id_,
+        application_command_id = application_command_id,
         name = name,
         options = options,
         resolved = resolved,
@@ -39,14 +39,14 @@ def test__InteractionMetadataApplicationCommand__copy_with__0():
     
     Case: No fields given.
     """
-    id_ = 202211060037
+    application_command_id = 202211060037
     name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
     resolved = Resolved(attachments = [Attachment.precreate(202211060038)])
     target_id = 202211060039
     
     interaction_metadata = InteractionMetadataApplicationCommand(
-        id = id_,
+        application_command_id = application_command_id,
         name = name,
         options = options,
         resolved = resolved,
@@ -64,26 +64,27 @@ def test__InteractionMetadataApplicationCommand__copy_with__1():
     
     Case: All fields given.
     """
-    old_id = 202211060040
-    new_id = 202211060041
+    old_application_command_id = 202211060040
     old_name = 'Inaba'
-    new_name = 'Reisen'
     old_options = [InteractionOption(name = 'Rem')]
-    new_options = [InteractionOption(name = 'Diablo')]
     old_resolved = Resolved(attachments = [Attachment.precreate(202211060042)])
-    new_resolved = Resolved(messages = [Message.precreate(202211060043)])
     old_target_id = 202211060044
+    
+    new_application_command_id = 202211060041
+    new_name = 'Reisen'
+    new_options = [InteractionOption(name = 'Diablo')]
+    new_resolved = Resolved(messages = [Message.precreate(202211060043)])
     new_target_id = 202211060045
     
     interaction_metadata = InteractionMetadataApplicationCommand(
-        id = old_id,
+        application_command_id = old_application_command_id,
         name = old_name,
         options = old_options,
         resolved = old_resolved,
         target_id = old_target_id,
     )
     copy = interaction_metadata.copy_with(
-        id = new_id,
+        application_command_id = new_application_command_id,
         name = new_name,
         options = new_options,
         resolved = new_resolved,
@@ -92,7 +93,7 @@ def test__InteractionMetadataApplicationCommand__copy_with__1():
     _check_is_all_field_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     
-    vampytest.assert_eq(copy.id, new_id)
+    vampytest.assert_eq(copy.id, new_application_command_id)
     vampytest.assert_eq(copy.name, new_name)
     vampytest.assert_eq(copy.options, tuple(new_options))
     vampytest.assert_eq(copy.resolved, new_resolved)

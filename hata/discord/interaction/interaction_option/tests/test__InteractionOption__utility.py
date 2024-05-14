@@ -14,14 +14,14 @@ def test__InteractionOption__copy():
     focused = True
     name = 'Worldly'
     options = [InteractionOption(name = 'flower')]
-    type_ = ApplicationCommandOptionType.sub_command
+    option_type = ApplicationCommandOptionType.sub_command
     value = 'flower land'
     
     interaction_option = InteractionOption(
         focused = focused,
         name = name,
         options = options,
-        type_ = type_,
+        option_type = option_type,
         value = value,
     )
     
@@ -40,14 +40,14 @@ def test__InteractionOption__copy_with():
     focused = True
     name = 'Worldly'
     options = [InteractionOption(name = 'flower')]
-    type_ = ApplicationCommandOptionType.sub_command
+    option_type = ApplicationCommandOptionType.sub_command
     value = 'flower land'
     
     interaction_option = InteractionOption(
         focused = focused,
         name = name,
         options = options,
-        type_ = type_,
+        option_type = option_type,
         value = value,
     )
     
@@ -64,21 +64,22 @@ def test__InteractionOption__copy_with__1():
     Case: All fields given.
     """
     old_focused = True
-    new_focused = False
     old_name = 'Worldly'
-    new_name = 'START'
     old_options = [InteractionOption(name = 'flower')]
-    new_options = [InteractionOption(name = 'crazy')]
-    old_type = ApplicationCommandOptionType.sub_command
-    new_type = ApplicationCommandOptionType.sub_command_group
+    old_option_type = ApplicationCommandOptionType.sub_command
     old_value = 'flower land'
+    
+    new_focused = False
+    new_name = 'START'
+    new_options = [InteractionOption(name = 'crazy')]
+    new_option_type = ApplicationCommandOptionType.sub_command_group
     new_value = 'beats'
     
     interaction_option = InteractionOption(
         focused = old_focused,
         name = old_name,
         options = old_options,
-        type_ = old_type,
+        option_type = old_option_type,
         value = old_value,
     )
     
@@ -86,7 +87,7 @@ def test__InteractionOption__copy_with__1():
         focused = new_focused,
         name = new_name,
         options = new_options,
-        type_ = new_type,
+        option_type = new_option_type,
         value = new_value,
     )
     
@@ -96,7 +97,7 @@ def test__InteractionOption__copy_with__1():
     vampytest.assert_eq(copy.focused, new_focused)
     vampytest.assert_eq(copy.name, new_name)
     vampytest.assert_eq(copy.options, tuple(new_options))
-    vampytest.assert_is(copy.type, new_type)
+    vampytest.assert_is(copy.type, new_option_type)
     vampytest.assert_eq(copy.value, new_value)
 
 
@@ -105,10 +106,10 @@ def test__InteractionOption__focused_option():
     Tests whether ``InteractionOption.focused_option`` works as intended.
     """
     interaction_option_1 = InteractionOption(focused = False)
-    interaction_option_2 = InteractionOption(focused = False, type_ = ApplicationCommandOptionType.sub_command)
+    interaction_option_2 = InteractionOption(focused = False, option_type = ApplicationCommandOptionType.sub_command)
     interaction_option_3 = InteractionOption(focused = True)
     interaction_option_4 = InteractionOption(
-        focused = False, type_ = ApplicationCommandOptionType.sub_command, options = [interaction_option_3]
+        focused = False, option_type = ApplicationCommandOptionType.sub_command, options = [interaction_option_3]
     )
     
     for interaction_option, expected_output in (
@@ -127,7 +128,7 @@ def test__InteractionOption__get_value_of():
     interaction_option_1 = InteractionOption(name = 'hello', value = 'hell')
     interaction_option_2 = InteractionOption(
         name = 'supernova',
-        type_ = ApplicationCommandOptionType.sub_command,
+        option_type = ApplicationCommandOptionType.sub_command,
         options = [interaction_option_1],
         value = 'vistnry',
     )
@@ -148,7 +149,7 @@ def test__InteractionOption__iter_non_focused_values():
     interaction_option_1 = InteractionOption(name = 'hello', value = 'hell', focused = False)
     interaction_option_2 = InteractionOption(
         name = 'supernova',
-        type_ = ApplicationCommandOptionType.sub_command,
+        option_type = ApplicationCommandOptionType.sub_command,
         options = [interaction_option_1],
         value = 'vistnry',
         focused = False,

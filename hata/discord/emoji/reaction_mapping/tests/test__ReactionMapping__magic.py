@@ -4,33 +4,43 @@ from ....core import BUILTIN_EMOJIS
 from ....user import User
 
 from ...reaction import Reaction, ReactionType
+from ...reaction_mapping_line import ReactionMappingLine
 
 from ..reaction_mapping import ReactionMapping
 
 
-NotImplementedType = type(NotImplemented)
-
-
 def _iter_options__bool():
-    yield ReactionMapping(), False
-    yield ReactionMapping({Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): [None]}), True
+    yield (
+        {},
+        False,
+    )
+    
+    yield (
+        {
+            'lines': {
+                Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): ReactionMappingLine(count = 1),
+            }
+        },
+        True,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options__bool()).returning_last())
-def test__ReactionMapping__bool(input_value):
+def test__ReactionMapping__bool(keyword_parameters):
     """
     Tests whether ``ReactionMapping.__bool__`` works as intended.
     
     Parameters
     ----------
-    input_value : ``ReactionMapping``
-        The reaction mapping to get its boolean value of.
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create instance with.
     
     Returns
     -------
     output : `bool`
     """
-    output = bool(input_value)
+    reaction_mapping = ReactionMapping(**keyword_parameters)
+    output = bool(reaction_mapping)
     vampytest.assert_instance(output, bool)
     return output
 
@@ -39,182 +49,217 @@ def test__ReactionMapping__repr():
     """
     tests whether ``ReactionMapping.__repr__`` works as intended.
     """
-    reaction_mapping = ReactionMapping({
-        Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): [None]}
+    reaction_mapping = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): ReactionMappingLine(count = 1),
+        }
     )
     vampytest.assert_instance(repr(reaction_mapping), str)
 
 
 def _iter_options__len():
     yield (
-        ReactionMapping(),
+        {},
         0,
     )
     
     yield (
-        ReactionMapping({
-            Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): [None, None],
-        }),
+        {
+            'lines': {
+                Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): ReactionMappingLine(count = 3),
+            },
+        },
         1,
     )
+    
     yield (
-        ReactionMapping({
-            Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): [None, None, None],
-            Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.burst): [None],
-        }),
+        {
+            'lines': {
+                Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): ReactionMappingLine(count = 3),
+                Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.burst): ReactionMappingLine(count = 1),
+            },
+        },
         2,
     )
+    
     yield (
-        ReactionMapping({
-            Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): [None, None, None],
-            Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): [None],
-        }),
+        {
+            'lines': {
+                Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): ReactionMappingLine(count = 3),
+                Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 1),
+            },
+        },
         2,
     )
 
 
 @vampytest._(vampytest.call_from(_iter_options__len()).returning_last())
-def test__ReactionMapping__len(input_value):
+def test__ReactionMapping__len(keyword_parameters):
     """
     Tests whether ``ReactionMapping.__len__`` works as intended.
     
     Parameters
     ----------
-    input_value : ``ReactionMapping``
-        The reaction mapping to get its length value of.
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create instance with.
     
     Returns
     -------
     output : `int`
     """
-    output = len(input_value)
+    reaction_mapping = ReactionMapping(**keyword_parameters)
+    output = len(reaction_mapping)
     vampytest.assert_instance(output, int)
     return output
 
 
-def _iter_options__eq():
+def _iter_options__eq__same_type():
     emoji_0 = BUILTIN_EMOJIS['x']
     emoji_1 = BUILTIN_EMOJIS['heart']
     user_0 = User.precreate(202210010037)
     
     yield (
-        ReactionMapping(),
-        ReactionMapping(),
+        {},
+        {},
         True,
     )
+    
     yield (
-        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [None]}),
-        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [None]}),
+        {
+            'lines': {
+                Reaction.from_fields(emoji_1, ReactionType.standard): ReactionMappingLine(count = 1),
+            },
+        },
+        {
+            'lines': {
+                Reaction.from_fields(emoji_1, ReactionType.standard): ReactionMappingLine(count = 1),
+            },
+        },
         True,
     )
+    
     yield (
-        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [None]}),
-        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [None, None]}),
+        {
+            'lines': {
+                Reaction.from_fields(emoji_1, ReactionType.standard): ReactionMappingLine(count = 1),
+            },
+        },
+        {
+            'lines': {
+                Reaction.from_fields(emoji_1, ReactionType.standard): ReactionMappingLine(count = 2),
+            },
+        },
         False,
     )
+    
     yield (
-        ReactionMapping(),
-        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [None]}),
+        {},
+        {
+            'lines': {
+                Reaction.from_fields(emoji_1, ReactionType.standard): ReactionMappingLine(count = 1),
+            },
+        },
         False,
     )
+
     yield (
-        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [user_0]}),
-        {Reaction.from_fields(emoji_1, ReactionType.standard): [user_0]},
-        True,
-    )
-    yield (
-        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [user_0]}),
-        {Reaction.from_fields(emoji_1, ReactionType.standard): [user_0, None]},
+        {
+            'lines': {
+                Reaction.from_fields(emoji_1, ReactionType.standard): ReactionMappingLine(count = 1, users = [user_0]),
+            },
+        },
+        {
+            'lines': {
+                Reaction.from_fields(emoji_1, ReactionType.burst): ReactionMappingLine(count = 1, users = [user_0]),
+            },
+        },
         False,
     )
+    
     yield (
-        ReactionMapping(),
-        {Reaction.from_fields(emoji_1, ReactionType.standard): [None]},
+        {
+            'lines': {
+                Reaction.from_fields(emoji_0, ReactionType.standard): ReactionMappingLine(count = 1, users = [user_0]),
+            },
+        },
+        {
+            'lines': {
+                Reaction.from_fields(emoji_1, ReactionType.standard): ReactionMappingLine(count = 1, users = [user_0]),
+            }
+        },
         False,
     )
+    
     yield (
-        ReactionMapping(),
-        {Reaction.from_fields(emoji_1, ReactionType.standard): [12.6]},
-        NotImplemented,
-    )
-    yield (
-        ReactionMapping(),
-        {12.6: [None]},
-        NotImplemented,
-    )
-    yield (
-        ReactionMapping(),
-        {Reaction.from_fields(emoji_1, ReactionType.standard): 12.5},
-        NotImplemented,
-    )
-    yield (
-        ReactionMapping(),
-        22.0,
-        NotImplemented,
-    )
-    yield (
-        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [user_0]}),
-        {Reaction.from_fields(emoji_1, ReactionType.standard): 12.5},
-        NotImplemented,
-    )
-    yield (
-        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.standard): [None]}),
-        {emoji_1: [None]},
-        True,
-    )
-    yield (
-        ReactionMapping({Reaction.from_fields(emoji_1, ReactionType.burst): [None]}),
-        {emoji_1: [None]},
-        False,
-    )
-    yield (
-        ReactionMapping({
-            Reaction.from_fields(emoji_1, ReactionType.standard): [user_0],
-        }),
-        ReactionMapping({
-            Reaction.from_fields(emoji_1, ReactionType.burst): [user_0],
-        }),
-        False,
-    )
-    yield (
-        ReactionMapping({
-            Reaction.from_fields(emoji_0, ReactionType.standard): [user_0],
-        }),
-        ReactionMapping({
-            Reaction.from_fields(emoji_1, ReactionType.standard): [user_0],
-        }),
-        False,
-    )
-    yield (
-        ReactionMapping({
-            Reaction.from_fields(emoji_0, ReactionType.burst): [user_0],
-        }),
-        ReactionMapping({
-            Reaction.from_fields(emoji_1, ReactionType.burst): [user_0],
-        }),
+        {
+            'lines': {
+                Reaction.from_fields(emoji_0, ReactionType.burst): ReactionMappingLine(count = 1, users = [user_0]),
+            },
+        },
+        {
+            'lines': {
+                Reaction.from_fields(emoji_1, ReactionType.burst): ReactionMappingLine(count = 1, users = [user_0]),
+            },
+        },
         False,
     )
 
 
-@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
-def test__ReactionMapping__eq(value_0, value_1):
+@vampytest._(vampytest.call_from(_iter_options__eq__same_type()).returning_last())
+def test__ReactionMapping__eq__same_type(keyword_parameters_0, keyword_parameters_1):
     """
     Tests whether ``ReactionMapping.__eq__`` works as intended.
     
+    Case: Same type.
+    
     Parameters
     ----------
-    value_0 : ``ReactionMapping``
-        The reaction mapping to execute `==` with.
-    value_1 : `object`
-        Other value to compare to.
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    keyword_parameters_1 : `dict<object, object>`
+        Keyword parameters to create instance with.
     
     Returns
     -------
-    output : `bool`, `NotImplementedType`
+    output : `bool`
     """
-    output = ReactionMapping.__eq__(value_0, value_1)
-    vampytest.assert_instance(output, bool, NotImplementedType)
+    reaction_mapping_0 = ReactionMapping(**keyword_parameters_0)
+    reaction_mapping_1 = ReactionMapping(**keyword_parameters_1)
+    
+    output = reaction_mapping_0 == reaction_mapping_1
+    vampytest.assert_instance(output, bool)
     return output
+
+
+def test__ReactionMapping__eq__different_type():
+    """
+    Tests whether ``ReactionMapping.__eq__`` works as intended.
+    
+    Case: Different type.
+    """
+    reaction_mapping = ReactionMapping()
+    
+    output = reaction_mapping == object()
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
+
+
+def test__ReactionMapping__eq__cleared():
+    """
+    Tests whether ``ReactionMapping.__eq__`` works as intended.
+    
+    Case: Cleared
+    """
+    reaction_mapping = ReactionMapping(
+        lines = {
+            Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.burst): ReactionMappingLine(count = 1),
+        },
+    )
+    reaction_mapping.clear()
+    
+    output = reaction_mapping == ReactionMapping()
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
 
 
 def test__ReactionMapping__hash():
@@ -227,10 +272,162 @@ def test__ReactionMapping__hash():
     user_0 = User.precreate(202305040096)
     user_1 = User.precreate(202305040097)
     
-    mapping = ReactionMapping({
-        Reaction.from_fields(emoji_0, ReactionType.standard): [user_0, None, None],
-        Reaction.from_fields(emoji_0, ReactionType.burst): [user_0, None, None],
-        Reaction.from_fields(emoji_1, ReactionType.standard): [user_1],
-    })
+    mapping = ReactionMapping(
+        lines = {
+            Reaction.from_fields(emoji_0, ReactionType.standard): ReactionMappingLine(count = 3, users = [user_0]),
+            Reaction.from_fields(emoji_0, ReactionType.burst): ReactionMappingLine(count = 3, users = [user_0]),
+            Reaction.from_fields(emoji_1, ReactionType.standard): ReactionMappingLine(count = 1, users = [user_1]),
+        },
+    )
     
     vampytest.assert_instance(hash(mapping), int)
+
+
+def _iter_options__contains():
+    emoji_0 = BUILTIN_EMOJIS['heart']
+    
+    reaction_0 = Reaction.from_fields(emoji_0, ReactionType.standard)
+    reaction_1 = Reaction.from_fields(emoji_0, ReactionType.burst)
+    
+    yield (
+        {},
+        reaction_0,
+        False,
+    )
+    
+    yield (
+        {
+            'lines': {
+                reaction_0: ReactionMappingLine(count = 3),
+            },
+        },
+        reaction_0,
+        True,
+    )
+    
+    yield (
+        {
+            'lines': {
+                reaction_0: ReactionMappingLine(count = 3),
+            },
+        },
+        reaction_1,
+        False,
+    )
+    
+    yield (
+        {
+            'lines': {
+                reaction_0: ReactionMappingLine(count = 3),
+            },
+        },
+        emoji_0,
+        True,
+    )
+    
+    yield (
+        {
+            'lines': {
+                reaction_1: ReactionMappingLine(count = 3),
+            },
+        },
+        emoji_0,
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__contains()).returning_last())
+def test__ReactionMapping__contains(keyword_parameters, reaction):
+    """
+    Tests whether ``ReactionMapping.__contains__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create instance with.
+    reaction : ``Emoji``, ``Reaction``
+        Reaction or compatible to check.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    reaction_mapping = ReactionMapping(**keyword_parameters)
+    output = reaction in reaction_mapping
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__getitem():
+    emoji_0 = BUILTIN_EMOJIS['heart']
+    
+    reaction_0 = Reaction.from_fields(emoji_0, ReactionType.standard)
+    reaction_1 = Reaction.from_fields(emoji_0, ReactionType.burst)
+    
+    yield (
+        {},
+        reaction_0,
+        None,
+    )
+    
+    yield (
+        {
+            'lines': {
+                reaction_0: ReactionMappingLine(count = 3),
+            },
+        },
+        reaction_0,
+        ReactionMappingLine(count = 3),
+    )
+    
+    yield (
+        {
+            'lines': {
+                reaction_0: ReactionMappingLine(count = 3),
+            },
+        },
+        reaction_1,
+        None,
+    )
+    
+    yield (
+        {
+            'lines': {
+                reaction_0: ReactionMappingLine(count = 3),
+            },
+        },
+        emoji_0,
+        ReactionMappingLine(count = 3),
+    )
+    
+    yield (
+        {
+            'lines': {
+                reaction_1: ReactionMappingLine(count = 3),
+            },
+        },
+        emoji_0,
+        None,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__getitem()).returning_last())
+def test__ReactionMapping__getitem(keyword_parameters, reaction):
+    """
+    Tests whether ``ReactionMapping.__getitem__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create instance with.
+    reaction : ``Emoji``, ``Reaction``
+        Reaction or compatible to check.
+    
+    Returns
+    -------
+    output : `None | ReactionMappingLine`
+    """
+    reaction_mapping = ReactionMapping(**keyword_parameters)
+    output = reaction_mapping[reaction]
+    vampytest.assert_instance(output, ReactionMappingLine, nullable = True)
+    return output

@@ -91,6 +91,7 @@ def test__PollResult__copy_with__all_fields():
 
     vampytest.assert_eq(copy.answer_id, new_answer_id)
     vampytest.assert_eq(copy.count, new_count)
+    vampytest.assert_eq(copy.users, set(new_users))
 
 
 def _iter_options__merge_with():
@@ -103,6 +104,7 @@ def _iter_options__merge_with():
     yield {'count': 1, 'users': {user_0}}, {'count': 1}, (1, {user_0})
     yield {'count': 2, 'users': {user_0, user_1}}, {'count': 1}, (1, set())
     yield {'count': 1, 'users': {user_0}}, {'count': 2}, (2, set())
+    yield {'count': 1, 'users': {user_0}}, {'count': 1, 'users': {user_1}}, (1, {user_1})
 
 
 @vampytest._(vampytest.call_from(_iter_options__merge_with()).returning_last())

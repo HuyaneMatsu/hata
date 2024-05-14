@@ -77,7 +77,7 @@ def test__InteractionMetadataApplicationCommandAutocomplete__get_value_of():
     interaction_option_1 = InteractionOption(name = 'fumo', value = 'friday')
     interaction_option_2 = InteractionOption(
         name = 'maou',
-        type_ = ApplicationCommandOptionType.sub_command,
+        option_type = ApplicationCommandOptionType.sub_command,
         options = [interaction_option_1],
         value = 'day',
     )

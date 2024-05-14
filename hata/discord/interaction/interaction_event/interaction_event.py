@@ -225,32 +225,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             application_permissions = Permission()
         else:
             application_permissions = validate_application_permissions(application_permissions)
-
-        # channel_id
-        if channel_id is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.__new__`\'s `channel_id` parameter is deprecated and will be removed in '
-                    f'2023 November. Please use `channel` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            if isinstance(channel_id, int):
-                channel = create_partial_channel_from_id(channel_id, ChannelType.unknown, 0)
-            
-            elif isinstance(channel_id, str) and channel_id.isdecimal():
-                channel = create_partial_channel_from_id(int(channel_id), ChannelType.unknown, 0)
-            
-            elif isinstance(channel_id, Channel):
-                channel = channel_id
-            
-            else:
-                raise TypeError(
-                    f'`channel_id` can `int`, `str` (snowflake), `{Channel.__name__}`, '
-                    f'got {channel_id.__class__.__name__}; {channel_id!r}.'
-                )
         
         # channel
         if channel is ...:
@@ -263,34 +237,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             entitlements = None
         else:
             entitlements = validate_entitlements(entitlements)
-        
-        # guild_id
-        if guild_id is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.__new__`\'s `guild_id` parameter is deprecated and will be removed in 2024 '
-                    f'February. Please use `guild` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            guild_id = validate_guild_id(guild_id)
-            if guild_id:
-                guild = create_partial_guild_from_id(guild_id)
-            else:
-                guild = None
-        
-        # guild_locale
-        if guild_locale is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.__new__`\'s `guild_locale` parameter is deprecated and will be removed in 2024 '
-                    f'February.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
         
         # guild
         if guild is ...:
@@ -326,18 +272,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             user = ZEROUSER
         else:
             user = validate_user(user)
-        
-        # locale
-        if locale is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.__new__`\'s `locale` parameter is deprecated and will be removed in 2024 '
-                    f'February. Please use `user_locale` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            user_locale = locale
         
         # user_locale
         if user_locale is ...:
@@ -572,73 +506,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         """
         interaction_id = validate_id(interaction_id)
         
-        # Deprecations
-        if channel_id is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.precreate`\'s `channel_id` parameter is deprecated and will be removed in '
-                    f'2023 November. Please use `channel` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            if isinstance(channel_id, int):
-                channel = create_partial_channel_from_id(channel_id, ChannelType.unknown, 0)
-            
-            elif isinstance(channel_id, str) and channel_id.isdecimal():
-                channel = create_partial_channel_from_id(int(channel_id), ChannelType.unknown, 0)
-            
-            elif isinstance(channel_id, Channel):
-                channel = channel_id
-            
-            else:
-                raise TypeError(
-                    f'`channel_id` can `int`, `str` (snowflake), `{Channel.__name__}`, '
-                    f'got {channel_id.__class__.__name__}; {channel_id!r}.'
-                )
-            
-            keyword_parameters['channel'] = channel
-        
-        if guild_id is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.precreate`\'s `guild_id` parameter is deprecated and will be removed in '
-                    f'2024 February.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            guild_id = validate_guild_id(guild_id)
-            if guild_id is None:
-                guild = None
-            else:
-                guild = create_partial_guild_from_id(guild_id)
-            keyword_parameters['guild'] = guild
-
-        if guild_locale is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.precreate`\'s `guild_locale` parameter is deprecated and will be removed in '
-                    f'2024 February.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-        
-        if locale is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.precreate`\'s `locale` parameter is deprecated and will be removed in '
-                    f'2024 February. Please use `user_locale` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            keyword_parameters['user_locale'] = locale
-        
-        
         if keyword_parameters:
             processed = []
             
@@ -796,67 +663,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         else:
             application_permissions = validate_application_permissions(application_permissions)
         
-        if guild_id is not ...:
-            warn(
-                (
-                    f'`{type(self).__name__}.copy_with`\'s `guild_id` parameter is deprecated and will be removed in '
-                    f'2024 February.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            guild_id = validate_guild_id(guild_id)
-            if guild_id is None:
-                guild = None
-            else:
-                guild = create_partial_guild_from_id(guild_id)
-
-        if guild_locale is not ...:
-            warn(
-                (
-                    f'`{type(self).__name__}.copy_with`\'s `guild_locale` parameter is deprecated and will be removed '
-                    f'in 2024 February.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-        
         # guild
         if guild is ...:
             guild = self.guild
         else:
             guild = validate_guild(guild)
-        
-        # channel_id
-        if channel_id is not ...:
-            warn(
-                (
-                    f'`{self.__class__.__name__}.copy_with`\'s `channel_id` parameter is deprecated and will be '
-                    f'removed in 2023 November. Please use `channel` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            if isinstance(channel_id, int):
-                channel = create_partial_channel_from_id(
-                    channel_id, ChannelType.unknown, 0 if guild is None else guild.id
-                )
-            
-            elif isinstance(channel_id, str) and channel_id.isdecimal():
-                channel = create_partial_channel_from_id(
-                    int(channel_id), ChannelType.unknown, 0 if guild is None else guild.id
-                )
-            
-            elif isinstance(channel_id, Channel):
-                channel = channel_id
-            
-            else:
-                raise TypeError(
-                    f'`channel_id` can `int`, `str` (snowflake), `{Channel.__name__}`, '
-                    f'got {channel_id.__class__.__name__}; {channel_id!r}.'
-                )
         
         # channel
         if channel is ...:
@@ -903,17 +714,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             user = self.user
         else:
             user = validate_user(user)
-        
-        if locale is not ...:
-            warn(
-                (
-                    f'`{type(self).__name__}.copy_with`\'s `locale` parameter is deprecated and will be removed '
-                    f'in 2024 February. Please use `user_locale` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            user_locale = locale
         
         # user_locale
         if user_locale is ...:
@@ -1426,22 +1226,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
                 voice_client = client.voice_clients.get(guild.id, None)
         
         return voice_client
-    
-    
-    @property
-    def locale(self):
-        """
-        Deprecated and will be removed in 2024 February. Please use `.user_locale` instead.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.local` is deprecated and will be removed n 2024 February. Please use '
-                f'`.user_locale` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.user_locale
     
     
     def has_entitlement(self, entitlement):

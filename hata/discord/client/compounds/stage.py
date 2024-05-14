@@ -1,7 +1,5 @@
 __all__ = ()
 
-import warnings
-
 from scarletio import Compound
 
 from ...channel import Channel
@@ -81,19 +79,6 @@ class ClientCompoundStageEndpoints(Compound):
         # channel_id
         channel_id = get_channel_id(channel, Channel.is_guild_stage)
         
-        if isinstance(stage_template, str):
-            warnings.warn(
-                (
-                    f'`{self.__class__.__name__}.stage_create`\'s `topic` parameters became keyword only. '
-                    f'Its positional support will be removed at 2023 August.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            keyword_parameters['topic'] = stage_template
-            stage_template = None
-        
         data = build_create_payload(stage_template, STAGE_CREATE_FIELD_CONVERTERS, keyword_parameters)
         data['channel_id'] = channel_id
         
@@ -144,19 +129,6 @@ class ClientCompoundStageEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         stage, channel_id = get_stage_and_channel_id(stage)
-        
-        if isinstance(stage_template, str):
-            warnings.warn(
-                (
-                    f'`{self.__class__.__name__}.stage_edit`\'s `topic` parameters became keyword only. '
-                    f'Its positional support will be removed at 2023 August.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            keyword_parameters['topic'] = stage_template
-            stage_template = None
         
         data = build_edit_payload(stage, stage_template, STAGE_EDIT_FIELD_CONVERTERS, keyword_parameters)
         

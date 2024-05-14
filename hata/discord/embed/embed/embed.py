@@ -1,7 +1,5 @@
 __all__ = ('Embed',)
 
-import warnings
-
 from scarletio import RichAttributeErrorBaseType
 
 from ...utils import DATETIME_FORMAT_CODE, sanitize_mentions
@@ -140,73 +138,6 @@ class Embed(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # Handle deprecations, there is a lot!
-        if extra_positional_parameters:
-            extra_positional_parameter_length = len(extra_positional_parameters)
-            if extra_positional_parameter_length >= 4:
-                warnings.warn(
-                    (
-                        f'`embed_type` parameter of `{cls.__name__}.__new__` is moved to be a keyword only '
-                        f'parameter and the positional usage is deprecated and will be removed in 2023 August.'
-                    ),
-                    FutureWarning,
-                    stacklevel = 2,
-                )
-                
-                embed_type = extra_positional_parameters[3]
-            
-            
-            if extra_positional_parameter_length >= 3:
-                warnings.warn(
-                    (
-                        f'`timestamp` parameter of `{cls.__name__}.__new__` is moved to be a keyword only '
-                        f'parameter and the positional usage is deprecated and will be removed in 2023 August.'
-                    ),
-                    FutureWarning,
-                    stacklevel = 2,
-                )
-                
-                timestamp = extra_positional_parameters[2]
-            
-            
-            if extra_positional_parameter_length >= 2:
-                warnings.warn(
-                    (
-                        f'`url` parameter of `{cls.__name__}.__new__` is moved to be a keyword only '
-                        f'parameter and the positional usage is deprecated and will be removed in 2023 August.'
-                    ),
-                    FutureWarning,
-                    stacklevel = 2,
-                )
-                
-                url = extra_positional_parameters[1]
-            
-            
-            if extra_positional_parameter_length >= 1:
-                warnings.warn(
-                    (
-                        f'`color` parameter of `{cls.__name__}.__new__` is moved to be a keyword only '
-                        f'parameter and the positional usage is deprecated and will be removed in 2023 August.'
-                    ),
-                    FutureWarning,
-                    stacklevel = 2,
-                )
-                
-                color = extra_positional_parameters[0]
-        
-        
-        if (type_ is not ...):
-            warnings.warn(
-                (
-                    f'`type_` parameter of `{cls.__name__}.__new__` has been renamed to `embed_type`. '
-                    f'The option for using `type_` will be removed in 2023 August.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            embed_type = type_
-        
         # Validate parameters
         
         # title
@@ -1501,46 +1432,3 @@ class Embed(RichAttributeErrorBaseType):
         """
         self.thumbnail = EmbedThumbnail(url)
         return self
-    
-    
-    @property
-    def _data(self):
-        """
-        Deprecated and will be removed in 2023 August.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}._data` is deprecated, and will be removed in 2023 August. '
-                f'Please use `.to_data()` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.to_data(include_internals = True)
-    
-    
-    @_data.setter
-    def _data(self, data):
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}._data` is deprecated, and will be removed in 2023 August. '
-                f'Please use `.from_data(data)` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        self.author = parse_author(data)
-        self.color = parse_color(data)
-        self.description = parse_description(data)
-        self.fields = parse_fields(data)
-        self.footer = parse_footer(data)
-        self.image = parse_image(data)
-        self.provider = parse_provider(data)
-        self.thumbnail = parse_thumbnail(data)
-        self.timestamp = parse_timestamp(data)
-        self.title = parse_title(data)
-        self.type = parse_type(data)
-        self.url = parse_url(data)
-        self.video = parse_video(data)

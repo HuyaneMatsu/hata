@@ -1,13 +1,14 @@
 __all__ = ('ReactionMapping', )
 
-from scarletio import set_docs
-from scarletio.utils.compact import NEEDS_DUMMY_INIT
+from warnings import warn
+
+from scarletio import RichAttributeErrorBaseType
 
 from ..emoji import Emoji, create_partial_emoji_data, create_partial_emoji_from_data
 from ..reaction import Reaction, ReactionType
+from ..reaction_mapping_line import ReactionMappingLine
 
-from .fields import validate_reaction
-from .reaction_mapping_line import ReactionMappingLine
+from .fields import validate_lines
 
 
 COUNT_KEYS_TO_TYPES = (
@@ -16,230 +17,58 @@ COUNT_KEYS_TO_TYPES = (
 )
 
 
-def _validate_reaction_mapping_initialize_with(reaction_mapping_type, initialize_with):
+class ReactionMapping(RichAttributeErrorBaseType):
     """
-    Validates the `initialize_with` parameter of ``ReactionMapping``.
-    
-    Parameters
-    ----------
-    reaction_mapping_type : `type`
-        The type of the reaction mapping.
-    initialize_with : `None`, `iterable` of `tuple` ((``Emoji``, ``Reaction``), `iterable` of \
-            (``ClientUserBase``, `None`)), `dict` of \ ((``Emoji``, ``Reaction``), `iterable` of \
-            (``ClientUserBase``, `None`) items, `instance<reaction_mapping_type>`
-        The value to initialise the reaction mapping.
-    
-    Returns
-    -------
-    built_initialize_with : `None`, `list` of `tuple` ((``Emoji``, ``Reaction``), ``ReactionMappingLine``) items
-        The validated extend with value.
-    
-    Raises
-    ------
-    TypeError
-        - If `initialize_with`'s type is unacceptable.
-        - If an item (or element) of `initialize_with` has incorrect type, length or structure.
-    """
-    if initialize_with is None:
-        built_initialize_with = None
-    
-    elif type(initialize_with) is reaction_mapping_type:
-        built_initialize_with = _validate_reaction_mapping_initialize_with_same(initialize_with)
-    
-    elif isinstance(initialize_with, dict):
-        built_initialize_with = _validate_reaction_mapping_initialize_with_dict(initialize_with)
-    
-    elif (getattr(initialize_with, '__iter__', None) is not None):
-        built_initialize_with = _validate_reaction_mapping_initialize_with_iterable(initialize_with)
-    
-    else:
-        raise TypeError(
-            f'`initialize_with` can be `None`, `{reaction_mapping_type.__name__}`, `iterable` or `dict`, got '
-            f'{initialize_with.__class__.__name__}; {initialize_with!r}'
-        )
-    
-    return built_initialize_with
-
-
-def _validate_reaction_mapping_initialize_with_same(initialize_with):
-    """
-    Validates the `initialize_with` parameter of ``ReactionMapping`` where it is the same type.
-    
-    Parameters
-    ----------
-    initialize_with : ``ReactionMapping``
-        The value to initialize_with self with.
-    
-    Returns
-    -------
-    built_initialize_with : `None`, `list` of `tuple` ((``Emoji``, ``Reaction``), ``ReactionMappingLine``) items
-        The validated extend with value.
-    """
-    built_initialize_with = None
-    
-    for reaction, line in initialize_with.items():
-        if built_initialize_with is None:
-            built_initialize_with = []
-        
-        built_initialize_with.append((reaction, line.copy()))
-    
-    return built_initialize_with
-
-
-def _validate_reaction_mapping_initialize_with_dict(initialize_with):
-    """
-    Validates the `initialize_with` parameter of ``ReactionMapping`` where it is a dictionary.
-    
-    Parameters
-    ----------
-    initialize_with : `dict` of (``Emoji``, `iterable` of (``ClientUserBase``, `None`) items
-        The value to initialize_with self with.
-    
-    Returns
-    -------
-    built_initialize_with : `None`, `list` of `tuple` ((``Emoji``, ``Reaction``), ``ReactionMappingLine``) items
-        The validated extend with value.
-    
-    Raises
-    ------
-    TypeError
-        - If `initialize_with` has an item of an unacceptable structure.
-    """
-    built_initialize_with = None
-    for item in initialize_with.items():
-        built_initialize_with = _validate_reaction_mapping_initialize_with_item(built_initialize_with, item)
-    
-    return built_initialize_with
-
-
-def _validate_reaction_mapping_initialize_with_iterable(initialize_with):
-    """
-    Validates the `initialize_with` parameter of ``ReactionMapping`` where it is any iterable.
-    
-    Parameters
-    ----------
-    initialize_with : `iterable` of `tuple` ((``Emoji``, ``Reaction``), `iterable` of (``ClientUserBase``, `None`))
-        The value to initialize_with self with.
-    
-    Returns
-    -------
-    built_initialize_with : `None`, `list` of `tuple` ((``Emoji``, ``Reaction``), ``ReactionMappingLine``) items
-        The validated extend with value.
-    
-    Raises
-    ------
-    TypeError
-        - If `initialize_with` contains a non `tuple` element.
-        - If `initialize_with` contains an element which length is not `2`.
-        - If `initialize_with` has an element of an unacceptable structure.
-    """
-    built_initialize_with = None
-    
-    for item in initialize_with:
-        if not isinstance(item, tuple):
-            raise TypeError(
-                f'`initialize_with` items can be `tuple` instances, got '
-                f'{item.__class__.__name__}; {item!r}; initialize_with{initialize_with!r}'
-            )
-        
-        item_length = len(item)
-        if len(item) != 2:
-            raise TypeError(
-                f'`initialize_with` items can be `tuple` with length of `2`, got '
-                f'item_length = {item_length!r}; item = {item!r}; initialize_with{initialize_with!r}'
-            )
-        
-        built_initialize_with = _validate_reaction_mapping_initialize_with_item(built_initialize_with, item)
-    
-    return built_initialize_with
-
-
-def _validate_reaction_mapping_initialize_with_item(built_initialize_with, item):
-    """
-    Validates an item of the `initialize_with` parameter of ``ReactionMapping``.
-    
-    Parameters
-    ----------
-    built_initialize_with : `None`, `list` of `tuple` ((``Emoji``, ``Reaction``), ``ReactionMappingLine``) items
-        The validated extend with value.
-    item : `tuple` (``Emoji``, `iterable` of (``ClientUserBase``, `None`))
-        Reaction mapping item to validate.
-    
-    Returns
-    -------
-    built_initialize_with : `None`, `list` of `tuple` ((``Emoji``, ``Reaction``), ``ReactionMappingLine``) items
-        The validated extend with value.
-    
-    Raises
-    ------
-    TypeError
-        - If `item[0]` is not ``Emoji`` / ``Reaction``.
-        - If `item[1]` isn ot accepted by ``ReactionMappingLine``.
-    """
-    reaction, line = item
-    
-    reaction = validate_reaction(reaction)
-    line = ReactionMappingLine(line)
-    
-    if line:
-        if built_initialize_with is None:
-            built_initialize_with = []
-        
-        built_initialize_with.append((reaction, line))
-    
-    return built_initialize_with
-
-
-class ReactionMapping(dict):
-    """
-    A `dict` subclass, which contains the reactions on a ``Message`` with (``Reaction``, ``ReactionMappingLine``)
-    items.
+    Contains the reactions on a ``Message`` with (``Reaction``, ``ReactionMappingLine``) items.
     
     Attributes
     ----------
-    fully_loaded : `bool`
-        Whether the reaction mapping line is fully loaded.
+    lines : `None | dict<Reaction, ReactionMappingLine>`
+        Reaction to users relation.
     """
-    __slots__ = ('fully_loaded',)
+    __slots__ = ('lines',)
     
-    if NEEDS_DUMMY_INIT:
-        def __init__(self, *args, **kwargs):
-            pass
-    else:
-        __init__ = object.__init__
-    
-    
-    def __new__(cls, initialize_with = None):
+    def __new__(cls, *, lines = ...):
         """
         Creates a new reaction mapping instance.
         
         Parameters
         ----------
-        initialize_with : `None`, `iterable` of `tuple` ((``Emoji``, ``Reaction``), `iterable` of \
-                (``ClientUserBase``, `None`)), `dict` of \ ((``Emoji``, ``Reaction``), `iterable` of \
-                (``ClientUserBase``, `None`) items, `instance<cls>` = `None`, Optional
-            The value to initialize_with self with.
+        lines : `None | dict<str | Emoji | Reaction, ReactionMappingLine> \
+                | list<(str | Emoji | Reaction, ReactionMappingLine)>`, Optional (Keyword only)
+            Reaction to users relation.
         
         Raises
         ------
         TypeError
             - If `initialize_with`'s is unacceptable.
         """
-        built_initialize_with = _validate_reaction_mapping_initialize_with(cls, initialize_with)
+        if lines is ...:
+            lines = None
+        else:
+            lines = validate_lines(lines)
         
-        self = dict.__new__(cls)
-        self.fully_loaded = True
-        
-        if (built_initialize_with is not None):
-            dict.update(self, built_initialize_with)
-            self._full_check()
-        
+        # Construct
+        self = object.__new__(cls)
+        self.lines = lines
         return self
+    
+    
+    def __len__(self):
+        """Returns the length of the reaction mapping."""
+        lines = self.lines
+        if lines is None:
+            return 0
+        
+        return len(lines)
     
     
     def __bool__(self):
         """Returns whether self has any any reactions"""
-        if dict.__len__(self):
+        
+        # lines
+        lines = self.lines
+        if (lines is not None) and lines:
             return True
         
         return False
@@ -247,74 +76,38 @@ class ReactionMapping(dict):
     
     def __repr__(self):
         """Returns the reaction mapping's representation."""
-        repr_parts = [self.__class__.__name__, '(']
+        repr_parts = ['<', type(self).__name__]
         
-        if dict.__len__(self):
-            repr_parts.append('{')
-            for reaction, line in dict.items(self):
-                repr_parts.append(repr(reaction))
-                repr_parts.append(': ')
-                repr_parts.append(repr(line))
-                repr_parts.append(', ')
-            
-            repr_parts[-1] = '}'
+        # lines
+        lines = self.lines
+        if (lines is not None) and lines:
+            repr_parts.append('lines = ')
+            repr_parts.append(repr(lines))
         
-        repr_parts.append(')')
+        repr_parts.append('>')
         return ''.join(repr_parts)
     
     
     def __eq__(self, other):
         """Returns whether self equals to other."""
-        if type(other) is type(self):
-            return dict.__eq__(self, other)
+        if type(self) is not type(other):
+            return NotImplemented
         
-        if isinstance(other, dict):
-            return self._is_equal_dict(other)
+        # lines
+        self_lines = self.lines
+        other_lines = other.lines
+        if (self_lines is None) or (not self_lines):
+            if (other_lines is not None) and other_lines:
+                return False
         
-        return NotImplemented
-    
-    
-    def _is_equal_dict(self, other):
-        """
-        Returns whether self equals to the given dictionary.
-        
-        Parameters
-        ----------
-        other : `dict` of (``Emoji``, `iterable` of (``ClientUserBase``, `None`)) items
-            The other instance to compare self to.
-        
-        Returns
-        -------
-        is_equal : `bool`, `NotImplemented`
-        """
-        for reaction in other.keys():
-            if not isinstance(reaction, (Emoji, Reaction)):
-                return NotImplemented
-        
-        is_equal = True
-        
-        for reaction in {*dict.keys(self), *other.keys()}:
-            try:
-                other_line = other[reaction]
-            except KeyError:
-                is_equal = False
-                continue
+        else:
+            if (other_lines is None) or (not other_lines):
+                return False
             
-            try:
-                self_line = self[reaction]
-            except KeyError:
-                self_line = ReactionMappingLine._create_empty(0)
-                is_equal = False
-            
-            line_equals = type(self_line).__eq__(self_line, other_line)
-            if line_equals is NotImplemented:
-                return NotImplemented
-            
-            if not line_equals:
-                is_equal = False
-            continue
+            if self_lines != other_lines:
+                return False
         
-        return is_equal
+        return True
     
     
     def __hash__(self):
@@ -324,8 +117,10 @@ class ReactionMapping(dict):
         """
         hash_value = 0
         
-        for reaction, line in dict.items(self):
-            hash_value ^= hash(reaction) & hash(line)
+        lines = self.lines
+        if (lines is not None):
+            for reaction, line in lines.items():
+             hash_value ^= hash(reaction) & hash(line)
         
         return hash_value
     
@@ -337,19 +132,14 @@ class ReactionMapping(dict):
         
         Parameters
         ----------
-        data : `None`, `dict` of (`str`, `object`) items
+        data : `None`, `list<dict<str, object>>`
             Reactions data.
         
         Returns
         -------
         self : `instance<cls>`
         """
-        self = dict.__new__(cls)
-        if (data is None) or (not data):
-            self.fully_loaded = True
-            return self
-        
-        self.fully_loaded = False
+        lines = None
         
         for line_data in data:
             counts = line_data.get('count_details', None)
@@ -360,9 +150,19 @@ class ReactionMapping(dict):
             
             for key, reaction_type in COUNT_KEYS_TO_TYPES:
                 count = counts.get(key, 0)
-                if count:
-                    self[Reaction.from_fields(emoji, reaction_type)] = ReactionMappingLine._create_empty(count)
+                if not count:
+                    continue
+                
+                if lines is None:
+                    lines = {}
+                
+                line = ReactionMappingLine._create_empty()
+                line.count = count
+                lines[Reaction.from_fields(emoji, reaction_type)] = line
         
+        # Construct
+        self = object.__new__(cls)
+        self.lines = lines
         return self
     
     
@@ -376,30 +176,32 @@ class ReactionMapping(dict):
         """
         data = []
         
-        reduced_to_emojis = {}
-        for reaction, line in dict.items(self):
-            emoji = reaction.emoji
-            try:
-                by_type = reduced_to_emojis[emoji]
-            except KeyError:
-                by_type = {}
-                reduced_to_emojis[emoji] = by_type
+        lines = self.lines
+        if (lines is not None):
+            reduced_to_emojis = {}
+            for reaction, line in lines.items():
+                emoji = reaction.emoji
+                try:
+                    by_type = reduced_to_emojis[emoji]
+                except KeyError:
+                    by_type = {}
+                    reduced_to_emojis[emoji] = by_type
+                
+                by_type[reaction.type] = line
+                
+                
+            for emoji, by_type in reduced_to_emojis.items():
+                counts = {}
+                
+                for key, reaction_type in COUNT_KEYS_TO_TYPES:
+                    line = by_type.get(reaction_type, None)
+                    counts[key] = 0 if (line is None) else line.count
+                
+                data.append({
+                    'count_details': counts,
+                    'emoji': create_partial_emoji_data(emoji),
+                })
             
-            by_type[reaction.type] = line
-            
-            
-        for emoji, by_type in reduced_to_emojis.items():
-            counts = {}
-            
-            for key, reaction_type in COUNT_KEYS_TO_TYPES:
-                line = by_type.get(reaction_type, None)
-                counts[key] = 0 if (line is None) else len(line)
-            
-            data.append({
-                'count_details': counts,
-                'emoji': create_partial_emoji_data(emoji),
-            })
-        
         return data
     
     
@@ -412,11 +214,15 @@ class ReactionMapping(dict):
         -------
         emoji_count : `int`
         """
-        return len({reaction.emoji for reaction in dict.keys(self)})
+        lines = self.lines
+        if lines is None:
+            return 0
+        
+        return len({reaction.emoji for reaction in lines.keys()})
     
     
-    reaction_count = set_docs(
-        property(dict.__len__),
+    @property
+    def reaction_count(self):
         """
         The amount of different reactions, which were added on the reaction mapping's respective ``Message``.
         
@@ -424,7 +230,11 @@ class ReactionMapping(dict):
         -------
         reaction_count : `int`
         """
-    )
+        lines = self.lines
+        if lines is None:
+            return 0
+        
+        return len(lines)
     
     
     @property
@@ -436,23 +246,11 @@ class ReactionMapping(dict):
         -------
         total_count : `int`
         """
-        total_reactions = 0
+        lines = self.lines
+        if lines is None:
+            return 0
         
-        for users in dict.values(self):
-            total_reactions += len(users)
-        
-        return total_reactions
-    
-    
-    def clear(self):
-        """
-        Clears the reaction mapping with clearing it's lines.
-        """
-        for value in self.values():
-            value.clear()
-        
-        if self.fully_loaded:
-            self._full_check()
+        return sum(line.count for line in lines.values())
     
     
     def copy(self):
@@ -463,16 +261,18 @@ class ReactionMapping(dict):
         -------
         new : `instance<type<self>>`
         """
-        new = dict.__new__(type(self))
-        new.fully_loaded = self.fully_loaded
+        new = object.__new__(type(self))
         
-        for reaction, line in dict.items(self):
-            new[reaction.copy()] = line.copy()
+        # lines
+        lines = self.lines
+        if (lines is not None):
+            lines = {reaction.copy(): line.copy() for reaction, line in lines.items()}
+        new.lines = lines
         
         return new
     
     
-    def add(self, reaction, user):
+    def _add_reaction(self, reaction, user):
         """
         Adds a user to the reactors.
         
@@ -482,17 +282,16 @@ class ReactionMapping(dict):
             The reaction.
         user : ``ClientUserBase``
             The reactor user.
-        """
-        try:
-            line = self[reaction]
-        except KeyError:
-            line = ReactionMappingLine._create_empty(0)
-            self[reaction] = line
         
-        line.add(user)
+        Returns
+        -------
+        success : `bool`
+        """
+        line = self._get_or_create_line(reaction)
+        return line._add_reaction(user)
     
     
-    def remove(self, reaction, user):
+    def _remove_reaction(self, reaction, user):
         """
         Removes a user from the reactors.
         
@@ -507,20 +306,24 @@ class ReactionMapping(dict):
         -------
         success : `bool`
         """
+        lines = self.lines
+        if lines is None:
+            return False
+        
         try:
             line = self[reaction]
         except KeyError:
             return False
         
-        success = line.remove(user)
+        success = line._remove_reaction(user)
         if success:
             if not line:
-                del self[reaction]
+                del lines[reaction]
         
         return success
     
     
-    def remove_emoji(self, emoji):
+    def _remove_reaction_emoji(self, emoji):
         """
         Removes all the users who reacted with the given ``Emoji`` and then returns the stored line.
         
@@ -531,51 +334,30 @@ class ReactionMapping(dict):
         
         Returns
         -------
-        line : `None`, `dict<Reaction, ReactionMappingLine>`
+        removed_lines : `None | dict<Reaction, ReactionMappingLine>`
         """
-        lines = None
+        removed_lines = None
         
-        for reaction, line in dict.items(self):
-            if reaction.emoji is not emoji:
-                continue
-            
-            if lines is None:
-                lines = {}
-            
-            lines[reaction] = line
-            continue
-        
-        if lines is not None:
-            should_full_check = False
-            
+        lines = self.lines
+        if (lines is not None):
             for reaction, line in lines.items():
-                del self[reaction]
-                
-                if line.unknown:
-                    should_full_check = True
+                if reaction.emoji is not emoji:
+                    continue
             
-            if should_full_check:
-                self._full_check()
+                if removed_lines is None:
+                    removed_lines = {}
+            
+                removed_lines[reaction] = line
+                continue
         
-        return lines
+            if (removed_lines is not None):
+                for reaction in removed_lines.keys():
+                    del lines[reaction]
+            
+        return removed_lines
     
     
-    # this function is called if a reaction loses all it's unknown reactors
-    def _full_check(self):
-        """
-        Checks whether the reaction mapping is fully loaded, by checking it's values' `.unknown` and sets the current
-        state to `.fully_loaded`.
-        """
-        for line in self.values():
-            if line.unknown:
-                self.fully_loaded = False
-                return
-        
-        self.fully_loaded = True
-    
-    
-    # we call this when we get SOME reactors of a reaction
-    def _update_some_users(self, reaction, users):
+    def _fill_some_reactions(self, reaction, users):
         """
         Called when some reactors of a reaction are updated.
         
@@ -586,17 +368,11 @@ class ReactionMapping(dict):
         users : `list` of ``ClientUserBase``
             The added reactors.
         """
-        try:
-            line = self[reaction]
-        except KeyError:
-            line = ReactionMappingLine._create_empty(0)
-            self[reaction] = line
-            
-        line.update(users)
-        self._full_check()
+        line = self._get_or_create_line(reaction)
+        line._fill_some_reactions(users)
     
     
-    def _update_all_users(self, reaction, users):
+    def _fill_all_reactions(self, reaction, users):
         """
         Called when all the reactors of a reaction are updated of the reaction mapping.
         
@@ -607,5 +383,184 @@ class ReactionMapping(dict):
         users : `list` of ``ClientUserBase``
             The added reactors.
         """
-        self[reaction] = ReactionMappingLine._create_full(users)
-        self._full_check()
+        line = self._get_or_create_line(reaction)
+        line._fill_all_reactions(users)
+    
+    
+    def __getitem__(self, reaction):
+        """
+        Gets the result for the given answer.
+        
+        Parameters
+        ----------
+        reaction : `Emoji | Reaction`
+            
+        Returns
+        -------
+        result : `None | ReactionMappingLine`
+       
+        """
+        lines = self.lines
+        if (lines is not None):
+            return lines.get(reaction, None)
+    
+    
+    def _get_or_create_line(self, reaction):
+        """
+        Gets the line for the given `reaction`. If not found creates a new one.
+        
+        Parameters
+        ----------
+        reaction : ``Reaction``
+            The reaction pointing at the line.
+        
+        Returns
+        -------
+        line : ``ReactionMappingLine``
+        """
+        lines = self.lines
+        if lines is None:
+            line = ReactionMappingLine._create_empty()
+            self.lines = {reaction: line}
+        else:
+            try:
+                line = lines[reaction]
+            except KeyError:
+                line = ReactionMappingLine._create_empty()
+                lines[reaction] = line
+        
+        return line
+    
+    
+    def clear(self):
+        """
+        Clears the non-client users of the reaction mapping.
+        """
+        lines = self.lines
+        if (lines is not None):
+            lines.clear()
+    
+    
+    def __contains__(self, reaction):
+        """Returns whether the reaction mapping has the given reaction."""
+        lines = self.lines
+        if lines is None:
+            return False
+        
+        return reaction in lines
+    
+    
+    def iter_reactions(self):
+        """
+        Iterates over reactions.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        reaction : ``Reaction``
+        """
+        lines = self.lines
+        if (lines is not None):
+            yield from lines.keys()
+    
+    
+    def iter_lines(self):
+        """
+        Iterates over lines.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        item : ``ReactionMappingLine``
+        """
+        lines = self.lines
+        if (lines is not None):
+            yield from lines.values()
+    
+    
+    def iter_items(self):
+        """
+        Iterates over `reaction - lines` pairs.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        item : `(Reaction, ReactionMappingLine)`
+        """
+        lines = self.lines
+        if (lines is not None):
+            yield from lines.items()
+    
+    
+    
+    @property
+    def fully_loaded(self):
+        """
+        Returns whether the reaction mapping line is fully loaded.
+        
+        Deprecated and will be removed in 2025 Jan.
+        """
+        warn(
+            (
+                f'`{type(self).__name__}.fully_loaded` is deprecated and will be removed in 2025 Jan.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        for result in self.iter_result():
+            if result.unknown:
+                return False
+        
+        return True
+    
+    
+    def keys(self):
+        """
+        Deprecated and will be removed in 2025 Jan. Use ``.iter_reactions`` instead.
+        """
+        warn(
+            (
+                f'`{type(self).__name__}.keys` is deprecated and will be removed in 2025 Jan. '
+                f'Use `.iter_reactions` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return self.iter_reactions()
+
+
+    def values(self):
+        """
+        Deprecated and will be removed in 2025 Jan. Use ``.iter_lines`` instead.
+        """
+        warn(
+            (
+                f'`{type(self).__name__}.values` is deprecated and will be removed in 2025 Jan. '
+                f'Use `.iter_lines` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return self.iter_lines()
+
+
+    def items(self):
+        """
+        Deprecated and will be removed in 2025 Jan. Use ``.iter_items`` instead.
+        """
+        warn(
+            (
+                f'`{type(self).__name__}.items` is deprecated and will be removed in 2025 Jan. '
+                f'Use `.iter_items` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return self.iter_items()

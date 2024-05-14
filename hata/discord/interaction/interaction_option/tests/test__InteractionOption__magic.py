@@ -12,14 +12,14 @@ def test__InteractionOption__repr():
     focused = True
     name = 'Worldly'
     options = [InteractionOption(name = 'flower')]
-    type_ = ApplicationCommandOptionType.sub_command
+    option_type = ApplicationCommandOptionType.sub_command
     value = 'flower land'
     
     interaction_option = InteractionOption(
         focused = focused,
         name = name,
         options = options,
-        type_ = type_,
+        option_type = option_type,
         value = value,
     )
     
@@ -33,14 +33,14 @@ def test__InteractionOption__hash():
     focused = True
     name = 'Worldly'
     options = [InteractionOption(name = 'flower')]
-    type_ = ApplicationCommandOptionType.sub_command
+    option_type = ApplicationCommandOptionType.sub_command
     value = 'flower land'
     
     interaction_option = InteractionOption(
         focused = focused,
         name = name,
         options = options,
-        type_ = type_,
+        option_type = option_type,
         value = value,
     )
     
@@ -54,14 +54,14 @@ def test__InteractionOption__eq():
     focused = True
     name = 'Worldly'
     options = [InteractionOption(name = 'flower')]
-    type_ = ApplicationCommandOptionType.sub_command
+    option_type = ApplicationCommandOptionType.sub_command
     value = 'flower land'
     
     keyword_parameters = {
         'focused': focused,
         'name': name,
         'options': options,
-        'type_': type_,
+        'option_type': option_type,
         'value': value,
     }
     
@@ -74,7 +74,7 @@ def test__InteractionOption__eq():
         ('focused', False),
         ('name', 'night'),
         ('options', None),
-        ('type_', ApplicationCommandOptionType.string),
+        ('option_type', ApplicationCommandOptionType.string),
         ('value', 'blooms'),
     ):
         test_interaction_option = InteractionOption(**{**keyword_parameters, field_name: field_value})

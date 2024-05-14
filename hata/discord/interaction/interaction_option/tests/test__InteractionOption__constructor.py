@@ -40,14 +40,14 @@ def test__InteractionOption__new__1():
     focused = True
     name = 'Worldly'
     options = [InteractionOption(name = 'flower')]
-    type_ = ApplicationCommandOptionType.sub_command
+    option_type = ApplicationCommandOptionType.sub_command
     value = 'flower land'
     
     interaction_option = InteractionOption(
         focused = focused,
         name = name,
         options = options,
-        type_ = type_,
+        option_type = option_type,
         value = value,
     )
     _assert_fields_set(interaction_option)
@@ -55,7 +55,7 @@ def test__InteractionOption__new__1():
     vampytest.assert_eq(interaction_option.focused, focused)
     vampytest.assert_eq(interaction_option.name, name)
     vampytest.assert_eq(interaction_option.options, tuple(options))
-    vampytest.assert_is(interaction_option.type, type_)
+    vampytest.assert_is(interaction_option.type, option_type)
     vampytest.assert_eq(interaction_option.value, value)
 
 

@@ -1,5 +1,7 @@
 __all__ = ('InteractionMetadataApplicationCommand',)
 
+from warnings import warn
+
 from scarletio import copy_docs
 
 from .application_command_autocomplete import InteractionMetadataApplicationCommandAutocomplete
@@ -31,6 +33,82 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
     """
     __slots__ = ('resolved', 'target_id')
     
+    
+    def __new__(
+        cls,
+        *,
+        application_command_id = ...,
+        id = ...,
+        name = ...,
+        options = ...,
+        resolved = ...,
+        target_id = ...,
+    ):
+        """
+        Creates a new interaction metadata from the given parameters.
+        
+        Parameters
+        ----------
+        application_command_id : `int`, Optional (Keyword only)
+            The represented application command's identifier number.
+        
+        name : `str`, Optional (Keyword only)
+            The represented application command's name.
+        
+        options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
+            Application command option representations. Like sub-command or parameter.
+        
+        resolved : `None`, ``Resolved``, Optional (Keyword only)
+            Contains the received entities.
+        
+        target_id : `int`, Optional (Keyword only)
+            The interaction's target's identifier. Applicable for context commands.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # id - Deprecated
+        if id is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\' `id` parameter is deprecated '
+                    f'and will be removed in 2024 December. '
+                    f'Please use `application_command_id` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            application_command_id = id
+        
+        # resolved
+        if resolved is ...:
+            resolved = None
+        else:
+            resolved = validate_resolved(resolved)
+        
+        # target_id
+        if target_id is ...:
+            target_id = 0
+        else:
+            target_id = validate_target_id(target_id)
+        
+        # Construct
+        self = InteractionMetadataApplicationCommandAutocomplete.__new__(
+            cls,
+            application_command_id = application_command_id,
+            name = name,
+            options = options,
+        )
+        self.resolved = resolved
+        self.target_id = target_id
+        return self
+    
+    
     @classmethod
     @copy_docs(InteractionMetadataApplicationCommandAutocomplete._create_empty)
     def _create_empty(cls):
@@ -54,28 +132,85 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         return new
     
     
-    @copy_docs(InteractionMetadataApplicationCommandAutocomplete._set_attributes_from_keyword_parameters)
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+    def copy_with(
+        self,
+        *,
+        application_command_id = ...,
+        id = ...,
+        name = ...,
+        options = ...,
+        resolved = ...,
+        target_id = ...,
+    ):
+        """
+        Copies the interaction metadata with the given fields.
+        
+        Parameters
+        ----------
+        application_command_id : `int`, Optional (Keyword only)
+            The represented application command's identifier number.
+        
+        name : `str`, Optional (Keyword only)
+            The represented application command's name.
+        
+        options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
+            Application command option representations. Like sub-command or parameter.
+        
+        resolved : `None`, ``Resolved``, Optional (Keyword only)
+            Contains the received entities.
+        
+        target_id : `int`, Optional (Keyword only)
+            The interaction's target's identifier. Applicable for context commands.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # id - Deprecated
+        if id is not ...:
+            warn(
+                (
+                    f'`{type(self).__name__}.copy_with`\' `id` parameter is deprecated '
+                    f'and will be removed in 2024 December. '
+                    f'Please use `application_command_id` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            application_command_id = id
+        
         # resolved
-        try:
-            resolved = keyword_parameters.pop('resolved')
-        except KeyError:
-            pass
+        if resolved is ...:
+            resolved = self.resolved
+            if (resolved is not None):
+                resolved = resolved.copy()
         else:
-            self.resolved = validate_resolved(resolved)
+            resolved = validate_resolved(resolved)
         
         # target_id
-        try:
-            target_id = keyword_parameters.pop('target_id')
-        except KeyError:
-            pass
+        if target_id is ...:
+            target_id = self.target_id
         else:
-            self.target_id = validate_target_id(target_id)
+            target_id = validate_target_id(target_id)
         
-        
-        InteractionMetadataApplicationCommandAutocomplete._set_attributes_from_keyword_parameters(
-            self, keyword_parameters
+        # Construct
+        new = InteractionMetadataApplicationCommandAutocomplete.copy_with(
+            self,
+            application_command_id = application_command_id,
+            name = name,
+            options = options,
         )
+        new.resolved = resolved
+        new.target_id = target_id
+        return new
     
     
     @classmethod

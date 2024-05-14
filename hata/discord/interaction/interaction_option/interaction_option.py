@@ -1,6 +1,7 @@
 __all__ = ('InteractionOption',)
 
 import reprlib
+from warnings import warn
 
 from scarletio import RichAttributeErrorBaseType, export
 
@@ -38,28 +39,32 @@ class InteractionOption(RichAttributeErrorBaseType):
     __slots__ = ('focused', 'name', 'options', 'type', 'value')
     
     
-    def __new__(cls, **keyword_parameters):
+    def __new__(
+        cls,
+        *,
+        focused = ...,
+        name = ...,
+        option_type = ...,
+        options = ...,
+        type_ = ...,
+        value = ...,
+    ):
         """
         Creates a new interaction option from the given keyword parameters.
         
         Parameters
         ----------
-        **keyword_parameters : Keyword parameters
-            Keyword parameters defining which fields and how should be set.
-        
-        Other Parameters
-        ----------------
         focused : `bool`, Optional (Keyword only)
             Whether this field is focused by the user.
         
         name : `str`, Optional (Keyword only)
             The option's name.
         
+        option_type : ``ApplicationCommandOptionType``, `int`, Optional (Keyword only)
+            The represented option's type.
+        
         options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
             Nested options.
-        
-        type_ : ``ApplicationCommandOptionType``, Optional (Keyword only)
-            The represented option's type.
         
         value : `None`, `str`, `float`, `int`, Optional (Keyword only)
             The value the user has been typed or selected.
@@ -67,13 +72,62 @@ class InteractionOption(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            - If a field's type is incorrect.
-            - Extra or unused fields given.
+            - If a parameter's type is incorrect.
         ValueError
-            - If a field's value is incorrect.
+            - If a parameter's value is incorrect.
         """
-        self = cls._create_empty()
-        self._populate_from_keyword_parameters(keyword_parameters)
+        # type_ - Deprecated
+        if type_ is not ...:
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\' `type_` parameter is deprecated '
+                    f'and will be removed in 2024 December. '
+                    f'Please use `option_type` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            option_type = type_
+        
+        # focused
+        if focused is ...:
+            focused = False
+        else:
+            focused = validate_focused(focused)
+        
+        # name
+        if name is ...:
+            name = ''
+        else:
+            name = validate_name(name)
+        
+        # option_type
+        if option_type is ...:
+            option_type = ApplicationCommandOptionType.none
+        else:
+            option_type = validate_type(option_type)
+        
+        # options
+        if options is ...:
+            options = None
+        else:
+            options = validate_options(options)
+        
+        # value
+        if value is ...:
+            value = None
+        else:
+            value = validate_value(value)
+        
+        
+        # Construct
+        self = object.__new__(cls)
+        self.focused = focused
+        self.name = name
+        self.options = options
+        self.type = option_type
+        self.value = value
         return self
     
     
@@ -108,120 +162,109 @@ class InteractionOption(RichAttributeErrorBaseType):
         new.name = self.name
         options = self.options
         if (options is not None):
-            options = tuple(option.copy() for option in options)
+            options = (*(option.copy() for option in options),)
         new.options = options
         new.type = self.type
         new.value = self.value
         return new
     
     
-    def copy_with(self, **keyword_parameters):
+    def copy_with(
+        self,
+        *,
+        focused = ...,
+        name = ...,
+        option_type = ...,
+        options = ...,
+        type_ = ...,
+        value = ...,
+    ):
         """
         Copies the interaction option with replacing the defined fields.
         
         Parameters
         ----------
-        **keyword_parameters : Keyword parameters
-            Keyword parameters defining which fields and how should be set.
-        
-        Other Parameters
-        ----------------
         focused : `bool`, Optional (Keyword only)
             Whether this field is focused by the user.
         
         name : `str`, Optional (Keyword only)
             The option's name.
         
+        option_type : ``ApplicationCommandOptionType``, `int`, Optional (Keyword only)
+            The represented option's type.
+        
         options : `None`, `tuple` of ``InteractionOption``, Optional (Keyword only)
             Nested options.
-        
-        type_ : ``ApplicationCommandOptionType``, Optional (Keyword only)
-            The represented option's type.
         
         value : `None`, `str`, `float`, `int`, Optional (Keyword only)
             The value the user has been typed or selected.
         
         Returns
         -------
-        new : `instance<cls>`
+        new : `instance<type<self>>`
         
         Raises
         ------
         TypeError
-            - If a field's type is incorrect.
-            - Extra or unused fields given.
+            - If a parameter's type is incorrect.
         ValueError
-            - If a field's value is incorrect.
+            - If a parameter's value is incorrect.
         """
-        self = self.copy()
-        self._populate_from_keyword_parameters(keyword_parameters)
-        return self
-    
-    
-    def _populate_from_keyword_parameters(self, keyword_parameters):
-        """
-        Sets the interaction option's attributes from the given keyword parameters.
-        
-        Parameters
-        keyword_parameters : `dict` of (`str`, `object`) items
-            A dictionary of keyword parameters defining which fields and how should be set.
-        
-        Raises
-        ------
-        TypeError
-            - If a field's type is incorrect.
-            - Extra or unused fields given.
-        ValueError
-            - If a field's value is incorrect.
-        """
-        if not keyword_parameters:
-            return
+        # type - Deprecated
+        if type_ is not ...:
+            warn(
+                (
+                    f'`{type(self).__name__}.copy_with`\' `type_` parameter is deprecated '
+                    f'and will be removed in 2024 December. '
+                    f'Please use `option_type` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            option_type = type_
         
         # focused
-        try:
-            focused = keyword_parameters.pop('focused')
-        except KeyError:
-            pass
+        if focused is ...:
+            focused = self.focused
         else:
-            self.focused = validate_focused(focused)
+            focused = validate_focused(focused)
         
         # name
-        try:
-            name = keyword_parameters.pop('name')
-        except KeyError:
-            pass
+        if name is ...:
+            name = self.name
         else:
-            self.name = validate_name(name)
+            name = validate_name(name)
+        
+        # option_type
+        if option_type is ...:
+            option_type = self.type
+        else:
+            option_type = validate_type(option_type)
         
         # options
-        try:
-            options = keyword_parameters.pop('options')
-        except KeyError:
-            pass
+        if options is ...:
+            options = self.options
+            if (options is not None):
+                options = (*(option.copy() for option in options),)
         else:
-            self.options = validate_options(options)
-        
-        # type
-        try:
-            type_ = keyword_parameters.pop('type_')
-        except KeyError:
-            pass
-        else:
-            self.type = validate_type(type_)
+            options = validate_options(options)
         
         # value
-        try:
-            value = keyword_parameters.pop('value')
-        except KeyError:
-            pass
+        if value is ...:
+            value = self.value
         else:
-            self.value = validate_value(value)
+            value = validate_value(value)
         
         
-        if keyword_parameters:
-            raise TypeError(
-                f'Extra or unused keyword parameters: {keyword_parameters!r}.'
-            )
+        # Construct
+        new = object.__new__(type(self))
+        new.focused = focused
+        new.name = name
+        new.options = options
+        new.type = option_type
+        new.value = value
+        return new
     
     
     @classmethod
@@ -267,26 +310,32 @@ class InteractionOption(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the interaction option's representation."""
-        repr_parts = [
-            '<', self.__class__.__name__,
-            ' name = ', repr(self.name),
-        ]
+        repr_parts = ['<', type(self).__name__,]
         
-        if self.focused:
-            repr_parts.append(' (focused)')
+        # name
+        repr_parts.append(', name = ')
+        repr_parts.append(repr(self.name))
         
+        # focused
+        focused = self.focused
+        if focused:
+            repr_parts.append(', focused = ')
+            repr_parts.append(repr(focused))
+        
+        # value
         value = self.value
         if (value is not None):
             repr_parts.append(', value = ')
             repr_parts.append(reprlib.repr(value))
         
-        type_ = self.type
+        # type
+        option_type = self.type
         repr_parts.append(', type = ')
-        repr_parts.append(type_.name)
-        repr_parts.append(' (')
-        repr_parts.append(repr(type_.value))
-        repr_parts.append(')')
+        repr_parts.append(option_type.name)
+        repr_parts.append(' ~ ')
+        repr_parts.append(repr(option_type.value))
         
+        # options
         options = self.options
         if (options is not None):
             repr_parts.append(', options = [')

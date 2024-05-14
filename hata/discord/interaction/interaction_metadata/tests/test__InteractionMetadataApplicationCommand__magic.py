@@ -12,14 +12,14 @@ def test__InteractionMetadataApplicationCommand__repr():
     """
     Tests whether ``InteractionMetadataApplicationCommand.__repr__`` works as intended.
     """
-    id_ = 202211060023
+    application_command_id = 202211060023
     name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
     resolved = Resolved(attachments = [Attachment.precreate(202211060024)])
     target_id = 202211060025
     
     interaction_metadata = InteractionMetadataApplicationCommand(
-        id = id_,
+        application_command_id = application_command_id,
         name = name,
         options = options,
         resolved = resolved,
@@ -32,14 +32,14 @@ def test__InteractionMetadataApplicationCommand__hash():
     """
     Tests whether ``InteractionMetadataApplicationCommand.__hash__`` works as intended.
     """
-    id_ = 202211060026
+    application_command_id = 202211060026
     name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
     resolved = Resolved(attachments = [Attachment.precreate(202211060027)])
     target_id = 202211060028
     
     interaction_metadata = InteractionMetadataApplicationCommand(
-        id = id_,
+        application_command_id = application_command_id,
         name = name,
         options = options,
         resolved = resolved,
@@ -52,14 +52,14 @@ def test__InteractionMetadataApplicationCommand__eq():
     """
     Tests whether ``InteractionMetadataApplicationCommand.__eq__`` works as intended.
     """
-    id_ = 202211060029
+    application_command_id = 202211060029
     name = 'Inaba'
     options = [InteractionOption(name = 'Rem')]
     resolved = Resolved(attachments = [Attachment.precreate(202211060030)])
     target_id = 202211060031
     
     keyword_parameters = {
-        'id': id_,
+        'application_command_id': application_command_id,
         'name': name,
         'options': options,
         'resolved': resolved,
@@ -72,7 +72,7 @@ def test__InteractionMetadataApplicationCommand__eq():
     vampytest.assert_ne(interaction_metadata, object())
     
     for field_name, field_value in (
-        ('id', 202211060032),
+        ('application_command_id', 202211060032),
         ('name', 'Reisen'),
         ('options', None),
         ('resolved', None),

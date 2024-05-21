@@ -27,6 +27,7 @@ def test__ComponentMetadataBase__placeholders():
     vampytest.assert_instance(component_metadata.options, tuple, nullable = True)
     vampytest.assert_instance(component_metadata.placeholder, str, nullable = True)
     vampytest.assert_instance(component_metadata.required, bool)
+    vampytest.assert_instance(component_metadata.sku_id, int)
     vampytest.assert_instance(component_metadata.text_input_style, TextInputStyle)
     vampytest.assert_instance(component_metadata.url, str, nullable = True)
     vampytest.assert_instance(component_metadata.value, str, nullable = True)

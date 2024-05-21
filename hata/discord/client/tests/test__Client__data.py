@@ -4,7 +4,7 @@ from ...bases import IconType, Icon
 from ...color import Color
 from ...guild import Guild
 from ...localization import Locale
-from ...user import AvatarDecoration, GuildProfile, PremiumType, UserFlag
+from ...user import AvatarDecoration, GuildProfile, PremiumType, UserClan, UserFlag
 
 from ..client import Client
 
@@ -20,6 +20,7 @@ def test__Client__to_data():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160016)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180060, tag = 'meow')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -30,6 +31,7 @@ def test__Client__to_data():
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
+        'clan': clan.to_data(defaults = True),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
         'username': name,
@@ -45,6 +47,7 @@ def test__Client__to_data():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         bot = bot,
         client_id = client_id,
         discriminator = discriminator,
@@ -73,6 +76,7 @@ def test__Client__update_attributes():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160017)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180061, tag = 'meow')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -88,6 +92,7 @@ def test__Client__update_attributes():
         'avatar_decoration_data': avatar_decoration.to_data(),
         'banner': banner.as_base_16_hash,
         'accent_color': int(banner_color),
+        'clan': clan.to_data(),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
         'public_flags': int(flags),
@@ -110,6 +115,7 @@ def test__Client__update_attributes():
         vampytest.assert_eq(client.avatar_decoration, avatar_decoration)
         vampytest.assert_eq(client.banner, banner)
         vampytest.assert_eq(client.banner_color, banner_color)
+        vampytest.assert_eq(client.clan, clan)
         vampytest.assert_eq(client.discriminator, discriminator)
         vampytest.assert_eq(client.display_name, display_name)
         vampytest.assert_eq(client.flags, flags)
@@ -134,6 +140,7 @@ def test__Client__difference_update_attributes():
     old_avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160018)
     old_banner = Icon(IconType.animated, 12)
     old_banner_color = Color(1236)
+    old_clan = UserClan(guild_id = 202405180062, tag = 'meow')
     old_discriminator = 2222
     old_display_name = 'Far'
     old_flags = UserFlag(1)
@@ -148,6 +155,7 @@ def test__Client__difference_update_attributes():
     new_avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160019)
     new_banner = Icon(IconType.animated, 14)
     new_banner_color = Color(12)
+    new_clan = UserClan(guild_id = 202405180063, tag = 'miau')
     new_discriminator = 11
     new_display_name = 'East'
     new_flags = UserFlag(2)
@@ -163,6 +171,7 @@ def test__Client__difference_update_attributes():
         'avatar_decoration_data': new_avatar_decoration.to_data(),
         'banner': new_banner.as_base_16_hash,
         'accent_color': int(new_banner_color),
+        'clan': new_clan.to_data(),
         'discriminator': str(new_discriminator).rjust(4, '0'),
         'global_name': new_display_name,
         'public_flags': int(new_flags),
@@ -180,6 +189,7 @@ def test__Client__difference_update_attributes():
         'name': old_name,
         'banner': old_banner,
         'banner_color': old_banner_color,
+        'clan': old_clan,
         'discriminator': old_discriminator,
         'display_name': old_display_name,
         'email': old_email,
@@ -196,6 +206,7 @@ def test__Client__difference_update_attributes():
         avatar_decoration = old_avatar_decoration,
         banner = old_banner,
         banner_color = old_banner_color,
+        clan = old_clan,
         discriminator = old_discriminator,
         display_name = old_display_name,
         flags = old_flags,
@@ -214,6 +225,7 @@ def test__Client__difference_update_attributes():
         vampytest.assert_eq(client.avatar_decoration, new_avatar_decoration)
         vampytest.assert_eq(client.banner, new_banner)
         vampytest.assert_eq(client.banner_color, new_banner_color)
+        vampytest.assert_eq(client.clan, new_clan)
         vampytest.assert_eq(client.discriminator, new_discriminator)
         vampytest.assert_eq(client.display_name, new_display_name)
         vampytest.assert_eq(client.flags, new_flags)

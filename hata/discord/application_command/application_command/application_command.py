@@ -25,7 +25,7 @@ from .fields import (
     validate_version
 )
 from .preinstanced import (
-    APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
+    CONTEXT_TARGET_TYPES, ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
 )
 
 
@@ -248,7 +248,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         
         # Post checks
-        if (target_type in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES):
+        if (target_type in CONTEXT_TARGET_TYPES):
             # Context commands cannot have description and options, so we clear them.
             description = None
             description_localizations = None
@@ -1237,7 +1237,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         
         # Post checks
-        if (target_type in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES):
+        if (target_type in CONTEXT_TARGET_TYPES):
             # Context commands cannot have description and options, so we clear them.
             description = None
             description_localizations = None
@@ -1416,7 +1416,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         -------
         is_context_command : `bool`
         """
-        return (self.target_type in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES)
+        return (self.target_type in CONTEXT_TARGET_TYPES)
     
     
     def is_slash_command(self):

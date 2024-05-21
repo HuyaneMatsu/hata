@@ -1,5 +1,5 @@
 __all__ = (
-    'APPLICATION_COMMAND_CONTEXT_TARGET_TYPES', 'APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL',
+    'CONTEXT_TARGET_TYPES', 'INTEGRATION_CONTEXT_TYPES_ALL',
     'ApplicationCommandIntegrationContextType', 'ApplicationCommandTargetType',
 )
 
@@ -56,7 +56,7 @@ class ApplicationCommandTargetType(PreinstancedBase):
     channel = P(4, 'channel')
 
 
-APPLICATION_COMMAND_CONTEXT_TARGET_TYPES = frozenset((
+CONTEXT_TARGET_TYPES = frozenset((
     ApplicationCommandTargetType.user,
     ApplicationCommandTargetType.message,
     ApplicationCommandTargetType.channel
@@ -107,6 +107,6 @@ class ApplicationCommandIntegrationContextType(PreinstancedBase):
     any_private_channel = P(2, 'any private channel',)
 
 
-APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL = tuple(sorted(
+INTEGRATION_CONTEXT_TYPES_ALL = tuple(sorted(
     ApplicationCommandIntegrationContextType.INSTANCES.values()
 ))

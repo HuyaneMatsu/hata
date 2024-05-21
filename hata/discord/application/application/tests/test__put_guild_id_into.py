@@ -13,14 +13,14 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_guild_id_into(guild_id, defaults):
+def test__put_guild_id_into(input_value, defaults):
     """
     Tests whether ``put_guild_id_into`` works as intended.
     
     Parameters
     ----------
-    guild_id : `int`
-        The guild's identifier to serialise.
+    input_value : `int`
+        Value to serialize.
     defaults : `bool`
         Whether default values should be included as well.
     
@@ -28,4 +28,4 @@ def test__put_guild_id_into(guild_id, defaults):
     -------
     output : `dict<str, object>`
     """
-    return put_guild_id_into(guild_id, {}, defaults)
+    return put_guild_id_into(input_value, {}, defaults)

@@ -2,7 +2,7 @@ __all__ = ('ApplicationCommandOptionMetadataString',)
 
 from scarletio import copy_docs
 
-from .constants import APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT, APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT
+from .constants import MAX_LENGTH_DEFAULT, MIN_LENGTH_DEFAULT
 from .fields import (
     parse_max_length, parse_min_length, put_max_length_into, put_min_length_into, validate_max_length,
     validate_min_length
@@ -65,13 +65,13 @@ class ApplicationCommandOptionMetadataString(ApplicationCommandOptionMetadataPri
         """
         # max_length
         if max_length is ...:
-            max_length = APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT
+            max_length = MAX_LENGTH_DEFAULT
         else:
             max_length = validate_max_length(max_length)
         
         # min_length
         if min_length is ...:
-            min_length = APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT
+            min_length = MIN_LENGTH_DEFAULT
         else:
             min_length = validate_min_length(min_length)
         

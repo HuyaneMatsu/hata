@@ -3,7 +3,7 @@ import vampytest
 from ....bases import Icon, IconType
 from ....color import Color
 from ....localization import Locale
-from ....user import AvatarDecoration, PremiumType, UserFlag
+from ....user import AvatarDecoration, PremiumType, UserClan, UserFlag
 
 from ..oauth2_user import Oauth2User
 
@@ -17,6 +17,7 @@ def test__Oauth2User__repr():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160043)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180021, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -35,6 +36,7 @@ def test__Oauth2User__repr():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
@@ -57,6 +59,7 @@ def test__Oauth2User__hash():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160044)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180022, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -75,6 +78,7 @@ def test__Oauth2User__hash():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
@@ -98,6 +102,7 @@ def test__Oauth2User__eq():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160045)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180023, tag = 'miau')
     discriminator = 2222
     display_name = 'far'
     flags = UserFlag(1)
@@ -113,6 +118,7 @@ def test__Oauth2User__eq():
         'avatar_decoration': avatar_decoration,
         'banner': banner,
         'banner_color': banner_color,
+        'clan': clan,
         'discriminator': discriminator,
         'display_name': display_name,
         'flags': flags,
@@ -137,6 +143,7 @@ def test__Oauth2User__eq():
         ('avatar_decoration', None),
         ('banner', None),
         ('banner_color', None),
+        ('clan', None),
         ('discriminator', 0),
         ('display_name', None),
         ('flags', UserFlag(0)),
@@ -161,6 +168,7 @@ def test__Oauth2User__format():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160046)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180024, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -176,6 +184,7 @@ def test__Oauth2User__format():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,

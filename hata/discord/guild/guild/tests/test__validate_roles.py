@@ -5,7 +5,7 @@ from ....role import Role
 from ..fields import validate_roles
 
 
-def iter_options__passing():
+def _iter_options__passing():
     role_id = 202306080008
     role_name = 'Koishi'
     
@@ -21,7 +21,7 @@ def iter_options__passing():
     yield {role_id: role}, {role_id: role}
 
     
-@vampytest._(vampytest.call_from(iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
 def test__validate_roles__passing(input_value):
     """
     Tests whether ``validate_roles`` works as intended.
@@ -40,14 +40,14 @@ def test__validate_roles__passing(input_value):
     return validate_roles(input_value)
 
 
-def iter_options__type_error():
+def _iter_options__type_error():
     yield 12.6
     yield [12.6]
     yield {12.6: 12.6}
 
 
 @vampytest.raising(TypeError)
-@vampytest.call_from(iter_options__type_error())
+@vampytest.call_from(_iter_options__type_error())
 def test__validate_roles__type_error(input_value):
     """
     Tests whether ``validate_roles`` works as intended.

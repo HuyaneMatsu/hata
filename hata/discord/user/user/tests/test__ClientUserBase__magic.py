@@ -4,6 +4,7 @@ from ....bases import Icon, IconType
 from ....color import Color
 
 from ...avatar_decoration import AvatarDecoration
+from ...user_clan import UserClan
 
 from ..flags import UserFlag
 from ..client_user_base import ClientUserBase
@@ -18,6 +19,7 @@ def test__ClientUserBase__repr():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160031)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180035, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -32,6 +34,7 @@ def test__ClientUserBase__repr():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
@@ -50,6 +53,7 @@ def test__ClientUserBase__hash():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160032)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180036, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -64,6 +68,7 @@ def test__ClientUserBase__hash():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
@@ -83,6 +88,7 @@ def test__ClientUserBase__eq():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160050)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180037, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -94,8 +100,9 @@ def test__ClientUserBase__eq():
         'avatar_decoration': avatar_decoration,
         'banner': banner,
         'banner_color': banner_color,
+        'clan': clan,
         'discriminator': discriminator,
-         'display_name': display_name,
+        'display_name': display_name,
         'flags': flags,
         'name': name,
         'bot': bot,
@@ -114,6 +121,7 @@ def test__ClientUserBase__eq():
         ('avatar_decoration', None),
         ('banner', None),
         ('banner_color', None),
+        ('clan', None),
         ('discriminator', 0),
         ('display_name', None),
         ('flags', UserFlag(0)),
@@ -134,6 +142,7 @@ def test__ClientUserBase__format():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160051)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180038, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -145,6 +154,7 @@ def test__ClientUserBase__format():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,

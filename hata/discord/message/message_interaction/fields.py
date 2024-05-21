@@ -2,7 +2,7 @@ __all__ = ()
 
 from ...application import ApplicationIntegrationType
 from ...application_command.application_command.constants import (
-    APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN
+    NAME_LENGTH_MAX as APPLICATION_COMMAND_NAME_LENGTH_MAX, NAME_LENGTH_MIN as APPLICATION_COMMAND_NAME_LENGTH_MIN
 )
 from ...field_parsers import entity_id_parser_factory, nullable_entity_parser_factory, preinstanced_parser_factory
 from ...field_putters import (

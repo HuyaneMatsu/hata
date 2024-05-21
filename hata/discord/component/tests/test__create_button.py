@@ -16,6 +16,7 @@ def test__create_button():
     emoji = BUILTIN_EMOJIS['heart']
     enabled = False
     label = 'frost'
+    sku_id = 0
     url = None
     
     component = create_button(
@@ -24,6 +25,7 @@ def test__create_button():
         emoji = emoji,
         enabled = enabled,
         label = label,
+        sku_id = sku_id,
         url = url,
     )
     
@@ -34,4 +36,5 @@ def test__create_button():
     vampytest.assert_is(component.emoji, emoji)
     vampytest.assert_eq(component.enabled, enabled)
     vampytest.assert_eq(component.label, label)
+    vampytest.assert_eq(component.sku_id, sku_id)
     vampytest.assert_eq(component.url, url)

@@ -3,11 +3,13 @@ __all__ = ()
 from .....discord.application import ApplicationIntegrationType
 from .....discord.guild import Guild
 from .....discord.application_command.application_command.constants import (
-    APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN
+    NAME_LENGTH_MAX as APPLICATION_COMMAND_NAME_LENGTH_MAX,
+    NAME_LENGTH_MIN as APPLICATION_COMMAND_NAME_LENGTH_MIN
 )
 from .....discord.application_command.application_command.fields import validate_nsfw as _validate_nsfw
 from .....discord.application_command.application_command.preinstanced import (
-    APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL, ApplicationCommandIntegrationContextType
+    ApplicationCommandIntegrationContextType,
+    INTEGRATION_CONTEXT_TYPES_ALL as APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL
 )
 from .....discord.permission import Permission
 from .....discord.preconverters import preconvert_bool, preconvert_flag, preconvert_snowflake

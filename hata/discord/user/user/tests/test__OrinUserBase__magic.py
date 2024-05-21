@@ -4,6 +4,7 @@ from ....bases import Icon, IconType
 from ....color import Color
 
 from ...avatar_decoration import AvatarDecoration
+from ...user_clan import UserClan
 
 from ..flags import UserFlag
 from ..orin_user_base import OrinUserBase
@@ -18,6 +19,7 @@ def test__OrinUserBase__repr():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160034)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180007, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -31,6 +33,7 @@ def test__OrinUserBase__repr():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
@@ -48,6 +51,7 @@ def test__OrinUserBase__hash():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160035)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180008, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -61,6 +65,7 @@ def test__OrinUserBase__hash():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
@@ -79,6 +84,7 @@ def test__OrinUserBase__eq():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160036)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180009, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -89,6 +95,7 @@ def test__OrinUserBase__eq():
         'avatar_decoration': avatar_decoration,
         'banner': banner,
         'banner_color': banner_color,
+        'clan': clan,
         'discriminator': discriminator,
         'display_name': display_name,
         'flags': flags,
@@ -108,6 +115,7 @@ def test__OrinUserBase__eq():
         ('avatar_decoration', None),
         ('banner', None),
         ('banner_color', None),
+        ('clan', None),
         ('discriminator', 0),
         ('display_name', None),
         ('flags', UserFlag(0)),
@@ -127,6 +135,7 @@ def test__OrinUserBase__format():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160037)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180010, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -137,6 +146,7 @@ def test__OrinUserBase__format():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,

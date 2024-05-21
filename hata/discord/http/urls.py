@@ -1591,7 +1591,6 @@ def user_avatar_decoration_url_as(user, ext = None, size = None):
     end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/avatar-decoration-presets/{prefix}{avatar_decoration.asset_hash:0>32x}.{ext}{end}'
-    
 
 
 def soundboard_sound_url(sound):
@@ -1605,3 +1604,57 @@ def soundboard_sound_url(sound):
     url : `str`
     """
     return f'{CDN_ENDPOINT}/soundboard-sounds/{sound.id}'
+
+
+def clan_icon_url(clan):
+    """
+    Returns the clan's icon's image's url. If the clan has no icon, then returns `None`.
+    
+    This function is a property of ``UserClan``
+    
+    Returns
+    -------
+    url : `None`, `str`
+    """
+    icon_type = clan.icon_type
+    if not icon_type.can_create_url():
+        return None
+    
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
+    
+    return f'{CDN_ENDPOINT}/clan-badges/{clan.guild_id}/{prefix}{clan.icon_hash:0>32x}.{ext}'
+
+
+def clan_icon_url_as(clan, ext = None, size = None):
+    """
+    Returns the clan's icon's url. If the clan has no icon, then returns `None`.
+    
+    This function is a method of ``UserClan``.
+    
+    Parameters
+    ----------
+    ext : `None`, `str` = `None`, Optional
+        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the clan has
+        animated icon, it can `'gif'` as well.
+    size : `None`, `int` = `None`, Optional
+        The preferred minimal size of the image's url.
+    
+    Returns
+    -------
+    url : `None`, `str`
+    
+    Raises
+    ------
+    ValueError
+        If `ext`, `size` was not passed as any of the expected values.
+    """
+    icon_type = clan.icon_type
+    if not icon_type.can_create_url():
+        return None
+    
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
+    
+    return f'{CDN_ENDPOINT}/clan-badges/{clan.guild_id}/{prefix}{clan.icon_hash:0>32x}.{ext}{end}'

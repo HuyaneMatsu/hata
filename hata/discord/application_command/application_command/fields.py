@@ -28,11 +28,11 @@ from ...utils import is_valid_application_command_name
 from ..application_command_option import ApplicationCommandOption
 
 from .constants import (
-    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
-    APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_OPTIONS_MAX
+    DESCRIPTION_LENGTH_MAX, DESCRIPTION_LENGTH_MIN,
+    NAME_LENGTH_MAX, NAME_LENGTH_MIN, OPTIONS_MAX
 )
 from .preinstanced import (
-    APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL, ApplicationCommandIntegrationContextType,
+    INTEGRATION_CONTEXT_TYPES_ALL, ApplicationCommandIntegrationContextType,
     ApplicationCommandTargetType
 )
 
@@ -51,7 +51,7 @@ validate_application_id = entity_id_validator_factory('application_id', Applicat
 parse_description = nullable_string_parser_factory('description')
 put_description_into = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory(
-    'description', APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
+    'description', DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX
 )
 
 # description_localizations
@@ -138,7 +138,7 @@ def validate_integration_context_types(integration_context_types):
     integration_context_types = _validate_integration_context_types(integration_context_types)
     if (
         (integration_context_types is not None) and
-        (integration_context_types == APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL)
+        (integration_context_types == INTEGRATION_CONTEXT_TYPES_ALL)
     ):
         integration_context_types = None
     
@@ -217,13 +217,13 @@ def validate_name(name):
     name_length = len(name)
     if (
         name_length and (
-            (name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN) or
-            (name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX)
+            (name_length < NAME_LENGTH_MIN) or
+            (name_length > NAME_LENGTH_MAX)
         )
     ):
         raise ValueError(
-            f'`name` length can be >= {APPLICATION_COMMAND_NAME_LENGTH_MIN} and '
-            f'<= {APPLICATION_COMMAND_NAME_LENGTH_MAX}, got {name_length}; name = {name!r}'
+            f'`name` length can be >= {NAME_LENGTH_MIN} and '
+            f'<= {NAME_LENGTH_MAX}, got {name_length}; name = {name!r}'
         )
     
     if not is_valid_application_command_name(name):
@@ -283,7 +283,7 @@ def validate_options(options):
     """
     options = _pre_validate_options(options)
     if (options is not None):
-        options = options[:APPLICATION_COMMAND_OPTIONS_MAX]
+        options = options[:OPTIONS_MAX]
     
     return options
 

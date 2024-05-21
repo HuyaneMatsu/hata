@@ -11,6 +11,7 @@ from ....role import Role
 from ....utils import is_url
 
 from ...avatar_decoration import AvatarDecoration
+from ...user_clan import UserClan
 
 from ..flags import UserFlag
 from ..preinstanced import DefaultAvatar, PremiumType, Status
@@ -28,6 +29,7 @@ def test__UserBase__placeholders():
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
     vampytest.assert_instance(user.banner_hash, int)
     vampytest.assert_instance(user.banner_type, IconType)
+    vampytest.assert_instance(user.clan, UserClan, nullable = True)
     vampytest.assert_instance(user.bot, bool)
     vampytest.assert_instance(user.discriminator, int)
     vampytest.assert_instance(user.display_name, str, nullable = True)

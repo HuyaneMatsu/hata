@@ -1,6 +1,7 @@
 __all__ = ()
 
 from scarletio import copy_docs
+
 from .builder_base import BuilderBase
 
 from .conversions import CONVERSION_KEYWORD, CONVERSION_NONE, CONVERSION_POSITIONAL
@@ -58,6 +59,11 @@ class BuilderFielded(BuilderBase):
         raise TypeError(
             f'{key!r} could not be recognised as a field. Got {type(value).__name__}; {value!r}.'
         )
+    
+    
+    @copy_docs(BuilderBase._iter_conversions)
+    def _iter_conversions(self):
+        yield from self.fields.keys()
     
     
     @copy_docs(BuilderBase._iter_fields)

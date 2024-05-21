@@ -10,10 +10,7 @@ from ...field_putters import (
 from ...localization.helpers import localized_dictionary_builder
 from ...localization.utils import build_locale_dictionary, destroy_locale_dictionary
 
-from .constants import (
-    APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN,
-    APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN
-)
+from .constants import NAME_LENGTH_MAX, NAME_LENGTH_MIN, VALUE_LENGTH_MAX, VALUE_LENGTH_MIN
 
 # name
 
@@ -60,13 +57,13 @@ def validate_name(name):
     name_length = len(processed_name)
     if (
         name_length and (
-            (name_length < APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN) or
-            (name_length > APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX)
+            (name_length < NAME_LENGTH_MIN) or
+            (name_length > NAME_LENGTH_MAX)
         )
     ):
         raise ValueError(
             f'`name` length` can be in range '
-            f'[{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}] '
+            f'[{NAME_LENGTH_MIN}:{NAME_LENGTH_MAX}] '
             f'got {name_length!r}; {name!r}.'
         )
     
@@ -120,12 +117,12 @@ def validate_value(value):
     if isinstance(processed_value, str):
         value_length = len(processed_value)
         if (
-            (value_length < APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN) or
-            (value_length > APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX)
+            (value_length < VALUE_LENGTH_MIN) or
+            (value_length > VALUE_LENGTH_MAX)
         ):
             raise ValueError(
                 f'`value` length` can be in range '
-                f'[{APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX}]'
+                f'[{VALUE_LENGTH_MIN}:{VALUE_LENGTH_MAX}]'
                 f'got {value_length!r}; {value!r}.'
             )
     

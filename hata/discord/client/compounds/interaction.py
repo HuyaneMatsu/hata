@@ -1,6 +1,6 @@
 __all__ = ()
 
-import warnings
+from warnings import warn
 
 from scarletio import Compound
 from scarletio.web_common import FormData
@@ -9,7 +9,7 @@ from ...application import Application
 from ...bases import maybe_snowflake
 from ...builder.serialization import create_serializer
 from ...builder.serialization_configuration import SerializationConfiguration
-from ...component import InteractionForm
+from ...component import ButtonStyle, InteractionForm
 from ...http import DiscordApiClient
 from ...interaction import InteractionEvent, InteractionResponseContext, InteractionResponseType, InteractionType
 from ...message import Message, MessageFlag
@@ -316,7 +316,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         assert _assert__interaction_event_type(interaction_event)
         
         if not interaction_event.is_unanswered():
-            warnings.warn(
+            warn(
                 (
                     f'`{type(self).__name__}.interaction_response_form` called on an interaction already '
                     f'acknowledged / answered: {interaction_event!r}. Returning `None`.'
@@ -1059,6 +1059,16 @@ class ClientCompoundInteractionEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
+        if not interaction_event.is_unanswered():
+            warn(
+                (
+                    f'`{type(self).__name__}.interaction_require_subscription` is deprecated. '
+                    f'Please use a component with `{ButtonStyle.__name__}.subscription` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+        
         _assert__interaction_event_type(interaction_event)
         
         application_id = self.application.id

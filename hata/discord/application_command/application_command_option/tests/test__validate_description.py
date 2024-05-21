@@ -1,7 +1,7 @@
 import vampytest
 
 from ..constants import (
-    APPLICATION_COMMAND_OPTION_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_OPTION_DESCRIPTION_LENGTH_MIN
+    DESCRIPTION_LENGTH_MAX, DESCRIPTION_LENGTH_MIN
 )
 from ..fields import validate_description
 
@@ -52,8 +52,8 @@ def test__validate_description__type_error(input_value):
 
 
 @vampytest.raising(ValueError)
-@vampytest.call_with('a' * (APPLICATION_COMMAND_OPTION_DESCRIPTION_LENGTH_MIN - 1))
-@vampytest.call_with('a' * (APPLICATION_COMMAND_OPTION_DESCRIPTION_LENGTH_MAX + 1))
+@vampytest.call_with('a' * (DESCRIPTION_LENGTH_MIN - 1))
+@vampytest.call_with('a' * (DESCRIPTION_LENGTH_MAX + 1))
 def test__validate_description__value_error(input_value):
     """
     Tests whether `validate_description` works as intended.

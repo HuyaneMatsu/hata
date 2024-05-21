@@ -6,7 +6,7 @@ from ..component_metadata import ComponentMetadataBase
 from ..component_metadata.fields import (
     validate_button_style, validate_channel_types, validate_default_values, validate_enabled, validate_label,
     validate_max_length, validate_max_values, validate_min_length, validate_min_values, validate_options,
-    validate_placeholder, validate_required, validate_text_input_style, validate_url, validate_value
+    validate_placeholder, validate_required, validate_sku_id, validate_text_input_style, validate_url, validate_value
 )
 from ..shared_fields import validate_components, validate_custom_id, validate_emoji
 
@@ -87,6 +87,9 @@ class Component(RichAttributeErrorBaseType):
         
         required : `bool`, Optional (Keyword only)
             Whether the field is required to be fulfilled.
+        
+        sku_id : `int`, ``SKU``, Optional (keyword only)
+            Purchasable stock keeping unit identifier.
         
         text_input_style : ``TextInputStyle``, Optional (Keyword only)
             The text input's style.
@@ -301,6 +304,9 @@ class Component(RichAttributeErrorBaseType):
         required : `bool`, Optional (Keyword only)
             Whether the field is required to be fulfilled.
         
+        sku_id : `int`, ``SKU``, Optional (keyword only)
+            Purchasable stock keeping unit identifier.
+        
         text_input_style : ``TextInputStyle``, Optional (Keyword only)
             The text input's style.
         
@@ -496,6 +502,16 @@ class Component(RichAttributeErrorBaseType):
     @required.setter
     def required(self, required):
         self.metadata.required = validate_required(required)
+    
+    
+    @property
+    @copy_docs(ComponentMetadataBase.sku_id)
+    def sku_id(self):
+        return self.metadata.sku_id
+    
+    @sku_id.setter
+    def sku_id(self, sku_id):
+        self.metadata.sku_id = validate_sku_id(sku_id)
     
     
     @property

@@ -6,15 +6,18 @@ from ..button import ComponentMetadataButton
 from ..preinstanced import ButtonStyle
 
 
-def test__ComponentMetadataButton__repr__0():
+def test__ComponentMetadataButton__repr__default():
     """
     Tests whether ``ComponentMetadataButton.__repr__`` works as intended.
+    
+    Case: default.
     """
     button_style = ButtonStyle.green
     custom_id = 'orin'
     emoji = BUILTIN_EMOJIS['heart']
     enabled = False
     label = 'frost'
+    sku_id = 0
     url = None
     
     component_metadata = ComponentMetadataButton(
@@ -23,13 +26,14 @@ def test__ComponentMetadataButton__repr__0():
         emoji = emoji,
         enabled = enabled,
         label = label,
+        sku_id = sku_id,
         url = url,
     )
     
     vampytest.assert_instance(repr(component_metadata), str)
 
 
-def test__ComponentMetadataButton__repr__1():
+def test__ComponentMetadataButton__repr__url():
     """
     Tests whether ``ComponentMetadataButton.__repr__`` works as intended.
     
@@ -44,11 +48,26 @@ def test__ComponentMetadataButton__repr__1():
     vampytest.assert_instance(repr(component_metadata), str)
 
 
+def test__ComponentMetadataButton__repr__sku_id():
+    """
+    Tests whether ``ComponentMetadataButton.__repr__`` works as intended.
+    
+    Case: sku id.
+    """
+    sku_id = 202405180077
+    
+    component_metadata = ComponentMetadataButton(
+        sku_id = sku_id,
+    )
+    
+    vampytest.assert_instance(repr(component_metadata), str)
 
 
-def test__ComponentMetadataButton__hash__0():
+def test__ComponentMetadataButton__hash__default():
     """
     Tests whether ``ComponentMetadataButton.__hash__`` works as intended.
+    
+    Case: default.
     """
     button_style = ButtonStyle.green
     custom_id = 'orin'
@@ -69,8 +88,7 @@ def test__ComponentMetadataButton__hash__0():
     vampytest.assert_instance(hash(component_metadata), int)
 
 
-
-def test__ComponentMetadataButton__hash__1():
+def test__ComponentMetadataButton__hash__url():
     """
     Tests whether ``ComponentMetadataButton.__hash__`` works as intended.
     
@@ -85,16 +103,39 @@ def test__ComponentMetadataButton__hash__1():
     vampytest.assert_instance(hash(component_metadata), int)
 
 
-def test__ComponentMetadataButton__eq__0():
+def test__ComponentMetadataButton__hash__sku_id():
+    """
+    Tests whether ``ComponentMetadataButton.__hash__`` works as intended.
+    
+    Case: sku_id.
+    """
+    sku_id = 202405180078
+    
+    component_metadata = ComponentMetadataButton(
+        sku_id = sku_id,
+    )
+    
+    vampytest.assert_instance(hash(component_metadata), int)
+
+
+def test__ComponentMetadataButton__different_type():
     """
     Tests whether ``ComponentMetadataButton.__eq__`` works as intended.
+    
+    Case: Different type.
     """
+    component_metadata = ComponentMetadataButton()
+    
+    vampytest.assert_ne(component_metadata, object())
+
+
+def _iter_options__eq__same_type():
     button_style = ButtonStyle.green
     custom_id = 'orin'
     emoji = BUILTIN_EMOJIS['heart']
     enabled = False
     label = 'frost'
-    url = None
+    url = 'https://www.orindance.party/'
     
     keyword_parameters = {
         'button_style': button_style,
@@ -104,43 +145,187 @@ def test__ComponentMetadataButton__eq__0():
         'label': label,
         'url': url,
     }
-    
-    component_metadata = ComponentMetadataButton(**keyword_parameters)
-    
-    vampytest.assert_eq(component_metadata, component_metadata)
-    vampytest.assert_ne(component_metadata, object())
-    
-    for field_name, field_value in (
-        ('button_style', ButtonStyle.red),
-        ('custom_id', 'okuu'),
-        ('emoji', BUILTIN_EMOJIS['knife']),
-        ('enabled', True),
-        ('label', 'fragment'),
-        # ('url', None), # <- we test url in the test under this one
-    ):
-        test_component_metadata = ComponentMetadataButton(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(component_metadata, test_component_metadata)
 
 
-def test__ComponentMetadataButton__eq__1():
+    yield (
+        {
+            **keyword_parameters,
+            'url': None,
+            'sku_id': 0,
+        },
+        {
+            **keyword_parameters,
+            'url': None,
+            'sku_id': 0,
+        },
+        True,
+    )
+    
+    yield (
+        {
+            **keyword_parameters,
+            'url': None,
+            'sku_id': 0,
+        },
+        {
+            **keyword_parameters,
+            'url': None,
+            'sku_id': 0,
+            'button_style': ButtonStyle.red,
+        },
+        False,
+    )
+    
+    yield (
+        {
+            **keyword_parameters,
+            'url': None,
+            'sku_id': 0,
+        },
+        {
+            **keyword_parameters,
+            'url': None,
+            'sku_id': 0,
+            'custom_id': 'okuu',
+        },
+        False,
+    )
+    
+    yield (
+        {
+            **keyword_parameters,
+            'url': None,
+            'sku_id': 0,
+        },
+        {
+            **keyword_parameters,
+            'url': None,
+            'sku_id': 0,
+            'emoji': None,
+        },
+        False,
+    )
+    
+    yield (
+        {
+            **keyword_parameters,
+            'url': None,
+            'sku_id': 0,
+        },
+        {
+            **keyword_parameters,
+            'url': None,
+            'sku_id': 0,
+            'enabled': True,
+        },
+        False,
+    )
+    
+    yield (
+        {
+            **keyword_parameters,
+            'url': None,
+            'sku_id': 0,
+        },
+        {
+            **keyword_parameters,
+            'url': None,
+            'sku_id': 0,
+            'label': 'fragment',
+        },
+        False,
+    )
+    
+    yield (
+        {
+            **keyword_parameters,
+            'button_style': ButtonStyle.link,
+            'custom_id': None,
+            'sku_id': 0,
+        },
+        {
+            **keyword_parameters,
+            'button_style': ButtonStyle.link,
+            'custom_id': None,
+            'sku_id': 0,
+        },
+        True,
+    )
+    
+    yield (
+        {
+            **keyword_parameters,
+            'button_style': ButtonStyle.link,
+            'custom_id': None,
+            'sku_id': 0,
+        },
+        {
+            **keyword_parameters,
+            'button_style': ButtonStyle.link,
+            'custom_id': None,
+            'sku_id': 0,
+            'url': 'https://www.astil.dev/',
+        },
+        False,
+    )
+    
+    yield (
+        {
+            **keyword_parameters,
+            'button_style': ButtonStyle.subscription,
+            'custom_id': None,
+            'url': None,
+            'sku_id': 202405180081,
+        },
+        {
+            **keyword_parameters,
+            'button_style': ButtonStyle.subscription,
+            'custom_id': None,
+            'url': None,
+            'sku_id': 202405180081,
+        },
+        True,
+    )
+    
+    yield (
+        {
+            **keyword_parameters,
+            'button_style': ButtonStyle.subscription,
+            'custom_id': None,
+            'url': None,
+        },
+        {
+            **keyword_parameters,
+            'button_style': ButtonStyle.subscription,
+            'custom_id': None,
+            'url': None,
+            'sku_id': 202405180080,
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq__same_type()).returning_last())
+def test__ComponentMetadataButton__eq__same_type(keyword_parameters_0, keyword_parameters_1):
     """
     Tests whether ``ComponentMetadataButton.__eq__`` works as intended.
     
-    Case: url.
+    Case: same type.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
     """
-    url = 'https://orindance.party/'
+    component_metadata_0 = ComponentMetadataButton(**keyword_parameters_0)
+    component_metadata_1 = ComponentMetadataButton(**keyword_parameters_1)
+    output = component_metadata_0 == component_metadata_1
     
-    keyword_parameters = {
-        'url': url,
-    }
-    
-    component_metadata = ComponentMetadataButton(**keyword_parameters)
-    
-    vampytest.assert_eq(component_metadata, component_metadata)
-    vampytest.assert_ne(component_metadata, object())
-    
-    for field_name, field_value in (
-        ('url', 'https://www.astil.dev/'),
-    ):
-        test_component_metadata = ComponentMetadataButton(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(component_metadata, test_component_metadata)
+    vampytest.assert_instance(output, bool)
+    return output

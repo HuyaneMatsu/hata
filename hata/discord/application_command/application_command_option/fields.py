@@ -18,8 +18,8 @@ from ...localization.utils import build_locale_dictionary, destroy_locale_dictio
 
 
 from .constants import (
-    APPLICATION_COMMAND_OPTION_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_OPTION_DESCRIPTION_LENGTH_MIN,
-    APPLICATION_COMMAND_OPTION_NAME_LENGTH_MAX, APPLICATION_COMMAND_OPTION_NAME_LENGTH_MIN
+    DESCRIPTION_LENGTH_MAX, DESCRIPTION_LENGTH_MIN,
+    NAME_LENGTH_MAX, NAME_LENGTH_MIN
 )
 from .preinstanced import ApplicationCommandOptionType
 
@@ -29,7 +29,7 @@ from .preinstanced import ApplicationCommandOptionType
 parse_description = nullable_string_parser_factory('description')
 put_description_into = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory(
-    'description', APPLICATION_COMMAND_OPTION_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_OPTION_DESCRIPTION_LENGTH_MAX
+    'description', DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX
 )
 
 # description_localizations
@@ -49,7 +49,7 @@ validate_description_localizations = partial_func(
 parse_name = force_string_parser_factory('name')
 put_name_into = force_string_putter_factory('name')
 validate_name = force_string_validator_factory(
-    'name', APPLICATION_COMMAND_OPTION_NAME_LENGTH_MIN, APPLICATION_COMMAND_OPTION_NAME_LENGTH_MAX
+    'name', NAME_LENGTH_MIN, NAME_LENGTH_MAX
 )
 
 # name_localizations

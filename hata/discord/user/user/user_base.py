@@ -1,6 +1,5 @@
 __all__ = ('UserBase', )
 
-from warnings import warn
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 
 from scarletio import include
@@ -12,7 +11,7 @@ from ...localization.utils import LOCALE_DEFAULT
 from ...utils import DATETIME_FORMAT_CODE
 
 from .fields import (
-    parse_name, put_avatar_decoration_into, put_banner_color_into, put_bot_into, put_discriminator_into,
+    parse_name, put_avatar_decoration_into, put_banner_color_into, put_bot_into, put_clan_into, put_discriminator_into,
     put_display_name_into, put_flags_into, put_id_into, put_name_into, validate_name
 )
 from .flags import UserFlag
@@ -136,6 +135,8 @@ class UserBase(DiscordEntity, immortal = True):
         +-----------------------+-------------------------------+-----------------------+
         | channel_id            | `int`                         | ``Webhook``           |
         +-----------------------+-------------------------------+-----------------------+
+        | clan                  | `None`, ``UserClan``          | ``Client``, ``User``  |
+        +-----------------------+-------------------------------+-----------------------+
         | discriminator         | `int`                         | ``Client``, ``User``  |
         +-----------------------+-------------------------------+-----------------------+
         | display_name          | `None`, `str`                 | ``Client``, ``User``  |
@@ -243,6 +244,7 @@ class UserBase(DiscordEntity, immortal = True):
         
         if include_internals:
             put_bot_into(self.bot, data, defaults)
+            put_clan_into(self.clan, data, defaults)
             put_id_into(self.id, data, defaults)
             put_flags_into(self.flags, data, defaults)
         
@@ -539,6 +541,10 @@ class UserBase(DiscordEntity, immortal = True):
         if (self.bot != other.bot):
             return False
         
+        # clan
+        if (self.clan != other.clan):
+            return False
+        
         # discriminator
         if (self.discriminator != other.discriminator):
             return False
@@ -680,6 +686,16 @@ class UserBase(DiscordEntity, immortal = True):
         """,
     )
     
+    clan = PlaceHolder(
+        None,
+        """
+        Returns the user's primary clan.
+        
+        Returns
+        -------
+        clan : `None`, ``UserClan``
+        """,
+    )
     
     discriminator = PlaceHolder(
         0,
@@ -908,29 +924,6 @@ class UserBase(DiscordEntity, immortal = True):
         activities = self.activities
         if (activities is not None):
             yield from activities
-    
-    
-    @property
-    def mfa(self):
-        """
-        Returns whether the user has multi factory authentication enabled.
-        
-        This property is deprecated and will be removed in 2024 April. Please use `mfa_enabled` instead.
-        
-        Returns
-        -------
-        mfa_enabled : `bool`
-        """
-        warn(
-            (
-                f'`{self.__class__.__name__}.mfa` is deprecated and will be removed in 2024 April.'
-                f'Please use `.mfa_enabled` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.mfa_enabled
     
     
     @property

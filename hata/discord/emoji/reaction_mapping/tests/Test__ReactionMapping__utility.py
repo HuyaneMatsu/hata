@@ -206,7 +206,7 @@ def _iter_options__add_reaction():
 
 
 @vampytest._(vampytest.call_from(_iter_options__add_reaction()).returning_last())
-def test__ReactionMapping__add(keyword_parameters, reaction, user):
+def test__ReactionMapping__add_reaction(keyword_parameters, reaction, user):
     """
     Tests whether ``ReactionMapping._add_reaction`` works as intended.
     
@@ -312,12 +312,29 @@ def _iter_options__remove_reaction():
             False,
         ),
     )
+    
+    # Deleted all users, but still have 1 unknown
+    yield (
+        {
+            'lines': {
+                Reaction.from_fields(emoji_0, ReactionType.burst): ReactionMappingLine(count = 2, users = [user_0]),
+            },
+        },
+        Reaction.from_fields(emoji_0, ReactionType.burst),
+        user_0,
+        (
+            {
+                Reaction.from_fields(emoji_0, ReactionType.burst): ReactionMappingLine(count = 1, users = []),
+            },
+            False,
+        ),
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options__remove_reaction()).returning_last())
-def test__reactionMapping__remove(keyword_parameters, reaction, user):
+def test__ReactionMapping__remove_reaction(keyword_parameters, reaction, user):
     """
-    Tests whether ``ReactionMapping.remove`` works as intended.
+    Tests whether ``ReactionMapping.remove_reaction`` works as intended.
     
     Parameters
     ----------

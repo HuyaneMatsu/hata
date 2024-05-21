@@ -100,7 +100,6 @@ class MessageBuilderWebhookCreate(MessageBuilderBase):
     """
     __slots__ = ()
     
-    
     applied_tags = CONVERSION_APPLIED_TAGS
     applied_tag_ids = CONVERSION_APPLIED_TAG_IDS
     attachments = CONVERSION_ATTACHMENTS
@@ -144,9 +143,9 @@ class MessageBuilderForumThreadCreate(MessageBuilderBase):
     tts = CONVERSION_TTS
 
 
-class MessageBuilderInteractionFollowupEdit(MessageBuilderEdit):
+class MessageBuilderInteractionComponentEdit(MessageBuilderBase):
     """
-    Message builder for ``Client.interaction_followup_message_edit``.
+    Message builder for ``Client.interaction_component_message_edit``.
     
     Attributes
     ----------
@@ -154,7 +153,7 @@ class MessageBuilderInteractionFollowupEdit(MessageBuilderEdit):
         The fields to create the message with.
     """
     __slots__ = ()
-    
+
 
 class MessageBuilderInteractionFollowupCreate(MessageBuilderBase):
     """
@@ -174,9 +173,9 @@ class MessageBuilderInteractionFollowupCreate(MessageBuilderBase):
     tts = CONVERSION_TTS
 
 
-class MessageBuilderInteractionComponentEdit(MessageBuilderBase):
+class MessageBuilderInteractionFollowupEdit(MessageBuilderEdit):
     """
-    Message builder for ``Client.interaction_component_message_edit``.
+    Message builder for ``Client.interaction_followup_message_edit``.
     
     Attributes
     ----------

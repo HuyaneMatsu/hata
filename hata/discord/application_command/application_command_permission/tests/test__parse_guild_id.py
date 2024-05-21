@@ -4,11 +4,11 @@ from ..fields import parse_guild_id
 
 
 def _iter_options():
-    role_id = 202302210027
+    guild_id = 202302210027
     
     yield {}, 0
     yield {'guild_id': None}, 0
-    yield {'guild_id': str(role_id)}, role_id
+    yield {'guild_id': str(guild_id)}, guild_id
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

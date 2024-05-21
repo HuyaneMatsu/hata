@@ -9,9 +9,11 @@ from ...application_command import (
     ApplicationCommandPermissionOverwriteTargetType
 )
 from ...application_command.application_command.constants import (
-    APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD
+    LIMIT_GLOBAL as APPLICATION_COMMAND_LIMIT_GLOBAL, LIMIT_GUILD as APPLICATION_COMMAND_LIMIT_GUILD
 )
-from ...application_command.application_command_permission.constants import APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
+from ...application_command.application_command_permission.constants import (
+    PERMISSION_OVERWRITES_MAX as APPLICATION_COMMAND_PERMISSION_OVERWRITES_MAX
+)
 from ...http import DiscordApiClient
 from ...oauth2 import Oauth2Access, Oauth2Scope, Oauth2User
 
@@ -822,9 +824,9 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         
         permission_overwrite_datas_length = len(permission_overwrite_datas)
-        if permission_overwrite_datas_length > APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX:
+        if permission_overwrite_datas_length > APPLICATION_COMMAND_PERMISSION_OVERWRITES_MAX:
             raise ValueError(
-                f'`permission_overwrites` can contain up to `{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` '
+                f'`permission_overwrites` can contain up to `{APPLICATION_COMMAND_PERMISSION_OVERWRITES_MAX}` '
                 f'permission_overwrites, got {permission_overwrite_datas_length!r}; '
                 f'{permission_overwrites!r}.'
             )

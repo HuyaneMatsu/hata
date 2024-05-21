@@ -7,19 +7,22 @@ from ...avatar_decoration import AvatarDecoration
 from ..fields import validate_avatar_decoration
 
 
-def _iter_options():
+def _iter_options__passing():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160014)
     
     yield (None, None)
     yield (avatar_decoration, avatar_decoration)
 
 
-@vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_avatar_decoration__passing(input_value):
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_avatar_decoration(input_value):
     """
     Tests whether `validate_avatar_decoration` works as intended.
-    
-    Case: passing.
     
     Parameters
     ----------
@@ -29,25 +32,9 @@ def test__validate_avatar_decoration__passing(input_value):
     Returns
     -------
     output : `None | AvatarDecoration`
-    """
-    return validate_avatar_decoration(input_value)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-def test__validate_avatar_decoration__type_error(input_value):
-    """
-    Tests whether `validate_avatar_decoration` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Value to validate.
     
     Raises
     ------
     TypeError
     """
-    validate_avatar_decoration(input_value)
+    return validate_avatar_decoration(input_value)

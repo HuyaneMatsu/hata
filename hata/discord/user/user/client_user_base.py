@@ -36,6 +36,8 @@ class ClientUserBase(OrinUserBase):
         The user's banner's type.
     bot : `bool`
         Whether the user is a bot or a user account.
+    clan : `None`, ``UserClan``
+        The user's primary clan.
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
     display_name : `None`, `str`
@@ -64,6 +66,7 @@ class ClientUserBase(OrinUserBase):
         banner = ...,
         banner_color = ...,
         bot = ...,
+        clan = ...,
         discriminator = ...,
         display_name = ...,
         flags = ...,
@@ -84,6 +87,8 @@ class ClientUserBase(OrinUserBase):
             The user's banner color.
         bot : `bool`, Optional (Keyword only)
             Whether the user is a bot or a user account.
+        clan : `None`, ``UserClan``, Optional (Keyword only)
+            The user's primary clan.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
         display_name : `None`, `str`, Optional (Keyword only)
@@ -112,6 +117,7 @@ class ClientUserBase(OrinUserBase):
             avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
+            clan = clan,
             discriminator = discriminator,
             display_name = display_name,
             flags = flags,
@@ -268,6 +274,12 @@ class ClientUserBase(OrinUserBase):
         self.banner_hash = client.banner_hash
         self.banner_type = client.banner_type
         self.bot = client.bot
+        
+        clan = client.clan
+        if (clan is not None):
+            clan = clan.copy()
+        self.clan = clan
+        
         self.discriminator = client.discriminator
         self.display_name = client.display_name
         self.flags = client.flags
@@ -327,6 +339,7 @@ class ClientUserBase(OrinUserBase):
         banner = ...,
         banner_color = ...,
         bot = ...,
+        clan = ...,
         discriminator = ...,
         display_name = ...,
         flags = ...,
@@ -347,6 +360,8 @@ class ClientUserBase(OrinUserBase):
             The user's banner color.
         bot : `bool`, Optional (Keyword only)
             Whether the user is a bot or a user account.
+        clan : `None`, ``UserClan``, Optional (Keyword only)
+            The user's primary clan.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
         display_name : `None`, `str`, Optional (Keyword only)
@@ -380,6 +395,7 @@ class ClientUserBase(OrinUserBase):
             avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
+            clan = clan,
             discriminator = discriminator,
             display_name = display_name,
             flags = flags,

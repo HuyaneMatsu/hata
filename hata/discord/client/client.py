@@ -31,7 +31,7 @@ from ..user import (
 )
 from ..user.user.fields import (
     parse_email, parse_email_verified, parse_locale, parse_mfa_enabled, parse_premium_type, validate_avatar_decoration,
-    validate_banner_color, validate_bot, validate_discriminator, validate_display_name, validate_email,
+    validate_banner_color, validate_bot, validate_clan, validate_discriminator, validate_display_name, validate_email,
     validate_email_verified, validate_flags, validate_locale, validate_mfa_enabled, validate_name,
     validate_premium_type, validate_status
 )
@@ -103,7 +103,7 @@ class Client(
         Discord api client for lower level interactions with the Discord API.
     
     application : ``Application``
-        The bot account's application. The application data of the client is requested meanwhile it logs in.
+        The client's application. The application data of the client is requested meanwhile it logs in.
     
     avatar_hash : `int`
         The client's avatar's hash in `uint128`.
@@ -115,16 +115,19 @@ class Client(
         The client's avatar decorations.
     
     banner_color : `None`, ``Color``
-        The user's banner color if has any.
+        The client's banner color if has any.
     
     banner_hash : `int`
-        The user's banner's hash in `uint128`.
+        The client's banner's hash in `uint128`.
     
     banner_type : ``IconType``
-        The user's banner's type.
+        The client's banner's type.
     
     bot : `bool`
-        Whether the client is a bot or a user account.
+        Whether the client is a bot.
+    
+    clan : `None`, ``UserClan``
+        The client's primary clan.
     
     discriminator : `int`
         The client's discriminator. Given to avoid overlapping names.
@@ -266,6 +269,7 @@ class Client(
         banner = ...,
         banner_color = ...,
         bot = ...,
+        clan = ...,
         client_id = ...,
         discriminator = ...,
         display_name = ...,
@@ -320,7 +324,10 @@ class Client(
             The client's banner color.
         
         bot : `bool`, Optional (Keyword only)
-            Whether the client is a bot user or a user account.
+            Whether the client is a bot.
+        
+        clan : `None`, ``UserClan``, Optional (Keyword only)
+            The client's primary clan.
         
         client_id : `None`, `int`, `str`, Optional (Keyword only)
             The client's `.id`. If passed as `str` will be converted to `int`. Defaults to `None`.
@@ -458,10 +465,17 @@ class Client(
         else:
             banner_color = validate_banner_color(banner_color)
         
+        # bot
         if bot is ...:
             bot = True
         else:
             bot = validate_bot(bot)
+        
+        # clan
+        if clan is ...:
+            clan = None
+        else:
+            clan = validate_clan(clan)
         
         # client_id
         if client_id is ...:
@@ -617,9 +631,10 @@ class Client(
         self.application = application
         self.avatar = avatar
         self.avatar_decoration = avatar_decoration
-        self.bot = bot
         self.banner = banner
         self.banner_color = banner_color
+        self.bot = bot
+        self.clan = clan
         self.discriminator = discriminator
         self.display_name = display_name
         self.email = email

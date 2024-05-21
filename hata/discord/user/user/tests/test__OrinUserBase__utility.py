@@ -4,6 +4,7 @@ from ....bases import Icon, IconType
 from ....color import Color
 
 from ...avatar_decoration import AvatarDecoration
+from ...user_clan import UserClan
 
 from ..flags import UserFlag
 from ..orin_user_base import OrinUserBase
@@ -19,6 +20,7 @@ def test__OrinUserBase__copy():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160072)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180011, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -29,6 +31,7 @@ def test__OrinUserBase__copy():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
@@ -52,6 +55,7 @@ def test__OrinUserBase__copy_with__0():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160073)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180012, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -62,6 +66,7 @@ def test__OrinUserBase__copy_with__0():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
@@ -85,6 +90,7 @@ def test__OrinUserBase__copy_with__1():
     old_avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160074)
     old_banner = Icon(IconType.static, 15)
     old_banner_color = Color(1236)
+    old_clan = UserClan(guild_id = 202405180013, tag = 'miau')
     old_discriminator = 2222
     old_display_name = 'Far'
     old_flags = UserFlag(1)
@@ -94,6 +100,7 @@ def test__OrinUserBase__copy_with__1():
     new_avatar_decoration =AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160090)
     new_banner = Icon(IconType.static, 10)
     new_banner_color = Color(1236)
+    new_clan = UserClan(guild_id = 202405180014, tag = 'meow')
     new_discriminator = 1
     new_display_name = 'East'
     new_flags = UserFlag(2)
@@ -104,6 +111,7 @@ def test__OrinUserBase__copy_with__1():
         avatar_decoration = old_avatar_decoration,
         banner = old_banner,
         banner_color = old_banner_color,
+        clan = old_clan,
         discriminator = old_discriminator,
         display_name = old_display_name,
         flags = old_flags,
@@ -115,6 +123,7 @@ def test__OrinUserBase__copy_with__1():
         avatar_decoration = new_avatar_decoration,
         banner = new_banner,
         banner_color = new_banner_color,
+        clan = new_clan,
         discriminator = new_discriminator,
         display_name = new_display_name,
         flags = new_flags,
@@ -127,6 +136,7 @@ def test__OrinUserBase__copy_with__1():
     vampytest.assert_eq(copy.avatar_decoration, new_avatar_decoration)
     vampytest.assert_eq(copy.banner, new_banner)
     vampytest.assert_eq(copy.banner_color, new_banner_color)
+    vampytest.assert_eq(copy.clan, new_clan)
     vampytest.assert_eq(copy.discriminator, new_discriminator)
     vampytest.assert_eq(copy.display_name, new_display_name)
     vampytest.assert_eq(copy.flags, new_flags)

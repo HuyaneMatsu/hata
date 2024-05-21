@@ -7,6 +7,7 @@ from ....color import Color
 
 from ...avatar_decoration import AvatarDecoration
 from ...guild_profile import GuildProfile
+from ...user_clan import UserClan
 
 from ..flags import UserFlag
 from ..user import User
@@ -14,7 +15,7 @@ from ..user import User
 from .test__User__constructor import _assert_fields_set
 
 
-def test__User__from_data__0():
+def test__User__from_data__user_data_only():
     """
     Tests whether ``User.from_data`` works as intended.
     
@@ -25,6 +26,7 @@ def test__User__from_data__0():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160076)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180056, tag = 'meow')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -35,6 +37,7 @@ def test__User__from_data__0():
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
+        'clan': clan.to_data(),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
         'username': name,
@@ -52,6 +55,7 @@ def test__User__from_data__0():
     vampytest.assert_eq(user.avatar, avatar)
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
+    vampytest.assert_eq(user.clan, clan)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.name, name)
@@ -142,6 +146,7 @@ def test__User__from_data_and_difference_update_profile__user_missing():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160077)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180057, tag = 'meow')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -154,6 +159,7 @@ def test__User__from_data_and_difference_update_profile__user_missing():
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
+        'clan': clan.to_data(),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
         'username': name,
@@ -180,6 +186,7 @@ def test__User__from_data_and_difference_update_profile__user_missing():
     vampytest.assert_eq(user.avatar, avatar)
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
+    vampytest.assert_eq(user.clan, clan)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.name, name)
@@ -285,6 +292,7 @@ def test__User__from_data_and_update_profile__user_missing_cache():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160078)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180058, tag = 'meow')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -299,6 +307,7 @@ def test__User__from_data_and_update_profile__user_missing_cache():
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
+        'clan': clan.to_data(),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
         'username': name,
@@ -325,6 +334,7 @@ def test__User__from_data_and_update_profile__user_missing_cache():
     vampytest.assert_eq(user.avatar, avatar)
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
+    vampytest.assert_eq(user.clan, clan)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.name, name)

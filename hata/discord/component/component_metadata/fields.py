@@ -2,20 +2,22 @@ __all__ = ()
 
 from scarletio import include
 
+from ...application import SKU
 from ...channel import Channel, ChannelType
 from ...field_parsers import (
-    bool_parser_factory, int_parser_factory, negated_bool_parser_factory, nullable_object_array_parser_factory,
-    nullable_string_parser_factory, preinstanced_array_parser_factory, preinstanced_parser_factory
+    bool_parser_factory, entity_id_parser_factory, int_parser_factory, negated_bool_parser_factory,
+    nullable_object_array_parser_factory, nullable_string_parser_factory, preinstanced_array_parser_factory,
+    preinstanced_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, int_optional_putter_factory, negated_bool_optional_putter_factory,
-    nullable_entity_array_putter_factory, nullable_string_optional_putter_factory, preinstanced_array_putter_factory,
-    preinstanced_putter_factory, url_optional_putter_factory
+    bool_optional_putter_factory, entity_id_optional_putter_factory, int_optional_putter_factory,
+    negated_bool_optional_putter_factory, nullable_entity_array_putter_factory, nullable_string_optional_putter_factory,
+    preinstanced_array_putter_factory, preinstanced_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, int_conditional_validator_factory, nullable_object_array_validator_factory,
-    nullable_string_validator_factory, preinstanced_array_validator_factory, preinstanced_validator_factory,
-    url_optional_validator_factory
+    bool_validator_factory, entity_id_validator_factory, int_conditional_validator_factory,
+    nullable_object_array_validator_factory, nullable_string_validator_factory, preinstanced_array_validator_factory,
+    preinstanced_validator_factory, url_optional_validator_factory
 )
 from ...role import Role
 from ...user import ClientUserBase
@@ -316,6 +318,13 @@ validate_placeholder = nullable_string_validator_factory('placeholder', 0, PLACE
 parse_required = bool_parser_factory('required', True)
 put_required_into = bool_optional_putter_factory('required', True)
 validate_required = bool_validator_factory('required', True)
+
+# sku_id
+
+parse_sku_id = entity_id_parser_factory('sku_id')
+put_sku_id_into = entity_id_optional_putter_factory('sku_id')
+validate_sku_id = entity_id_validator_factory('sku_id', SKU)
+
 
 # text_input_style
 

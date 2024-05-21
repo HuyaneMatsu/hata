@@ -17,10 +17,11 @@ def _assert_fields_set(component_metadata):
     vampytest.assert_instance(component_metadata.emoji, Emoji, nullable = True)
     vampytest.assert_instance(component_metadata.enabled, bool)
     vampytest.assert_instance(component_metadata.label, str, nullable = True)
+    vampytest.assert_instance(component_metadata.sku_id, int)
     vampytest.assert_instance(component_metadata.url, str, nullable = True)
 
 
-def test__ComponentMetadataButton__new__0():
+def test__ComponentMetadataButton__new__no_fields():
     """
     Tests whether ``ComponentMetadataButton.__new__`` works as intended.
     
@@ -30,7 +31,7 @@ def test__ComponentMetadataButton__new__0():
     _assert_fields_set(component_metadata)
 
 
-def test__ComponentMetadataButton__new__1():
+def test__ComponentMetadataButton__new__all_fields():
     """
     Tests whether ``ComponentMetadataButton.__new__`` works as intended.
     
@@ -41,6 +42,7 @@ def test__ComponentMetadataButton__new__1():
     emoji = BUILTIN_EMOJIS['heart']
     enabled = False
     label = 'frost'
+    sku_id = 0
     url = None
     
     component_metadata = ComponentMetadataButton(
@@ -49,6 +51,7 @@ def test__ComponentMetadataButton__new__1():
         emoji = emoji,
         enabled = enabled,
         label = label,
+        sku_id = sku_id,
         url = url,
     )
     _assert_fields_set(component_metadata)
@@ -57,10 +60,11 @@ def test__ComponentMetadataButton__new__1():
     vampytest.assert_is(component_metadata.emoji, emoji)
     vampytest.assert_eq(component_metadata.enabled, enabled)
     vampytest.assert_eq(component_metadata.label, label)
+    vampytest.assert_eq(component_metadata.sku_id, sku_id)
     vampytest.assert_eq(component_metadata.url, url)
 
 
-def test__ComponentMetadataButton__new__2():
+def test__ComponentMetadataButton__new__url():
     """
     Tests whether ``ComponentMetadataButton.__new__`` works as intended.
     
@@ -76,8 +80,23 @@ def test__ComponentMetadataButton__new__2():
     vampytest.assert_eq(component_metadata.url, url)
 
 
+def test__ComponentMetadataButton__new__sku_id():
+    """
+    Tests whether ``ComponentMetadataButton.__new__`` works as intended.
+    
+    Case: sku id.
+    """
+    sku_id = 202405180073
+    
+    component_metadata = ComponentMetadataButton(
+        sku_id = sku_id,
+    )
+    _assert_fields_set(component_metadata)
+    vampytest.assert_is(component_metadata.button_style, ButtonStyle.subscription)
+    vampytest.assert_eq(component_metadata.sku_id, sku_id)
 
-def test__ComponentMetadataButton__from_keyword_parameters__0():
+
+def test__ComponentMetadataButton__from_keyword_parameters__no_fields():
     """
     Tests whether ``ComponentMetadataButton.from_keyword_parameters`` works as intended.
     
@@ -89,7 +108,7 @@ def test__ComponentMetadataButton__from_keyword_parameters__0():
     _assert_fields_set(component_metadata)
 
 
-def test__ComponentMetadataButton__from_keyword_parameters__1():
+def test__ComponentMetadataButton__from_keyword_parameters__all_fields():
     """
     Tests whether ``ComponentMetadataButton.from_keyword_parameters`` works as intended.
     
@@ -100,6 +119,7 @@ def test__ComponentMetadataButton__from_keyword_parameters__1():
     emoji = BUILTIN_EMOJIS['heart']
     enabled = False
     label = 'frost'
+    sku_id = 0
     url = None
     
     keyword_parameters = {
@@ -108,6 +128,7 @@ def test__ComponentMetadataButton__from_keyword_parameters__1():
         'emoji': emoji,
         'enabled': enabled,
         'label': label,
+        'sku_id': sku_id,
         'url': url,
     }
     
@@ -118,10 +139,11 @@ def test__ComponentMetadataButton__from_keyword_parameters__1():
     vampytest.assert_is(component_metadata.emoji, emoji)
     vampytest.assert_eq(component_metadata.enabled, enabled)
     vampytest.assert_eq(component_metadata.label, label)
+    vampytest.assert_eq(component_metadata.sku_id, sku_id)
     vampytest.assert_eq(component_metadata.url, url)
 
 
-def test__ComponentMetadataButton__from_keyword_parameters__2():
+def test__ComponentMetadataButton__from_keyword_parameters__url():
     """
     Tests whether ``ComponentMetadataButton.from_keyword_parameters`` works as intended.
     
@@ -137,3 +159,21 @@ def test__ComponentMetadataButton__from_keyword_parameters__2():
     _assert_fields_set(component_metadata)
     vampytest.assert_is(component_metadata.button_style, ButtonStyle.link)
     vampytest.assert_eq(component_metadata.url, url)
+
+
+def test__ComponentMetadataButton__from_keyword_parameters__sku_id():
+    """
+    Tests whether ``ComponentMetadataButton.from_keyword_parameters`` works as intended.
+    
+    Case: sku id.
+    """
+    sku_id = 202405180074
+    
+    keyword_parameters = {
+        'sku_id': sku_id,
+    }
+    
+    component_metadata = ComponentMetadataButton.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(component_metadata)
+    vampytest.assert_is(component_metadata.button_style, ButtonStyle.subscription)
+    vampytest.assert_eq(component_metadata.sku_id, sku_id)

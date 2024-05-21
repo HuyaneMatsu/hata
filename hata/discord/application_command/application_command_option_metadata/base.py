@@ -4,7 +4,7 @@ from scarletio import RichAttributeErrorBaseType
 
 from ...bases import PlaceHolder
 
-from .constants import APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT, APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT
+from .constants import MAX_LENGTH_DEFAULT, MIN_LENGTH_DEFAULT
 
 
 class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
@@ -239,7 +239,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
     
     
     max_length = PlaceHolder(
-        APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT,
+        MAX_LENGTH_DEFAULT,
         """
         The maximum input length allowed for this option.
         
@@ -267,7 +267,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
     
     
     min_length = PlaceHolder(
-        APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT,
+        MIN_LENGTH_DEFAULT,
         """
         The minimal input length allowed for this option.
         

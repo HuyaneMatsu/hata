@@ -1,7 +1,7 @@
 __all__ = ()
 
 from ..application_command_option_metadata.constants import (
-    APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT, APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT
+    MAX_LENGTH_DEFAULT, MIN_LENGTH_DEFAULT
 )
 
 from ..application_command_option_metadata.fields import (
@@ -15,9 +15,9 @@ FIELDS = {
     'channel_types': (validate_channel_types, None),
     'choices': (validate_choices, None),
     'default': (validate_default, False),
-    'max_length': (validate_max_length, APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT),
+    'max_length': (validate_max_length, MAX_LENGTH_DEFAULT),
     'max_value': (validate_max_value, None),
-    'min_length': (validate_min_length, APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT),
+    'min_length': (validate_min_length, MIN_LENGTH_DEFAULT),
     'min_value': (validate_min_value, None),
     'options': (validate_options, None),
     'required': (validate_required, False),

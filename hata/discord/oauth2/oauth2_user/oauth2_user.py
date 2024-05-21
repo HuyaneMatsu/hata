@@ -3,7 +3,7 @@ __all__ = ('Oauth2User',)
 from scarletio import copy_docs
 
 from ...localization.utils import LOCALE_DEFAULT
-from ...user import OrinUserBase, PremiumType, UserFlag
+from ...user import OrinUserBase, PremiumType, UserClan, UserFlag
 from ...user.user.fields import (
     parse_email, parse_email_verified, parse_id, parse_locale, parse_mfa_enabled, parse_premium_type, put_email_into,
     put_email_verified_into, put_locale_into, put_mfa_enabled_into, put_oauth2_flags_into, put_premium_type_into,
@@ -34,6 +34,8 @@ class Oauth2User(OrinUserBase):
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
+    clan : `None`, ``UserClan``
+        The user's primary clan.
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
     display_name : `None`, `str`
@@ -64,6 +66,7 @@ class Oauth2User(OrinUserBase):
         avatar_decoration = ...,
         banner = ...,
         banner_color = ...,
+        clan = ...,
         discriminator = ...,
         display_name = ...,
         email = ...,
@@ -87,6 +90,8 @@ class Oauth2User(OrinUserBase):
             The user's banner.
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
             The user's banner color.
+        user_clan : `None`, ``UserClan``, Optional (Keyword only)
+            The user's primary clan.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
         display_name : `None`, `str`, Optional (Keyword only)
@@ -150,6 +155,7 @@ class Oauth2User(OrinUserBase):
             avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
+            clan = clan,
             discriminator = discriminator,
             display_name = display_name,
             flags = flags,
@@ -273,6 +279,7 @@ class Oauth2User(OrinUserBase):
         avatar_decoration = ...,
         banner = ...,
         banner_color = ...,
+        clan = ...,
         discriminator = ...,
         display_name = ...,
         email = ...,
@@ -296,6 +303,8 @@ class Oauth2User(OrinUserBase):
             The user's banner.
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
             The user's banner color.
+        clan : `None`, ``UserClan``, Optional (Keyword only)
+            The user's primary clan.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
         display_name : `None`, `str`, Optional (Keyword only)
@@ -359,6 +368,7 @@ class Oauth2User(OrinUserBase):
             avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
+            clan = clan,
             discriminator = discriminator,
             display_name = display_name,
             flags = flags,

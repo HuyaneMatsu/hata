@@ -4,7 +4,7 @@ from scarletio import copy_docs
 
 from .....discord.application_command import ApplicationCommand, ApplicationCommandTargetType
 from .....discord.application_command.application_command_permission.constants import (
-    APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
+    PERMISSION_OVERWRITES_MAX as APPLICATION_COMMAND_PERMISSION_OVERWRITES_MAX
 )
 from .....discord.user.user.helpers import _try_get_guild_id
 
@@ -567,11 +567,11 @@ class CommandBaseApplicationCommand(CommandBase):
         if __debug__:
             if (
                 (permission_overwrites_for_guild is not None) and
-                (len(permission_overwrites_for_guild) >= APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX)
+                (len(permission_overwrites_for_guild) >= APPLICATION_COMMAND_PERMISSION_OVERWRITES_MAX)
             ):
                 raise AssertionError(
                     f'`Each command in each guild can have up to '
-                    f'{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX} permission overwrites which is already reached.'
+                    f'{APPLICATION_COMMAND_PERMISSION_OVERWRITES_MAX} permission overwrites which is already reached.'
                 )
         
         if (permission_overwrites_for_guild is not None) and (permission_overwrite is not None):

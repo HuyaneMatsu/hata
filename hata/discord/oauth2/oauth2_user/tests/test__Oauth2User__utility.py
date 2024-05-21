@@ -3,7 +3,7 @@ import vampytest
 from ....bases import Icon, IconType
 from ....color import Color
 from ....localization import Locale
-from ....user import AvatarDecoration, PremiumType, UserFlag
+from ....user import AvatarDecoration, PremiumType, UserClan, UserFlag
 
 from ..oauth2_user import Oauth2User
 
@@ -18,6 +18,7 @@ def test__Oauth2User__copy():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160047)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180025, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -33,6 +34,7 @@ def test__Oauth2User__copy():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
@@ -51,7 +53,7 @@ def test__Oauth2User__copy():
     vampytest.assert_eq(user, copy)
 
 
-def test__Oauth2User__copy_with__0():
+def test__Oauth2User__copy_with__no_fields():
     """
     Tests whether ``Oauth2User.copy_with`` works as intended.
     
@@ -61,6 +63,7 @@ def test__Oauth2User__copy_with__0():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160048)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180026, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -76,6 +79,7 @@ def test__Oauth2User__copy_with__0():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
@@ -94,7 +98,7 @@ def test__Oauth2User__copy_with__0():
     vampytest.assert_eq(user, copy)
 
 
-def test__Oauth2User__copy_with__1():
+def test__Oauth2User__copy_with__all_fields():
     """
     Tests whether ``Oauth2User.copy_with`` works as intended.
     
@@ -104,6 +108,7 @@ def test__Oauth2User__copy_with__1():
     old_avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160049)
     old_banner = Icon(IconType.static, 15)
     old_banner_color = Color(1236)
+    old_clan = UserClan(guild_id = 202405180027, tag = 'miau')
     old_discriminator = 2222
     old_display_name = 'Far'
     old_flags = UserFlag(1)
@@ -118,6 +123,7 @@ def test__Oauth2User__copy_with__1():
     new_avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160093)
     new_banner = Icon(IconType.static, 10)
     new_banner_color = Color(1236)
+    new_clan = UserClan(guild_id = 202405180028, tag = 'meow')
     new_discriminator = 1
     new_display_name = 'East'
     new_flags = UserFlag(2)
@@ -133,6 +139,7 @@ def test__Oauth2User__copy_with__1():
         avatar_decoration = old_avatar_decoration,
         banner = old_banner,
         banner_color = old_banner_color,
+        clan = old_clan,
         discriminator = old_discriminator,
         display_name = old_display_name,
         flags = old_flags,
@@ -149,6 +156,7 @@ def test__Oauth2User__copy_with__1():
         avatar_decoration = new_avatar_decoration,
         banner = new_banner,
         banner_color = new_banner_color,
+        clan = new_clan,
         discriminator = new_discriminator,
         display_name = new_display_name,
         flags = new_flags,
@@ -166,6 +174,7 @@ def test__Oauth2User__copy_with__1():
     vampytest.assert_eq(copy.avatar_decoration, new_avatar_decoration)
     vampytest.assert_eq(copy.banner, new_banner)
     vampytest.assert_eq(copy.banner_color, new_banner_color)
+    vampytest.assert_eq(copy.clan, new_clan)
     vampytest.assert_eq(copy.discriminator, new_discriminator)
     vampytest.assert_eq(copy.display_name, new_display_name)
     vampytest.assert_eq(copy.flags, new_flags)

@@ -28,6 +28,53 @@ def test__BuilderBase__new():
     _assert_fields_set(builder)
 
 
+def test__BuilderBase__eq__same_type():
+    """
+    Tests whether ``BuilderBase.__eq__`` works as intended.
+    
+    Case: Same type.
+    """
+    builder_0 = BuilderBase()
+    builder_1 = BuilderBase()
+    
+    output = builder_0 == builder_1
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
+
+
+def test__BuilderBase__eq__different_type():
+    """
+    Tests whether ``BuilderBase.__eq__`` works as intended.
+    
+    Case : different type.
+    """
+    builder = BuilderBase()
+    
+    output = builder == object()
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
+
+
+def test__BuilderBase__hash():
+    """
+    Tests whether ``BuilderBase.__hash__`` works as intended.
+    """
+    builder = BuilderBase()
+    
+    output = hash(builder)
+    vampytest.assert_instance(output, int)
+
+
+def test__BuilderBase__repr():
+    """
+    Tests whether ``BuilderBase.__repr__`` works as intended.
+    """
+    builder = BuilderBase()
+    
+    output = repr(builder)
+    vampytest.assert_instance(output, str)
+
+
 def test__BuilderBase__setter_none():
     """
     Tests whether ``BuilderBase._setter_none`` works as intended.
@@ -511,6 +558,12 @@ def test__BuilderBase__setter_instance():
         [(conversion_0, value_0), (conversion_1, value_1)],
     )
 
+
+def test__BuilderBase__iter_conversions():
+    """
+    Tests whether ``BuilderBase._iter_conversions`` works as intended.
+    """
+    vampytest.assert_true(is_generator_function(BuilderBase._iter_conversions))
 
 
 def test__BuilderBase__iter_fields():

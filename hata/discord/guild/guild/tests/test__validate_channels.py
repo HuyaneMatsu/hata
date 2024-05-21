@@ -5,7 +5,7 @@ from ....channel import Channel, ChannelType
 from ..fields import validate_channels
 
 
-def iter_options__passing():
+def _iter_options__passing():
     channel_id = 202306080007
     channel_name = 'Koishi'
     
@@ -22,7 +22,7 @@ def iter_options__passing():
     yield {channel_id: channel}, {channel_id: channel}
 
     
-@vampytest._(vampytest.call_from(iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
 def test__validate_channels__passing(input_value):
     """
     Tests whether ``validate_channels`` works as intended.
@@ -41,14 +41,14 @@ def test__validate_channels__passing(input_value):
     return validate_channels(input_value)
 
 
-def iter_options__type_error():
+def _iter_options__type_error():
     yield 12.6
     yield [12.6]
     yield {12.6: 12.6}
 
 
 @vampytest.raising(TypeError)
-@vampytest.call_from(iter_options__type_error())
+@vampytest.call_from(_iter_options__type_error())
 def test__validate_channels__type_error(input_value):
     """
     Tests whether ``validate_channels`` works as intended.

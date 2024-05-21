@@ -43,6 +43,8 @@ class ClientUserPBase(ClientUserBase):
         The user's banner's type.
     bot : `bool`
         Whether the user is a bot or a user account.
+    clan : `None`, ``UserClan``
+        The user's primary clan.
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
     display_name : `None`, `str`
@@ -75,6 +77,7 @@ class ClientUserPBase(ClientUserBase):
         banner = ...,
         banner_color = ...,
         bot = ...,
+        clan = ...,
         discriminator = ...,
         display_name = ...,
         flags = ...,
@@ -97,6 +100,8 @@ class ClientUserPBase(ClientUserBase):
             The user's banner.
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
             The user's banner color.
+        clan : `None`, ``UserClan``, Optional (Keyword only)
+            The user's primary clan.
         bot : `bool`, Optional (Keyword only)
             Whether the user is a bot or a user account.
         discriminator : `str`, `int`, Optional (Keyword only)
@@ -148,6 +153,7 @@ class ClientUserPBase(ClientUserBase):
             banner = banner,
             banner_color = banner_color,
             bot = bot,
+            clan = clan,
             discriminator = discriminator,
             display_name = display_name,
             flags = flags,
@@ -330,6 +336,7 @@ class ClientUserPBase(ClientUserBase):
         banner = ...,
         banner_color = ...,
         bot = ...,
+        clan = ...,
         discriminator = ...,
         display_name = ...,
         flags = ...,
@@ -354,6 +361,8 @@ class ClientUserPBase(ClientUserBase):
             The user's banner color.
         bot : `bool`, Optional (Keyword only)
             Whether the user is a bot or a user account.
+        clan : `None`, ``UserClan``, Optional (Keyword only)
+            The user's primary clan.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
         display_name : `None`, `str`, Optional (Keyword only)
@@ -407,6 +416,7 @@ class ClientUserPBase(ClientUserBase):
             banner = banner,
             banner_color = banner_color,
             bot = bot,
+            clan = clan,
             discriminator = discriminator,
             display_name = display_name,
             flags = flags,

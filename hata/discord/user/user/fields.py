@@ -19,6 +19,7 @@ from ...localization import Locale
 from ...localization.utils import LOCALE_DEFAULT
 
 from ..avatar_decoration import AvatarDecoration
+from ..user_clan import UserClan
 
 from .constants import (
     DISCRIMINATOR_VALUE_MAX, DISCRIMINATOR_VALUE_MIN, DISPLAY_NAME_LENGTH_MAX, NAME_LENGTH_MAX, NAME_LENGTH_MIN,
@@ -218,6 +219,12 @@ def validate_banner_color(banner_color):
 parse_bot = bool_parser_factory('bot', False)
 put_bot_into = force_bool_putter_factory('bot')
 validate_bot = bool_validator_factory('bot', False)
+
+# clan
+
+parse_clan = nullable_entity_parser_factory('clan', UserClan)
+put_clan_into = nullable_entity_optional_putter_factory('clan', UserClan)
+validate_clan = nullable_entity_validator_factory('clan', UserClan)
 
 # discriminator
 

@@ -35,12 +35,13 @@ def test__Component__proxies__0():
     vampytest.assert_instance(component.options, tuple, nullable = True)
     vampytest.assert_instance(component.placeholder, str, nullable = True)
     vampytest.assert_instance(component.required, bool)
+    vampytest.assert_instance(component.sku_id, int)
     vampytest.assert_instance(component.text_input_style, TextInputStyle)
     vampytest.assert_instance(component.url, str, nullable = True)
     vampytest.assert_instance(component.value, str, nullable = True)
 
 
-def test__Component__proxies__read_button():
+def test__Component__proxies__read_button__generic():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -63,6 +64,22 @@ def test__Component__proxies__read_button():
     vampytest.assert_eq(component.enabled, enabled)
     vampytest.assert_eq(component.label, label)
     vampytest.assert_eq(component.url, url)
+
+
+def test__Component__proxies__read_button__sku_id():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading button fields with sku id.
+    """
+    sku_id = 202405180079
+    
+    component = Component(
+        ComponentType.button,
+        sku_id = sku_id,
+    )
+    
+    vampytest.assert_eq(component.sku_id, sku_id)
 
 
 def test__Component__proxies__read_channel_select():
@@ -169,7 +186,7 @@ def test__Component__proxies__read_button_style():
     vampytest.assert_is(component.button_style, button_style)
 
 
-def test__Component__proxies__write_button():
+def test__Component__proxies__write_button__generic():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -191,6 +208,21 @@ def test__Component__proxies__write_button():
     vampytest.assert_eq(component.enabled, enabled)
     vampytest.assert_eq(component.label, label)
     vampytest.assert_eq(component.url, url)
+
+
+def test__Component__proxies__write_button():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: writing button fields.
+    """
+    sku_id = 202405180082
+    
+    component = Component(ComponentType.button)
+    
+    component.sku_id = sku_id
+    
+    vampytest.assert_eq(component.sku_id, sku_id)
 
 
 def test__Component__proxies__write_channel_select():

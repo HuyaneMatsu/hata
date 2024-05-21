@@ -16,10 +16,10 @@ from ...field_validators import (
 from ..application_command_option_choice import ApplicationCommandOptionChoice
 
 from .constants import (
-    APPLICATION_COMMAND_OPTION_CHOICES_MAX, APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT,
-    APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX, APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN,
-    APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT, APPLICATION_COMMAND_OPTION_MIN_LENGTH_MAX,
-    APPLICATION_COMMAND_OPTION_MIN_LENGTH_MIN, APPLICATION_COMMAND_OPTION_OPTIONS_MAX
+    CHOICES_MAX, MAX_LENGTH_DEFAULT,
+    MAX_LENGTH_MAX, MAX_LENGTH_MIN,
+    MIN_LENGTH_DEFAULT, MIN_LENGTH_MAX,
+    MIN_LENGTH_MIN, OPTIONS_MAX
 )
 
 # autocomplete
@@ -76,7 +76,7 @@ def validate_choices_postprocessed(choices, expected_choice_type):
                     f'Got {choice.__class__.__name__}; {choice!r}; choices = {choices!r}.'
                 )
         
-        choices = choices[:APPLICATION_COMMAND_OPTION_CHOICES_MAX]
+        choices = choices[:CHOICES_MAX]
     
     return choices
 
@@ -104,8 +104,8 @@ def parse_max_length(data):
     max_length : `int`
     """
     max_length = data.get('max_length', None)
-    if (max_length is None) or (max_length == APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX):
-        max_length = APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT
+    if (max_length is None) or (max_length == MAX_LENGTH_MAX):
+        max_length = MAX_LENGTH_DEFAULT
 
     return max_length
 
@@ -128,7 +128,7 @@ def put_max_length_into(max_length, data, defaults):
     data : `dict` of (`str`, `object`) items
     """
     if (max_length == 0):
-        max_length = APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX
+        max_length = MAX_LENGTH_MAX
     
     data['max_length'] = max_length
     return data
@@ -157,21 +157,21 @@ def validate_max_length(max_length):
         - If `max_length`'s value is incorrect.
     """
     if (max_length is None):
-        return APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT
+        return MAX_LENGTH_DEFAULT
     
     if not isinstance(max_length, int):
         raise TypeError(
             f'`max_length` can be `None`, `int`, got {max_length.__class__.__name__}; {max_length!r}.'
         )
         
-    if max_length == APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT:
-        return APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT
+    if max_length == MAX_LENGTH_DEFAULT:
+        return MAX_LENGTH_DEFAULT
     
-    if max_length < APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN:
-        max_length = APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN
+    if max_length < MAX_LENGTH_MIN:
+        max_length = MAX_LENGTH_MIN
     
-    elif max_length >= APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX:
-        max_length = APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT
+    elif max_length >= MAX_LENGTH_MAX:
+        max_length = MAX_LENGTH_DEFAULT
 
     return max_length
 
@@ -245,8 +245,8 @@ def validate_max_value_postprocessed(max_value, expected_value_type):
 
 # min_length
 
-parse_min_length = int_parser_factory('min_length', APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT)
-put_min_length_into = int_optional_putter_factory('min_length', APPLICATION_COMMAND_OPTION_MIN_LENGTH_MIN)
+parse_min_length = int_parser_factory('min_length', MIN_LENGTH_DEFAULT)
+put_min_length_into = int_optional_putter_factory('min_length', MIN_LENGTH_MIN)
 
 
 def validate_min_length(min_length):
@@ -271,18 +271,18 @@ def validate_min_length(min_length):
         - If `min_length` is not applicable for the given type.
     """
     if (min_length is None):
-        return APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT
+        return MIN_LENGTH_DEFAULT
     
     if not isinstance(min_length, int):
         raise TypeError(
             f'`min_length` can be `None`, `int`, got {min_length.__class__.__name__}; {min_length!r}.'
         )
     
-    if min_length < APPLICATION_COMMAND_OPTION_MIN_LENGTH_MIN:
-        min_length = APPLICATION_COMMAND_OPTION_MIN_LENGTH_MIN
+    if min_length < MIN_LENGTH_MIN:
+        min_length = MIN_LENGTH_MIN
     
-    elif min_length > APPLICATION_COMMAND_OPTION_MIN_LENGTH_MAX:
-        min_length = APPLICATION_COMMAND_OPTION_MIN_LENGTH_MAX
+    elif min_length > MIN_LENGTH_MAX:
+        min_length = MIN_LENGTH_MAX
 
     return min_length
 
@@ -390,7 +390,7 @@ def validate_options_postprocessed(options):
     """
     options = validate_options(options)
     if (options is not None):
-        options = options[:APPLICATION_COMMAND_OPTION_OPTIONS_MAX]
+        options = options[:OPTIONS_MAX]
     
     return options
 

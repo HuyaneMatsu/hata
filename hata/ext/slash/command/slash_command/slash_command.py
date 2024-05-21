@@ -6,7 +6,9 @@ from warnings import warn
 from scarletio import copy_docs, export
 
 from .....discord.application_command import ApplicationCommandTargetType
-from .....discord.application_command.application_command.constants import APPLICATION_COMMAND_OPTIONS_MAX
+from .....discord.application_command.application_command.constants import (
+    OPTIONS_MAX as APPLICATION_COMMAND_OPTIONS_MAX
+)
 from .....discord.events.handling_helpers import Router, check_name, route_name, route_value
 
 from ...constants import (

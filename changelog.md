@@ -1,9 +1,26 @@
-## 1.3.56 *\[2024-05-??\]*
+## 1.3.56 *\[2024-05-21\]*
 
 ### Improvements
 
 - `ReactionMapping` is no longer `dict` sub-type, contains `dict` as `.lines` now. Constructors changed.
 - `ReactionMappingLine` is no longer `set` sub-type. Contains `set` as `.users` now. Constructors changed.
+- Add `UserClan`.
+- Add `UserBase.clan`.
+- Add `AuditLogEntryType.home_screen_create`.
+- Add `AuditLogEntryType.home_screen_update`.
+- Add `ButtonStyle.subscription`.
+- Add `ComponentMetadata.sku_id`.
+- Add `Component.sku_id`.
+- Add `BuilderBase.__eq__`.
+- Add `BuilderBase.__hash__`.
+- Add `BuilderBase.__repr__`.
+
+#### ext.slash
+
+- `InteractionResponse` now supports relaxed parameters.
+    (Causes `show_for_invoking_user_ony` response modifier to collision with the `silent` parameter.)
+- `abort` now supports relaxed parameters.
+- Commands now support relaxed value returning.
 
 ### Renames, Deprecations & Removals
 

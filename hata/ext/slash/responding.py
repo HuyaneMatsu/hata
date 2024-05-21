@@ -1,16 +1,21 @@
 __all__ = ('abort', 'InteractionAbortedError', 'InteractionResponse',)
 
+from itertools import islice
+
 from scarletio import is_coroutine_generator, skip_ready_cycle
 
 from ...discord.client import Client
 from ...discord.component import InteractionForm
-from ...discord.embed import Embed
 from ...discord.interaction import InteractionType
-from ...discord.poll import Poll
+from ...discord.message import (
+    MessageBuilderBase, MessageBuilderInteractionComponentEdit, MessageBuilderInteractionFollowupCreate,
+    MessageBuilderInteractionFollowupEdit, MessageBuilderInteractionResponseCreate,
+    MessageBuilderInteractionResponseEdit
+)
 
+from .conversions import CONVERSION_ABORT, CONVERSION_INTERACTION_EVENT, CONVERSION_MESSAGE
 from .response_modifier import (
-    get_show_for_invoking_user_only_from, get_show_for_invoking_user_only_of, get_wait_for_acknowledgement_of,
-    un_map_pack_response_creation_modifier, un_map_pack_response_edition_modifier
+    get_show_for_invoking_user_only_from, get_show_for_invoking_user_only_of, get_wait_for_acknowledgement_of
 )
 
 
@@ -18,29 +23,6 @@ INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
 INTERACTION_TYPE_FORM_SUBMIT = InteractionType.form_submit
 INTERACTION_TYPE_AUTOCOMPLETE = InteractionType.application_command_autocomplete
-
-
-def is_only_embed(maybe_embeds):
-    """
-    Checks whether the given value is a `tuple`, `list` containing only `embed-like`-s.
-    
-    Parameters
-    ----------
-    maybe_embeds : (`tuple`, `list`) of `Embed`, `object`
-        The value to check whether is a `tuple`, `list` containing only `embed-like`-s.
-    
-    Returns
-    -------
-    is_only_embed : `bool`
-    """
-    if not isinstance(maybe_embeds, (list, tuple)):
-        return False
-    
-    for maybe_embed in maybe_embeds:
-        if not isinstance(maybe_embed, Embed):
-            return False
-    
-    return True
 
 
 async def get_request_coroutines(client, interaction_event, response_modifier, response, is_return):
@@ -112,18 +94,6 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     # wait for async acknowledgement if applicable
     await interaction_event._wait_for_async_task_completion()
     
-    if isinstance(response, (str, Embed, Poll)) or is_only_embed(response):
-        async for request_coroutine in _get_request_coroutines_from_value(
-            client,
-            interaction_event,
-            response_modifier,
-            response,
-            is_return,
-        ):
-            yield request_coroutine
-        
-        return
-    
     if isinstance(response, InteractionForm):
         yield client.interaction_form_send(interaction_event, response)
         return
@@ -147,107 +117,19 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
         
         return
     
-    if isinstance(response, InteractionResponse):
-        for request_coroutine in response.get_request_coroutines(
-            client,
-            interaction_event,
-            response_modifier,
-            is_return,
-        ):
-            yield request_coroutine
-        
-        return
+    if not isinstance(response, InteractionResponse):
+        response = InteractionResponse(response)
     
-    response = str(response)
-    if len(response) > 2000:
-        response = response[:2000]
-    
-    async for request_coroutine in _get_request_coroutines_from_value(
+    for request_coroutine in response.get_request_coroutines(
         client,
         interaction_event,
         response_modifier,
-        response,
         is_return,
     ):
         yield request_coroutine
     
     # No more cases
     return
-
-
-async def _get_request_coroutines_from_value(client, interaction_event, response_modifier, response, is_return):
-    """
-    Gets request coroutine after an output from a command coroutine. Might return `None` if there is nothing to send.
-    
-    This function is an async iterable coroutine generator.
-    
-    Parameters
-    ----------
-    client : ``Client``
-        The client who will send the responses if applicable.
-    interaction_event : ``InteractionEvent``
-        The respective event to respond on.
-    response_modifier : `None`, ``ResponseModifier``
-        Modifies values returned and yielded to command coroutine processor.
-    response : `object`
-        object object yielded or returned by the command coroutine.
-    is_return : `bool`
-        Whether the response is used in a return and we do not require response message.
-    
-    Yields
-    -------
-    request_coroutine : `None`, `CoroutineType`
-    """
-    interaction_event_type = interaction_event.type
-    
-    if interaction_event.is_responded():
-        yield client.interaction_followup_message_create(
-            interaction_event,
-            response,
-            show_for_invoking_user_only = get_show_for_invoking_user_only_of(response_modifier),
-        )
-    
-    else:
-        if (
-            (interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND) or
-            (
-                (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT) and
-                (interaction_event.message is None)
-            )
-        ):
-            if interaction_event.is_unanswered():
-                yield client.interaction_response_message_create(
-                    interaction_event,
-                    response,
-                    **un_map_pack_response_creation_modifier(response_modifier),
-                )
-            
-            elif interaction_event.is_deferred():
-                yield client.interaction_followup_message_create(
-                    interaction_event,
-                    response,
-                    **un_map_pack_response_creation_modifier(response_modifier),
-                )
-        elif (
-            (interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT) or
-            (
-                (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT) and
-                (interaction_event.message is not None)
-            )
-        ):
-            if interaction_event.is_unanswered():
-                yield client.interaction_component_message_edit(
-                    interaction_event,
-                    response,
-                    **un_map_pack_response_edition_modifier(response_modifier),
-                )
-            
-            elif interaction_event.is_deferred():
-                yield client.interaction_response_message_edit(
-                    interaction_event,
-                    response,
-                    **un_map_pack_response_edition_modifier(response_modifier),
-                )
 
 
 async def process_command_coroutine_generator(
@@ -388,182 +270,136 @@ async def process_command_coroutine(client, interaction_event, response_modifier
         await request_coroutine
 
 
-class InteractionResponse:
+class InteractionResponse(
+    MessageBuilderInteractionComponentEdit,
+    MessageBuilderInteractionFollowupCreate,
+    MessageBuilderInteractionFollowupEdit,
+    MessageBuilderInteractionResponseCreate,
+    MessageBuilderInteractionResponseEdit,
+    MessageBuilderBase,
+):
     """
-    Rich interaction response message usable with `return` or with `yield` statements.
+    Message builder for interaction responses.
     
     May pass it's parameters to any of the following method depending on control flow.
     
-    - ``Client.interaction_response_message_create``
-    - ``Client.interaction_response_message_edit``
-    - ``Client.interaction_followup_message_create``
+    - ``Client.interaction_application_command_acknowledge``
+    - ``Client.interaction_application_command_autocomplete``
     - ``Client.interaction_component_acknowledge``
     - ``Client.interaction_component_message_edit``
+    - ``Client.interaction_followup_message_create``
+    - ``Client.interaction_followup_message_edit``
+    - ``Client.interaction_response_message_create``
+    - ``Client.interaction_response_message_edit``
     
     Attributes
     ----------
-    _abort : `bool`
-        Whether the slash response is derived from an ``abort`` call.
-    _event : `None`, ``InteractionEvent``
-        The interaction event to use instead of the default one.
-    _message : `Ellipsis`, `None`, ``Message``.
-        Whether a message should be edited instead of creating a new one.
-    _parameters : `dict` of (`str`, `object`) items
-        Parameters to pass to the respective ``Client`` functions.
-        
-        Can have the following keys:
-        
-        - `'allowed_mentions'`
-        - `'content'`
-        - `'components'`
-        - `'embed'`
-        - `'file'`
-        - `'poll'`
-        - `'show_for_invoking_user_only'`
-        - '`silent`'
-        - `'suppress_embeds'`
-        - `'tts'`
+    fields : `dict<Conversion, object>`
+        The fields to create the message with.
     """
-    __slots__ = ('_abort', '_event', '_message', '_parameters',)
+    __slots__ = ()
     
-    def __init__(
-        self,
-        content = ...,
-        *,
-        allowed_mentions = ...,
-        components = ...,
-        embed = ...,
-        event = None,
-        file = ...,
-        message = ...,
-        poll = ...,
-        show_for_invoking_user_only = ..., 
-        silent = ...,
-        suppress_embeds = ...,
-        tts = ...,
-    ):
+    
+    abort = CONVERSION_ABORT
+    interaction_event = CONVERSION_INTERACTION_EVENT
+    message = CONVERSION_MESSAGE
+    
+    
+    def __new__(cls, *positional_parameters, **keyword_parameters):
         """
-        Creates a new ``InteractionResponse`` with the given parameters.
-        
         Parameters
         ----------
-        content : `None`, `str`, ``Embed``, `object`, Optional
-            The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``Embed`` is given, then will be casted to string.
-            
-            If given as ``Embed``, then is sent as the message's embed.
+        *positional_parameters : Positional parameters
+            Additional parameters to create the message with.
         
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
-                , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``Client._parse_allowed_mentions`` for
-            details.
+        **keyword_parameters : Keyword parameters
+            Additional parameters to create the message with.
         
-        components : `None`, ``Component``, (`set`, `list`) of ``Component``, Optional (Keyword only)
+        Other Parameters
+        ----------------
+        abort : `None`, `bool`, Optional (Keyword only)
+            Whether the interaction response is dropped from ``abort``.
+        
+        allowed_mentions : `None`,  ``AllowedMentionProxy``, `str`, ``UserBase``, ``Role``, `list` of \
+                (`str`, ``UserBase``, ``Role`` ) , Optional
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
+            for details.
+        
+        attachments : `None`, `object`, Optional (Keyword only)
+            Attachments to send.
+        
+        components : `None`, ``Component``, `(tuple | list)<Component, (tuple | list)<Component>>`
             Components attached to the message.
         
-        embed : `None`, ``Embed``, `list` of ``Embed``, Optional (Keyword only)
-            The embedded content of the message.
+        content : `None`, `str`, Optional
+            The message's content if given.
+        
+        poll : `None`, ``Poll``, Optional
+            The message's poll.
             
-            If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
-
-        event : `None`, ``InteractionEvent`` = `None`, Optional (Keyword only)
-            A specific event ot answer instead of the command's.
+            > Response message must be created or else discord will ignore the `poll` field.
+        
+        embed : `None`, `Embed`, Optional
+            Alternative for `embeds`.
+        
+        embeds : `None`, `list<Embed>`, Optional
+            The new embedded content of the message.
+        
+        event : `None`, ``InteractionEvent`` = `None`, Optional
+            Alternative for `interaction_event`.
         
         file : `None`, `object`, Optional (Keyword only)
-            A file to send. Check ``Client._create_file_form`` for details.
+            Alternative for `attachments`.
+        
+        files : `None`, `object`, Optional (Keyword only)
+            Alternative for `attachments`.
+        
+        flags : `int`, ``MessageFlag`, Optional
+            The message's flags.
+        
+        interaction_event : `None`, ``InteractionEvent`` = `None`, Optional
+            A specific event ot answer instead of the command's.
         
         message : `None`, ``Message``, Optional (Keyword only)
             Whether the interaction's message should be edited.
         
-        poll : `None`, ``Poll``, Optional (Keyword only)
-            Poll to reply with.
+        show_for_invoking_user_only : `bool` = `False`, Optional (Keyword only)
+            Whether the sent message should only be shown to the invoking user.
         
-        show_for_invoking_user_only : `bool`, Optional (Keyword only)
-            Whether the sent message should only be shown to the invoking user. Defaults to the value passed when
-            adding the command.
-        
-        silent : `bool`, Optional (Keyword only)
+        silent : `bool` = `False`, Optional (Keyword only)
             Whether the message should be delivered silently.
         
-        suppress_embeds : `bool`, Optional (Keyword only)
+        suppress_embeds : `bool` = `False`, Optional (Keyword only)
             Whether the message's embeds should be suppressed initially.
         
-        tts : `bool`, Optional (Keyword only)
+        tts : `bool` = `False`, Optional (Keyword only)
             Whether the message is text-to-speech.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - if a parameter's value is incorrect.
         """
-        self._abort = False
-        self._parameters = parameters = {}
-        self._message = message
-        self._event = event
+        positional_parameters_length = len(positional_parameters)
+        if not positional_parameters_length:
+            self = MessageBuilderBase.__new__(cls)
         
-        if (allowed_mentions is not ...):
-            parameters['allowed_mentions'] = allowed_mentions
-        
-        if (content is not ...):
-            parameters['content'] = content
-        
-        if (components is not ...):
-            parameters['components'] = components
-        
-        if (embed is not ...):
-            parameters['embed'] = embed
-        
-        if (file is not ...):
-            parameters['file'] = file
-        
-        if (poll is not ...):
-            parameters['poll'] = poll
-        
-        if (show_for_invoking_user_only is not ...):
-            parameters['show_for_invoking_user_only'] = show_for_invoking_user_only
-        
-        if (silent is not ...):
-            parameters['silent'] = silent
-        
-        if (suppress_embeds is not ...):
-            parameters['suppress_embeds'] = suppress_embeds
-        
-        if (tts is not ...):
-            parameters['tts'] = tts
-    
-    
-    def set_abort(self):
-        """
-        Marks the interaction response as an abortion.
-        
-        Returns
-        -------
-        self : `instance<type<self>>`
-        """
-        self._abort = True
-        return self
-    
-    
-    def _get_response_parameters(self, allowed_parameters):
-        """
-        Gets response parameters to pass to a ``Client`` method.
-        
-        Parameters
-        ----------
-        allowed_parameters : `tuple` of `str`
-            Allowed parameters to be passed to the respective client method.
-        
-        Returns
-        -------
-        response_parameters : `dict` of (`str`, `object`) items
-            Parameters to pass the the respective client method.
-        """
-        parameters = self._parameters
-        response_parameters = {}
-        for key in allowed_parameters:
-            try:
-                value = parameters[key]
-            except KeyError:
-                continue
+        else:
+            self = positional_parameters[0]
+            if isinstance(self, cls):
+                if positional_parameters_length > 1:
+                    self._with_positional_parameters(islice(positional_parameters, 1, positional_parameters_length))
             
-            response_parameters[key] = value
+            else:
+                self = MessageBuilderBase.__new__(cls)
+                self._with_positional_parameters(positional_parameters)
         
-        return response_parameters
+        if keyword_parameters:
+            self._with_keyword_parameters(keyword_parameters)
+        
+        return self
     
     
     def get_request_coroutines(self, client, interaction_event, response_modifier, is_return):
@@ -587,7 +423,7 @@ class InteractionResponse:
         -------
         request_coroutine : `None`, `CoroutineType`
         """
-        event = self._event
+        event = self.interaction_event
         if (event is not None):
             interaction_event = event
         
@@ -599,27 +435,22 @@ class InteractionResponse:
                 (interaction_event.message is None)
             )
         ):
-            message = self._message
-            if message is not ...:
-                
+            for message in self._try_pull_field_value(CONVERSION_MESSAGE):
                 # Note: here we cannot put `poll` on the message.
-                response_parameters = self._get_response_parameters((
-                    'allowed_mentions', 'content', 'components', 'embed', 'file'
-                ))
                 if (response_modifier is not None):
-                    response_modifier.apply_to_edition(response_parameters)
+                    response_modifier.apply_to_edition(self)
                 
                 if message is None:
-                    yield client.interaction_response_message_edit(interaction_event, **response_parameters)
+                    yield client.interaction_response_message_edit(interaction_event, self)
                 else:
-                    yield client.interaction_followup_message_edit(interaction_event, message, **response_parameters)
+                    yield client.interaction_followup_message_edit(interaction_event, message, self)
                 return
             
             if (not interaction_event.is_unanswered()):
                 need_acknowledging = False
-            elif ('file' in self._parameters):
+            elif (self.attachments is not None):
                 need_acknowledging = True
-            elif self._abort:
+            elif self.abort:
                 need_acknowledging = False
             elif is_return:
                 need_acknowledging = False
@@ -629,30 +460,17 @@ class InteractionResponse:
             if need_acknowledging:
                 yield client.interaction_application_command_acknowledge(
                     interaction_event,
-                    show_for_invoking_user_only = get_show_for_invoking_user_only_from(
-                        self._parameters,
-                        response_modifier,
-                    ),
+                    show_for_invoking_user_only = get_show_for_invoking_user_only_from(self, response_modifier),
                 )
             
-            response_parameters = self._get_response_parameters((
-                'allowed_mentions', 'content', 'components', 'embed', 'file', 'poll', 'show_for_invoking_user_only',
-                'silent', 'suppress_embeds', 'tts'
-            ))
             if (response_modifier is not None):
-                response_modifier.apply_to_creation(response_parameters)
+                response_modifier.apply_to_creation(self)
             
             if need_acknowledging or (not interaction_event.is_unanswered()):
-                yield client.interaction_followup_message_create(
-                    interaction_event,
-                    **response_parameters,
-                )
+                yield client.interaction_followup_message_create(interaction_event, self)
             
             else:
-                yield client.interaction_response_message_create(
-                    interaction_event,
-                    **response_parameters,
-                )
+                yield client.interaction_response_message_create(interaction_event, self)
             
             return
         
@@ -663,22 +481,18 @@ class InteractionResponse:
                 (interaction_event.message is not None)
             )
         ):
-            if self._abort:
+            if self.abort:
                 # If we are aborting we acknowledge it (if not yet) and create a new message.
                 if interaction_event.is_unanswered():
                     yield client.interaction_component_acknowledge(interaction_event)
                 
-                response_parameters = self._get_response_parameters((
-                    'allowed_mentions', 'content', 'components', 'embed', 'file', 'poll',
-                    'show_for_invoking_user_only', 'silent', 'suppress_embeds', 'tts'
-                ))
                 if (response_modifier is not None):
-                    response_modifier.apply_to_creation(response_parameters)
+                    response_modifier.apply_to_creation(self)
                 
-                yield client.interaction_followup_message_create(interaction_event, **response_parameters)
+                yield client.interaction_followup_message_create(interaction_event, self)
                 
             elif interaction_event.is_unanswered():
-                if ('file' in self._parameters):
+                if (self.attachments is not None):
                     need_acknowledging = True
                 else:
                     need_acknowledging = False
@@ -689,42 +503,26 @@ class InteractionResponse:
                     )
                 
                 # Note: here we cannot put `poll` on the message.
-                response_parameters = self._get_response_parameters((
-                    'allowed_mentions', 'content', 'components', 'embed', 'file'
-                ))
                 if (response_modifier is not None):
-                    response_modifier.apply_to_edition(response_parameters)
+                    response_modifier.apply_to_edition(self)
                 
                 if need_acknowledging:
-                    yield client.interaction_response_message_edit(interaction_event, **response_parameters)
-                
-                elif response_parameters:
-                    yield client.interaction_component_message_edit(interaction_event, **response_parameters)
-                
-                else:
                     yield client.interaction_component_acknowledge(
                         interaction_event,
                         get_wait_for_acknowledgement_of(response_modifier),
                     )
+                
+                yield client.interaction_component_message_edit(interaction_event, self)
             
             elif interaction_event.is_deferred():
-                
                 # Note: here we cannot put `poll` on the message.
-                response_parameters = self._get_response_parameters((
-                    'allowed_mentions', 'content', 'components', 'embed', 'file'
-                ))
-                if response_parameters:
-                    yield client.interaction_response_message_edit(interaction_event, **response_parameters)
+                yield client.interaction_response_message_edit(interaction_event, self)
             
             elif interaction_event.is_responded():
-                response_parameters = self._get_response_parameters((
-                    'allowed_mentions', 'content', 'components', 'embed', 'file', 'poll',
-                    'show_for_invoking_user_only', 'silent', 'suppress_embeds', 'tts'
-                ))
                 if (response_modifier is not None):
-                    response_modifier.apply_to_creation(response_parameters)
+                    response_modifier.apply_to_creation(self)
                 
-                yield client.interaction_followup_message_create(interaction_event, **response_parameters)
+                yield client.interaction_followup_message_create(interaction_event, self)
             
             return
         
@@ -732,149 +530,19 @@ class InteractionResponse:
             if interaction_event.is_unanswered():
                 yield client.interaction_application_command_autocomplete(interaction_event, None)
             
-            response_parameters = self._get_response_parameters((
-                'allowed_mentions', 'content', 'components', 'embed', 'file', 'poll', 'show_for_invoking_user_only',
-                'silent', 'suppress_embeds', 'tts'
-            ))
             if (response_modifier is not None):
-                response_modifier.apply_to_creation(response_parameters)
+                response_modifier.apply_to_creation(self)
             
-            yield client.interaction_followup_message_create(
-                interaction_event,
-                **response_parameters,
-            )
-            
+            yield client.interaction_followup_message_create(interaction_event, self)
             return
         
         # no more cases
-    
-    def __repr__(self):
-        """Returns the slash response's representation."""
-        repr_parts = ['<', self.__class__.__name__]
-        
-        is_abort = self._abort
-        if self._abort:
-            repr_parts.append(' abort = ')
-            repr_parts.append(repr(is_abort))
-            
-            field_added = True
-        else:
-            field_added = False
-        
-        event = self._event
-        if (event is not None):
-            if field_added:
-                repr_parts.append(',')
-            else:
-                field_added = True
-            
-            repr_parts.append(' event = ')
-            repr_parts.append(repr(event))
-        
-        message = self._message
-        if (message is not ...):
-            if field_added:
-                repr_parts.append(',')
-            else:
-                field_added = True
-            
-            repr_parts.append(' message = ')
-            repr_parts.append(repr(message))
-        
-        for key, value in self._parameters.items():
-            if field_added:
-                repr_parts.append(',')
-            else:
-                field_added = True
-            
-            repr_parts.append(' ')
-            repr_parts.append(key)
-            repr_parts.append(' = ')
-            repr_parts.append(repr(value))
-        
-        repr_parts.append('>')
-        return ''.join(repr_parts)
-    
-    
-    def __eq__(self, other):
-        """Returns whether the two interaction responses are equal."""
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self._abort != other._abort:
-            return False
-        
-        if self._event is not other._event:
-            return False
-        
-        if self._message is not other._message:
-            return False
-        
-        if self._parameters != other._parameters:
-            return False
-        
-        return True
-    
-    
-    def __hash__(self):
-        """Returns the interaction response's hash value."""
-        hash_value = 0
-        
-        # _abort
-        hash_value ^= self._abort
-        
-        # _event
-        event = self._event
-        if (event is not None):
-            hash_value ^= hash(event)
-        
-        # _message
-        message = self._message
-        if (message is not None):
-            hash_value ^= hash(message)
-        
-        # _parameters
-        to_dos = [*self._parameters]
-        seed = 0
-        
-        while to_dos:
-            seed += 1
-            
-            to_do = to_dos.pop()
-            try:
-                to_do_hash_value = hash(to_do)
-            except TypeError:
-                if isinstance(to_do, dict):
-                    for item in to_do.items():
-                        to_dos.extend(item)
-                    continue
-                
-                if getattr(type(to_do), '__iter__', None) is not None:
-                    to_dos.extend(to_do)
-                    continue
-                
-                to_do_hash_value = object.__hash__(to_do)
-            
-            hash_value ^= to_do_hash_value & (seed * seed)
-            continue
-        
-        return hash_value
 
 
 def abort(
-    content = ...,
-    *,
-    allowed_mentions = ...,
-    components = ...,
-    embed = ...,
-    event = None,
-    file = ...,
-    message = ...,
-    poll = ...,
+    *positional_parameters,
     show_for_invoking_user_only = True,
-    silent = ...,
-    suppress_embeds = ...,
-    tts = ...,
+    **keyword_parameters,
 ):
     """
     Aborts the slash response with sending the passed parameters as a response.
@@ -885,72 +553,85 @@ def abort(
     
     Parameters
     ----------
-    content : `None`, `str`, ``Embed``, `object`, Optional
-        The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-        if any other non `str`, ``Embed`` is given, then will be casted to string.
-        
-        If given as ``Embed``, then is sent as the message's embed.
-    
-    allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
-            , Optional (Keyword only)
-        Which user or role can the message ping (or everyone). Check ``Client._parse_allowed_mentions`` for details.
-    
-    components : `None`, ``Component``, (`set`, `list`) of ``Component``, Optional (Keyword only)
-        Components attached to the message.
-    
-    embed : `None` ``Embed``, `list` of ``Embed``, Optional (Keyword only)
-        The embedded content of the message.
-        
-        If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
-    
-    event : `None`, ``InteractionEvent`` = `None`, Optional (Keyword only)
-        A specific event ot answer instead of the command's.
-    
-    file : `None` `object`, Optional (Keyword only)
-        A file to send. Check ``Client._create_file_form`` for details.
-    
-    message : `None`, ``Message``, Optional (Keyword only)
-        Whether the interaction's message should be edited.
-        
-    poll : `None`, ``Poll``, Optional (Keyword only)
-        Poll to reply with.
+    *positional_parameters : Positional parameters
+        Additional parameters to create the message with.
     
     show_for_invoking_user_only : `bool` = `True`, Optional (Keyword only)
         Whether the sent message should only be shown to the invoking user.
-        
-        If given as `True`, only the message's content and embeds and components will be processed by Discord.
-        
-        Defaults to `True`.
     
-    silent : `bool`, Optional (Keyword only)
+    **keyword_parameters : Keyword parameters
+        Additional parameters to create the message with.
+    
+    Other Parameters
+    ----------------
+    allowed_mentions : `None`,  ``AllowedMentionProxy``, `str`, ``UserBase``, ``Role``, `list` of \
+            (`str`, ``UserBase``, ``Role`` ) , Optional
+        Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
+        for details.
+    
+    attachments : `None`, `object`, Optional (Keyword only)
+        Attachments to send.
+    
+    components : `None`, ``Component``, `(tuple | list)<Component, (tuple | list)<Component>>`
+        Components attached to the message.
+    
+    content : `None`, `str`, Optional
+        The message's content if given.
+    
+    poll : `None`, ``Poll``, Optional
+        The message's poll.
+        
+        > Response message must be created or else discord will ignore the `poll` field.
+    
+    embed : `None`, `Embed`, Optional
+        Alternative for `embeds`.
+    
+    embeds : `None`, `list<Embed>`, Optional
+        The new embedded content of the message.
+    
+    event : `None`, ``InteractionEvent`` = `None`, Optional
+        Alternative for `interaction_event`.
+    
+    file : `None`, `object`, Optional (Keyword only)
+        Alternative for `attachments`.
+    
+    files : `None`, `object`, Optional (Keyword only)
+        Alternative for `attachments`.
+    
+    flags : `int`, ``MessageFlag`, Optional
+        The message's flags.
+    
+    interaction_event : `None`, ``InteractionEvent`` = `None`, Optional
+        A specific event ot answer instead of the command's.
+    
+    message : `None`, ``Message``, Optional (Keyword only)
+        Whether the interaction's message should be edited.
+    
+    silent : `bool` = `False`, Optional (Keyword only)
         Whether the message should be delivered silently.
     
-    suppress_embeds : `bool`, Optional (Keyword only)
+    suppress_embeds : `bool` = `False`, Optional (Keyword only)
         Whether the message's embeds should be suppressed initially.
     
-    tts : `bool`, Optional (Keyword only)
+    tts : `bool` = `False`, Optional (Keyword only)
         Whether the message is text-to-speech.
     
     Raises
     ------
+    TypeError
+        - If a parameter's type is incorrect.
+    ValueError
+        - if a parameter's value is incorrect.
     InteractionAbortedError
-        The exception which aborts the interaction, then yields the response.
+        - The exception which aborts the interaction, then yields the response.
     """
     raise InteractionAbortedError(
         InteractionResponse(
-            content,
-            allowed_mentions = allowed_mentions,
-            components = components,
-            embed = embed,
-            event = event,
-            file = file,
-            message = message,
-            poll = poll,
+            *positional_parameters,
+            **keyword_parameters,
+            abort = True,
             show_for_invoking_user_only = show_for_invoking_user_only,
-            silent = silent,
-            suppress_embeds = suppress_embeds,
-            tts = tts,
-        ).set_abort(),
+        )
     )
 
 

@@ -311,13 +311,13 @@ class ReactionMapping(RichAttributeErrorBaseType):
             return False
         
         try:
-            line = self[reaction]
+            line = lines[reaction]
         except KeyError:
             return False
         
         success = line._remove_reaction(user)
         if success:
-            if not line:
+            if not line.count:
                 del lines[reaction]
         
         return success

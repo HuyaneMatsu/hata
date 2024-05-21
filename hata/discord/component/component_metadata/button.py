@@ -14,8 +14,9 @@ from ..shared_helpers import create_auto_custom_id
 from .base import ComponentMetadataBase
 from .constants import BUTTON_STYLE_DEFAULT
 from .fields import (
-    parse_button_style, parse_enabled, parse_label, parse_url, put_button_style_into, put_enabled_into, put_label_into,
-    put_url_into, validate_button_style, validate_enabled, validate_label, validate_url
+    parse_button_style, parse_enabled, parse_label, parse_sku_id, parse_url, put_button_style_into, put_enabled_into,
+    put_label_into, put_sku_id_into, put_url_into, validate_button_style, validate_enabled, validate_label,
+    validate_sku_id, validate_url
 )
 from .preinstanced import ButtonStyle
 
@@ -32,7 +33,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
     custom_id : `None`, `str`
         Custom identifier to detect which button was clicked by the user.
         
-        > Mutually exclusive with the `url` field.
+        > Mutually exclusive with the `sku_id` and `url` fields.
     
     emoji : `None`, ``Emoji``
         Emoji of the button if applicable.
@@ -43,15 +44,30 @@ class ComponentMetadataButton(ComponentMetadataBase):
     label : `None`, `str`
         Label of the component.
     
+    sku_id : `int`
+        Purchasable stock keeping unit identifier.
+        
+        > Mutually exclusive with the `custom_id` and `url` fields.
+    
     url : `None`, `str`
         Url to redirect to when clicking on the button.
         
-        > Mutually exclusive with the `custom_id` field.
+        > Mutually exclusive with the `custom_id` and `sku_id` fields.
     """
-    __slots__ = ('button_style', 'custom_id', 'emoji', 'enabled', 'label', 'url',)
+    __slots__ = ('button_style', 'custom_id', 'emoji', 'enabled', 'label', 'sku_id', 'url',)
     
     
-    def __new__(cls, *, button_style = ..., custom_id = ..., emoji = ..., enabled = ..., label = ..., url = ...):
+    def __new__(
+        cls,
+        *,
+        button_style = ...,
+        custom_id = ...,
+        emoji = ...,
+        enabled = ...,
+        label = ...,
+        sku_id = ...,
+        url = ...,
+    ):
         """
         Creates a new button component metadata.
         
@@ -63,7 +79,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which button was clicked by the user.
             
-            > Mutually exclusive with the `url` field.
+            > Mutually exclusive with the `sku_id` and `url` fields.
         
         emoji : `None`, ``Emoji``, Optional (Keyword only)
             Emoji of the button if applicable.
@@ -74,10 +90,15 @@ class ComponentMetadataButton(ComponentMetadataBase):
         label : `None`, `str`, Optional (Keyword only)
             Label of the component.
         
+        sku_id : `int`, ``SKU``, Optional (Keyword only)
+            Purchasable stock keeping unit identifier.
+            
+            > Mutually exclusive with the `custom_id` and `url` fields.
+        
         url : `None`, `str`, Optional (Keyword only)
             Url to redirect to when clicking on the button.
             
-            > Mutually exclusive with the `custom_id` field.
+            > Mutually exclusive with the `custom_id` and `sku_id` fields.
         
         Raises
         ------
@@ -116,11 +137,35 @@ class ComponentMetadataButton(ComponentMetadataBase):
         else:
             label = validate_label(label)
         
+        # sku
+        if sku_id is ...:
+            sku_id = 0
+        else:
+            sku_id = validate_sku_id(sku_id)
+        
         # url
         if url is ...:
             url = None
         else:
             url = validate_url(url)
+        
+        # Postprocess
+        if url is not None:
+            button_style = ButtonStyle.link
+        
+        elif sku_id:
+            button_style = ButtonStyle.subscription
+        
+        else:
+            if custom_id is None:
+                custom_id = create_auto_custom_id()
+            
+            if (
+                (button_style is ButtonStyle.none) or
+                (button_style is ButtonStyle.link) or
+                (button_style is ButtonStyle.subscription)
+            ):
+                button_style = BUTTON_STYLE_DEFAULT
         
         # Construct
         self = object.__new__(cls)
@@ -129,9 +174,8 @@ class ComponentMetadataButton(ComponentMetadataBase):
         self.emoji = emoji
         self.enabled = enabled
         self.label = label
+        self.sku_id = sku_id
         self.url = url
-        
-        self._validate()
         
         return self
     
@@ -145,40 +189,14 @@ class ComponentMetadataButton(ComponentMetadataBase):
             emoji = keyword_parameters.pop('emoji', ...),
             enabled = keyword_parameters.pop('enabled', ...),
             label = keyword_parameters.pop('label', ...),
+            sku_id = keyword_parameters.pop('sku_id', ...),
             url = keyword_parameters.pop('url', ...),
         )
     
     
-    def _validate(self):
-        """
-        Runs additional validation after the component is created.
-        
-        Raises
-        ------
-        ValueError
-            - `url` is mutually exclusive with `custom_id`.
-        """
-        if self.url is None:
-            if self.custom_id is None:
-                self.custom_id = create_auto_custom_id()
-            
-            if (self.button_style is ButtonStyle.link) or (self.button_style is ButtonStyle.none):
-                self.button_style = BUTTON_STYLE_DEFAULT
-            
-        else:
-            if self.custom_id is None:
-                self.button_style = ButtonStyle.link
-            
-            else:
-                raise ValueError(
-                    f'`custom_id` and `url` fields are mutually exclusive, got '
-                    f'custom_id = {self.custom_id!r}, url = {self.url!r}.'
-                )
-    
-    
     @copy_docs(ComponentMetadataBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # Descriptive fields : button_style
         
@@ -213,6 +231,12 @@ class ComponentMetadataButton(ComponentMetadataBase):
         
         
         # Optional descriptive fields: url & enabled
+        
+        # sku_id
+        sku_id = self.sku_id
+        if sku_id:
+            repr_parts.append(', sku_id = ')
+            repr_parts.append(repr(sku_id))
         
         # url
         url = self.url
@@ -256,6 +280,9 @@ class ComponentMetadataButton(ComponentMetadataBase):
         if (label is not None):
             hash_value ^= hash(label)
         
+        # sku_id
+        hash_value ^= self.sku_id
+        
         # url
         url = self.url
         if (url is not None):
@@ -285,7 +312,11 @@ class ComponentMetadataButton(ComponentMetadataBase):
         # label
         if self.label != other.label:
             return False
-            
+        
+        # sku_id
+        if self.sku_id != other.sku_id:
+            return False
+        
         # url
         if self.url != other.url:
             return False
@@ -303,6 +334,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         self.emoji = parse_emoji(data)
         self.enabled = parse_enabled(data)
         self.label = parse_label(data)
+        self.sku_id = parse_sku_id(data)
         self.url = parse_url(data)
         
         return self
@@ -317,6 +349,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         put_emoji_into(self.emoji, data, defaults)
         put_enabled_into(self.enabled, data, defaults)
         put_label_into(self.label, data, defaults)
+        put_sku_id_into(self.sku_id, data, defaults)
         put_url_into(self.url, data, defaults)
         
         return data
@@ -331,12 +364,23 @@ class ComponentMetadataButton(ComponentMetadataBase):
         new.emoji = self.emoji
         new.enabled = self.enabled
         new.label = self.label
+        new.sku_id = self.sku_id
         new.url = self.url
         
         return new
     
     
-    def copy_with(self, *, button_style = ..., custom_id = ..., emoji = ..., enabled = ..., label = ..., url = ...):
+    def copy_with(
+        self,
+        *,
+        button_style = ...,
+        custom_id = ...,
+        emoji = ...,
+        enabled = ...,
+        label = ...,
+        sku_id = ...,
+        url = ...,
+    ):
         """
         Copies the button component metadata with the given fields.
         
@@ -348,7 +392,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which button was clicked by the user.
             
-            > Mutually exclusive with the `url` field.
+            > Mutually exclusive with the `sku_id` and `url`fields.
         
         emoji : `None`, ``Emoji``, Optional (Keyword only)
             Emoji of the button if applicable.
@@ -359,10 +403,15 @@ class ComponentMetadataButton(ComponentMetadataBase):
         label : `None`, `str`, Optional (Keyword only)
             Label of the component.
         
+        sku_id : `int`, ``SKU``, Optional (Keyword only)
+            Purchasable stock keeping unit identifier.
+            
+            > Mutually exclusive with the `custom_id` and `url` fields.
+        
         url : `None`, `str`, Optional (Keyword only)
             Url to redirect to when clicking on the button.
             
-            > Mutually exclusive with the `custom_id` field.
+            > Mutually exclusive with the `custom_id` and `sku_id` fields.
         
         Returns
         -------
@@ -405,11 +454,35 @@ class ComponentMetadataButton(ComponentMetadataBase):
         else:
             label = validate_label(label)
         
+        # sku_id
+        if sku_id is ...:
+            sku_id = self.sku_id
+        else:
+            sku_id = validate_sku_id(sku_id)
+        
         # url
         if url is ...:
             url = self.url
         else:
             url = validate_url(url)
+        
+        # Postprocess
+        if url is not None:
+            button_style = ButtonStyle.link
+        
+        elif sku_id:
+            button_style = ButtonStyle.subscription
+        
+        else:
+            if custom_id is None:
+                custom_id = create_auto_custom_id()
+            
+            if (
+                (button_style is ButtonStyle.none) or
+                (button_style is ButtonStyle.link) or
+                (button_style is ButtonStyle.subscription)
+            ):
+                button_style = BUTTON_STYLE_DEFAULT
         
         # Construct
         new = object.__new__(type(self))
@@ -418,9 +491,8 @@ class ComponentMetadataButton(ComponentMetadataBase):
         new.emoji = emoji
         new.enabled = enabled
         new.label = label
+        new.sku_id = sku_id
         new.url = url
-        
-        new._validate()
         
         return new
     
@@ -433,5 +505,6 @@ class ComponentMetadataButton(ComponentMetadataBase):
             emoji = keyword_parameters.pop('emoji', ...),
             enabled = keyword_parameters.pop('enabled', ...),
             label = keyword_parameters.pop('label', ...),
+            sku_id = keyword_parameters.pop('sku_id', ...),
             url = keyword_parameters.pop('url', ...),
         )

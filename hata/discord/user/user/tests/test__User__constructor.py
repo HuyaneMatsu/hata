@@ -7,6 +7,7 @@ from ....bases import Icon, IconType
 from ....color import Color
 
 from ...avatar_decoration import AvatarDecoration
+from ...user_clan import UserClan
 
 from ..flags import UserFlag
 from ..user import User
@@ -27,6 +28,7 @@ def _assert_fields_set(user):
     vampytest.assert_instance(user.avatar_decoration, AvatarDecoration, nullable = True)
     vampytest.assert_instance(user.banner, Icon)
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
+    vampytest.assert_instance(user.clan, UserClan, nullable = True)
     vampytest.assert_instance(user.discriminator, int)
     vampytest.assert_instance(user.display_name, str, nullable = True)
     vampytest.assert_instance(user.flags, UserFlag)
@@ -42,7 +44,7 @@ def _assert_fields_set(user):
         vampytest.assert_instance(user.statuses, dict, nullable = True)
 
 
-def test__User__precreate__0():
+def test__User__precreate__no_fields():
     """
     Tests whether ``User.precreate`` works as intended.
     
@@ -54,7 +56,7 @@ def test__User__precreate__0():
     vampytest.assert_eq(user.id, user_id)
 
 
-def test__User__precreate__1():
+def test__User__precreate__all_fields():
     """
     Tests whether ``User.precreate`` works as intended.
     
@@ -65,6 +67,7 @@ def test__User__precreate__1():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160075)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180054, tag = 'meow')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -89,6 +92,7 @@ def test__User__precreate__1():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
@@ -103,6 +107,7 @@ def test__User__precreate__1():
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
+    vampytest.assert_eq(user.clan, clan)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.flags, flags)
@@ -115,11 +120,11 @@ def test__User__precreate__1():
         vampytest.assert_eq(user.statuses, statuses)
 
 
-def test__User__precreate__2():
+def test__User__precreate__caching():
     """
     Tests whether ``User.precreate`` works as intended.
     
-    Case: No fields given.
+    Case: Caching.
     """
     user_id = 202302080010
     user = User.precreate(user_id)

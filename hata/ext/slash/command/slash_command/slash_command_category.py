@@ -3,7 +3,9 @@ __all__ = ('SlashCommandCategory',)
 from scarletio import RichAttributeErrorBaseType, WeakReferer, copy_docs, include
 
 from .....discord.application_command import ApplicationCommandOption, ApplicationCommandOptionType
-from .....discord.application_command.application_command.constants import APPLICATION_COMMAND_OPTIONS_MAX
+from .....discord.application_command.application_command.constants import (
+    OPTIONS_MAX as APPLICATION_COMMAND_OPTIONS_MAX
+)
 from .....discord.client import Client
 from .....discord.events.handling_helpers import create_event_from_class
 from .....discord.interaction import InteractionEvent

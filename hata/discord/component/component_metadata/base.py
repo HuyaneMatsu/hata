@@ -216,7 +216,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         """
         Custom identifier to detect which component was clicked (or used) by the user.
         
-        > Mutually exclusive with the `url` field if the component is a buttons.
+        > Mutually exclusive with the `sku_id` and `url` fields if the component is a buttons.
         
         Returns
         -------
@@ -356,6 +356,18 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         """
     )
     
+    sku_id = PlaceHolder(
+        0,
+        """
+        Purchasable stock keeping unit identifier.
+        
+        > Mutually exclusive with the `custom_id` and `url` fields if the component is a buttons.
+        
+        Returns
+        -------
+        sku_id : `int`
+        """
+    )
     
     text_input_style = PlaceHolder(
         TextInputStyle.none,
@@ -374,7 +386,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         """
         Url to redirect to.
          
-        > Mutually exclusive with the `custom_id` field if the component is a buttons.
+        > Mutually exclusive with the `custom_id` and `sku_id` fields if the component is a buttons.
         
         Returns
         -------

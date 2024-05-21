@@ -35,6 +35,7 @@ def test__UserBase__to_data():
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': None,
         'accent_color': None,
+        'clan': None,
         'discriminator': '0000',
         'global_name': None,
         'username': name,

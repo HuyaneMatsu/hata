@@ -1,9 +1,6 @@
 import vampytest
 
-from ..constants import (
-    APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT, APPLICATION_COMMAND_OPTION_MIN_LENGTH_MIN,
-    APPLICATION_COMMAND_OPTION_MIN_LENGTH_MAX
-)
+from ..constants import MIN_LENGTH_DEFAULT, MIN_LENGTH_MIN, MIN_LENGTH_MAX
 from ..fields import validate_min_length
 
 
@@ -14,11 +11,11 @@ def test__validate_min_length__0():
     Case: passing.
     """
     for input_value, expected_output in (
-        (None, APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT),
-        (APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT, APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT),
+        (None, MIN_LENGTH_DEFAULT),
+        (MIN_LENGTH_DEFAULT, MIN_LENGTH_DEFAULT),
         (10, 10),
-        (APPLICATION_COMMAND_OPTION_MIN_LENGTH_MIN - 10, APPLICATION_COMMAND_OPTION_MIN_LENGTH_MIN),
-        (APPLICATION_COMMAND_OPTION_MIN_LENGTH_MAX + 10, APPLICATION_COMMAND_OPTION_MIN_LENGTH_MAX),
+        (MIN_LENGTH_MIN - 10, MIN_LENGTH_MIN),
+        (MIN_LENGTH_MAX + 10, MIN_LENGTH_MAX),
     ):
         output = validate_min_length(input_value)
         vampytest.assert_eq(output, expected_output)

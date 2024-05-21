@@ -7,6 +7,7 @@ from ....guild import Guild
 
 from ...avatar_decoration import AvatarDecoration
 from ...guild_profile import GuildProfile
+from ...user_clan import UserClan
 
 from ..flags import UserFlag
 from ..client_user_base import ClientUserBase
@@ -35,6 +36,7 @@ def test__ClientUserBase__to_data():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160028)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180032, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -46,6 +48,7 @@ def test__ClientUserBase__to_data():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
+        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
@@ -58,6 +61,7 @@ def test__ClientUserBase__to_data():
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': avatar_decoration.to_data(defaults = True),
         'accent_color': int(banner_color),
+        'clan': clan.to_data(defaults = True),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
         'username': name,
@@ -84,6 +88,7 @@ def test__ClientUserBase__from_data_and_difference_update_profile__missing_user(
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160029)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180033, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -96,6 +101,7 @@ def test__ClientUserBase__from_data_and_difference_update_profile__missing_user(
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
+        'clan': clan.to_data(),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
         'username': name,
@@ -126,6 +132,7 @@ def test__ClientUserBase__from_data_and_difference_update_profile__missing_user(
     vampytest.assert_eq(user.avatar, avatar)
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
+    vampytest.assert_eq(user.clan, clan)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.name, name)
@@ -285,6 +292,7 @@ def test__ClientUserBase__from_data_and_update_profile__user_missing_and_caching
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160030)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
+    clan = UserClan(guild_id = 202405180034, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
@@ -299,6 +307,7 @@ def test__ClientUserBase__from_data_and_update_profile__user_missing_and_caching
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
+        'clan': clan.to_data(),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
         'username': name,
@@ -327,6 +336,7 @@ def test__ClientUserBase__from_data_and_update_profile__user_missing_and_caching
     vampytest.assert_eq(user.avatar, avatar)
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
+    vampytest.assert_eq(user.clan, clan)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.name, name)

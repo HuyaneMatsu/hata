@@ -3,7 +3,12 @@ __all__ = ()
 from scarletio import RichAttributeErrorBaseType
 
 from ...discord.allowed_mentions import AllowedMentionProxy
+from ...discord.message import MessageFlag
+from ...discord.message.message_builder.conversions import CONVERSION_ALLOWED_MENTIONS, CONVERSION_FLAGS
 from ...discord.preconverters import preconvert_bool
+
+
+MESSAGE_FLAG_VALUE_SHOW_FOR_INVOKING_USER_ONLY = MessageFlag().update_by_keys(invoking_user_only = True)
 
 
 def _validate_show_for_invoking_user_only(show_for_invoking_user_only):
@@ -156,51 +161,61 @@ class ResponseModifier(RichAttributeErrorBaseType):
         return self
     
     
-    def apply_to_creation(self, parameters):
+    def apply_to_creation(self, interaction_response):
         """
         Applies the response creation modifiers to the given parameters.
         
         Parameters
         ----------
-        parameters : `dict` of (`str`, `object`) items
-            Request parameters.
+        interaction_response : ``InteractionResponse``
+            Interaction response to apply self to.
         """
-        self._apply_to_shared(parameters)
+        self._apply_to_shared(interaction_response)
         
         show_for_invoking_user_only = self.show_for_invoking_user_only
         if (show_for_invoking_user_only is not None):
-            parameters.setdefault('show_for_invoking_user_only', show_for_invoking_user_only)
+            # This is a nested + nested field, so passing it as False does nothing.
+            interaction_response._setter_field(
+                CONVERSION_FLAGS,
+                (MESSAGE_FLAG_VALUE_SHOW_FOR_INVOKING_USER_ONLY if show_for_invoking_user_only else False),
+            )
     
     
-    def apply_to_edition(self, parameters):
+    def apply_to_edition(self, interaction_response):
         """
         Applies the response edition modifiers to the given parameters.
         
         Parameters
         ----------
-        parameters : `dict` of (`str`, `object`) items
-            Request parameters.
+        interaction_response : ``InteractionResponse``
+            Interaction response to apply self to.
         """
-        self._apply_to_shared(parameters)
+        self._apply_to_shared(interaction_response)
     
     
-    def _apply_to_shared(self, parameters):
+    def _apply_to_shared(self, interaction_response):
         """
         Applies creation and edition modifiers to the given parameters.
         
         Parameters
         ----------
-        parameters : `dict` of (`str`, `object`) items
-            Request parameters.
+        interaction_response : ``InteractionResponse``
+            Interaction response to apply self to.
         """
         allowed_mentions = self.allowed_mentions
         if (allowed_mentions is not None):
-            parameters.setdefault('allowed_mentions', allowed_mentions)
+            for _ in interaction_response._try_pull_field_value():
+                break
+            else:
+                interaction_response._setter_field(
+                    CONVERSION_ALLOWED_MENTIONS,
+                    allowed_mentions,
+                )
     
     
     def __repr__(self):
         """Returns the parameter modifier's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         
         allowed_mentions = self.allowed_mentions
@@ -299,15 +314,15 @@ def get_show_for_invoking_user_only_of(response_modifier):
     return show_for_invoking_user_only
 
 
-def get_show_for_invoking_user_only_from(parameters, response_modifier):
+def get_show_for_invoking_user_only_from(interaction_response, response_modifier):
     """
     Gets the `show_for_invoking_user_only` value from the given parameters from the given response modifier if not
     present.
     
     Parameters
     ----------
-    parameters : `dict` of (`str`, `object` items
-        Request parameters.
+    interaction_response : ``InteractionResponse``
+        Interaction response to pull from.
     response_modifier : `None`, ``ResponseModifier``
         The respective response modifier if any,
     
@@ -315,12 +330,10 @@ def get_show_for_invoking_user_only_from(parameters, response_modifier):
     -------
     show_for_invoking_user_only : `bool`
     """
-    try:
-        show_for_invoking_user_only = parameters['show_for_invoking_user_only']
-    except KeyError:
-        show_for_invoking_user_only = get_show_for_invoking_user_only_of(response_modifier)
+    for value in interaction_response._try_pull_field_value(CONVERSION_FLAGS):
+        return (True if value & MESSAGE_FLAG_VALUE_SHOW_FOR_INVOKING_USER_ONLY else False)
     
-    return show_for_invoking_user_only
+    return  get_show_for_invoking_user_only_of(response_modifier)
 
 
 def get_wait_for_acknowledgement_of(response_modifier):
@@ -342,55 +355,3 @@ def get_wait_for_acknowledgement_of(response_modifier):
         wait_for_acknowledgement = response_modifier.wait_for_acknowledgement
     
     return wait_for_acknowledgement
-
-
-DUMMY_DICT = {}
-
-def un_map_pack_response_creation_modifier(response_modifier):
-    """
-    Returns an un-map-packer to the given response modifier for message creation endpoints.
-    
-    Parameters
-    ----------
-    response_modifier : `None`, ``ResponseModifier``
-        The response modifier to un-map-pack if any.
-    
-    Returns
-    -------
-    un_map_packer : `dict`
-    
-    Notes
-    -----
-    We could have use ``un_map_pack``, but dictionaries are just faster.
-    """
-    if response_modifier is None:
-        return DUMMY_DICT
-    
-    dictionary = {}
-    response_modifier.apply_to_creation(dictionary)
-    return dictionary
-
-
-def un_map_pack_response_edition_modifier(response_modifier):
-    """
-    Returns an un-map-packer to the given response modifier for message edition endpoints.
-    
-    Parameters
-    ----------
-    response_modifier : `None`, ``ResponseModifier``
-        The response modifier to un-map-pack if any.
-    
-    Returns
-    -------
-    un_map_packer : `dict`
-    
-    Notes
-    -----
-    We could have use ``un_map_pack``, but dictionaries are just faster.
-    """
-    if response_modifier is None:
-        return DUMMY_DICT
-    
-    dictionary = {}
-    response_modifier.apply_to_edition(dictionary)
-    return dictionary

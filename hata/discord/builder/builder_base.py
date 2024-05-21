@@ -387,6 +387,55 @@ class BuilderBase(RichAttributeErrorBaseType, metaclass = BuilderMeta):
         return self
     
     
+    def __eq__(self, other):
+        """Returns whether the two builders are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        for conversion in {*self._iter_conversions(), *other._iter_conversions()}:
+            if self._getter_field(conversion) != other._getter_field(conversion):
+                return False
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the hash value of the builder."""
+        hash_value = 0
+        
+        for conversion, value in self._iter_fields():
+            if not value:
+                continue
+            
+            hash_value ^= hash(conversion) & hash(value)
+        
+        return hash_value
+    
+    
+    def __repr__(self):
+        """Returns the builder's representation."""
+        repr_parts = ['<', type(self).__name__]
+        
+        field_added = False
+        
+        for conversion, value in self._iter_fields():
+            if not value:
+                continue
+            
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' ')
+            repr_parts.append(conversion.name)
+            repr_parts.append(' = ')
+            repr_parts.append(repr(value))
+            
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
     def _setter_none(self, conversion, value):
         """
         Sets nothing.
@@ -773,9 +822,25 @@ class BuilderBase(RichAttributeErrorBaseType, metaclass = BuilderMeta):
         return value
     
     
+    def _iter_conversions(self):
+        """
+        Iterates over the set conversions of the builder.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        conversion : ``Conversion``
+        """
+        return
+        yield
+    
+    
     def _iter_fields(self):
         """
         Iterates over the set fields of the builder.
+        
+        This method is an iterable generator.
         
         Yields
         ------

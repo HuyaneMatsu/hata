@@ -4,6 +4,7 @@ from .avatar_decoration import *
 from .guild_profile import *
 from .thread_profile import *
 from .user import *
+from .user_clan import *
 from .voice_state import *
 
 
@@ -14,5 +15,6 @@ __all__ = (
     *guild_profile.__all__,
     *thread_profile.__all__,
     *user.__all__,
+    *user_clan.__all__,
     *voice_state.__all__,
 )

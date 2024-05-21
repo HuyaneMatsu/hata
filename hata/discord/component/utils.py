@@ -12,6 +12,7 @@ def create_button(
     *,
     custom_id = ...,
     enabled = ...,
+    sku_id = ...,
     style = ...,
     url = ...,
 ):
@@ -29,10 +30,15 @@ def create_button(
     custom_id : `None`, `str`, Optional (Keyword only)
         Custom identifier to detect which button was clicked by the user.
         
-        > Mutually exclusive with the `url` field.
+        > Mutually exclusive with the `url` and `sku_id` fields.
     
     enabled : `bool`, Optional (Keyword only)
         Whether the button is enabled.
+    
+    sku_id : `int`, ``SKU``, Optional (Keyword only)
+        Purchasable stock keeping unit identifier.
+        
+        > Mutually exclusive with the `custom_id` and `url` fields.
     
     style : `None`, ``ButtonStyle``, `int`, Optional (Keyword only)
         The button's style.
@@ -40,7 +46,7 @@ def create_button(
     url : `None`, `str`, Optional (Keyword only)
         Url to redirect to when clicking on the button.
         
-        > Mutually exclusive with the `custom_id` field.
+        > Mutually exclusive with the `custom_id` and `sku_id` fields.
     
     Returns
     -------
@@ -61,6 +67,7 @@ def create_button(
         label = label,
         enabled = enabled,
         emoji = emoji,
+        sku_id = sku_id,
         url = url,
     )
 

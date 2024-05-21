@@ -4,15 +4,27 @@ from ..constants import NAME_LENGTH_MAX, NAME_LENGTH_MIN
 from ..fields import validate_name
 
 
-def _iter_options():
+def _iter_options__passing():
     yield None, ''
     yield '', ''
     yield 'aa', 'aa'
     yield 'a?a', 'aa'
 
 
-@vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_name__passing(input_value):
+def _iter_options__type_error():
+    yield 12.6
+
+
+def _iter_options__value_error():
+    yield 'a' * (NAME_LENGTH_MAX + 1)
+    yield 'a' * (NAME_LENGTH_MIN - 1)
+    yield '??'
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_name(input_value):
     """
     Tests whether `validate_name` works as intended.
     
@@ -26,47 +38,10 @@ def test__validate_name__passing(input_value):
     Returns
     -------
     output : `str`
-    """
-    return validate_name(input_value)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-def test__validate_name__type_error(input_value):
-    """
-    Tests whether `validate_name` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        The value to validate.
     
     Raises
     ------
     TypeError
-    """
-    validate_name(input_value)
-
-
-@vampytest.raising(ValueError)
-@vampytest.call_with('a' * (NAME_LENGTH_MIN - 1))
-@vampytest.call_with('a' * (NAME_LENGTH_MAX + 1))
-@vampytest.call_with('??')
-def test__validate_name__value_error(input_value):
-    """
-    Tests whether `validate_name` works as intended.
-    
-    Case: `ValueError`.
-    
-    Parameters
-    ----------
-    input_value : `None`, `str`
-        The value to validate.
-    
-    Raises
-    ------
-    TypeError
+    ValueError
     """
     return validate_name(input_value)

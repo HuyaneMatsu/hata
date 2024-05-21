@@ -3,15 +3,20 @@ import vampytest
 from ..fields import validate_name
 
 
-def _iter_options():
+def _iter_options__passing():
     yield None, ''
     yield '', ''
     yield 'a', 'a'
     yield 'aa', 'aa'
 
 
-@vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_name__passing(input_value):
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_name(input_value):
     """
     Tests whether `validate_name` works as intended.
     
@@ -19,31 +24,16 @@ def test__validate_name__passing(input_value):
     
     Parameters
     ----------
-    input_value : `None`, `str`
+    input_value : `object`
         The value to validate.
     
     Returns
     -------
     output : `str`
-    """
-    return validate_name(input_value)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-def test__validate_name__type_error(input_value):
-    """
-    Tests whether `validate_name` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        The value to validate.
     
     Raises
     ------
     TypeError
+    ValueError
     """
-    validate_name(input_value)
+    return validate_name(input_value)

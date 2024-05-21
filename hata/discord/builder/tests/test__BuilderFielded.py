@@ -6,25 +6,96 @@ from ..builder_fielded import BuilderFielded
 from .helpers import _create_default_conversion
 
 
-def _assert_fields_set(message_builder):
+def _assert_fields_set(builder):
     """
     Asserts whether every fields of the message builder are set.
     
     Parameters
     ----------
-    message_builder : ``BuilderFielded``
+    builder : ``BuilderFielded``
         The message builder to test.
     """
-    vampytest.assert_instance(message_builder, BuilderFielded)
-    vampytest.assert_instance(message_builder.fields, dict)
+    vampytest.assert_instance(builder, BuilderFielded)
+    vampytest.assert_instance(builder.fields, dict)
 
 
 def test__BuilderFielded__new():
     """
     Tests whether ``BuilderFielded.__new__`` works as intended.
     """
-    message_builder = BuilderFielded()
-    _assert_fields_set(message_builder)
+    builder = BuilderFielded()
+    _assert_fields_set(builder)
+
+
+def test__BuilderFielded__eq__same_type():
+    """
+    Tests whether ``BuilderFielded.__eq__`` works as intended.
+    
+    Case: Same type.
+    """
+    conversion = _create_default_conversion({
+        'field_kind': CONVERSION_KIND_FIELD,
+        'set_type': str,
+    })
+    
+    builder_0 = BuilderFielded()
+    builder_0._store_field_value(conversion, 'mister')
+    builder_1 = BuilderFielded()
+    builder_1._store_field_value(conversion, 'mister')
+    builder_2 = BuilderFielded()
+    
+    output = builder_0 == builder_1
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
+    
+    output = builder_0 == builder_2
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
+
+
+def test__BuilderFielded__eq__different_type():
+    """
+    Tests whether ``BuilderFielded.__eq__`` works as intended.
+    
+    Case : different type.
+    """
+    builder = BuilderFielded()
+    
+    output = builder == object()
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
+
+
+def test__BuilderFielded__hash():
+    """
+    Tests whether ``BuilderFielded.__hash__`` works as intended.
+    """
+    conversion = _create_default_conversion({
+        'field_kind': CONVERSION_KIND_FIELD,
+        'set_type': str,
+    })
+    
+    builder = BuilderFielded()
+    builder._store_field_value(conversion, 'mister')
+    
+    output = hash(builder)
+    vampytest.assert_instance(output, int)
+
+
+def test__BuilderFielded__repr():
+    """
+    Tests whether ``BuilderFielded.__repr__`` works as intended.
+    """
+    conversion = _create_default_conversion({
+        'field_kind': CONVERSION_KIND_FIELD,
+        'set_type': str,
+    })
+    
+    builder = BuilderFielded()
+    builder._store_field_value(conversion, 'mister')
+    
+    output = repr(builder)
+    vampytest.assert_instance(output, str)
 
 
 def test__BuilderFielded__store_field_value():
@@ -37,11 +108,11 @@ def test__BuilderFielded__store_field_value():
     })
     value = 'hes mister'
     
-    message_builder = BuilderFielded()
-    message_builder._store_field_value(conversion, value)
+    builder = BuilderFielded()
+    builder._store_field_value(conversion, value)
     
     vampytest.assert_eq(
-        message_builder.fields,
+        builder.fields,
         {
             conversion : value,
         },
@@ -59,12 +130,12 @@ def test__BuilderFielded__try_pull_field_value__none():
         'set_type': str,
     })
     
-    message_builder = BuilderFielded()
+    builder = BuilderFielded()
     
     for item in []:
-        message_builder._store_field_value(*item)
+        builder._store_field_value(*item)
     
-    output = [*message_builder._try_pull_field_value(conversion)]
+    output = [*builder._try_pull_field_value(conversion)]
     vampytest.assert_eq(output, [])
 
 
@@ -79,11 +150,11 @@ def test__BuilderFielded__try_pull_field_value__match():
         'set_type': str,
     })
     
-    message_builder = BuilderFielded()
+    builder = BuilderFielded()
     
-    message_builder._store_field_value(conversion, 'mister')
+    builder._store_field_value(conversion, 'mister')
     
-    output = [*message_builder._try_pull_field_value(conversion)]
+    output = [*builder._try_pull_field_value(conversion)]
     vampytest.assert_eq(output, ['mister'])
 
 
@@ -93,10 +164,10 @@ def test__BuilderFielded__with_positional_parameter_unknown():
     """
     value = [12] 
     
-    message_builder = BuilderFielded()
+    builder = BuilderFielded()
     
     with vampytest.assert_raises(TypeError):
-        message_builder._with_positional_parameter_unknown(value)
+        builder._with_positional_parameter_unknown(value)
 
 
 def test__BuilderFielded__with_keyword_parameter_unknown():
@@ -106,10 +177,39 @@ def test__BuilderFielded__with_keyword_parameter_unknown():
     key = 'mister'
     value = [12] 
     
-    message_builder = BuilderFielded()
+    builder = BuilderFielded()
     
     with vampytest.assert_raises(TypeError):
-        message_builder._with_keyword_parameter_unknown(key, value)
+        builder._with_keyword_parameter_unknown(key, value)
+
+
+def test__BuilderFielded__iter_conversions():
+    """
+    Tests whether ``BuilderFielded._iter_conversions`` works as intended.
+    """
+    conversion_0 = _create_default_conversion({
+        'field_kind': CONVERSION_KIND_FIELD,
+        'set_type': str,
+    })
+    
+    conversion_1 = _create_default_conversion({
+        'field_kind': CONVERSION_KIND_FIELD,
+        'set_type': str,
+    })
+    
+    conversions = [(conversion_0, 'mister'), (conversion_1, 'hey')]
+    builder = BuilderFielded()
+    
+    
+    for item in conversions:
+        builder._store_field_value(*item)
+    
+    output = {*builder._iter_conversions()}
+    
+    vampytest.assert_eq(
+        {conversion[0] for conversion in conversions},
+        output,
+    )
 
 
 def test__BuilderFielded__iter_fields():
@@ -127,13 +227,13 @@ def test__BuilderFielded__iter_fields():
     })
     
     fields = [(conversion_0, 'mister'), (conversion_1, 'hey')]
-    message_builder = BuilderFielded()
+    builder = BuilderFielded()
     
     
     for item in fields:
-        message_builder._store_field_value(*item)
+        builder._store_field_value(*item)
     
-    output = [*message_builder._iter_fields()]
+    output = [*builder._iter_fields()]
     
     vampytest.assert_eq(
         dict(fields),

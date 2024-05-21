@@ -2,7 +2,7 @@ __all__ = ()
 
 from ...application_command import ApplicationCommand
 from ...application_command.application_command.constants import (
-    APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN
+    NAME_LENGTH_MAX as APPLICATION_COMMAND_NAME_LENGTH_MAX, NAME_LENGTH_MIN as APPLICATION_COMMAND_NAME_LENGTH_MIN
 )
 from ...bases import DiscordEntity
 from ...component import ComponentType

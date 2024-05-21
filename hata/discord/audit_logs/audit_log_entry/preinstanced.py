@@ -493,9 +493,13 @@ class AuditLogEntryType(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------+-----------------------------------+
     | onboarding_screen_update              | onboarding screen update              | 167   | onboarding_screen                 |
     +---------------------------------------+---------------------------------------+-------+-----------------------------------+
-    | home_feature_item                     | home_feature_item                     | 171   | none                              |
+    | home_feature_item                     | home feature item                     | 171   | none                              |
     +---------------------------------------+---------------------------------------+-------+-----------------------------------+
-    | home_remove_item                      | home_remove_item                      | 172   | none                              |
+    | home_remove_item                      | home remove item                      | 172   | none                              |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | home_screen_create                    | home screen create                    | 190   | none                              |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | home_screen_update                    | home screen update                    | 191   | none                              |
     +---------------------------------------+---------------------------------------+-------+-----------------------------------+
     | channel_status_update                 | channel status update                 | 192   | channel                           |
     +---------------------------------------+---------------------------------------+-------+-----------------------------------+
@@ -622,9 +626,11 @@ class AuditLogEntryType(PreinstancedBase):
     onboarding_screen_create =  P(166,'onboarding screen create', AuditLogEntryTargetType.onboarding_screen)
     onboarding_screen_update =  P(167, 'onboarding screen update', AuditLogEntryTargetType.onboarding_screen)
     
-    home_feature_item = P(171, 'home_feature_item', AuditLogEntryTargetType.none)
-    home_remove_item = P(172, 'home_remove_item', AuditLogEntryTargetType.none)
+    home_feature_item = P(171, 'home feature item', AuditLogEntryTargetType.none)
+    home_remove_item = P(172, 'home remove item', AuditLogEntryTargetType.none)
     
+    home_screen_create = P(190, 'home screen create', AuditLogEntryTargetType.none)
+    home_screen_update = P(191, 'home screen update', AuditLogEntryTargetType.none)
     channel_status_update = P(192, 'channel status update', AuditLogEntryTargetType.channel)
     channel_status_delete = P(193, 'channel status delete', AuditLogEntryTargetType.channel)
     

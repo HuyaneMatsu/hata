@@ -1,7 +1,8 @@
 __all__ = ()
 
 from .....discord.application_command.application_command.constants import (
-    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN
+    DESCRIPTION_LENGTH_MAX as APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX,
+    DESCRIPTION_LENGTH_MIN as APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN
 )
 from .....discord.preconverters import preconvert_bool
 

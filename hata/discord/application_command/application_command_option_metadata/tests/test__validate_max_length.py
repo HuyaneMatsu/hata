@@ -1,8 +1,8 @@
 import vampytest
 
 from ..constants import (
-    APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT, APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN,
-    APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX
+    MAX_LENGTH_DEFAULT, MAX_LENGTH_MIN,
+    MAX_LENGTH_MAX
 )
 from ..fields import validate_max_length
 
@@ -14,11 +14,11 @@ def test__validate_max_length__0():
     Case: passing.
     """
     for input_value, expected_output in (
-        (None, APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT),
-        (APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT, APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT),
+        (None, MAX_LENGTH_DEFAULT),
+        (MAX_LENGTH_DEFAULT, MAX_LENGTH_DEFAULT),
         (10, 10),
-        (APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN - 10, APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN),
-        (APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX + 10, APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT),
+        (MAX_LENGTH_MIN - 10, MAX_LENGTH_MIN),
+        (MAX_LENGTH_MAX + 10, MAX_LENGTH_DEFAULT),
     ):
         output = validate_max_length(input_value)
         vampytest.assert_eq(output, expected_output)

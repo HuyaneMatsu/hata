@@ -8,7 +8,7 @@ from scarletio import (
 )
 
 from ...discord.application_command import (
-    APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommand, ApplicationCommandTargetType
+    ApplicationCommand, ApplicationCommandTargetType, CONTEXT_TARGET_TYPES as APPLICATION_COMMAND_CONTEXT_TARGET_TYPES
 )
 from ...discord.client import Client
 from ...discord.client.request_helpers import get_guild_id

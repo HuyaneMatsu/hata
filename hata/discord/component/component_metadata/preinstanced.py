@@ -40,6 +40,8 @@ class ButtonStyle(PreinstancedBase):
     +-----------------------+---------------+-------+
     | link                  | link          | 5     |
     +-----------------------+---------------+-------+
+    | subscription          | subscription  | 6     |
+    +-----------------------+---------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -53,6 +55,7 @@ class ButtonStyle(PreinstancedBase):
     green = P(3, 'green')
     red = P(4, 'red')
     link = P(5, 'link')
+    subscription = P(6, 'subscription')
 
 
 class TextInputStyle(PreinstancedBase):

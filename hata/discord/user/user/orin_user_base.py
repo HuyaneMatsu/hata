@@ -5,8 +5,9 @@ from scarletio import copy_docs
 from ...bases import ICON_TYPE_NONE
 
 from .fields import (
-    parse_avatar_decoration, parse_banner_color, parse_discriminator, parse_display_name, parse_flags,
-    validate_avatar_decoration, validate_banner_color, validate_discriminator, validate_display_name, validate_flags
+    parse_avatar_decoration, parse_banner_color, parse_clan, parse_discriminator, parse_display_name, parse_flags,
+    validate_avatar_decoration, validate_banner_color, validate_clan, validate_discriminator, validate_display_name,
+    validate_flags
 )
 from .flags import UserFlag
 from .user_base import USER_BANNER, UserBase 
@@ -30,6 +31,8 @@ class OrinUserBase(UserBase):
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
+    clan : `None`, ``UserClan``
+        The user's primary clan.
     discriminator : `int`
         The client's discriminator. Given to avoid overlapping names.
     display_name : `None`, `str`
@@ -41,7 +44,7 @@ class OrinUserBase(UserBase):
     name : str
         The client's username.
     """
-    __slots__ = ('avatar_decoration', 'banner_color', 'discriminator', 'display_name', 'flags')
+    __slots__ = ('avatar_decoration', 'banner_color', 'clan', 'discriminator', 'display_name', 'flags')
     
     banner = USER_BANNER
     
@@ -52,6 +55,7 @@ class OrinUserBase(UserBase):
         avatar_decoration = ...,
         banner = ...,
         banner_color = ...,
+        clan = ...,
         discriminator = ...,
         display_name = ...,
         flags = ...,
@@ -70,6 +74,8 @@ class OrinUserBase(UserBase):
             The user's banner.
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
             The user's banner color.
+        clan : `None`, ``UserClan``, Optional (Keyword only)
+            The user's primary clan.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
         display_name : `None`, `str`, Optional (Keyword only)
@@ -104,6 +110,12 @@ class OrinUserBase(UserBase):
         else:
             banner_color = validate_banner_color(banner_color)
         
+        # clan
+        if clan is ...:
+            clan = None
+        else:
+            clan = validate_clan(clan)
+        
         # discriminator
         if discriminator is ...:
             discriminator = 0
@@ -131,6 +143,7 @@ class OrinUserBase(UserBase):
         self.avatar_decoration = avatar_decoration
         self.banner = banner
         self.banner_color = banner_color
+        self.clan = clan
         self.discriminator = discriminator
         self.display_name = display_name
         self.flags = flags
@@ -144,6 +157,7 @@ class OrinUserBase(UserBase):
         self.avatar_decoration = parse_avatar_decoration(data)
         self._set_banner(data)
         self.banner_color = parse_banner_color(data)
+        self.clan = parse_clan(data)
         self.discriminator = parse_discriminator(data)
         self.display_name = parse_display_name(data)
         self.flags = parse_flags(data)
@@ -167,6 +181,12 @@ class OrinUserBase(UserBase):
         if self.banner_color != banner_color:
             old_attributes['banner_color'] = self.banner_color
             self.banner_color = banner_color
+        
+        # clan
+        clan = parse_clan(data)
+        if self.clan != clan:
+            old_attributes['clan'] = self.clan
+            self.clan = clan
         
         # discriminator
         discriminator = parse_discriminator(data)
@@ -196,6 +216,7 @@ class OrinUserBase(UserBase):
         self.banner_color = None
         self.banner_hash = 0
         self.banner_type = ICON_TYPE_NONE
+        self.clan = None
         self.discriminator = 0
         self.display_name = None
         self.flags = UserFlag()
@@ -212,6 +233,12 @@ class OrinUserBase(UserBase):
         
         new.banner = self.banner
         new.banner_color = self.banner_color
+        
+        clan = self.clan
+        if (clan is not None):
+            clan = clan.copy()
+        new.clan = clan
+        
         new.discriminator = self.discriminator
         new.display_name = self.display_name
         new.flags = self.flags
@@ -225,6 +252,7 @@ class OrinUserBase(UserBase):
         avatar_decoration = ...,
         banner = ...,
         banner_color = ...,
+        clan = ...,
         discriminator = ...,
         display_name = ...,
         flags = ...,
@@ -243,6 +271,8 @@ class OrinUserBase(UserBase):
             The user's banner.
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
             The user's banner color.
+        clan : `None`, ``UserClan``, Optional (Keyword only)
+            The user's primary clan.
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
         display_name : `None`, `str`, Optional (Keyword only)
@@ -283,6 +313,14 @@ class OrinUserBase(UserBase):
         else:
             banner_color = validate_banner_color(banner_color)
         
+        # clan
+        if clan is ...:
+            clan = self.clan
+            if (clan is not None):
+                clan = clan.copy()
+        else:
+            clan = validate_clan(clan)
+        
         # discriminator
         if discriminator is ...:
             discriminator = self.discriminator
@@ -310,6 +348,7 @@ class OrinUserBase(UserBase):
         new.avatar_decoration = avatar_decoration
         new.banner = banner
         new.banner_color = banner_color
+        new.clan = clan
         new.discriminator = discriminator
         new.display_name = display_name
         new.flags = flags
@@ -333,6 +372,11 @@ class OrinUserBase(UserBase):
         if (banner_color is not None):
             hash_value ^= 1 << 25
             hash_value ^= banner_color
+        
+        # clan
+        clan = self.clan
+        if (clan is not None):
+            hash_value ^= hash(clan)
         
         # discriminator
         hash_value ^= self.discriminator << 26

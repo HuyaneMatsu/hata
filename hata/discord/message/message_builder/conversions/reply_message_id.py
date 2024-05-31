@@ -3,9 +3,9 @@ __all__ = ('CONVERSION_REPLY_MESSAGE_ID',)
 from ....builder.constants import CONVERSION_KIND_FIELD
 from ....builder.conversion import Conversion
 
-from ..reply_configuration import ReplyConfiguration
+from ..message_reference_configuration import MessageReferenceConfiguration
 
-from .reply_configuration import CONVERSION_REPLY_CONFIGURATION
+from .message_reference_configuration import CONVERSION_MESSAGE_REFERENCE_CONFIGURATION
 
 
 class CONVERSION_REPLY_MESSAGE_ID(Conversion):
@@ -15,7 +15,7 @@ class CONVERSION_REPLY_MESSAGE_ID(Conversion):
     name_aliases = None
     expected_types_messages = '`int`'
     kind = CONVERSION_KIND_FIELD
-    output_conversion = CONVERSION_REPLY_CONFIGURATION
+    output_conversion = CONVERSION_MESSAGE_REFERENCE_CONFIGURATION
     
     # Setting
     
@@ -29,12 +29,12 @@ class CONVERSION_REPLY_MESSAGE_ID(Conversion):
     def set_validator(value):
         # None
         if value is None:
-            yield ReplyConfiguration()
+            yield MessageReferenceConfiguration()
             return
         
         # int
         if isinstance(value, int):
-            yield ReplyConfiguration(message_id = value)
+            yield MessageReferenceConfiguration(message_id = value)
             return
         
         # No other cases
@@ -42,7 +42,7 @@ class CONVERSION_REPLY_MESSAGE_ID(Conversion):
     
     # Reading
     
-    get_default = False
+    get_default = 0
     
     def get_processor(value):
         if value is None:
@@ -58,4 +58,4 @@ class CONVERSION_REPLY_MESSAGE_ID(Conversion):
     
     # Sorting
     
-    sort_priority = 2100
+    sort_priority = 2400

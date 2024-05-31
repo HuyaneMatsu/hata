@@ -8,6 +8,7 @@ def _iter_options():
     yield AttachmentFlag(0), False, {}
     yield AttachmentFlag(0), True, {'flags': 0}
     yield AttachmentFlag(1), False, {'flags': 1}
+    yield AttachmentFlag(1), True, {'flags': 1}
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

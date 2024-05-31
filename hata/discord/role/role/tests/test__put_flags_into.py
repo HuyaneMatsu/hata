@@ -8,6 +8,7 @@ def _iter_options():
     yield RoleFlag(0), False, {}
     yield RoleFlag(0), True, {'flags': 0}
     yield RoleFlag(1), False, {'flags': 1}
+    yield RoleFlag(1), True, {'flags': 1}
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

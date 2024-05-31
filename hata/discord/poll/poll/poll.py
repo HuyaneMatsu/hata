@@ -3,6 +3,7 @@ __all__ = ('Poll',)
 from scarletio import RichAttributeErrorBaseType
 
 from ...bases import maybe_snowflake
+from ...utils import DATETIME_FORMAT_CODE
 
 from ..poll_answer import PollAnswer
 from ..poll_result import PollResult
@@ -287,7 +288,7 @@ class Poll(RichAttributeErrorBaseType):
                 field_added = True
             
             repr_parts.append(' expires_at = ')
-            repr_parts.append(repr(expires_at))
+            repr_parts.append(format(expires_at, DATETIME_FORMAT_CODE))
         
         # finalized
         finalized = self.finalized

@@ -26,7 +26,7 @@ def test__MessageCall__copy():
     vampytest.assert_eq(message_call, copy)
 
 
-def test__MessageCall__copy_with__0():
+def test__MessageCall__copy_with__no_fields():
     """
     Tests whether ``MessageCall.copy_with`` works as intended.
     
@@ -47,11 +47,11 @@ def test__MessageCall__copy_with__0():
     vampytest.assert_eq(message_call, copy)
 
 
-def test__MessageCall__copy_with__1():
+def test__MessageCall__copy_with__all_fields():
     """
     Tests whether ``MessageCall.copy_with`` works as intended.
     
-    Case: all no fields given.
+    Case: all fields given.
     """
     old_ended_at = DateTime(2016, 5, 14)
     old_user_ids = [202304280018, 202304280019]
@@ -75,15 +75,28 @@ def test__MessageCall__copy_with__1():
     vampytest.assert_eq(copy.user_ids, tuple(new_user_ids))
 
 
-def test__MessageCall__iter_user_ids():
+def _iter_options__iter_user_ids():
+    user_id_0 = 202304280022
+    user_id_1 = 202304280023
+    
+    yield None, []
+    yield [user_id_0], [user_id_0]
+    yield [user_id_0, user_id_1], [user_id_0, user_id_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_user_ids()).returning_last())
+def test__MessageCall__iter_user_ids(input_value):
     """
     Tests whether ``MessageCall.iter_user_ids`` works as intended.
+    
+    Parameters
+    ----------
+    user_ids : `None | list<int>`
+        User identifiers to create instance with.
+    
+    Returns
+    -------
+    output : `list<int>`
     """
-    for input_value, expected_output in (
-        (None, []),
-        ([202304280022], [202304280022]),
-        ([202304280023, 202304280024], [202304280023, 202304280024])
-    ):
-        message_call = MessageCall(user_ids = input_value)
-        output = [*message_call.iter_user_ids()]
-        vampytest.assert_eq(output, expected_output)
+    message_call = MessageCall(user_ids = input_value)
+    return [*message_call.iter_user_ids()]

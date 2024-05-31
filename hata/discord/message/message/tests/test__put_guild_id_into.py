@@ -6,7 +6,7 @@ from ..fields import put_guild_id_into
 def _iter_options():
     guild_id = 202304260007
     
-    yield 0, False, {'guild_id': None}
+    yield 0, False, {}
     yield 0, True, {'guild_id': None}
     yield guild_id, False, {'guild_id': str(guild_id)}
     yield guild_id, True, {'guild_id': str(guild_id)}

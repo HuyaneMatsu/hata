@@ -65,9 +65,8 @@ def parse_archived(data):
     -------
     archived : `bool`
     """
-    try:
-        sub_data = data['thread_metadata']
-    except KeyError:
+    sub_data = data.get('thread_metadata', None)
+    if sub_data is None:
         archived = False
     else:
         archived = sub_data.get('archived', False)
@@ -121,9 +120,8 @@ def parse_archived_at(data):
     -------
     archived_at : `int`
     """
-    try:
-        sub_data = data['thread_metadata']
-    except KeyError:
+    sub_data = data.get('thread_metadata', None)
+    if sub_data is None:
         archived_at = None
     else:
         archived_at_timestamp = sub_data.get('archive_timestamp', None)
@@ -186,9 +184,8 @@ def parse_auto_archive_after(data):
     -------
     auto_archive_after : `int`
     """
-    try:
-        sub_data = data['thread_metadata']
-    except KeyError:
+    sub_data = data.get('thread_metadata', None)
+    if sub_data is None:
         auto_archive_after = AUTO_ARCHIVE_DEFAULT
     else:
         auto_archive_after = sub_data.get('auto_archive_duration', None)
@@ -269,9 +266,8 @@ def parse_created_at(data):
     -------
     created_at : `int`
     """
-    try:
-        sub_data = data['thread_metadata']
-    except KeyError:
+    sub_data = data.get('thread_metadata', None)
+    if sub_data is None:
         created_at = None
     else:
         created_at_timestamp = sub_data.get('create_timestamp', None)
@@ -439,9 +435,8 @@ def parse_invitable(data):
     -------
     invitable : `bool`
     """
-    try:
-        sub_data = data['thread_metadata']
-    except KeyError:
+    sub_data = data.get('thread_metadata', None)
+    if sub_data is None:
         invitable = True
     else:
         invitable = sub_data.get('invitable', True)
@@ -513,9 +508,8 @@ def parse_open(data):
     -------
     open_ : `bool`
     """
-    try:
-        sub_data = data['thread_metadata']
-    except KeyError:
+    sub_data = data.get('thread_metadata', None)
+    if sub_data is None:
         open_ = True
     else:
         open_ = not sub_data.get('locked', False)

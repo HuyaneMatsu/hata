@@ -45,7 +45,7 @@ def validate_flags(flags):
     
     Parameters
     ----------
-    flags : `str`
+    flags : `None | int`
         Flags to validate.
     
     Returns
@@ -59,6 +59,9 @@ def validate_flags(flags):
     ValueError
         - `flags` is negative.
     """
+    if flags is None:
+        return 0
+    
     if not isinstance(flags, int):
         raise TypeError(f'`flags` can be `int`, got {flags.__class__.__name__}; {flags!r}.')
     

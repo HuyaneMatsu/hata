@@ -88,7 +88,7 @@ submitted form.
 ```py3
 import re
 from hata import DiscordException, ERROR_CODES, Embed
-from hata.ext.slash import abort
+from hata.ext.slash import Form, TextInput, TextInputStyle, abort
 
 ADD_ROLE_FORM = Form(
     'Add role', # Any dummy title does it

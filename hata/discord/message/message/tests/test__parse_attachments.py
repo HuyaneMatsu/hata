@@ -4,10 +4,8 @@ from ...attachment import Attachment
 
 from ..fields import parse_attachments
 
-def test__parse_attachments():
-    """
-    Tests whether ``parse_attachments`` works as intended.
-    """
+
+def _iter_options():
     attachment_id_0 = 202304290006
     attachment_name_0 = 'Primrose'
     
@@ -24,27 +22,59 @@ def test__parse_attachments():
         name = attachment_name_1,
     )
     
-    for input_data, expected_output in (
-        ({}, None),
-        ({'attachments': None}, None),
-        ({'attachments': []}, None),
-        (
-            {
-                'attachments': [
-                    attachment_0.to_data(include_internals = True),
-                ],
-            },
-            (attachment_0,),
-        ),
-        (
-            {
-                'attachments': [
-                    attachment_0.to_data(include_internals = True),
-                    attachment_1.to_data(include_internals = True),
-                ],
-            },
-            (attachment_0, attachment_1),
-        ),
-    ):
-        output = parse_attachments(input_data)
-        vampytest.assert_eq(output, expected_output)
+    yield (
+        {},
+        None,
+    )
+    
+    yield (
+        {
+            'attachments': None,
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'attachments': [],
+        },
+        None,
+    )
+    
+    yield (
+        {
+            'attachments': [
+                attachment_0.to_data(include_internals = True),
+            ],
+        },
+        (attachment_0,),
+    )
+    
+    yield (
+        {
+            'attachments': [
+                attachment_0.to_data(include_internals = True),
+                attachment_1.to_data(include_internals = True),
+            ],
+        },
+        (attachment_0, attachment_1),
+    )
+    
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_attachments(input_data):
+    """
+    Tests whether ``parse_attachments`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | tuple<Attachment>`
+    """
+    output = parse_attachments(input_data)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    return output

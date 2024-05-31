@@ -24,19 +24,19 @@ from .fields import (
     parse_id, parse_interaction, parse_mentioned_channels_cross_guild, parse_mentioned_everyone,
     parse_mentioned_role_ids, parse_mentioned_users, parse_message_id, parse_nonce, parse_pinned, parse_poll,
     parse_poll_and_change, parse_reactions, parse_referenced_message, parse_resolved, parse_role_subscription,
-    parse_stickers, parse_thread, parse_tts, parse_type, put_activity_into, put_application_id_into,
+    parse_snapshots, parse_stickers, parse_thread, parse_tts, parse_type, put_activity_into, put_application_id_into,
     put_application_into, put_attachments_into, put_author_into, put_call_into, put_channel_id_into,
     put_components_into, put_content_into, put_edited_at_into, put_embeds_into, put_flags_into, put_guild_id_into,
     put_id_into, put_interaction_into, put_mentioned_channels_cross_guild_into, put_mentioned_everyone_into,
     put_mentioned_role_ids_into, put_mentioned_users_into, put_message_id_into, put_nonce_into, put_pinned_into,
     put_poll_into, put_reactions_into, put_referenced_message_into, put_resolved_into, put_role_subscription_into,
-    put_stickers_into, put_thread_into, put_tts_into, put_type_into, validate_activity, validate_application,
-    validate_application_id, validate_attachments, validate_author, validate_call, validate_channel_id,
-    validate_components, validate_content, validate_edited_at, validate_embeds, validate_flags, validate_guild_id,
-    validate_id, validate_interaction, validate_mentioned_channels_cross_guild, validate_mentioned_everyone,
-    validate_mentioned_role_ids, validate_mentioned_users, validate_nonce, validate_pinned, validate_poll,
-    validate_reactions, validate_referenced_message, validate_resolved, validate_role_subscription, validate_stickers,
-    validate_thread, validate_tts, validate_type
+    put_snapshots_into, put_stickers_into, put_thread_into, put_tts_into, put_type_into, validate_activity,
+    validate_application, validate_application_id, validate_attachments, validate_author, validate_call,
+    validate_channel_id, validate_components, validate_content, validate_edited_at, validate_embeds, validate_flags,
+    validate_guild_id, validate_id, validate_interaction, validate_mentioned_channels_cross_guild,
+    validate_mentioned_everyone, validate_mentioned_role_ids, validate_mentioned_users, validate_nonce, validate_pinned,
+    validate_poll, validate_reactions, validate_referenced_message, validate_resolved, validate_role_subscription,
+    validate_snapshots, validate_stickers, validate_thread, validate_tts, validate_type
 )
 from .flags import MessageFlag
 from .preinstanced import MESSAGE_DEFAULT_CONVERTER, MessageType
@@ -83,6 +83,7 @@ PRECREATE_FIELDS = {
     'referenced_message': ('referenced_message', validate_referenced_message),
     'resolved': ('resolved', validate_resolved),
     'role_subscription': ('role_subscription', validate_role_subscription),
+    'snapshots': ('snapshots', validate_snapshots),
     'pinned': ('pinned', validate_pinned),
     'stickers': ('stickers', validate_stickers),
     'thread': ('thread', validate_thread),
@@ -201,6 +202,9 @@ class Message(DiscordEntity, immortal = True):
     role_subscription : `None`, ``MessageRoleSubscription``
         Additional role subscription information attached to the message. Defaults to `None`.
     
+    snapshots : `None`, `tuple` of ``MessageSnapshot``
+        Forwarded snapshots of other messages.
+    
     stickers : `None`, `tuple` of ``Sticker``
         The stickers sent with the message. Defaults to `None`.
     
@@ -223,8 +227,8 @@ class Message(DiscordEntity, immortal = True):
         '_cache_mentioned_channels', '_state', 'activity', 'application', 'application_id', 'attachments', 'author',
         'call', 'channel_id', 'components', 'content', 'edited_at', 'embeds', 'flags', 'guild_id', 'interaction',
         'mentioned_channels_cross_guild', 'mentioned_everyone', 'mentioned_role_ids', 'mentioned_users', 'nonce',
-        'pinned', 'poll', 'reactions', 'referenced_message', 'resolved', 'role_subscription', 'stickers', 'thread',
-        'tts', 'type'
+        'pinned', 'poll', 'reactions', 'referenced_message', 'resolved', 'role_subscription', 'snapshots', 'stickers',
+        'thread', 'tts', 'type'
     )
     
     
@@ -255,6 +259,7 @@ class Message(DiscordEntity, immortal = True):
         referenced_message = ...,
         resolved = ...,
         role_subscription = ...,
+        snapshots = ...,
         stickers = ...,
         thread = ...,
         tts = ...,
@@ -336,6 +341,9 @@ class Message(DiscordEntity, immortal = True):
         
         role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
+        
+        snapshots : `None`, `iterable` of ``MessageSnapshot`, Optional (Keyword only)
+            Forwarded snapshots of other messages.
         
         stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
             The stickers sent with the message.
@@ -491,6 +499,12 @@ class Message(DiscordEntity, immortal = True):
         else:
             role_subscription = validate_role_subscription(role_subscription)
         
+        # snapshots
+        if snapshots is ...:
+            snapshots = None
+        else:
+            snapshots = validate_snapshots(snapshots)
+        
         # stickers
         if stickers is ...:
             stickers = None
@@ -546,6 +560,7 @@ class Message(DiscordEntity, immortal = True):
         self.referenced_message = referenced_message
         self.resolved = resolved
         self.role_subscription = role_subscription
+        self.snapshots = snapshots
         self.stickers = stickers
         self.thread = thread
         self.tts = tts
@@ -776,6 +791,7 @@ class Message(DiscordEntity, immortal = True):
         self.referenced_message = parse_referenced_message(data)
         self.resolved = parse_resolved(data, guild_id = guild_id)
         self.role_subscription = parse_role_subscription(data)
+        self.snapshots = parse_snapshots(data)
         self.stickers = parse_stickers(data)
         self.thread = parse_thread(data, guild_id)
         self.tts = parse_tts(data)
@@ -1033,6 +1049,10 @@ class Message(DiscordEntity, immortal = True):
         if self.role_subscription != other.role_subscription:
             return False
         
+        # snapshots
+        if self.snapshots != other.snapshots:
+            return False
+        
         # stickers
         if self.stickers != other.stickers:
             return False
@@ -1193,6 +1213,13 @@ class Message(DiscordEntity, immortal = True):
         role_subscription = self.role_subscription
         if (role_subscription is not None):
             hash_value ^= hash(role_subscription)
+        
+        # snapshots
+        snapshots = self.snapshots
+        if (snapshots is not None):
+            hash_value ^= len(snapshots) << 35
+            for snapshot in snapshots:
+                hash_value ^= hash(snapshot)
         
         # stickers
         stickers = self.stickers
@@ -1703,6 +1730,7 @@ class Message(DiscordEntity, immortal = True):
             )
             put_resolved_into(self.resolved, data, defaults, guild_id = self.guild_id)
             put_role_subscription_into(self.role_subscription, data, defaults)
+            put_snapshots_into(self.snapshots, data, defaults)
             put_stickers_into(self.stickers, data, defaults)
             put_thread_into(self.thread, data, defaults)
         
@@ -1780,6 +1808,7 @@ class Message(DiscordEntity, immortal = True):
         self.referenced_message = None
         self.resolved = None
         self.role_subscription = None
+        self.snapshots = None
         self.stickers = None
         self.thread = None
         self.tts = False
@@ -1894,6 +1923,9 @@ class Message(DiscordEntity, immortal = True):
         
         role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
+        
+        snapshots : `None`, `iterable` of ``MessageSnapshot`, Optional (Keyword only)
+            Forwarded snapshots of other messages.
         
         stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
             The stickers sent with the message.
@@ -2041,6 +2073,11 @@ class Message(DiscordEntity, immortal = True):
             role_subscription = role_subscription.copy()
         new.role_subscription = role_subscription
         
+        snapshots = self.snapshots
+        if (snapshots is not None):
+            snapshots = (*(snapshot.copy() for snapshot in snapshots),)
+        new.snapshots = snapshots
+        
         stickers = self.stickers
         if (stickers is not None):
             stickers = (*stickers,)
@@ -2080,6 +2117,7 @@ class Message(DiscordEntity, immortal = True):
         referenced_message = ...,
         resolved = ...,
         role_subscription = ...,
+        snapshots = ...,
         stickers = ...,
         thread = ...,
         tts = ...,
@@ -2161,6 +2199,9 @@ class Message(DiscordEntity, immortal = True):
         
         role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only)
             Additional role subscription information attached to the message.
+        
+        snapshots : `None`, `iterable` of ``MessageSnapshot`, Optional (Keyword only)
+            Forwarded snapshots of other messages.
         
         stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
             The stickers sent with the message.
@@ -2348,6 +2389,14 @@ class Message(DiscordEntity, immortal = True):
         else:
             role_subscription = validate_role_subscription(role_subscription)
         
+        # snapshots
+        if snapshots is ...:
+            snapshots = self.snapshots
+            if (snapshots is not None):
+                snapshots = (*(snapshot.copy() for snapshot in snapshots),)
+        else:
+            snapshots = validate_snapshots(snapshots)
+        
         # stickers
         if stickers is ...:
             stickers = self.stickers
@@ -2405,6 +2454,7 @@ class Message(DiscordEntity, immortal = True):
         new.referenced_message = referenced_message
         new.resolved = resolved
         new.role_subscription = role_subscription
+        new.snapshots = snapshots
         new.stickers = stickers
         new.thread = thread
         new.tts = tts
@@ -2730,6 +2780,19 @@ class Message(DiscordEntity, immortal = True):
             return embeds[0]
     
     @property
+    def snapshot(self):
+        """
+        Returns the first snapshot in the message.
+
+        Returns
+        -------
+        snapshot : `None`, ``MessageSnapshot``
+        """
+        snapshots = self.snapshots
+        if snapshots is not None:
+            return snapshots[0]
+    
+    @property
     def sticker(self):
         """
         Returns the first sticker in the message.
@@ -2885,6 +2948,21 @@ class Message(DiscordEntity, immortal = True):
         mentioned_users = self.mentioned_users
         if (mentioned_users is not None):
             yield from mentioned_users
+    
+    
+    def iter_snapshots(self):
+        """
+        Iterates over the snapshots of the message.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        snapshot : ``Snapshot``
+        """
+        snapshots = self.snapshots
+        if snapshots is not None:
+            yield from snapshots
     
     
     def iter_stickers(self):
@@ -3166,6 +3244,17 @@ class Message(DiscordEntity, immortal = True):
         has_role_subscription : `bool`
         """
         return self.role_subscription is not None
+    
+    
+    def has_snapshots(self):
+        """
+        Returns whether the message has ``.snapshots`` set as its non default value.
+        
+        Returns
+        -------
+        has_snapshots : `bool`
+        """
+        return self.snapshots is not None
     
     
     def has_stickers(self):

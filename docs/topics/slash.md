@@ -245,9 +245,9 @@ from hata import Embed
 from hata.ext.slash import P # P is a shortcut for `SlashParameter`
 
 CAKES = [
-    'https://tenor.com/view/chocolate-cake-candles-gif-15613028',
-    'https://tenor.com/view/cake-yummy-hungry-eating-birthday-cake-gif-18507935',
-    'https://tenor.com/view/cake-fat-slice-gif-4931308',
+    'https://media1.tenor.com/m/TH1NEUEfRsEAAAAC/chocolate-cake-candles.gif',
+    'https://media1.tenor.com/m/TbV8bjfPi34AAAAd/cake-yummy.gif',
+    'https://media1.tenor.com/m/_zWV9yOWsfAAAAAC/cake-fat.gif',
 ]
 
 @Nitori.interactions(guild = TEST_GUILD)

@@ -1,17 +1,17 @@
-__all__ = ('CONVERSION_REPLY_CONFIGURATION',)
+__all__ = ('CONVERSION_MESSAGE_REFERENCE_CONFIGURATION',)
 
 from ....builder.constants import CONVERSION_KIND_FIELD
 from ....builder.conversion import Conversion
 
-from ..reply_configuration import ReplyConfiguration
+from ..message_reference_configuration import MessageReferenceConfiguration
 
 
-class CONVERSION_REPLY_CONFIGURATION(Conversion):
+class CONVERSION_MESSAGE_REFERENCE_CONFIGURATION(Conversion):
     # Generic
     
-    name = 'reply_configuration'
+    name = 'message_reference_configuration'
     name_aliases = None
-    expected_types_messages = f'`{ReplyConfiguration.__name__}`'
+    expected_types_messages = f'`{MessageReferenceConfiguration.__name__}`'
     kind = CONVERSION_KIND_FIELD
     output_conversion = None
     

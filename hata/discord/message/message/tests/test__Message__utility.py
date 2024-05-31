@@ -20,6 +20,7 @@ from ...message_application import MessageApplication
 from ...message_call import MessageCall
 from ...message_interaction import MessageInteraction
 from ...message_role_subscription import MessageRoleSubscription
+from ...message_snapshot import MessageSnapshot
 
 from ..flags import MessageFlag
 from ..message import Message
@@ -271,6 +272,10 @@ def test__Message__copy():
     referenced_message = Message.precreate(202305040107, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110034)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    snapshots = [
+        MessageSnapshot(content = 'Kazami'),
+        MessageSnapshot(content = 'Yuuka'),
+    ]
     stickers = [
         Sticker.precreate(202305040118, name = 'Kirisame'),
         Sticker.precreate(202305040119, name = 'Marisa'),
@@ -304,6 +309,7 @@ def test__Message__copy():
         referenced_message = referenced_message,
         resolved = resolved,
         role_subscription = role_subscription,
+        snapshots = snapshots,
         stickers = stickers,
         thread = thread,
         tts = tts,
@@ -365,6 +371,10 @@ def test__Message__copy_with__no_fields():
     referenced_message = Message.precreate(202305040133, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110035)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    snapshots = [
+        MessageSnapshot(content = 'Kazami'),
+        MessageSnapshot(content = 'Yuuka'),
+    ]
     stickers = [
         Sticker.precreate(202305040134, name = 'Kirisame'),
         Sticker.precreate(202305040135, name = 'Marisa'),
@@ -398,6 +408,7 @@ def test__Message__copy_with__no_fields():
         referenced_message = referenced_message,
         resolved = resolved,
         role_subscription = role_subscription,
+        snapshots = snapshots,
         stickers = stickers,
         thread = thread,
         tts = tts,
@@ -459,6 +470,10 @@ def test__Message__copy_with__all_fields():
     old_referenced_message = Message.precreate(202305040149, content = 'Patchouli')
     old_resolved = Resolved(attachments = [Attachment.precreate(202310110036)])
     old_role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    old_snapshots = [
+        MessageSnapshot(content = 'Kazami'),
+        MessageSnapshot(content = 'Yuuka'),
+    ]
     old_stickers = [
         Sticker.precreate(202305040150, name = 'Kirisame'),
         Sticker.precreate(202305040151, name = 'Marisa'),
@@ -509,6 +524,10 @@ def test__Message__copy_with__all_fields():
     new_referenced_message = Message.precreate(202305040164, content = 'Book')
     new_resolved = Resolved(attachments = [Attachment.precreate(202310110036)])
     new_role_subscription = MessageRoleSubscription(tier_name = 'Big brain')
+    new_snapshots = [
+        MessageSnapshot(content = 'Mushroom'),
+        MessageSnapshot(content = 'Soup'),
+    ]
     new_stickers = [
         Sticker.precreate(202305040165, name = 'Magic'),
         Sticker.precreate(202305040166, name = 'Witch'),
@@ -541,6 +560,7 @@ def test__Message__copy_with__all_fields():
         referenced_message = old_referenced_message,
         resolved = old_resolved,
         role_subscription = old_role_subscription,
+        snapshots = old_snapshots,
         stickers = old_stickers,
         thread = old_thread,
         tts = old_tts,
@@ -571,6 +591,7 @@ def test__Message__copy_with__all_fields():
         referenced_message = new_referenced_message,
         resolved = new_resolved,
         role_subscription = new_role_subscription,
+        snapshots = new_snapshots,
         stickers = new_stickers,
         thread = new_thread,
         tts = new_tts,
@@ -603,6 +624,7 @@ def test__Message__copy_with__all_fields():
     vampytest.assert_eq(copy.referenced_message, new_referenced_message)
     vampytest.assert_eq(copy.resolved, new_resolved)
     vampytest.assert_eq(copy.role_subscription, new_role_subscription)
+    vampytest.assert_eq(copy.snapshots, tuple(new_snapshots))
     vampytest.assert_eq(copy.stickers, tuple(new_stickers))
     vampytest.assert_eq(copy.thread, new_thread)
     vampytest.assert_eq(copy.tts, new_tts)
@@ -1076,6 +1098,35 @@ def test__Message__embed(input_value):
     return output
 
 
+def _iter_options__snapshot():
+    snapshot_0 = MessageSnapshot(content = 'Koishi')
+    snapshot_1 = MessageSnapshot(content = 'Satori')
+    
+    yield None, None
+    yield [snapshot_1], snapshot_1
+    yield [snapshot_0, snapshot_1], snapshot_0
+
+
+@vampytest._(vampytest.call_from(_iter_options__snapshot()).returning_last())
+def test__Message__snapshot(input_value):
+    """
+    Tests whether ``Message.snapshot`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<MessageSnapshot>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `NNone | MessageSnapshot`
+    """
+    message = Message(snapshots = input_value)
+    output = message.snapshot
+    vampytest.assert_instance(output, MessageSnapshot, nullable = True)
+    return output
+
+
 def _iter_options__sticker():
     sticker_0 = Sticker.precreate(202305050018, name = 'Koishi')
     sticker_1 = Sticker.precreate(202305050019, name = 'Satori')
@@ -1321,6 +1372,33 @@ def test__Message__iter_mentioned_users(input_value):
     """
     message = Message(mentioned_users = input_value)
     return [*message.iter_mentioned_users()]
+
+
+def _iter_options__iter_snapshots():
+    snapshot_0 = MessageSnapshot(content = 'Kazami')
+    snapshot_1 = MessageSnapshot(content = 'Yuuka')
+    
+    yield None, []
+    yield [snapshot_0], [snapshot_0]
+    yield [snapshot_0, snapshot_1], [snapshot_0, snapshot_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_snapshots()).returning_last())
+def test__Message__iter_snapshots(input_value):
+    """
+    Tests whether ``Message.iter_snapshots`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<MessageSnapshot>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<MessageSnapshot>`
+    """
+    message = Message(snapshots = input_value)
+    return [*message.iter_snapshots()]
 
 
 def _iter_options__iter_stickers():
@@ -1961,6 +2039,36 @@ def test__Message__has_role_subscription(input_value):
     """
     message = Message(role_subscription = input_value)
     output = message.has_role_subscription()
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def _iter_options__has_snapshots():
+    snapshots = [
+        MessageSnapshot(content = 'Kazami'),
+        MessageSnapshot(content = 'Yuuka'),
+    ]
+    
+    yield None, False
+    yield snapshots, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__has_snapshots()).returning_last())
+def test__Message__has_snapshots(input_value):
+    """
+    Tests whether ``Message.has_snapshots`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<MessageSnapshot>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message = Message(snapshots = input_value)
+    output = message.has_snapshots()
     vampytest.assert_instance(output, bool)
     return output
 

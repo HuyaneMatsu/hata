@@ -2,7 +2,7 @@ from datetime import datetime as DateTime
 
 import vampytest
 
-from ..utils import SignedUrlParseResult
+from ..utils import DATETIME_FORMAT_CODE, SignedUrlParseResult
 
 
 def _assert_fields_set(result):
@@ -55,8 +55,8 @@ def test__SignedUrlParseResult__repr():
     vampytest.assert_instance(output, str)
     vampytest.assert_in(type(result).__name__, output)
     vampytest.assert_in(f'url = {url!r}', output)
-    vampytest.assert_in(f'signed_at = {signed_at!r}', output)
-    vampytest.assert_in(f'expires_at = {expires_at!r}', output)
+    vampytest.assert_in(f'signed_at = {signed_at:{DATETIME_FORMAT_CODE}}', output)
+    vampytest.assert_in(f'expires_at = {expires_at:{DATETIME_FORMAT_CODE}}', output)
     vampytest.assert_in(f'signature = {signature!r}', output)
 
 

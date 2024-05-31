@@ -4,49 +4,36 @@ from ..fields import validate_flags
 from ..flags import MessageFlag
 
 
-def iter_options__passing():
+def _iter_options__passing():
+    yield None, MessageFlag(0)
     yield 1, MessageFlag(1)
     yield MessageFlag(1), MessageFlag(1)
 
 
-@vampytest._(vampytest.call_from(iter_options__passing()).returning_last())
-def test__validate_flags__passing(input_value):
+def _iter_options__type_error():
+    yield 'a'
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_flags(input_value):
     """
     Tests whether `validate_flags` works as intended.
-    
-    Case: passing.
     
     Parameters
     ----------
     input_value : `object`
-        The object to validate.
+        The value to validate.
     
     Returns
     -------
     value : ``MessageFlag``
-        The validated value.
-    """
-    output = validate_flags(input_value)
-    vampytest.assert_instance(output, MessageFlag)
-    return output
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with('a')
-def test__validate_flags__type_error(input_value):
-    """
-    Tests whether `validate_flags` works as intended.
-    
-    Case: type error.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        The object to validate.
     
     Raises
     ------
     TypeError
-        The raises exception.
     """
-    validate_flags(input_value)
+    output = validate_flags(input_value)
+    vampytest.assert_instance(output, MessageFlag)
+    return output

@@ -27,6 +27,6 @@ def test__parse_created_at(input_data):
     
     Returns
     -------
-    output : `None`, `DateTime`
+    output : `None | DateTime`
     """
     return parse_created_at(input_data)

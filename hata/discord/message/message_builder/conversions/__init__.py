@@ -9,11 +9,12 @@ from .embed import *
 from .embeds import *
 from .enforce_nonce import *
 from .flags import *
+from .forward_message import *
 from .instance import *
+from .message_reference_configuration import *
 from .name import *
 from .nonce import *
 from .poll import *
-from .reply_configuration import *
 from .reply_fail_fallback import *
 from .reply_message_id import *
 from .show_for_invoking_user_only import *

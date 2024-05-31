@@ -18,6 +18,7 @@ from ...message_application import MessageApplication
 from ...message_call import MessageCall
 from ...message_interaction import MessageInteraction
 from ...message_role_subscription import MessageRoleSubscription
+from ...message_snapshot import MessageSnapshot
 
 from ..flags import MessageFlag
 from ..message import Message
@@ -63,6 +64,7 @@ def _assert_fields_set(message):
     vampytest.assert_instance(message.referenced_message, Message, nullable = True)
     vampytest.assert_instance(message.resolved, Resolved, nullable = True)
     vampytest.assert_instance(message.role_subscription, MessageRoleSubscription, nullable = True)
+    vampytest.assert_instance(message.snapshots, tuple, nullable = True)
     vampytest.assert_instance(message.stickers, tuple, nullable = True)
     vampytest.assert_instance(message.thread, Channel, nullable = True)
     vampytest.assert_instance(message.tts, bool)
@@ -128,6 +130,10 @@ def test__Message__new__all_fields():
     referenced_message = Message.precreate(202305030012, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110006)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    snapshots = [
+        MessageSnapshot(content = 'Kazami'),
+        MessageSnapshot(content = 'Yuuka'),
+    ]
     stickers = [
         Sticker.precreate(202305030013, name = 'Kirisame'),
         Sticker.precreate(202305030014, name = 'Marisa'),
@@ -161,6 +167,7 @@ def test__Message__new__all_fields():
         referenced_message = referenced_message,
         resolved = resolved,
         role_subscription = role_subscription,
+        snapshots = snapshots,
         stickers = stickers,
         thread = thread,
         tts = tts,
@@ -191,6 +198,7 @@ def test__Message__new__all_fields():
     vampytest.assert_eq(message.referenced_message, referenced_message)
     vampytest.assert_eq(message.resolved, resolved)
     vampytest.assert_eq(message.role_subscription, role_subscription)
+    vampytest.assert_eq(message.snapshots, tuple(snapshots))
     vampytest.assert_eq(message.stickers, tuple(stickers))
     vampytest.assert_eq(message.thread, thread)
     vampytest.assert_eq(message.tts, tts)
@@ -278,6 +286,10 @@ def test__Message__precreate__all_fields():
     referenced_message = Message.precreate(202305030032, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110007)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    snapshots = [
+        MessageSnapshot(content = 'Kazami'),
+        MessageSnapshot(content = 'Yuuka'),
+    ]
     stickers = [
         Sticker.precreate(202305030033, name = 'Kirisame'),
         Sticker.precreate(202305030034, name = 'Marisa'),
@@ -318,6 +330,7 @@ def test__Message__precreate__all_fields():
         referenced_message = referenced_message,
         resolved = resolved,
         role_subscription = role_subscription,
+        snapshots = snapshots,
         stickers = stickers,
         thread = thread,
         tts = tts,
@@ -348,6 +361,7 @@ def test__Message__precreate__all_fields():
     vampytest.assert_eq(message.referenced_message, referenced_message)
     vampytest.assert_eq(message.resolved, resolved)
     vampytest.assert_eq(message.role_subscription, role_subscription)
+    vampytest.assert_eq(message.snapshots, tuple(snapshots))
     vampytest.assert_eq(message.stickers, tuple(stickers))
     vampytest.assert_eq(message.thread, thread)
     vampytest.assert_eq(message.tts, tts)

@@ -5,18 +5,45 @@ from ....embed import Embed
 from ..fields import parse_embeds
 
 
-def test__parse_embeds():
-    """
-    Tests whether ``parse_embeds`` works as intended.
-    """
+def _iter_options():
     embed_0 = Embed('Hell')
     embed_1 = Embed('Rose')
     
-    for input_value, expected_output in (
-        ({}, None),
-        ({'embeds': None}, None),
-        ({'embeds': [embed_0.to_data()]}, (embed_0, )),
-        ({'embeds': [embed_0.to_data(), embed_1.to_data()]}, (embed_0, embed_1)),
-    ):
-        output = parse_embeds(input_value)
-        vampytest.assert_eq(output, expected_output)
+    yield (
+        {},
+        None,
+    )
+    
+    yield (
+        {'embeds': None},
+        None,
+    )
+    
+    yield (
+        {'embeds': [embed_0.to_data()]},
+        (embed_0,),
+    )
+    
+    yield (
+        {'embeds': [embed_0.to_data(), embed_1.to_data()]},
+        (embed_0, embed_1),
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_embeds(input_data):
+    """
+    Tests whether ``parse_embeds`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | tuple<Embed>`
+    """
+    output = parse_embeds(input_data)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    return output

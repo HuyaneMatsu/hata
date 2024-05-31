@@ -1087,7 +1087,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
     @property
     def guild(self):
         """
-        Returns the auto moderation rule's guild. If the guild is not cached returns `None`
+        Returns the auto moderation rule's guild. If the guild is not cached returns `None`.
         
         Returns
         -------

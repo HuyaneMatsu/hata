@@ -204,7 +204,7 @@ class ResponseModifier(RichAttributeErrorBaseType):
         """
         allowed_mentions = self.allowed_mentions
         if (allowed_mentions is not None):
-            for _ in interaction_response._try_pull_field_value():
+            for _ in interaction_response._try_pull_field_value(CONVERSION_ALLOWED_MENTIONS):
                 break
             else:
                 interaction_response._setter_field(

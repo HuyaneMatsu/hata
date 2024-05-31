@@ -1,15 +1,15 @@
 import vampytest
 
-from ...reply_configuration import ReplyConfiguration
+from ...message_reference_configuration import MessageReferenceConfiguration
 
 from ..reply_fail_fallback import CONVERSION_REPLY_FAIL_FALLBACK
 
 
 def _iter_options__set_validator():
     yield object(), []
-    yield None, [ReplyConfiguration()]
-    yield False, [ReplyConfiguration(fail_fallback = False)]
-    yield True, [ReplyConfiguration(fail_fallback = True)]
+    yield None, [MessageReferenceConfiguration()]
+    yield False, [MessageReferenceConfiguration(fail_fallback = False)]
+    yield True, [MessageReferenceConfiguration(fail_fallback = True)]
 
 
 @vampytest._(vampytest.call_from(_iter_options__set_validator()).returning_last())
@@ -24,15 +24,15 @@ def test__CONVERSION_REPLY_FAIL_FALLBACK__set_validator(input_value):
     
     Returns
     -------
-    output : `list<ReplyConfiguration>`
+    output : `list<MessageReferenceConfiguration>`
     """
     return [*CONVERSION_REPLY_FAIL_FALLBACK.set_validator(input_value)]
 
 
 def _iter_options__get_processor():
     yield None, False
-    yield ReplyConfiguration(fail_fallback = False), False
-    yield ReplyConfiguration(fail_fallback = True), True
+    yield MessageReferenceConfiguration(fail_fallback = False), False
+    yield MessageReferenceConfiguration(fail_fallback = True), True
 
 
 @vampytest._(vampytest.call_from(_iter_options__get_processor()).returning_last())
@@ -42,7 +42,7 @@ def test__CONVERSION_REPLY_FAIL_FALLBACK__get_processor(input_value):
     
     Parameters
     ----------
-    input_value : `None | ReplyConfiguration`
+    input_value : `None | MessageReferenceConfiguration`
         Value to test.
     
     Returns

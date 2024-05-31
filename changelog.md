@@ -1,3 +1,24 @@
+## 1.3.57 *\[2024-05-31\]*
+
+### Improvements
+
+- Add `MessageReferenceType`.
+- Add `forward_message` parameter to `Client.message_create`.
+- Add `MessageSnapshot`.
+- Add `Message.snapshots`.
+- Add `Message.has_snapshots`.
+- Add `Message.iter_snapshots`.
+- Add `Message.snapshot`.
+
+### Bug fixes
+
+#### ext.slash
+- Fix an error when applying `allowed_mentions` set from command parameters. (from 1.3.56)
+
+### Renames, Deprecations & Removals
+
+- Rename `ReplyConfiguration` to `MessageReferenceConfiguration`.
+
 ## 1.3.56 *\[2024-05-21\]*
 
 ### Improvements

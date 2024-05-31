@@ -2,6 +2,8 @@ __all__ = ('VerificationScreen', )
 
 from scarletio import RichAttributeErrorBaseType
 
+from ...utils import DATETIME_FORMAT_CODE
+
 from .fields import (
     parse_description, parse_edited_at, parse_steps, put_description_into, put_edited_at_into, put_steps_into,
     validate_description, validate_edited_at, validate_steps
@@ -165,7 +167,7 @@ class VerificationScreen(RichAttributeErrorBaseType):
                 field_added = True
             
             repr_parts.append(' edited_at = ')
-            repr_parts.append(repr(edited_at))
+            repr_parts.append(format(edited_at, DATETIME_FORMAT_CODE))
         
         repr_parts.append('>')
         return ''.join(repr_parts)

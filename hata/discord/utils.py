@@ -1936,13 +1936,13 @@ class SignedUrlParseResult(RichAttributeErrorBaseType):
         signed_at = self.signed_at
         if (signed_at is not None):
             repr_parts.append(', signed_at = ')
-            repr_parts.append(repr(signed_at))
+            repr_parts.append(format(signed_at, DATETIME_FORMAT_CODE))
         
         # expires_at
         expires_at = self.expires_at
         if (expires_at is not None):
             repr_parts.append(', expires_at = ')
-            repr_parts.append(repr(expires_at))
+            repr_parts.append(format(expires_at, DATETIME_FORMAT_CODE))
         
         # signature
         signature = self.signature

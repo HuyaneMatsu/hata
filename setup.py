@@ -157,6 +157,7 @@ setup(
         'hata.discord.message.message_call',
         'hata.discord.message.message_interaction',
         'hata.discord.message.message_role_subscription',
+        'hata.discord.message.message_snapshot',
         'hata.discord.message.poll_change',
         'hata.discord.message.poll_update',
         'hata.discord.oauth2',

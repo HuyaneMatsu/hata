@@ -42,9 +42,9 @@ MESSAGE_SERIALIZER_CREATE = create_serializer(
             MessageBuilderCreate.embeds,
             MessageBuilderCreate.enforce_nonce,
             MessageBuilderCreate.flags,
+            MessageBuilderCreate.message_reference_configuration,
             MessageBuilderCreate.nonce,
             MessageBuilderCreate.poll,
-            MessageBuilderCreate.reply_configuration,
             MessageBuilderCreate.sticker_ids,
             MessageBuilderCreate.tts,
         ],
@@ -329,6 +329,9 @@ class ClientCompoundMessageEndpoints(Compound):
         
         flags : `int`, ``MessageFlag`, Optional
             The message's flags.
+        
+        forward_message : `int`, ``Message``, Optional (Keyword only)
+            
         
         nonce : `None`, `str`, Optional (Keyword only)
             Used for optimistic message sending. The sent nonce with be present as `Message.nonce`,

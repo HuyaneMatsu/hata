@@ -3,9 +3,9 @@ __all__ = ('CONVERSION_REPLY_FAIL_FALLBACK',)
 from ....builder.constants import CONVERSION_KIND_FIELD
 from ....builder.conversion import Conversion
 
-from ..reply_configuration import ReplyConfiguration
+from ..message_reference_configuration import MessageReferenceConfiguration
 
-from .reply_configuration import CONVERSION_REPLY_CONFIGURATION
+from .message_reference_configuration import CONVERSION_MESSAGE_REFERENCE_CONFIGURATION
 
 
 class CONVERSION_REPLY_FAIL_FALLBACK(Conversion):
@@ -15,7 +15,7 @@ class CONVERSION_REPLY_FAIL_FALLBACK(Conversion):
     name_aliases = None
     expected_types_messages = '`None`, `bool`'
     kind = CONVERSION_KIND_FIELD
-    output_conversion = CONVERSION_REPLY_CONFIGURATION
+    output_conversion = CONVERSION_MESSAGE_REFERENCE_CONFIGURATION
     
     # Setting
     
@@ -29,12 +29,12 @@ class CONVERSION_REPLY_FAIL_FALLBACK(Conversion):
     def set_validator(value):
         # None
         if value is None:
-            yield ReplyConfiguration()
+            yield MessageReferenceConfiguration()
             return
         
         # bool
         if isinstance(value, bool):
-            yield ReplyConfiguration(fail_fallback = value)
+            yield MessageReferenceConfiguration(fail_fallback = value)
             return
         
         # No other cases

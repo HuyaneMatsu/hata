@@ -1,45 +1,54 @@
 import vampytest
 
-from ....message import Attachment
+from ....message.attachment import Attachment
 
 from ..fields import validate_attachments
 
 
-def test__validate_attachments__0():
-    """
-    Tests whether ``validate_attachments`` works as intended.
+def _iter_options__passing():
+    attachment_id_0 = 202405240014
+    attachment_id_1 = 202405240015
     
-    Case: passing.
-    """
-    attachment_id = 202211050010
-    attachment_name = 'Faker'
+    attachment_0 = Attachment.precreate(attachment_id_0)
+    attachment_1 = Attachment.precreate(attachment_id_1)
     
-    attachment = Attachment.precreate(
-        attachment_id,
-        name = attachment_name,
+    yield None, None
+    yield [], None
+    yield {}, None
+    yield [attachment_0], {attachment_id_0: attachment_0}
+    yield {attachment_id_0: attachment_0}, {attachment_id_0: attachment_0}
+    yield [attachment_1, attachment_0], {attachment_id_0: attachment_0, attachment_id_1: attachment_1}
+    yield (
+        {attachment_id_1: attachment_1, attachment_id_0: attachment_0},
+        {attachment_id_0: attachment_0, attachment_id_1: attachment_1},
     )
-    
-    for input_value, expected_output in (
-        (None, None),
-        ([], None),
-        ({}, None),
-        ([attachment], {attachment_id: attachment}),
-        ({attachment_id: attachment}, {attachment_id: attachment}),
-    ):
-        output = validate_attachments(input_value)
-        vampytest.assert_eq(output, expected_output)
 
 
-def test__validate_attachments__1():
+def _iter_options__type_error():
+    yield 12.6
+    yield [12.6]
+    yield {12.6: 12.6}
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_attachments(input_value):
     """
-    Tests whether ``validate_attachments`` works as intended.
+    Validates whether ``validate_attachments`` works as intended.
     
-    Case: raising.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Returns
+    -------
+    output : `None | dict<int, Attachment>`
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-        [12.6],
-        {12.6: 12.6},
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_attachments(input_value)
+    output = validate_attachments(input_value)
+    vampytest.assert_instance(output, dict, nullable = True)
+    return output

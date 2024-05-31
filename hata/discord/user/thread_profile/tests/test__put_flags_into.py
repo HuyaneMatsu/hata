@@ -8,6 +8,7 @@ def _iter_options():
     yield ThreadProfileFlag(0), False, {}
     yield ThreadProfileFlag(0), True, {'flags': 0}
     yield ThreadProfileFlag(1), False, {'flags': 1}
+    yield ThreadProfileFlag(1), True, {'flags': 1}
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

@@ -8,6 +8,7 @@ def _iter_options():
     yield ChannelFlag(0), False, {}
     yield ChannelFlag(0), True, {'flags': 0}
     yield ChannelFlag(1), False, {'flags': 1}
+    yield ChannelFlag(1), True, {'flags': 1}
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

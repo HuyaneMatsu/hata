@@ -24,12 +24,11 @@ def test__validate_flags(input_value):
     Parameters
     ----------
     input_value : `object`
-        The object to validate.
+        The value to validate.
     
     Returns
     -------
     value : ``ApplicationFlag``
-        The validated value.
     
     Raises
     ------

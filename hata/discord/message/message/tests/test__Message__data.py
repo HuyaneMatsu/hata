@@ -19,6 +19,7 @@ from ...message_application import MessageApplication
 from ...message_call import MessageCall
 from ...message_interaction import MessageInteraction
 from ...message_role_subscription import MessageRoleSubscription
+from ...message_snapshot import MessageSnapshot
 from ...poll_change import PollChange
 from ...poll_update import PollUpdate
 
@@ -78,6 +79,10 @@ def test__Message__from_data__all_fields():
     referenced_message = Message.precreate(202305030051, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110008)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    snapshots = [
+        MessageSnapshot(content = 'Kazami'),
+        MessageSnapshot(content = 'Yuuka'),
+    ]
     stickers = [
         Sticker.precreate(202305030052, name = 'Kirisame'),
         Sticker.precreate(202305030053, name = 'Marisa'),
@@ -113,6 +118,7 @@ def test__Message__from_data__all_fields():
         'message_reference': referenced_message.to_message_reference_data(),
         'resolved': resolved.to_data(),
         'role_subscription_data': role_subscription.to_data(),
+        'message_snapshots': [snapshot.to_data() for snapshot in snapshots],
         'sticker_items': [create_partial_sticker_data(sticker) for sticker in stickers],
         'thread': thread.to_data(include_internals = True),
         
@@ -151,6 +157,7 @@ def test__Message__from_data__all_fields():
     vampytest.assert_eq(message.referenced_message, referenced_message)
     vampytest.assert_eq(message.resolved, resolved)
     vampytest.assert_eq(message.role_subscription, role_subscription)
+    vampytest.assert_eq(message.snapshots, tuple(snapshots))
     vampytest.assert_eq(message.stickers, tuple(stickers))
     vampytest.assert_eq(message.thread, thread)
     vampytest.assert_eq(message.tts, tts)
@@ -273,6 +280,10 @@ def test__Message__to_data():
     referenced_message = Message.precreate(202310110022, content = 'Patchouli')
     resolved = Resolved(attachments = [Attachment.precreate(202310110023)])
     role_subscription = MessageRoleSubscription(tier_name = 'Knowledge')
+    snapshots = [
+        MessageSnapshot(content = 'Kazami'),
+        MessageSnapshot(content = 'Yuuka'),
+    ]
     stickers = [
         Sticker.precreate(202310110024, name = 'Kirisame'),
         Sticker.precreate(202310110025, name = 'Marisa'),
@@ -309,6 +320,7 @@ def test__Message__to_data():
         'message_reference': referenced_message.to_message_reference_data(),
         'resolved': resolved.to_data(defaults = True),
         'role_subscription_data': role_subscription.to_data(defaults = True),
+        'message_snapshots': [snapshots.to_data(defaults = True) for snapshots in snapshots],
         'sticker_items': [create_partial_sticker_data(sticker) for sticker in stickers],
         'thread': thread.to_data(defaults = True, include_internals = True),
         'type': message_type.value,
@@ -350,6 +362,7 @@ def test__Message__to_data():
         referenced_message = referenced_message,
         resolved = resolved,
         role_subscription = role_subscription,
+        snapshots = snapshots,
         stickers = stickers,
         thread = thread,
         tts = tts,

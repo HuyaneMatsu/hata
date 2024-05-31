@@ -14,11 +14,12 @@ from ...field_parsers import (
     preinstanced_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, entity_id_putter_factory, flag_optional_putter_factory,
-    nullable_date_time_optional_putter_factory, nullable_entity_array_putter_factory,
-    nullable_entity_optional_putter_factory, nullable_functional_array_optional_putter_factory,
-    nullable_object_array_optional_putter_factory, nullable_string_optional_putter_factory,
-    optional_entity_id_array_optional_putter_factory, preinstanced_putter_factory, url_optional_putter_factory
+    bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
+    flag_optional_putter_factory, nullable_date_time_optional_putter_factory,
+    nullable_entity_array_optional_putter_factory, nullable_entity_optional_putter_factory,
+    nullable_functional_array_optional_putter_factory, nullable_object_array_optional_putter_factory,
+    nullable_string_optional_putter_factory, optional_entity_id_array_optional_putter_factory,
+    preinstanced_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, default_entity_validator_factory, entity_id_array_validator_factory,
@@ -104,7 +105,7 @@ validate_application_id = entity_id_validator_factory('application_id', Applicat
 # attachments
 
 parse_attachments = nullable_entity_array_parser_factory('attachments', Attachment)
-put_attachments_into = nullable_entity_array_putter_factory('attachments', Attachment)
+put_attachments_into = nullable_entity_array_optional_putter_factory('attachments', Attachment)
 validate_attachments = nullable_entity_array_validator_factory('attachments', Attachment)
 
 # author
@@ -234,7 +235,7 @@ validate_flags = flag_validator_factory('flags', MessageFlag)
 # guild_id
 
 parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id_into = entity_id_putter_factory('guild_id')
+put_guild_id_into = entity_id_optional_putter_factory('guild_id')
 validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 # id
@@ -719,6 +720,12 @@ put_role_subscription_into = nullable_entity_optional_putter_factory(
     'role_subscription_data', MessageRoleSubscription
 )
 validate_role_subscription = nullable_entity_validator_factory('role_subscription', MessageRoleSubscription)
+
+# snapshots
+
+parse_snapshots = nullable_object_array_parser_factory('message_snapshots', NotImplemented, include = 'MessageSnapshot')
+put_snapshots_into = nullable_object_array_optional_putter_factory('message_snapshots')
+validate_snapshots = nullable_object_array_validator_factory('snapshots', NotImplemented, include = 'MessageSnapshot')
 
 # stickers
 

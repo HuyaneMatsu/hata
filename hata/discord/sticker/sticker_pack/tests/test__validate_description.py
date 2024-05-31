@@ -3,18 +3,21 @@ import vampytest
 from ..fields import validate_description
 
 
-def _iter_options():
+def _iter_options__passing():
     yield None, None
     yield '', None
     yield 'a', 'a'
 
 
-@vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_description__passing(input_value):
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_description(input_value):
     """
     Tests whether `validate_description` works as intended.
-    
-    Case: passing.
     
     Parameters
     ----------
@@ -24,25 +27,10 @@ def test__validate_description__passing(input_value):
     Returns
     -------
     output : `None | str`
-    """
-    return validate_description(input_value)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-def test__validate_description__type_error(input_value):
-    """
-    Tests whether `validate_description` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Value to validate.
     
     Raises
     ------
     TypeError
+    ValueError
     """
-    validate_description(input_value)
+    return validate_description(input_value)

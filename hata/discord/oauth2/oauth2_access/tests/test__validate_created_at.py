@@ -5,47 +5,34 @@ import vampytest
 from ..fields import validate_created_at
 
 
-def _iter_options():
+def _iter_options__passing():
     created_at = DateTime(2016, 5, 14)
     
     yield created_at, created_at
 
 
-@vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_created_at__passing(input_value):
-    """
-    Tests whether ``validate_created_at`` works as intended.
-    
-    Case: passing.
-    
-    Parameters
-    ----------
-    input_value : `DateTime`
-        The value to validate.
-    
-    Returns
-    -------
-    output : `DateTime`
-    """
-    return validate_created_at(input_value)
+def _iter_options__type_error():
+    yield 12.6
+    yield None
 
 
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-@vampytest.call_with(None)
-def test__validate_created_at__type_error(input_value):
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_created_at(input_value):
     """
     Tests whether ``validate_created_at`` works as intended.
-    
-    Case: `TypeError`.
     
     Parameters
     ----------
     input_value : `object`
         The value to validate.
     
+    Returns
+    -------
+    output : `DateTime`
+    
     Raises
     ------
     TypeError
     """
-    validate_created_at(input_value)
+    return validate_created_at(input_value)

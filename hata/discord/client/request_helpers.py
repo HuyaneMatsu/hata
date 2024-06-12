@@ -136,7 +136,38 @@ def get_channel_guild_id_and_id(channel, type_checker):
     )
 
 
-def get_channel_and_id(channel, type_checker):
+def build_get_channel_and_id_error_message(channel, type_checker):
+    """
+    Builds error message for `get_channel_and_id`.
+    
+    Parameters
+    ----------
+    channel : `object`
+        The object that was passed as `channel`.
+    type_checker : `None | FunctionType`
+        Type checker for `channel`.
+    
+    Returns
+    -------
+    error_message : `str`
+    """
+    parts = ['`channel` can be `', Channel.__name__, '`, `int`']
+    
+    if (type_checker is not None):
+        parts.append(', passing the `')
+        parts.append(type_checker.__name__)
+        parts.append('` check')
+    
+    parts.append(', got ')
+    parts.append(type(channel).__name__)
+    parts.append('; ')
+    parts.append(repr(channel))
+    parts.append('.')
+    
+    return ''.join(parts)
+
+
+def get_channel_and_id(channel, type_checker = None):
     """
     Gets thread channel and it's identifier from the given thread channel or of it's identifier.
     
@@ -144,7 +175,7 @@ def get_channel_and_id(channel, type_checker):
     ----------
     channel : ``Channel``, `int`
         The channel, or it's identifier.
-    type_checker : `FunctionType`
+    type_checker : `None | FunctionType` = `None`, Optional
         Type checker for `channel`.
     
     Returns
@@ -161,7 +192,7 @@ def get_channel_and_id(channel, type_checker):
     """
     while True:
         if isinstance(channel, Channel):
-            if type_checker(channel) or channel.partial:
+            if (type_checker is None) or type_checker(channel) or channel.partial:
                 channel_id = channel.id
                 break
         
@@ -174,14 +205,11 @@ def get_channel_and_id(channel, type_checker):
                     channel = None
                     break
                 
-                if type_checker(channel) or channel.partial:
+                if (type_checker is None) or type_checker(channel) or channel.partial:
                     channel_id = channel.id
                     break
         
-        raise TypeError(
-            f'`channel` can be `{Channel.__name__}`, `int`,  passing the `{type_checker.__name__}` check, '
-            f'got {channel.__class__.__name__}; {channel!r}.'
-        )
+        raise TypeError(build_get_channel_and_id_error_message(channel, type_checker))
     
     return channel, channel_id
 

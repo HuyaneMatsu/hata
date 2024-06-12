@@ -411,6 +411,15 @@ Group Details
     - Resets after : `N/A`
     - Notes : Untested.
 
+- channel_get
+    - Endpoint : `/channels/{channel_id}`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `1000`
+    - Resets after : `1.0`
+    - Notes : Assumably global.
+
 - channel_edit
     - Endpoint : `/channels/{channel_id}`
     - Method : `PATCH`
@@ -2173,6 +2182,7 @@ application_get_all_detectable = RateLimitGroup(optimistic = True)
 client_logout = RateLimitGroup() # untested
 channel_delete = RateLimitGroup.unlimited()
 channel_group_leave = RateLimitGroup.unlimited() # untested; same as channel_delete?
+channel_get = RateLimitGroup()
 channel_edit = RateLimitGroup(LIMITER_CHANNEL)
 channel_group_edit = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?
 channel_directory_counts = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # untested; same as channel_edit?

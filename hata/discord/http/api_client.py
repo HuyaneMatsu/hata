@@ -1798,6 +1798,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             params = params,
         )
     
+    
     # DiscordException Forbidden (403), code = 20001: Bots cannot use this endpoint
     # data structure: {'sticker_ids': [sticker_id_1, ...]}
     async def greet(self, channel_id, data):
@@ -1807,6 +1808,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             f'{API_ENDPOINT}/channels/{channel_id}/greet',
             data,
         )
+    
     
     # hooman only
     async def bulk_ack(self):
@@ -1824,6 +1826,17 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             f'{API_ENDPOINT}/voice/regions',
         )
     
+    
+    # channel
+    
+    async def channel_get(self, channel_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.channel_get, channel_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/channels/{channel_id}',
+        )
+    
+    
     # thread
     
     async def guild_thread_get_all_active(self, guild_id):
@@ -1832,6 +1845,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/threads/active',
         )
+    
     
     # DiscordException Bad Request (400), code = 50001: Missing Access
     async def thread_create(self, channel_id, data):

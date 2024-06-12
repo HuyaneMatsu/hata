@@ -1,7 +1,5 @@
 __all__ = ()
 
-from scarletio import include
-
 from ...application import SKU
 from ...channel import Channel, ChannelType
 from ...field_parsers import (
@@ -11,8 +9,9 @@ from ...field_parsers import (
 )
 from ...field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, int_optional_putter_factory,
-    negated_bool_optional_putter_factory, nullable_entity_array_putter_factory, nullable_string_optional_putter_factory,
-    preinstanced_array_putter_factory, preinstanced_putter_factory, url_optional_putter_factory
+    negated_bool_optional_putter_factory, nullable_entity_array_putter_factory,
+    nullable_string_optional_putter_factory, nullable_string_putter_factory, preinstanced_array_putter_factory,
+    preinstanced_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, int_conditional_validator_factory,
@@ -23,17 +22,17 @@ from ...role import Role
 from ...user import ClientUserBase
 
 from ..entity_select_default_value import EntitySelectDefaultValue, EntitySelectDefaultValueType
+from ..media_item import MediaItem
 from ..string_select_option import StringSelectOption
 
 from .constants import (
-    BUTTON_STYLE_DEFAULT, LABEL_LENGTH_MAX, MAX_LENGTH_DEFAULT, MAX_LENGTH_MAX, MAX_LENGTH_MIN, MAX_VALUES_DEFAULT,
-    MAX_VALUES_MAX, MAX_VALUES_MIN, MIN_LENGTH_DEFAULT, MIN_LENGTH_MAX, MIN_LENGTH_MIN, MIN_VALUES_DEFAULT,
-    MIN_VALUES_MAX, MIN_VALUES_MIN, PLACEHOLDER_LENGTH_MAX, TEXT_INPUT_STYLE_DEFAULT, URL_LENGTH_MAX, VALUE_LENGTH_MAX
+    BUTTON_STYLE_DEFAULT, CONTENT_LENGTH_MAX, CONTENT_LENGTH_MIN, LABEL_LENGTH_MAX, MAX_LENGTH_DEFAULT, MAX_LENGTH_MAX,
+    MAX_LENGTH_MIN, MAX_VALUES_DEFAULT, MAX_VALUES_MAX, MAX_VALUES_MIN, MIN_LENGTH_DEFAULT, MIN_LENGTH_MAX,
+    MIN_LENGTH_MIN, MIN_VALUES_DEFAULT, MIN_VALUES_MAX, MIN_VALUES_MIN, PLACEHOLDER_LENGTH_MAX,
+    SEPARATOR_SPACING_SIZE_DEFAULT, TEXT_INPUT_STYLE_DEFAULT, URL_LENGTH_MAX, VALUE_LENGTH_MAX
 )
-from .preinstanced import ButtonStyle, TextInputStyle
+from .preinstanced import ButtonStyle, SeparatorSpacingSize, TextInputStyle
 
-
-Component = include('Component')
 
 # button_style
 
@@ -46,6 +45,12 @@ validate_button_style = preinstanced_validator_factory('button_style', ButtonSty
 parse_channel_types = preinstanced_array_parser_factory('channel_types', ChannelType)
 put_channel_types_into = preinstanced_array_putter_factory('channel_types')
 validate_channel_types = preinstanced_array_validator_factory('channel_types', ChannelType)
+
+# content
+
+parse_content = nullable_string_parser_factory('content')
+put_content_into = nullable_string_putter_factory('content')
+validate_content = nullable_string_validator_factory('content', CONTENT_LENGTH_MIN, CONTENT_LENGTH_MAX)
 
 # default_values
 
@@ -244,6 +249,12 @@ def validate_default_values(default_values):
         f'got {type(default_values).__name__}; {default_values!r}.'
     )
 
+# divider
+
+parse_divider = bool_parser_factory('divider', True)
+put_divider_into = bool_optional_putter_factory('divider', True)
+validate_divider = bool_validator_factory('divider', True)
+
 
 # enabled
 
@@ -251,11 +262,20 @@ parse_enabled = negated_bool_parser_factory('disabled', True)
 put_enabled_into = negated_bool_optional_putter_factory('disabled', True)
 validate_enabled = bool_validator_factory('enabled', True)
 
+
+# items
+
+parse_items = nullable_object_array_parser_factory('items', MediaItem)
+put_items_into = nullable_entity_array_putter_factory('items', MediaItem)
+validate_items = nullable_object_array_validator_factory('items', MediaItem)
+
+
 # label
 
 parse_label = nullable_string_parser_factory('label')
 put_label_into = nullable_string_optional_putter_factory('label')
 validate_label = nullable_string_validator_factory('label', 0, LABEL_LENGTH_MAX)
+
 
 # max_length
 
@@ -324,6 +344,13 @@ validate_required = bool_validator_factory('required', True)
 parse_sku_id = entity_id_parser_factory('sku_id')
 put_sku_id_into = entity_id_optional_putter_factory('sku_id')
 validate_sku_id = entity_id_validator_factory('sku_id', SKU)
+
+
+# spacing_size
+
+parse_spacing_size = preinstanced_parser_factory('spacing', SeparatorSpacingSize, SEPARATOR_SPACING_SIZE_DEFAULT)
+put_spacing_size_into = preinstanced_putter_factory('spacing')
+validate_spacing_size = preinstanced_validator_factory('spacing_size', SeparatorSpacingSize)
 
 
 # text_input_style

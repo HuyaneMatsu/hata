@@ -1,3 +1,43 @@
+## 1.3.58 *\[2024-06-12\]*
+
+### Improvements
+
+- Add `HATA_MEDIA_ENDPOINT` env variable.
+- `sticker_url` and `sticker_url_as` now returns the correct urls for `gif` stickers.
+- Add `Client.channel_get`.
+- Add `DiscordApiClient.channel_get`.
+- Add `RATE_LIMIT_GROUPS.channel_get`.
+- Add `ApplicationCommandTargetType.application_activity`.
+- Add `ComponentType.text`.
+- Add `ComponentType.media_gallery`.
+- Add `ComponentType.separator`.
+- Add `SeparatorSpacingSize`.
+- Add `GuildProfileFlag.guest`.
+- Add `GuildProfileFlag.auto_moderation_quarantined_clan_tag`.
+- Add `GuildProfileFlag.privacy_settings_direct_message_promotion_acknowledged`.
+- Add `ComponentMetadataText`.
+- Add `use_external_application_commands` ``Permission``,
+- Add `ComponentMetadataBase.content`.
+- Add `Component.content`
+- Add `ComponentMetadataMediaGallery`.
+- Add `ComponentMetadataBase.items`.
+- Add `Component.items`
+- Add `Component.iter_items`
+- Add `ComponentMetadataSpacing`.
+- Add `ComponentMetadataBase.divider`.
+- Add `ComponentMetadataBase.spacing_size`.
+- Add `Component.divider`
+- Add `Component.spacing_size`
+- Add `create_media_gallery`.
+- Add `create_separator`.
+- Add `create_text`.
+
+#### ext.slash
+- Add `Text`.
+- Add `MediaGallery`.
+- Add `Separator`.
+- Add `SeparatorSpacingSize`.
+
 ## 1.3.57 *\[2024-05-31\]*
 
 ### Improvements

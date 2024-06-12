@@ -1,6 +1,7 @@
 __all__ = (
-    'create_button', 'create_channel_select', 'create_mentionable_select', 'create_role_select', 'create_row',
-    'create_string_select', 'create_text_input', 'create_user_select'
+    'create_button', 'create_channel_select', 'create_media_gallery', 'create_mentionable_select',
+    'create_role_select', 'create_row', 'create_separator', 'create_string_select', 'create_text', 'create_text_input',
+    'create_user_select'
 )
 
 from .component import Component, ComponentType
@@ -80,7 +81,7 @@ def create_row(
     
     Parameters
     ----------
-    *components : `None`, `iterable` of ``Component``
+    *components : ``Component``
         Sub components.
     
     Returns
@@ -164,7 +165,7 @@ def create_text_input(
     value = ...,
 ):
     """
-    Creates a new text input.
+    Creates a new text input. Can be used inside of forms.
     
     Parameters
     ----------
@@ -394,7 +395,7 @@ def create_channel_select(
     min_values = ...,
 ):
     """
-    Creates a new channel (user & role) select.
+    Creates a new channel select.
     
     Parameters
     ----------
@@ -440,4 +441,93 @@ def create_channel_select(
         max_values = max_values,
         min_values = min_values,
         placeholder = placeholder,
+    )
+
+
+def create_text(
+    content = ...,
+):
+    """
+    Creates a new text component. Can be used inside of forms.
+    
+    Parameters
+    ----------
+    content : `None`, `str`, Optional
+        The content shown on the component.
+    
+    Returns
+    -------
+    text : ``Component``
+    
+    Raises
+    ------
+    TypeError
+        - If a parameter's type is incorrect.
+    ValueError
+        - If a parameter's value is incorrect.
+    """
+    return Component(
+        ComponentType.text,
+        content = content,
+    )
+
+
+def create_media_gallery(
+    *items,
+):
+    """
+    Creates a new media gallery component. Can be used inside of forms.
+    
+    Parameters
+    ----------
+    *items : ``MediaItem``
+        The media items shown on the component.
+    
+    Returns
+    -------
+    text : ``Component``
+    
+    Raises
+    ------
+    TypeError
+        - If a parameter's type is incorrect.
+    ValueError
+        - If a parameter's value is incorrect.
+    """
+    return Component(
+        ComponentType.media_gallery,
+        items = items,
+    )
+
+
+def create_separator(
+    *,
+    divider = ...,
+    spacing_size = ...,
+):
+    """
+    Creates a new separator component. Can be used inside of forms.
+    
+    Parameters
+    ----------
+    divider : `bool`, Optional (Keyword only)
+        Whether the separator should contain a divider.
+    spacing_size : ``SeparatorSpacingSize``, `int`, Optional (Keyword only)
+        The separator's spacing's size.
+    
+    Returns
+    -------
+    separator : ``Component``
+    
+    Raises
+    ------
+    TypeError
+        - If a parameter's type is incorrect.
+    ValueError
+        - If a parameter's value is incorrect.
+    """
+    return Component(
+        ComponentType.separator,
+        divider = divider,
+        spacing_size = spacing_size,
     )

@@ -20,10 +20,10 @@ def test__ComponentMetadataRow__copy():
     
     _assert_fields_set(copy)
     vampytest.assert_is_not(component_metadata, copy)
-    vampytest.assert_eq(copy.components, tuple(components))
+    vampytest.assert_eq(component_metadata, copy)
 
 
-def test__ComponentMetadataRow__copy_with__0():
+def test__ComponentMetadataRow__copy_with__no_fields():
     """
     Tests whether ``ComponentMetadataRow.copy_with`` works as intended.
     
@@ -38,16 +38,17 @@ def test__ComponentMetadataRow__copy_with__0():
     
     _assert_fields_set(copy)
     vampytest.assert_is_not(component_metadata, copy)
-    vampytest.assert_eq(copy.components, tuple(components))
+    vampytest.assert_eq(component_metadata, copy)
 
 
-def test__ComponentMetadataRow__copy_with__1():
+def test__ComponentMetadataRow__copy_with__all_fields():
     """
     Tests whether ``ComponentMetadataRow.copy_with`` works as intended.
     
     Case: all fields.
     """
     old_components = [Component(ComponentType.button, label = 'chata')]
+    
     new_components = [Component(ComponentType.button, label = 'yuina')]
     
     component_metadata = ComponentMetadataRow(
@@ -62,7 +63,7 @@ def test__ComponentMetadataRow__copy_with__1():
     vampytest.assert_eq(copy.components, tuple(new_components))
 
 
-def test__ComponentMetadataRow__copy_with_keyword_parameters__0():
+def test__ComponentMetadataRow__copy_with_keyword_parameters__no_fields():
     """
     Tests whether ``ComponentMetadataRow.copy_with_keyword_parameters`` works as intended.
     
@@ -77,16 +78,17 @@ def test__ComponentMetadataRow__copy_with_keyword_parameters__0():
     
     _assert_fields_set(copy)
     vampytest.assert_is_not(component_metadata, copy)
-    vampytest.assert_eq(copy.components, tuple(components))
+    vampytest.assert_eq(component_metadata, copy)
 
 
-def test__ComponentMetadataRow__copy_with_keyword_parameters__1():
+def test__ComponentMetadataRow__copy_with_keyword_parameters__all_fields():
     """
     Tests whether ``ComponentMetadataRow.copy_with_keyword_parameters`` works as intended.
     
     Case: all fields.
     """
     old_components = [Component(ComponentType.button, label = 'chata')]
+    
     new_components = [Component(ComponentType.button, label = 'yuina')]
     
     component_metadata = ComponentMetadataRow(

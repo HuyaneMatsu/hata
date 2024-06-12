@@ -468,13 +468,13 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | premium_referral                          | premium referral                          | 35    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | guild_incidents_enable                    | guild incidents enable                    | 36    | convert_guild_incidents_enable                    | false     |
+    | guild_incidents_enable                    | guild incidents enable                    | 36    | convert_guild_incidents_enable                    | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | guild_incidents_disable                   | guild incidents disable                   | 37    | convert_guild_incidents_disable                   | false     |
+    | guild_incidents_disable                   | guild incidents disable                   | 37    | convert_guild_incidents_disable                   | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | guild_incidents_report_raid               | guild incidents report raid               | 38    | MESSAGE_DEFAULT_CONVERTER                         | false     |
+    | guild_incidents_report_raid               | guild incidents report raid               | 38    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | guild_incidents_report_false_alarm        | guild incidents report false alarm        | 39    | MESSAGE_DEFAULT_CONVERTER                         | false     |
+    | guild_incidents_report_false_alarm        | guild incidents report false alarm        | 39    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | guild_chat_revive                         | guild chat revive                         | 40    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+

@@ -4,28 +4,35 @@ from ..fields import validate_button_style
 from ..preinstanced import ButtonStyle
 
 
-def test__validate_button_style__0():
+def _iter_options__passing():
+    yield ButtonStyle.link, ButtonStyle.link
+    yield ButtonStyle.link.value, ButtonStyle.link
+    yield None, ButtonStyle.none
+
+
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_button_style(input_value):
     """
     Tests whether `validate_button_style` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (ButtonStyle.red, ButtonStyle.red),
-        (ButtonStyle.red.value, ButtonStyle.red)
-    ):
-        output = validate_button_style(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_button_style__1():
-    """
-    Tests whether `validate_button_style` works as intended.
+    Parameters
+    ----------
+    input_value : `dict<str, object>`
+        Value to validate.
     
-    Case: `TypeError`.
+    Returns
+    -------
+    output : ``ButtonStyle``
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_button_style(input_value)
+    output = validate_button_style(input_value)
+    vampytest.assert_instance(output, ButtonStyle)
+    return output

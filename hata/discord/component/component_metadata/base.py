@@ -4,6 +4,7 @@ from scarletio import RichAttributeErrorBaseType
 
 from ...bases import PlaceHolder
 
+from .constants import SEPARATOR_SPACING_SIZE_DEFAULT
 from .preinstanced import ButtonStyle, TextInputStyle
 
 
@@ -34,7 +35,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters to build the metadata from.
         
         Returns
@@ -53,7 +54,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the component metadata's representation."""
-        return f'<{self.__class__.__name__}>'
+        return f'<{type(self).__name__}>'
     
     
     def __hash__(self):
@@ -92,7 +93,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Component data.
         
         Returns
@@ -114,7 +115,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         return {}
     
@@ -156,7 +157,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters defining which fields should be changed.
         
         Returns
@@ -211,6 +212,18 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
     )
     
     
+    content = PlaceHolder(
+        None,
+        """
+        The content shown on the component.
+        
+        Returns
+        -------
+        content : `None`, `str`
+        """
+    )
+    
+    
     custom_id = PlaceHolder(
         None,
         """
@@ -237,6 +250,18 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
     )
     
     
+    divider = PlaceHolder(
+        True,
+        """
+        Whether the separator should contain a divider.
+        
+        Returns
+        -------
+        divider : `bool`
+        """
+    )
+    
+    
     emoji = PlaceHolder(
         None,
         """
@@ -257,6 +282,18 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         Returns
         -------
         enabled : `bool`
+        """
+    )
+    
+    
+    items = PlaceHolder(
+        None,
+        """
+        The media items shown on the component.
+        
+        Returns
+        -------
+        items : `None`, `tuple` of ``MediaItem``
         """
     )
     
@@ -356,6 +393,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         """
     )
     
+    
     sku_id = PlaceHolder(
         0,
         """
@@ -368,6 +406,19 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         sku_id : `int`
         """
     )
+    
+    
+    spacing_size = PlaceHolder(
+        SEPARATOR_SPACING_SIZE_DEFAULT,
+        """
+        The separator's spacing's size.
+        
+        Returns
+        -------
+        spacing_size : ``SeparatorSpacingSize``
+        """
+    )
+    
     
     text_input_style = PlaceHolder(
         TextInputStyle.none,

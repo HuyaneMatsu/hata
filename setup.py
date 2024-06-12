@@ -87,6 +87,7 @@ setup(
         'hata.discord.component.component_metadata',
         'hata.discord.component.entity_select_default_value',
         'hata.discord.component.interaction_form',
+        'hata.discord.component.media_item',
         'hata.discord.component.string_select_option',
         'hata.discord.embed',
         'hata.discord.embed.embed',

@@ -32,4 +32,6 @@ def test__validate_nsfw(input_value):
     ------
     TypeError
     """
-    return validate_nsfw(input_value)
+    output = validate_nsfw(input_value)
+    vampytest.assert_instance(output, bool)
+    return output

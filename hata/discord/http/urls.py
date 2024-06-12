@@ -9,7 +9,8 @@ import re
 from scarletio import export, include
 
 from ...env import (
-    API_VERSION, CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_STATUS_ENDPOINT
+    API_VERSION, CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_MEDIA_ENDPOINT,
+    CUSTOM_STATUS_ENDPOINT
 )
 
 
@@ -21,6 +22,7 @@ API_ENDPOINT = f'https://discord.com/api/v{API_VERSION}' if (CUSTOM_API_ENDPOINT
 CDN_ENDPOINT = 'https://cdn.discordapp.com' if (CUSTOM_CDN_ENDPOINT is None) else CUSTOM_CDN_ENDPOINT
 DISCORD_ENDPOINT = 'https://discord.com' if (CUSTOM_DISCORD_ENDPOINT is None) else CUSTOM_DISCORD_ENDPOINT
 STATUS_ENDPOINT = 'https://status.discord.com/api/v2' if (CUSTOM_STATUS_ENDPOINT is None) else CUSTOM_STATUS_ENDPOINT
+MEDIA_ENDPOINT =  'https://media.discordapp.net' if (CUSTOM_MEDIA_ENDPOINT is None) else CUSTOM_MEDIA_ENDPOINT
 
 del CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_STATUS_ENDPOINT, API_VERSION
 
@@ -1295,8 +1297,10 @@ def achievement_icon_url_as(achievement, ext = None, size = None):
     ext = _validate_extension(icon_type, ext)
     end = _build_end(size)
     
-    return f'{CDN_ENDPOINT}/app-assets/{achievement.application_id}/achievements/{achievement.id}/icons/{prefix}' \
-           f'{achievement.icon_hash:0>32x}.{ext}{end}'
+    return (
+        f'{CDN_ENDPOINT}/app-assets/{achievement.application_id}/achievements/{achievement.id}/icons/{prefix}'
+       f'{achievement.icon_hash:0>32x}.{ext}{end}'
+    )
 
 
 def sticker_url(sticker):
@@ -1309,11 +1313,16 @@ def sticker_url(sticker):
     -------
     url : `None`, `str`
     """
-    format = sticker.format
-    if format is StickerFormat.none:
+    sticker_format = sticker.format
+    if sticker_format is StickerFormat.none:
         return None
     
-    return f'{CDN_ENDPOINT}/stickers/{sticker.id}.{format.extension}'
+    if sticker_format is StickerFormat.gif:
+        endpoint = MEDIA_ENDPOINT
+    else:
+        endpoint = CDN_ENDPOINT
+        
+    return f'{endpoint}/stickers/{sticker.id}.{sticker_format.extension}'
 
 
 def sticker_url_as(sticker, size = None, preview = False):
@@ -1359,7 +1368,12 @@ def sticker_url_as(sticker, size = None, preview = False):
         if sticker_format is StickerFormat.apng:
             end = f'{end}{"&" if end else "?"}passthrough=false'
     
-    return f'{CDN_ENDPOINT}/stickers/{sticker.id}.{sticker_format.extension}{end}'
+    if sticker_format is StickerFormat.gif:
+        endpoint = MEDIA_ENDPOINT
+    else:
+        endpoint = CDN_ENDPOINT
+    
+    return f'{endpoint}/stickers/{sticker.id}.{sticker_format.extension}{end}'
 
 
 def sticker_pack_banner(sticker_pack):

@@ -2,6 +2,7 @@ import vampytest
 
 from ...component_metadata import ButtonStyle, TextInputStyle
 from ...entity_select_default_value import EntitySelectDefaultValue, EntitySelectDefaultValueType
+from ...media_item import MediaItem
 from ...string_select_option import StringSelectOption
 
 from ..component import Component
@@ -64,10 +65,13 @@ def test__Component__copy_with__fields():
 
 
 def _iter_options__iter_components():
-    component = Component(ComponentType.button, custom_id = 'chen')
+    component_0 = Component(ComponentType.button, custom_id = 'chen')
+    component_1 = Component(ComponentType.button, custom_id = 'ran')
     
-    yield (component, [])
-    yield (Component(ComponentType.row, components = [component]), [component])
+    yield (component_0, [])
+    yield (Component(ComponentType.row, components = []), [])
+    yield (Component(ComponentType.row, components = [component_0]), [component_0])
+    yield (Component(ComponentType.row, components = [component_0, component_1]), [component_0, component_1])
     
 
 @vampytest._(vampytest.call_from(_iter_options__iter_components()).returning_last())
@@ -88,10 +92,12 @@ def test__Component__iter_components(input_value):
 
 
 def _iter_options__iter_options():
-    options = [StringSelectOption('yume')]
+    option_0 = StringSelectOption('yume')
+    option_1 = StringSelectOption('ame')
     
-    yield (Component(ComponentType.string_select), [])
-    yield (Component(ComponentType.string_select, options = options), options)
+    yield Component(ComponentType.string_select), []
+    yield Component(ComponentType.string_select, options = [option_0]), [option_0]
+    yield Component(ComponentType.string_select, options = [option_0, option_1]), [option_0, option_1]
 
 
 @vampytest._(vampytest.call_from(_iter_options__iter_options()).returning_last())
@@ -111,11 +117,42 @@ def test__Component__iter_options(input_value):
     return [*input_value.iter_options()]
 
 
-def _iter_options__iter_default_values():
-    default_values = [EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202310130051)]
+def _iter_options__iter_items():
+    item_0 = MediaItem('https://orindance.party/')
+    item_1 = MediaItem('https://www.astil.dev/')
     
-    yield (Component(ComponentType.user_select), [])
-    yield (Component(ComponentType.user_select, default_values = default_values), default_values)
+    yield Component(ComponentType.media_gallery), []
+    yield Component(ComponentType.media_gallery, items = [item_0]), [item_0]
+    yield Component(ComponentType.media_gallery, items = [item_0, item_1]), [item_0, item_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_items()).returning_last())
+def test__Component__iter_items(input_value):
+    """
+    Tests whether ``Component.iter_items`` works as intended.
+    
+    Parameters
+    -----------
+    input_value : ``Component``
+        Component to test with.
+    
+    Returns
+    -------
+    output : list<MediaItem>`
+    """
+    return [*input_value.iter_items()]
+
+
+def _iter_options__iter_default_values():
+    default_value_0 = EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202310130051)
+    default_value_1 = EntitySelectDefaultValue(EntitySelectDefaultValueType.user, 202310130052)
+    
+    yield Component(ComponentType.user_select), []
+    yield Component(ComponentType.user_select, default_values = [default_value_0]), [default_value_0]
+    yield (
+        Component(ComponentType.user_select, default_values = [default_value_0, default_value_1]),
+        [default_value_0, default_value_1],
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options__iter_default_values()).returning_last())

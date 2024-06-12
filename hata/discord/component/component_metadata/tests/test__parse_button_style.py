@@ -1,18 +1,30 @@
 import vampytest
 
+from ..constants import BUTTON_STYLE_DEFAULT
+from ..fields import parse_button_style
 from ..preinstanced import ButtonStyle
 
-from ..fields import parse_button_style
+
+def _iter_options():
+    yield {}, BUTTON_STYLE_DEFAULT
+    yield {'style':BUTTON_STYLE_DEFAULT.value}, BUTTON_STYLE_DEFAULT
+    yield {'style': ButtonStyle.link.value}, ButtonStyle.link
 
 
-def test__parse_button_style():
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_button_style(input_data):
     """
     Tests whether ``parse_button_style`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : ``ButtonStyle``
     """
-    for input_data, expected_output in (
-        ({}, ButtonStyle.blue),
-        ({'style': ButtonStyle.blue.value}, ButtonStyle.blue),
-        ({'style': ButtonStyle.red.value}, ButtonStyle.red),
-    ):
-        output = parse_button_style(input_data)
-        vampytest.assert_eq(output, expected_output)
+    output = parse_button_style(input_data)
+    vampytest.assert_instance(output, ButtonStyle)
+    return output

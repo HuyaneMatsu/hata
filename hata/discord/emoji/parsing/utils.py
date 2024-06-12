@@ -144,7 +144,6 @@ def parse_all_emojis(text):
     if text is None:
         return set()
     return {*_iter_parse_all_emojis(text)}
-    
 
 
 def _parse_emojis_ordered(text, parser):

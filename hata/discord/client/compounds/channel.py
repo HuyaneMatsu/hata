@@ -1003,6 +1003,57 @@ class ClientCompoundChannelEndpoints(Compound):
         return PermissionOverwrite.from_data(data)
     
     
+    async def channel_get(self, channel, *, force_update = False):
+        """
+        Requests the given channel and returns it.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``Channel``, `int`
+            The channel or its identifier to get.
+        force_update : `bool` = `False`, Optional (Keyword only)
+            Whether the user should be requested even if it supposed to be up to date.
+        
+        Returns
+        -------
+        user : ``ClientUserBase``
+        
+        Raises
+        ------
+        TypeError
+            If `channel` was not given as ``Channel``, nor as `int`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        channel, channel_id = get_channel_and_id(channel)
+        
+        # a goto to check whether we should force update the channel.
+        while True:
+            if force_update:
+                break
+            
+            if channel is None:
+                break
+            
+            if not channel.partial:
+                return channel
+            
+            break
+        
+        data = await self.api.channel_get(channel_id)
+        
+        if channel is None:
+            channel = Channel.from_data(data, self)
+        else:
+            channel._update_attributes(data)
+        
+        return channel
+    
+    
     async def guild_channel_get_all(self, guild):
         """
         Requests the given guild's channels and if there any de-sync between the wrapper and Discord, applies the

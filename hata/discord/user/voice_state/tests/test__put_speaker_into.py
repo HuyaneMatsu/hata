@@ -3,14 +3,27 @@ import vampytest
 from ..fields import put_speaker_into
 
 
-def test__put_speaker_into():
+def _iter_options():
+    yield False, False, {}
+    yield False, True, {'suppress': True}
+    yield True, False, {'suppress': False}
+    yield True, True, {'suppress': False}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_speaker_into(input_value, defaults):
     """
     Tests whether ``put_speaker_into`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `bool`
+        The value to serialise.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
     """
-    for input_value, defaults, expected_output in (
-        (False, False, {}),
-        (False, True, {'suppress': True}),
-        (True, False, {'suppress': False}),
-    ):
-        data = put_speaker_into(input_value, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    return put_speaker_into(input_value, {}, defaults)

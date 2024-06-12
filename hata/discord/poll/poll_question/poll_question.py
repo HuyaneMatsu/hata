@@ -40,6 +40,7 @@ class PollQuestion(RichAttributeErrorBaseType):
         else:
             text = validate_text(text)
         
+        # Construct
         self = object.__new__(cls)
         self.text = text
         return self
@@ -69,9 +70,9 @@ class PollQuestion(RichAttributeErrorBaseType):
     def __repr__(self):
         repr_parts = ['<', type(self).__name__]
         
+        # text
         text = self.text
-        if text is not None:
-            field_added = True
+        if (text is not None):
             repr_parts.append(' text = ')
             repr_parts.append(repr(text))
         
@@ -110,7 +111,7 @@ class PollQuestion(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Data to create poll question from.
         
         Returns
@@ -169,7 +170,6 @@ class PollQuestion(RichAttributeErrorBaseType):
         Returns
         -------
         new : `instance<type<self>>`
-        
         """
         new = object.__new__(type(self))
         new.text = self.text
@@ -202,6 +202,7 @@ class PollQuestion(RichAttributeErrorBaseType):
         else:
             text = validate_text(text)
         
+        # Construct
         new = object.__new__(type(self))
         new.text = text
         return new

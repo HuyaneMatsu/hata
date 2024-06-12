@@ -256,7 +256,7 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
         # custom_id
         custom_id = self.custom_id
         if (custom_id is not None):
-            hash_value ^= hash(self.custom_id)
+            hash_value ^= hash(custom_id)
         
         # resolved
         resolved = self.resolved

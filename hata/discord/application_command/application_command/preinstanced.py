@@ -29,19 +29,21 @@ class ApplicationCommandTargetType(PreinstancedBase):
     
     Every predefined application command target can be accessed as class attribute as well:
     
-    +-----------------------+-------------------+-------+
-    | Class attribute name  | Name              | Value |
-    +=======================+===================+=======+
-    | none                  | none              | 0     |
-    +-----------------------+-------------------+-------+
-    | chat                  | chat              | 1     |
-    +-----------------------+-------------------+-------+
-    | user                  | user              | 2     |
-    +-----------------------+-------------------+-------+
-    | message               | message           | 3     |
-    +-----------------------+-------------------+-------+
-    | channel               | channel           | 4     |
-    +-----------------------+-------------------+-------+
+    +-----------------------+-----------------------+-------+
+    | Class attribute name  | Name                  | Value |
+    +=======================+=======================+=======+
+    | none                  | none                  | 0     |
+    +-----------------------+-----------------------+-------+
+    | chat                  | chat                  | 1     |
+    +-----------------------+-----------------------+-------+
+    | user                  | user                  | 2     |
+    +-----------------------+-----------------------+-------+
+    | message               | message               | 3     |
+    +-----------------------+-----------------------+-------+
+    | application_activity  | application_activity  | 4     |
+    +-----------------------+-----------------------+-------+
+    | channel               | channel               | 1004  |
+    +-----------------------+-----------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -53,13 +55,14 @@ class ApplicationCommandTargetType(PreinstancedBase):
     chat = P(1, 'chat',)
     user = P(2, 'user',)
     message = P(3, 'message',)
-    channel = P(4, 'channel')
+    activity_start = P(4, 'activity_start')
+    channel = P(1004, 'channel')
 
 
 CONTEXT_TARGET_TYPES = frozenset((
     ApplicationCommandTargetType.user,
     ApplicationCommandTargetType.message,
-    ApplicationCommandTargetType.channel
+    ApplicationCommandTargetType.channel,
 ))
 
 

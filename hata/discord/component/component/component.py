@@ -4,9 +4,10 @@ from scarletio import RichAttributeErrorBaseType, copy_docs, export
 
 from ..component_metadata import ComponentMetadataBase
 from ..component_metadata.fields import (
-    validate_button_style, validate_channel_types, validate_default_values, validate_enabled, validate_label,
-    validate_max_length, validate_max_values, validate_min_length, validate_min_values, validate_options,
-    validate_placeholder, validate_required, validate_sku_id, validate_text_input_style, validate_url, validate_value
+    validate_button_style, validate_channel_types, validate_content, validate_default_values, validate_divider,
+    validate_enabled, validate_items, validate_label, validate_max_length, validate_max_values, validate_min_length,
+    validate_min_values, validate_options, validate_placeholder, validate_required, validate_sku_id,
+    validate_spacing_size, validate_text_input_style, validate_url, validate_value
 )
 from ..shared_fields import validate_components, validate_custom_id, validate_emoji
 
@@ -51,6 +52,9 @@ class Component(RichAttributeErrorBaseType):
         components : `None`, `tuple` of ``Component``, Optional (Keyword only)
             Sub-components.
         
+        content : `None`, `str`, Optional (Keyword only)
+            The content shown on the component.
+        
         custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which component was clicked (or used) by the user.
         
@@ -63,6 +67,12 @@ class Component(RichAttributeErrorBaseType):
         
         enabled : `bool`, Optional (Keyword only)
             Whether the component is enabled.
+        
+        divider : `bool`, Optional (Keyword only)
+            Whether the separator should contain a divider.
+        
+        items : `None`, `tuple` of ``MediaItem``, Optional (Keyword only)
+            The media items shown on the component.
         
         label : `None`, `str`, Optional (Keyword only)
             Label of the component.
@@ -90,6 +100,9 @@ class Component(RichAttributeErrorBaseType):
         
         sku_id : `int`, ``SKU``, Optional (keyword only)
             Purchasable stock keeping unit identifier.
+        
+        spacing_size : ``SeparatorSpacingSize``, `int`, Optional (Keyword only)
+            The separator's spacing's size.
         
         text_input_style : ``TextInputStyle``, Optional (Keyword only)
             The text input's style.
@@ -267,6 +280,9 @@ class Component(RichAttributeErrorBaseType):
         components : `None`, `tuple` of ``Component``, Optional (Keyword only)
             Sub-components.
         
+        content : `None`, `str`, Optional (Keyword only)
+            The content shown on the component.
+        
         custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which component was clicked (or used) by the user.
         
@@ -279,6 +295,12 @@ class Component(RichAttributeErrorBaseType):
         
         enabled : `bool`, Optional (Keyword only)
             Whether the component is enabled.
+        
+        divider : `bool`, Optional (Keyword only)
+            Whether the separator should contain a divider.
+        
+        items : `None`, `tuple` of ``MediaItem``, Optional (Keyword only)
+            The media items shown on the component.
         
         label : `None`, `str`, Optional (Keyword only)
             Label of the component.
@@ -306,6 +328,9 @@ class Component(RichAttributeErrorBaseType):
         
         sku_id : `int`, ``SKU``, Optional (keyword only)
             Purchasable stock keeping unit identifier.
+        
+        spacing_size : ``SeparatorSpacingSize``, `int`, Optional (Keyword only)
+            The separator's spacing's size.
         
         text_input_style : ``TextInputStyle``, Optional (Keyword only)
             The text input's style.
@@ -384,6 +409,17 @@ class Component(RichAttributeErrorBaseType):
         self.metadata.components = validate_components(components)
     
     
+    # content
+    @property
+    @copy_docs(ComponentMetadataBase.content)
+    def content(self):
+        return self.metadata.content
+    
+    @content.setter
+    def content(self, content):
+        self.metadata.content = validate_content(content)
+    
+    
     @property
     @copy_docs(ComponentMetadataBase.custom_id)
     def custom_id(self):
@@ -404,6 +440,18 @@ class Component(RichAttributeErrorBaseType):
         self.metadata.default_values = validate_default_values(default_values)
     
     
+    # divider
+    @property
+    @copy_docs(ComponentMetadataBase.divider)
+    def divider(self):
+        return self.metadata.divider
+    
+    @divider.setter
+    def divider(self, divider):
+        self.metadata.divider = validate_divider(divider)
+    
+    
+    # emoji
     @property
     @copy_docs(ComponentMetadataBase.emoji)
     def emoji(self):
@@ -434,6 +482,18 @@ class Component(RichAttributeErrorBaseType):
         self.metadata.label = validate_label(label)
     
     
+    # items
+    @property
+    @copy_docs(ComponentMetadataBase.items)
+    def items(self):
+        return self.metadata.items
+    
+    @items.setter
+    def items(self, items):
+        self.metadata.items = validate_items(items)
+    
+    
+    # max_length
     @property
     @copy_docs(ComponentMetadataBase.max_length)
     def max_length(self):
@@ -504,6 +564,7 @@ class Component(RichAttributeErrorBaseType):
         self.metadata.required = validate_required(required)
     
     
+    # sku_id
     @property
     @copy_docs(ComponentMetadataBase.sku_id)
     def sku_id(self):
@@ -514,6 +575,18 @@ class Component(RichAttributeErrorBaseType):
         self.metadata.sku_id = validate_sku_id(sku_id)
     
     
+    # spacing_size
+    @property
+    @copy_docs(ComponentMetadataBase.spacing_size)
+    def spacing_size(self):
+        return self.metadata.spacing_size
+    
+    @spacing_size.setter
+    def spacing_size(self, spacing_size):
+        self.metadata.spacing_size = validate_spacing_size(spacing_size)
+    
+    
+    # text_input_style
     @property
     @copy_docs(ComponentMetadataBase.text_input_style)
     def text_input_style(self):
@@ -523,6 +596,8 @@ class Component(RichAttributeErrorBaseType):
     def text_input_style(self, text_input_style):
         self.metadata.text_input_style = validate_text_input_style(text_input_style)
     
+    
+    # url
     @property
     @copy_docs(ComponentMetadataBase.url)
     def url(self):
@@ -619,3 +694,18 @@ class Component(RichAttributeErrorBaseType):
         default_values = self.default_values
         if (default_values is not None):
             yield from default_values
+
+    
+    def iter_items(self):
+        """
+        Iterates over the media items of the component.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        item : ``MediaItem``
+        """
+        items = self.items
+        if (items is not None):
+            yield from items

@@ -3,15 +3,25 @@ import vampytest
 from ..fields import parse_url
 
 
-def test__parse_url():
+def _iter_options():
+    yield {}, None
+    yield {'url': None}, None
+    yield {'url': ''}, None
+    yield {'url': 'https://orindance.party/'}, 'https://orindance.party/'
+    
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_url(input_data):
     """
     Tests whether ``parse_url`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | str`
     """
-    for input_data, expected_output in (
-        ({}, None),
-        ({'url': None}, None),
-        ({'url': ''}, None),
-        ({'url': 'https://orindance.party/'}, 'https://orindance.party/'),
-    ):
-        output = parse_url(input_data)
-        vampytest.assert_eq(output, expected_output)
+    return parse_url(input_data)

@@ -4,20 +4,31 @@ from ..component import Component
 from ..preinstanced import ComponentType
 
 
-def test__Component__iter():
+def _iter_options__iter():
+    component_0 = Component(ComponentType.button, custom_id = 'chen')
+    component_1 = Component(ComponentType.button, custom_id = 'satori')
+    
+    yield None, []
+    yield [component_0], [component_0]
+    yield [component_0, component_1], [component_0, component_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter()).returning_last())
+def test__Component__iter(components):
     """
     Tests whether ``Component.__iter__`` works as intended.
+    
+    Parameters
+    ----------
+    components : `None | list<str, object>`
+        Components to create component with.
+    
+    Returns
+    -------
+    output : `list<Component>`
     """
-    custom_id = 'chen'
-    
-    component = Component(ComponentType.button, custom_id = custom_id)
-    
-    for component, expected_output in (
-        (component, []),
-        (Component(ComponentType.row, components = [component]), [component]),
-    ):
-        output = [*component]
-        vampytest.assert_eq(output, expected_output)
+    component = Component(ComponentType.row, components = components)
+    return [*component]
 
 
 def test__Component__repr():

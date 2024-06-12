@@ -271,7 +271,7 @@ class Attachment(DiscordEntity):
     def __repr__(self):
         """Returns the representation of the attachment."""
         repr_parts = [
-            '<', self.__class__.__name__,
+            '<', type(self).__name__,
         ]
         
         attachment_id = self.id

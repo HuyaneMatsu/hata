@@ -3,8 +3,9 @@ __all__ = ('ComponentType',)
 from ...bases import Preinstance as P, PreinstancedBase
 
 from ..component_metadata import (
-    ComponentMetadataBase, ComponentMetadataButton, ComponentMetadataChannelSelect, ComponentMetadataMentionableSelect,
-    ComponentMetadataRoleSelect, ComponentMetadataRow, ComponentMetadataStringSelect, ComponentMetadataTextInput,
+    ComponentMetadataBase, ComponentMetadataButton, ComponentMetadataChannelSelect, ComponentMetadataMediaGallery,
+    ComponentMetadataMentionableSelect, ComponentMetadataRoleSelect, ComponentMetadataRow,
+    ComponentMetadataStringSelect, ComponentMetadataSeparator, ComponentMetadataText, ComponentMetadataTextInput,
     ComponentMetadataUserSelect
 )
 
@@ -51,6 +52,18 @@ class ComponentType(PreinstancedBase):
     | mentionable_select    | mentionable select    | 7     |
     +-----------------------+-----------------------+-------+
     | channel_select        | channel select        | 8     |
+    +-----------------------+-----------------------+-------+
+    | ???                   | ???                   | 9     |
+    +-----------------------+-----------------------+-------+
+    | text                  | text                  | 10    |
+    +-----------------------+-----------------------+-------+
+    | ???                   | ???                   | 11    |
+    +-----------------------+-----------------------+-------+
+    | media_gallery         | media gallery         | 12    |
+    +-----------------------+-----------------------+-------+
+    | ???                   | ???                   | 13    |
+    +-----------------------+-----------------------+-------+
+    | separator             | separator             | 14    |
     +-----------------------+-----------------------+-------+
     """
     INSTANCES = {}
@@ -112,3 +125,6 @@ class ComponentType(PreinstancedBase):
     role_select = P(6, 'role select', ComponentMetadataRoleSelect)
     mentionable_select = P(7, 'mentionable select', ComponentMetadataMentionableSelect)
     channel_select = P(8, 'channel select', ComponentMetadataChannelSelect)
+    text = P(10, 'text', ComponentMetadataText)
+    media_gallery = P(12, 'media gallery', ComponentMetadataMediaGallery)
+    separator = P(14, 'separator', ComponentMetadataSeparator)

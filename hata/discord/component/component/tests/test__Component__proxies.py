@@ -4,15 +4,16 @@ from ....channel import ChannelType
 from ....core import BUILTIN_EMOJIS
 from ....emoji import Emoji
 
-from ...component_metadata import ButtonStyle, TextInputStyle
+from ...component_metadata import ButtonStyle, SeparatorSpacingSize, TextInputStyle
 from ...entity_select_default_value import EntitySelectDefaultValue, EntitySelectDefaultValueType
+from ...media_item import MediaItem
 from ...string_select_option import StringSelectOption
 
 from ..component import Component
 from ..preinstanced import ComponentType
 
 
-def test__Component__proxies__0():
+def test__Component__proxies__reading_defaults():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -23,11 +24,14 @@ def test__Component__proxies__0():
     vampytest.assert_instance(component.button_style, ButtonStyle)
     vampytest.assert_instance(component.channel_types, tuple, nullable = True)
     vampytest.assert_instance(component.components, tuple, nullable = True)
+    vampytest.assert_instance(component.content, str, nullable = True)
     vampytest.assert_instance(component.custom_id, str, nullable = True)
     vampytest.assert_instance(component.default_values, tuple, nullable = True)
     vampytest.assert_instance(component.emoji, Emoji, nullable = True)
     vampytest.assert_instance(component.enabled, bool)
+    vampytest.assert_instance(component.divider, bool)
     vampytest.assert_instance(component.label, str, nullable = True)
+    vampytest.assert_instance(component.items, tuple, nullable = True)
     vampytest.assert_instance(component.max_length, int)
     vampytest.assert_instance(component.max_values, int)
     vampytest.assert_instance(component.min_length, int)
@@ -36,6 +40,7 @@ def test__Component__proxies__0():
     vampytest.assert_instance(component.placeholder, str, nullable = True)
     vampytest.assert_instance(component.required, bool)
     vampytest.assert_instance(component.sku_id, int)
+    vampytest.assert_instance(component.spacing_size, SeparatorSpacingSize)
     vampytest.assert_instance(component.text_input_style, TextInputStyle)
     vampytest.assert_instance(component.url, str, nullable = True)
     vampytest.assert_instance(component.value, str, nullable = True)
@@ -186,6 +191,57 @@ def test__Component__proxies__read_button_style():
     vampytest.assert_is(component.button_style, button_style)
 
 
+def test__Component__proxies__read_text():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading text fields.
+    """
+    content = 'remilia'
+    
+    component = Component(
+        ComponentType.text,
+        content = content,
+    )
+    
+    vampytest.assert_eq(component.content, content)
+
+
+def test__Component__proxies__read_media_gallery():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading string media gallery.
+    """
+    items = [MediaItem('https://orindance.party/')]
+    
+    component = Component(
+        ComponentType.media_gallery,
+        items = items,
+    )
+    
+    vampytest.assert_eq(component.items, tuple(items))
+
+
+def test__Component__proxies__read_separator():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading string separator.
+    """
+    divider = False
+    spacing_size = SeparatorSpacingSize.large
+    
+    component = Component(
+        ComponentType.separator,
+        divider = divider,
+        spacing_size = spacing_size,
+    )
+    
+    vampytest.assert_eq(component.divider, divider)
+    vampytest.assert_is(component.spacing_size, spacing_size)
+
+
 def test__Component__proxies__write_button__generic():
     """
     Tests whether ``Component`` field proxies work as intended.
@@ -322,3 +378,51 @@ def test__Component__proxies__write_button_style():
     component.button_style = button_style
     
     vampytest.assert_is(component.button_style, button_style)
+
+
+def test__Component__proxies__write_text():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: writing text fields.
+    """
+    content = 'remilia'
+    
+    component = Component(ComponentType.text)
+    
+    component.content = content
+    
+    vampytest.assert_eq(component.content, content)
+
+
+def test__Component__proxies__write_media_gallery():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: writing media gallery fields.
+    """
+    items = [MediaItem('https://orindance.party/')]
+    
+    component = Component(ComponentType.media_gallery)
+    
+    component.items = items
+    
+    vampytest.assert_eq(component.items, tuple(items))
+
+
+def test__Component__proxies__write_separator():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: writing separator fields.
+    """
+    divider = False
+    spacing_size = SeparatorSpacingSize.large
+    
+    component = Component(ComponentType.separator)
+    
+    component.divider = divider
+    component.spacing_size = spacing_size
+    
+    vampytest.assert_eq(component.divider, divider)
+    vampytest.assert_is(component.spacing_size, spacing_size)

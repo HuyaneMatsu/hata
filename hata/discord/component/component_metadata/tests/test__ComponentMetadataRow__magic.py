@@ -31,23 +31,48 @@ def test__ComponentMetadataRow__hash():
     vampytest.assert_instance(hash(component_metadata), int)
 
 
-def test__ComponentMetadataRow__eq():
-    """
-    Tests whether ``ComponentMetadataRow.__eq__`` works as intended.
-    """
+def _iter_options__eq__same_type():
     components = [Component(ComponentType.button, label = 'chata')]
     
     keyword_parameters = {
         'components': components,
     }
-    
-    component_metadata = ComponentMetadataRow(**keyword_parameters)
-    
-    vampytest.assert_eq(component_metadata, component_metadata)
-    vampytest.assert_ne(component_metadata, object())
 
-    for field_name, field_value in (
-        ('components', None),
-    ):
-        test_component_metadata = ComponentMetadataRow(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(component_metadata, test_component_metadata)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'components': None,
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq__same_type()).returning_last())
+def test__ComponentMetadataRow__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``ComponentMetadataRow.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    component_metadata_0 = ComponentMetadataRow(**keyword_parameters_0)
+    component_metadata_1 = ComponentMetadataRow(**keyword_parameters_1)
+    
+    output = component_metadata_0 == component_metadata_1
+    vampytest.assert_instance(output, bool)
+    return output

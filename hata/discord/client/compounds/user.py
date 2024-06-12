@@ -379,11 +379,6 @@ class ClientCompoundUserEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        
-        Raises
-        ------
-        TypeError
-            If `user` was not given as ``ClientUserBase``, nor as `int`.
         """
         user, user_id = get_user_and_id(user)
         

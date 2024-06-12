@@ -1,10 +1,10 @@
 __all__ = ()
 
-from .preinstanced import ButtonStyle, TextInputStyle
+from .preinstanced import ButtonStyle, SeparatorSpacingSize, TextInputStyle
 
 
 BUTTON_STYLE_DEFAULT = ButtonStyle.blue
-
+SEPARATOR_SPACING_SIZE_DEFAULT = SeparatorSpacingSize.small
 TEXT_INPUT_STYLE_DEFAULT = TextInputStyle.short
 
 LABEL_LENGTH_MAX = 80
@@ -33,3 +33,6 @@ MIN_VALUES_DEFAULT = 1
 VALUE_LENGTH_MAX = 4000
 
 URL_LENGTH_MAX = 512
+
+CONTENT_LENGTH_MIN = 1
+CONTENT_LENGTH_MAX = 4000

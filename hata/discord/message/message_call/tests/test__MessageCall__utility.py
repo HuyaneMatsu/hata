@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -11,7 +11,7 @@ def test__MessageCall__copy():
     """
     Tests whether ``MessageCall.copy`` works as intended.
     """
-    ended_at = DateTime(2016, 5, 14)
+    ended_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     user_ids = [202304280014, 202304280015]
     
     message_call = MessageCall(
@@ -32,7 +32,7 @@ def test__MessageCall__copy_with__no_fields():
     
     Case: no fields given.
     """
-    ended_at = DateTime(2016, 5, 14)
+    ended_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     user_ids = [202304280016, 202304280017]
     
     message_call = MessageCall(
@@ -53,10 +53,10 @@ def test__MessageCall__copy_with__all_fields():
     
     Case: all fields given.
     """
-    old_ended_at = DateTime(2016, 5, 14)
+    old_ended_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     old_user_ids = [202304280018, 202304280019]
     
-    new_ended_at = DateTime(2016, 5, 15)
+    new_ended_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     new_user_ids = [202304280020, 202304280021]
     
     message_call = MessageCall(

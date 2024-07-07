@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -237,13 +237,13 @@ def test__Message__copy():
         Attachment.precreate(202305040108, name = 'Komeiji'),
     ]
     author = User.precreate(202305040109, name = 'Orin')
-    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     components = [
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Okuu')]),
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Parsee')]),
     ]
     content = 'Satori'
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     embeds = [
         Embed('Yakumo'),
         Embed('Yukari'),
@@ -263,7 +263,7 @@ def test__Message__copy():
     message_type = MessageType.call
     nonce = 'Sakuya'
     pinned = True
-    poll = Poll(expires_at = DateTime(2016, 5, 14))
+    poll = Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     reactions = ReactionMapping(
         lines = {
             Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
@@ -336,13 +336,13 @@ def test__Message__copy_with__no_fields():
         Attachment.precreate(202305040124, name = 'Komeiji'),
     ]
     author = User.precreate(202305040125, name = 'Orin')
-    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     components = [
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Okuu')]),
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Parsee')]),
     ]
     content = 'Satori'
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     embeds = [
         Embed('Yakumo'),
         Embed('Yukari'),
@@ -362,7 +362,7 @@ def test__Message__copy_with__no_fields():
     message_type = MessageType.call
     nonce = 'Sakuya'
     pinned = True
-    poll = Poll(expires_at = DateTime(2016, 5, 14))
+    poll = Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     reactions = ReactionMapping(
         lines = {
             Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
@@ -435,13 +435,13 @@ def test__Message__copy_with__all_fields():
         Attachment.precreate(202305040140, name = 'Komeiji'),
     ]
     old_author = User.precreate(202305040141, name = 'Orin')
-    old_call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    old_call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     old_components = [
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Okuu')]),
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Parsee')]),
     ]
     old_content = 'Satori'
-    old_edited_at = DateTime(2016, 5, 14)
+    old_edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     old_embeds = [
         Embed('Yakumo'),
         Embed('Yukari'),
@@ -461,7 +461,7 @@ def test__Message__copy_with__all_fields():
     old_message_type = MessageType.call
     old_nonce = 'Sakuya'
     old_pinned = True
-    old_poll = Poll(expires_at = DateTime(2016, 5, 14))
+    old_poll = Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     old_reactions = ReactionMapping(
         lines = {
             Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
@@ -489,13 +489,13 @@ def test__Message__copy_with__all_fields():
         Attachment.precreate(202305040156, name = 'Satoris'),
     ]
     new_author = User.precreate(202305040080, name = 'Dancing')
-    new_call = MessageCall(ended_at = DateTime(2045, 5, 4))
+    new_call = MessageCall(ended_at = DateTime(2045, 5, 4, tzinfo = TimeZone.utc))
     new_components = [
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Nuclear bird')]),
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Green hell')]),
     ]
     new_content = 'Open eye'
-    new_edited_at = DateTime(2016, 6, 14)
+    new_edited_at = DateTime(2016, 6, 14, tzinfo = TimeZone.utc)
     new_embeds = [
         Embed('Old hag and pets'),
         Embed('Old hag'),
@@ -515,7 +515,7 @@ def test__Message__copy_with__all_fields():
     new_message_type = MessageType.user_add
     new_nonce = 'Maid'
     new_pinned = False
-    new_poll = Poll(expires_at = DateTime(2016, 5, 15))
+    new_poll = Poll(expires_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc))
     new_reactions = ReactionMapping(
         lines = {
             Reaction.from_fields(BUILTIN_EMOJIS['heart'], ReactionType.standard): ReactionMappingLine(count = 1),
@@ -1598,7 +1598,7 @@ def test__Message__has_content(input_value):
 
 
 def _iter_options__has_edited_at():
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield None, False
     yield edited_at, True
@@ -1931,7 +1931,7 @@ def test__Message__has_pinned(input_value):
 
 
 def _iter_options__has_poll():
-    poll = Poll(expires_at = DateTime(2016, 5, 14))
+    poll = Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     
     yield None, False
     yield poll, True
@@ -2412,7 +2412,7 @@ def _iter_options__has_any_content_field():
         True,
     )
     yield {'author': User.precreate(202404200025, name = 'Orin')}, False
-    yield {'call': MessageCall(ended_at = DateTime(2045, 3, 4))}, False
+    yield {'call': MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))}, False
     yield (
         {
             'components': [
@@ -2422,7 +2422,7 @@ def _iter_options__has_any_content_field():
         True,
     )
     yield {'content': 'Satori'}, True
-    yield {'edited_at': DateTime(2016, 5, 14)}, False
+    yield {'edited_at': DateTime(2016, 5, 14, tzinfo = TimeZone.utc)}, False
     yield {'embeds': [Embed('Yakumo')]}, True
     yield {'flags': MessageFlag(15)}, False
     yield {'interaction': MessageInteraction.precreate(202404200026, name = 'Ran')}, False
@@ -2447,7 +2447,7 @@ def _iter_options__has_any_content_field():
     yield {'message_type': MessageType.default}, False
     yield {'nonce': 'Sakuya'}, False
     yield {'pinned': True}, False
-    yield {'poll': Poll(expires_at = DateTime(2016, 5, 14))}, True
+    yield {'poll': Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))}, True
     yield (
         {
             'reactions': ReactionMapping(

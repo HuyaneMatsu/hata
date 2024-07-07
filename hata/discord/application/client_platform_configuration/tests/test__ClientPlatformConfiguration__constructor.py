@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -37,7 +37,7 @@ def test__ClientPlatformConfiguration__new__all_fields():
     Case: All fields given.
     """
     label_type = LabelType.new
-    labelled_until = DateTime(2016, 5, 14)
+    labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     release_phase = ReleasePhase.global_launch
     
     configuration = ClientPlatformConfiguration(

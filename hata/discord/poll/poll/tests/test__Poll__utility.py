@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -25,7 +25,7 @@ def test__Poll__clean_copy():
         PollAnswer.precreate(202404140041, text = user.mention),
     ]
     duration = 7200
-    expires_at = DateTime(2016, 5, 14)
+    expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     finalized = True
     layout = PollLayout.default
     question = PollQuestion(text = 'wanna play')
@@ -64,7 +64,7 @@ def test__Poll__copy():
         PollAnswer.precreate(202404140043, text = 'mister'),
     ]
     duration = 7200
-    expires_at = DateTime(2016, 5, 14)
+    expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     finalized = True
     layout = PollLayout.default
     question = PollQuestion(text = 'wanna play')
@@ -102,7 +102,7 @@ def test__Poll__copy_with__no_fields():
         PollAnswer.precreate(202404140045, text = 'mister'),
     ]
     duration = 7200
-    expires_at = DateTime(2016, 5, 14)
+    expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     finalized = True
     layout = PollLayout.default
     question = PollQuestion(text = 'wanna play')
@@ -140,7 +140,7 @@ def test__Poll__copy_with__all_fields():
         PollAnswer.precreate(202404140047, text = 'mister'),
     ]
     old_duration = 7200
-    old_expires_at = DateTime(2016, 5, 14)
+    old_expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     old_finalized = True
     old_layout = PollLayout.default
     old_question = PollQuestion(text = 'wanna play')
@@ -155,7 +155,7 @@ def test__Poll__copy_with__all_fields():
         PollAnswer.precreate(202404140049, text = 'carting'),
     ]
     new_duration = 3600
-    new_expires_at = DateTime(2016, 5, 15)
+    new_expires_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     new_finalized = False
     new_layout = PollLayout.none
     new_question = PollQuestion(text = 'magic farm')
@@ -204,7 +204,7 @@ def _iter_options__contents():
         PollAnswer.precreate(202404140051, text = 'mister'),
     ]
     duration = 7200
-    expires_at = DateTime(2016, 5, 14)
+    expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     finalized = True
     layout = PollLayout.default
     question = PollQuestion(text = 'wanna play')
@@ -251,7 +251,7 @@ def _iter_options__iter_contents():
         PollAnswer.precreate(202404140053, text = 'mister'),
     ]
     duration = 7200
-    expires_at = DateTime(2016, 5, 14)
+    expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     finalized = True
     layout = PollLayout.default
     question = PollQuestion(text = 'wanna play')

@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -13,7 +13,7 @@ def test__MessageCall__from_data():
     """
     Tests whether ``MessageCall.from_data`` works as intended.
     """
-    ended_at = DateTime(2016, 5, 14)
+    ended_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     user_ids = [202304280002, 202304280003]
     
     data = {
@@ -34,7 +34,7 @@ def test__MessageCall__to_data():
     
     Case: include defaults.
     """
-    ended_at = DateTime(2016, 5, 14)
+    ended_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     user_ids = [202304280004, 202304280005]
     
     message_call = MessageCall(

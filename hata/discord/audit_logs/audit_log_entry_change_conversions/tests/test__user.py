@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -374,7 +374,7 @@ def test__TIMED_OUT_UNTIL_CONVERSION__generic():
 
 
 def _iter_options__timed_out_until__value_deserializer():
-    date_time = DateTime(2016, 5, 14)
+    date_time = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield datetime_to_timestamp(date_time), date_time
     yield None, None
@@ -398,7 +398,7 @@ def test__TIMED_OUT_UNTIL_CONVERSION__value_deserializer(input_value):
 
 
 def _iter_options__timed_out_until__value_serializer():
-    date_time = DateTime(2016, 5, 14)
+    date_time = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield date_time, datetime_to_timestamp(date_time)
     yield None, None

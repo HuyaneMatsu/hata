@@ -14,7 +14,7 @@ if RICH_DISCORD_EXCEPTION:
 else:
     reconstruct_payload = None
 
-EXCEPTION_RESPONSE_RP = re.compile('\d+\: (.*)')
+EXCEPTION_RESPONSE_RP = re.compile('\\d+\\: (.*)')
 
 
 class DiscordException(Exception):
@@ -46,14 +46,14 @@ class DiscordException(Exception):
     +-------+-----------------------+---------------+
     | 429   | TOO MANY REQUESTS     | rate limited  |
     +-------+-----------------------+---------------+
-    | 500   | SERVER ERROR          | \*retry       |
+    | 500   | SERVER ERROR          | \\*retry       |
     +-------+-----------------------+---------------+
-    | 502   | GATEWAY UNAVAILABLE   | \*retry       |
+    | 502   | GATEWAY UNAVAILABLE   | \\*retry       |
     +-------+-----------------------+---------------+
     | 5XX   | SERVER ERROR          | raise         |
     +-------+-----------------------+---------------+
     
-    \* For five times a request can fail with `OsError` or return `501` / `502` response code. If the request fails
+    \\* For five times a request can fail with `OsError` or return `501` / `502` response code. If the request fails
     with these cases for the fifth try and the last one resulted `501` / `502` response code, then
     ``DiscordException`` will be raised.
     
@@ -176,7 +176,7 @@ class DiscordException(Exception):
             if not message_base.endswith(('.', ',')):
                 message_parts.append(';')
             
-            message_parts.append('retry after: ')
+            message_parts.append(' retry after: ')
             message_parts.append(format(self.retry_after, '.02f'))
         
         return ''.join(message_parts)

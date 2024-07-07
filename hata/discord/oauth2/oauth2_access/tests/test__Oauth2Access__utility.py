@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -13,7 +13,7 @@ def test__Oauth2Access__copy():
     Tests whether ``Oauth2Access.copy`` works as intended.
     """
     access_token = 'immortal'
-    created_at = DateTime(2016, 5, 4)
+    created_at = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
     expires_after = 69
     redirect_url = 'https://orindance.party/'
     refresh_token = 'smoke'
@@ -41,7 +41,7 @@ def test__Oauth2Access__copy_with__0():
     Case: No fields given.
     """
     access_token = 'immortal'
-    created_at = DateTime(2016, 5, 4)
+    created_at = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
     expires_after = 69
     redirect_url = 'https://orindance.party/'
     refresh_token = 'smoke'
@@ -69,13 +69,13 @@ def test__Oauth2Access__copy_with__1():
     Case: All fields given.
     """
     old_access_token = 'immortal'
-    old_created_at = DateTime(2016, 5, 4)
+    old_created_at = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
     old_expires_after = 69
     old_redirect_url = 'https://orindance.party/'
     old_refresh_token = 'smoke'
     old_scopes = [Oauth2Scope.bot]
     new_access_token = 'reach'
-    new_created_at = DateTime(2016, 5, 5)
+    new_created_at = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     new_expires_after = 10000
     new_redirect_url = 'https://www.astil.dev/'
     new_refresh_token = 'moon'

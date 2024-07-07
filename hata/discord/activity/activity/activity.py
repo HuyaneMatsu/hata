@@ -637,7 +637,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        duration : `None`, `timedelta`
+        duration : `None`, `TimeDelta`
         """
         if self.type is not ActivityType.spotify:
             return None

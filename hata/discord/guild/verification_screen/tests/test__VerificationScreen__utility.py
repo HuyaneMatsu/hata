@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -13,7 +13,7 @@ def test__VerificationScreen__new__copy():
     """
     Tests whether ``VerificationScreen.copy`` works as intended.
     """
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     description = 'Yukari'
     steps = [
         VerificationScreenStep(
@@ -42,7 +42,7 @@ def test__VerificationScreen__new__copy_with__0():
     
     Case: No fields given.
     """
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     description = 'Yukari'
     steps = [
         VerificationScreenStep(
@@ -71,8 +71,8 @@ def test__VerificationScreen__new__copy_with__1():
     
     Case: All fields given.
     """
-    old_edited_at = DateTime(2016, 5, 14)
-    new_edited_at = DateTime(2017, 5, 14)
+    old_edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    new_edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     old_description = 'Yukari'
     new_description = 'Yurica'
     old_steps = [

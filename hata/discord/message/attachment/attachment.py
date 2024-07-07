@@ -6,12 +6,12 @@ from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from .constants import DURATION_DEFAULT
 from .fields import (
     parse_content_type, parse_description, parse_duration, parse_flags, parse_height, parse_id, parse_name,
-    parse_proxy_url, parse_size, parse_temporary, parse_url, parse_waveform, parse_width, put_content_type_into,
-    put_description_into, put_duration_into, put_flags_into, put_height_into, put_id_into, put_name_into,
-    put_proxy_url_into, put_size_into, put_temporary_into, put_url_into, put_waveform_into, put_width_into,
-    validate_content_type, validate_description, validate_duration, validate_flags, validate_height, validate_id,
-    validate_name, validate_proxy_url, validate_size, validate_temporary, validate_url, validate_waveform,
-    validate_width
+    parse_proxy_url, parse_size, parse_temporary, parse_title, parse_url, parse_waveform, parse_width,
+    put_content_type_into, put_description_into, put_duration_into, put_flags_into, put_height_into, put_id_into,
+    put_name_into, put_proxy_url_into, put_size_into, put_temporary_into, put_title_into, put_url_into,
+    put_waveform_into, put_width_into, validate_content_type, validate_description, validate_duration, validate_flags,
+    validate_height, validate_id, validate_name, validate_proxy_url, validate_size, validate_temporary, validate_title,
+    validate_url, validate_waveform, validate_width
 )
 from .flags import AttachmentFlag
 
@@ -26,6 +26,7 @@ PRECREATE_FIELDS = {
     'proxy_url': ('proxy_url', validate_proxy_url),
     'size': ('size', validate_size),
     'temporary': ('temporary', validate_temporary),
+    'title': ('title', validate_title),
     'url': ('url', validate_url),
     'waveform': ('waveform', validate_waveform),
     'width': ('width', validate_width),
@@ -64,6 +65,7 @@ class Attachment(DiscordEntity):
     
     name : `str`
         The name of the attachment.
+        Special and unicode characters are excluded from an attachment's name.
     
     proxy_url : `str`
         Proxied url of the attachment.
@@ -77,6 +79,10 @@ class Attachment(DiscordEntity):
         Temporary attachments are guaranteed to be available as long as their message itself exists.
         
         > Defaults to `False`.
+    
+    title : `None`, `str`
+        The attachment's title.
+        Present if any characters were excluded from ``.name``.
     
     url : `str`
         The attachment's url.
@@ -92,8 +98,8 @@ class Attachment(DiscordEntity):
         > Defaults to `0`.
     """
     __slots__ = (
-        'content_type', 'description', 'duration', 'flags', 'height', 'name', 'proxy_url', 'size', 'temporary', 'url',
-        'waveform', 'width'
+        'content_type', 'description', 'duration', 'flags', 'height', 'name', 'proxy_url', 'size', 'temporary',
+        'title', 'url', 'waveform', 'width'
     )
     
     def __new__(
@@ -107,6 +113,7 @@ class Attachment(DiscordEntity):
         name = ...,
         size = ...,
         temporary = ...,
+        title = ...,
         url = ...,
         waveform = ...,
         width = ...,
@@ -139,6 +146,9 @@ class Attachment(DiscordEntity):
         
         temporary : `bool`, Optional (Keyword only)
             Whether the attachment is temporary and is removed after a set period of time.
+        
+        title : `None`, `str`, Optional (Keyword only)
+            The attachment's title.
         
         url : `str`, Optional (Keyword only)
             The attachment's url.
@@ -204,6 +214,12 @@ class Attachment(DiscordEntity):
         else:
             temporary = validate_temporary(temporary)
         
+        # title
+        if title is ...:
+            title = None
+        else:
+            title = validate_title(title)
+        
         # url
         if url is ...:
             url = ''
@@ -235,6 +251,7 @@ class Attachment(DiscordEntity):
         self.proxy_url = None
         self.size = size
         self.temporary = temporary
+        self.title = title
         self.url = url
         self.waveform = waveform
         self.width = width
@@ -262,6 +279,7 @@ class Attachment(DiscordEntity):
         self.proxy_url = parse_proxy_url(data)
         self.size = parse_size(data)
         self.temporary = parse_temporary(data)
+        self.title = parse_title(data)
         self.url = parse_url(data)
         self.waveform = parse_waveform(data)
         self.width = parse_width(data)
@@ -286,6 +304,12 @@ class Attachment(DiscordEntity):
         
         repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
+        
+        # If has title
+        title = self.title
+        if (title is not None):
+            repr_parts.append(', title = ')
+            repr_parts.append(repr(title))
         
         # Extra if audio
         duration = self.duration
@@ -361,6 +385,10 @@ class Attachment(DiscordEntity):
         if self.temporary != other.temporary:
             return False
         
+        # title
+        if self.title != other.title:
+            return False
+        
         # url
         if self.url != other.url:
             return False
@@ -423,6 +451,11 @@ class Attachment(DiscordEntity):
         # temporary
         hash_value ^= self.temporary << 16
         
+        # title
+        title = self.title
+        if (title is not None):
+            hash_value ^= hash(title)
+        
         # url
         hash_value ^= hash(self.url)
         
@@ -463,6 +496,7 @@ class Attachment(DiscordEntity):
         put_name_into(self.name, data, defaults)
         put_size_into(self.size, data, defaults)
         put_temporary_into(self.temporary, data, defaults)
+        put_title_into(self.title, data, defaults)
         put_url_into(self.url, data, defaults)
         put_waveform_into(self.waveform, data, defaults)
         put_width_into(self.width, data, defaults)
@@ -495,6 +529,7 @@ class Attachment(DiscordEntity):
         new.proxy_url = None
         new.size = self.size
         new.temporary = self.temporary
+        new.title = self.title
         new.url = self.url
         new.waveform = self.waveform
         new.width = self.width
@@ -512,6 +547,7 @@ class Attachment(DiscordEntity):
         name = ...,
         size = ...,
         temporary = ...,
+        title = ...,
         url = ...,
         waveform = ...,
         width = ...,
@@ -546,6 +582,9 @@ class Attachment(DiscordEntity):
         
         temporary : `bool`, Optional (Keyword only)
             Whether the attachment is temporary and is removed after a set period of time.
+        
+        title : `None`, `str`, Optional (Keyword only)
+            The attachment's title.
         
         url : `str`, Optional (Keyword only)
             The attachment's url.
@@ -608,6 +647,12 @@ class Attachment(DiscordEntity):
         else:
             temporary = validate_temporary(temporary)
         
+        # title
+        if title is ...:
+            title = self.title
+        else:
+            title = validate_title(title)
+        
         # url
         if url is ...:
             url = self.url
@@ -639,6 +684,7 @@ class Attachment(DiscordEntity):
         new.proxy_url = None
         new.size = size
         new.temporary = temporary
+        new.title = title
         new.url = url
         new.waveform = waveform
         new.width = width
@@ -690,6 +736,9 @@ class Attachment(DiscordEntity):
         
         temporary : `bool`, Optional (Keyword only)
             Whether the attachment is temporary and is removed after a set period of time.
+        
+        title : `None`, `str`, Optional (Keyword only)
+            The attachment's title.
             
         url : `str`, Optional (Keyword only)
             The attachment's url.
@@ -732,6 +781,7 @@ class Attachment(DiscordEntity):
         self.proxy_url = None
         self.size = 0
         self.temporary = False
+        self.title = None
         self.url = ''
         self.waveform = None
         self.width = 0
@@ -741,3 +791,19 @@ class Attachment(DiscordEntity):
                 setattr(self, *item)
         
         return self
+    
+    
+    @property
+    def display_name(self):
+        """
+        Returns the displayed name of the attachment.
+        
+        Returns
+        -------
+        display_name : `str`
+        """
+        title = self.title
+        if (title is not None):
+            return title
+        
+        return self.name

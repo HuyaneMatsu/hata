@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -7,16 +7,28 @@ from ....utils import datetime_to_millisecond_unix_time
 from ..fields import parse_end
 
 
-def test__parse_end():
+def _iter_options():
+    timestamp = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
+    
+    yield {}, None
+    yield {'end': None}, None
+    yield {'end': datetime_to_millisecond_unix_time(timestamp)}, timestamp
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_end(input_data):
     """
     Tests whether ``parse_end`` works as intended.
-    """
-    date = DateTime(2016, 1, 14)
     
-    for input_data, expected_output in (
-        ({}, None),
-        ({'end': None}, None),
-        ({'end': datetime_to_millisecond_unix_time(date)}, date)
-    ):
-        output = parse_end(input_data)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | DateTime`
+    """
+    output = parse_end(input_data)
+    vampytest.assert_instance(output, DateTime, nullable = True)
+    return output

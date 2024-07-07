@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -15,8 +15,8 @@ def _iter_options():
         ),
         (
             'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
-            DateTime(2024,  2,  9, 20, 45, 18),
-            DateTime(2024,  2, 23, 20, 45, 18),
+            DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc),
+            DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc),
             b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
         )
     )
@@ -40,7 +40,7 @@ def _iter_options():
         ),
         (
             'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
-            DateTime(2024,  2,  9, 20, 45, 18),
+            DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc),
             None,
             b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
         )
@@ -53,7 +53,7 @@ def _iter_options():
         (
             'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
             None,
-            DateTime(2024,  2, 23, 20, 45, 18),
+            DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc),
             b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
         )
     )
@@ -64,8 +64,8 @@ def _iter_options():
         ),
         (
             'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
-            DateTime(2024,  2,  9, 20, 45, 18),
-            DateTime(2024,  2, 23, 20, 45, 18),
+            DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc),
+            DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc),
             None,
         )
     )

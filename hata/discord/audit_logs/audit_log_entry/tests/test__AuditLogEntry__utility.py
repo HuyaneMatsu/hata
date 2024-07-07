@@ -1,3 +1,5 @@
+from gc import collect
+
 import vampytest
 
 from ....guild import Guild
@@ -389,3 +391,93 @@ def test__AuditLogEntry__iter_details(audit_log_entry):
     output : `set<(str, object)>`
     """
     return {*audit_log_entry.iter_details()}
+
+
+def _iter_options__link_parent_soft():
+    # not linked
+    parent_0 = AuditLog()
+    entry = AuditLogEntry()
+    yield entry, parent_0, [parent_0], parent_0
+    
+    # linked, but gc-d
+    parent_0 = AuditLog()
+    parent_1 = AuditLog()
+    entry = AuditLogEntry()
+    entry._parent_reference = parent_0._get_self_reference()
+    parent_0 = None
+    collect()
+    yield entry, parent_1, [parent_1], parent_1
+
+    # linked
+    parent_0 = AuditLog()
+    parent_1 = AuditLog()
+    entry = AuditLogEntry()
+    entry._parent_reference = parent_0._get_self_reference()
+    yield entry, parent_1, [parent_0, parent_1], parent_0
+
+
+@vampytest._(vampytest.call_from(_iter_options__link_parent_soft()).returning_last())
+def _iter_options__link_parent_soft(audit_log_entry, parent, extra):
+    """
+    Tests whether ``AuditLogEntry._link_parent_soft`` works as intended.
+    
+    Parameters
+    ----------
+    audit_log_entry : ``AuditLogEntry``
+        Entry to to iter its details of.
+    parent : ``AuditLog``
+        The parent to link.
+    extra : `list<object>`
+        Additional objects to keep in cache.
+    
+    Returns
+    -------
+    output : ``AuditLog``
+    """
+    audit_log_entry._link_parent_soft(parent)
+    return audit_log_entry.parent
+
+
+def _iter_options__link_parent_hard():
+    # not linked
+    parent_0 = AuditLog()
+    entry = AuditLogEntry()
+    yield entry, parent_0, [parent_0], parent_0
+    
+    # linked, but gc-d
+    parent_0 = AuditLog()
+    parent_1 = AuditLog()
+    entry = AuditLogEntry()
+    entry._parent_reference = parent_0._get_self_reference()
+    parent_0 = None
+    collect()
+    yield entry, parent_1, [parent_1], parent_1
+
+    # linked
+    parent_0 = AuditLog()
+    parent_1 = AuditLog()
+    entry = AuditLogEntry()
+    entry._parent_reference = parent_0._get_self_reference()
+    yield entry, parent_1, [parent_0, parent_1], parent_1
+
+
+@vampytest._(vampytest.call_from(_iter_options__link_parent_hard()).returning_last())
+def _iter_options__link_parent_hard(audit_log_entry, parent, extra):
+    """
+    Tests whether ``AuditLogEntry._link_parent_hard`` works as intended.
+    
+    Parameters
+    ----------
+    audit_log_entry : ``AuditLogEntry``
+        Entry to to iter its details of.
+    parent : ``AuditLog``
+        The parent to link.
+    extra : `list<object>`
+        Additional objects to keep in cache.
+    
+    Returns
+    -------
+    output : ``AuditLog``
+    """
+    audit_log_entry._link_parent_hard(parent)
+    return audit_log_entry.parent

@@ -123,7 +123,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
                 data = to_json(data)
             
             if (reason is not None):
-                headers[AUDIT_LOG_REASON] = quote(reason, safe = '\ ')
+                headers[AUDIT_LOG_REASON] = quote(reason, safe = '\\ ')
         else:
             # bearer or webhook request
             if (CONTENT_TYPE not in headers) and (not isinstance(data, NON_JSON_TYPES)):

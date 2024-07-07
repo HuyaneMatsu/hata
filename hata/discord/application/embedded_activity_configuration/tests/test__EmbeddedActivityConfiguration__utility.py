@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -16,8 +16,8 @@ def test__EmbeddedActivityConfiguration__copy():
     """
     age_gated = True
     client_platform_configurations = {
-        PlatformType.web: ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14)),
-        PlatformType.ios: ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14)),
+        PlatformType.web: ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)),
+        PlatformType.ios: ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14, tzinfo = TimeZone.utc)),
     }
     content_security_policy_exceptions_exist = False
     default_orientation_lock_state = OrientationLockState.unlocked
@@ -50,8 +50,8 @@ def test__EmbeddedActivityConfiguration__copy_with__no_fields():
     """
     age_gated = True
     client_platform_configurations = {
-        PlatformType.web: ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14)),
-        PlatformType.ios: ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14)),
+        PlatformType.web: ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)),
+        PlatformType.ios: ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14, tzinfo = TimeZone.utc)),
     }
     content_security_policy_exceptions_exist = False
     default_orientation_lock_state = OrientationLockState.unlocked
@@ -84,8 +84,8 @@ def test__EmbeddedActivityConfiguration__copy_with__all_fields():
     """
     old_age_gated = True
     old_client_platform_configurations = {
-        PlatformType.web: ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14)),
-        PlatformType.ios: ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14)),
+        PlatformType.web: ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)),
+        PlatformType.ios: ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14, tzinfo = TimeZone.utc)),
     }
     old_content_security_policy_exceptions_exist = False
     old_default_orientation_lock_state = OrientationLockState.unlocked
@@ -95,7 +95,7 @@ def test__EmbeddedActivityConfiguration__copy_with__all_fields():
     
     new_age_gated = False
     new_client_platform_configurations = {
-        PlatformType.android: ClientPlatformConfiguration(labelled_until = DateTime(2016, 8, 14)),
+        PlatformType.android: ClientPlatformConfiguration(labelled_until = DateTime(2016, 8, 14, tzinfo = TimeZone.utc)),
     }
     new_content_security_policy_exceptions_exist = True
     new_default_orientation_lock_state = OrientationLockState.portrait
@@ -139,8 +139,8 @@ def _iter_options__iter_supported_platforms():
     yield None, set()
     yield (
         {
-            PlatformType.web: ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14)),
-            PlatformType.ios: ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14)),
+            PlatformType.web: ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)),
+            PlatformType.ios: ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14, tzinfo = TimeZone.utc)),
         },
         {PlatformType.web, PlatformType.ios},
     )
@@ -165,8 +165,8 @@ def test__EmbeddedActivityConfiguration__iter_supported_platforms(client_platfor
 
 
 def _iter_options__get_client_platform_configuration():
-    configuration_0 = ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14))
-    configuration_1 = ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14))
+    configuration_0 = ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
+    configuration_1 = ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14, tzinfo = TimeZone.utc))
     
     yield None, PlatformType.web, None
     yield None, PlatformType.web.value, None

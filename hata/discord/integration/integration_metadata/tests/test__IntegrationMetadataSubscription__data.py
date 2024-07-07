@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -24,7 +24,7 @@ def test__IntegrationMetadataSubscription__from_data__0():
     revoked = True
     role_id = 202210090003
     subscriber_count = 100
-    synced_at = DateTime(2016, 9, 9)
+    synced_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     syncing = True
     
     data = {
@@ -65,7 +65,7 @@ def test__IntegrationMetadataSubscription__to_data():
     revoked = True
     role_id = 202210090004
     subscriber_count = 100
-    synced_at = DateTime(2016, 9, 9)
+    synced_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     syncing = True
     
     integration_metadata = IntegrationMetadataSubscription(

@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -11,10 +11,10 @@ def test__GuildIncidents__copy():
     """
     Tests whether ``GuildIncidents.copy`` works as intended.
     """
-    direct_message_spam_detected_at = DateTime(2015, 5, 14)
-    direct_messages_disabled_until = DateTime(2016, 5, 14)
-    invites_disabled_until = DateTime(2017, 5, 14)
-    raid_detected_at = DateTime(2018, 5, 14)
+    direct_message_spam_detected_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
+    direct_messages_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    invites_disabled_until = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
+    raid_detected_at = DateTime(2018, 5, 14, tzinfo = TimeZone.utc)
     
     guild_incidents = GuildIncidents(
         direct_message_spam_detected_at = direct_message_spam_detected_at,
@@ -36,10 +36,10 @@ def test__GuildIncidents__copy_with__no_fields():
     
     Case: No fields given.
     """
-    direct_message_spam_detected_at = DateTime(2015, 5, 14)
-    direct_messages_disabled_until = DateTime(2016, 5, 14)
-    invites_disabled_until = DateTime(2017, 5, 14)
-    raid_detected_at = DateTime(2018, 5, 14)
+    direct_message_spam_detected_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
+    direct_messages_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    invites_disabled_until = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
+    raid_detected_at = DateTime(2018, 5, 14, tzinfo = TimeZone.utc)
     
     guild_incidents = GuildIncidents(
         direct_message_spam_detected_at = direct_message_spam_detected_at,
@@ -61,15 +61,15 @@ def test__GuildIncidents__copy_with_all_fields1():
     
     Case: All fields given.
     """
-    old_direct_message_spam_detected_at = DateTime(2015, 5, 14)
-    old_direct_messages_disabled_until = DateTime(2016, 5, 14)
-    old_invites_disabled_until = DateTime(2017, 5, 14)
-    old_raid_detected_at = DateTime(2018, 5, 14)
+    old_direct_message_spam_detected_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
+    old_direct_messages_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    old_invites_disabled_until = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
+    old_raid_detected_at = DateTime(2018, 5, 14, tzinfo = TimeZone.utc)
     
-    new_direct_message_spam_detected_at = DateTime(2015, 5, 15)
-    new_direct_messages_disabled_until = DateTime(2016, 5, 11)
-    new_invites_disabled_until = DateTime(2017, 5, 15)
-    new_raid_detected_at = DateTime(2018, 5, 15)
+    new_direct_message_spam_detected_at = DateTime(2015, 5, 15, tzinfo = TimeZone.utc)
+    new_direct_messages_disabled_until = DateTime(2016, 5, 11, tzinfo = TimeZone.utc)
+    new_invites_disabled_until = DateTime(2017, 5, 15, tzinfo = TimeZone.utc)
+    new_raid_detected_at = DateTime(2018, 5, 15, tzinfo = TimeZone.utc)
     
     guild_incidents = GuildIncidents(
         direct_message_spam_detected_at = old_direct_message_spam_detected_at,

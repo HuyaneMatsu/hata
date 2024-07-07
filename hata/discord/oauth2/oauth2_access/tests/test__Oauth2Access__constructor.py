@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -41,7 +41,7 @@ def test__Oauth2Access__new__1():
     Case: All fields given.
     """
     access_token = 'immortal'
-    created_at = DateTime(2016, 5, 4)
+    created_at = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
     expires_after = 69
     redirect_url = 'https://orindance.party/'
     refresh_token = 'smoke'

@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -11,8 +11,8 @@ def test__DiscoveryCategory__repr():
     """
     Tests whether ``GuildDiscovery.__repr__`` works as intended.
     """
-    application_actioned = DateTime(2016, 5, 4)
-    application_requested = DateTime(2017, 6, 4)
+    application_actioned = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
+    application_requested = DateTime(2017, 6, 4, tzinfo = TimeZone.utc)
     emoji_discovery = True
     keywords = ['kisaki']
     primary_category = DiscoveryCategory.music
@@ -33,8 +33,8 @@ def test__DiscoveryCategory__hash():
     """
     Tests whether ``GuildDiscovery.__hash__`` works as intended.
     """
-    application_actioned = DateTime(2016, 5, 4)
-    application_requested = DateTime(2017, 6, 4)
+    application_actioned = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
+    application_requested = DateTime(2017, 6, 4, tzinfo = TimeZone.utc)
     emoji_discovery = True
     keywords = ['kisaki']
     primary_category = DiscoveryCategory.music
@@ -55,8 +55,8 @@ def test__DiscoveryCategory__eq():
     """
     Tests whether ``GuildDiscovery.__eq__`` works as intended.
     """
-    application_actioned = DateTime(2016, 5, 4)
-    application_requested = DateTime(2017, 6, 4)
+    application_actioned = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
+    application_requested = DateTime(2017, 6, 4, tzinfo = TimeZone.utc)
     emoji_discovery = True
     keywords = ['kisaki']
     primary_category = DiscoveryCategory.music

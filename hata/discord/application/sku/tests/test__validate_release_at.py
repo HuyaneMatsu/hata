@@ -1,51 +1,40 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
 from ..fields import validate_release_at
 
 
-def _iter_options():
-    release_at = DateTime(2016, 5, 14)
+def _iter_options__passing():
+    timestamp = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     
     yield None, None
-    yield release_at, release_at
+    yield timestamp, timestamp
 
 
-@vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_release_at__passing(input_value):
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_release_at(input_value):
     """
     Tests whether ``validate_release_at`` works as intended.
-    
-    Case: passing.
     
     Parameters
     ----------
     input_value : `object`
-        The value to validate.
+        Value to validate.
     
     Returns
     -------
     output : `None | DateTime`
-    """
-    return validate_release_at(input_value)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-def test__validate_release_at__type_error(input_value):
-    """
-    Tests whether ``validate_release_at`` works as intended.
     
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        The value to validate.
-    
-    Raises
-    ------
+    Raising
+    -------
     TypeError
     """
-    validate_release_at(input_value)
+    output = validate_release_at(input_value)
+    vampytest.assert_instance(output, DateTime, nullable = True)
+    return output

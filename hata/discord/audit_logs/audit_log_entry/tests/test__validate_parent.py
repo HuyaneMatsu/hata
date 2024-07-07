@@ -5,20 +5,23 @@ from ...audit_log import AuditLog
 from ..fields import validate_parent
 
 
-def _iter_options():
+def _iter_options__passing():
     yield None, None
     
-    audit_log = AuditLog(None)
+    audit_log = AuditLog()
     
     yield audit_log, audit_log
 
 
-@vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_parent__passing(input_value):
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_parent(input_value):
     """
     Tests whether `validate_parent` works as intended.
-    
-    Case: passing.
     
     Parameters
     ----------
@@ -28,25 +31,9 @@ def test__validate_parent__passing(input_value):
     Returns
     -------
     output : `None | AuditLog`
-    """
-    return validate_parent(input_value)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-def test__validate_parent__type_error(input_value):
-    """
-    Tests whether `validate_parent` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Value to validate.
     
     Raises
     ------
     TypeError
     """
-    validate_parent(input_value)
+    return validate_parent(input_value)

@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -7,16 +7,29 @@ from ....utils import datetime_to_timestamp
 from ..fields import put_archived_at_into
 
 
-def test__put_archived_at_into():
-    """
-    Tests whether ``put_archived_at_into`` is working as intended.
-    """
-    archived_at = DateTime(2016, 9, 9)
+def _iter_options():
+    timestamp = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     
-    for input_value, defaults, expected_output in (
-        (None, False, {}),
-        (None, True, {'thread_metadata': {'archive_timestamp': None}}),
-        (archived_at, False, {'thread_metadata': {'archive_timestamp': datetime_to_timestamp(archived_at)}}),
-    ):
-        data = put_archived_at_into(input_value, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    yield None, False, {}
+    yield None, True, {'thread_metadata': {'archive_timestamp': None}}
+    yield timestamp, False, {'thread_metadata': {'archive_timestamp': datetime_to_timestamp(timestamp)}}
+    yield timestamp, True, {'thread_metadata': {'archive_timestamp': datetime_to_timestamp(timestamp)}}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_archived_at_into(input_value, defaults):
+    """
+    Tests whether ``put_archived_at_into`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | DateTime`
+        Value to serialize.
+    defaults : `bool`
+        Whether fields with their default values should be serialised as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
+    """
+    return put_archived_at_into(input_value, {}, defaults)

@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -8,7 +8,7 @@ from ..fields import put_expires_at_into
 
 
 def _iter_options():
-    until = DateTime(2016, 5, 14)
+    until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield None, False, {}
     yield None, True, {'expiry': None}

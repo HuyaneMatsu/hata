@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -86,7 +86,7 @@ def test__Guild__from_data__all_fields():
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
-    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     invite_splash = Icon(IconType.animated, 18)
     large = True
@@ -341,7 +341,7 @@ def test__Guild__to_data():
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
-    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     invite_splash = Icon(IconType.animated, 18)
     large = True
@@ -557,7 +557,7 @@ def test__Guild__set_attributes__create():
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
-    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     invite_splash = Icon(IconType.animated, 18)
     large = True
@@ -768,7 +768,7 @@ def test__Guild__set_attributes__existing():
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
-    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     invite_splash = Icon(IconType.animated, 18)
     large = True
@@ -964,7 +964,7 @@ def test__Guild__update_attributes():
     old_features = [GuildFeature.animated_icon]
     old_hub_type = HubType.college
     old_icon = Icon(IconType.animated, 16)
-    old_incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    old_incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     old_inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     old_invite_splash = Icon(IconType.animated, 18)
     old_max_presences = 420
@@ -1002,7 +1002,7 @@ def test__Guild__update_attributes():
     new_features = [GuildFeature.animated_banner]
     new_hub_type = HubType.high_school
     new_icon = Icon(IconType.animated, 116)
-    new_incidents = GuildIncidents(direct_messages_disabled_until = DateTime(2016, 5, 14))
+    new_incidents = GuildIncidents(direct_messages_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     new_inventory_settings = GuildInventorySettings(emoji_pack_collectible = False)
     new_invite_splash = Icon(IconType.animated, 118)
     new_max_presences = 1420
@@ -1200,7 +1200,7 @@ def test__Guild__difference_update_attributes():
     old_features = [GuildFeature.animated_icon]
     old_hub_type = HubType.college
     old_icon = Icon(IconType.animated, 16)
-    old_incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    old_incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     old_inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     old_invite_splash = Icon(IconType.animated, 18)
     old_max_presences = 420
@@ -1238,7 +1238,7 @@ def test__Guild__difference_update_attributes():
     new_features = [GuildFeature.animated_banner]
     new_hub_type = HubType.high_school
     new_icon = Icon(IconType.animated, 116)
-    new_incidents = GuildIncidents(direct_messages_disabled_until = DateTime(2016, 5, 14))
+    new_incidents = GuildIncidents(direct_messages_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     new_inventory_settings = GuildInventorySettings(emoji_pack_collectible = False)
     new_invite_splash = Icon(IconType.animated, 118)
     new_max_presences = 1420
@@ -1784,7 +1784,7 @@ def test__Guild__sync__default():
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
-    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     invite_splash = Icon(IconType.animated, 18)
     max_presences = 420

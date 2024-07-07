@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -135,7 +135,7 @@ def test__Invite__precreate__all_fields():
     approximate_user_count = 13
     code = '202308060071'
     channel = Channel.precreate(202308060072)
-    created_at = DateTime(2016, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = InviteFlag(11)
     guild = Guild.precreate(202308060073)
     inviter = User.precreate(202308060074)

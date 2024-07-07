@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 from types import FunctionType
 
 import vampytest
@@ -32,7 +32,7 @@ def test__MessageType__call():
     """
     Tests whether ``MessageType.call`` conversion not fails.
     """
-    ended_at = DateTime(2016, 4, 4)
+    ended_at = DateTime(2016, 4, 4, tzinfo = TimeZone.utc)
     user_0 = User.precreate(202305060000)
     user_1 = User.precreate(202305060001)
     

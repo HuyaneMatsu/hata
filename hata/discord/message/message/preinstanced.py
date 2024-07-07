@@ -1,8 +1,6 @@
 __all__ = ('MessageType', )
 
-import warnings
-
-from scarletio import class_property, include
+from scarletio import include
 
 from ...activity import ActivityType
 from ...bases import Preinstance as P, PreinstancedBase
@@ -615,57 +613,6 @@ class MessageType(PreinstancedBase):
     guild_gaming_stats = P(42, 'guild gaming stats', MESSAGE_DEFAULT_CONVERTER, True)
     poll = P(43, 'poll', MESSAGE_DEFAULT_CONVERTER, True)
     purchase_notification = P(44, 'purchase notification', convert_purchase_notification, False)
-
-
-    @class_property
-    def add_user(cls):
-        """
-        Deprecated and will be removed in 2023 November. Please use `.user_add` instead.
-        """
-        warnings.warn(
-            (
-                f'`{cls.__name__}.add_user` is deprecated and will be removed in 2023 November. '
-                f'Please use `.user_add` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return cls.user_add
-
-
-    @class_property
-    def remove_user(cls):
-        """
-        Deprecated and will be removed in 2023 November. Please use `.user_remove` instead.
-        """
-        warnings.warn(
-            (
-                f'`{cls.__name__}.remove_user` is deprecated and will be removed in 2023 November. '
-                f'Please use `.user_remove` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return cls.user_remove
-
-
-    @class_property
-    def application_subscription(cls):
-        """
-        Deprecated and will be removed in 2023 November. Please use `.application_guild_subscription` instead.
-        """
-        warnings.warn(
-            (
-                f'`{cls.__name__}.application_subscription` is deprecated and will be removed in 2023 November. '
-                f'Please use `.application_guild_subscription` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return cls.application_guild_subscription
 
 
 GENERIC_MESSAGE_TYPES = frozenset((

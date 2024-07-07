@@ -1,9 +1,8 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
 from ....embed import Embed
-from ....guild import Guild
 
 from ...attachment import Attachment
 from ...message import MessageFlag
@@ -22,11 +21,10 @@ def test__MessageSnapshot__copy():
         Attachment.precreate(202405250015, name = 'Komeiji'),
     ]
     content = 'orin'
-    created_at = DateTime(2016, 5, 14)
-    edited_at = DateTime(2017, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
-    guild_id = 202405250029
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
@@ -35,7 +33,6 @@ def test__MessageSnapshot__copy():
         edited_at = edited_at,
         embeds = embeds,
         flags = flags,
-        guild_id = guild_id,
     )
     copy = message_snapshot.copy()
     
@@ -56,11 +53,10 @@ def test__MessageSnapshot__copy_with__no_fields():
         Attachment.precreate(202405250017, name = 'Komeiji'),
     ]
     content = 'orin'
-    created_at = DateTime(2016, 5, 14)
-    edited_at = DateTime(2017, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
-    guild_id = 202405250030
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
@@ -69,7 +65,6 @@ def test__MessageSnapshot__copy_with__no_fields():
         edited_at = edited_at,
         embeds = embeds,
         flags = flags,
-        guild_id = guild_id,
     )
     copy = message_snapshot.copy_with()
     
@@ -90,22 +85,20 @@ def test__MessageSnapshot__copy_with__all_fields():
         Attachment.precreate(202405250019, name = 'Komeiji'),
     ]
     old_content = 'orin'
-    old_created_at = DateTime(2016, 5, 14)
-    old_edited_at = DateTime(2017, 5, 14)
+    old_created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    old_edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     old_embeds = [Embed('okuu'), Embed('egg')]
     old_flags = MessageFlag(12)
-    old_guild_id = 202405250031
     
     new_attachments = [
         Attachment.precreate(202405250020, name = 'komeiji'),
         Attachment.precreate(202405250021, name = 'koishi'),
     ]
     new_content = 'miau'
-    new_created_at = DateTime(2016, 5, 14)
-    new_edited_at = DateTime(2017, 5, 14)
+    new_created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    new_edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     new_embeds = [Embed('boils'), Embed('them')]
     new_flags = MessageFlag(78)
-    new_guild_id = 202405250032
     
     message_snapshot = MessageSnapshot(
         attachments = old_attachments,
@@ -114,7 +107,6 @@ def test__MessageSnapshot__copy_with__all_fields():
         edited_at = old_edited_at,
         embeds = old_embeds,
         flags = old_flags,
-        guild_id = old_guild_id,
     )
     copy = message_snapshot.copy_with(
         attachments = new_attachments,
@@ -123,7 +115,6 @@ def test__MessageSnapshot__copy_with__all_fields():
         edited_at = new_edited_at,
         embeds = new_embeds,
         flags = new_flags,
-        guild_id = new_guild_id,
     )
     
     _assert_fields_set(copy)
@@ -135,39 +126,6 @@ def test__MessageSnapshot__copy_with__all_fields():
     vampytest.assert_eq(copy.edited_at, new_edited_at)
     vampytest.assert_eq(copy.embeds, tuple(new_embeds))
     vampytest.assert_eq(copy.flags, new_flags)
-    vampytest.assert_eq(copy.guild_id, new_guild_id)
-
-
-def _iter_options__guild():
-    guild_id_0 = 202405250033
-    guild_id_1 = 202405250034
-    
-    yield 0, None
-    yield guild_id_0, None
-    yield guild_id_1, Guild.precreate(guild_id_1)
-
-
-@vampytest._(vampytest.call_from(_iter_options__guild()).returning_last())
-def test__MessageSnapshot__guild(guild_id):
-    """
-    Tests whether ``MessageSnapshot.guild`` works as intended.
-    
-    Parameters
-    ----------
-    guild_id : `int`
-        Guild identifier to test with.
-    
-    Returns
-    -------
-    guild : `None | Guild`
-    """
-    message_snapshot = MessageSnapshot(
-        guild_id = guild_id,
-    )
-    
-    output = message_snapshot.guild
-    vampytest.assert_instance(output, Guild, nullable = True)
-    return output
 
 
 def _iter_options__embed():

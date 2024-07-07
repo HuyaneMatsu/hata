@@ -1,7 +1,6 @@
 __all__ = ('InteractionComponent',)
 
 from reprlib import repr as short_repr
-from warnings import warn
 
 from scarletio import RichAttributeErrorBaseType, export
 
@@ -38,7 +37,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
     __slots__ = ('components', 'custom_id', 'type', 'value')
     
     
-    def __new__(cls, *, component_type = ..., components = ..., custom_id = ..., value = ..., type_ = ...):
+    def __new__(cls, *, component_type = ..., components = ..., custom_id = ..., value = ...):
         """
         Creates a new interaction component from the given keyword parameters.
         
@@ -63,17 +62,6 @@ class InteractionComponent(RichAttributeErrorBaseType):
         ValueError
             - If a field's value is incorrect.
         """
-        if type_ is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.__new__`\s `type_` parameter is deprecated and will be removed in '
-                    f'2024 February. Please use `component_type` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            component_type = type_
-        
         # component_type
         if component_type is ...:
             component_type = ComponentType.none
@@ -143,7 +131,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
         return new
     
     
-    def copy_with(self, component_type = ..., components = ..., custom_id = ..., value = ..., type_ = ...):
+    def copy_with(self, component_type = ..., components = ..., custom_id = ..., value = ...):
         """
         Copies the interaction component with replacing the defined fields.
         
@@ -173,17 +161,6 @@ class InteractionComponent(RichAttributeErrorBaseType):
         ValueError
             - If a field's value is incorrect.
         """
-        if type_ is not ...:
-            warn(
-                (
-                    f'`{type(self).__name__}.copy_with`\s `type_` parameter is deprecated and will be removed in '
-                    f'2024 February. Please use `component_type` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            component_type = type_
-        
         # component_type
         if component_type is ...:
             component_type = self.type

@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -26,8 +26,8 @@ def test__DateTime__new():
     Tests whether ``DateTime.__new__`` works as intended.
     """
     url = 'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png'
-    signed_at  = DateTime(2024,  2,  9, 20, 45, 18)
-    expires_at = DateTime(2024,  2, 23, 20, 45, 18)
+    signed_at  = DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc)
+    expires_at = DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc)
     signature = b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O'
     
     result = SignedUrlParseResult(url, signed_at, expires_at, signature)
@@ -44,8 +44,8 @@ def test__SignedUrlParseResult__repr():
     Tests whether ``SignedUrlParseResult.__repr__`` works as intended.
     """
     url = 'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png'
-    signed_at  = DateTime(2024,  2,  9, 20, 45, 18)
-    expires_at = DateTime(2024,  2, 23, 20, 45, 18)
+    signed_at  = DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc)
+    expires_at = DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc)
     signature = b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O'
     
     result = SignedUrlParseResult(url, signed_at, expires_at, signature)
@@ -64,14 +64,14 @@ def _iter_options__eq__same_type():
     yield (
         (
             'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
-            DateTime(2024,  2,  9, 20, 45, 18),
-            DateTime(2024,  2, 23, 20, 45, 18),
+            DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc),
+            DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc),
             b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
         ),
         (
             'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
-            DateTime(2024,  2,  9, 20, 45, 18),
-            DateTime(2024,  2, 23, 20, 45, 18),
+            DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc),
+            DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc),
             b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
         ),
         True,
@@ -80,14 +80,14 @@ def _iter_options__eq__same_type():
     yield (
         (
             'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/image.png',
-            DateTime(2024,  2,  9, 20, 45, 18),
-            DateTime(2024,  2, 23, 20, 45, 18),
+            DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc),
+            DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc),
             b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
         ),
         (
             'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
-            DateTime(2024,  2,  9, 20, 45, 18),
-            DateTime(2024,  2, 23, 20, 45, 18),
+            DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc),
+            DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc),
             b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
         ),
         False,
@@ -97,29 +97,13 @@ def _iter_options__eq__same_type():
         (
             'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
             None,
-            DateTime(2024,  2, 23, 20, 45, 18),
+            DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc),
             b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
         ),
         (
             'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
-            DateTime(2024,  2,  9, 20, 45, 18),
-            DateTime(2024,  2, 23, 20, 45, 18),
-            b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
-        ),
-        False,
-    )
-    
-    yield (
-        (
-            'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
-            DateTime(2024,  2,  9, 20, 45, 18),
-            None,
-            b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
-        ),
-        (
-            'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
-            DateTime(2024,  2,  9, 20, 45, 18),
-            DateTime(2024,  2, 23, 20, 45, 18),
+            DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc),
+            DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc),
             b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
         ),
         False,
@@ -128,14 +112,30 @@ def _iter_options__eq__same_type():
     yield (
         (
             'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
-            DateTime(2024,  2,  9, 20, 45, 18),
-            DateTime(2024,  2, 23, 20, 45, 18),
+            DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc),
+            None,
+            b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
+        ),
+        (
+            'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
+            DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc),
+            DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc),
+            b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
+        ),
+        False,
+    )
+    
+    yield (
+        (
+            'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
+            DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc),
+            DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc),
             None,
         ),
         (
             'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png',
-            DateTime(2024,  2,  9, 20, 45, 18),
-            DateTime(2024,  2, 23, 20, 45, 18),
+            DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc),
+            DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc),
             b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O',
         ),
         False,
@@ -190,8 +190,8 @@ def test__SignedUrlParseResult__eq__different_type(other):
     output : `bool`
     """
     url = 'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png'
-    signed_at  = DateTime(2024,  2,  9, 20, 45, 18)
-    expires_at = DateTime(2024,  2, 23, 20, 45, 18)
+    signed_at  = DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc)
+    expires_at = DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc)
     signature = b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O'
     
     result = SignedUrlParseResult(url, signed_at, expires_at, signature)
@@ -206,8 +206,8 @@ def test__SignedUrlParseResult__hash():
     Tests whether ``SignedUrlParseResult.__hash__`` works as intended.
     """
     url = 'https://cdn.discordapp.com/attachments/1012345678900020080/1234567891233211234/my_image.png'
-    signed_at  = DateTime(2024,  2,  9, 20, 45, 18)
-    expires_at = DateTime(2024,  2, 23, 20, 45, 18)
+    signed_at  = DateTime(2024,  2,  9, 20, 45, 18, tzinfo = TimeZone.utc)
+    expires_at = DateTime(2024,  2, 23, 20, 45, 18, tzinfo = TimeZone.utc)
     signature = b'$\x81\xf3\r\xd6\x7fP?T\xd0 \xae;U3\xb9\x98\x7f\xaeNU\xf2\xb4\xe3\x92n\x08\xa3\xfa>\xe2O'
     
     result = SignedUrlParseResult(url, signed_at, expires_at, signature)

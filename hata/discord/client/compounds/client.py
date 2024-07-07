@@ -1,6 +1,6 @@
 __all__ = ()
 
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 from scarletio import Compound
 
@@ -201,7 +201,7 @@ class ClientCompoundClientEndpoints(Compound):
         guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_guild_stage)
         
         if request:
-            timestamp = datetime_to_timestamp(DateTime.utcnow())
+            timestamp = datetime_to_timestamp(DateTime.now(TimeZone.utc))
         else:
             timestamp = None
         

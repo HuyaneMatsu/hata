@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -13,7 +13,7 @@ def test__ThreadProfile__copy():
     Tests whether ``ThreadProfile.copy`` works as intended.
     """
     flags = ThreadProfileFlag(2)
-    joined_at = DateTime(2016, 5, 15)
+    joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     
     
     thread_profile = ThreadProfile(
@@ -34,7 +34,7 @@ def test__ThreadProfile__copy_with__0():
     Case: No fields given.
     """
     flags = ThreadProfileFlag(2)
-    joined_at = DateTime(2016, 5, 15)
+    joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     
     
     thread_profile = ThreadProfile(
@@ -57,8 +57,8 @@ def test__ThreadProfile__copy_with__1():
     """
     old_flags = ThreadProfileFlag(2)
     new_flags = ThreadProfileFlag(4)
-    old_joined_at = DateTime(2016, 5, 15)
-    new_joined_at = DateTime(2017, 5, 15)
+    old_joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
+    new_joined_at = DateTime(2017, 5, 15, tzinfo = TimeZone.utc)
 
     
     thread_profile = ThreadProfile(
@@ -83,6 +83,6 @@ def test__ThreadProfile__created_at():
     
     Case: no roles cached.
     """
-    joined_at = DateTime(2020, 5, 14)
+    joined_at = DateTime(2020, 5, 14, tzinfo = TimeZone.utc)
     thread_profile = ThreadProfile(joined_at = joined_at)
     vampytest.assert_eq(thread_profile.created_at, joined_at)

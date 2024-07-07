@@ -142,7 +142,6 @@ class ClientCompoundIntegrationEndpoints(Compound):
         expire_behavior = ...,
         expire_grace_period = ...,
         emojis_enabled = ...,
-        enable_emojis = ...,
     ):
         """
         Edits the given integration.
@@ -224,17 +223,6 @@ class ClientCompoundIntegrationEndpoints(Compound):
                     )
                 
             data['expire_grace_period'] = expire_grace_period
-        
-        if (enable_emojis is not None):
-            warn(
-                (
-                    f'`{self.__class__.__name__}.integration_edit`\'s `enable_emojis` parameter is deprecated '
-                    f'and will be removed in 2024 Marc. Please use `emojis_enabled` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            emojis_enabled = enable_emojis
         
         if (emojis_enabled is not ...):
             if __debug__:

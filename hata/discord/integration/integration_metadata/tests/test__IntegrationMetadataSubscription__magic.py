@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -20,7 +20,7 @@ def test__IntegrationMetadataSubscription__repr():
     revoked = True
     role_id = 202210090005
     subscriber_count = 100
-    synced_at = DateTime(2016, 9, 9)
+    synced_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     syncing = True
 
     integration_metadata = IntegrationMetadataSubscription(
@@ -47,7 +47,7 @@ def test__IntegrationMetadataSubscription__eq():
     revoked = True
     role_id = 202210090006
     subscriber_count = 100
-    synced_at = DateTime(2016, 9, 9)
+    synced_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     syncing = True
     
     keyword_parameters = {
@@ -92,7 +92,7 @@ def test__IntegrationMetadataSubscription__hash():
     revoked = True
     role_id = 202210110000
     subscriber_count = 100
-    synced_at = DateTime(2016, 9, 9)
+    synced_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     syncing = True
 
     integration_metadata = IntegrationMetadataSubscription(

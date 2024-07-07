@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -16,8 +16,8 @@ def test__EmbeddedActivityConfiguration__from_data():
     """
     age_gated = True
     client_platform_configurations = {
-        PlatformType.web: ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14)),
-        PlatformType.ios: ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14)),
+        PlatformType.web: ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)),
+        PlatformType.ios: ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14, tzinfo = TimeZone.utc)),
     }
     content_security_policy_exceptions_exist = False
     default_orientation_lock_state = OrientationLockState.unlocked
@@ -58,8 +58,8 @@ def test__EmbeddedActivityConfiguration__to_data():
     """
     age_gated = True
     client_platform_configurations = {
-        PlatformType.web: ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14)),
-        PlatformType.ios: ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14)),
+        PlatformType.web: ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)),
+        PlatformType.ios: ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14, tzinfo = TimeZone.utc)),
     }
     content_security_policy_exceptions_exist = False
     default_orientation_lock_state = OrientationLockState.unlocked

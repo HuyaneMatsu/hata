@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -35,7 +35,7 @@ def test__MessageCall__new__no_fields():
     
     Case: All fields given.
     """
-    ended_at = DateTime(2016, 5, 14)
+    ended_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     user_ids = [202304280000, 202304280001]
 
     message_call = MessageCall(

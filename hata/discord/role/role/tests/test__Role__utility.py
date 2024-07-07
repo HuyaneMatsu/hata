@@ -133,17 +133,37 @@ def test__Role__manager_id():
     vampytest.assert_eq(manager_id, entity_id)
 
 
-def test__Role__guild():
+def _iter_options__guild():
+    guild_id = 0
+    yield 202407030000, guild_id, None
+    
+    guild_id = 202407030001
+    yield 2024070300002, guild_id, None
+    
+    guild_id = 202407030003
+    yield 202407030004, guild_id, Guild.precreate(guild_id)
+
+
+@vampytest._(vampytest.call_from(_iter_options__guild()).returning_last())
+def test__Role__guild(role_id, guild_id):
     """
     Tests whether ``Role.guild`` works as intended.
+    
+    Parameters
+    ----------
+    role_id : `int`
+        Identifier to create the role with.
+    guild_id : `int`
+        Guild identifier to create the role with.
+    
+    Returns
+    -------
+    output : `None | Guild`
     """
-    guild_id = 202211040037
-    role_id = 202211040038
-    
-    guild = Guild.precreate(guild_id)
     role = Role.precreate(role_id, guild_id = guild_id)
-    
-    vampytest.assert_is(role.guild, guild)
+    output = role.guild
+    vampytest.assert_instance(output, Guild, nullable = True)
+    return output
 
 
 def test__Role__partial__0():

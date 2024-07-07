@@ -3,14 +3,27 @@ import vampytest
 from ..fields import put_title_into
 
 
-def test__put_title_into():
+def _iter_options():
+    yield None, False, {}
+    yield None, True, {'title': ''}
+    yield 'a', False, {'title': 'a'}
+    yield 'a', True, {'title': 'a'}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_title_into(input_value, defaults):
     """
     Tests whether ``put_title_into`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None`, `str`
+        Value to put into data.
+    defaults : `bool`
+        Whether values of their default value should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
     """
-    for input_value, defaults, expected_output in (
-        (None, False, {}),
-        (None, True, {'title': ''}),
-        ('a', False, {'title': 'a'}),
-    ):
-        data = put_title_into(input_value, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    return put_title_into(input_value, {}, defaults)

@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -15,9 +15,9 @@ def test__ChannelMetadataGuildThreadBase__from_data():
     """
     parent_id = 202209180002
     name = 'Armelyrics'
-    created_at = DateTime(2020, 5, 14)
+    created_at = DateTime(2020, 5, 14, tzinfo = TimeZone.utc)
     archived = True
-    archived_at = DateTime(2021, 5, 14)
+    archived_at = DateTime(2021, 5, 14, tzinfo = TimeZone.utc)
     auto_archive_after = 86400
     open_ = True
     owner_id = 202209180013
@@ -57,9 +57,9 @@ def test__ChannelMetadataGuildThreadBase__to_data():
     """
     parent_id = 202209180003
     name = 'Armelyrics'
-    created_at = DateTime(2020, 5, 14)
+    created_at = DateTime(2020, 5, 14, tzinfo = TimeZone.utc)
     archived = True
-    archived_at = DateTime(2021, 5, 14)
+    archived_at = DateTime(2021, 5, 14, tzinfo = TimeZone.utc)
     auto_archive_after = 86400
     open_ = True
     owner_id = 202209180014
@@ -107,8 +107,8 @@ def test__ChannelMetadataGuildThreadBase__update_attributes():
     new_name = 'Okuu'
     old_archived = True
     new_archived = False
-    old_archived_at = DateTime(2021, 5, 14)
-    new_archived_at = DateTime(2021, 9, 9)
+    old_archived_at = DateTime(2021, 5, 14, tzinfo = TimeZone.utc)
+    new_archived_at = DateTime(2021, 9, 9, tzinfo = TimeZone.utc)
     old_auto_archive_after = 86400
     new_auto_archive_after = 3600
     old_open = True
@@ -157,8 +157,8 @@ def test__ChannelMetadataGuildThreadBase__difference_update_attributes():
     new_name = 'Okuu'
     old_archived = True
     new_archived = False
-    old_archived_at = DateTime(2021, 5, 14)
-    new_archived_at = DateTime(2021, 9, 9)
+    old_archived_at = DateTime(2021, 5, 14, tzinfo = TimeZone.utc)
+    new_archived_at = DateTime(2021, 9, 9, tzinfo = TimeZone.utc)
     old_auto_archive_after = 86400
     new_auto_archive_after = 3600
     old_open = True

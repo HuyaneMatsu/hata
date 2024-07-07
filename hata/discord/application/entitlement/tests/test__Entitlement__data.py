@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -20,11 +20,11 @@ def test__Entitlement__from_data():
     application_id = 202310040014
     consumed = True
     deleted = True
-    ends_at = DateTime(2016, 5, 14)
+    ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
     guild_id = 202310040032
     sku_id = 202310040033
-    starts_at = DateTime(2015, 5, 14)
+    starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310040015
     user_id = 202310040016
     
@@ -85,11 +85,11 @@ def test__Entitlement__from_data_is_created():
     application_id = 202310070001
     consumed = True
     deleted = True
-    ends_at = DateTime(2016, 5, 14)
+    ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
     guild_id = 202310070002
     sku_id = 202310070003
-    starts_at = DateTime(2015, 5, 14)
+    starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310070004
     user_id = 202310070005
     
@@ -158,11 +158,11 @@ def test__Entitlement__set_attributes():
     application_id = 202310040027
     consumed = True
     deleted = True
-    ends_at = DateTime(2016, 5, 14)
+    ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
     guild_id = 202310040028
     sku_id = 202310040029
-    starts_at = DateTime(2015, 5, 14)
+    starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310040030
     user_id = 202310040031
     
@@ -201,8 +201,8 @@ def test__Entitlement__update_attributes():
     entitlement_id = 202310040034
     consumed = True
     deleted = True
-    ends_at = DateTime(2016, 5, 14)
-    starts_at = DateTime(2015, 5, 14)
+    ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     
     data = {
         'consumed': consumed,
@@ -228,13 +228,13 @@ def test__Entitlement__difference_update_attributes():
     
     old_consumed = True
     old_deleted = True
-    old_ends_at = DateTime(2016, 5, 14)
-    old_starts_at = DateTime(2015, 5, 14)
+    old_ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    old_starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     
     new_consumed = False
     new_deleted = False
-    new_ends_at = DateTime(2016, 10, 14)
-    new_starts_at = DateTime(2015, 10, 14)
+    new_ends_at = DateTime(2016, 10, 14, tzinfo = TimeZone.utc)
+    new_starts_at = DateTime(2015, 10, 14, tzinfo = TimeZone.utc)
     
     data = {
         'consumed': new_consumed,
@@ -279,11 +279,11 @@ def test__Entitlement__to_data__full():
     application_id = 202310040018
     consumed = True
     deleted = True
-    ends_at = DateTime(2016, 5, 14)
+    ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
     guild_id = 202310040019
     sku_id = 202310040020
-    starts_at = DateTime(2015, 5, 14)
+    starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310040021
     user_id = 202310040022
     

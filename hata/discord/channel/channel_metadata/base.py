@@ -1,7 +1,5 @@
 __all__ = ('ChannelMetadataBase',)
 
-from warnings import warn
-
 from scarletio import RichAttributeErrorBaseType, include
 
 from ...bases import Icon, IconType, PlaceHolder, IconSlot
@@ -717,22 +715,6 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         default_thread_reaction_emoji : ``Emoji``
         """
     )
-    
-
-    @property
-    def default_thread_reaction(self):
-        """
-        Deprecated and will be removed in 2024 Marc. Please use `.default_thread_reaction_emoji` instead.
-        """
-        warn(
-            (
-                f'`{self.__class__.__name__}.default_thread_reaction` is deprecated and will be removed in '
-                f'2024 Marc. Please use `.default_thread_reaction_emoji` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.default_thread_reaction_emoji
     
     
     default_thread_slowmode = PlaceHolder(

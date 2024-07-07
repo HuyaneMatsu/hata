@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -8,8 +8,8 @@ from ..fields import parse_poll
 
 
 def _iter_options():
-    poll_0 = Poll(expires_at = DateTime(2016, 5, 14))
-    poll_1 = Poll(expires_at = DateTime(2016, 5, 15))
+    poll_0 = Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
+    poll_1 = Poll(expires_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc))
     
     yield {}, None, None
     yield {'poll': None}, None, None

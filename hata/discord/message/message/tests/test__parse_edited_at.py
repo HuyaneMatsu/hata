@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -8,7 +8,7 @@ from ..fields import parse_edited_at
 
 
 def _iter_options():
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield {}, None
     yield {'edited_timestamp': None}, None

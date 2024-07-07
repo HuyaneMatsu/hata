@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -8,11 +8,11 @@ from ..fields import parse_direct_messages_disabled_until
 
 
 def _iter_options():
-    until = DateTime(2016, 5, 14)
+    timestamp = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield {}, None
     yield {'dms_disabled_until': None}, None
-    yield {'dms_disabled_until': datetime_to_timestamp(until)}, until
+    yield {'dms_disabled_until': datetime_to_timestamp(timestamp)}, timestamp
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -27,6 +27,6 @@ def test__parse_direct_messages_disabled_until(input_data):
     
     Returns
     -------
-    output : `DateTime`
+    output : `None | DateTime`
     """
     return parse_direct_messages_disabled_until(input_data)

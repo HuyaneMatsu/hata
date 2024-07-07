@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -20,7 +20,7 @@ def test__Invite__repr():
     approximate_user_count = 13
     code = '202308060077'
     channel = Channel.precreate(202308060078)
-    created_at = DateTime(2016, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = InviteFlag(11)
     guild = Guild.precreate(202308060079)
     inviter = User.precreate(202308060080)
@@ -63,7 +63,7 @@ def test__Invite__hash():
     approximate_user_count = 13
     code = '202308070000'
     channel = Channel.precreate(202308070001)
-    created_at = DateTime(2016, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = InviteFlag(11)
     guild = Guild.precreate(202308070002)
     inviter = User.precreate(202308070003)

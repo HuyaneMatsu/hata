@@ -18,7 +18,7 @@ from ..poll_question import PollQuestion
 from ..poll_result import PollResult
 from ..poll_result.utils import merge_update_poll_results
 
-from .constants import DURATION_DEFAULT
+from .constants import DURATION_DEFAULT, DURATION_MAX
 from .preinstanced import PollLayout
 
 
@@ -114,8 +114,8 @@ put_duration_into = int_optional_postprocess_putter_factory(
 validate_duration = int_conditional_validator_factory(
     'duration',
     DURATION_DEFAULT,
-    (lambda duration: duration > 0 and duration % 3600 == 0),
-    'must be > 0 and multiple of 3600'
+    (lambda duration: duration > 0 and duration <= DURATION_MAX and duration % 3600 == 0),
+    f'must be > 0 and <= and {DURATION_MAX} multiple of 3600'
 )
 
 

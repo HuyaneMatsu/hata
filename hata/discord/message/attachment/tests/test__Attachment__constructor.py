@@ -24,6 +24,7 @@ def _assert_fields_set(attachment):
     vampytest.assert_instance(attachment.proxy_url, str, nullable = True)
     vampytest.assert_instance(attachment.size, int)
     vampytest.assert_instance(attachment.temporary, bool)
+    vampytest.assert_instance(attachment.title, str, nullable = True)
     vampytest.assert_instance(attachment.url, str)
     vampytest.assert_instance(attachment.waveform, str, nullable = True)
     vampytest.assert_instance(attachment.width, int)
@@ -53,6 +54,7 @@ def test__Attachment__new__1():
     name = 'i miss you'
     size = 999
     temporary = True
+    title = 'flandre'
     url = 'https://www.astil.dev/'
     waveform = 'kisaki'
     width = 998
@@ -66,6 +68,7 @@ def test__Attachment__new__1():
         name = name,
         size = size,
         temporary = temporary,
+        title = title,
         url = url,
         waveform = waveform,
         width = width,
@@ -80,6 +83,7 @@ def test__Attachment__new__1():
     vampytest.assert_eq(attachment.name, name)
     vampytest.assert_eq(attachment.size, size)
     vampytest.assert_eq(attachment.temporary, temporary)
+    vampytest.assert_eq(attachment.title, title)
     vampytest.assert_eq(attachment.url, url)
     vampytest.assert_eq(attachment.waveform, waveform)
     vampytest.assert_eq(attachment.width, width)
@@ -116,6 +120,7 @@ def test__Attachment__precreate__1():
     proxy_url = 'https://orindance.party/'
     size = 999
     temporary = True
+    title = 'flandre'
     url = 'https://www.astil.dev/'
     waveform = 'kisaki'
     width = 998
@@ -131,6 +136,7 @@ def test__Attachment__precreate__1():
         proxy_url = proxy_url,
         size = size,
         temporary = temporary,
+        title = title,
         url = url,
         waveform = waveform,
         width = width,
@@ -148,6 +154,7 @@ def test__Attachment__precreate__1():
     vampytest.assert_eq(attachment.name, name)
     vampytest.assert_eq(attachment.size, size)
     vampytest.assert_eq(attachment.temporary, temporary)
+    vampytest.assert_eq(attachment.title, title)
     vampytest.assert_eq(attachment.url, url)
     vampytest.assert_eq(attachment.waveform, waveform)
     vampytest.assert_eq(attachment.width, width)

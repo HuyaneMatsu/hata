@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -18,7 +18,7 @@ def test__SKU__copy():
     flags = SKUFlag(11)
     name = 'Red'
     premium = True
-    release_at = DateTime(2016, 5, 14)
+    release_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     sku_type = SKUType.consumable
     
     sku = SKU(
@@ -48,7 +48,7 @@ def test__SKU__copy_with__0():
     flags = SKUFlag(11)
     name = 'Red'
     premium = True
-    release_at = DateTime(2016, 5, 14)
+    release_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     sku_type = SKUType.consumable
     
     sku = SKU(
@@ -78,7 +78,7 @@ def test__SKU__copy_with__1():
     old_flags = SKUFlag(11)
     old_name = 'Red'
     old_premium = True
-    old_release_at = DateTime(2016, 5, 14)
+    old_release_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     old_sku_type = SKUType.consumable
     
     new_access_type = SKUAccessType.early_access
@@ -86,7 +86,7 @@ def test__SKU__copy_with__1():
     new_flags = SKUFlag(12)
     new_name = 'Burning'
     new_premium = False
-    new_release_at = DateTime(2016, 6, 14)
+    new_release_at = DateTime(2016, 6, 14, tzinfo = TimeZone.utc)
     new_sku_type = SKUType.durable
     
     sku = SKU(

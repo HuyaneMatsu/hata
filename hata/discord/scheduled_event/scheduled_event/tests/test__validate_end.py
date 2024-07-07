@@ -1,34 +1,40 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
 from ..fields import validate_end
 
 
-def test__validate_end__0():
+def _iter_options__passing():
+    timestamp = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
+    
+    yield None, None
+    yield timestamp, timestamp
+
+
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_end(input_value):
     """
     Tests whether ``validate_end`` works as intended.
     
-    Case: passing.
-    """
-    end = DateTime(2016, 9, 9)
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    for input_parameter, expected_output in (
-        (None, None),
-        (end, end),
-    ):
-        output = validate_end(input_parameter)
-        vampytest.assert_is(output, expected_output)
-
-
-def test__validate_end__1():
-    """
-    Tests whether ``validate_end`` works as intended.
+    Returns
+    -------
+    output : `None | DateTime`
     
-    Case: `TypeError`.
+    Raising
+    -------
+    TypeError
     """
-    for input_parameter in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_end(input_parameter)
+    output = validate_end(input_value)
+    vampytest.assert_instance(output, DateTime, nullable = True)
+    return output

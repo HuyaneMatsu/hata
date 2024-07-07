@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -12,7 +12,7 @@ def test__Oauth2Access__repr():
     """
     
     access_token = 'immortal'
-    created_at = DateTime(2016, 5, 4)
+    created_at = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
     expires_after = 69
     redirect_url = 'https://orindance.party/'
     refresh_token = 'smoke'
@@ -35,7 +35,7 @@ def test__Oauth2Access__hash():
     Tests whether ``Oauth2Access.__hash__`` works as intended.
     """
     access_token = 'immortal'
-    created_at = DateTime(2016, 5, 4)
+    created_at = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
     expires_after = 69
     redirect_url = 'https://orindance.party/'
     refresh_token = 'smoke'
@@ -58,7 +58,7 @@ def test__Oauth2Access__eq():
     Tests whether ``Oauth2Access.__eq__`` works as intended.
     """
     access_token = 'immortal'
-    created_at = DateTime(2016, 5, 4)
+    created_at = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
     expires_after = 69
     redirect_url = 'https://orindance.party/'
     refresh_token = 'smoke'
@@ -79,7 +79,7 @@ def test__Oauth2Access__eq():
     
     for field_name, field_value in (
         ('access_token', 'ashe'),
-        ('created_at', DateTime(2016, 5, 5)),
+        ('created_at', DateTime(2016, 5, 5, tzinfo = TimeZone.utc)),
         ('expires_after', 10000),
         ('redirect_url', 'https://www.astil.dev/'),
         ('refresh_token', 'of rogue'),

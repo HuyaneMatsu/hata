@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -8,11 +8,11 @@ from ..fields import parse_raid_detected_at
 
 
 def _iter_options():
-    until = DateTime(2016, 5, 14)
+    timestamp = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield {}, None
     yield {'raid_detected_at': None}, None
-    yield {'raid_detected_at': datetime_to_timestamp(until)}, until
+    yield {'raid_detected_at': datetime_to_timestamp(timestamp)}, timestamp
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -27,6 +27,6 @@ def test__parse_raid_detected_at(input_data):
     
     Returns
     -------
-    output : `DateTime`
+    output : `None | DateTime`
     """
     return parse_raid_detected_at(input_data)

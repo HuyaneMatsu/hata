@@ -8,10 +8,9 @@ from ...utils import DATETIME_FORMAT_CODE, DISCORD_EPOCH_START
 from ..message import MessageFlag
 
 from .fields import (
-    parse_attachments, parse_content, parse_created_at, parse_edited_at, parse_embeds, parse_flags, parse_guild_id,
+    parse_attachments, parse_content, parse_created_at, parse_edited_at, parse_embeds, parse_flags,
     put_attachments_into, put_content_into, put_created_at_into, put_edited_at_into, put_embeds_into, put_flags_into,
-    put_guild_id_into, validate_attachments, validate_content, validate_created_at, validate_edited_at, validate_embeds,
-    validate_flags, validate_guild_id
+    validate_attachments, validate_content, validate_created_at, validate_edited_at, validate_embeds, validate_flags
 )
 
 
@@ -34,10 +33,8 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         The snapshotted message's embeds.
     flags : ``MessageFlag``
         The snapshotted message's flags.
-    guild_id : `int`
-        The guild's identifier where the message is from.
     """
-    __slots__ = ('attachments', 'content', 'created_at', 'edited_at', 'embeds', 'flags', 'guild_id')
+    __slots__ = ('attachments', 'content', 'created_at', 'edited_at', 'embeds', 'flags')
     
     def __new__(
         cls,
@@ -48,7 +45,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         edited_at = ...,
         embeds = ...,
         flags = ...,
-        guild_id = ...,
     ):
         """
         Creates a new message snapshot from the given parameters.
@@ -67,8 +63,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             The snapshotted message's embeds.
         flags : `MessageFlag | int | None`, Optional (Keyword only)
             The snapshotted message's flags.
-        guild_id : `int | Guild | None`, Optional (Keyword only)
-            The guild's identifier where the message is from.
         
         Raises
         ------
@@ -113,12 +107,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         else:
             flags = validate_flags(flags)
         
-        # guild_id
-        if guild_id is ...:
-            guild_id = 0
-        else:
-            guild_id = validate_guild_id(guild_id)
-        
         # Construct
         self = object.__new__(cls)
         self.attachments = attachments
@@ -127,7 +115,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         self.edited_at = edited_at
         self.embeds = embeds
         self.flags = flags
-        self.guild_id = guild_id
         return self
     
     
@@ -152,7 +139,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         self.edited_at = parse_edited_at(data)
         self.embeds = parse_embeds(data)
         self.flags = parse_flags(data)
-        self.guild_id = parse_guild_id(data)
         return self
     
     
@@ -176,7 +162,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         put_edited_at_into(self.edited_at, data, defaults)
         put_embeds_into(self.embeds, data, defaults)
         put_flags_into(self.flags, data, defaults)
-        put_guild_id_into(self.guild_id, data, defaults)
         return data
     
     
@@ -207,10 +192,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         
         # flags
         if self.flags != other.flags:
-            return False
-        
-        # guild_id
-        if self.guild_id != other.guild_id:
             return False
         
         return True
@@ -288,17 +269,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             repr_parts.append(' flags = ')
             repr_parts.append(repr(flags))
         
-        # guild_id
-        guild_id = self.guild_id
-        if guild_id:
-            if field_added:
-                repr_parts.append(',')
-            else:
-                field_added = True
-            
-            repr_parts.append(' guild_id = ')
-            repr_parts.append(repr(guild_id))
-        
         repr_parts.append('>')
         return ''.join(repr_parts)
     
@@ -341,9 +311,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         # flags
         hash_value ^= self.flags
         
-        # guild_id
-        hash_value ^= self.guild_id
-        
         return hash_value
     
     
@@ -372,7 +339,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         new.embeds = embeds
         
         new.flags = self.flags
-        new.guild_id = self.guild_id
         
         return new
     
@@ -386,7 +352,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         edited_at = ...,
         embeds = ...,
         flags = ...,
-        guild_id = ...,
     ):
         """
         Copies the message snapshot with the given fields.
@@ -405,8 +370,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             The snapshotted message's embeds.
         flags : `MessageFlag | int | None`, Optional (Keyword only)
             The snapshotted message's flags.
-        guild_id : `int | Guild | None`, Optional (Keyword only)
-            The guild's identifier where the message is from.
         
         Returns
         -------
@@ -459,12 +422,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         else:
             flags = validate_flags(flags)
         
-        # guild_id
-        if guild_id is ...:
-            guild_id = self.guild_id
-        else:
-            guild_id = validate_guild_id(guild_id)
-        
         # Construct
         new = object.__new__(type(self))
         new.attachments = attachments
@@ -473,7 +430,6 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         new.edited_at = edited_at
         new.embeds = embeds
         new.flags = flags
-        new.guild_id = guild_id
         return new
     
     # Iterators
@@ -535,18 +491,3 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         embeds = self.embeds
         if embeds is not None:
             return embeds[0]
-    
-    # properties
-    
-    @property
-    def guild(self):
-        """
-        Returns the message snapshot's guild. If the guild is not cached returns `None`.
-        
-        Returns
-        -------
-        guild : `None`, ``Guild``
-        """
-        guild_id = self.guild_id
-        if guild_id:
-            return GUILDS.get(guild_id, None)

@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -8,12 +8,12 @@ from ..fields import put_joined_at_into
 
 
 def _iter_options():
-    until = DateTime(2016, 5, 14)
+    timestamp = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield None, False, {}
     yield None, True, {'joined_at': None}
-    yield until, False, {'joined_at': datetime_to_timestamp(until)}
-    yield until, True, {'joined_at': datetime_to_timestamp(until)}
+    yield timestamp, False, {'joined_at': datetime_to_timestamp(timestamp)}
+    yield timestamp, True, {'joined_at': datetime_to_timestamp(timestamp)}
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -23,7 +23,7 @@ def test__put_joined_at_into(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `bool`
+    input_value : `None | DateTime`
         The value to serialise.
     defaults : `bool`
         Whether default values should be included as well.

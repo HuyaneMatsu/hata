@@ -20,13 +20,3 @@ __all__ = (
     *rate_limit_proxy.__all__,
     *urls.__all__,
 )
-
-
-# Deprecate imports
-
-from scarletio.http_client import HTTPClient
-
-from ...utils.module_deprecation import deprecated_import
-
-# Deprecated at 2024 Jan 1
-deprecated_import(HTTPClient, 'DiscordHTTPClient')

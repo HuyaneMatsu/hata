@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -57,9 +57,9 @@ def _iter_options__user_date_sort_key():
     user_1 = User.precreate(202306180001)
     user_2 = User.precreate(202306180002)
     
-    date_time_0 = DateTime(2016, 5, 14)
-    date_time_1 = DateTime(2017, 5, 14)
-    date_time_2 = DateTime(2018, 5, 14)
+    date_time_0 = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    date_time_1 = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
+    date_time_2 = DateTime(2018, 5, 14, tzinfo = TimeZone.utc)
     
     yield [], []
     yield [(user_0, date_time_0)], [(user_0, date_time_0)]

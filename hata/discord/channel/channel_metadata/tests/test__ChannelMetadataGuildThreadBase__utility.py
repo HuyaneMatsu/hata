@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -13,9 +13,9 @@ def test__ChannelMetadataGuildThreadAnnouncements__copy():
     """
     name = 'alice'
     parent_id = 202304120061
-    created_at = DateTime(2016, 4, 4)
+    created_at = DateTime(2016, 4, 4, tzinfo = TimeZone.utc)
     archived = False
-    archived_at = DateTime(2017, 4, 4)
+    archived_at = DateTime(2017, 4, 4, tzinfo = TimeZone.utc)
     auto_archive_after = 3600
     open_ = True
     owner_id = 202304120062
@@ -48,9 +48,9 @@ def test__ChannelMetadataGuildThreadAnnouncements__copy_with__0():
     """
     name = 'alice'
     parent_id = 202304120063
-    created_at = DateTime(2016, 4, 4)
+    created_at = DateTime(2016, 4, 4, tzinfo = TimeZone.utc)
     archived = False
-    archived_at = DateTime(2017, 4, 4)
+    archived_at = DateTime(2017, 4, 4, tzinfo = TimeZone.utc)
     auto_archive_after = 3600
     open_ = True
     owner_id = 202304120064
@@ -83,9 +83,9 @@ def test__ChannelMetadataGuildThreadAnnouncements__copy_with__1():
     """
     old_name = 'alice'
     old_parent_id = 202304120065
-    old_created_at = DateTime(2016, 4, 4)
+    old_created_at = DateTime(2016, 4, 4, tzinfo = TimeZone.utc)
     old_archived = False
-    old_archived_at = DateTime(2017, 4, 4)
+    old_archived_at = DateTime(2017, 4, 4, tzinfo = TimeZone.utc)
     old_auto_archive_after = 3600
     old_open = True
     old_owner_id = 202304120066
@@ -93,9 +93,9 @@ def test__ChannelMetadataGuildThreadAnnouncements__copy_with__1():
     
     new_name = 'emotion'
     new_parent_id = 202304120067
-    new_created_at = DateTime(2016, 4, 5)
+    new_created_at = DateTime(2016, 4, 5, tzinfo = TimeZone.utc)
     new_archived = True
-    new_archived_at = DateTime(2017, 4, 5)
+    new_archived_at = DateTime(2017, 4, 5, tzinfo = TimeZone.utc)
     new_auto_archive_after = 604800
     new_open = False
     new_owner_id = 202304120068
@@ -147,9 +147,9 @@ def test__ChannelMetadataGuildThreadAnnouncements__copy_with_keyword_parameters_
     """
     name = 'alice'
     parent_id = 202304120069
-    created_at = DateTime(2016, 4, 4)
+    created_at = DateTime(2016, 4, 4, tzinfo = TimeZone.utc)
     archived = False
-    archived_at = DateTime(2017, 4, 4)
+    archived_at = DateTime(2017, 4, 4, tzinfo = TimeZone.utc)
     auto_archive_after = 3600
     open_ = True
     owner_id = 202304120070
@@ -184,9 +184,9 @@ def test__ChannelMetadataGuildThreadAnnouncements__copy_with_keyword_parameters_
     """
     old_name = 'alice'
     old_parent_id = 202304120071
-    old_created_at = DateTime(2016, 4, 4)
+    old_created_at = DateTime(2016, 4, 4, tzinfo = TimeZone.utc)
     old_archived = False
-    old_archived_at = DateTime(2017, 4, 4)
+    old_archived_at = DateTime(2017, 4, 4, tzinfo = TimeZone.utc)
     old_auto_archive_after = 3600
     old_open = True
     old_owner_id = 202304120072
@@ -194,9 +194,9 @@ def test__ChannelMetadataGuildThreadAnnouncements__copy_with_keyword_parameters_
     
     new_name = 'emotion'
     new_parent_id = 202304120073
-    new_created_at = DateTime(2016, 4, 5)
+    new_created_at = DateTime(2016, 4, 5, tzinfo = TimeZone.utc)
     new_archived = True
-    new_archived_at = DateTime(2017, 4, 5)
+    new_archived_at = DateTime(2017, 4, 5, tzinfo = TimeZone.utc)
     new_auto_archive_after = 604800
     new_open = False
     new_owner_id = 202304120074

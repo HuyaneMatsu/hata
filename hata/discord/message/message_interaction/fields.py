@@ -4,16 +4,18 @@ from ...application import ApplicationIntegrationType
 from ...application_command.application_command.constants import (
     NAME_LENGTH_MAX as APPLICATION_COMMAND_NAME_LENGTH_MAX, NAME_LENGTH_MIN as APPLICATION_COMMAND_NAME_LENGTH_MIN
 )
-from ...field_parsers import entity_id_parser_factory, nullable_entity_parser_factory, preinstanced_parser_factory
+from ...field_parsers import (
+    default_entity_parser_factory, entity_id_parser_factory, nullable_entity_parser_factory, preinstanced_parser_factory
+)
 from ...field_putters import (
-    entity_id_optional_putter_factory, entity_id_putter_factory, nullable_entity_optional_putter_factory,
-    preinstanced_putter_factory
+    default_entity_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
+    nullable_entity_optional_putter_factory, preinstanced_putter_factory
 )
 from ...field_validators import (
-    entity_id_validator_factory, force_string_validator_factory, nullable_entity_validator_factory,
-    nullable_string_array_validator_factory, preinstanced_validator_factory
+    default_entity_validator_factory, entity_id_validator_factory, force_string_validator_factory,
+    nullable_entity_validator_factory, nullable_string_array_validator_factory, preinstanced_validator_factory
 )
-from ...user import ClientUserBase
+from ...user import ClientUserBase, User, ZEROUSER
 
 
 # authorizer_user_ids
@@ -261,36 +263,8 @@ put_type_into = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('type', NotImplemented, include = 'InteractionType')
 
 
-# user_id
+# user
 
-# old messages do not have the new data, so we default back to the old one.
-def parse_user_id(data):
-    """
-    Parses out the user identifier from the given data.
-    
-    Parameters
-    ----------
-    data : `dict<str, object>`
-        Data to parse from.
-    
-    Returns
-    -------
-    user_id : `int`
-    """
-    try:
-        user_id = data['user_id']
-    except KeyError:
-        user_data = data.get('user', None)
-        if user_data is None:
-            return 0
-        
-        user_id = user_data.get('id', None)
-    
-    if user_id is None:
-        return 0
-    
-    return int(user_id)
-
-
-put_user_id_into = entity_id_putter_factory('user_id')
-validate_user_id = entity_id_validator_factory('user_id', ClientUserBase)
+parse_user = default_entity_parser_factory('user', User, default = ZEROUSER)
+put_user_into = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
+validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)

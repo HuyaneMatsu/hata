@@ -27,7 +27,7 @@ from hata import Client
 from hata.ext.top_gg import setup_ext_top_gg
 
 Sakuya = Client(TOKEN)
-top_gg_client = setup_ext_top_gg(Sakuya, top_gg_token=TOP_GG_TOKEN)
+top_gg_client = setup_ext_top_gg(Sakuya, top_gg_token = TOP_GG_TOKEN)
 ```
 
 ## Parameters

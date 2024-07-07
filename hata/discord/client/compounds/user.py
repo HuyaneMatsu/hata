@@ -124,7 +124,7 @@ class ClientCompoundUserEndpoints(Compound):
             Until when the user is timed out.
         
         timeout_duration : `int`, `float`, `TimeDelta`, Optional (Keyword only)
-            The timeout duration of the user in seconds.
+            The timeout duration of the user in seconds or in delta.
         
             The max allowed value equals to 28 days.
         

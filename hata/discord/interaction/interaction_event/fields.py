@@ -127,12 +127,6 @@ parse_guild_locale = preinstanced_parser_factory('guild_locale', Locale, LOCALE_
 put_guild_locale_into = preinstanced_putter_factory('guild_locale')
 validate_guild_locale = preinstanced_validator_factory('guild_locale', Locale)
 
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id_into = entity_id_optional_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', Guild)
-
 # id
 
 parse_id = entity_id_parser_factory('id')

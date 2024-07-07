@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -341,7 +341,7 @@ def test__START_CONVERSION__generic():
 
 
 def _iter_options__date_time__value_deserializer():
-    date_time = DateTime(2016, 5, 14)
+    date_time = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield END_CONVERSION, datetime_to_timestamp(date_time), date_time
     yield END_CONVERSION, None, None
@@ -369,7 +369,7 @@ def test__DATE_TIME_CONVERSION__value_deserializer(conversion, input_value):
 
 
 def _iter_options__date_time__value_serializer():
-    date_time = DateTime(2016, 5, 14)
+    date_time = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield END_CONVERSION, date_time, datetime_to_timestamp(date_time)
     yield END_CONVERSION, None, None

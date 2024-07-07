@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -15,7 +15,7 @@ def test__ClientPlatformConfiguration__from_data():
     Tests whether ``ClientPlatformConfiguration.from_data`` works as intended.
     """
     label_type = LabelType.new
-    labelled_until = DateTime(2016, 5, 14)
+    labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     release_phase = ReleasePhase.global_launch
     
     data = {
@@ -39,7 +39,7 @@ def test__ClientPlatformConfiguration__to_data():
     Case: include defaults.
     """
     label_type = LabelType.new
-    labelled_until = DateTime(2016, 5, 14)
+    labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     release_phase = ReleasePhase.global_launch
     
     configuration = ClientPlatformConfiguration(

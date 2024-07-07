@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 from os.path import join as join_paths
 
 import vampytest
@@ -28,10 +28,10 @@ def test__get_profile_names():
     ]
     
     creations = {
-        join_paths(directory_path,              'latest.prof') : DateTime(2024, 3, 10, 19, 31,  3),
-        join_paths(directory_path, '2024_03_10_19_31_03.prof') : DateTime(2024, 3, 10, 19, 31,  3),
-        join_paths(directory_path, '2024_03_10_19_11_32.prof') : DateTime(2024, 3, 10, 19, 11, 32),
-        join_paths(directory_path, '2024_03_10_18_29_48.prof') : DateTime(2024, 3, 10, 18, 29, 48),
+        join_paths(directory_path,              'latest.prof') : DateTime(2024, 3, 10, 19, 31,  3, tzinfo = TimeZone.utc),
+        join_paths(directory_path, '2024_03_10_19_31_03.prof') : DateTime(2024, 3, 10, 19, 31,  3, tzinfo = TimeZone.utc),
+        join_paths(directory_path, '2024_03_10_19_11_32.prof') : DateTime(2024, 3, 10, 19, 11, 32, tzinfo = TimeZone.utc),
+        join_paths(directory_path, '2024_03_10_18_29_48.prof') : DateTime(2024, 3, 10, 18, 29, 48, tzinfo = TimeZone.utc),
     }
     
     

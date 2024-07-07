@@ -8,6 +8,7 @@ def _iter_options__passing():
     yield None, None
     yield '', None
     yield 'a', 'a'
+    yield 'aa', 'aa'
 
 
 def _iter_options__type_error():

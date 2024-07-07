@@ -106,10 +106,10 @@ class PluginLoader(RichAttributeErrorBaseType):
     
     ```py
     from hata.ext.plugin_loader import PLUGIN_LOADER
-    from datetime import datetime
+    from datetime import datetime as DateTime, timezone as TimeZone
     
     cake = 'cake'
-    now = datetime.utcnow()
+    now = DateTime.now(TimeZone.utc)
     
     PLUGIN_LOADER.add_default_variables(cake = cake, now = now)
     PLUGIN_LOADER.register_and_load('plugin')

@@ -886,8 +886,8 @@ class Message(DiscordEntity, immortal = True):
         >>>> # 'e' stands for edited.
         >>>> f'{message:e}'
         'never'
-        >>>> from datetime import datetime
-        >>>> message = Message(edited_at = datetime.utcnow())
+        >>>> from datetime import datetime as DateTime, timezone as TimeZone
+        >>>> message = Message(edited_at = DateTime.now(TimeZone.utc))
         >>>> message
         <Message id = 0, length = 0, <User name = '#0000'>>
         >>>> f'{message:e}'

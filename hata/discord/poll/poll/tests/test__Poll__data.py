@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -24,7 +24,7 @@ def test__Poll__from_data():
         PollAnswer.precreate(202404140025, text = 'mister'),
     ]
     duration = 7200
-    expires_at = DateTime(2016, 5, 14)
+    expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     finalized = True
     layout = PollLayout.default
     question = PollQuestion(text = 'wanna play')
@@ -70,7 +70,7 @@ def test__Poll__to_data__include_internals():
         PollAnswer.precreate(202404140027, text = 'mister'),
     ]
     duration = 7200
-    expires_at = DateTime(2016, 5, 14)
+    expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     finalized = True
     layout = PollLayout.default
     question = PollQuestion(text = 'wanna play')
@@ -120,7 +120,7 @@ def test__Poll__to_data__exclude_internals():
         PollAnswer.precreate(202404140029, text = 'mister'),
     ]
     duration = 7200
-    expires_at = DateTime(2016, 5, 14)
+    expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     finalized = True
     layout = PollLayout.default
     question = PollQuestion(text = 'wanna play')
@@ -164,7 +164,7 @@ def test__Poll__update_attributes():
         PollAnswer.precreate(202404170006, text = 'mister'),
     ]
     old_duration = 7200
-    old_expires_at = DateTime(2016, 5, 14)
+    old_expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     old_finalized = True
     old_layout = PollLayout.default
     old_question = PollQuestion(text = 'wanna play')
@@ -179,7 +179,7 @@ def test__Poll__update_attributes():
         PollAnswer.precreate(202404170010, text = 'sister'),
     ]
     new_duration = 3600
-    new_expires_at = DateTime(2016, 5, 15)
+    new_expires_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     new_finalized = False
     new_layout = PollLayout.none
     new_question = PollQuestion(text = 'wanna wake up')
@@ -233,7 +233,7 @@ def test__Poll__difference_update_attributes():
         PollAnswer.precreate(202404170014, text = 'mister'),
     ]
     old_duration = 7200
-    old_expires_at = DateTime(2016, 5, 14)
+    old_expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     old_finalized = True
     old_layout = PollLayout.default
     old_question = PollQuestion(text = 'wanna play')
@@ -248,7 +248,7 @@ def test__Poll__difference_update_attributes():
         PollAnswer.precreate(202404170018, text = 'sister'),
     ]
     new_duration = 3600
-    new_expires_at = DateTime(2016, 5, 15)
+    new_expires_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     new_finalized = False
     new_layout = PollLayout.none
     new_question = PollQuestion(text = 'wanna wake up')

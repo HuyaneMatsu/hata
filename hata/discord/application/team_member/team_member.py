@@ -1,7 +1,5 @@
 __all__ = ('TeamMember',)
 
-from warnings import warn
-
 from scarletio import RichAttributeErrorBaseType
 
 from ...user import ZEROUSER
@@ -10,7 +8,7 @@ from .fields import (
     parse_role, parse_state, parse_user, put_role_into, put_state_into, put_user_into,
     validate_role, validate_state, validate_user
 )
-from .preinstanced import TeamMemberPermission, TeamMemberRole, TeamMembershipState
+from .preinstanced import TeamMemberRole, TeamMembershipState
 
 
 class TeamMember(RichAttributeErrorBaseType):
@@ -257,38 +255,3 @@ class TeamMember(RichAttributeErrorBaseType):
         new.state = state
         new.user = user
         return new
-    
-    
-    def iter_permissions(self):
-        """
-        Iterates over the permissions of the team member.
-        
-        Deprecated and will be removed in 2024 February.
-        
-        This method is an iterable generator.
-        
-        Yields
-        ------
-        permission : ``TeamMemberPermission``
-        """
-        warn(
-            f'`{self.__class__.__name__}.iter_permissions` is deprecated and will be removed in 2024 February.',
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        yield TeamMemberPermission.admin
-    
-    
-    @property
-    def permissions(self):
-        """
-        Deprecated and will be removed in 2024 February.
-        """
-        warn(
-            f'`{self.__class__.__name__}.permissions` is deprecated and will be removed in 2024 February.',
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return (TeamMemberPermission.admin,)

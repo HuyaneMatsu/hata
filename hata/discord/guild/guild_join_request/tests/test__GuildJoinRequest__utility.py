@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -18,11 +18,11 @@ def test__GuildJoinRequest__copy():
     Tests whether ``GuildJoinRequest.copy`` works as intended.
     """
     actioned_by = User.precreate(202305170026, name = 'Koishi')
-    actioned_at = DateTime(2016, 5, 14)
-    created_at = DateTime(2017, 7, 6)
+    actioned_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    created_at = DateTime(2017, 7, 6, tzinfo = TimeZone.utc)
     form_responses = [GuildJoinRequestFormResponse(), GuildJoinRequestFormResponse()]
     guild_id = 202305170027
-    last_seen_at = DateTime(2018, 4, 4)
+    last_seen_at = DateTime(2018, 4, 4, tzinfo = TimeZone.utc)
     rejection_reason = 'Koishi is better'
     status = GuildJoinRequestStatus.rejected
     user = User.precreate(202305170028, name = 'Koisheep')
@@ -53,11 +53,11 @@ def test__GuildJoinRequest__copy_with__0():
     Case: no fields given.
     """
     actioned_by = User.precreate(202305170029, name = 'Koishi')
-    actioned_at = DateTime(2016, 5, 14)
-    created_at = DateTime(2017, 7, 6)
+    actioned_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    created_at = DateTime(2017, 7, 6, tzinfo = TimeZone.utc)
     form_responses = [GuildJoinRequestFormResponse(), GuildJoinRequestFormResponse()]
     guild_id = 202305170030
-    last_seen_at = DateTime(2018, 4, 4)
+    last_seen_at = DateTime(2018, 4, 4, tzinfo = TimeZone.utc)
     rejection_reason = 'Koishi is better'
     status = GuildJoinRequestStatus.rejected
     user = User.precreate(202305170031, name = 'Koisheep')
@@ -88,21 +88,21 @@ def test__GuildJoinRequest__copy_with__1():
     Case: all fields given.
     """
     old_actioned_by = User.precreate(202305170032, name = 'Koishi')
-    old_actioned_at = DateTime(2016, 5, 14)
-    old_created_at = DateTime(2017, 7, 6)
+    old_actioned_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    old_created_at = DateTime(2017, 7, 6, tzinfo = TimeZone.utc)
     old_form_responses = [GuildJoinRequestFormResponse(), GuildJoinRequestFormResponse()]
     old_guild_id = 202305170033
-    old_last_seen_at = DateTime(2018, 4, 4)
+    old_last_seen_at = DateTime(2018, 4, 4, tzinfo = TimeZone.utc)
     old_rejection_reason = 'Koishi is better'
     old_status = GuildJoinRequestStatus.rejected
     old_user = User.precreate(202305170034, name = 'Koisheep')
     
     new_actioned_by = User.precreate(202305170035, name = 'Satori')
-    new_actioned_at = DateTime(2016, 5, 13)
-    new_created_at = DateTime(2017, 7, 5)
+    new_actioned_at = DateTime(2016, 5, 13, tzinfo = TimeZone.utc)
+    new_created_at = DateTime(2017, 7, 5, tzinfo = TimeZone.utc)
     new_form_responses = [GuildJoinRequestFormResponse()]
     new_guild_id = 202305170036
-    new_last_seen_at = DateTime(2018, 4, 12)
+    new_last_seen_at = DateTime(2018, 4, 12, tzinfo = TimeZone.utc)
     new_rejection_reason = 'Satori is ok'
     new_status = GuildJoinRequestStatus.pending
     new_user = User.precreate(202305170037, name = 'Satosheep')

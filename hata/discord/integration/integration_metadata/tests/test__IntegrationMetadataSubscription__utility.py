@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -20,7 +20,7 @@ def test__IntegrationMetadataSubscription__copy():
     revoked = True
     role_id = 202212170041
     subscriber_count = 100
-    synced_at = DateTime(2016, 9, 9)
+    synced_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     syncing = True
     
     integration_metadata = IntegrationMetadataSubscription(
@@ -52,7 +52,7 @@ def test__IntegrationMetadataSubscription__copy_with__0():
     revoked = True
     role_id = 202212170042
     subscriber_count = 100
-    synced_at = DateTime(2016, 9, 9)
+    synced_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     syncing = True
 
     integration_metadata = IntegrationMetadataSubscription(
@@ -84,7 +84,7 @@ def test__IntegrationMetadataSubscription__copy_with__1():
     old_revoked = True
     old_role_id = 202212170043
     old_subscriber_count = 100
-    old_synced_at = DateTime(2016, 9, 9)
+    old_synced_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     old_syncing = True
     new_account = IntegrationAccount('hello', 'hell')
     new_expire_behavior = IntegrationExpireBehavior.kick
@@ -92,7 +92,7 @@ def test__IntegrationMetadataSubscription__copy_with__1():
     new_revoked = True
     new_role_id = 202212170044
     new_subscriber_count = 100
-    new_synced_at = DateTime(2016, 9, 9)
+    new_synced_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     new_syncing = True
 
     integration_metadata = IntegrationMetadataSubscription(
@@ -142,7 +142,7 @@ def test__IntegrationMetadataSubscription__copy_with_keyword_parameters__0():
     revoked = True
     role_id = 202304080009
     subscriber_count = 100
-    synced_at = DateTime(2016, 9, 9)
+    synced_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     syncing = True
 
     integration_metadata = IntegrationMetadataSubscription(
@@ -174,7 +174,7 @@ def test__IntegrationMetadataSubscription__copy_with_keyword_parameters__1():
     old_revoked = True
     old_role_id = 202304080010
     old_subscriber_count = 100
-    old_synced_at = DateTime(2016, 9, 9)
+    old_synced_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     old_syncing = True
     new_account = IntegrationAccount('hello', 'hell')
     new_expire_behavior = IntegrationExpireBehavior.kick
@@ -182,7 +182,7 @@ def test__IntegrationMetadataSubscription__copy_with_keyword_parameters__1():
     new_revoked = True
     new_role_id = 202304080011
     new_subscriber_count = 100
-    new_synced_at = DateTime(2016, 9, 9)
+    new_synced_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     new_syncing = True
 
     integration_metadata = IntegrationMetadataSubscription(

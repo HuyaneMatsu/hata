@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -19,7 +19,7 @@ def iter_activity_datas_by_type():
     name = 'Iceon'
     application_id = 202209070021
     assets = ActivityAssets(image_large = 'senya')
-    created_at = DateTime(2014, 9, 11)
+    created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
     activity_id = 202209070022
@@ -28,7 +28,10 @@ def iter_activity_datas_by_type():
     session_id = 'Autobahn'
     state = 'plain'
     sync_id = 'asia'
-    timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
+    timestamps = ActivityTimestamps(
+        end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
+        start = DateTime(2014, 9, 10, tzinfo = TimeZone.utc),
+    )
     url = 'https://www.astil.dev/'
     emoji = Emoji.precreate(202209070023, name = 'Princess')
     
@@ -61,6 +64,7 @@ def test__Activity__hash():
     for data in iter_activity_datas_by_type():
         activity = Activity.from_data(data)
         vampytest.assert_instance(hash(activity), int)
+
 
 def test__Activity__repr():
     """

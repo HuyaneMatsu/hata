@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -22,11 +22,10 @@ def test__MessageSnapshot__from_data():
         Attachment.precreate(202405250003, name = 'Komeiji'),
     ]
     content = 'orin'
-    created_at = DateTime(2016, 5, 14)
-    edited_at = DateTime(2017, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
-    guild_id = 202405250023
     
     data = {
         'message': {
@@ -40,7 +39,6 @@ def test__MessageSnapshot__from_data():
             'embeds': [embed.to_data() for embed in embeds],
             'flags': int(flags),
         },
-        'guild_id': str(guild_id),
     }
     
     message_snapshot = MessageSnapshot.from_data(data)
@@ -52,7 +50,6 @@ def test__MessageSnapshot__from_data():
     vampytest.assert_eq(message_snapshot.edited_at, edited_at)
     vampytest.assert_eq(message_snapshot.embeds, tuple(embeds))
     vampytest.assert_eq(message_snapshot.flags, flags)
-    vampytest.assert_eq(message_snapshot.guild_id, guild_id)
 
 
 def test__MessageSnapshot__to_data():
@@ -66,11 +63,10 @@ def test__MessageSnapshot__to_data():
         Attachment.precreate(202405250005, name = 'Komeiji'),
     ]
     content = 'orin'
-    created_at = DateTime(2016, 5, 14)
-    edited_at = DateTime(2017, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
-    guild_id = 202405250024
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
@@ -79,7 +75,6 @@ def test__MessageSnapshot__to_data():
         edited_at = edited_at,
         embeds = embeds,
         flags = flags,
-        guild_id = guild_id,
     )
     
     vampytest.assert_eq(
@@ -98,6 +93,5 @@ def test__MessageSnapshot__to_data():
                 'embeds': [embed.to_data(defaults = True) for embed in embeds],
                 'flags': int(flags),
             },
-            'guild_id': str(guild_id),
         }
     )

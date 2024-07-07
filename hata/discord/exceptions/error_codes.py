@@ -253,6 +253,10 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | connection_revoked                                                | 40012     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| cannot_consume_non_consumable_sku                                 | 40018     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| cannot_delete_non_test_entitlement                                | 40019     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | user_in_team                                                      | 40024     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | team_members_must_be_verified                                     | 40026     | -         |
@@ -290,6 +294,8 @@ Error Codes
 | invites_disabled                                                  | 40069     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | entitlement_already_granted                                       | 40074     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| max_interaction_followup_messages                                 | 40094     | 5         |
 +-------------------------------------------------------------------+-----------+-----------+
 | cloudflare_block                                                  | 40333     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -776,6 +782,8 @@ request_too_large = 40005
 feature_disabled = 40006
 user_banned = 40007
 connection_revoked = 40012
+cannot_consume_non_consumable_sku = 40018
+cannot_delete_non_test_entitlement = 40019
 user_in_team = 40024
 team_members_must_be_verified = 40026
 team_invitation_accepted = 40027
@@ -795,6 +803,7 @@ tag_required = 40067
 user_quarantined = 40068
 invites_disabled = 40069
 entitlement_already_granted = 40074
+max_interaction_followup_messages = 40094
 cloudflare_block = 40333
 
 missing_access = 50001

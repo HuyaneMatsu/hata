@@ -1,23 +1,17 @@
 __all__ = ()
 
-from warnings import warn
-
 from scarletio import Compound
 
-from ...application import Application
 from ...bases import maybe_snowflake
 from ...channel import Channel
 from ...exceptions import DiscordException, ERROR_CODES
 from ...guild import Guild
 from ...http import DiscordApiClient
-from ...invite import Invite, InviteTargetType
-from ...invite.invite.fields import (
-    validate_code, validate_max_age, validate_max_uses, validate_temporary, validate_unique
-)
+from ...invite import Invite
+from ...invite.invite.fields import validate_code
 from ...invite.invite.utils import INVITE_GUILD_FIELD_CONVERTERS
 from ...payload_building import build_create_payload
 from ...permission.permission import PERMISSION_MASK_CREATE_INSTANT_INVITE
-from ...user import ClientUserBase
 
 from ..request_helpers import get_channel_id, get_guild_and_id, get_guild_id
 
@@ -108,21 +102,6 @@ class ClientCompoundInviteEndpoints(Compound):
         invite_data = await self.api.invite_get(invite_data_vanity['code'], {'with_counts': True})
         invite_data['uses'] = invite_data_vanity.get('uses', None)
         return Invite.from_data(invite_data)
-    
-    
-    async def vanity_invite_edit(self, guild, vanity_code, *, reason = None):
-        """
-        Deprecated and will be removed in 2023 February. Please use ``.invite_edit_vanity`` instead.
-        """
-        warn(
-            (
-                f'`{self.__class__.__name__}.vanity_invite_edit` is deprecated and will be removed at 2024 February. '
-                f'Please use `.invite_edit_vanity` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return await self.invite_edit_vanity(guild, vanity_code, reason = reason)
     
     
     async def invite_edit_vanity(self, guild, vanity_code, *, reason = None):
@@ -230,212 +209,6 @@ class ClientCompoundInviteEndpoints(Compound):
         data = build_create_payload(invite_template, INVITE_GUILD_FIELD_CONVERTERS, keyword_parameters)
         invite_data = await self.api.invite_create(channel_id, data)
         return Invite.from_data(invite_data)
-    
-    
-    # 'target_user_id' :
-    #     DiscordException BAD REQUEST (400), code = 50035: Invalid Form Body
-    #     target_user_type.GUILD_INVITE_INVALID_TARGET_USER_TYPE('Invalid target user type')
-    #
-    # 'target_type', as 0:
-    #     DiscordException BAD REQUEST (400), code = 50035: Invalid Form Body
-    #     target_user_type.BASE_TYPE_CHOICES('Value must be one of (1,).')
-    #
-    # 'target_type', as 1:
-    #     DiscordException BAD REQUEST (400), code = 50035: Invalid Form Body
-    #     target_user_type.GUILD_INVITE_INVALID_TARGET_USER_TYPE('Invalid target user type')
-    #
-    # 'target_user_id' and 'target_user_type' together:
-    #     DiscordException BAD REQUEST (400), code = 50035: Invalid Form Body
-    #     target_user_id.GUILD_INVITE_INVALID_STREAMER('The specified user is currently not streaming in this channel')
-    #
-    # 'target_user_id' and 'target_user_type' with not correct channel:
-    #     DiscordException BAD REQUEST (400), code = 50035: Invalid Form Body
-    #     target_user_id.GUILD_INVITE_INVALID_STREAMER('The specified user is currently not streaming in this channel')
-    
-    async def stream_invite_create(self, guild, user, *, max_age = 0, max_uses = 0, unique = True, temporary = False):
-        """
-        Creates an STREAM invite at the given guild for the specific user. The user must be streaming at the guild,
-        when the invite is created.
-        
-        Deprecated and will be removed in 2024 February.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        guild : ``Guild``
-            The guild where the user streams.
-        user : ```ClientUserBase``, `int`
-            The streaming user.
-        max_age : `int` = `0`, Optional (Keyword only)
-            After how much time (in seconds) will the invite expire. Defaults is never.
-        max_uses : `int` = `0`, Optional (Keyword only)
-            How much times can the invite be used. Defaults to unlimited.
-        unique : `bool` = `True`, Optional (Keyword only)
-            Whether the created invite should be unique.
-        temporary : `bool` = `False`, Optional (Keyword only)
-            Whether the invite should give only temporary membership.
-        
-        Returns
-        -------
-        invite : ``Invite``
-        
-        Raises
-        ------
-        TypeError
-            - If `user` was not given neither as ``ClientUserBase`` neither as `int`.
-            - If `guild` is not ``Guild``.
-        ValueError
-            - If the user is not streaming at the guild.
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        warn(
-            (
-                f'`{self.__class__.__name__}.stream_invite_create` is deprecated and will be removed at 2024 February. '
-                f'Please use `.invite_create` with `target_type` and `target_user` parameters instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        if not isinstance(guild, Guild):
-            raise TypeError(
-                f'`guild` can be `{Guild.__name__}`, got {guild.__class__.__name__}; {guild!r}.'
-            )
-        
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(
-                    f'`user` can be `{ClientUserBase.__name__}`, `int`, got {user.__class__.__name__}; {user!r}.'
-                )
-        
-        try:
-            voice_state = guild.voice_states[user_id]
-        except KeyError:
-            raise ValueError(
-                f'The user must stream at a voice channel of the guild. Got user = {user!r}; guild = {guild!r}.'
-            ) from None
-        
-        if not voice_state.self_stream:
-            raise ValueError(
-                f'The user must stream at a voice channel of the guild. Got user = {user!r}; guild = {guild!r}.'
-            )
-        
-        max_age = validate_max_age(max_age)
-        max_uses = validate_max_uses(max_uses)
-        unique = validate_unique(unique)
-        temporary = validate_temporary(temporary)
-        
-        data = {
-            'max_age': max_age,
-            'max_uses': max_uses,
-            'temporary': temporary,
-            'unique': unique,
-            'target_user_id': user_id,
-            'target_type': InviteTargetType.stream.value,
-        }
-        
-        data = await self.api.invite_create(voice_state.channel.id, data)
-        return Invite.from_data(data)
-    
-    # Could not find correct application:
-    #    DiscordException Bad Request (400), code = 50035: Invalid Form Body
-    #    target_application_id.GUILD_INVITE_INVALID_APPLICATION('The specified application is not embedded')
-    
-    async def application_invite_create(
-        self, channel, application, *, max_age = 0, max_uses = 0, unique = True, temporary = False
-    ):
-        """
-        Creates an EMBEDDED_APPLICATION invite to the specified voice channel. The application must have must have
-        `embedded` flag.
-        
-        Deprecated and will be removed in 2024 February.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        channel : ``Channel``, `int
-            The target channel of the invite.
-        application : ``Application``, `int`
-            The embedded application to open in the voice channel.
-            
-            > The application must have `EMBEDDED_APPLICATION` flag.
-        
-        max_age : `int` = `0`, Optional (Keyword only)
-            After how much time (in seconds) will the invite expire.
-            
-            > If given as `0` (so by default) then the created invite will never expire.
-        
-        max_uses : `int` = `0`, Optional (Keyword only)
-            How much times can the invite be used.
-            
-            > If given as `0` (so by default) then the created invite will have no use limit.
-        
-        unique : `bool` = `True`, Optional (Keyword only)
-            Whether the created invite should be unique.
-        
-        temporary : `bool` = `False`, Optional (Keyword only)
-            Whether the invite should give only temporary membership.
-        
-        Returns
-        -------
-        invite : ``Invite``
-        
-        Raises
-        ------
-        TypeError
-            - If `channel` was not given neither as ``Channel``, neither as `int`.
-            - If `application` was not given neither as ``Application`` nor as`int`.
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        warn(
-            (
-                f'`{self.__class__.__name__}.application_invite_create` is deprecated and will be removed at 2024 '
-                f'February. '
-                f'Please use `.invite_create` with `target_type` and `target_user` parameters instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        channel_id = get_channel_id(channel, Channel.is_guild_voice)
-        
-        if isinstance(application, Application):
-            application_id = application.id
-        else:
-            application_id = maybe_snowflake(application)
-            if application_id is None:
-                raise TypeError(
-                    f'`application` can be `{Application.__name__}`, `int`, got '
-                    f'{application.__class__.__name__}; {application!r}.'
-                )
-        
-        max_age = validate_max_age(max_age)
-        max_uses = validate_max_uses(max_uses)
-        unique = validate_unique(unique)
-        temporary = validate_temporary(temporary)
-        
-        data = {
-            'max_age': max_age,
-            'max_uses': max_uses,
-            'temporary': temporary,
-            'unique': unique,
-            'target_application_id': application_id,
-            'target_type': InviteTargetType.embedded_application.value,
-        }
-        
-        data = await self.api.invite_create(channel_id, data)
-        return Invite.from_data(data)
     
     
     async def invite_create_preferred(self, guild, **keyword_parameters):

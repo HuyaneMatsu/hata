@@ -210,7 +210,7 @@ async def role_claimer(event):
     return InteractionResponse('Claim role by clicking on it', components = ROLE_CLAIMER_COMPONENTS)
 
 
-@Nitori.interactions(custom_id = re.compile('role_claimer\.(\d+)'))
+@Nitori.interactions(custom_id = re.compile('role_claimer\\.(\\d+)'))
 async def give_role(client, event, role_id):
     role_id = int(role_id)
     

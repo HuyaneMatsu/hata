@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -32,7 +32,7 @@ def test__Embed__from_data():
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
     thumbnail = EmbedThumbnail('attachment://thumbnail')
-    timestamp = DateTime(2016, 5, 5)
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     title = 'embed title'
     url = 'https://orindance.party/'
     video = EmbedVideo('attachment://video')
@@ -86,7 +86,7 @@ def test__Embed__to_data():
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
     thumbnail = EmbedThumbnail('attachment://thumbnail')
-    timestamp = DateTime(2016, 5, 5)
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     title = 'embed title'
     url = 'https://orindance.party/'
     video = EmbedVideo('attachment://video')

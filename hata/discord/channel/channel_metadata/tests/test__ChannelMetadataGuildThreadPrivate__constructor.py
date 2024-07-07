@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -30,9 +30,9 @@ def test__ChannelMetadataGuildThreadPrivate__new__0():
     """
     parent_id = 202209180036
     name = 'Armelyrics'
-    created_at = DateTime(2020, 5, 14)
+    created_at = DateTime(2020, 5, 14, tzinfo = TimeZone.utc)
     archived = True
-    archived_at = DateTime(2021, 5, 14)
+    archived_at = DateTime(2021, 5, 14, tzinfo = TimeZone.utc)
     auto_archive_after = 86400
     open_ = True
     owner_id = 202209180037
@@ -83,9 +83,9 @@ def test__ChannelMetadataGuildThreadPrivate__from_keyword_parameters__0():
     """
     parent_id = 202304110022
     name = 'Armelyrics'
-    created_at = DateTime(2020, 5, 14)
+    created_at = DateTime(2020, 5, 14, tzinfo = TimeZone.utc)
     archived = True
-    archived_at = DateTime(2021, 5, 14)
+    archived_at = DateTime(2021, 5, 14, tzinfo = TimeZone.utc)
     auto_archive_after = 86400
     open_ = True
     owner_id = 202304110023

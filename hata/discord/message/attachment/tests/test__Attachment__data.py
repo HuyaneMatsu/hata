@@ -22,6 +22,7 @@ def test__Attachment__from_data():
     size = 999
     proxy_url = 'https://orindance.party/'
     temporary = True
+    title = 'flandre'
     url = 'https://www.astil.dev/'
     waveform = 'kisaki'
     width = 998
@@ -37,6 +38,7 @@ def test__Attachment__from_data():
         'size': size,
         'proxy_url': proxy_url,
         'ephemeral': temporary,
+        'title': title,
         'url': url,
         'waveform': waveform,
         'width': width,
@@ -57,6 +59,7 @@ def test__Attachment__from_data():
     vampytest.assert_eq(attachment.name, name)
     vampytest.assert_eq(attachment.size, size)
     vampytest.assert_eq(attachment.temporary, temporary)
+    vampytest.assert_eq(attachment.title, title)
     vampytest.assert_eq(attachment.url, url)
     vampytest.assert_eq(attachment.waveform, waveform)
     vampytest.assert_eq(attachment.width, width)
@@ -78,6 +81,7 @@ def test__Attachment__to_data():
     size = 999
     proxy_url = 'https://orindance.party/'
     temporary = True
+    title = 'flandre'
     url = 'https://www.astil.dev/'
     waveform = 'kisaki'
     width = 998
@@ -93,6 +97,7 @@ def test__Attachment__to_data():
         proxy_url = proxy_url,
         size = size,
         temporary = temporary,
+        title = title,
         url = url,
         waveform = waveform,
         width = width,
@@ -114,6 +119,7 @@ def test__Attachment__to_data():
             'size': size,
             'proxy_url': proxy_url,
             'ephemeral': temporary,
+            'title': title,
             'url': url,
             'waveform': waveform,
             'width': width,

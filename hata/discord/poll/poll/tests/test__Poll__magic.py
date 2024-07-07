@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -20,7 +20,7 @@ def test__Poll__repr():
         PollAnswer.precreate(202404140031, text = 'mister'),
     ]
     duration = 7200
-    expires_at = DateTime(2016, 5, 14)
+    expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     finalized = True
     layout = PollLayout.default
     question = PollQuestion(text = 'wanna play')
@@ -52,7 +52,7 @@ def test__Poll__hash():
         PollAnswer.precreate(202404140033, text = 'mister'),
     ]
     duration = 7200
-    expires_at = DateTime(2016, 5, 14)
+    expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     finalized = True
     layout = PollLayout.default
     question = PollQuestion(text = 'wanna play')
@@ -84,7 +84,7 @@ def test__Poll__eq():
         PollAnswer.precreate(202404140035, text = 'mister'),
     ]
     duration = 7200
-    expires_at = DateTime(2016, 5, 14)
+    expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     finalized = True
     layout = PollLayout.default
     question = PollQuestion(text = 'wanna play')
@@ -130,7 +130,7 @@ def _iter_options__bool():
         PollAnswer.precreate(202404140037, text = 'mister'),
     ]
     duration = 7200
-    expires_at = DateTime(2016, 5, 14)
+    expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     finalized = True
     layout = PollLayout.default
     question = PollQuestion(text = 'wanna play')
@@ -178,7 +178,7 @@ def _iter_options__len():
         PollAnswer.precreate(202404140039, text = 'mister'),
     ]
     duration = 7200
-    expires_at = DateTime(2016, 5, 14)
+    expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     finalized = True
     layout = PollLayout.default
     question = PollQuestion(text = 'wanna play')

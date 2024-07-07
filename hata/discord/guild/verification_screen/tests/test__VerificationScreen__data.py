@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -15,7 +15,7 @@ def test__VerificationScreen__from_data():
     """
     Tests whether ``VerificationScreen.from_data`` works as intended.
     """
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     description = 'Yukari'
     steps = [
         VerificationScreenStep(
@@ -46,7 +46,7 @@ def test__VerificationScreen__to_data():
     
     Case: include defaults and internals.
     """
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     description = 'Yukari'
     steps = [
         VerificationScreenStep(

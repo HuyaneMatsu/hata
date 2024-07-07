@@ -1,7 +1,5 @@
 __all__ = ('GuildWidgetUser',)
 
-import warnings
-
 from ...bases import DiscordEntity
 from ...user import Status
 
@@ -371,49 +369,3 @@ class GuildWidgetUser(DiscordEntity):
             return f'{self.name}#{discriminator:0>4}'
         
         return self.name
-    
-    
-    @property
-    def mention(self):
-        """
-        The mention of the user.
-        
-        Returns
-        -------
-        mention : `str`
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.mention` is deprecated and will be removed in 2023 November. '
-                f'This property actually never returned the correct value, that is why.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return f'<@{self.id}>'
-    
-    
-    @property
-    def mention_nick(self):
-        """
-        The mention to the user's nick.
-        
-        Returns
-        -------
-        mention : `str`
-        
-        Notes
-        -----
-        It actually has nothing to do with the user's nickname > <.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.mention_nick` is deprecated and will be removed in 2023 November. '
-                f'This property actually never returned the correct value, that is why.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return f'<@!{self.id}>'

@@ -1,7 +1,7 @@
 __all__ = ('message_relative_index',)
 
 from collections import deque
-from datetime import datetime
+from datetime import datetime as DateTime, timezone as TimeZone
 from time import time as current_time
 
 from scarletio import LOOP_TIME, WeakReferer
@@ -117,7 +117,7 @@ class MessageHistoryCollector:
             repr_parts.append(' cancelled')
         else:
             repr_parts.append(' scheduled: ')
-            timestamp = datetime.utcfromtimestamp(current_time() + handle.when + self.delay - LOOP_TIME())
+            timestamp = DateTime.fromtimestamp(current_time() + handle.when + self.delay - LOOP_TIME(), TimeZone.utc)
             repr_parts.append(timestamp.__format__(DATETIME_FORMAT_CODE))
         
         repr_parts.append('>')

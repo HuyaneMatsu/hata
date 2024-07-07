@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -10,8 +10,8 @@ def test__ActivityTimestamps__repr():
     Tests whether ``ActivityTimestamps.__repr__`` works as intended.
     """
     field = ActivityTimestamps(
-        end = DateTime(2016, 5, 24, 14, 27, 42),
-        start = DateTime(2016, 5, 2, 15, 10, 34),
+        end = DateTime(2016, 5, 24, 14, 27, 42, tzinfo = TimeZone.utc),
+        start = DateTime(2016, 5, 2, 15, 10, 34, tzinfo = TimeZone.utc),
     )
     
     vampytest.assert_instance(repr(field), str)
@@ -22,8 +22,8 @@ def test__ActivityTimestamps__eq():
     Tests whether ``ActivityTimestamps.__repr__`` works as intended.
     """
     fields = {
-        'end': DateTime(2016, 5, 24, 14, 27, 42),
-        'start': DateTime(2016, 5, 2, 15, 10, 34),
+        'end': DateTime(2016, 5, 24, 14, 27, 42, tzinfo = TimeZone.utc),
+        'start': DateTime(2016, 5, 2, 15, 10, 34, tzinfo = TimeZone.utc),
     }
     
     field_original = ActivityTimestamps(**fields)
@@ -43,8 +43,8 @@ def test__ActivityTimestamps__hash():
     Tests whether ``ActivityTimestamps.__hash__`` works as intended.
     """
     field = ActivityTimestamps(
-        end =  DateTime(2016, 5, 24, 14, 27, 42),
-        start = DateTime(2016, 5, 2, 15, 10, 34),
+        end =  DateTime(2016, 5, 24, 14, 27, 42, tzinfo = TimeZone.utc),
+        start = DateTime(2016, 5, 2, 15, 10, 34, tzinfo = TimeZone.utc),
     )
     
     vampytest.assert_instance(hash(field), int)
@@ -60,7 +60,7 @@ def test__ActivityTimestamps__bool():
     vampytest.assert_instance(field_bool, bool)
     vampytest.assert_false(field_bool)
     
-    date_time = DateTime(2016, 5, 2, 15, 10, 34)
+    date_time = DateTime(2016, 5, 2, 15, 10, 34, tzinfo = TimeZone.utc)
     
     for field_name in (
         'end',

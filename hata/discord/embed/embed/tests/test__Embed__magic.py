@@ -1,9 +1,8 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
 from ....color import Color
-from ....utils import datetime_to_timestamp
 
 from ...embed_author import EmbedAuthor
 from ...embed_field import EmbedField
@@ -43,7 +42,7 @@ def test__Embed__len():
     image = EmbedImage('attachment://image')
     provider = EmbedProvider(embed_provider_name)
     thumbnail = EmbedThumbnail('attachment://thumbnail')
-    timestamp = DateTime(2016, 5, 5)
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     title = embed_title
     url = 'https://orindance.party/'
     video = EmbedVideo('attachment://video')
@@ -86,7 +85,7 @@ def _iter_options__bool():
     yield {'image': EmbedImage('attachment://image')}, True
     yield {'provider': EmbedProvider('provider name')}, True
     yield {'thumbnail': EmbedThumbnail('attachment://thumbnail')}, True
-    yield {'timestamp': DateTime(2016, 5, 5)}, True
+    yield {'timestamp': DateTime(2016, 5, 5, tzinfo = TimeZone.utc)}, True
     yield {'title': 'embed title'}, True
     yield {'url': 'https://orindance.party/'}, True
     yield {'video': EmbedVideo('attachment://video')}, True
@@ -134,7 +133,7 @@ def test__Embed__repr():
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
     thumbnail = EmbedThumbnail('attachment://thumbnail')
-    timestamp = DateTime(2016, 5, 5)
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     title = 'embed title'
     url = 'https://orindance.party/'
     video = EmbedVideo('attachment://video')
@@ -171,7 +170,7 @@ def test__Embed__hash():
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
     thumbnail = EmbedThumbnail('attachment://thumbnail')
-    timestamp = DateTime(2016, 5, 5)
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     title = 'embed title'
     url = 'https://orindance.party/'
     video = EmbedVideo('attachment://video')
@@ -208,7 +207,7 @@ def test__Embed__eq():
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
     thumbnail = EmbedThumbnail('attachment://thumbnail')
-    timestamp = DateTime(2016, 5, 5)
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     title = 'embed title'
     url = 'https://orindance.party/'
     video = EmbedVideo('attachment://video')
@@ -244,7 +243,7 @@ def test__Embed__eq():
         ('image', EmbedImage('attachment://image_what')),
         ('provider', EmbedProvider('provider derp')),
         ('thumbnail', EmbedThumbnail('attachment://thumbnail_what')),
-        ('timestamp', DateTime(2016, 5, 4)),
+        ('timestamp', DateTime(2016, 5, 4, tzinfo = TimeZone.utc)),
         ('title', 'embed derp'),
         ('url', 'https://www.astil.dev/project/hata/'),
         ('video', EmbedVideo('attachment://video_what')),

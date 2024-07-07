@@ -3,7 +3,7 @@ __all__ = ('parse_oauth2_redirect_url',)
 import re
 
 
-OAUTH2_REQUEST_URL_RP = re.compile('(https?://.+?)\?code=([a-zA-Z0-9]{30})')
+OAUTH2_REQUEST_URL_RP = re.compile('(https?://.+?)\\?code=([a-zA-Z0-9]{30})')
 
 
 def parse_oauth2_redirect_url(url):

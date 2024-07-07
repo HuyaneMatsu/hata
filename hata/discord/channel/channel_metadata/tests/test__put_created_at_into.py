@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -8,7 +8,7 @@ from ..fields import put_created_at_into
 
 
 def _iter_options():
-    created_at = DateTime(2016, 9, 9)
+    created_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     
     yield None, False, {}
     yield None, True, {'thread_metadata': {'create_timestamp': None}}
@@ -30,6 +30,6 @@ def test__put_created_at_into(input_value, defaults):
     
     Returns
     -------
-    output : `bool`
+    output : `dict<str, object>`
     """
     return put_created_at_into(input_value, {}, defaults)

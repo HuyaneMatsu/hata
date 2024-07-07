@@ -1,7 +1,5 @@
 __all__ = ('InteractionEvent',)
 
-from warnings import warn
-
 from scarletio import Future, copy_docs, export, include, shield
 
 from ...bases import DiscordEntity, EventBase
@@ -29,7 +27,7 @@ from .fields import (
     put_application_id_into, put_application_permissions_into, put_channel_into, put_entitlements_into, put_guild_into,
     put_id_into, put_message_into, put_token_into, put_type_into, put_user_into, put_user_locale_into,
     put_user_permissions_into, validate_application_id, validate_application_permissions, validate_channel,
-    validate_entitlements, validate_guild, validate_guild_id, validate_id, validate_interaction, validate_message,
+    validate_entitlements, validate_guild, validate_id, validate_interaction, validate_message,
     validate_token, validate_type, validate_user, validate_user_locale, validate_user_permissions
 )
 from .preinstanced import InteractionType
@@ -143,10 +141,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         application_id = ...,
         application_permissions = ...,
         channel = ...,
-        channel_id = ...,
         entitlements = ...,
         guild = ...,
-        guild_id = ...,
         guild_locale = ...,
         interaction = ...,
         interaction_type = ...,
@@ -167,11 +163,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         application_permissions : ``Permission``, `int`, Optional (Keyword only)
             The permissions granted to the application in the guild.
-        
-        channel_id : `int`, `str`, ``Channel``, Optional (Keyword only)
-            The channel's identifier from where the interaction was called.
-            
-            > Deprecated and will be removed in 2023 November.
         
         channel : ``Channel``, Optional (Keyword only)
             The channel from where the interaction was called.
@@ -427,11 +418,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     def precreate(
         cls,
         interaction_id,
-        *,
-        channel_id = ...,
-        guild_id = ...,
-        guild_locale = ...,
-        locale = ...,
         **keyword_parameters,
     ):
         """
@@ -443,11 +429,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         ----------
         interaction_id : `int`
             The interaction's identifier.
-        
-        channel_id : `int`, `str`, ``Channel``, Optional (Keyword only)
-            The channel's identifier from where the interaction was called.
-            
-            > Deprecated and will be removed in 2023 November.
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters defining which attribute and how should be set.

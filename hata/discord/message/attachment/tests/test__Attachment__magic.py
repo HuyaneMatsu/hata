@@ -18,6 +18,7 @@ def test__Attachment__repr():
     size = 999
     proxy_url = 'https://orindance.party/'
     temporary = True
+    title = 'flandre'
     url = 'https://www.astil.dev/'
     width = 998
     
@@ -32,6 +33,7 @@ def test__Attachment__repr():
         proxy_url = proxy_url,
         size = size,
         temporary = temporary,
+        title = title,
         url = url,
         width = width,
     )
@@ -53,6 +55,7 @@ def test__Attachment__hash():
     size = 999
     proxy_url = 'https://orindance.party/'
     temporary = True
+    title = 'flandre'
     url = 'https://www.astil.dev/'
     waveform = 'kisaki'
     width = 998
@@ -68,6 +71,7 @@ def test__Attachment__hash():
         proxy_url = proxy_url,
         size = size,
         temporary = temporary,
+        title = title,
         url = url,
         waveform = waveform,
         width = width,
@@ -90,6 +94,7 @@ def test__Attachment__eq():
     size = 999
     proxy_url = 'https://orindance.party/'
     temporary = True
+    title = 'flandre'
     url = 'https://www.astil.dev/'
     waveform = 'kisaki'
     width = 998
@@ -103,6 +108,7 @@ def test__Attachment__eq():
         'name': name,
         'size': size,
         'temporary': temporary,
+        'title': title,
         'url': url,
         'waveform': waveform,
         'width': width,
@@ -137,6 +143,7 @@ def test__Attachment__eq():
         ('name', 'Slave of Scarlet'),
         ('size', 701),
         ('temporary', False),
+        ('title', 'remilia'),
         ('url', 'https://orindance.party/'),
         ('waveform', 'revenge'),
         ('width', 7000),

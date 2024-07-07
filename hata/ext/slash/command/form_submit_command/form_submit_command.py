@@ -110,7 +110,7 @@ class FormSubmitCommand(CommandBaseCustomId):
         """
         if (target is not None) and (target not in COMMAND_TARGETS_FORM_COMPONENT_COMMAND):
             raise ValueError(
-                f'`target` can be `None` or any of `{COMMAND_TARGETS_FORM_COMPONENT_COMMAND!r}`\s '
+                f'`target` can be `None` or any of `{COMMAND_TARGETS_FORM_COMPONENT_COMMAND!r}`\'s '
                 f'values, got {target!r}.'
             )
         

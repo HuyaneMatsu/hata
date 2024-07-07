@@ -1,7 +1,7 @@
 __all__ = ('Slasher', )
 
 import warnings
-from datetime import datetime, timedelta
+from datetime import datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 
 from scarletio import (
     RichAttributeErrorBaseType, Task, TaskGroup, WeakKeyDictionary, WeakReferer, copy_docs, export, run_coroutine
@@ -49,7 +49,7 @@ INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE = InteractionType.application_
 INTERACTION_TYPE_FORM_SUBMIT = InteractionType.form_submit
 
 # It is 7 days, but lets re-request after 6
-OWNERS_ACCESS_REQUEST_INTERVAL = timedelta(days = 6)
+OWNERS_ACCESS_REQUEST_INTERVAL = TimeDelta(days = 6)
 
 
 def match_application_commands_to_commands(application_commands, commands, match_schema):
@@ -3393,7 +3393,7 @@ class Slasher(
                 return None
             
         else:
-            if (owners_access.created_at + OWNERS_ACCESS_REQUEST_INTERVAL) >= datetime.utcnow():
+            if (owners_access.created_at + OWNERS_ACCESS_REQUEST_INTERVAL) >= DateTime.now(TimeZone.utc):
                 return owners_access
         
         

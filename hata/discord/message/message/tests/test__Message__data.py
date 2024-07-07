@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -44,13 +44,13 @@ def test__Message__from_data__all_fields():
         Attachment.precreate(202305030042, name = 'Komeiji'),
     ]
     author = User.precreate(202305030043, name = 'Orin')
-    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     components = [
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Okuu')]),
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Parsee')]),
     ]
     content = 'Satori'
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     embeds = [
         Embed('Yakumo'),
         Embed('Yukari'),
@@ -70,7 +70,7 @@ def test__Message__from_data__all_fields():
     message_type = MessageType.call
     nonce = 'Sakuya'
     pinned = True
-    poll = Poll(expires_at = DateTime(2016, 5, 14))
+    poll = Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     reactions = ReactionMapping(
         lines = {
             Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
@@ -192,7 +192,7 @@ def test__Message__from_data__should_not_update_if_updated():
     
     Case: Should not update if already up to date.
     """
-    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     message_id = 202305030059
     
     input_data = {
@@ -216,7 +216,7 @@ def test__Message__from_data__should_update_if_precreate():
     
     Case: Should update if precreated
     """
-    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     message_id = 202305030060
     
     message = Message.precreate(message_id)
@@ -245,13 +245,13 @@ def test__Message__to_data():
         Attachment.precreate(202310110013, name = 'Komeiji'),
     ]
     author = User.precreate(202310110014, name = 'Orin')
-    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     components = [
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Okuu')]),
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Parsee')]),
     ]
     content = 'Satori'
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     embeds = [
         Embed('Yakumo'),
         Embed('Yukari'),
@@ -271,7 +271,7 @@ def test__Message__to_data():
     message_type = MessageType.inline_reply
     nonce = 'Sakuya'
     pinned = True
-    poll = Poll(expires_at = DateTime(2016, 5, 14))
+    poll = Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     reactions = ReactionMapping(
         lines = {
             Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
@@ -380,7 +380,7 @@ def test__Message__create_message_was_up_to_date__new():
     
     Case: New.
     """
-    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     message_id = 202305030061
     
     input_data = {
@@ -402,7 +402,7 @@ def test__Message__create_message_was_up_to_date__in_cache_require_update():
     
     Case: In cache, needs update.
     """
-    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     message_id = 202305030062
     
     message = Message.precreate(message_id)
@@ -426,7 +426,7 @@ def test__Message__create_message_was_up_to_date__in_cache_up_to_date():
     
     Case: In cache, up to date.
     """
-    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     message_id = 202305030063
     
     input_data = {
@@ -600,7 +600,7 @@ def test__message__late_init__loading():
     
     Case: flags -> Loading.
     """
-    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     message_id = 202305030078
     
     message = Message.precreate(message_id, flags = MessageFlag().update_by_keys(loading = True))
@@ -622,7 +622,7 @@ def test__message__late_init__not_loading_but_receiving_interaction():
     Case: flags -> not Loading & interaction received.
     """
     interaction = MessageInteraction.precreate(202305030081, name = 'Koishi')
-    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     message_id = 202305030082
     
     message = Message.precreate(message_id, flags = MessageFlag().update_by_keys(loading = False))
@@ -649,13 +649,13 @@ def test__Message__difference_update_attributes():
         Attachment.precreate(202305030083, name = 'Koishi'),
         Attachment.precreate(202305030084, name = 'Komeiji'),
     ]
-    old_call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    old_call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     old_components = [
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Okuu')]),
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Parsee')]),
     ]
     old_content = 'Satori'
-    old_edited_at = DateTime(2016, 5, 14)
+    old_edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     old_embeds = [
         Embed('Yakumo'),
         Embed('Yukari'),
@@ -672,20 +672,20 @@ def test__Message__difference_update_attributes():
         User.precreate(202305030088, name = 'Izaoyi'),
     ]
     old_pinned = True
-    old_poll = Poll(expires_at = DateTime(2016, 5, 14))
+    old_poll = Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     old_resolved = Resolved(attachments = [Attachment.precreate(202310140050)])
     
     new_attachments = [
         Attachment.precreate(202305030089, name = 'Yuuka'),
         Attachment.precreate(202305030090, name = 'Yuugi'),
     ]
-    new_call = MessageCall(ended_at = DateTime(2045, 4, 4))
+    new_call = MessageCall(ended_at = DateTime(2045, 4, 4, tzinfo = TimeZone.utc))
     new_components = [
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Chiruno')]),
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Dai')]),
     ]
     new_content = 'Mokou'
-    new_edited_at = DateTime(2016, 10, 28)
+    new_edited_at = DateTime(2016, 10, 28, tzinfo = TimeZone.utc)
     new_embeds = [
         Embed('Kokoro'),
         Embed('Keine'),
@@ -702,7 +702,7 @@ def test__Message__difference_update_attributes():
         User.precreate(202305030096, name = 'Lapislazuli'),
     ]
     new_pinned = False
-    new_poll = Poll(expires_at = DateTime(2016, 5, 15))
+    new_poll = Poll(expires_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc))
     new_resolved = Resolved(attachments = [Attachment.precreate(202310140051)])
     
     
@@ -773,7 +773,11 @@ def test__Message__difference_update_attributes():
         'mentioned_role_ids': tuple(old_mentioned_role_ids),
         'mentioned_users': tuple(old_mentioned_users),
         'pinned': old_pinned,
-        'poll': PollChange.from_fields(None, PollUpdate.from_fields(new_poll, {'expires_at': DateTime(2016, 5, 14)}), None),
+        'poll': PollChange.from_fields(
+            None,
+            PollUpdate.from_fields(new_poll, {'expires_at': DateTime(2016, 5, 14, tzinfo = TimeZone.utc)}),
+            None,
+        ),
         'resolved': old_resolved,
     }
     
@@ -818,13 +822,13 @@ def test__Message__update_attributes():
         Attachment.precreate(202305030098, name = 'Koishi'),
         Attachment.precreate(202305030099, name = 'Komeiji'),
     ]
-    old_call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    old_call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     old_components = [
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Okuu')]),
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Parsee')]),
     ]
     old_content = 'Satori'
-    old_edited_at = DateTime(2016, 5, 14)
+    old_edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     old_embeds = [
         Embed('Yakumo'),
         Embed('Yukari'),
@@ -841,20 +845,20 @@ def test__Message__update_attributes():
         User.precreate(202305030105, name = 'Izaoyi'),
     ]
     old_pinned = True
-    old_poll = Poll(expires_at = DateTime(2016, 5, 14))
+    old_poll = Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     old_resolved = Resolved(attachments = [Attachment.precreate(202310140052)])
     
     new_attachments = [
         Attachment.precreate(202305030106, name = 'Yuuka'),
         Attachment.precreate(202305030107, name = 'Yuugi'),
     ]
-    new_call = MessageCall(ended_at = DateTime(2045, 4, 4))
+    new_call = MessageCall(ended_at = DateTime(2045, 4, 4, tzinfo = TimeZone.utc))
     new_components = [
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Chiruno')]),
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Dai')]),
     ]
     new_content = 'Mokou'
-    new_edited_at = DateTime(2016, 10, 28)
+    new_edited_at = DateTime(2016, 10, 28, tzinfo = TimeZone.utc)
     new_embeds = [
         Embed('Kokoro'),
         Embed('Keine'),
@@ -871,7 +875,7 @@ def test__Message__update_attributes():
         User.precreate(202305030113, name = 'Lapislazuli'),
     ]
     new_pinned = False
-    new_poll = Poll(expires_at = DateTime(2016, 5, 15))
+    new_poll = Poll(expires_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc))
     new_resolved = Resolved(attachments = [Attachment.precreate(202310140053)])
     
     
@@ -977,7 +981,7 @@ def test__Message__update_content_fields():
         Embed('Yakumo'),
         Embed('Yukari'),
     ]
-    old_poll = Poll(expires_at = DateTime(2016, 5, 14))
+    old_poll = Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     
     new_attachments = [
         Attachment.precreate(202305030123, name = 'Yuuka'),
@@ -992,7 +996,7 @@ def test__Message__update_content_fields():
         Embed('Kokoro'),
         Embed('Keine'),
     ]
-    new_poll = Poll(expires_at = DateTime(2016, 5, 15))
+    new_poll = Poll(expires_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc))
     
     
     message_id = 202305030125

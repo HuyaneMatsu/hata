@@ -6,7 +6,6 @@ __all__ = (
 import sys
 from base64 import b64encode
 from reprlib import repr as short_repr
-from warnings import warn
 
 from scarletio import DOCS_ENABLED, RichAttributeErrorBaseType, copy_docs, docs_property, include
 
@@ -671,23 +670,6 @@ class Icon(RichAttributeErrorBaseType):
     
     def __bool__(self):
         return (self.type is not ICON_TYPE_NONE)
-    
-    
-    @classmethod
-    def from_base16_hash(cls, icon):
-        """
-        Deprecated and will be removed in 2024 Marc. Please use ``from_base_16_hash.`` instead.
-        """
-        warn(
-            (
-                f'`{cls.__name__}.from_base16_hash` is deprecated and will be removed in 2024 Marc. '
-                f'Please use `.from_base_16_hash` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return cls.from_base_16_hash(icon)
     
     
     @classmethod

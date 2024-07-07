@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -48,11 +48,11 @@ def test__GuildJoinRequest__new__1():
     Case: Fields given.
     """
     actioned_by = User.precreate(202305170003, name = 'Koishi')
-    actioned_at = DateTime(2016, 5, 14)
-    created_at = DateTime(2017, 7, 6)
+    actioned_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    created_at = DateTime(2017, 7, 6, tzinfo = TimeZone.utc)
     form_responses = [GuildJoinRequestFormResponse(), GuildJoinRequestFormResponse()]
     guild_id = 202305170004
-    last_seen_at = DateTime(2018, 4, 4)
+    last_seen_at = DateTime(2018, 4, 4, tzinfo = TimeZone.utc)
     rejection_reason = 'Koishi is better'
     status = GuildJoinRequestStatus.rejected
     user = User.precreate(202305170005, name = 'Koisheep')

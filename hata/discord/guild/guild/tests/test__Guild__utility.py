@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -1637,19 +1637,19 @@ def _iter_options__get_users_like_ordered():
     guild_id = 202306260074
     
     user_0 = User.precreate(202306260074, name = 'orin')
-    user_0.guild_profiles[guild_id] = GuildProfile(joined_at = DateTime(2016, 5, 14))
+    user_0.guild_profiles[guild_id] = GuildProfile(joined_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     
     user_1 = User.precreate(202306260075, name = 'rin')
-    user_1.guild_profiles[guild_id] = GuildProfile(joined_at = DateTime(2016, 5, 13))
+    user_1.guild_profiles[guild_id] = GuildProfile(joined_at = DateTime(2016, 5, 13, tzinfo = TimeZone.utc))
     
     user_2 = User.precreate(202306260076, name = 'cat', discriminator = 12, display_name = 'orin')
-    user_2.guild_profiles[guild_id] = GuildProfile(joined_at = DateTime(2016, 5, 15))
+    user_2.guild_profiles[guild_id] = GuildProfile(joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc))
     
     user_3 = User.precreate(202306260077, name = 'cat', discriminator = 14)
-    user_3.guild_profiles[guild_id] = GuildProfile(nick = 'orin', joined_at = DateTime(2016, 5, 12))
+    user_3.guild_profiles[guild_id] = GuildProfile(nick = 'orin', joined_at = DateTime(2016, 5, 12, tzinfo = TimeZone.utc))
 
     user_4 = User.precreate(202306260078, name = 'cat', discriminator = 14)
-    user_4.guild_profiles[guild_id] = GuildProfile(nick = 'okuu', joined_at = DateTime(2016, 5, 20))
+    user_4.guild_profiles[guild_id] = GuildProfile(nick = 'okuu', joined_at = DateTime(2016, 5, 20, tzinfo = TimeZone.utc))
     
     guild = Guild.precreate(guild_id, users = [user_0, user_1, user_2, user_3, user_4])
     
@@ -2266,12 +2266,12 @@ def test__Guild__boosters__has():
     user_0.guild_profiles[guild_id] = GuildProfile()
     
     user_1 = User.precreate(202306270089)
-    user_1.guild_profiles[guild_id] = GuildProfile(boosts_since = DateTime(2016, 4, 14))
+    user_1.guild_profiles[guild_id] = GuildProfile(boosts_since = DateTime(2016, 4, 14, tzinfo = TimeZone.utc))
     
     user_2 = User.precreate(202306270090)
     
     user_3 = User.precreate(202306270092)
-    user_3.guild_profiles[guild_id] = GuildProfile(boosts_since = DateTime(2015, 4, 14))
+    user_3.guild_profiles[guild_id] = GuildProfile(boosts_since = DateTime(2015, 4, 14, tzinfo = TimeZone.utc))
     
     guild = Guild.precreate(guild_id, users = [user_0, user_1, user_2, user_3], boost_count = 2)
     

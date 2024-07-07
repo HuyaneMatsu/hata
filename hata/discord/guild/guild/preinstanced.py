@@ -2,7 +2,6 @@ __all__ = (
     'ExplicitContentFilterLevel', 'GuildFeature', 'HubType', 'MfaLevel', 'MessageNotificationLevel', 'NsfwLevel',
     'VerificationLevel'
 )
-import warnings
 
 from scarletio import class_property, export
 
@@ -418,23 +417,6 @@ class GuildFeature(PreinstancedBase):
     vip_voice_regions = P('VIP_REGIONS', 'vip voice regions')
     web_page = P('GUILD_WEB_PAGE_VANITY_URL', 'web page')
     welcome_screen_enabled = P('WELCOME_SCREEN_ENABLED', 'welcome screen enabled')
-
-
-    @class_property
-    def onboarding(cls):
-        """
-        `.onboarding` is deprecated and will be removed in 2024 January. Please use `.onboarding_enabled` instead.
-        """
-        warnings.warn(
-            (
-                f'`{cls.__name__}.onboarding` is deprecated and will be removed in 2024 January. '
-                f'Please use `.onboarding_enabled` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        return cls.onboarding_enabled
 
 
 class NsfwLevel(PreinstancedBase):

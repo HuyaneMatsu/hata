@@ -1,13 +1,11 @@
 __all__ = ('Invite',)
 
 from datetime import datetime as DateTime
-from warnings import warn
 
 from scarletio import export
 
 from ...bases import DiscordEntity
 from ...core import INVITES
-from ...guild import NsfwLevel
 from ...http import urls as module_urls
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ClientUserBase, ZEROUSER
@@ -906,49 +904,3 @@ class Invite(DiscordEntity, immortal = True):
         partial : `bool`
         """
         return False if self.code else True
-    
-    
-    @property
-    def stage(self):
-        """
-        Returns the invite's stage.
-        
-        Deprecated and will be removed in 2024 February.
-        
-        Returns
-        -------
-        stage : `None`, ``InviteStage``
-        """
-        warn(
-            f'`{self.__class__.__name__}.stage` is deprecated and will be removed in 2024 February.',
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return None
-    
-    
-    @property
-    def nsfw_level(self):
-        """
-        Returns the invite's guild's nsfw level if applicable.
-        
-        Deprecated and will be removed in 2024 February.
-        
-        Returns
-        -------
-        stage : ``NsfwLevel``
-        """
-        warn(
-            f'`{self.__class__.__name__}.nsfw_level` is deprecated and will be removed in 2024 February.',
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        guild = self.guild
-        if (guild is None):
-            nsfw_level = NsfwLevel.none
-        else:
-            nsfw_level = guild.nsfw_level
-        
-        return nsfw_level

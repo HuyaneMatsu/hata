@@ -91,7 +91,7 @@ def _get_event_deprecation_state(name):
     # if name == 'stuff':
     #    warnings.warn(
     #        (
-    #            '`Client.events.stuff` is deprecated and will be removed in 2022 jan.\n'
+    #            '`Client.events.stuff` is deprecated and will be removed in 2030 jan.\n'
     #            'Please use `Client.events.stiff(client, event)` instead.'
     #        ),
     #        FutureWarning,

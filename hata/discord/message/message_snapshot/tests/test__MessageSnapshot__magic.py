@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -19,11 +19,10 @@ def test__MessageSnapshot__repr():
         Attachment.precreate(202405250007, name = 'Komeiji'),
     ]
     content = 'orin'
-    created_at = DateTime(2016, 5, 14)
-    edited_at = DateTime(2017, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
-    guild_id = 202405250025
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
@@ -32,7 +31,6 @@ def test__MessageSnapshot__repr():
         edited_at = edited_at,
         embeds = embeds,
         flags = flags,
-        guild_id = guild_id,
     )
     
     vampytest.assert_instance(repr(message_snapshot), str)
@@ -47,11 +45,10 @@ def test__MessageSnapshot__hash():
         Attachment.precreate(202405250009, name = 'Komeiji'),
     ]
     content = 'orin'
-    created_at = DateTime(2016, 5, 14)
-    edited_at = DateTime(2017, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
-    guild_id = 202405250026
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
@@ -60,7 +57,6 @@ def test__MessageSnapshot__hash():
         edited_at = edited_at,
         embeds = embeds,
         flags = flags,
-        guild_id = guild_id,
     )
     
     vampytest.assert_instance(hash(message_snapshot), int)
@@ -91,11 +87,10 @@ def test__messageSnapshot__eq__different_type(other):
         Attachment.precreate(202405250011, name = 'Komeiji'),
     ]
     content = 'orin'
-    created_at = DateTime(2016, 5, 14)
-    edited_at = DateTime(2017, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
-    guild_id = 202405250027
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
@@ -104,7 +99,6 @@ def test__messageSnapshot__eq__different_type(other):
         edited_at = edited_at,
         embeds = embeds,
         flags = flags,
-        guild_id = guild_id,
     )
     
     output = message_snapshot == other
@@ -119,11 +113,10 @@ def _iter_options__eq__same_type():
         Attachment.precreate(202405250013, name = 'Komeiji'),
     ]
     content = 'orin'
-    created_at = DateTime(2016, 5, 14)
-    edited_at = DateTime(2017, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
-    guild_id = 202405250027
     
     keyword_parameters = {
         'attachments': attachments,
@@ -132,7 +125,6 @@ def _iter_options__eq__same_type():
         'edited_at': edited_at,
         'embeds': embeds,
         'flags': flags,
-        'guild_id': guild_id,
     }
     
     yield (
@@ -163,7 +155,7 @@ def _iter_options__eq__same_type():
         keyword_parameters,
         {
             **keyword_parameters,
-            'created_at': DateTime(2016, 5, 15),
+            'created_at': DateTime(2016, 5, 15, tzinfo = TimeZone.utc),
         },
         False,
     )
@@ -172,7 +164,7 @@ def _iter_options__eq__same_type():
         keyword_parameters,
         {
             **keyword_parameters,
-            'edited_at': DateTime(2017, 5, 15),
+            'edited_at': DateTime(2017, 5, 15, tzinfo = TimeZone.utc),
         },
         False,
     )
@@ -191,15 +183,6 @@ def _iter_options__eq__same_type():
         {
             **keyword_parameters,
             'flags': MessageFlag(78),
-        },
-        False,
-    )
-    
-    yield (
-        keyword_parameters,
-        {
-            **keyword_parameters,
-            'guild_id': 202405250028,
         },
         False,
     )

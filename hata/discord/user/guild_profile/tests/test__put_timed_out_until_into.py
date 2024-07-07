@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -8,7 +8,7 @@ from ..fields import put_timed_out_until_into
 
 
 def _iter_options():
-    until = DateTime(2016, 5, 14)
+    until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield None, False, {}
     yield None, True, {'communication_disabled_until': None}
@@ -23,7 +23,7 @@ def test__put_timed_out_until_into(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `bool`
+    input_value : `None | DateTime`
         The value to serialise.
     defaults : `bool`
         Whether default values should be included as well.

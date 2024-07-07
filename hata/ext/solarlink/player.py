@@ -1,6 +1,6 @@
 __all__ = ('SolarPlayer', )
 
-from datetime import datetime
+from datetime import datetime as DateTime, timezone as TimeZone
 from random import randrange
 
 from scarletio import copy_docs
@@ -581,7 +581,7 @@ class SolarPlayer(SolarPlayerBase):
                 return
         
         if request:
-            timestamp = datetime_to_timestamp(datetime.utcnow())
+            timestamp = datetime_to_timestamp(DateTime.now(TimeZone.utc))
         else:
             timestamp = None
         

@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -13,8 +13,8 @@ def test__GuildDiscovery__new__copy():
     """
     Tests whether ``GuildDiscovery.copy`` works as intended.
     """
-    application_actioned = DateTime(2016, 5, 4)
-    application_requested = DateTime(2017, 6, 4)
+    application_actioned = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
+    application_requested = DateTime(2017, 6, 4, tzinfo = TimeZone.utc)
     emoji_discovery = True
     keywords = ['kisaki']
     primary_category = DiscoveryCategory.music
@@ -41,8 +41,8 @@ def test__GuildDiscovery__new__copy_with__0():
     
     Case: No fields given.
     """
-    application_actioned = DateTime(2016, 5, 4)
-    application_requested = DateTime(2017, 6, 4)
+    application_actioned = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
+    application_requested = DateTime(2017, 6, 4, tzinfo = TimeZone.utc)
     emoji_discovery = True
     keywords = ['kisaki']
     primary_category = DiscoveryCategory.music
@@ -69,10 +69,10 @@ def test__GuildDiscovery__new__copy_with__1():
     
     Case: All fields given.
     """
-    old_application_actioned = DateTime(2016, 5, 4)
-    new_application_actioned = DateTime(2016, 5, 9)
-    old_application_requested = DateTime(2017, 6, 4)
-    new_application_requested = DateTime(2017, 6, 9)
+    old_application_actioned = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
+    new_application_actioned = DateTime(2016, 5, 9, tzinfo = TimeZone.utc)
+    old_application_requested = DateTime(2017, 6, 4, tzinfo = TimeZone.utc)
+    new_application_requested = DateTime(2017, 6, 9, tzinfo = TimeZone.utc)
     old_emoji_discovery = True
     new_emoji_discovery = False
     old_keywords = ['kisaki']

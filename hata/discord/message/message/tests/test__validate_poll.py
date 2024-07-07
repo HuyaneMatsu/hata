@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -8,7 +8,7 @@ from ..fields import validate_poll
 
 
 def _iter_options__passing():
-    poll = Poll(expires_at = DateTime(2016, 5, 14))
+    poll = Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     
     yield None, None
     yield poll, poll

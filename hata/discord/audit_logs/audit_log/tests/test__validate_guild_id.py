@@ -1,18 +1,18 @@
 import vampytest
 
-from ....user import User
+from ....guild import Guild
 
-from ..fields import validate_user_id
+from ..fields import validate_guild_id
 
 
 def _iter_options__passing():
-    user_id = 202308010003
+    guild_id = 202406270018
     
     yield None, 0
     yield 0, 0
-    yield user_id, user_id
-    yield User.precreate(user_id), user_id
-    yield str(user_id), user_id
+    yield guild_id, guild_id
+    yield Guild.precreate(guild_id), guild_id
+    yield str(guild_id), guild_id
 
 
 def _iter_options__type_error():
@@ -21,22 +21,22 @@ def _iter_options__type_error():
 
 def _iter_options__value_error():
     yield '-1'
-    yield -1
     yield '1111111111111111111111'
+    yield -1
     yield 1111111111111111111111
 
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
 @vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
 @vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
-def test__validate_user_id__passing(input_value):
+def test__validate_guild_id(input_value):
     """
-    Tests whether `validate_user_id` works as intended.
+    Tests whether `validate_guild_id` works as intended.
     
     Parameters
     ----------
     input_value : `object`
-        Input value to test with.
+        Input value to validate.
     
     Returns
     -------
@@ -47,4 +47,4 @@ def test__validate_user_id__passing(input_value):
     TypeError
     ValueError
     """
-    return validate_user_id(input_value)
+    return validate_guild_id(input_value)

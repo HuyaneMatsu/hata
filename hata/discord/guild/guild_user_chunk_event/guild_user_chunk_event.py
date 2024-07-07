@@ -350,31 +350,3 @@ class GuildUserChunkEvent(EventBase):
         user : ``ClientUserBase``
         """
         yield from self.users
-    
-    
-    @property
-    def index(self):
-        warnings.warn(
-            (
-                f'`{self.__name__}.index` is deprecated and will be removed in 2023 December.'
-                f'Please use `.chunk_index` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.chunk_index
-    
-    
-    @property
-    def count(self):
-        warnings.warn(
-            (
-                f'`{self.__name__}.count` is deprecated and will be removed in 2023 December.'
-                f'Please use `.chunk_count` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.chunk_count

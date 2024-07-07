@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -38,7 +38,7 @@ def _iter_options__general_properties():
     yield (ChannelType.private_group, 'application_id', 202301210011)
     yield (ChannelType.guild_thread_public, 'applied_tag_ids', (202209180147, 202209180148))
     yield (ChannelType.guild_thread_public, 'archived', True)
-    yield (ChannelType.guild_thread_public, 'archived_at', DateTime(2022, 5, 14))
+    yield (ChannelType.guild_thread_public, 'archived_at', DateTime(2022, 5, 14, tzinfo = TimeZone.utc))
     yield (ChannelType.guild_thread_public, 'auto_archive_after', 604800)
     yield (ChannelType.guild_forum, 'available_tags', (ForumTag('tumoneko'), ))
     yield (ChannelType.guild_voice, 'bitrate', 50000)
@@ -531,7 +531,7 @@ def test__Channel__created_at__1():
     """
     channel_id = 202209200054
     
-    expected_created_at = DateTime(2023, 11, 11)
+    expected_created_at = DateTime(2023, 11, 11, tzinfo = TimeZone.utc)
     
     channel = Channel.precreate(
         channel_id, channel_type = ChannelType.guild_thread_public, created_at = expected_created_at

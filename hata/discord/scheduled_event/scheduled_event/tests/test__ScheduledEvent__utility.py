@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -21,12 +21,12 @@ def test__ScheduledEvent__copy():
     """
     channel_id = 202303160071
     description = 'koishi'
-    end = DateTime(2016, 3, 10)
+    end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
     entity_type = ScheduledEventEntityType.location
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
-    start = DateTime(2017, 4, 6)
+    start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
     
@@ -58,12 +58,12 @@ def test__ScheduledEvent__copy_with__0():
     """
     channel_id = 202303160072
     description = 'koishi'
-    end = DateTime(2016, 3, 10)
+    end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
     entity_type = ScheduledEventEntityType.location
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
-    start = DateTime(2017, 4, 6)
+    start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
     
@@ -95,23 +95,23 @@ def test__ScheduledEvent__copy_with__1():
     """
     old_channel_id = 202303160073
     old_description = 'koishi'
-    old_end = DateTime(2016, 3, 10)
+    old_end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
     old_entity_type = ScheduledEventEntityType.location
     old_image = Icon(IconType.static, 45)
     old_name = 'komeiji'
     old_privacy_level = PrivacyLevel.public
-    old_start = DateTime(2017, 4, 6)
+    old_start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     old_status = ScheduledEventStatus.active
     old_location = 'hell'
     
     new_channel_id = 202303160074
     new_description = 'yakumo'
-    new_end = DateTime(2016, 4, 10)
+    new_end = DateTime(2016, 4, 10, tzinfo = TimeZone.utc)
     new_entity_type = ScheduledEventEntityType.stage
     new_image = Icon(IconType.animated, 46)
     new_name = 'yukari'
     new_privacy_level = PrivacyLevel.guild_only
-    new_start = DateTime(2017, 5, 6)
+    new_start = DateTime(2017, 5, 6, tzinfo = TimeZone.utc)
     new_status = ScheduledEventStatus.cancelled
     new_speaker_ids = [202303160075, 202303160076]
     

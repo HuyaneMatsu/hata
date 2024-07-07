@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -57,12 +57,12 @@ def test__ScheduledEvent__new__1():
     """
     channel_id = 202303160000
     description = 'koishi'
-    end = DateTime(2016, 3, 10)
+    end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
     entity_type = ScheduledEventEntityType.location
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
-    start = DateTime(2017, 4, 6)
+    start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
     
@@ -129,12 +129,12 @@ def test__ScheduledEvent__precreate__1():
     
     channel_id = 202303160004
     description = 'koishi'
-    end = DateTime(2016, 3, 10)
+    end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
     entity_type = ScheduledEventEntityType.location
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
-    start = DateTime(2017, 4, 6)
+    start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
     

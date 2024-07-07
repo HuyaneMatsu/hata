@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -95,13 +95,13 @@ def test__Message__new__all_fields():
         Attachment.precreate(202305030003, name = 'Komeiji'),
     ]
     author = User.precreate(202305030004, name = 'Orin')
-    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     components = [
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Okuu')]),
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Parsee')]),
     ]
     content = 'Satori'
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     embeds = [
         Embed('Yakumo'),
         Embed('Yukari'),
@@ -121,7 +121,7 @@ def test__Message__new__all_fields():
     message_type = MessageType.call
     nonce = 'Sakuya'
     pinned = True
-    poll = Poll(expires_at = DateTime(2016, 5, 14))
+    poll = Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     reactions = ReactionMapping(
         lines = {
             Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),
@@ -251,13 +251,13 @@ def test__Message__precreate__all_fields():
         Attachment.precreate(202305030023, name = 'Komeiji'),
     ]
     author = User.precreate(202305030024, name = 'Orin')
-    call = MessageCall(ended_at = DateTime(2045, 3, 4))
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
     components = [
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Okuu')]),
         Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Parsee')]),
     ]
     content = 'Satori'
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     embeds = [
         Embed('Yakumo'),
         Embed('Yukari'),
@@ -277,7 +277,7 @@ def test__Message__precreate__all_fields():
     message_type = MessageType.call
     nonce = 'Sakuya'
     pinned = True
-    poll = Poll(expires_at = DateTime(2016, 5, 14))
+    poll = Poll(expires_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     reactions = ReactionMapping(
         lines = {
             Reaction.from_fields(BUILTIN_EMOJIS['x'], ReactionType.standard): ReactionMappingLine(count = 2),

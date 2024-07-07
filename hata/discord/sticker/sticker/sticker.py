@@ -1,7 +1,5 @@
 __all__ = ('Sticker', )
 
-import warnings
-
 from ...bases import DiscordEntity
 from ...core import GUILDS, STICKERS, STICKER_PACKS
 from ...http import urls as module_urls
@@ -238,45 +236,6 @@ class Sticker(DiscordEntity, immortal = True):
         return self
     
     
-    @classmethod
-    def from_partial_data(cls, data):
-        """
-        Creates a sticker from the given partial sticker data.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `object`) items
-            Sticker data.
-        
-        Returns
-        -------
-        sticker : `instance<cls>`
-        """
-        warnings.warn(
-            (
-                f'`{cls.__name__}.from_partial_data` is deprecate and will be removed in 2023 December. '
-                f'Please use `create_partial_sticker_data` instead.'
-            ),
-            FutureWarning,
-        )
-        
-        sticker_id = parse_id(data)
-        
-        try:
-            self = STICKERS[sticker_id]
-        except KeyError:
-            self = cls._create_empty(sticker_id)
-            STICKERS[sticker_id] = self
-        else:
-            if not self.partial:
-                return self
-        
-        self.format = parse_format(data)
-        self.name = parse_name(data)
-        
-        return self
-    
-    
     def to_data(self, *, defaults = False, include_internals = False):
         """
         Converts the sticker to a json serializable object.
@@ -311,31 +270,7 @@ class Sticker(DiscordEntity, immortal = True):
         
         return data
     
-
-    def to_partial_data(self):
-        """
-        Tries to convert the sticker to a json serializable dictionary representing a partial sticker.
-        
-        Returns
-        -------
-        data : `dict` of (`str`, `object`)
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.to_partial_data` is deprecate and will be removed in 2023 December. '
-                f'Please use `create_partial_sticker_data` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        data = {}
-        put_format_into(self.format, data, True)
-        put_id_into(self.id, data, True)
-        put_name_into(self.name, data, True)
-        return data
     
-
     @classmethod
     def precreate(cls, sticker_id, **keyword_parameters):
         """

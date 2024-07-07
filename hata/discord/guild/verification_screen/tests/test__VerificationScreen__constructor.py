@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -39,7 +39,7 @@ def test__VerificationScreen__new__1():
     
     Case: All fields given.
     """
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     description = 'Yukari'
     steps = [
         VerificationScreenStep(

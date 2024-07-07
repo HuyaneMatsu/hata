@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -29,7 +29,7 @@ def test__ActivityMetadataCustom__name__1():
     """
     state = 'state'
     emoji = Emoji.precreate(202209060009, name = 'Code49')
-    created_at = DateTime(2014, 9, 16)
+    created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
     
     activity_metadata = ActivityMetadataCustom(
         created_at = created_at,
@@ -46,7 +46,7 @@ def test__ActivityMetadataCustom__copy():
     """
     state = 'state'
     emoji = BUILTIN_EMOJIS['x']
-    created_at = DateTime(2014, 9, 16)
+    created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
     
     activity_metadata = ActivityMetadataCustom(
         created_at = created_at,
@@ -69,7 +69,7 @@ def test__ActivityMetadataCustom__copy_with__0():
     """
     state = 'state'
     emoji = BUILTIN_EMOJIS['x']
-    created_at = DateTime(2014, 9, 16)
+    created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
     
     activity_metadata = ActivityMetadataCustom(
         created_at = created_at,
@@ -92,10 +92,10 @@ def test__ActivityMetadataCustom__copy_with__1():
     """
     old_state = 'state'
     old_emoji = BUILTIN_EMOJIS['x']
-    old_created_at = DateTime(2014, 9, 16)
+    old_created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
     new_state = 'seven'
     new_emoji = BUILTIN_EMOJIS['heart']
-    new_created_at = DateTime(2014, 10, 16)
+    new_created_at = DateTime(2014, 10, 16, tzinfo = TimeZone.utc)
     
     activity_metadata = ActivityMetadataCustom(
         created_at = old_created_at,
@@ -124,7 +124,7 @@ def test__ActivityMetadataCustom__copy_with_keyword_parameters__0():
     """
     state = 'state'
     emoji = BUILTIN_EMOJIS['x']
-    created_at = DateTime(2014, 9, 16)
+    created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
     
     activity_metadata = ActivityMetadataCustom(
         created_at = created_at,
@@ -148,10 +148,10 @@ def test__ActivityMetadataCustom__copy_with_keyword_parameters__1():
     """
     old_state = 'state'
     old_emoji = BUILTIN_EMOJIS['x']
-    old_created_at = DateTime(2014, 9, 16)
+    old_created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
     new_state = 'seven'
     new_emoji = BUILTIN_EMOJIS['heart']
-    new_created_at = DateTime(2014, 10, 16)
+    new_created_at = DateTime(2014, 10, 16, tzinfo = TimeZone.utc)
     
     activity_metadata = ActivityMetadataCustom(
         created_at = old_created_at,

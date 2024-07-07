@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -22,7 +22,7 @@ def test__Invite__set_attributes():
     invite = Invite.precreate('202308060015')
     
     channel = Channel.precreate(202308060016)
-    created_at = DateTime(2016, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = InviteFlag(11)
     guild = Guild.precreate(
         202308060017,
@@ -122,7 +122,7 @@ def test__Invite__update_attributes():
     invite = Invite.precreate('202308060023')
     
     channel = Channel.precreate(202308060024)
-    created_at = DateTime(2016, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = InviteFlag(11)
     guild = Guild.precreate(
         202308060025,
@@ -352,7 +352,7 @@ def test__Invite__from_data():
     """
     code = '202308060039'
     channel = Channel.precreate(202308060040)
-    created_at = DateTime(2016, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = InviteFlag(11)
     guild = Guild.precreate(
         202308060041,
@@ -441,7 +441,7 @@ def test__Invite__to_data__with_internals():
     """
     code = '202308060053'
     channel = Channel.precreate(202308060054)
-    created_at = DateTime(2016, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = InviteFlag(11)
     guild = Guild.precreate(
         202308060055,
@@ -512,7 +512,7 @@ def test__Invite__to_data__without_internals():
     """
     code = '202308060059'
     channel = Channel.precreate(202308060060)
-    created_at = DateTime(2016, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = InviteFlag(11)
     guild = Guild.precreate(
         202308060061,

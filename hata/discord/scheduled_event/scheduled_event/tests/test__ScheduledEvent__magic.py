@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -17,12 +17,12 @@ def test__ScheduledEvent__repr():
     
     channel_id = 202303160050
     description = 'koishi'
-    end = DateTime(2016, 3, 10)
+    end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
     entity_type = ScheduledEventEntityType.location
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
-    start = DateTime(2017, 4, 6)
+    start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
     
@@ -71,12 +71,12 @@ def test__ScheduledEvent__hash():
     
     channel_id = 202303160057
     description = 'koishi'
-    end = DateTime(2016, 3, 10)
+    end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
     entity_type = ScheduledEventEntityType.location
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
-    start = DateTime(2017, 4, 6)
+    start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
     
@@ -124,12 +124,12 @@ def test__ScheduledEvent__eq():
     
     channel_id = 202303160064
     description = 'koishi'
-    end = DateTime(2016, 3, 10)
+    end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
     entity_type = ScheduledEventEntityType.location
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
-    start = DateTime(2017, 4, 6)
+    start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
     
@@ -171,12 +171,12 @@ def test__ScheduledEvent__eq():
     for field_name, field_value in (
         ('channel_id', 202303160070),
         ('description', 'yakumo'),
-        ('end', DateTime(2016, 5, 10)),
+        ('end', DateTime(2016, 5, 10, tzinfo = TimeZone.utc)),
         ('entity_type', ScheduledEventEntityType.stage),
         ('image', Icon(IconType.animated, 42)),
         ('name', 'yukari'),
         ('privacy_level', PrivacyLevel.guild_only),
-        ('start', DateTime(2016, 3, 12)),
+        ('start', DateTime(2016, 3, 12, tzinfo = TimeZone.utc)),
         ('status', ScheduledEventStatus.cancelled),
         ('location', 'beat'),
 

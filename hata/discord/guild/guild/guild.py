@@ -1,6 +1,6 @@
 __all__ = ('Guild',)
 
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 from warnings import warn
 
@@ -482,7 +482,6 @@ class Guild(DiscordEntity, immortal = True):
         name = ...,
         nsfw_level = ...,
         owner_id = ...,
-        preferred_locale = ...,
         public_updates_channel_id = ...,
         safety_alerts_channel_id = ...,
         rules_channel_id = ...,
@@ -685,18 +684,6 @@ class Guild(DiscordEntity, immortal = True):
         else:
             invite_splash = cls.invite_splash.validate_icon(invite_splash, allow_data = True)
         
-        # preferred_locale
-        if preferred_locale is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.__new__`\'s `preferred_locale` parameter is deprecated and will be '
-                    f'removed in 2024 February. Please use `locale` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            locale = preferred_locale
-        
         # locale
         if locale is ...:
             locale = LOCALE_DEFAULT
@@ -854,7 +841,7 @@ class Guild(DiscordEntity, immortal = True):
     
     
     @classmethod
-    def precreate(cls, guild_id, *, preferred_locale = ..., **keyword_parameters):
+    def precreate(cls, guild_id, **keyword_parameters):
         """
         Precreates the guild with the given parameters. Precreated guilds are picked up when a guild's data is received
         with the same id.
@@ -1061,19 +1048,6 @@ class Guild(DiscordEntity, immortal = True):
             - If a parameter's value is incorrect.
         """
         guild_id = validate_id(guild_id)
-        
-        # Deprecations
-        if preferred_locale is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.precreate`\'s `preferred_locale` parameter is deprecated and will be removed in '
-                    f'2024 February. Please use `locale` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            keyword_parameters['locale'] = preferred_locale
-            
         
         if keyword_parameters:
             processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
@@ -2198,7 +2172,6 @@ class Guild(DiscordEntity, immortal = True):
         name = ...,
         nsfw_level = ...,
         owner_id = ...,
-        preferred_locale = ...,
         public_updates_channel_id = ...,
         safety_alerts_channel_id = ...,
         rules_channel_id = ...,
@@ -2400,18 +2373,6 @@ class Guild(DiscordEntity, immortal = True):
             invite_splash = self.invite_splash
         else:
             invite_splash = type(self).invite_splash.validate_icon(invite_splash, allow_data = True)
-        
-        # preferred_locale
-        if preferred_locale is not ...:
-            warn(
-                (
-                    f'`{type(self).__name__}.copy_with`\'s `preferred_locale` parameter is deprecated and will be '
-                    f'removed in 2024 February. Please use `locale` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            locale = preferred_locale
         
         # locale
         if locale is ...:
@@ -4478,7 +4439,7 @@ class Guild(DiscordEntity, immortal = True):
             if joined_at is None:
                 # Instead of defaulting to `user.created_at` use the current date
                 if now_date_time is None:
-                    now_date_time = DateTime.utcnow()
+                    now_date_time = DateTime.now(TimeZone.utc)
                 
                 joined_at = now_date_time
             

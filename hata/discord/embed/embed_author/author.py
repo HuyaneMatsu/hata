@@ -1,7 +1,5 @@
 __all__ = ('EmbedAuthor',)
 
-import warnings
-
 from scarletio import copy_docs
 
 from ...utils import sanitize_mentions, url_cutter
@@ -276,20 +274,3 @@ class EmbedAuthor(EmbedFieldBase):
         name = self.name
         if (name is not None):
             yield name
-    
-    
-    @property
-    def proxy_icon_url(self):
-        """
-        Deprecated and will be removed in 2023 august. Please use ``.icon_proxy_url``.
-        """
-        warnings.warn(
-            (
-                f'`{type(self).__name__}.proxy_icon_url` is deprecated and will be removed in 2023 august. '
-                f'Please use `.icon_proxy_url` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-    
-        return self.icon_proxy_url

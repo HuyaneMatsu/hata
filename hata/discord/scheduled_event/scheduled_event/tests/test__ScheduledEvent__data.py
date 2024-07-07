@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -24,12 +24,12 @@ def test__ScheduledEvent__from_data__0():
     
     channel_id = 202303160012
     description = 'koishi'
-    end = DateTime(2016, 3, 10)
+    end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
     entity_type = ScheduledEventEntityType.location
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
-    start = DateTime(2017, 4, 6)
+    start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
     
@@ -151,12 +151,12 @@ def test__ScheduledEvent__to_data():
     
     channel_id = 202303160022
     description = 'koishi'
-    end = DateTime(2016, 3, 10)
+    end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
     entity_type = ScheduledEventEntityType.location
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
-    start = DateTime(2017, 4, 6)
+    start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
     
@@ -217,12 +217,12 @@ def test__ScheduledEvent__set_attributes():
     """
     channel_id = 202303160028
     description = 'koishi'
-    end = DateTime(2016, 3, 10)
+    end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
     entity_type = ScheduledEventEntityType.location
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
-    start = DateTime(2017, 4, 6)
+    start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
     
@@ -277,12 +277,12 @@ def test__ScheduledEvent__update_attributes():
     """
     channel_id = 202303160034
     description = 'koishi'
-    end = DateTime(2016, 3, 10)
+    end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
     entity_type = ScheduledEventEntityType.location
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
-    start = DateTime(2017, 4, 6)
+    start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
     
@@ -346,12 +346,12 @@ def test__ScheduledEvent__difference_update_attributes():
     
     old_channel_id = 202303160039
     old_description = 'koishi'
-    old_end = DateTime(2016, 3, 10)
+    old_end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
     old_entity_type = ScheduledEventEntityType.location
     old_image = Icon(IconType.static, 45)
     old_name = 'komeiji'
     old_privacy_level = PrivacyLevel.public
-    old_start = DateTime(2017, 4, 6)
+    old_start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     old_status = ScheduledEventStatus.active
     old_location = 'hell'
     
@@ -361,12 +361,12 @@ def test__ScheduledEvent__difference_update_attributes():
     
     new_channel_id = 202303160043
     new_description = 'yakumo'
-    new_end = DateTime(2016, 4, 10)
+    new_end = DateTime(2016, 4, 10, tzinfo = TimeZone.utc)
     new_entity_type = ScheduledEventEntityType.stage
     new_image = Icon(IconType.animated, 46)
     new_name = 'yukari'
     new_privacy_level = PrivacyLevel.guild_only
-    new_start = DateTime(2017, 5, 6)
+    new_start = DateTime(2017, 5, 6, tzinfo = TimeZone.utc)
     new_status = ScheduledEventStatus.cancelled
     new_speaker_ids = [202303160044, 202303160045]
     

@@ -1,7 +1,6 @@
 __all__ = ()
 
 from reprlib import repr as short_repr
-from warnings import warn
 
 from scarletio import Compound
 from scarletio.web_common import Formdata
@@ -395,84 +394,3 @@ class ClientCompoundStickerEndpoints(Compound):
             stickers = [*guild.stickers.values()]
         
         return stickers
-    
-    
-    async def sticker_guild_get_all(self, *position_parameters, **keyword_parameters):
-        """
-        Deprecated and will be removed in 2023 December. Please use ``.sticker_get_all_guild`` instead.
-        """
-        warn(
-            (
-                f'`{self.__class__.__name__}.sticker_guild_get_all` is deprecated and will be removed in 2023 '
-                f'December. '
-                f'Please use `.sticker_get_all_guild` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return await self.sticker_get_all_guild(*position_parameters, **keyword_parameters)
-    
-    
-    async def sticker_guild_create(self, *position_parameters, **keyword_parameters):
-        """
-        Deprecated and will be removed in 2023 December. Please use ``.sticker_create`` instead.
-        """
-        warn(
-            (
-                f'`{self.__class__.__name__}.sticker_guild_create` is deprecated and will be removed in 2023 December. '
-                f'Please use `.sticker_create` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return await self.sticker_create(*position_parameters, **keyword_parameters)
-    
-    
-    async def sticker_guild_edit(self, *position_parameters, **keyword_parameters):
-        """
-        Deprecated and will be removed in 2023 December. Please use ``.sticker_edit`` instead.
-        """
-        warn(
-            (
-                f'`{self.__class__.__name__}.sticker_guild_edit` is deprecated and will be removed in 2023 December. '
-                f'Please use `.sticker_edit` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return await self.sticker_edit(*position_parameters, **keyword_parameters)
-
-    
-    async def sticker_guild_delete(self, *position_parameters, **keyword_parameters):
-        """
-        Deprecated and will be removed in 2023 December. Please use ``.sticker_delete`` instead.
-        """
-        warn(
-            (
-                f'`{self.__class__.__name__}.sticker_guild_delete` is deprecated and will be removed in 2023 December. '
-                f'Please use `.sticker_delete` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return await self.sticker_delete(*position_parameters, **keyword_parameters)
-    
-    
-    async def sticker_guild_get(self, *position_parameters, **keyword_parameters):
-        """
-        Deprecated and will be removed in 2023 December. Please use ``.sticker_get_guild`` instead.
-        """
-        warn(
-            (
-                f'`{self.__class__.__name__}.sticker_guild_get` is deprecated and will be removed in 2023 December. '
-                f'Please use `.sticker_get_guild` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return await self.sticker_get_guild(*position_parameters, **keyword_parameters)

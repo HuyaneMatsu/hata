@@ -7,7 +7,7 @@ from ..fields import parse_guild_id
 
 def _iter_options():
     guild_id = 202310180012
-    audit_log = AuditLog(None, guild_id = 202310180012)
+    audit_log = AuditLog(guild_id = 202310180012)
     
     yield {}, None, 0
     yield {}, audit_log, guild_id

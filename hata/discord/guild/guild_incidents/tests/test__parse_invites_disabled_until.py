@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -8,7 +8,7 @@ from ..fields import parse_invites_disabled_until
 
 
 def _iter_options():
-    until = DateTime(2016, 5, 14)
+    until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield {}, None
     yield {'invites_disabled_until': None}, None
@@ -27,6 +27,6 @@ def test__parse_invites_disabled_until(input_data):
     
     Returns
     -------
-    output : `DateTime`
+    output : `None | DateTime`
     """
     return parse_invites_disabled_until(input_data)

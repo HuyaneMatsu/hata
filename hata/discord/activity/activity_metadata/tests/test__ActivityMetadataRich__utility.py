@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -19,7 +19,7 @@ def test__ActivityMetadataRich__copy():
     """
     application_id = 202212300005
     assets = ActivityAssets(image_large = 'senya')
-    created_at = DateTime(2014, 9, 11)
+    created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
     activity_id = 202212300006
@@ -29,7 +29,10 @@ def test__ActivityMetadataRich__copy():
     session_id = 'Autobahn'
     state = 'plain'
     sync_id = 'asia'
-    timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
+    timestamps = ActivityTimestamps(
+        end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
+        start = DateTime(2014, 9, 10, tzinfo = TimeZone.utc),
+    )
     url = 'https://www.astil.dev/'
     
     activity_metadata = ActivityMetadataRich(
@@ -64,7 +67,7 @@ def test__ActivityMetadataRich__copy_with__0():
     """
     application_id = 202212300007
     assets = ActivityAssets(image_large = 'senya')
-    created_at = DateTime(2014, 9, 11)
+    created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
     activity_id = 202212300008
@@ -74,7 +77,10 @@ def test__ActivityMetadataRich__copy_with__0():
     session_id = 'Autobahn'
     state = 'plain'
     sync_id = 'asia'
-    timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
+    timestamps = ActivityTimestamps(
+        end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
+        start = DateTime(2014, 9, 10, tzinfo = TimeZone.utc),
+    )
     url = 'https://www.astil.dev/'
     
     activity_metadata = ActivityMetadataRich(
@@ -111,8 +117,8 @@ def test__ActivityMetadataRich__copy_with__1():
     new_application_id = 202212300010
     old_assets = ActivityAssets(image_large = 'senya')
     new_assets = ActivityAssets(image_small = 'merami')
-    old_created_at = DateTime(2014, 9, 11)
-    new_created_at = DateTime(2012, 9, 11)
+    old_created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
+    new_created_at = DateTime(2012, 9, 11, tzinfo = TimeZone.utc)
     old_details = 'vocal'
     new_details = 'pop'
     old_flags = ActivityFlag(1)
@@ -131,8 +137,14 @@ def test__ActivityMetadataRich__copy_with__1():
     new_state = 'land'
     old_sync_id = 'asia'
     new_sync_id = 'past'
-    old_timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
-    new_timestamps = ActivityTimestamps(end = DateTime(2012, 9, 12), start = DateTime(2012, 9, 10))
+    old_timestamps = ActivityTimestamps(
+        end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
+        start = DateTime(2014, 9, 10, tzinfo = TimeZone.utc),
+    )
+    new_timestamps = ActivityTimestamps(
+        end = DateTime(2012, 9, 12, tzinfo = TimeZone.utc),
+        start = DateTime(2012, 9, 10, tzinfo = TimeZone.utc),
+    )
     old_url = 'https://www.astil.dev/'
     new_url = 'https://www.astil.dev/project/hata/'
     
@@ -196,7 +208,7 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__0():
     """
     application_id = 202304090002
     assets = ActivityAssets(image_large = 'senya')
-    created_at = DateTime(2014, 9, 11)
+    created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
     activity_id = 202304090003
@@ -206,7 +218,10 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__0():
     session_id = 'Autobahn'
     state = 'plain'
     sync_id = 'asia'
-    timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
+    timestamps = ActivityTimestamps(
+        end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
+        start = DateTime(2014, 9, 10, tzinfo = TimeZone.utc),
+    )
     url = 'https://www.astil.dev/'
     
     activity_metadata = ActivityMetadataRich(
@@ -244,8 +259,8 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
     new_application_id = 202304090005
     old_assets = ActivityAssets(image_large = 'senya')
     new_assets = ActivityAssets(image_small = 'merami')
-    old_created_at = DateTime(2014, 9, 11)
-    new_created_at = DateTime(2012, 9, 11)
+    old_created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
+    new_created_at = DateTime(2012, 9, 11, tzinfo = TimeZone.utc)
     old_details = 'vocal'
     new_details = 'pop'
     old_flags = ActivityFlag(1)
@@ -264,8 +279,14 @@ def test__ActivityMetadataRich__copy_with_keyword_parameters__1():
     new_state = 'land'
     old_sync_id = 'asia'
     new_sync_id = 'past'
-    old_timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
-    new_timestamps = ActivityTimestamps(end = DateTime(2012, 9, 12), start = DateTime(2012, 9, 10))
+    old_timestamps = ActivityTimestamps(
+        end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
+        start = DateTime(2014, 9, 10, tzinfo = TimeZone.utc),
+    )
+    new_timestamps = ActivityTimestamps(
+        end = DateTime(2012, 9, 12, tzinfo = TimeZone.utc),
+        start = DateTime(2012, 9, 10, tzinfo = TimeZone.utc),
+    )
     old_url = 'https://www.astil.dev/'
     new_url = 'https://www.astil.dev/project/hata/'
     

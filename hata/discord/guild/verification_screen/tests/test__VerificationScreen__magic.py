@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -11,7 +11,7 @@ def test__VerificationScreen__repr():
     """
     Tests whether ``VerificationScreen.__repr__`` works as intended.
     """
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     description = 'Yukari'
     steps = [
         VerificationScreenStep(
@@ -34,7 +34,7 @@ def test__VerificationScreen__hash():
     """
     Tests whether ``VerificationScreen.__hash__`` works as intended.
     """
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     description = 'Yukari'
     steps = [
         VerificationScreenStep(
@@ -57,7 +57,7 @@ def test__VerificationScreen__eq():
     """
     Tests whether ``VerificationScreen.__eq__`` works as intended.
     """
-    edited_at = DateTime(2016, 5, 14)
+    edited_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     description = 'Yukari'
     steps = [
         VerificationScreenStep(

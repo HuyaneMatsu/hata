@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime, timedelta as TimeDelta
+from datetime import datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 
 import vampytest
 
@@ -98,7 +98,7 @@ def test__Activity__spotify_track_duration():
     Tests whether ``Activity.spotify_track_duration`` works as intended.
     """
     duration = TimeDelta(seconds = 69)
-    start = DateTime(2022, 6, 6)
+    start = DateTime(2022, 6, 6, tzinfo = TimeZone.utc)
     end = start + duration
     
     activity = Activity(activity_type = ActivityType.spotify, timestamps = ActivityTimestamps(end = end, start = start))
@@ -220,7 +220,7 @@ def test__Activity__start():
     """
     Tests whether ``Activity.start`` works as intended.
     """
-    start = DateTime(2022, 6, 6)
+    start = DateTime(2022, 6, 6, tzinfo = TimeZone.utc)
     
     activity = Activity(activity_type = ActivityType.spotify, timestamps = ActivityTimestamps(start = start))
     
@@ -231,7 +231,7 @@ def test__Activity__end():
     """
     Tests whether ``Activity.end`` works as intended.
     """
-    end = DateTime(2022, 6, 6)
+    end = DateTime(2022, 6, 6, tzinfo = TimeZone.utc)
     
     activity = Activity(activity_type = ActivityType.spotify, timestamps = ActivityTimestamps(end = end))
     

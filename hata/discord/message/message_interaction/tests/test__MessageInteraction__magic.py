@@ -2,6 +2,7 @@ import vampytest
 
 from ....application import ApplicationIntegrationType
 from ....interaction import InteractionType
+from ....user import User
 
 from ..message_interaction import MessageInteraction
 
@@ -13,7 +14,7 @@ def test__MessageInteraction__repr():
     message_interaction_id = 202403250021
     
     interaction_type = InteractionType.application_command
-    user_id = 202403250022
+    user = User.precreate(202403250022)
     sub_command_name_stack = ('Afraid', 'Darkness')
     name = 'Chata'
     response_message_id = 20240325009
@@ -33,7 +34,7 @@ def test__MessageInteraction__repr():
         response_message_id = response_message_id,
         sub_command_name_stack = sub_command_name_stack,
         triggering_interaction = triggering_interaction,
-        user_id = user_id,
+        user = user,
     )
     
     vampytest.assert_instance(repr(message_interaction), str)
@@ -46,7 +47,7 @@ def test__MessageInteraction__hash():
     message_interaction_id = 202403250023
     
     interaction_type = InteractionType.application_command
-    user_id = 202403250024
+    user = User.precreate(202403250024)
     sub_command_name_stack = ('Afraid', 'Darkness')
     name = 'Chata'
     response_message_id = 20240325010
@@ -66,7 +67,7 @@ def test__MessageInteraction__hash():
         response_message_id = response_message_id,
         sub_command_name_stack = sub_command_name_stack,
         triggering_interaction = triggering_interaction,
-        user_id = user_id,
+        user = user,
     )
     
     vampytest.assert_instance(hash(message_interaction), int)
@@ -80,7 +81,7 @@ def test__MessageInteraction__eq():
     message_interaction_id_1 = 202403250026
     
     interaction_type = InteractionType.application_command
-    user_id = 202403250027
+    user = User.precreate(202403250027)
     sub_command_name_stack = ('Afraid', 'Darkness')
     name = 'Chata'
     response_message_id = 20240325011
@@ -100,7 +101,7 @@ def test__MessageInteraction__eq():
         'response_message_id': response_message_id,
         'sub_command_name_stack': sub_command_name_stack,
         'triggering_interaction': triggering_interaction,
-        'user_id': user_id,
+        'user': user,
     }
     
     message_interaction = MessageInteraction.precreate(**keyword_parameters)
@@ -116,7 +117,7 @@ def test__MessageInteraction__eq():
         ('interaction_type', InteractionType.form_submit),
         ('sub_command_name_stack', None),
         ('triggering_interaction', None),
-        ('user_id', 202403250028),
+        ('user', User.precreate(202403250028)),
     ):
         test_message_interaction = MessageInteraction.precreate(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(message_interaction, test_message_interaction)

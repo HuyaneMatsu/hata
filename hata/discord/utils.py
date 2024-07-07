@@ -169,7 +169,7 @@ def _datetime_from_parsed(parsed):
     else:
         micro = int(micro)
     
-    return DateTime(year, month, day, hour, minute, second, micro)
+    return DateTime(year, month, day, hour, minute, second, micro, tzinfo = TimeZone.utc)
 
 
 def timestamp_to_datetime(timestamp):
@@ -261,7 +261,7 @@ def id_to_datetime(id_):
     -------
     date_time : `DateTime`
     """
-    return DateTime.utcfromtimestamp(((id_ >> 22) + DISCORD_EPOCH) / 1000.0)
+    return DateTime.fromtimestamp(((id_ >> 22) + DISCORD_EPOCH) / 1000.0, TimeZone.utc)
 
 
 DISCORD_EPOCH_START = id_to_datetime(0)
@@ -312,7 +312,7 @@ def unix_time_to_datetime(unix_time):
     date_time : `DateTime`
     """
     try:
-        return DateTime.utcfromtimestamp(unix_time)
+        return DateTime.fromtimestamp(unix_time, TimeZone.utc)
     except ValueError:
         # Normal oses
         pass
@@ -451,7 +451,7 @@ DATETIME_MIN = unix_time_to_datetime(UNIX_TIME_MIN)
 
 while True:
     try:
-        DATETIME_MAX = DateTime(year = 3000, month = 1, day = 1)
+        DATETIME_MAX = DateTime(year = 3000, month = 1, day = 1, tzinfo = TimeZone.utc)
         UNIX_TIME_MAX = datetime_to_unix_time(DATETIME_MAX)
     except OverflowError:
         pass
@@ -459,14 +459,14 @@ while True:
         break
     
     try:
-        DATETIME_MAX = DateTime(year = 2300, month = 1, day = 1)
+        DATETIME_MAX = DateTime(year = 2300, month = 1, day = 1, tzinfo = TimeZone.utc)
         UNIX_TIME_MAX = datetime_to_unix_time(DATETIME_MAX)
     except OverflowError:
         pass
     else:
         break
 
-    DATETIME_MAX = DateTime(year = 2038, month = 1, day = 1)
+    DATETIME_MAX = DateTime(year = 2038, month = 1, day = 1, tzinfo = TimeZone.utc)
     UNIX_TIME_MAX = datetime_to_unix_time(DATETIME_MAX)
     break
 
@@ -583,20 +583,20 @@ def log_time_converter(value):
     )
 
 
-APPLICATION_COMMAND_NAME_RP = re_compile('[a-zA-Z0-9_\-]{1,32}')
+APPLICATION_COMMAND_NAME_RP = re_compile('[a-zA-Z0-9_\\-]{1,32}')
 
-ID_RP = re_compile('(\d{7,21})')
-IS_MENTION_RP = re_compile('@(?:everyone|here)|<(?:@[!&]?|#|/[a-zA-Z0-9_\-]{3,32}:)\d{7,21}>')
+ID_RP = re_compile('(\\d{7,21})')
+IS_MENTION_RP = re_compile('@(?:everyone|here)|<(?:@[!&]?|#|/[a-zA-Z0-9_\\-]{3,32}:)\\d{7,21}>')
 
-USER_MENTION_RP = re_compile('<@!?(\d{7,21})>')
-CHANNEL_MENTION_RP = re_compile('<#(\d{7,21})>')
-ROLE_MENTION_RP = re_compile('<@&(\d{7,21})>')
-APPLICATION_COMMAND_MENTION_RP = re_compile('</([a-zA-Z0-9_\-]{3,32}):(\d{7,21})>')
+USER_MENTION_RP = re_compile('<@!?(\\d{7,21})>')
+CHANNEL_MENTION_RP = re_compile('<#(\\d{7,21})>')
+ROLE_MENTION_RP = re_compile('<@&(\\d{7,21})>')
+APPLICATION_COMMAND_MENTION_RP = re_compile('</([a-zA-Z0-9_\\-]{3,32}):(\\d{7,21})>')
 
-EMOJI_RP = re_compile('<(a)?:([a-zA-Z0-9_]{2,32})(?:~[1-9])?:(\d{7,21})>')
-REACTION_RP = re_compile('([a-zA-Z0-9_]{2,32}):(\d{7,21})')
+EMOJI_RP = re_compile('<(a)?:([a-zA-Z0-9_]{2,32})(?:~[1-9])?:(\\d{7,21})>')
+REACTION_RP = re_compile('([a-zA-Z0-9_]{2,32}):(\\d{7,21})')
 EMOJI_NAME_RP = re_compile(':?([a-zA-Z0-9_\\-~]{1,32}):?')
-FILTER_RP = re_compile('("(.+?)"|\S + )')
+FILTER_RP = re_compile('("(.+?)"|\\S + )')
 INVITE_CODE_RP = re_compile('([a-zA-Z0-9-]+)')
 
 
@@ -1050,7 +1050,7 @@ else:
             If `delta` was not passed as `DateTime`, `RelativeDelta`.
         """
         if isinstance(delta, DateTime):
-            delta = RelativeDelta(DateTime.utcnow(), delta)
+            delta = RelativeDelta(DateTime.now(TimeZone.utc), delta)
         elif isinstance(delta, RelativeDelta):
             pass
         else:
@@ -1377,7 +1377,7 @@ def url_cutter(url):
         
     return f'{url[:from_start]}...{url[top_limit - from_end - 1:]}'
 
-DELTA_RP = re_compile('([\+\-]?\d+)[ \t]*([a-zA-Z]+)')
+DELTA_RP = re_compile('([\\+\\-]?\\d+)[ \\t]*([a-zA-Z]+)')
 TDELTA_KEYS = ('weeks', 'days', 'hours', 'minutes', 'seconds', 'microseconds')
 RDELTA_KEYS = ('years', 'months', *TDELTA_KEYS)
 
@@ -1444,7 +1444,7 @@ else:
         if result:
             return RelativeDelta(**result)
 
-CHANNEL_MESSAGE_RP = re_compile('(\d{7,21})-(\d{7,21})')
+CHANNEL_MESSAGE_RP = re_compile('(\\d{7,21})-(\\d{7,21})')
 
 def parse_message_reference(text):
     """
@@ -1640,11 +1640,8 @@ def parse_date_header_to_datetime(date_data):
         The parsed out date time.
     """
     *date_tuple, tz = parse_date_timezone(date_data)
-    if tz is None:
-        date = DateTime(*date_tuple[:6])
-    else:
-        date = DateTime(*date_tuple[:6], tzinfo = TimeZone(TimeDelta(seconds = tz)))
-    return date
+    
+    return DateTime(*date_tuple[:6], tzinfo = TimeZone.utc if tz is None else TimeZone(TimeDelta(seconds = tz)))
 
 
 URL_RP = re_compile(
@@ -1657,9 +1654,9 @@ URL_RP = re_compile(
     '(?:'
     # IP address exclusion
     # private & local networks
-    '(?:(?:10|127)(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:0|[1-9]\d?|1\d\d|2[0-4]\d|25[0-5])))|'
-    '(?:(?:169\.254|192\.168)(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5]))(?:\.(?:0|[1-9]\d?|1\d\d|2[0-4]\d|25[0-5])))|'
-    '(?:172\.(?:1[6-9]|2\d|3[0-1])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5]))(?:\.(?:0|[1-9]\d?|1\d\d|2[0-4]\d|25[0-5]))))'
+    '(?:(?:10|127)(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:0|[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-5])))|'
+    '(?:(?:169\\.254|192\\.168)(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5]))(?:\\.(?:0|[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-5])))|'
+    '(?:172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5]))(?:\\.(?:0|[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-5]))))'
     '|'
     # private & local hosts
     '(?:localhost)'
@@ -1670,12 +1667,12 @@ URL_RP = re_compile(
     # excludes network & broadcast addresses
     # (first & last IP address of each class)
     '(?:'
-    '(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])'
-    '(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}'
-    '(?:\.(?:0|[1-9]\d?|1\d\d|2[0-4]\d|25[0-5])))'
+    '(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])'
+    '(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}'
+    '(?:\\.(?:0|[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-5])))'
     '|'
     # IPv6 RegEx
-    '\[('
+    '\\[('
     # 1:2:3:4:5:6:7:8
     '([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|'
     # 1::                              1:2:3:4:5:6:7::
@@ -1696,29 +1693,29 @@ URL_RP = re_compile(
     ':((:[0-9a-fA-F]{1,4}){1,7}|:)|'
     # fe80::7:8%eth0   fe80::7:8%1
     # (link-local IPv6 addresses with zone index)
-    'fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]?|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\.){3}'
+    'fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]?|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\\.){3}'
     # ::255.255.255.255   ::ffff:255.255.255.255  ::ffff:0:255.255.255.255
     # (IPv4-mapped IPv6 addresses and IPv4-translated addresses)
-    '(25[0-5]|(2[0-4]|1?[0-9])?[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\.){3}'
+    '(25[0-5]|(2[0-4]|1?[0-9])?[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\\.){3}'
     # 2001:db8:3:4::192.0.2.33  64:ff9b::192.0.2.33
     # (IPv4-Embedded IPv6 Address)
     '(25[0-5]|(2[0-4]|1?[0-9])?[0-9])'
-    ')\]|'
+    ')\\]|'
     # host name
     '(?:(?:(?:xn--)|[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]-?)*[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]+)'
     # domain name
-    '(?:\.(?:(?:xn--)|[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]-?)*[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]+)*'
+    '(?:\\.(?:(?:xn--)|[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]-?)*[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]+)*'
     # TLD identifier
-    '(?:\.(?:(?:xn--[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]{2,})|[a-z\u00a1-\uffff\U00010000-\U0010ffff]{2,}))'
+    '(?:\\.(?:(?:xn--[a-z\u00a1-\uffff\U00010000-\U0010ffff0-9]{2,})|[a-z\u00a1-\uffff\U00010000-\U0010ffff]{2,}))'
     ')'
     # port number
-    '(?::\d{2,5})?'
+    '(?::\\d{2,5})?'
     # resource path
     '(?:/[-a-z\u00a1-\uffff\U00010000-\U0010ffff0-9._~%!$&\'()*+,;=:@/]*)?'
     # query string
-    '(?:\?\S*)?'
+    '(?:\\?\\S*)?'
     # fragment
-    '(?:#\S*)?',
+    '(?:#\\S*)?',
     re_unicode | re_ignore_case
 )
 
@@ -1774,8 +1771,8 @@ class TIMESTAMP_STYLES:
     
     ```py
     >>> from hata import DATETIME_FORMAT_CODE
-    >>> from datetime import datetime as DateTime
-    >>> print(f'{DateTime.utcnow():{DATETIME_FORMAT_CODE}}')
+    >>> from datetime import datetime as DateTime, timezone as TimeZone
+    >>> print(f'{DateTime.now(TimeZone.utc):{DATETIME_FORMAT_CODE}}')
     2021-08-05 13:53:16
     ```
     
@@ -1784,8 +1781,8 @@ class TIMESTAMP_STYLES:
     
     ```py
     >>> from hata import elapsed_time
-    >>> from datetime import datetime as DateTime, timedelta as TimeDelta
-    >>> when = DateTime.utcnow() - TimeDelta(days = 5)
+    >>> from datetime import datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+    >>> when = DateTime.now(TimeZone.utc) - TimeDelta(days = 5)
     >>> print(f'{elapsed_time(when)} ago')
     5 days ago
     ```

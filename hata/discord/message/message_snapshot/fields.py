@@ -1,8 +1,6 @@
 __all__ = ()
 
-from ...field_parsers import entity_id_parser_factory
-from ...field_putters import entity_id_optional_putter_factory
-from ...field_validators import entity_id_validator_factory, force_date_time_validator_factory
+from ...field_validators import force_date_time_validator_factory
 from ...utils import DISCORD_EPOCH_START, datetime_to_timestamp, timestamp_to_datetime
 
 from ..message import MessageFlag
@@ -337,10 +335,3 @@ def put_flags_into(flags, data, defaults):
         message_data['flags'] = int(flags)
     
     return data
-
-
-# guild_id
-
-parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id_into = entity_id_optional_putter_factory('guild_id')
-validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')

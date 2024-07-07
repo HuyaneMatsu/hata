@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -14,7 +14,7 @@ def test__VoiceState__repr():
     guild_id = 202301240019
     speaker = True
     mute = True
-    requested_to_speak_at = DateTime(2016, 5, 14)
+    requested_to_speak_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     self_deaf = True
     self_mute = True
     self_stream = True
@@ -49,7 +49,7 @@ def test__VoiceState__hash():
     guild_id = 202301240022
     speaker = True
     mute = True
-    requested_to_speak_at = DateTime(2016, 5, 14)
+    requested_to_speak_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     self_deaf = True
     self_mute = True
     self_stream = True
@@ -84,7 +84,7 @@ def test__VoiceState__eq():
     guild_id = 202301240022
     speaker = True
     mute = True
-    requested_to_speak_at = DateTime(2016, 5, 14)
+    requested_to_speak_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     self_deaf = True
     self_mute = True
     self_stream = True
@@ -120,7 +120,7 @@ def test__VoiceState__eq():
         ('guild_id', 202301240025),
         ('speaker', False),
         ('mute', False),
-        ('requested_to_speak_at', DateTime(2016, 5, 13)),
+        ('requested_to_speak_at', DateTime(2016, 5, 13, tzinfo = TimeZone.utc)),
         ('self_deaf', False),
         ('self_mute', False),
         ('self_stream', False),

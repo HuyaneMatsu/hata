@@ -18,8 +18,8 @@ from .utils import raw_name_to_display
 CheckBase = include('CheckBase')
 CommandCheckWrapper = include('CommandCheckWrapper')
 
-SUB_COMMAND_NAME_RP = re_compile('([a-zA-Z0-9_\-]+)\s*')
-COMMAND_NAME_RP = re_compile('\s*([^\s]*)\s*', re_multi_line | re_dotall)
+SUB_COMMAND_NAME_RP = re_compile('([a-zA-Z0-9_\\-]+)\\s*')
+COMMAND_NAME_RP = re_compile('\\s*([^\\s]*)\\s*', re_multi_line | re_dotall)
 
 async def run_checks(checks, command_context):
     """
@@ -371,7 +371,7 @@ def test_name_rule(rule, rule_name):
     if rule is None:
         return
     
-    rule_type = rule.__class__
+    rule_type = type(rule)
     if (rule_type is not FunctionType):
         raise TypeError(
             f'`{rule_name}` can be `{FunctionType.__name__}`, got {rule_type.__name__}; {rule!r}.'

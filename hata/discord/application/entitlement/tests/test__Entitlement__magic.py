@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -16,11 +16,11 @@ def test__Entitlement__repr():
     application_id = 202310040037
     consumed = True
     deleted = True
-    ends_at = DateTime(2016, 5, 14)
+    ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
     guild_id = 202310040038
     sku_id = 202310040039
-    starts_at = DateTime(2015, 5, 14)
+    starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310040040
     user_id = 202310040041
     
@@ -51,11 +51,11 @@ def test__Entitlement__hash():
     application_id = 202310040043
     consumed = True
     deleted = True
-    ends_at = DateTime(2016, 5, 14)
+    ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
     guild_id = 202310040044
     sku_id = 202310040045
-    starts_at = DateTime(2015, 5, 14)
+    starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310040046
     user_id = 202310040047
     
@@ -96,11 +96,11 @@ def test__Entitlement__eq():
     application_id = 202310040049
     consumed = True
     deleted = True
-    ends_at = DateTime(2016, 5, 14)
+    ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
     guild_id = 202310040050
     sku_id = 202310040051
-    starts_at = DateTime(2015, 5, 14)
+    starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310040052
     user_id = 202310040053
     

@@ -1,7 +1,7 @@
 __all__ = ('VoiceClient', )
 
 import socket as module_socket
-from datetime import datetime
+from datetime import datetime as DateTime, timezone as TimeZone
 from functools import partial as partial_func
 
 from scarletio import (
@@ -675,7 +675,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                 return
         
         if request:
-            timestamp = datetime_to_timestamp(datetime.utcnow())
+            timestamp = datetime_to_timestamp(DateTime.now(TimeZone.utc))
         else:
             timestamp = None
         

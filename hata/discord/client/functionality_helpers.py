@@ -2,7 +2,7 @@ __all__ = ()
 
 from base64 import b64decode
 from binascii import Error as Base64DecodeError
-from datetime import datetime
+from datetime import datetime as DateTime, timezone as TimeZone
 from math import inf
 
 from scarletio import BaseMethodType, Future, LOOP_TIME, Task, TaskGroup
@@ -931,7 +931,7 @@ async def request_channel_thread_channels(client, guild_id, channel_id, request_
         if thread_channels:
             before = thread_channels[-1].created_at
         else:
-            before = datetime.utcnow()
+            before = DateTime.now(TimeZone.utc)
         
         query_parameters = {'before': before}
     

@@ -6,15 +6,15 @@ from scarletio import export, include
 
 from ...bases import DiscordEntity
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
-from ...user import ZEROUSER, create_partial_user_from_id
+from ...user import ZEROUSER, User, create_partial_user_from_id
 
 from .fields import (
     parse_authorizer_user_ids, parse_id, parse_interacted_message_id, parse_name_and_sub_command_name_stack,
-    parse_response_message_id, parse_triggering_interaction, parse_type, parse_user_id, put_authorizer_user_ids_into,
+    parse_response_message_id, parse_triggering_interaction, parse_type, parse_user, put_authorizer_user_ids_into,
     put_id_into, put_interacted_message_id_into, put_name_and_sub_command_name_stack_into, put_response_message_id_into,
-    put_triggering_interaction_into, put_type_into, put_user_id_into, validate_authorizer_user_ids, validate_id,
+    put_triggering_interaction_into, put_type_into, put_user_into, validate_authorizer_user_ids, validate_id,
     validate_interacted_message_id, validate_name, validate_response_message_id, validate_sub_command_name_stack,
-    validate_triggering_interaction, validate_type, validate_user_id
+    validate_triggering_interaction, validate_type, validate_user
 )
 
 
@@ -32,8 +32,7 @@ PRECREATE_FIELDS = {
     'response_message_id': ('response_message_id', validate_response_message_id),
     'sub_command_name_stack': ('sub_command_name_stack', validate_sub_command_name_stack),
     'triggering_interaction': ('triggering_interaction', validate_triggering_interaction),
-    'user': ('user_id', validate_user_id),
-    'user_id': ('user_id', validate_user_id),
+    'user': ('user', validate_user),
 }
 
 
@@ -60,12 +59,12 @@ class MessageInteraction(DiscordEntity):
         Represents the source form interaction. Present if the message is created from a form interaction.
     type : ``InteractionType``
         The interaction's type.
-    user_id : `int`
-        The user's identifier who invoked the interaction.
+    user : ``ClientUserBase``
+        The user who invoked the interaction.
     """
     __slots__ = (
         'authorizer_user_ids', 'interacted_message_id', 'name', 'response_message_id', 'sub_command_name_stack',
-        'triggering_interaction', 'type', 'user_id'
+        'triggering_interaction', 'type', 'user'
     )
     
     def __new__(
@@ -108,8 +107,8 @@ class MessageInteraction(DiscordEntity):
         triggering_interaction : `None | MessageInteraction`, Optional (Keyword only)
             Represents the source form interaction. Present if the message is created from a form interaction.
         
-        user_id : `int`, `None`, ``ClientUserBase``, Optional (Keyword only)
-            The user's identifier who invoked the interaction.
+        user : `None`, ``ClientUserBase``, Optional (Keyword only)
+            The user who invoked the interaction.
         
         Raises
         ------
@@ -119,16 +118,16 @@ class MessageInteraction(DiscordEntity):
             - If a parameter's value is incorrect.
         """
         # Deprecations
-        if user is not ...:
+        if user_id is not ...:
             warn(
                 (
-                    f'`{cls.__name__}.__new__`\' `user` parameter is deprecated and will be removed in 2024 November. '
-                    f'Please use `user_id` instead.'
+                    f'`{cls.__name__}.__new__`\' `user_id` parameter is deprecated and will be removed in 2025 January. '
+                    f'Please use `user` instead.'
                 ),
                 FutureWarning,
                 stacklevel = 2,
             )
-            user_id = user
+            user = User.precreate(user_id)
         
         # authorizer_user_ids
         if authorizer_user_ids is ...:
@@ -171,11 +170,11 @@ class MessageInteraction(DiscordEntity):
         else:
             triggering_interaction = validate_triggering_interaction(triggering_interaction)
         
-        # user_id
-        if user_id is ...:
-            user_id = 0
+        # user
+        if user is ...:
+            user = ZEROUSER
         else:
-            user_id = validate_user_id(user_id)
+            user = validate_user(user)
         
         # Construct
         self = object.__new__(cls)
@@ -187,7 +186,7 @@ class MessageInteraction(DiscordEntity):
         self.sub_command_name_stack = sub_command_name_stack
         self.triggering_interaction = triggering_interaction
         self.type = interaction_type
-        self.user_id = user_id
+        self.user = user
         return self
     
     
@@ -240,11 +239,8 @@ class MessageInteraction(DiscordEntity):
         triggering_interaction : `None | MessageInteraction`, Optional (Keyword only)
             Represents the source form interaction. Present if the message is created from a form interaction.
         
-        user : `int`, `None`,``ClientUserBase``, Optional (Keyword only)
-            Alternative for `user`.
-        
-        user_id : `int`, `None`, ``ClientUserBase``, Optional (Keyword only)
-            The user's identifier who invoked the interaction.
+        user : `None`, ``ClientUserBase``, Optional (Keyword only)
+            The user who invoked the interaction.
         
         Returns
         -------
@@ -297,7 +293,7 @@ class MessageInteraction(DiscordEntity):
         self.sub_command_name_stack = None
         self.triggering_interaction = None
         self.type = InteractionType.none
-        self.user_id = 0
+        self.user = ZEROUSER
         return self
     
     
@@ -324,7 +320,7 @@ class MessageInteraction(DiscordEntity):
         self.response_message_id = parse_response_message_id(data)
         self.triggering_interaction = parse_triggering_interaction(data)
         self.type = parse_type(data)
-        self.user_id = parse_user_id(data)
+        self.user = parse_user(data)
         
         return self
     
@@ -354,9 +350,9 @@ class MessageInteraction(DiscordEntity):
             self.triggering_interaction, data, defaults, include_internals = include_internals
         )
         put_type_into(self.type, data, defaults)
-        put_user_id_into(self.user_id, data, defaults)
         
         if include_internals:
+            put_user_into(self.user, data, defaults)
             put_id_into(self.id, data, defaults)
         
         return data
@@ -404,9 +400,9 @@ class MessageInteraction(DiscordEntity):
             repr_parts.append(', sub_command_name_stack = ')
             repr_parts.append(repr(sub_command_name_stack))
         
-        # user_id
-        repr_parts.append(', user_id = ')
-        repr_parts.append(repr(self.user_id))
+        # user
+        repr_parts.append(', user = ')
+        repr_parts.append(repr(self.user))
         
         # authorizer_user_ids
         authorizer_user_ids = self.authorizer_user_ids
@@ -500,7 +496,7 @@ class MessageInteraction(DiscordEntity):
             return False
         
         # user
-        if self.user_id != other.user_id:
+        if self.user is not other.user:
             return False
         
         return True
@@ -545,7 +541,7 @@ class MessageInteraction(DiscordEntity):
         hash_value ^= self.type.value << 4
         
         # user
-        hash_value ^= self.user_id
+        hash_value ^= hash(self.user)
         
         return hash_value
     
@@ -582,7 +578,7 @@ class MessageInteraction(DiscordEntity):
         new.triggering_interaction = triggering_interaction
         
         new.type = self.type
-        new.user_id = self.user_id
+        new.user = self.user
         
         return new
     
@@ -627,8 +623,8 @@ class MessageInteraction(DiscordEntity):
         triggering_interaction : `None | MessageInteraction`, Optional (Keyword only)
             Represents the source form interaction. Present if the message is created from a form interaction.
         
-        user_id : `int`, `None`, ``ClientUserBase``, Optional (Keyword only)
-            The user's identifier who invoked the interaction.
+        user : `None`, ``ClientUserBase``, Optional (Keyword only)
+            The user who invoked the interaction.
         
         Returns
         -------
@@ -642,16 +638,16 @@ class MessageInteraction(DiscordEntity):
             - If a parameter's value is incorrect.
         """
         # Deprecations
-        if user is not ...:
+        if user_id is not ...:
             warn(
                 (
-                    f'`{type(self).__name__}.copy_with`\' `user` parameter is deprecated '
-                    f'and will be removed in 2024 November. Please use `user_id` instead.'
+                    f'`{type(self).__name__}.copy_with`\' `user_id` parameter is deprecated '
+                    f'and will be removed in 2024 December. Please use `user` instead.'
                 ),
                 FutureWarning,
                 stacklevel = 2,
             )
-            user_id = user
+            user = User.precreate(user_id)
         
         # authorizer_user_ids
         if authorizer_user_ids is ...:
@@ -701,11 +697,11 @@ class MessageInteraction(DiscordEntity):
         else:
             triggering_interaction = validate_triggering_interaction(triggering_interaction)
         
-        # user_id
-        if user_id is ...:
-            user_id = self.user_id
+        # user
+        if user is ...:
+            user = self.user
         else:
-            user_id = validate_user_id(user_id)
+            user = validate_user(user)
     
         # Construct
         new = object.__new__(type(self))
@@ -717,7 +713,7 @@ class MessageInteraction(DiscordEntity):
         new.sub_command_name_stack = sub_command_name_stack
         new.triggering_interaction = triggering_interaction
         new.type = interaction_type
-        new.user_id = user_id
+        new.user = user
         return new
     
     
@@ -739,19 +735,15 @@ class MessageInteraction(DiscordEntity):
     
     
     @property
-    def user(self):
+    def user_id(self):
         """
-        Returns the user who invoked the interaction.
+        Returns the user's identifier who invoked the interaction.
         
         Returns
         -------
-        user : ``ClientUserBase``
+        user_id : `int`
         """
-        user_id = self.user_id
-        if user_id:
-            return create_partial_user_from_id(user_id)
-        
-        return ZEROUSER
+        return self.user.id
     
     
     def get_authorizer_user_id(self, integration_type):

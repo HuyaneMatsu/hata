@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -39,7 +39,7 @@ def test__Activity__new__0():
     
     application_id = 202209070019
     assets = ActivityAssets(image_large = 'senya')
-    created_at = DateTime(2014, 9, 11)
+    created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
     activity_id = 202209070020
@@ -48,7 +48,10 @@ def test__Activity__new__0():
     session_id = 'Autobahn'
     state = 'plain'
     sync_id = 'asia'
-    timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
+    timestamps = ActivityTimestamps(
+        end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
+        start = DateTime(2014, 9, 10, tzinfo = TimeZone.utc),
+    )
     url = 'https://www.astil.dev/'
     
     activity = Activity(

@@ -2,7 +2,7 @@ __all__ = ('get_channel_stdin', 'get_channel_stdout',)
 
 import reprlib
 from collections import deque
-from datetime import datetime, timedelta
+from datetime import datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 
 from scarletio import CancelledError, Future, LOOP_TIME, Task, shield, sleep
 
@@ -10,7 +10,7 @@ from ...discord.core import KOKORO
 from ...discord.utils import sanitize_content
 
 
-MESSAGE_EDIT_TIMEDELTA = timedelta(seconds = 10)
+MESSAGE_EDIT_TIMEDELTA = TimeDelta(seconds = 10)
 REQUEST_RATE_LIMIT = 1.2
 
 
@@ -147,7 +147,7 @@ class ChannelOutputStream:
                         if last_action is None:
                             last_action = message.created_at
                         
-                        if (last_action + MESSAGE_EDIT_TIMEDELTA > datetime.utcnow()):
+                        if (last_action + MESSAGE_EDIT_TIMEDELTA > DateTime.now(TimeZone.utc)):
                             un_poll = self._last_chunk
                             should_edit = True
                         else:

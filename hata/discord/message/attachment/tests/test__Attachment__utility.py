@@ -20,6 +20,7 @@ def test__Attachment__copy__0():
     name = 'i miss you'
     size = 999
     temporary = True
+    title = 'flandre'
     url = 'https://www.astil.dev/'
     waveform = 'kisaki'
     width = 998
@@ -33,6 +34,7 @@ def test__Attachment__copy__0():
         name = name,
         size = size,
         temporary = temporary,
+        title = title,
         url = url,
         waveform = waveform,
         width = width,
@@ -68,7 +70,7 @@ def test__Attachment__copy__1():
     vampytest.assert_is(copy.proxy_url, None)
 
 
-def test__Attachment__copy_with__0():
+def test__Attachment__copy_with__no_fields():
     """
     Tests whether ``Attachment.copy_with`` works as intended.
     
@@ -82,6 +84,7 @@ def test__Attachment__copy_with__0():
     name = 'i miss you'
     size = 999
     temporary = True
+    title = 'flandre'
     url = 'https://www.astil.dev/'
     waveform = 'kisaki'
     width = 998
@@ -95,6 +98,7 @@ def test__Attachment__copy_with__0():
         name = name,
         size = size,
         temporary = temporary,
+        title = title,
         url = url,
         waveform = waveform,
         width = width,
@@ -107,7 +111,7 @@ def test__Attachment__copy_with__0():
     vampytest.assert_eq(attachment, copy)
 
 
-def test__Attachment__copy_with__1():
+def test__Attachment__copy_with__all_fields():
     """
     Tests whether ``Attachment.copy_with`` works as intended.
     
@@ -144,6 +148,7 @@ def test__Attachment__copy_with__2():
     old_name = 'i miss you'
     old_size = 999
     old_temporary = True
+    old_title = 'flandre'
     old_url = 'https://www.astil.dev/'
     old_waveform = 'kisaki'
     old_width = 998
@@ -156,6 +161,7 @@ def test__Attachment__copy_with__2():
     new_name = 'Slave of Scarlet'
     new_size = 701
     new_temporary = False
+    new_title = 'remilia'
     new_url = 'https://orindance.party/'
     new_waveform = 'kisaki'
     new_width = 700
@@ -169,6 +175,7 @@ def test__Attachment__copy_with__2():
         name = old_name,
         size = old_size,
         temporary = old_temporary,
+        title = old_title,
         url = old_url,
         waveform = old_waveform,
         width = old_width,
@@ -183,6 +190,7 @@ def test__Attachment__copy_with__2():
         name = new_name,
         size = new_size,
         temporary = new_temporary,
+        title = new_title,
         url = new_url,
         waveform = new_waveform,
         width = new_width,
@@ -199,6 +207,36 @@ def test__Attachment__copy_with__2():
     vampytest.assert_eq(copy.name, new_name)
     vampytest.assert_eq(copy.size, new_size)
     vampytest.assert_eq(copy.temporary, new_temporary)
+    vampytest.assert_eq(copy.title, new_title)
     vampytest.assert_eq(copy.url, new_url)
     vampytest.assert_eq(copy.waveform, new_waveform)
     vampytest.assert_eq(copy.width, new_width)
+
+
+def _iter_options__display_name():
+    yield 'orin', 'okuu', 'okuu'
+    yield 'orin', None, 'orin'
+    yield None, 'okuu', 'okuu'
+    yield None, None, ''
+
+
+@vampytest._(vampytest.call_from(_iter_options__display_name()).returning_last())
+def test__Attachment__display_name(name, title):
+    """
+    Tests whether ``Attachment.display_name`` works as intended.
+    
+    Parameters
+    ----------
+    name : `None | str`
+        Attachment's name.
+    title : `None | str`
+        Attachment's title.
+    
+    Returns
+    -------
+    output : `str`
+    """
+    attachment = Attachment(name = name, title = title)
+    output = attachment.display_name
+    vampytest.assert_instance(output, str)
+    return output

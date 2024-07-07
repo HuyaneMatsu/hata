@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -8,7 +8,7 @@ from ..fields import put_created_at_into
 
 
 def _iter_options():
-    created_at = DateTime(2016, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield DISCORD_EPOCH_START, False, {}
     yield DISCORD_EPOCH_START, True, {'message': {'timestamp': datetime_to_timestamp(DISCORD_EPOCH_START)}}

@@ -2,7 +2,6 @@ __all__ = ('Channel',)
 
 from collections import deque
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape, match as re_match, search as re_search
-from warnings import warn
 
 from scarletio import LOOP_TIME, copy_docs, export, include
 
@@ -1616,20 +1615,6 @@ class Channel(DiscordEntity, immortal = True):
     
     
     @property
-    @copy_docs(ChannelMetadataBase.default_thread_reaction)
-    def default_thread_reaction(self):
-        warn(
-            (
-                f'`{self.__class__.__name__}.default_thread_reaction` is deprecated and will be removed in '
-                f'2024 Marc. Please use `.default_thread_reaction_emoji` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.default_thread_reaction_emoji
-    
-    
-    @property
     @copy_docs(ChannelMetadataBase.default_thread_slowmode)
     def default_thread_slowmode(self):
         return self.metadata.default_thread_slowmode
@@ -1875,22 +1860,6 @@ class Channel(DiscordEntity, immortal = True):
         channels : `list` of ``Channel``
         """
         return sorted(self.iter_channels())
-    
-    
-    @property
-    def channel_list(self):
-        """
-        Deprecated and will be removed in 2023 September. Please use ``.channels`` instead.
-        """
-        warn(
-            (
-                f'`{self.__class__.__name__}.channel_list` is deprecated and will be removed in '
-                f'2023 September. Please use `.channels` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.channels
     
     
     def iter_voice_users(self):

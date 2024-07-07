@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -17,7 +17,7 @@ def test__ActivityMetadataRich__repr():
     """
     application_id = 202209070013
     assets = ActivityAssets(image_large = 'senya')
-    created_at = DateTime(2014, 9, 11)
+    created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
     activity_id = 202209070014
@@ -27,7 +27,10 @@ def test__ActivityMetadataRich__repr():
     session_id = 'Autobahn'
     state = 'plain'
     sync_id = 'asia'
-    timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
+    timestamps = ActivityTimestamps(
+        end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
+        start = DateTime(2014, 9, 10, tzinfo = TimeZone.utc),
+    )
     url = 'https://www.astil.dev/'
     
     activity_metadata = ActivityMetadataRich(
@@ -56,7 +59,7 @@ def test__ActivityMetadataRich__hash():
     """
     application_id = 202209070015
     assets = ActivityAssets(image_large = 'senya')
-    created_at = DateTime(2014, 9, 11)
+    created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
     activity_id = 202209070016
@@ -66,7 +69,10 @@ def test__ActivityMetadataRich__hash():
     session_id = 'Autobahn'
     state = 'plain'
     sync_id = 'asia'
-    timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
+    timestamps = ActivityTimestamps(
+        end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
+        start = DateTime(2014, 9, 10, tzinfo = TimeZone.utc),
+    )
     url = 'https://www.astil.dev/'
     
     activity_metadata = ActivityMetadataRich(
@@ -95,7 +101,7 @@ def test__ActivityMetadataRich__eq():
     """
     application_id = 202209070017
     assets = ActivityAssets(image_large = 'senya')
-    created_at = DateTime(2014, 9, 11)
+    created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
     activity_id = 202209070018
@@ -105,7 +111,10 @@ def test__ActivityMetadataRich__eq():
     session_id = 'Autobahn'
     state = 'plain'
     sync_id = 'asia'
-    timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
+    timestamps = ActivityTimestamps(
+        end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
+        start = DateTime(2014, 9, 10, tzinfo = TimeZone.utc),
+    )
     url = 'https://www.astil.dev/'
     
 

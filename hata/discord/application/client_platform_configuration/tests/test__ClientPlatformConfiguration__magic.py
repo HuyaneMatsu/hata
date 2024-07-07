@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -11,7 +11,7 @@ def test__ClientPlatformConfiguration__repr():
     Tests whether ``ClientPlatformConfiguration.__repr__`` works as intended.
     """
     label_type = LabelType.new
-    labelled_until = DateTime(2016, 5, 14)
+    labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     release_phase = ReleasePhase.global_launch
     
     configuration = ClientPlatformConfiguration(
@@ -28,7 +28,7 @@ def test__ClientPlatformConfiguration__eq():
     Tests whether ``ClientPlatformConfiguration.__repr__`` works as intended.
     """
     label_type = LabelType.new
-    labelled_until = DateTime(2016, 5, 14)
+    labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     release_phase = ReleasePhase.global_launch
     
     keyword_parameters = {
@@ -43,7 +43,7 @@ def test__ClientPlatformConfiguration__eq():
     
     for field_name, field_value in (
         ('label_type', LabelType.updated),
-        ('labelled_until', DateTime(2017, 5, 14)),
+        ('labelled_until', DateTime(2017, 5, 14, tzinfo = TimeZone.utc)),
         # ('release_phase', ReleasePhase.global_launch),we only have 1 instance
     ):
         configuration_altered = ClientPlatformConfiguration(**{**keyword_parameters, field_name: field_value})
@@ -55,7 +55,7 @@ def test__ClientPlatformConfiguration__hash():
     Tests whether ``ClientPlatformConfiguration.__hash__`` works as intended.
     """
     label_type = LabelType.new
-    labelled_until = DateTime(2016, 5, 14)
+    labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     release_phase = ReleasePhase.global_launch
     
     configuration = ClientPlatformConfiguration(

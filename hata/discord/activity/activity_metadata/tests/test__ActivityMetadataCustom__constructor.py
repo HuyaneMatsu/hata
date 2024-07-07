@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -39,7 +39,7 @@ def test__ActivityMetadataCustom__new__1():
     
     Case: All fields given.
     """
-    created_at = DateTime(2016, 5, 4)
+    created_at = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
     emoji = BUILTIN_EMOJIS['x']
     state = 'bloody'
     
@@ -73,7 +73,7 @@ def test__ActivityMetadataCustom__from_keyword_parameters__1():
     
     Case: All fields given.
     """
-    created_at = DateTime(2016, 5, 4)
+    created_at = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
     emoji = BUILTIN_EMOJIS['x']
     state = 'bloody'
     

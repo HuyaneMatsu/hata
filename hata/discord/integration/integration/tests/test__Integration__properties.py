@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -77,7 +77,7 @@ def test__Integration__properties__2():
     revoked = True
     role_id = 202210140042
     subscriber_count = 100
-    synced_at = DateTime(2016, 9, 9)
+    synced_at = DateTime(2016, 9, 9, tzinfo = TimeZone.utc)
     syncing = True
     
     

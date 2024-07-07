@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -597,7 +597,7 @@ def test__ClientUserBase__is_boosting():
 
     # in guild -> but chad
     
-    user.guild_profiles[guild_id] = GuildProfile(boosts_since = DateTime(2015, 1, 1)) # Clearly chad
+    user.guild_profiles[guild_id] = GuildProfile(boosts_since = DateTime(2015, 1, 1, tzinfo = TimeZone.utc)) # Clearly chad
     output = user.is_boosting(guild_id)
     vampytest.assert_instance(output, bool)
     vampytest.assert_true(output)

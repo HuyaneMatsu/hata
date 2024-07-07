@@ -221,7 +221,7 @@ def build_all_emoji_pattern():
     pattern_core.build_into(into)
     pattern_core = None
     
-    into.append(')|(?<!\\\\)\:(')
+    into.append(')|(?<!\\\\)\\:(')
     
     pattern_core = TrieNode(None)
     for unicode in UNICODES:
@@ -232,7 +232,7 @@ def build_all_emoji_pattern():
     pattern_core.build_into(into)
     pattern_core = None
     
-    into.append(')\:|')
+    into.append(')\\:|')
     into.append(EMOJI_RP.pattern)
     into.append(')')
     

@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -13,7 +13,7 @@ def test__ActivityMetadataCustom__repr():
     """
     state = 'state'
     emoji = Emoji.precreate(202209060000, name = 'Code49')
-    created_at = DateTime(2014, 9, 16)
+    created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
     
     activity_metadata = ActivityMetadataCustom(
         created_at = created_at,
@@ -30,7 +30,7 @@ def test__ActivityMetadataCustom__hash():
     """
     state = 'state'
     emoji = Emoji.precreate(202209060001, name = 'Code49')
-    created_at = DateTime(2014, 9, 16)
+    created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
     
     activity_metadata = ActivityMetadataCustom(
         created_at = created_at,
@@ -47,7 +47,7 @@ def test__ActivityMetadataCustom__eq():
     """
     state = 'state'
     emoji = Emoji.precreate(202209060002, name = 'Code49')
-    created_at = DateTime(2014, 9, 16)
+    created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
     
     keyword_parameters = {
         'created_at': created_at,

@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -9,7 +9,7 @@ def test__MessageCall__repr():
     """
     Tests whether ``MessageCall.__repr__`` works as intended.
     """
-    ended_at = DateTime(2016, 5, 14)
+    ended_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     user_ids = [202304280006, 202304280007]
     
     message_call = MessageCall(
@@ -24,7 +24,7 @@ def test__MessageCall__hash():
     """
     Tests whether ``MessageCall.__hash__`` works as intended.
     """
-    ended_at = DateTime(2016, 5, 14)
+    ended_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     user_ids = [202304280008, 202304280009]
     
     message_call = MessageCall(
@@ -55,7 +55,7 @@ def test__messageCall__eq__different_type(other):
     -------
     output : `bool`
     """
-    ended_at = DateTime(2016, 5, 14)
+    ended_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     user_ids = [202304280008, 202304280009]
     
     message_call = MessageCall(
@@ -70,7 +70,7 @@ def test__messageCall__eq__different_type(other):
 
 
 def _iter_options__eq__same_type():
-    ended_at = DateTime(2016, 5, 14)
+    ended_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     user_ids = [202304280063, 202304280064]
     
     keyword_parameters = {
@@ -88,7 +88,7 @@ def _iter_options__eq__same_type():
         keyword_parameters,
         {
             **keyword_parameters,
-            'ended_at': DateTime(2016, 5, 15),
+            'ended_at': DateTime(2016, 5, 15, tzinfo = TimeZone.utc),
         },
         False,
     )

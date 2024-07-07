@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -21,7 +21,7 @@ def test__VoiceState__from_data__0():
     guild_id = 202301240004
     speaker = True
     mute = True
-    requested_to_speak_at = DateTime(2016, 5, 14)
+    requested_to_speak_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     self_deaf = True
     self_mute = True
     self_stream = True
@@ -124,7 +124,7 @@ def test__VoiceState__to_data():
     guild_id = 202301240007
     speaker = True
     mute = True
-    requested_to_speak_at = DateTime(2016, 5, 14)
+    requested_to_speak_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     self_deaf = True
     self_mute = True
     self_stream = True
@@ -173,7 +173,7 @@ def test__VoiceState__update_attributes():
     old_deaf = True
     old_speaker = True
     old_mute = True
-    old_requested_to_speak_at = DateTime(2016, 5, 14)
+    old_requested_to_speak_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     old_self_deaf = True
     old_self_mute = True
     old_self_stream = True
@@ -181,7 +181,7 @@ def test__VoiceState__update_attributes():
     new_deaf = False
     new_speaker = False
     new_mute = False
-    new_requested_to_speak_at = DateTime(2016, 5, 13)
+    new_requested_to_speak_at = DateTime(2016, 5, 13, tzinfo = TimeZone.utc)
     new_self_deaf = False
     new_self_mute = False
     new_self_stream = False
@@ -228,7 +228,7 @@ def test__VoiceState__difference_update_attributes():
     old_deaf = True
     old_speaker = True
     old_mute = True
-    old_requested_to_speak_at = DateTime(2016, 5, 14)
+    old_requested_to_speak_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     old_self_deaf = True
     old_self_mute = True
     old_self_stream = True
@@ -236,7 +236,7 @@ def test__VoiceState__difference_update_attributes():
     new_deaf = False
     new_speaker = False
     new_mute = False
-    new_requested_to_speak_at = DateTime(2016, 5, 13)
+    new_requested_to_speak_at = DateTime(2016, 5, 13, tzinfo = TimeZone.utc)
     new_self_deaf = False
     new_self_mute = False
     new_self_stream = False

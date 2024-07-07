@@ -100,18 +100,18 @@ def preconvert_snowflake_array(snowflake_array, name):
             else:
                 raise ValueError(
                     f'`{name}`\'s can contain `int`, `str` elements, got `str`, but not a valid snowflake '
-                    f'(7-20 length, digit only), got {snowflake!r}; snowflake_array={snowflake_array!r}.'
+                    f'(7-20 length, digit only), got {snowflake!r}; snowflake_array = {snowflake_array!r}.'
                 )
         else:
             raise TypeError(
                 f'`{name}`\'s can contain `int`, `str` elements, got '
-                f'{snowflake_type.__name__}; {snowflake!r}; snowflake_array={snowflake_array!r}.'
+                f'{snowflake_type.__name__}; {snowflake!r}; snowflake_array = {snowflake_array!r}.'
             )
         
         if snowflake < 0 or snowflake > ((1 << 64) - 1):
             raise ValueError(
                 f'`{name}`\'s elements can be only uint64, got '
-                f'{snowflake!r}; snowflake_array={snowflake_array!r}.'
+                f'{snowflake!r}; snowflake_array = {snowflake_array!r}.'
             )
         
         if snowflake_array_processed is None:
@@ -527,7 +527,7 @@ def preconvert_float(value, name, lower_limit, upper_limit):
 
 def get_type_names(type_or_types):
     """
-    Gets the given type(s)'s name closed within \` characters.
+    Gets the given type(s)'s name closed within \\` characters.
     
     Parameters
     ----------

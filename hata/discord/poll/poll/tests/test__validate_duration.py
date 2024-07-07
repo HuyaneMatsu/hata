@@ -10,8 +10,14 @@ def _iter_options__passing():
 
 
 def _iter_options__value_error():
-    yield -1
+    # under min
+    yield -3600
     yield 0
+    
+    # over max
+    yield 3600 * 24 * 32 + 3600
+    
+    # not % 3600 = 0
     yield 1
 
 

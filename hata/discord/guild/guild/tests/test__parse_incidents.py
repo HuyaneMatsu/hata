@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -10,14 +10,14 @@ from ..fields import parse_incidents
 
 
 def _iter_options():
-    until = DateTime(2016, 5, 14)
+    timestamp = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield {}, None
     yield {'incidents_data': None}, None
     yield {'incidents_data': {}}, GuildIncidents()
     yield (
-        {'incidents_data': {'invites_disabled_until': datetime_to_timestamp(until)}},
-        GuildIncidents(invites_disabled_until = until),
+        {'incidents_data': {'invites_disabled_until': datetime_to_timestamp(timestamp)}},
+        GuildIncidents(invites_disabled_until = timestamp),
     )
 
 

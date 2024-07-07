@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 from scarletio import WeakValueDictionary
@@ -272,7 +272,7 @@ def test__Guild__precreate__all_fields():
     features = [GuildFeature.animated_icon]
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
-    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14))
+    incidents = GuildIncidents(invites_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
     inventory_settings = GuildInventorySettings(emoji_pack_collectible = True)
     invite_splash = Icon(IconType.animated, 18)
     large = True

@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -6,7 +6,7 @@ from ..fields import validate_joined_at
 
 
 def _iter_options__passing():
-    joined_at = DateTime(2016, 5, 14)
+    joined_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     yield None, None
     yield joined_at, joined_at

@@ -45,7 +45,7 @@ VALID_IMAGE_MEDIA_TYPES_ALL = frozenset((*VALID_ICON_MEDIA_TYPES_EXTENDED, *VALI
 WIDGET_STYLE_RP = re.compile('shield|banner[1-4]')
 
 MESSAGE_JUMP_URL_RP = re.compile(
-    '(?:https://)?(?:(?:canary|ptb)\.)?discord(?:app)?.com/channels/(?:(\d{7,21})|@me)/(\d{7,21})/(\d{7,21})'
+    '(?:https://)?(?:(?:canary|ptb)\\.)?discord(?:app)?.com/channels/(?:(\\d{7,21})|@me)/(\\d{7,21})/(\\d{7,21})'
 )
 export(MESSAGE_JUMP_URL_RP, 'MESSAGE_JUMP_URL_RP')
 
@@ -175,12 +175,12 @@ def parse_message_jump_url(message_url):
 
 CDN_RP = re.compile(
     'https://(?:'
-        'cdn\.discordapp\.com|'
-        '(?:(?:canary|ptb)\.)?discord\.com|'
+        'cdn\\.discordapp\\.com|'
+        '(?:(?:canary|ptb)\\.)?discord\\.com|'
         '(?:'
-            'images-ext-\d+|'
+            'images-ext-\\d+|'
             'media'
-        ')\.discordapp\.net'
+        ')\\.discordapp\\.net'
     ')/'
 )
 
@@ -625,7 +625,7 @@ def webhook_url(webhook):
 
 
 WEBHOOK_URL_PATTERN = re.compile(
-    '(?:https://)?discord(?:app)?.com/api/(?:v\d+/)?webhooks/([0-9]{17,21})/([a-zA-Z0-9.\-_%]{60,68})(?:/.*)?'
+    '(?:https://)?discord(?:app)?.com/api/(?:v\\d+/)?webhooks/([0-9]{17,21})/([a-zA-Z0-9.\\-_%]{60,68})(?:/.*)?'
 )
 
 
@@ -673,7 +673,7 @@ def guild_vanity_invite_url(guild):
         return _build_invite_url(vanity_code)
 
 
-INVITE_URL_RP = re.compile('(?:https?://)?discord(?:\.gg|(?:app)?\.com/invite)/([a-zA-Z0-9-]+)')
+INVITE_URL_RP = re.compile('(?:https?://)?discord(?:\\.gg|(?:app)?\\.com/invite)/([a-zA-Z0-9-]+)')
 
 
 def activity_asset_image_large_url(activity):

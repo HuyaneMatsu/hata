@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -13,7 +13,7 @@ def test__ClientPlatformConfiguration__copy():
     Tests whether ``ClientPlatformConfiguration.copy`` works as intended.
     """
     label_type = LabelType.new
-    labelled_until = DateTime(2016, 5, 14)
+    labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     release_phase = ReleasePhase.global_launch
     
     configuration = ClientPlatformConfiguration(
@@ -36,7 +36,7 @@ def test__ClientPlatformConfiguration__copy_with__no_fields():
     Case: No fields given.
     """
     label_type = LabelType.new
-    labelled_until = DateTime(2016, 5, 14)
+    labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     release_phase = ReleasePhase.global_launch
     
     configuration = ClientPlatformConfiguration(
@@ -59,11 +59,11 @@ def test__ClientPlatformConfiguration__copy_with__all_fields():
     Case: All fields given.
     """
     old_label_type = LabelType.new
-    old_labelled_until = DateTime(2016, 5, 14)
+    old_labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     old_release_phase = ReleasePhase.global_launch
     
     new_label_type = LabelType.updated
-    new_labelled_until = DateTime(2017, 5, 16)
+    new_labelled_until = DateTime(2017, 5, 16, tzinfo = TimeZone.utc)
     new_release_phase = ReleasePhase.global_launch # we only have 1 instance
     
     configuration = ClientPlatformConfiguration(

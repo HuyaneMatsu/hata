@@ -1,3 +1,47 @@
+## 1.3.59 *\[2024-07-07\]*
+
+- Add `Attachment.title`.
+- Add `Attachment.display_name`.
+- Add `AuditLog.__new__`.
+- Add `AuditLog.to_data`.
+- Add `AuditLog.copy`.
+- Add `AuditLog.copy_with`.
+- Add `AuditLog.get_application_command`.
+- Add `AuditLog.get_auto_moderation_rule`.
+- Add `AuditLog.get_integration`.
+- Add `AuditLog.get_scheduled_event`.
+- Add `AuditLog.get_thread`.
+- Add `AuditLog.get_user`.
+- Add `AuditLog.get_webhook`.
+- Add `AuditLog.iter_application_commands`.
+- Add `AuditLog.iter_auto_moderation_rules`.
+- Add `AuditLog.iter_entries`.
+- Add `AuditLog.iter_integrations`.
+- Add `AuditLog.iter_scheduled_events`.
+- Add `AuditLog.iter_threads`.
+- Add `AuditLog.iter_users`.
+- Add `AuditLog.iter_webhooks`.
+- Add `ERROR_CODES.cannot_consume_non_consumable_sku`.
+- Add `ERROR_CODES.cannot_delete_non_test_entitlement`.
+- Add `ERROR_CODES.max_interaction_followup_messages`.
+- Add `AuditLog.__eq__`.
+- Add `AuditLog.__bool__`.
+- Add `AuditLog.from_many`.
+- Add `AuditLogIterator.__repr__`.
+- All created `DateTime` instance is now forced to be created with `utc` time zone.
+
+### Bug fixes
+
+- Fix `SyntaxWarning`-s on python 3.12.
+- Fix `DeprecationWarning`-s on python 3.12 caused by `.utcnow` and familiar calls.
+
+### Renames, Deprecations & Removals
+
+- Rename `AuditLog.__new__` to `.from_data`.
+- De-deprecate `MessageInteraction`'s `user` parameters.
+- Deprecate `MessageInteraction`'s `user_id` parameters. (Someone cooked)
+- Remove `MessageSnapshot.guild_id` as its expected to be removed from the payload.
+
 ## 1.3.58 *\[2024-06-12\]*
 
 ### Improvements

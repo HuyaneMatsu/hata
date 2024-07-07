@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -37,7 +37,7 @@ def test__ThreadProfile__new__1():
     Case: all fields.
     """
     flags = ThreadProfileFlag(24)
-    joined_at = DateTime(2016, 5, 15)
+    joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     
     thread_profile = ThreadProfile(
         flags = flags,

@@ -17,11 +17,9 @@ def _iter_options_type_error():
 
 @vampytest._(vampytest.call_from(_iter_options_passing()).returning_last())
 @vampytest._(vampytest.call_from(_iter_options_type_error()).raising(TypeError))
-def test__validate_type__passing(input_value):
+def test__validate_type(input_value):
     """
     Tests whether ``validate_type`` works as intended.
-    
-    Case: passing.
     
     Parameters
     ----------

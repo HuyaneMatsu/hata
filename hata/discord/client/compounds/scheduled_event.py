@@ -24,7 +24,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
     
     
     async def scheduled_event_create(
-        self, guild, scheduled_event_template = None, *positional_parameters, reason = None, **keyword_parameters
+        self, guild, scheduled_event_template = None, reason = None, **keyword_parameters
     ):
         """
         Creates a guild scheduled events.
@@ -91,23 +91,6 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(scheduled_event_template, str) or positional_parameters:
-            warnings.warn(
-                (
-                    f'`{self.__class__.__name__}.scheduled_event_create`\'s `name` and `start` parameters has been '
-                    f'moved to be keyword only. Positional support will be removed in 2023 august.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            if isinstance(scheduled_event_template, str):
-                keyword_parameters['name'] = scheduled_event_template
-            
-            if positional_parameters:
-                keyword_parameters['start'] = positional_parameters[0]
-        
-        
         guild_id = get_guild_id(guild)
         data = build_create_payload(
             scheduled_event_template, SCHEDULED_EVENT_CREATE_FIELD_CONVERTERS, keyword_parameters

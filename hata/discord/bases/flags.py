@@ -30,7 +30,7 @@ def maybe_apply_deprecation(function, name, deprecation_info):
         
         warnings.warn(
             (
-                f'{self.__class__.__name__}`\s {name} field is deprecated and will be removed in '
+                f'{self.__class__.__name__}`\'s {name} field is deprecated and will be removed in '
                 f'{deprecation_info[0]}. Please use {deprecation_info[1]} instead.'
             ),
             FutureWarning,

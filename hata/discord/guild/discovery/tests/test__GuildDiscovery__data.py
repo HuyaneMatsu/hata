@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -15,8 +15,8 @@ def test__GuildDiscovery__from_data():
     """
     Tests whether ``GuildDiscovery.from_data`` works as intended.
     """
-    application_actioned = DateTime(2016, 5, 4)
-    application_requested = DateTime(2017, 6, 4)
+    application_actioned = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
+    application_requested = DateTime(2017, 6, 4, tzinfo = TimeZone.utc)
     emoji_discovery = True
     keywords = ['kisaki']
     primary_category = DiscoveryCategory.music
@@ -48,8 +48,8 @@ def test__GuildDiscovery__to_data():
     
     Case: include defaults and internals.
     """
-    application_actioned = DateTime(2016, 5, 4)
-    application_requested = DateTime(2017, 6, 4)
+    application_actioned = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
+    application_requested = DateTime(2017, 6, 4, tzinfo = TimeZone.utc)
     emoji_discovery = True
     keywords = ['kisaki']
     primary_category = DiscoveryCategory.music

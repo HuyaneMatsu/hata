@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -18,7 +18,7 @@ def test__ActivityMetadataCustom__from_data__1():
     """
     state = 'state'
     emoji = Emoji.precreate(202209060003, name = 'Code49')
-    created_at = DateTime(2014, 9, 16)
+    created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
     
     data = {
         'state': state,
@@ -40,7 +40,7 @@ def test__ActivityMetadataCustom__to_data():
     """
     state = 'state'
     emoji = Emoji.precreate(202209060004, name = 'Code49')
-    created_at = DateTime(2014, 9, 16)
+    created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
     
     activity_metadata = ActivityMetadataCustom(
         created_at = created_at,
@@ -62,7 +62,7 @@ def test__ActivityMetadataCustom__to_data__user():
     """
     state = 'state'
     emoji = Emoji.precreate(202209060005, name = 'Code49')
-    created_at = DateTime(2014, 9, 16)
+    created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
     
     activity_metadata = ActivityMetadataCustom(
         created_at = created_at,
@@ -84,7 +84,7 @@ def test__ActivityMetadataCustom__to_data__include_internals():
     """
     state = 'state'
     emoji = Emoji.precreate(202209060006, name = 'Code49')
-    created_at = DateTime(2014, 9, 16)
+    created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
     
     activity_metadata = ActivityMetadataCustom(
         created_at = created_at,
@@ -113,8 +113,8 @@ def test__ActivityMetadataCustom__update_attributes():
     new_state = 'remilia'
     old_emoji = Emoji.precreate(202209060007, name = 'Code49')
     new_emoji = Emoji.precreate(202209060008, name = 'Howling')
-    old_created_at = DateTime(2014, 9, 16)
-    new_created_at = DateTime(2014, 9, 17)
+    old_created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
+    new_created_at = DateTime(2014, 9, 17, tzinfo = TimeZone.utc)
     
     activity_metadata = ActivityMetadataCustom(
         created_at = old_created_at,
@@ -141,8 +141,8 @@ def test__ActivityMetadataCustom__difference_update_attributes():
     new_state = 'remilia'
     old_emoji = Emoji.precreate(202209060007, name = 'Code49')
     new_emoji = Emoji.precreate(202209060008, name = 'Howling')
-    old_created_at = DateTime(2014, 9, 16)
-    new_created_at = DateTime(2014, 9, 17)
+    old_created_at = DateTime(2014, 9, 16, tzinfo = TimeZone.utc)
+    new_created_at = DateTime(2014, 9, 17, tzinfo = TimeZone.utc)
     
     activity_metadata = ActivityMetadataCustom(
         created_at = old_created_at,

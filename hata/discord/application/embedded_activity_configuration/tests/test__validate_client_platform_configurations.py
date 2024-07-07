@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -12,8 +12,8 @@ def _iter_options__passing():
     yield None, None
     yield {}, None
     
-    configuration_0 = ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14))
-    configuration_1 = ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14))
+    configuration_0 = ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc))
+    configuration_1 = ClientPlatformConfiguration(labelled_until = DateTime(2016, 6, 14, tzinfo = TimeZone.utc))
     
     yield (
         {
@@ -46,7 +46,7 @@ def _iter_options__type_error():
     }
     
     yield {
-        object(): ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14)),
+        object(): ClientPlatformConfiguration(labelled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)),
     }
 
 

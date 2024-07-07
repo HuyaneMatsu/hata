@@ -93,6 +93,12 @@ parse_temporary = bool_parser_factory('ephemeral', False)
 put_temporary_into = bool_optional_putter_factory('ephemeral', False)
 validate_temporary = bool_validator_factory('temporary', False)
 
+# title
+
+parse_title = nullable_string_parser_factory('title')
+put_title_into = nullable_string_optional_putter_factory('title')
+validate_title = nullable_string_validator_factory('title', 0, 1024)
+
 # url
 
 parse_url = force_string_parser_factory('url')

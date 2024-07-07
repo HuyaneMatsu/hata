@@ -253,6 +253,9 @@ class AuditLogEntry(DiscordEntity):
         details : `None | dict<str, object>`, Optional (Keyword only)
             Additional information for the specific action types.
         
+        entry_type : ``AuditLogEntryType``, `int`, Optional (Keyword only)
+            The logged event's type.
+        
         parent : `None | AuditLog`, Optional (Keyword only)
             The parent audit log for the entry.
         
@@ -261,8 +264,6 @@ class AuditLogEntry(DiscordEntity):
         
         Other Parameters
         ----------------
-        entry_type : ``AuditLogEntryType``, `int`, Optional (Keyword only)
-            The logged event's type.
         
         guild : `int`, `None`, ``Guild``, Optional (Keyword only)
             Alternative for `guild_id`.
@@ -782,3 +783,28 @@ class AuditLogEntry(DiscordEntity):
         details = self.details
         if (details is not None):
             yield from details.items()
+    
+    
+    def _link_parent_soft(self, parent):
+        """
+        Links the given parent to the entry if self is not linked yet.
+        
+        Parameters
+        ----------
+        parent : ``AuditLog`
+            The parent to link.
+        """
+        if self.parent is None:
+            self._parent_reference = parent._get_self_reference()
+    
+    
+    def _link_parent_hard(self, parent):
+        """
+        Links the given parent to the entry even if self is already linked.
+        
+        Parameters
+        ----------
+        parent : ``AuditLog`
+            The parent to link.
+        """
+        self._parent_reference = parent._get_self_reference()

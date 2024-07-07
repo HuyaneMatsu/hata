@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -35,8 +35,8 @@ def test__ActivityTimestamps__new__1():
     
     Case: All fields given.
     """
-    end = DateTime(2016, 5, 24, 14, 27, 42)
-    start = DateTime(2016, 5, 2, 15, 10, 34)
+    end = DateTime(2016, 5, 24, 14, 27, 42, tzinfo = TimeZone.utc)
+    start = DateTime(2016, 5, 2, 15, 10, 34, tzinfo = TimeZone.utc)
     
     field = ActivityTimestamps(
         end = end,

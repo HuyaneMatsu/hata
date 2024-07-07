@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -95,11 +95,11 @@ def test__Entitlement__precreate__all_fields():
     application_id = 202310040007
     consumed = True
     deleted = True
-    ends_at = DateTime(2016, 5, 14)
+    ends_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     entitlement_type = EntitlementType.user_gift
     guild_id = 202310040008
     sku_id = 202310040009
-    starts_at = DateTime(2015, 5, 14)
+    starts_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
     subscription_id = 202310040010
     user_id = 202310040011
     

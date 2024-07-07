@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -32,7 +32,7 @@ def test__Embed__clear():
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
     thumbnail = EmbedThumbnail('attachment://thumbnail')
-    timestamp = DateTime(2016, 5, 5)
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     title = 'embed title'
     url = 'https://orindance.party/'
     video = EmbedVideo('attachment://video')
@@ -123,7 +123,7 @@ def test__Embed__copy():
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
     thumbnail = EmbedThumbnail('attachment://thumbnail')
-    timestamp = DateTime(2016, 5, 5)
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     title = 'embed title'
     url = 'https://orindance.party/'
     video = EmbedVideo('attachment://video')
@@ -166,7 +166,7 @@ def test__Embed__copy_with__no_fields():
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
     thumbnail = EmbedThumbnail('attachment://thumbnail')
-    timestamp = DateTime(2016, 5, 5)
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     title = 'embed title'
     url = 'https://orindance.party/'
     video = EmbedVideo('attachment://video')
@@ -209,7 +209,7 @@ def test__Embed__copy_with__all_fields():
     old_image = EmbedImage('attachment://image')
     old_provider = EmbedProvider('provider name')
     old_thumbnail = EmbedThumbnail('attachment://thumbnail')
-    old_timestamp = DateTime(2016, 5, 5)
+    old_timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     old_title = 'embed title'
     old_url = 'https://orindance.party/'
     old_video = EmbedVideo('attachment://video')
@@ -223,7 +223,7 @@ def test__Embed__copy_with__all_fields():
     new_image = EmbedImage('attachment://image_hello')
     new_provider = EmbedProvider('provider derp')
     new_thumbnail = EmbedThumbnail('attachment://thumbnail_hello')
-    new_timestamp = DateTime(2016, 5, 4)
+    new_timestamp = DateTime(2016, 5, 4, tzinfo = TimeZone.utc)
     new_title = 'embed hello'
     new_url = 'https://www.astil.dev/project/hata/'
     new_video = EmbedVideo('attachment://video_hello')
@@ -305,7 +305,7 @@ def test__Embed__iter_contents__all():
     image = EmbedImage('attachment://image')
     provider = EmbedProvider(embed_provider_name)
     thumbnail = EmbedThumbnail('attachment://thumbnail')
-    timestamp = DateTime(2016, 5, 5)
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     title = embed_title
     url = 'https://orindance.party/'
     video = EmbedVideo('attachment://video')
@@ -372,7 +372,7 @@ def test__Embed__contents__all():
     image = EmbedImage('attachment://image')
     provider = EmbedProvider(embed_provider_name)
     thumbnail = EmbedThumbnail('attachment://thumbnail')
-    timestamp = DateTime(2016, 5, 5)
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     title = embed_title
     url = 'https://orindance.party/'
     video = EmbedVideo('attachment://video')
@@ -457,7 +457,7 @@ def test__Embed__get_short_repr():
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
     thumbnail = EmbedThumbnail('attachment://thumbnail')
-    timestamp = DateTime(2016, 5, 5)
+    timestamp = DateTime(2016, 5, 5, tzinfo = TimeZone.utc)
     title = 'embed title'
     url = 'https://orindance.party/'
     video = EmbedVideo('attachment://video')

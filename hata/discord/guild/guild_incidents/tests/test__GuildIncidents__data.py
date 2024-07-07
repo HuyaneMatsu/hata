@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -15,10 +15,10 @@ def test__GuildIncidents__from_data():
     
     Case: All fields given.
     """
-    direct_message_spam_detected_at = DateTime(2015, 5, 14)
-    direct_messages_disabled_until = DateTime(2016, 5, 14)
-    invites_disabled_until = DateTime(2017, 5, 14)
-    raid_detected_at = DateTime(2018, 5, 14)
+    direct_message_spam_detected_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
+    direct_messages_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    invites_disabled_until = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
+    raid_detected_at = DateTime(2018, 5, 14, tzinfo = TimeZone.utc)
     
     data = {
         'dm_spam_detected_at': datetime_to_timestamp(direct_message_spam_detected_at),
@@ -42,10 +42,10 @@ def test__GuildIncidents__to_data():
     
     Case: Include defaults and internals.
     """
-    direct_message_spam_detected_at = DateTime(2015, 5, 14)
-    direct_messages_disabled_until = DateTime(2016, 5, 14)
-    invites_disabled_until = DateTime(2017, 5, 14)
-    raid_detected_at = DateTime(2018, 5, 14)
+    direct_message_spam_detected_at = DateTime(2015, 5, 14, tzinfo = TimeZone.utc)
+    direct_messages_disabled_until = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    invites_disabled_until = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
+    raid_detected_at = DateTime(2018, 5, 14, tzinfo = TimeZone.utc)
     
     guild_incidents = GuildIncidents(
         direct_message_spam_detected_at = direct_message_spam_detected_at,

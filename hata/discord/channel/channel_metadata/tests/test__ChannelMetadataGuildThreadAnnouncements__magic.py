@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -11,9 +11,9 @@ def test__ChannelMetadataGuildThreadAnnouncements__repr():
     """
     parent_id = 202209180030
     name = 'Armelyrics'
-    created_at = DateTime(2020, 5, 14)
+    created_at = DateTime(2020, 5, 14, tzinfo = TimeZone.utc)
     archived = True
-    archived_at = DateTime(2021, 5, 14)
+    archived_at = DateTime(2021, 5, 14, tzinfo = TimeZone.utc)
     auto_archive_after = 86400
     open_ = True
     owner_id = 202209180031
@@ -41,9 +41,9 @@ def test__ChannelMetadataGuildThreadAnnouncements__hash():
     """
     parent_id = 202209180102
     name = 'Armelyrics'
-    created_at = DateTime(2020, 5, 14)
+    created_at = DateTime(2020, 5, 14, tzinfo = TimeZone.utc)
     archived = True
-    archived_at = DateTime(2021, 5, 14)
+    archived_at = DateTime(2021, 5, 14, tzinfo = TimeZone.utc)
     auto_archive_after = 86400
     open_ = True
     owner_id = 202209180103
@@ -70,9 +70,9 @@ def test__ChannelMetadataGuildThreadAnnouncements__eq():
     """
     parent_id = 202209180032
     name = 'Armelyrics'
-    created_at = DateTime(2020, 5, 14)
+    created_at = DateTime(2020, 5, 14, tzinfo = TimeZone.utc)
     archived = True
-    archived_at = DateTime(2021, 5, 14)
+    archived_at = DateTime(2021, 5, 14, tzinfo = TimeZone.utc)
     auto_archive_after = 86400
     open_ = True
     owner_id = 202209180033
@@ -97,9 +97,9 @@ def test__ChannelMetadataGuildThreadAnnouncements__eq():
     for field_name, field_value in (
         ('parent_id', 202209180034),
         ('name', 'Okuu'),
-        ('created_at', DateTime(2020, 9, 9)),
+        ('created_at', DateTime(2020, 9, 9, tzinfo = TimeZone.utc)),
         ('archived', False),
-        ('archived_at', DateTime(2021, 9, 9)),
+        ('archived_at', DateTime(2021, 9, 9, tzinfo = TimeZone.utc)),
         ('auto_archive_after', 3600),
         ('open', False),
         ('owner_id', 202209180035),

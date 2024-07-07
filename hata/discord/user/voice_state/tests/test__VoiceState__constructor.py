@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -54,7 +54,7 @@ def test__VoiceState__new__1():
     guild_id = 202301240001
     speaker = True
     mute = True
-    requested_to_speak_at = DateTime(2016, 5, 14)
+    requested_to_speak_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     self_deaf = True
     self_mute = True
     self_stream = True

@@ -1,7 +1,7 @@
 __all__ = ()
 
 import sys
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 from shutil import copy2 as copy_file
 from os import mkdir as create_directory
 from os.path import abspath as absolute_path, dirname as get_parent_directory_path, exists, join as join_paths
@@ -26,7 +26,7 @@ def _log(message):
     message : `str`
         The message to log.
     """
-    sys.stdout.write(f'{DateTime.utcnow():{DATETIME_FORMAT_CODE}} {message}\n')
+    sys.stdout.write(f'{DateTime.now(TimeZone.utc):{DATETIME_FORMAT_CODE}} {message}\n')
 
 
 class ConnectionEventHandler:
@@ -413,7 +413,7 @@ def _stop_profiling():
     stats = PROFILING_LIBRARY.convert2pstats(stats)
     
     file_path_latest = join_paths(directory_path, 'latest.prof')
-    file_path_history = join_paths(directory_path, f'{DateTime.utcnow():%Y_%m_%d_%H_%M_%S}.prof')
+    file_path_history = join_paths(directory_path, f'{DateTime.now(TimeZone.utc):%Y_%m_%d_%H_%M_%S}.prof')
     
     try:
         stats.dump_stats(file_path_history)

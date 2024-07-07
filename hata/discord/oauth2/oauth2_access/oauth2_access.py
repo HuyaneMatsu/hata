@@ -1,6 +1,6 @@
 __all__ = ('Oauth2Access', )
 
-from datetime import datetime as DateTime, timedelta as TimeDelta
+from datetime import datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 from time import time as time_now
 
 from scarletio import RichAttributeErrorBaseType
@@ -94,7 +94,7 @@ class Oauth2Access(RichAttributeErrorBaseType):
         
         # created_at
         if created_at is ...:
-            created_at = DateTime.utcnow()
+            created_at = DateTime.now(TimeZone.utc)
         else:
             created_at = validate_created_at(created_at)
         
@@ -152,7 +152,7 @@ class Oauth2Access(RichAttributeErrorBaseType):
         """
         self = object.__new__(cls)
         self.access_token = parse_access_token(data)
-        self.created_at = DateTime.utcnow()
+        self.created_at = DateTime.now(TimeZone.utc)
         self.expires_after = parse_expires_after(data)
         self.redirect_url = redirect_url
         self.refresh_token = parse_refresh_token(data)
@@ -305,7 +305,7 @@ class Oauth2Access(RichAttributeErrorBaseType):
         data : `None` or (`dict` of (`str`, `object`))
             Requested access data.
         """
-        self.created_at = DateTime.utcnow()
+        self.created_at = DateTime.now(TimeZone.utc)
         if data is None:
             return
         

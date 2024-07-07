@@ -1,14 +1,12 @@
 __all__ = ()
 
-from warnings import warn
-
 from scarletio import Compound
 
 from ...audit_logs import AuditLog, AuditLogEntryType, AuditLogIterator
 from ...bases import maybe_snowflake
 from ...channel import VoiceRegion
 from ...guild import (
-    Guild, GuildFeature, GuildPreview, GuildWidget, VerificationScreen, WelcomeScreen, create_partial_guild_from_data
+    Guild, GuildPreview, GuildWidget, VerificationScreen, WelcomeScreen, create_partial_guild_from_data
 )
 from ...guild.guild.utils import GUILD_FIELD_CONVERTERS, create_new_guild_data
 from ...guild.guild_incidents.utils import GUILD_INCIDENTS_FIELD_CONVERTERS
@@ -801,9 +799,6 @@ class ClientCompoundGuildEndpoints(Compound):
         guild,
         guild_template = None,
         *,
-        add_feature = ...,
-        remove_feature = ...,
-        preferred_locale = ...,
         reason = None,
         **keyword_parameters,
     ):
@@ -919,117 +914,7 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        # Deprecations
-        if preferred_locale is not ...:
-            warn(
-                (
-                    f'`{type(self).__name__}.guild_edit`\'s `preferred_locale` parameter is deprecated and will be '
-                    f'removed in 2024 February. Please use `locale` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            keyword_parameters['locale'] = preferred_locale
-        
         data = build_edit_payload(guild, guild_template, GUILD_FIELD_CONVERTERS, keyword_parameters)
-        
-        # Deprecations
-        if (add_feature is not ...) or (remove_feature is not ...):
-            warn(
-                (
-                    f'`add_feature` and `remove_feature` parameters are deprecated of '
-                    f'`{self.__class__.__name__}.guild_edit` and they will be removed in 2023 December. '
-                    f'Please use the `features` parameter accordingly.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            # Collect actual
-            features = set()
-            if (guild is not None):
-                for feature in guild.iter_features():
-                    features.add(feature.value)
-            
-            # Collect added
-            # Use GOTO
-            while True:
-                if add_feature is ...:
-                    break
-                
-                if isinstance(add_feature, GuildFeature):
-                    feature = add_feature.value
-                elif isinstance(add_feature, str):
-                    feature = add_feature
-                else:
-                    iter_func = getattr(type(add_feature), '__iter__', None)
-                    if iter_func is None:
-                        raise TypeError(
-                            f'`add_feature` can be `str`, `{GuildFeature.__name__}`, `iterable` of '
-                            f'(`str`, `{GuildFeature.__name__}`), got {add_feature.__class__.__name__}; '
-                            f'{add_feature!r}.'
-                        )
-                    
-                    for index, feature in enumerate(iter_func(add_feature)):
-                        if isinstance(feature, GuildFeature):
-                            feature = feature.value
-                        elif isinstance(feature, str):
-                            pass
-                        else:
-                            raise TypeError(
-                                f'`add_feature` was given as `iterable` so it expected to have '
-                                f'`{GuildFeature.__name__}`, `str` elements, but element `{index!r}` is '
-                                f'{feature.__class__.__name__}; {feature!r}; add_feature = {add_feature!r}.'
-                            )
-                        
-                        features.add(feature)
-                        continue
-                    
-                    break # End GOTO
-                
-                features.add(feature)
-                break # End GOTO
-            
-            # Collect removed
-            
-            while True:
-                if remove_feature is ...:
-                    break
-                
-                if isinstance(remove_feature, GuildFeature):
-                    feature = remove_feature.value
-                elif isinstance(remove_feature, str):
-                    feature = remove_feature
-                else:
-                    iter_func = getattr(type(remove_feature), '__iter__', None)
-                    if iter_func is None:
-                        raise TypeError(
-                            f'`remove_feature` can be `str`, `{GuildFeature.__name__}`, `iterable` of '
-                            f'(`str`, `{GuildFeature.__name__}`), got {remove_feature.__class__.__name__}; '
-                            f'{remove_feature!r}.'
-                        )
-                    
-                    for index, feature in enumerate(iter_func(remove_feature)):
-                        if isinstance(feature, GuildFeature):
-                            feature = feature.value
-                        elif isinstance(feature, str):
-                            pass
-                        else:
-                            raise TypeError(
-                                f'`remove_feature` was given as `iterable` so it expected to have '
-                                f'`{GuildFeature.__name__}`, `str` elements, but element `{index!r}` is '
-                                f'{feature.__class__.__name__}; {feature!r}; remove_feature = {remove_feature!r}.'
-                            )
-                        
-                        features.discard(feature)
-                        continue
-                    
-                    break # End GOTO
-                
-                features.discard(feature)
-                break # End GOTO
-            
-            data['features'] = features
         
         if data:
             await self.api.guild_edit(guild_id, data, reason)
@@ -1230,7 +1115,6 @@ class ClientCompoundGuildEndpoints(Compound):
         before = None,
         after = None,
         user = None,
-        event = ...,
         entry_type = None,
     ):
         """
@@ -1275,19 +1159,6 @@ class ClientCompoundGuildEndpoints(Compound):
             - If `limit` was not given as `int`.
             - If `limit` is out of the expected range [1:100].
         """
-        if event is not ...:
-            warn(
-                (
-                    f'`{type(self).__name__}.audit_log_get_chunk`\'s `event` parameter is deprecated and will be '
-                    f'removed in 2024 March. Please use `entry_type` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            entry_type = event
-        
-        
         guild, guild_id = get_guild_and_id(guild)
         
         if __debug__:
@@ -1336,10 +1207,10 @@ class ClientCompoundGuildEndpoints(Compound):
             data['action_type'] = entry_type_value
         
         data = await self.api.audit_log_get_chunk(guild_id, data)
-        return AuditLog(data, guild_id)
+        return AuditLog.from_data(data, guild_id)
     
     
-    async def audit_log_iterator(self, guild, *, user = None, entry_type = None, event = ...):
+    async def audit_log_iterator(self, guild, *, entry_type = None, user = None):
         """
         Returns an audit log iterator for the given guild.
         
@@ -1349,16 +1220,16 @@ class ClientCompoundGuildEndpoints(Compound):
         ----------
         guild : ``Guild``, `int`
             The guild, what's audit logs will be requested.
-        user : `None`, ``ClientUserBase``, `int` = `None`, Optional (Keyword only)
-            Whether the audit logs should be filtered only to those, which were created by the given user.
         entry_type : `None`, ``AuditLogEntryType``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only on the given event.
+        user : `None`, ``ClientUserBase``, `int` = `None`, Optional (Keyword only)
+            Whether the audit logs should be filtered only to those, which were created by the given user.
         
         Returns
         -------
         audit_log_iterator : ``AuditLogIterator``
         """
-        return AuditLogIterator(self, guild, user = user, entry_type = entry_type, event = event)
+        return AuditLogIterator(self, guild, entry_type = entry_type, user_id = user)
     
     
     async def guild_incidents_edit(

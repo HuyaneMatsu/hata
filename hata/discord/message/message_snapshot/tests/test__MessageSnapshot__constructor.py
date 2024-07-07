@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -26,7 +26,6 @@ def _assert_fields_set(message_snapshot):
     vampytest.assert_instance(message_snapshot.edited_at, DateTime, nullable = True)
     vampytest.assert_instance(message_snapshot.embeds, tuple, nullable = True)
     vampytest.assert_instance(message_snapshot.flags, MessageFlag)
-    vampytest.assert_instance(message_snapshot.guild_id, int)
 
 
 def test__MessageSnapshot__new__no_fields():
@@ -50,11 +49,10 @@ def test__MessageSnapshot__new__all_fields():
         Attachment.precreate(202405250001, name = 'Komeiji'),
     ]
     content = 'orin'
-    created_at = DateTime(2016, 5, 14)
-    edited_at = DateTime(2017, 5, 14)
+    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
-    guild_id = 202405250022
 
     message_snapshot = MessageSnapshot(
         attachments = attachments,
@@ -63,7 +61,6 @@ def test__MessageSnapshot__new__all_fields():
         edited_at = edited_at,
         embeds = embeds,
         flags = flags,
-        guild_id = guild_id,
     )
     _assert_fields_set(message_snapshot)
     
@@ -73,4 +70,3 @@ def test__MessageSnapshot__new__all_fields():
     vampytest.assert_eq(message_snapshot.edited_at, edited_at)
     vampytest.assert_eq(message_snapshot.embeds, tuple(embeds))
     vampytest.assert_eq(message_snapshot.flags, flags)
-    vampytest.assert_eq(message_snapshot.guild_id, guild_id)

@@ -1,6 +1,6 @@
 __all__ = ()
 
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 from scarletio import Task, include
 
@@ -3098,7 +3098,7 @@ if CACHE_PRESENCE:
         
         user_id = int(data['user_id'])
         user = create_partial_user_from_id(user_id)
-        timestamp = DateTime.utcfromtimestamp(data.get('timestamp', None))
+        timestamp = DateTime.fromtimestamp(data.get('timestamp', None), TimeZone.utc)
         
         Task(KOKORO, client.events.typing(client, channel, user, timestamp))
     

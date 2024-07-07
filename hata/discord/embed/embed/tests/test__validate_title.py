@@ -4,30 +4,35 @@ from ..constants import TITLE_LENGTH_MAX
 from ..fields import validate_title
 
 
-def test__validate_title__0():
+def _iter_options__passing():
+    yield None, None
+    yield '', None
+    yield 'a', 'a'
+    yield 'aa', 'aa'
+    yield 1, '1'
+
+
+def _iter_options__value_error():
+    yield 'a' * (TITLE_LENGTH_MAX + 1)
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_title(input_value):
     """
     Tests whether `validate_title` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (None, None),
-        ('', None),
-        ('a', 'a'),
-        (1, '1'),
-    ):
-        output = validate_title(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_title__1():
-    """
-    Tests whether `validate_title` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    Case: `ValueError`.
+    Returns
+    -------
+    output : `None | str`
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        'a' * (TITLE_LENGTH_MAX + 1),
-    ):
-        with vampytest.assert_raises(ValueError):
-            validate_title(input_value)
+    return validate_title(input_value)

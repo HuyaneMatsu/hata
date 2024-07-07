@@ -47,8 +47,8 @@ mention them directly instead of writing their ID out.
 Here is a short example of disabling the permissions for everyone role, and enabling it to 1 specific role:
 
 ```py3
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
+from datetime import datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
+from dateutil.relativedelta import relativedelta as RelativeDelta
 from hata import Embed, elapsed_time, DATETIME_FORMAT_CODE
 from hata.ext.slash import InteractionResponse, set_permission
 
@@ -58,7 +58,7 @@ from hata.ext.slash import InteractionResponse, set_permission
 @set_permission(TEST_GUILD, ('role', MODERATOR_ROLE_ID), True)
 async def latest_users(event):
     """Shows the new users of the guild."""
-    date_limit = datetime.utcnow() - timedelta(days=7)
+    date_limit = DateTime.now(TimeZone.utc) - TimeDelta(days=7)
     
     users = []
     guild = event.guild
@@ -84,7 +84,7 @@ async def latest_users(event):
                     '\n'
                     f'Joined : {joined_at:{DATETIME_FORMAT_CODE}} [*{elapsed_time(joined_at)} ago*]\n'
                     f'Created : {created_at:{DATETIME_FORMAT_CODE}} [*{elapsed_time(created_at)} ago*]\n'
-                    f'Difference : {elapsed_time(relativedelta(created_at, joined_at))}'
+                    f'Difference : {elapsed_time(RelativeDelta(created_at, joined_at))}'
                 ),
             )
     

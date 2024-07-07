@@ -2,6 +2,7 @@ import vampytest
 
 from ....application import ApplicationIntegrationType
 from ....interaction import InteractionType
+from ....user import User
 
 from ..message_interaction import MessageInteraction
 
@@ -15,7 +16,7 @@ def test__MessageInteraction__from_data():
     message_interaction_id = 202403250015
     
     interaction_type = InteractionType.application_command
-    user_id = 202403250016
+    user = User.precreate(202403250016)
     sub_command_name_stack = ('Afraid', 'Darkness')
     name = 'Chata'
     response_message_id = 20240325007
@@ -29,7 +30,7 @@ def test__MessageInteraction__from_data():
     data = {
         'id': str(message_interaction_id),
         'type': interaction_type.value,
-        'user_id': str(user_id),
+        'user': user.to_data(include_internals = True),
         'name': ' '.join([name, *sub_command_name_stack]),
         'original_response_message_id': str(response_message_id),
         'interacted_message_id': str(interacted_message_id),
@@ -51,7 +52,7 @@ def test__MessageInteraction__from_data():
     vampytest.assert_eq(message_interaction.sub_command_name_stack, sub_command_name_stack)
     vampytest.assert_eq(message_interaction.triggering_interaction, triggering_interaction)
     vampytest.assert_is(message_interaction.type, interaction_type)
-    vampytest.assert_eq(message_interaction.user_id, user_id)
+    vampytest.assert_is(message_interaction.user, user)
 
 
 def test__MessageInteraction__to_data():
@@ -63,7 +64,7 @@ def test__MessageInteraction__to_data():
     message_interaction_id = 202403250052
     
     interaction_type = InteractionType.application_command
-    user_id = 202403250019
+    user = User.precreate(202403250019)
     sub_command_name_stack = ('Afraid', 'Darkness')
     name = 'Chata'
     response_message_id = 20240325008
@@ -83,13 +84,13 @@ def test__MessageInteraction__to_data():
         response_message_id = response_message_id,
         sub_command_name_stack = sub_command_name_stack,
         triggering_interaction = triggering_interaction,
-        user_id = user_id,
+        user = user,
     )
     
     expected_output = {
         'id': str(message_interaction_id),
         'type': interaction_type.value,
-        'user_id': str(user_id),
+        'user': user.to_data(defaults = True, include_internals = True),
         'name': ' '.join([name, *sub_command_name_stack]),
         'original_response_message_id': str(response_message_id),
         'interacted_message_id': str(interacted_message_id),

@@ -56,7 +56,7 @@ interrupt.
 
 We got some `tutorials:https://www.astil.dev/project/hata/guides/` as well, please check them too!
 """
-__version__ = '1.3.58'
+__version__ = '1.3.59'
 
 # First import env, so if exception occurs we do not load the whole library.
 from .env import *

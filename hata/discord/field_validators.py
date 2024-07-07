@@ -1,6 +1,6 @@
 __all__ = ()
 
-from datetime import datetime as DateTime, timedelta as TimeDelta
+from datetime import datetime as DateTime, timedelta as TimeDelta, timezone as TimeZone
 
 from scarletio import include_with_callback, set_docs
 
@@ -2058,23 +2058,23 @@ def duration_validator_factory(field_name):
             if duration <= 0:
                 return None
             
-            return DateTime.utcnow() + TimeDelta(seconds = duration)
+            return DateTime.now(TimeZone.utc) + TimeDelta(seconds = duration)
         
         if isinstance(duration, TimeDelta):
             if duration <= ZERO_TIMEDELTA:
                 return None
             
-            return DateTime.utcnow() + duration
+            return DateTime.now(TimeZone.utc) + duration
         
         if isinstance(duration, float):
             if duration <= 0.0:
                 return None
     
-            return DateTime.utcnow() + TimeDelta(seconds = duration)
+            return DateTime.now(TimeZone.utc) + TimeDelta(seconds = duration)
         
         raise TypeError(
             f'`{field_name}` can be `int`, `float`, `{TimeDelta.__name__}`, got '
-            f'{duration.__class__.__name__}; {duration!r}.'
+            f'{type(duration).__name__}; {duration!r}.'
         )
     
     return validator

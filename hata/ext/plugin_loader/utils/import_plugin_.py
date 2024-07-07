@@ -75,7 +75,7 @@ def import_plugin(plugin_name, *variable_names, **keyword_parameters):
     # Validate `plugin_name` syntax.
     if not plugin_name:
         raise ValueError(
-            f'`plugin_name`\s syntax is incorrect; Cannot be empty string.'
+            f'`plugin_name`\'s syntax is incorrect; Cannot be empty string.'
         )
     
     plugin_name_parts = plugin_name.split('.')
@@ -90,19 +90,19 @@ def import_plugin(plugin_name, *variable_names, **keyword_parameters):
         
         if not plugin_name_part:
             raise ValueError(
-                f'`plugin_name`\s syntax is incorrect; two dot character cannot follow an identifier; got: '
+                f'`plugin_name`\'s syntax is incorrect; two dot character cannot follow an identifier; got: '
                 f'{plugin_name!r}.'
             )
         
         if not plugin_name_part.isidentifier():
             raise ValueError(
-                f'`plugin_name`\s syntax is incorrect; {plugin_name_part!r} is not an identifier; got: '
+                f'`plugin_name`\'s syntax is incorrect; {plugin_name_part!r} is not an identifier; got: '
                 f'{plugin_name!r}.'
             )
     
     if not plugin_name_parts[-1]:
         raise ValueError(
-            f'`plugin_name`\s syntax is incorrect; Cannot end with dot character; got: {plugin_name!r}.'
+            f'`plugin_name`\'s syntax is incorrect; Cannot end with dot character; got: {plugin_name!r}.'
         )
     
     

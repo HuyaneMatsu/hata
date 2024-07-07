@@ -1,9 +1,5 @@
 __all__ = ('ConnectionType', 'ConnectionVisibility',)
 
-from warnings import warn
-
-from scarletio import class_property
-
 from ...bases import Preinstance as P, PreinstancedBase
 
 
@@ -112,23 +108,6 @@ class ConnectionType(PreinstancedBase):
     xbox = P('xbox', 'Xbox')
     youtube = P('youtube', 'YouTube')
     
-    
-    @class_property
-    def unknown(cls):
-        """
-        Deprecated and will be removed in 2024 February. Please use `.none` instead.
-        """
-        warn(
-            (
-                f'`{cls.__name__}.unknown` is deprecated and will be removed in 2024 February. '
-                f'Please use `.none` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return cls.none
-
 
 class ConnectionVisibility(PreinstancedBase):
     """

@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -11,8 +11,8 @@ def test__ActivityTimestamps__copy():
     """
     Tests whether ``ActivityTimestamps.copy`` works as intended.
     """
-    end = DateTime(2016, 1, 14)
-    start = DateTime(2016, 5, 14)
+    end = DateTime(2016, 1, 14, tzinfo = TimeZone.utc)
+    start = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     field = ActivityTimestamps(
         end = end,
@@ -32,8 +32,8 @@ def test__ActivityTimestamps__copy_with__0():
     
     Case: No fields given.
     """
-    end = DateTime(2016, 1, 14)
-    start = DateTime(2016, 5, 14)
+    end = DateTime(2016, 1, 14, tzinfo = TimeZone.utc)
+    start = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     
     field = ActivityTimestamps(
         end = end,
@@ -53,10 +53,10 @@ def test__ActivityTimestamps__copy_with__1():
     
     Case: All fields given.
     """
-    old_end = DateTime(2016, 1, 14)
-    old_start = DateTime(2016, 5, 14)
-    new_end = DateTime(2016, 1, 12)
-    new_start = DateTime(2016, 1, 12)
+    old_end = DateTime(2016, 1, 14, tzinfo = TimeZone.utc)
+    old_start = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    new_end = DateTime(2016, 1, 12, tzinfo = TimeZone.utc)
+    new_start = DateTime(2016, 1, 12, tzinfo = TimeZone.utc)
     
     field = ActivityTimestamps(
         end = old_end,

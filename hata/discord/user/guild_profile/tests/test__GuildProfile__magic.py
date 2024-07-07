@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -13,13 +13,13 @@ def test__GuildProfile__repr():
     Tests whether ``GuildProfile.__repr__`` works as intended.
     """
     avatar = Icon(IconType.static, 12)
-    boosts_since = DateTime(2016, 5, 14)
+    boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = GuildProfileFlag(3)
-    joined_at = DateTime(2016, 5, 15)
+    joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     nick = 'Ayumi'
     pending = False
     role_ids = [2022100007, 2022100008]
-    timed_out_until = DateTime(2016, 5, 20)
+    timed_out_until = DateTime(2016, 5, 20, tzinfo = TimeZone.utc)
     
     
     guild_profile = GuildProfile(
@@ -41,13 +41,13 @@ def test__GuildProfile__hash():
     Tests whether ``GuildProfile.__hash__`` works as intended.
     """
     avatar = Icon(IconType.static, 12)
-    boosts_since = DateTime(2016, 5, 14)
+    boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = GuildProfileFlag(3)
-    joined_at = DateTime(2016, 5, 15)
+    joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     nick = 'Ayumi'
     pending = False
     role_ids = [2022100009, 2022100010]
-    timed_out_until = DateTime(2016, 5, 20)
+    timed_out_until = DateTime(2016, 5, 20, tzinfo = TimeZone.utc)
     
     
     guild_profile = GuildProfile(
@@ -69,13 +69,13 @@ def test__GuildProfile__eq():
     Tests whether ``GuildProfile.__eq__`` works as intended.
     """
     avatar = Icon(IconType.static, 12)
-    boosts_since = DateTime(2016, 5, 14)
+    boosts_since = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     flags = GuildProfileFlag(3)
-    joined_at = DateTime(2016, 5, 15)
+    joined_at = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     nick = 'Ayumi'
     pending = False
     role_ids = [2022100011, 2022100012]
-    timed_out_until = DateTime(2016, 5, 20)
+    timed_out_until = DateTime(2016, 5, 20, tzinfo = TimeZone.utc)
     
     keyword_parameters = {
         'avatar': avatar,

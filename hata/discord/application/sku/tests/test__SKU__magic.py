@@ -1,4 +1,4 @@
-from datetime import datetime as DateTime
+from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
@@ -20,7 +20,7 @@ def test__SKU__repr():
     flags = SKUFlag(11)
     name = 'Red'
     premium = True
-    release_at = DateTime(2016, 5, 14)
+    release_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     slug = 'https://orindance.party/'
     sku_type = SKUType.consumable
     
@@ -54,7 +54,7 @@ def test__SKU__hash():
     flags = SKUFlag(11)
     name = 'Red'
     premium = True
-    release_at = DateTime(2016, 5, 14)
+    release_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     slug = 'https://orindance.party/'
     sku_type = SKUType.consumable
     
@@ -95,7 +95,7 @@ def test__SKU__eq():
     flags = SKUFlag(11)
     name = 'Red'
     premium = True
-    release_at = DateTime(2016, 5, 14)
+    release_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     slug = 'https://orindance.party/'
     sku_type = SKUType.consumable
     

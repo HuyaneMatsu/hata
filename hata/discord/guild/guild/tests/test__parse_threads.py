@@ -18,8 +18,8 @@ def _iter_options():
         name = channel_name,
     )
     
-    yield {}, {}
-    yield {'threads': []}, {}
+    yield {}, None
+    yield {'threads': []}, None
     yield (
         {'threads': [channel.to_data(defaults = True, include_internals = True)]},
         {channel_id: channel},
@@ -38,7 +38,7 @@ def test__parse_threads(input_value):
     
     Returns
     -------
-    output : `dict<int, Channel>`
+    output : `None | dict<int, Channel>`
     """
     guild_id = 202306130025
     guild = Guild.precreate(guild_id)

@@ -19,7 +19,7 @@ async def play(
         abort('You need to be in a voice channel!')
     
     user = event.user
-    state = guild.voice_states.get(event.user.id, None)
+    state = guild.get_voice_state(event.user.id)
     if state is None:
         abort('You need to be in a voice channel!')
     

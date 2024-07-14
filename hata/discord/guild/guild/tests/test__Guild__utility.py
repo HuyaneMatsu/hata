@@ -2602,3 +2602,37 @@ def test__Guild__permissions_for_roles__admin():
     permissions = guild.permissions_for_roles(role)
     vampytest.assert_instance(permissions, Permission)
     vampytest.assert_eq(permissions, PERMISSION_ALL)
+
+
+def _iter_options__get_voice_state():
+    user_id_0 = 202407110000
+    user_id_1 = 202407110001
+    
+    voice_state_0 = VoiceState(user_id = user_id_0)
+    voice_state_1 = VoiceState(user_id = user_id_1)
+    
+    yield Guild.precreate(202407110002), user_id_0, None
+    yield Guild.precreate(202407110003, voice_states = [voice_state_0]), user_id_0, voice_state_0
+    yield Guild.precreate(202407110004, voice_states = [voice_state_1]), user_id_0, None
+    yield Guild.precreate(202407110005, voice_states = [voice_state_0, voice_state_1]), user_id_0, voice_state_0
+
+
+@vampytest._(vampytest.call_from(_iter_options__get_voice_state()).returning_last())
+def test__Guild__get_voice_state(guild, user_id):
+    """
+    Tests whether ``Guild.get_voice_state`` works as intended.
+    
+    Parameters
+    ----------
+    guild : ``Guild``
+        The guild to iterate its voice states of.
+    user_id : `int`
+        User identifier to get voice state for.
+    
+    Returns
+    -------
+    output : `None`, ``VoiceState``
+    """
+    output = guild.get_voice_state(user_id)
+    vampytest.assert_instance(output, VoiceState, nullable = True)
+    return output

@@ -158,7 +158,7 @@ def test__Channel__from_data__5():
     
     channel = Channel.from_data(data, None, guild_id, strong_cache = False)
     
-    vampytest.assert_eq(guild.threads, {})
+    vampytest.assert_eq(guild.threads, None)
 
 
 def test__Channel__from_data__6():

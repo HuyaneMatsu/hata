@@ -16,7 +16,9 @@ def _iter_options():
         guild_id = guild_id,
     )
     
-    yield {}, True, {'voice_states': []}
+    yield None, False, {'voice_states': []}
+    yield None, True, {'voice_states': []}
+    yield {user_id: voice_state}, False, {'voice_states': [voice_state.to_data(defaults = False)]}
     yield {user_id: voice_state}, True, {'voice_states': [voice_state.to_data(defaults = True)]}
 
 
@@ -27,7 +29,7 @@ def test__put_voice_states_into(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `dict<int, VoiceState>`
+    input_value : `None | dict<int, VoiceState>`
         Input value to serialise.
     defaults : `bool`
         Whether fields with their default values should be included as well.

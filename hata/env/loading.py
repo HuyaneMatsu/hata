@@ -1,6 +1,6 @@
 __all__ = ()
 
-from os import environ as environmental_variables
+from os import environ as environmental_variables, getcwd as get_current_working_directory
 from os.path import dirname as get_directory_name, isfile as is_file, join as join_paths
 from sys import _getframe as get_frame
 
@@ -55,17 +55,32 @@ def find_launched_location():
     return last_named_location
 
 
-def find_dot_env_file():
+def find_dot_env_file_in_launched_location():
     """
-    Tries to find dotenv location to load.
+    Tries to find dotenv file to load where the project is located.
     
     Returns
     -------
-    location : `None`, `str`
+    file_path : `None`, `str`
     """
-    launched_location = find_launched_location()
-    if (launched_location is not None):
-        file_path = join_paths(get_directory_name(launched_location), '.env')
+    location = find_launched_location()
+    if (location is not None):
+        file_path = join_paths(get_directory_name(location), '.env')
+        if is_file(file_path):
+            return file_path
+
+
+def find_dot_env_file_in_current_working_directory():
+    """
+    Tries to find dotenv file to load where the program was started at.
+    
+    Returns
+    -------
+    file_path : `None`, `str`
+    """
+    location = get_current_working_directory()
+    if (location is not None):
+        file_path = join_paths(get_directory_name(location), '.env')
         if is_file(file_path):
             return file_path
 

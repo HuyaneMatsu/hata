@@ -562,14 +562,18 @@ def parse_scheduled_events(data, scheduled_events):
     scheduled_events : `dict<int, ScheduledEvent>`
         Returns `scheduled_events` parameter.
     """
-    if scheduled_events:
+    if (scheduled_events is not None):
         old_scheduled_events = [*scheduled_events.values()]
-        scheduled_events.clear()
+        scheduled_events = None
     
     scheduled_event_datas = data.get('guild_scheduled_events', None)
     if (scheduled_event_datas is not None):
         for scheduled_event_data in scheduled_event_datas:
             scheduled_event = ScheduledEvent.from_data(scheduled_event_data, strong_cache = False)
+            
+            if scheduled_events is None:
+                scheduled_events = {}
+            
             scheduled_events[scheduled_event.id] = scheduled_event
     
     return scheduled_events
@@ -577,7 +581,7 @@ def parse_scheduled_events(data, scheduled_events):
 put_scheduled_events_into = entity_dictionary_putter_factory(
     'guild_scheduled_events', ScheduledEvent, force_include_internals = True
 )
-validate_scheduled_events = entity_dictionary_validator_factory('scheduled_events', ScheduledEvent)
+validate_scheduled_events = nullable_entity_dictionary_validator_factory('scheduled_events', ScheduledEvent)
 
 # stages
 
@@ -681,31 +685,34 @@ def parse_threads(data, threads, guild_id = 0):
     ----------
     data : `dict<str, object>`
         Guild data.
-    threads : `dict<int, Channel>`
+    threads : `None | dict<int, Channel>`
         The guild's threads.
     guild_id : `int` = `0`, Optional
         The guild's identifier.
         
     Returns
     -------
-    threads : `dict<int, Channel>`
+    threads : `None | dict<int, Channel>`
         Returns `threads` parameter.
     """
     if threads:
         old_threads = [*threads.values()]
-        threads.clear()
+        threads = None
     
     thread_datas = data.get('threads', None)
     if (thread_datas is not None):
         for thread_data in thread_datas:
             thread = Channel.from_data(thread_data, None, guild_id, strong_cache = False)
+            if threads is None:
+                threads = {}
+            
             threads[thread.id] = thread
     
     return threads
 
 
 put_threads_into = entity_dictionary_putter_factory('threads', Channel, force_include_internals = True)
-validate_threads = entity_dictionary_validator_factory('threads', Channel)
+validate_threads = nullable_entity_dictionary_validator_factory('threads', Channel)
 
 # user_count
 
@@ -842,25 +849,31 @@ def parse_voice_states(data, voice_states, guild_id = 0):
     ----------
     data : `dict<str, object>`
         Guild data.
-    voice_states : `dict<int, VoiceState>`
+    voice_states : `None | dict<int, VoiceState>`
         The guild's voice_states.
+    guild_id : `int` = `0`, Optional
+        The guild's identifier.
         
     Returns
     -------
-    voice_states : `dict<int, VoiceState>`
+    voice_states : `None | dict<int, VoiceState>`
         Returns `voice_states` parameter.
-    guild_id : `int` = `0`, Optional
-        The guild's identifier.
     """
-    if voice_states:
+    if (voice_states is not None):
         voice_states.clear()
+        voice_states = None
     
     voice_state_datas = data.get('voice_states', None)
     if (voice_state_datas is not None):
         for voice_state_data in voice_state_datas:
             voice_state = VoiceState.from_data(voice_state_data, guild_id, strong_cache = False)
-            if (voice_state is not None):
-                voice_states[voice_state.user_id] = voice_state
+            if (voice_state is None):
+                continue
+            
+            if voice_states is None:
+                voice_states = {}
+            
+            voice_states[voice_state.user_id] = voice_state
     
     return voice_states
 
@@ -879,14 +892,14 @@ def validate_voice_states(field_value):
     
     Returns
     -------
-    entity_dictionary : `dict` of (`int`, ``VoiceState``) items
+    entity_dictionary : `None | dict<int, VoiceState>`
     
     Raises
     ------
     TypeError
         - If `field_value`'s or it's elements type is incorrect.
     """
-    validated = {}
+    validated = None
     
     if field_value is not None:
         if isinstance(field_value, dict):
@@ -907,6 +920,9 @@ def validate_voice_states(field_value):
                     f'`voice_states` elements can be `{VoiceState.__name__}`, got {voice_state.__class__.__name__}; '
                     f'{voice_state!r}; voice_states = {field_value!r}.'
                 )
+            
+            if validated is None:
+                validated = {}
             
             validated[voice_state.user_id] = voice_state
     

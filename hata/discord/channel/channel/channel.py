@@ -879,7 +879,7 @@ class Channel(DiscordEntity, immortal = True):
         
         channel_id = self.id
         
-        for thread in guild.threads.values():
+        for thread in guild.iter_threads():
             if thread.parent_id == channel_id:
                 yield thread
     
@@ -1881,7 +1881,7 @@ class Channel(DiscordEntity, immortal = True):
             else:
                 channel_id = self.id
                 
-                for voice_state in guild.voice_states.values():
+                for voice_state in guild.iter_voice_states():
                     if voice_state.channel_id == channel_id:
                         yield voice_state.user
     
@@ -1917,7 +1917,7 @@ class Channel(DiscordEntity, immortal = True):
             else:
                 channel_id = self.id
                 
-                for voice_states in guild.voice_states.values():
+                for voice_states in guild.iter_voice_states():
                     if (voice_states.channel_id == channel_id) and (not voice_states.speaker):
                         yield voice_states.user
     
@@ -1953,7 +1953,7 @@ class Channel(DiscordEntity, immortal = True):
             else:
                 channel_id = self.id
                 
-                for voice_states in guild.voice_states.values():
+                for voice_states in guild.iter_voice_states():
                     if (voice_states.channel_id == channel_id) and voice_states.speaker:
                         yield voice_states.user
     
@@ -1989,7 +1989,7 @@ class Channel(DiscordEntity, immortal = True):
             else:
                 channel_id = self.id
                 
-                for voice_states in guild.voice_states.values():
+                for voice_states in guild.iter_voice_states():
                     if (voice_states.channel_id == channel_id):
                         user = voice_states.user
                         if self.permissions_for(user) >= PERMISSION_STAGE_MODERATOR:

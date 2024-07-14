@@ -372,7 +372,7 @@ async def edit_waifu(
     text_input = FIELD_TO_TEXT_INPUT[field]
     
     # We auto-fill the current value
-    text_input = text_input.copy_with(value=FIELD_TO_ATTRIBUTE[field].__get__(waifu, Waifu))
+    text_input = text_input.copy_with(value = FIELD_TO_ATTRIBUTE[field].__get__(waifu, Waifu))
     
     return Form(
         f'Editing {waifu.name}',

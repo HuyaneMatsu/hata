@@ -1475,7 +1475,7 @@ def test__Guild__update_voice_state__leave_but_not_there():
     output = [*guild._update_voice_state(data, user)]
     
     vampytest.assert_eq(output, [])
-    vampytest.assert_eq(guild.voice_states, {})
+    vampytest.assert_eq(guild.voice_states, None)
     
 
 def test__Guild__update_voice_state__update():
@@ -1489,10 +1489,8 @@ def test__Guild__update_voice_state__update():
     channel_id = 202306230048
     
     user = User.precreate(user_id)
-    guild = Guild.precreate(guild_id)
-    
     voice_state = VoiceState(user_id = user_id, channel_id = channel_id, guild_id = guild_id)
-    guild.voice_states[user_id] = voice_state
+    guild = Guild.precreate(guild_id, voice_states = [voice_state])
     
     data = {
         'channel_id': str(channel_id),
@@ -1520,10 +1518,8 @@ def test__Guild__update_voice_state__leave():
     channel_id = 202306230051
     
     user = User.precreate(user_id)
-    guild = Guild.precreate(guild_id)
-    
     voice_state = VoiceState(user_id = user_id, channel_id = channel_id, guild_id = guild_id)
-    guild.voice_states[user_id] = voice_state
+    guild = Guild.precreate(guild_id, voice_states = [voice_state])
     
     data = {
         'channel_id': None,
@@ -1535,7 +1531,7 @@ def test__Guild__update_voice_state__leave():
     output = [*guild._update_voice_state(data, user)]
     
     vampytest.assert_eq(output, [(VOICE_STATE_EVENT_LEAVE, matching_voice_state, channel_id)])
-    vampytest.assert_eq(guild.voice_states, {})
+    vampytest.assert_eq(guild.voice_states, None)
     vampytest.assert_is(voice_state._cache_user, user)
 
 
@@ -1551,10 +1547,8 @@ def test__Guild__update_voice_state__move():
     channel_id_1 = 202306230055
     
     user = User.precreate(user_id)
-    guild = Guild.precreate(guild_id)
-    
     voice_state = VoiceState(user_id = user_id, channel_id = channel_id_0, guild_id = guild_id)
-    guild.voice_states[user_id] = voice_state
+    guild = Guild.precreate(guild_id, voice_states = [voice_state])
     
     data = {
         'channel_id': str(channel_id_1),
@@ -1581,10 +1575,8 @@ def test__Guild__update_voice_state__no_change():
     channel_id = 202306230058
     
     user = User.precreate(user_id)
-    guild = Guild.precreate(guild_id)
-    
     voice_state = VoiceState(user_id = user_id, channel_id = channel_id, guild_id = guild_id)
-    guild.voice_states[user_id] = voice_state
+    guild = Guild.precreate(guild_id, voice_states = [voice_state])
     
     data = {
         'channel_id': str(channel_id),
@@ -1645,7 +1637,7 @@ def test__Guild__update_voice_state_restricted__leave_but_not_there():
     
     guild._update_voice_state_restricted(data, user)
     
-    vampytest.assert_eq(guild.voice_states, {})
+    vampytest.assert_eq(guild.voice_states, None)
     
 
 def test__Guild__update_voice_state_restricted__update():
@@ -1659,10 +1651,9 @@ def test__Guild__update_voice_state_restricted__update():
     channel_id = 202306230066
     
     user = User.precreate(user_id)
-    guild = Guild.precreate(guild_id)
     
     voice_state = VoiceState(user_id = user_id, channel_id = channel_id, guild_id = guild_id)
-    guild.voice_states[user_id] = voice_state
+    guild = Guild.precreate(guild_id, voice_states = [voice_state])
     
     data = {
         'channel_id': str(channel_id),
@@ -1689,10 +1680,8 @@ def test__Guild__update_voice_state_restricted__leave():
     channel_id = 202306230069
     
     user = User.precreate(user_id)
-    guild = Guild.precreate(guild_id)
-    
     voice_state = VoiceState(user_id = user_id, channel_id = channel_id, guild_id = guild_id)
-    guild.voice_states[user_id] = voice_state
+    guild = Guild.precreate(guild_id, voice_states = [voice_state])
     
     data = {
         'channel_id': None,
@@ -1701,7 +1690,7 @@ def test__Guild__update_voice_state_restricted__leave():
     
     guild._update_voice_state_restricted(data, user)
     
-    vampytest.assert_eq(guild.voice_states, {})
+    vampytest.assert_eq(guild.voice_states, None)
     vampytest.assert_is(voice_state._cache_user, user)
 
 
@@ -1717,10 +1706,9 @@ def test__Guild__update_voice_state_restricted__move():
     channel_id_1 = 202306230073
     
     user = User.precreate(user_id)
-    guild = Guild.precreate(guild_id)
     
     voice_state = VoiceState(user_id = user_id, channel_id = channel_id_0, guild_id = guild_id)
-    guild.voice_states[user_id] = voice_state
+    guild = Guild.precreate(guild_id, voice_states = [voice_state])
     
     data = {
         'channel_id': str(channel_id_1),
@@ -1746,10 +1734,9 @@ def test__Guild__update_voice_state_restricted__no_change():
     channel_id = 202306230080
     
     user = User.precreate(user_id)
-    guild = Guild.precreate(guild_id)
-    
     voice_state = VoiceState(user_id = user_id, channel_id = channel_id, guild_id = guild_id)
-    guild.voice_states[user_id] = voice_state
+    guild = Guild.precreate(guild_id, voice_states = [voice_state])
+    
     
     data = {
         'channel_id': str(channel_id),

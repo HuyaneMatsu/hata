@@ -229,7 +229,12 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
             except KeyError:
                 pass
             else:
-                guild.threads[channel_entity.id] = channel_entity
+                threads = guild.threads
+                if (threads is None):
+                    threads = {}
+                    guild.threads = threads
+                
+                threads[channel_entity.id] = channel_entity
     
     
     @copy_docs(ChannelMetadataGuildBase._is_equal_same_type)
@@ -516,10 +521,15 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         except KeyError:
             pass
         else:
-            try:
-                del guild.threads[channel_entity.id]
-            except KeyError:
-                pass
+            threads = guild.threads
+            if (threads is not None):
+                try:
+                    del threads[channel_entity.id]
+                except KeyError:
+                    pass
+                else:
+                    if not threads:
+                        guild.threads = None
         
         thread_users = self.thread_users
         if (thread_users is not None):

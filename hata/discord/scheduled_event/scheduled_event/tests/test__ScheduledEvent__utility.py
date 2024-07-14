@@ -175,7 +175,7 @@ def test__ScheduledEvent__delete():
     vampytest.assert_instance(output, bool)
     vampytest.assert_eq(output, True)
     
-    vampytest.assert_eq(guild.scheduled_events, {})
+    vampytest.assert_eq(guild.scheduled_events, None)
 
 
 def test__ScheduledEvent__partial__0():

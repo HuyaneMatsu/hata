@@ -237,10 +237,12 @@ class VoiceState(RichAttributeErrorBaseType):
         if strong_cache:
             guild = GUILDS.get(guild_id, None)
             if (guild is not None):
-                try:
-                    return guild.voice_states[user_id]
-                except KeyError:
-                    pass
+                voice_states = guild.voice_states
+                if (voice_states is not None):
+                    try:
+                        return voice_states[user_id]
+                    except KeyError:
+                        pass
         
         self = object.__new__(cls)
         self._cache_user = None
@@ -259,7 +261,11 @@ class VoiceState(RichAttributeErrorBaseType):
         
         if strong_cache:
             if (guild is not None):
-                guild.voice_states[user_id] = self
+                if voice_states is None:
+                    voice_states = {}
+                    guild.voice_states = voice_states
+                
+                voice_states[user_id] = self
         
         return self
     
@@ -417,10 +423,15 @@ class VoiceState(RichAttributeErrorBaseType):
             except KeyError:
                 pass
             else:
-                try:
-                    del guild.voice_states[self.user_id]
-                except KeyError:
-                    pass
+                voice_states = guild.voice_states
+                if (voice_states is not None):
+                    try:
+                        del voice_states[self.user_id]
+                    except KeyError:
+                        pass
+                    else:
+                        if not voice_states:
+                            guild.voice_states = None
         
         old_channel_id = self.channel_id
         self.channel_id = new_channel_id

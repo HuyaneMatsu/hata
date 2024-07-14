@@ -332,7 +332,7 @@ async def autocomplete_sticker_name(event, value):
 @Nitori.interactions(guild = TEST_GUILD)
 async def get_sticker_id(
     event,
-    sticker: P('str', 'Sticker\'s name', autocomplete=autocomplete_sticker_name),
+    sticker: P('str', 'Sticker\'s name', autocomplete = autocomplete_sticker_name),
 ):
     guild = event.guild
     if guild is None:

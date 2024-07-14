@@ -44,7 +44,7 @@ from hata.ext.plugin_loader import add_default_plugin_variables, register_and_lo
 
 my_beloved_bot = Client(...)
 
-add_default_plugin_variables(my_beloved_bot=my_beloved_bot)
+add_default_plugin_variables(my_beloved_bot = my_beloved_bot)
 
 register_and_load_plugin('plugin')
 ```
@@ -66,7 +66,7 @@ You can also define file specific variables.
 To do this, pass additional keyword variables when registering the plugin, e.g.:
 
 ```py
-register_and_load_plugin('plugin', add_launch_event_handler=False)
+register_and_load_plugin('plugin', add_launch_event_handler = False)
 ```
 
 Important note: these plugin-specific variables won't show up in sub-modules imported from that file.

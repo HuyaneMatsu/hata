@@ -34,7 +34,7 @@ def mark_as_plugin_root_directory():
     frame_globals = module_frame.f_globals
     spec = frame_globals.get('__spec__', None)
     if spec is None:
-        return
+        return 0
     
     source_file_path = spec.origin
 
@@ -47,20 +47,21 @@ def mark_as_plugin_root_directory():
     
     source_directory_path = get_directory_name(source_file_path)
     source_name = spec.name
+    count = 0
     
-    for file_name in list_directory(source_directory_path):
-        if file_name == '__init__.py':
+    for entry_name in list_directory(source_directory_path):
+        if entry_name == '__init__.py':
             continue
         
-        file_path = join_paths(source_directory_path, file_name)
+        file_path = join_paths(source_directory_path, entry_name)
         if is_file(file_path):
             if not file_path.endswith('.py'):
                 continue
             
-            file_name = file_name[:-len('.py')]
+            entry_name = entry_name[:-len('.py')]
         
         elif is_directory(file_path):
-            if file_name in IGNORED_DIRECTORY_NAMES:
+            if entry_name in IGNORED_DIRECTORY_NAMES:
                 continue
             
             if not is_file(join_paths(file_path, '__init__.py')):
@@ -69,5 +70,8 @@ def mark_as_plugin_root_directory():
         else:
             continue
         
-        import_plugin(f'{source_name}.{file_name}')
+        import_plugin(f'{source_name}.{entry_name}')
+        count += 1
         continue
+    
+    return count

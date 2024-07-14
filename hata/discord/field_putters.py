@@ -1187,7 +1187,7 @@ def _iter_nullable_dictionary_values(dictionary):
     
     Parameters
     ----------
-    dictionary : `dict<KeyType, ValueType>
+    dictionary : `None | dict<KeyType, ValueType>
         Dictionary to iterate over.
     
     Yields

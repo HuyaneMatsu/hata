@@ -138,7 +138,7 @@ def test__ScheduledEvent__from_data__3():
     
     scheduled_event = ScheduledEvent.from_data(data, strong_cache = False)
     
-    vampytest.assert_eq(guild.scheduled_events, {})
+    vampytest.assert_eq(guild.scheduled_events, None)
 
 
 def test__ScheduledEvent__to_data():
@@ -457,9 +457,8 @@ def test__ScheduledEvent__create_from_data_and_delete__0():
         user_count = 69
         
         cached_scheduled_event = ScheduledEvent.precreate(scheduled_event_id, guild_id = guild_id)
-        guild = Guild.precreate(guild_id)
+        guild = Guild.precreate(guild_id, scheduled_events = [cached_scheduled_event])
         guild.clients = [client]
-        guild.scheduled_events[scheduled_event_id] = cached_scheduled_event
         
         data = {
             'id': str(scheduled_event_id),
@@ -470,7 +469,7 @@ def test__ScheduledEvent__create_from_data_and_delete__0():
         scheduled_event = ScheduledEvent._create_from_data_and_delete(data)
         _assert_fields_set(scheduled_event)
         
-        vampytest.assert_eq(guild.scheduled_events, {})
+        vampytest.assert_eq(guild.scheduled_events, None)
         vampytest.assert_is(cached_scheduled_event, scheduled_event)
         
         vampytest.assert_eq(scheduled_event.user_count, user_count)
@@ -502,7 +501,7 @@ def test__ScheduledEvent__create_from_data_and_delete__1():
     scheduled_event = ScheduledEvent._create_from_data_and_delete(data)
     _assert_fields_set(scheduled_event)
     
-    vampytest.assert_eq(guild.scheduled_events, {})
+    vampytest.assert_eq(guild.scheduled_events, None)
     vampytest.assert_eq(scheduled_event.user_count, user_count)
     
     test_scheduled_event = ScheduledEvent.from_data(data)
@@ -553,9 +552,8 @@ def test__ScheduledEvent__from_data_is_created__1():
         user_count = 69
         
         cached_scheduled_event = ScheduledEvent.precreate(scheduled_event_id, guild_id = guild_id)
-        guild = Guild.precreate(guild_id)
+        guild = Guild.precreate(guild_id, scheduled_events = [cached_scheduled_event])
         guild.clients = [client]
-        guild.scheduled_events[scheduled_event_id] = cached_scheduled_event
         
         data = {
             'id': str(scheduled_event_id),

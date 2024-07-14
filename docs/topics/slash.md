@@ -617,7 +617,7 @@ async def channel_create(
         return 'Please keep name length between 2 and 32 characters.'
     
     try:
-        await client.channel_create(event.guild, name, parent=event.channel.parent)
+        await client.channel_create(event.guild, name, parent = event.channel.parent)
     except DiscordException as err:
         # Error message can be over 2k length
         reason = str(err)
@@ -1266,7 +1266,7 @@ async def set_nick(
 ):
     """Edit's the selected user's nick."""
     yield
-    await client.user_guild_profile_edit(event.guild, user, nick=nick)
+    await client.user_guild_profile_edit(event.guild, user, nick = nick)
     yield f'{user:f}\'s nick has been updated'
 ```
 

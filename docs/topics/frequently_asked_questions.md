@@ -78,7 +78,7 @@ object which also handles retrying requests.
 from scarletio import ReuAsyncIO
 
 with (await ReuAsyncIO('flan.png')) as file:
-    await client.message_create(channel, file=file)
+    await client.message_create(channel, file = file)
 ```
 
 To upload multiple files, use a list.

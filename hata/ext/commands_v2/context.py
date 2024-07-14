@@ -142,7 +142,7 @@ class CommandContext:
         message = self.message
         guild = message.guild
         if (guild is not None):
-            return guild.voice_states.get(message.author.id, None)
+            return guild.get_voice_state(message.author.id)
     
     
     @property

@@ -3893,11 +3893,16 @@ def GUILD_SCHEDULED_EVENT_DELETE__OPT(client, data):
         guild = GUILDS[parse_scheduled_event_guild_id(data)]
     except KeyError:
         return
-        
-    try:
-        del guild.scheduled_events[parse_scheduled_event_id(data)]
-    except KeyError:
-        pass
+    
+    scheduled_events = guild.scheduled_events
+    if (scheduled_events is not None):
+        try:
+            del scheduled_events[parse_scheduled_event_id(data)]
+        except KeyError:
+            pass
+        else:
+            if not scheduled_events:
+                guild.scheduled_events = None
 
 
 add_parser(

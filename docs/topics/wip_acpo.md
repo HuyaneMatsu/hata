@@ -69,7 +69,7 @@ async def latest_users(event):
         if created_at > date_limit:
             users.append((created_at, user))
     
-    users.sort(reverse=True)
+    users.sort(reverse = True)
     del users[10:]
     
     embed = Embed('Recently joined users')

@@ -572,12 +572,8 @@ class SolarPlayer(SolarPlayerBase):
         except KeyError:
             pass
         else:
-            try:
-                voice_state = guild.voice_states[node.client.id]
-            except KeyError:
-                return
-            
-            if voice_state.speaker:
+            voice_state = guild.get_voice_state(node.client.id)
+            if (voice_state is None) or voice_state.speaker:
                 return
         
         if request:
@@ -618,12 +614,8 @@ class SolarPlayer(SolarPlayerBase):
         except KeyError:
             pass
         else:
-            try:
-                voice_state = guild.voice_states[node.client.id]
-            except KeyError:
-                return
-            
-            if not voice_state.speaker:
+            voice_state = guild.get_voice_state(node.client.id)
+            if (voice_state is None) or not voice_state.speaker:
                 return
         
         data = {

@@ -816,7 +816,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         The event has a default handler called ``ChunkWaiter``.
     
     guild_user_delete(client: ``Client``, guild: ``Guild``, user: ``ClientUserBase``, \
-            profile: ``GuildProfile``):
+            guild_profile: `None` | ``GuildProfile``):
         Called when a user left (kicked or banned counts as well) from a guild. The `profile` parameter is the user's
         respective guild profile for the guild.
     

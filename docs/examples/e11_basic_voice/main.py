@@ -33,7 +33,7 @@ MY_GUILD = Guild.precreate(12345)
 async def join(client, event):
     """Joins to voice channel."""
     # Getting the invoking user's voice state
-    voice_state = event.guild.voice_states.get(event.user_id, None)
+    voice_state = event.guild.get_voice_state(event.user_id)
     if voice_state is None:
         return 'You are not at a voice channel!'
     

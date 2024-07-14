@@ -295,8 +295,8 @@ you can modify this behaviour.
 from hata.ext.commands_v2 import configure_converter
 
 @NekoBot.commands
-@configure_converter('user', everywhere=True)
-async def avatar(ctx, user: 'User'=None):
+@configure_converter('user', everywhere = True)
+async def avatar(ctx, user: 'User' = None):
     if user is None:
         user = ctx.author
     
@@ -343,8 +343,8 @@ Categories can be created on the fly, by using the `category` keyword inside of 
 from hata.ext.commands_v2 import configure_converter
 
 @NekoBot.commands(category='utility')
-@configure_converter('user', everywhere=True)
-async def avatar(ctx, user: 'User'=None):
+@configure_converter('user', everywhere = True)
+async def avatar(ctx, user: 'User' = None):
     if user is None:
         user = ctx.author
     
@@ -359,9 +359,9 @@ from hata.ext.commands_v2 import configure_converter
 
 UTILITY_CATEGORY = NekoBot.command_processor.create_category('utility')
 
-@NekoBot.commands(category=UTILITY_CATEGORY)
-@configure_converter('user', everywhere=True)
-async def avatar(ctx, user: 'User'=None):
+@NekoBot.commands(category = UTILITY_CATEGORY)
+@configure_converter('user', everywhere = True)
+async def avatar(ctx, user: 'user' = None):
     if user is None:
         user = ctx.author
     
@@ -377,8 +377,8 @@ from hata.ext.commands_v2 import configure_converter
 UTILITY_CATEGORY = NekoBot.command_processor.create_category('utility')
 
 @UTILITY_CATEGORY.commands
-@configure_converter('user', everywhere=True)
-async def avatar(ctx, user: 'User'=None):
+@configure_converter('user', everywhere = True)
+async def avatar(ctx, user: 'user' = None):
     if user is None:
         user = ctx.author
     
@@ -424,7 +424,7 @@ An other way to apply checks it to pass them to `.commands` decorator.
 import os
 from hata.ext.commands_v2 import checks
 
-@NekoBot.commands(checks=checks.owner_only())
+@NekoBot.commands(checks = checks.owner_only())
 async def shutdown():
     yield 'shutting down'
     os._exit()
@@ -473,7 +473,7 @@ Checks can be applied to categories at creation or later as well.
 
 ```py3
 # At creation
-UTILITY_CATEGORY = NekoBot.command_processor.create_category('utility', checks=checks.owner_only())
+UTILITY_CATEGORY = NekoBot.command_processor.create_category('utility', checks = checks.owner_only())
 
 # Apply checks later
 NekoBot.command_processor.get_default_category().checks = checks.owner_only()

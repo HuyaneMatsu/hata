@@ -1,7 +1,7 @@
 __all__ = ()
 
 import sys
-from os import geteuid as get_effective_user_id, sep as PATH_SEPARATOR
+from os import sep as PATH_SEPARATOR
 from os.path import (
     basename as get_file_name, commonpath as _get_common_path, isabs as is_absolute_path, split as split_path
 )
@@ -12,6 +12,13 @@ from scarletio import any_to_any, get_short_executable
 from ... import __package__ as PACKAGE_NAME
 
 from .constants import PACKAGE_MAIN_FILE, UPPER_DIRECTORY, WORKING_DIRECTORY
+
+
+# Conditional imports
+if sys.platform == 'linux':
+    from os import geteuid as get_effective_user_id
+else:
+    get_effective_user_id = None
 
 
 def get_main_call(with_parameters = False):
@@ -159,7 +166,7 @@ def render_main_call_into(into, with_parameters = False):
     -------
     into : `list` of `str`
     """
-    if get_effective_user_id() == 0:
+    if (get_effective_user_id is not None) and (get_effective_user_id() == 0):
         into.append('sudo ')
     
     system_parameters = sys.argv

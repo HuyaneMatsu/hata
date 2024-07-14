@@ -594,7 +594,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         except KeyError:
             pass
         else:
-            return guild.voice_states.get(self.client.id, None)
+            return guild.get_voice_state(self.client.id)
     
     
     async def move_to(self, channel):
@@ -666,12 +666,8 @@ class VoiceClient(RichAttributeErrorBaseType):
         except KeyError:
             pass
         else:
-            try:
-                voice_state = guild.voice_states[self.client.id]
-            except KeyError:
-                return
-            
-            if voice_state.speaker:
+            voice_state = guild.get_voice_state(self.client.id)
+            if (voice_state is None) or voice_state.speaker:
                 return
         
         if request:
@@ -707,12 +703,8 @@ class VoiceClient(RichAttributeErrorBaseType):
         except KeyError:
             pass
         else:
-            try:
-                voice_state = guild.voice_states[self.client.id]
-            except KeyError:
-                return
-            
-            if not voice_state.speaker:
+            voice_state = guild.get_voice_state(self.client.id)
+            if (voice_state is None) or not voice_state.speaker:
                 return
         
         data = {

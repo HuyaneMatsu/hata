@@ -19,8 +19,8 @@ def _iter_options():
         name = scheduled_event_name,
     )
     
-    yield {}, 202306110001, {}
-    yield {'guild_scheduled_events': []}, 202306110004, {}
+    yield {}, 202306110001, None
+    yield {'guild_scheduled_events': []}, 202306110004, None
     yield (
         {'guild_scheduled_events': [scheduled_event.to_data(defaults = True, include_internals = True)]},
         guild_id,
@@ -42,7 +42,7 @@ def test__parse_scheduled_events(input_value, guild_id):
     
     Returns
     -------
-    output : `dict<int, ScheduledEvent>`
+    output : `None | dict<int, ScheduledEvent>`
     """
     guild = Guild.precreate(guild_id)
     

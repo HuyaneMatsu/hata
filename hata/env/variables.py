@@ -7,14 +7,16 @@ __all__ = (
 import warnings
 
 from .getters import get_bool_env, get_int_env, get_str_env
-from .loading import find_dot_env_file, load_dot_env_from_file
+from .loading import find_dot_env_file_in_current_working_directory, find_dot_env_file_in_launched_location, load_dot_env_from_file
 
 # Load dotenv
+already_loaded = set()
+for file_path in (find_dot_env_file_in_current_working_directory(), find_dot_env_file_in_launched_location()):
+    if (file_path is not None) and (file_path not in already_loaded):
+        already_loaded.add(file_path)
+        load_dot_env_from_file(file_path).insert_to_environmental_variables().raise_if_failed()
 
-dot_env_file_path = find_dot_env_file()
-if (dot_env_file_path is not None):
-    load_dot_env_from_file(dot_env_file_path).insert_to_environmental_variables().raise_if_failed()
-del dot_env_file_path
+del already_loaded, file_path
 
 # Get variables
 

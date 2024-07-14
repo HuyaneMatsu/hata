@@ -113,7 +113,7 @@ bot_info = await Sakuya.top_gg.get_bot_info()
 Returns bot information based on the given query.
 
 ```py3
-bots = await Sakuya.top_gg.get_bots(limit=50, offset=0, sort_by=None, search=None)
+bots = await Sakuya.top_gg.get_bots(limit = 50, offset = 0, sort_by = None, search = None)
 ```
 
 `sort_by` fields and `search` field's keys might be the following:

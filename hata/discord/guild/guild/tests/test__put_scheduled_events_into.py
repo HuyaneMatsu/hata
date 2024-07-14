@@ -14,7 +14,13 @@ def _iter_options():
         name = scheduled_event_name,
     )
     
-    yield {}, True, {'guild_scheduled_events': []}
+    yield None, False, {'guild_scheduled_events': []}
+    yield None, True, {'guild_scheduled_events': []}
+    yield (
+        {scheduled_event_id: scheduled_event},
+        False,
+        {'guild_scheduled_events': [scheduled_event.to_data(defaults = False, include_internals = True)]},
+    )
     yield (
         {scheduled_event_id: scheduled_event},
         True,
@@ -29,7 +35,7 @@ def test__put_scheduled_events_into(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `dict<int, ScheduledEvent>`
+    input_value : `None | dict<int, ScheduledEvent>`
         Input value to serialise.
     defaults : `bool`
         Whether fields with their default values should be included as well.

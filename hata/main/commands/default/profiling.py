@@ -1,7 +1,7 @@
 __all__ = ()
 
 import sys
-from os import geteuid as get_effective_user_id, listdir as list_directory, system as execute
+from os import listdir as list_directory, system as execute
 from os.path import (
     abspath as absolute_path, getctime as get_creation_time, isdir as is_directory, isfile as is_file,
     join as join_paths, splitext as split_extension
@@ -12,6 +12,12 @@ from scarletio import get_short_executable
 
 from ...core import LIBRARY_CALLED_DIRECTLY, register
 from ...core.helpers import render_main_call_into
+
+# Conditional imports
+if sys.platform == 'linux':
+    from os import geteuid as get_effective_user_id
+else:
+    get_effective_user_id = None
 
 
 PYTHON_EXTENSIONS = frozenset(('.py', '.pyd', '.pyc', '.so'))
@@ -155,7 +161,7 @@ def build_package_not_installed(name):
     output_parts.append(repr(name))
     output_parts.append(' is not installed, cannot show profiling result.\n\nTo install it do:\n\n```\n$ ')
     
-    if get_effective_user_id() == 0:
+    if (get_effective_user_id is not None) and (get_effective_user_id() == 0):
         output_parts.append('sudo ')
     
     output_parts.append(quote(get_short_executable()))

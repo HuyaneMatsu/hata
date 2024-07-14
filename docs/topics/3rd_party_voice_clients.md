@@ -154,7 +154,7 @@ For `IDENTIFY` and `RESUME` voice gateway operations you will need the guilds ga
 It can be accessed trough `gateway.session_id`.
 
 Don't forget to overwrite **all** `voice_client_...` events when dealing with voice clients.
-To overwrite (replace) one use the `overwrite=True` parameter.
+To overwrite (replace) one use the `overwrite = True` parameter.
 
 ## Joining to voice channel
 
@@ -169,7 +169,7 @@ When you join the channel, `client.events.voice_client_join` will be called, in 
 channel.
 
 ```py3
-@client.events(overwrite=True)
+@client.events(overwrite = True)
 async def voice_client_join(client, voice_state):
     voice_client = get_voice_client(voice_state.guild_id)
     if voice_client is not None:
@@ -188,7 +188,7 @@ await gateway.change_voice_state(guild_id, channel_id)
 ```
 
 ```py3
-@client.events(overwrite=True)
+@client.events(overwrite = True)
 async def voice_client_move(client, voice_state, old_channel_id):
     voice_client = get_voice_client(voice_state.guild_id)
     if voice_client is not None:
@@ -205,7 +205,7 @@ await gateway.change_voice_state(guild_id, 0)
 ```
 
 ```py3
-@client.events(overwrite=True)
+@client.events(overwrite = True)
 async def voice_client_leave(client, voice_state, old_channel_id):
     voice_client = get_voice_client(voice_state.guild_id)
     if voice_client is not None:
@@ -220,11 +220,11 @@ Handling this event is optional, but its recommended overwriting it.
 
 ```py3
 gateway = client.gateway_for(guild_id)
-await gateway.change_voice_state(guild_id, channel_id, self_mute=..., self_deaf=...)
+await gateway.change_voice_state(guild_id, channel_id, self_mute = ..., self_deaf = ...)
 ```
 
 ```py3
-@client.events(overwrite=True)
+@client.events(overwrite = True)
 async def voice_client_update(client, voice_state, old_attributes):
     ...
 ```
@@ -235,7 +235,7 @@ If you do not want to deal with ghost clients, just register an empty function o
 voice channel.
 
 ```py3
-@client.events(overwrite=True)
+@client.events(overwrite = True)
 async def voice_client_ghost(client, voice_state):
     voice_client = await join_voice_client(voice_state)
     await voice_client.disconnect()
@@ -251,7 +251,7 @@ create parallel tasks for disconnects and to wait for their completion.
 ```py3
 from hata import WaitTillAll
 
-@client.events(overwrite=True)
+@client.events(overwrite = True)
 async def voice_client_shutdown(client):
     tasks = []
     for voice_client in voice_clients:
@@ -267,7 +267,7 @@ After connecting to a voice channel the `voice_server_update_event` is received.
 `token` set as non-`None` you are free to create your datagram connection.
 
 ```py3
-@client.events(overwrite=True)
+@client.events(overwrite = True)
 async def voice_server_update(client, event):
     voice_client = get_voice_client(event.guild_id)
     if voice_client is not None:

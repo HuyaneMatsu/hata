@@ -5,12 +5,8 @@ from ....channel import Channel, ChannelType
 from ..fields import validate_threads
 
 
-def test__validate_threads__0():
-    """
-    Tests whether ``validate_threads`` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options__passing():
+
     channel_id = 202306130027
     channel_name = 'Koishi'
     
@@ -20,27 +16,38 @@ def test__validate_threads__0():
         name = channel_name,
     )
     
-    for input_value, expected_output in (
-        (None, {}),
-        ([], {}),
-        ({}, {}),
-        ([channel], {channel_id: channel}),
-        ({channel_id: channel}, {channel_id: channel}),
-    ):
-        output = validate_threads(input_value)
-        vampytest.assert_eq(output, expected_output)
+    yield None, None
+    yield [], None
+    yield {}, None
+    yield [channel], {channel_id: channel}
+    yield {channel_id: channel}, {channel_id: channel}
 
 
-def test__validate_threads__1():
+def _iter_options__type_error():
+    yield 12.6
+    yield [12.6]
+    yield {12.6}
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_threads(input_value):
     """
     Tests whether ``validate_threads`` works as intended.
     
-    Case: raising.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Returns
+    -------
+    output : `None | dict<int, Channel>`
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-        [12.6],
-        {12.6: 12.6},
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_threads(input_value)
+    output = validate_threads(input_value)
+    vampytest.assert_instance(output, dict, nullable = True)
+    return output

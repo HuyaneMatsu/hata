@@ -1,4 +1,26 @@
+## 1.3.60 *\[2024-07-14\]*
+
+### Improvements
+
+- `Guild.voice_states` is now nullable.
+- Add `Guild.get_voice_state`.
+- `Guild.scheduled_events` is now nullable.
+- `Guild.threads` is now nullable.
+- Load dotenv file in the current working directory too.
+
+### Bug fixes
+
+- Fix `os.geteuid` is a thing only on linux, so we should not import it on other platforms.
+
+#### commands_v2
+- Fix `CheckIsBooster` could return non-boolean.
+
+### plugin_loader
+- Fix `mark_as_plugin_root_directory` not returning `count` as expected.
+
 ## 1.3.59 *\[2024-07-07\]*
+
+### Improvements
 
 - Add `Attachment.title`.
 - Add `Attachment.display_name`.
@@ -5988,7 +6010,7 @@ Rework `role.py` and `permission.py`.
 
 ##### ext.slash
 - `InteractionResponse` with `force_new_message = True` was not handling `show_for_invoking_user_only` correctly.
-- When passing `allowed_mentions`, `tts` to `abort`, do not set `show_for_invoking_user_only=False` if not given.
+- When passing `allowed_mentions`, `tts` to `abort`, do not set `show_for_invoking_user_only = False` if not given.
 
 #### Renames, Deprecation & Removals
 
@@ -6189,7 +6211,7 @@ Reduce `Message` entity size.
 - Add `Preinstance`. (sleep-cult#3040)
 
 ##### ext.slash
-- Update `abort`'s auto `show_for_invoking_user_only`, since now `show_for_invoking_user_only=True` supports embeds.
+- Update `abort`'s auto `show_for_invoking_user_only`, since now `show_for_invoking_user_only = True` supports embeds.
     (Gilgamesh#8939)
 - Add `mentionable_id` parameter support for slash commands.
 - Add `configure_parameter` to overwrite slash command annotations.

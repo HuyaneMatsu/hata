@@ -5,12 +5,7 @@ from ....user import VoiceState
 from ..fields import validate_voice_states
 
 
-def test__validate_voice_states__0():
-    """
-    Tests whether ``validate_voice_states`` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options__passing():
     user_id = 202306150021
     channel_id = 202306150021
     guild_id = 202306150022
@@ -21,27 +16,38 @@ def test__validate_voice_states__0():
         guild_id = guild_id,
     )
     
-    for input_value, expected_output in (
-        (None, {}),
-        ([], {}),
-        ({}, {}),
-        ([voice_state], {user_id: voice_state}),
-        ({user_id: voice_state}, {user_id: voice_state}),
-    ):
-        output = validate_voice_states(input_value)
-        vampytest.assert_eq(output, expected_output)
+    yield None, None
+    yield [], None
+    yield {}, None
+    yield [voice_state], {user_id: voice_state}
+    yield {user_id: voice_state}, {user_id: voice_state}
 
 
-def test__validate_voice_states__1():
+def _iter_options__type_error():
+    yield 12.6
+    yield [12.6]
+    yield {12.6}
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_voice_states(input_value):
     """
     Tests whether ``validate_voice_states`` works as intended.
     
-    Case: raising.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Returns
+    -------
+    output : `None | dict<int, VoiceState>`
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-        [12.6],
-        {12.6: 12.6},
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_voice_states(input_value)
+    output = validate_voice_states(input_value)
+    vampytest.assert_instance(output, dict, nullable = True)
+    return output

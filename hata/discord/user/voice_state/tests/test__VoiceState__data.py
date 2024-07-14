@@ -110,7 +110,7 @@ def test__VoiceState__from_data__3():
     }
     voice_state = VoiceState.from_data(data, guild_id, strong_cache = False)
     
-    vampytest.assert_eq(guild.voice_states, {})
+    vampytest.assert_eq(guild.voice_states, None)
 
 
 def test__VoiceState__to_data():
@@ -379,7 +379,7 @@ def test__VoiceState__update_channel__2():
     }
     
     output = voice_state._update_channel(data)
-    vampytest.assert_eq(guild.voice_states, {})
+    vampytest.assert_eq(guild.voice_states, None)
     
     vampytest.assert_eq(
         output,

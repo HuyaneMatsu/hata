@@ -18,8 +18,8 @@ def _iter_options():
         guild_id = guild_id,
     )
     
-    yield {}, guild_id, {}
-    yield {'voice_states': []}, guild_id, {}
+    yield {}, guild_id, None
+    yield {'voice_states': []}, guild_id, None
     yield (
         {'voice_states': [voice_state.to_data(defaults = True)]},
         guild_id,
@@ -41,7 +41,7 @@ def test__parse_voice_states(input_data, guild_id):
     
     Returns
     -------
-    output : `dict<int, VoiceState>`
+    output : `None | dict<int, VoiceState>`
     """
     guild = Guild.precreate(guild_id)
     return parse_voice_states(input_data, guild.voice_states, guild_id)

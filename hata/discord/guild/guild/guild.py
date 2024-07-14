@@ -419,7 +419,7 @@ class Guild(DiscordEntity, immortal = True):
     verification_level : ``VerificationLevel``
         The minimal verification needed to join or to interact with guild.
     
-    voice_states : `dict` of (`int`, ``VoiceState``) items
+    voice_states : `None`, `dict` of (`int`, ``VoiceState``) items
         Each user at a voice channel is represented by a their voice state. Voice state are stored in
         `respective user's id` - `voice state` relation.
     
@@ -822,18 +822,18 @@ class Guild(DiscordEntity, immortal = True):
         self.safety_alerts_channel_id = safety_alerts_channel_id
         self.roles = {}
         self.rules_channel_id = rules_channel_id
-        self.scheduled_events = {}
+        self.scheduled_events = None
         self.soundboard_sounds = None
         self.stages = None
         self.stickers = {}
         self.system_channel_id = system_channel_id
         self.system_channel_flags = system_channel_flags
-        self.threads = {}
+        self.threads = None
         self.user_count = 0
         self.users = GUILD_USERS_TYPE()
         self.vanity_code = vanity_code
         self.verification_level = verification_level
-        self.voice_states = {}
+        self.voice_states = None
         self.widget_channel_id = widget_channel_id
         self.widget_enabled = widget_enabled
         
@@ -1130,18 +1130,18 @@ class Guild(DiscordEntity, immortal = True):
         self.safety_alerts_channel_id = 0
         self.roles = {}
         self.rules_channel_id = 0
-        self.scheduled_events = {}
+        self.scheduled_events = None
         self.soundboard_sounds = None
         self.stages = None
         self.stickers = {}
         self.system_channel_id = 0
         self.system_channel_flags = SystemChannelFlag.NONE
-        self.threads = {}
+        self.threads = None
         self.user_count = 0
         self.users = GUILD_USERS_TYPE()
         self.vanity_code = None
         self.verification_level = VerificationLevel.none
-        self.voice_states = {}
+        self.voice_states = None
         self.widget_channel_id = 0
         self.widget_enabled = False
         return self
@@ -1184,11 +1184,8 @@ class Guild(DiscordEntity, immortal = True):
         self.users = parse_client_guild_profile(data, self.users, guild_id)
         
         if (client is not None) and (client not in self.clients):
-            try:
-                ghost_state = self.voice_states[client.id]
-            except KeyError:
-                pass
-            else:
+            ghost_state = self.get_voice_state(client.id)
+            if (ghost_state is not None):
                 trigger_voice_client_ghost_event(client, ghost_state)
             
             self.clients.append(client)
@@ -1310,12 +1307,12 @@ class Guild(DiscordEntity, immortal = True):
             self.emojis = parse_emojis(data, {}, guild_id)
             self.large = parse_large(data) or (user_count >= LARGE_GUILD_LIMIT)
             self.roles = parse_roles(data, {}, guild_id)
-            self.scheduled_events = parse_scheduled_events(data, {})
+            self.scheduled_events = parse_scheduled_events(data, None)
             self.stages = parse_stages(data, None)
             self.stickers = parse_stickers(data, {})
-            self.threads = parse_threads(data, {}, guild_id)
+            self.threads = parse_threads(data, None, guild_id)
             self.users = parse_users(data, GUILD_USERS_TYPE(), guild_id)
-            self.voice_states = parse_voice_states(data, {}, guild_id)
+            self.voice_states = parse_voice_states(data, None, guild_id)
             
         else:
             # Clear permission cache
@@ -2132,18 +2129,18 @@ class Guild(DiscordEntity, immortal = True):
         new.safety_alerts_channel_id = self.safety_alerts_channel_id
         new.roles = {}
         new.rules_channel_id = self.rules_channel_id
-        new.scheduled_events = {}
+        new.scheduled_events = None
         new.soundboard_sounds = None
         new.stages = None
         new.stickers = {}
         new.system_channel_id = self.system_channel_id
         new.system_channel_flags = self.system_channel_flags
-        new.threads = {}
+        new.threads = None
         new.user_count = 0
         new.users = GUILD_USERS_TYPE()
         new.vanity_code = self.vanity_code
         new.verification_level = self.verification_level
-        new.voice_states = {}
+        new.voice_states = None
         new.widget_channel_id = self.widget_channel_id
         new.widget_enabled = self.widget_enabled
         
@@ -2513,18 +2510,18 @@ class Guild(DiscordEntity, immortal = True):
         new.safety_alerts_channel_id = safety_alerts_channel_id
         new.roles = {}
         new.rules_channel_id = rules_channel_id
-        new.scheduled_events = {}
+        new.scheduled_events = None
         new.soundboard_sounds = None
         new.stages = None
         new.stickers = {}
         new.system_channel_id = system_channel_id
         new.system_channel_flags = system_channel_flags
-        new.threads = {}
+        new.threads = None
         new.user_count = 0
         new.users = GUILD_USERS_TYPE()
         new.vanity_code = vanity_code
         new.verification_level = verification_level
-        new.voice_states = {}
+        new.voice_states = None
         new.widget_channel_id = widget_channel_id
         new.widget_enabled = widget_enabled
         
@@ -2625,9 +2622,8 @@ class Guild(DiscordEntity, immortal = True):
             
             If `action` is `VOICE_STATE_EVENT_LEAVE`, `VOICE_STATE_EVENT_MOVE`, then the old channel's identifier is returned.
         """
-        try:
-            voice_state = self.voice_states[user.id]
-        except KeyError:
+        voice_state = self.get_voice_state(user.id)
+        if voice_state is None:
             voice_state = VoiceState.from_data(data, self.id)
             if (voice_state is not None):
                 voice_state._set_cache_user(user)
@@ -2659,9 +2655,8 @@ class Guild(DiscordEntity, immortal = True):
         user : ``ClientUserBase``
             The respective user.
         """
-        try:
-            voice_state = self.voice_states[user.id]
-        except KeyError:
+        voice_state = self.get_voice_state(user.id)
+        if voice_state is None:
             voice_state = VoiceState.from_data(data, self.id)
             if (voice_state is not None):
                 voice_state._set_cache_user(user)
@@ -4452,6 +4447,25 @@ class Guild(DiscordEntity, immortal = True):
         matches.sort(key = _user_date_sort_key)
         return [item[0] for item in matches]
     
+    
+    def get_voice_state(self, user_id):
+        """
+        Returns the guild's voice state for the given user identifier.
+        
+        Parameters
+        ----------
+        user_id : `int`
+            User identifier.
+        
+        Returns
+        -------
+        voice_state : `None`, ``VoiceState``
+        """
+        voice_states = self.voice_states
+        if voice_states is not None:
+            return voice_states.get(user_id, None)
+    
+    
     # ---- iterators ----
     
     def iter_channels(self, type_checker = None):
@@ -4544,7 +4558,9 @@ class Guild(DiscordEntity, immortal = True):
         ------
         scheduled_event : ``ScheduledEvent``
         """
-        yield from self.scheduled_events.values()
+        scheduled_events = self.scheduled_events
+        if (scheduled_events is not None):
+            yield from scheduled_events.values()
     
     
     def iter_soundboard_sounds(self):
@@ -4600,7 +4616,9 @@ class Guild(DiscordEntity, immortal = True):
         ------
         thread : ``Channel``
         """
-        yield from self.threads.values()
+        threads = self.threads
+        if (threads is not None):
+            yield from threads.values()
     
     
     def iter_users(self):
@@ -4626,7 +4644,9 @@ class Guild(DiscordEntity, immortal = True):
         ------
         voice_state : ``VoiceState``
         """
-        yield from self.voice_states.values()
+        voice_states = self.voice_states
+        if (voice_states is not None):
+            yield from self.voice_states.values()
     
     # ---- has ----
 

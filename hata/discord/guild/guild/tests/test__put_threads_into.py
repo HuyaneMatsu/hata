@@ -15,7 +15,9 @@ def _iter_options():
         name = channel_name,
     )
     
-    yield {}, True, {'threads': []}
+    yield None, False, {'threads': []}
+    yield None, True, {'threads': []}
+    yield {channel_id: channel}, False, {'threads': [channel.to_data(defaults = False, include_internals = True)]}
     yield {channel_id: channel}, True, {'threads': [channel.to_data(defaults = True, include_internals = True)]}
 
 
@@ -26,7 +28,7 @@ def test__put_threads_into(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `dict<int, Channel>`
+    input_value : `None | dict<int, Channel>`
         Input value to serialise.
     defaults : `bool`
         Whether fields with their default values should be included as well.

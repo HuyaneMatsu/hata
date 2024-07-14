@@ -278,7 +278,12 @@ class ScheduledEvent(DiscordEntity):
             except KeyError:
                 pass
             else:
-                guild.scheduled_events[scheduled_event_id] = self
+                scheduled_events = guild.scheduled_events
+                if (scheduled_events is None):
+                    scheduled_events = {}
+                    guild.scheduled_events = scheduled_events
+                
+                scheduled_events[scheduled_event_id] = self
         
         return self
     
@@ -321,7 +326,12 @@ class ScheduledEvent(DiscordEntity):
         except KeyError:
             pass
         else:
-            guild.scheduled_events[scheduled_event_id] = self
+            scheduled_events = guild.scheduled_events
+            if (scheduled_events is None):
+                scheduled_events = {}
+                guild.scheduled_events = scheduled_events
+            
+            scheduled_events[scheduled_event_id] = self
         
         return self, True
     
@@ -372,11 +382,18 @@ class ScheduledEvent(DiscordEntity):
             guild = GUILDS[self.guild_id]
         except KeyError:
             return False
-            
+        
+        scheduled_events = guild.scheduled_events
+        if scheduled_events is None:
+            return False
+        
         try:
-            del guild.scheduled_events[self.id]
+            del scheduled_events[self.id]
         except KeyError:
             return False
+        
+        if not scheduled_events:
+            guild.scheduled_events = None
         
         return True
     
@@ -1088,17 +1105,25 @@ class ScheduledEvent(DiscordEntity):
         partial : `bool`
         """
         guild_id = self.guild_id
-        if guild_id:
-            try:
-                guild = GUILDS[guild_id]
-            except KeyError:
-                pass
-            else:
-                if not guild.partial:
-                    if self.id in guild.scheduled_events.keys():
-                        return False
+        if not guild_id:
+            return True
         
-        return True
+        try:
+            guild = GUILDS[guild_id]
+        except KeyError:
+            return True
+        
+        if guild.partial:
+            return True
+        
+        scheduled_events = guild.scheduled_events
+        if (scheduled_events is None):
+            return True
+        
+        if self.id not in scheduled_events.keys():
+            return True
+        
+        return False
     
     
     @property

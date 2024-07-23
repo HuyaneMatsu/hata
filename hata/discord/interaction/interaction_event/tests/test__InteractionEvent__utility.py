@@ -1,12 +1,12 @@
 import vampytest
 
-from ....application import Entitlement, SKU
+from ....application import ApplicationIntegrationType, Entitlement, SKU
 from ....channel import Channel
 from ....guild import create_partial_guild_from_id
 from ....localization import Locale
 from ....message import Message
 from ....permission import Permission
-from ....user import User
+from ....user import ClientUserBase, User, create_partial_user_from_id
 from ....utils import now_as_id
 
 from ...interaction_metadata import InteractionMetadataApplicationCommand, InteractionMetadataMessageComponent
@@ -114,6 +114,10 @@ def test__InteractionEvent__copy():
     """
     application_id = 202211070052
     application_permissions = Permission(123)
+    authorizer_user_ids = {
+        ApplicationIntegrationType.user_install: 202407170017,
+        ApplicationIntegrationType.guild_install: 202407170018,
+    }
     channel = Channel.precreate(202211070053)
     entitlements = [Entitlement.precreate(202310050025), Entitlement.precreate(202310050026)]
     guild = create_partial_guild_from_id(202211070054)
@@ -131,6 +135,7 @@ def test__InteractionEvent__copy():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
+        authorizer_user_ids = authorizer_user_ids,
         channel = channel,
         entitlements = entitlements,
         guild = guild,
@@ -158,6 +163,10 @@ def test__InteractionEvent__copy__with__no_fields():
     """
     application_id = 202211070058
     application_permissions = Permission(123)
+    authorizer_user_ids = {
+        ApplicationIntegrationType.user_install: 202407170019,
+        ApplicationIntegrationType.guild_install: 202407170020,
+    }
     channel = Channel.precreate(202211070059)
     entitlements = [Entitlement.precreate(202310050027), Entitlement.precreate(202310050028)]
     guild = create_partial_guild_from_id(202211070060)
@@ -175,6 +184,7 @@ def test__InteractionEvent__copy__with__no_fields():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
+        authorizer_user_ids = authorizer_user_ids,
         channel = channel,
         entitlements = entitlements,
         guild = guild,
@@ -202,6 +212,10 @@ def test__InteractionEvent__copy__with__all_fields():
     """
     old_application_id = 202211070064
     old_application_permissions = Permission(123)
+    old_authorizer_user_ids = {
+        ApplicationIntegrationType.user_install: 202407170021,
+        ApplicationIntegrationType.guild_install: 202407170022,
+    }
     old_channel = Channel.precreate(202211070066)
     old_entitlements = [Entitlement.precreate(202310050028), Entitlement.precreate(202310050029)]
     old_guild = create_partial_guild_from_id(202211070068)
@@ -215,6 +229,10 @@ def test__InteractionEvent__copy__with__all_fields():
     
     new_application_id = 202211070065
     new_application_permissions = Permission(951)
+    new_authorizer_user_ids = {
+        ApplicationIntegrationType.user_install: 202407170023,
+        ApplicationIntegrationType.guild_install: 202407170024,
+    }
     new_channel = Channel.precreate(202211070067)
     new_entitlements = [Entitlement.precreate(202310050030), Entitlement.precreate(202310050031)]
     new_guild = create_partial_guild_from_id(202211070069)
@@ -229,6 +247,7 @@ def test__InteractionEvent__copy__with__all_fields():
     interaction_event = InteractionEvent(
         application_id = old_application_id,
         application_permissions = old_application_permissions,
+        authorizer_user_ids = old_authorizer_user_ids,
         channel = old_channel,
         entitlements = old_entitlements,
         guild = old_guild,
@@ -244,6 +263,7 @@ def test__InteractionEvent__copy__with__all_fields():
     copy = interaction_event.copy_with(
         application_id = new_application_id,
         application_permissions = new_application_permissions,
+        authorizer_user_ids = new_authorizer_user_ids,
         channel = new_channel,
         entitlements = new_entitlements,
         guild = new_guild,
@@ -260,6 +280,7 @@ def test__InteractionEvent__copy__with__all_fields():
 
     vampytest.assert_eq(copy.application_id, new_application_id)
     vampytest.assert_eq(copy.application_permissions, new_application_permissions)
+    vampytest.assert_eq(copy.authorizer_user_ids, new_authorizer_user_ids)
     vampytest.assert_is(copy.channel, new_channel)
     vampytest.assert_eq(copy.entitlements, tuple(new_entitlements))
     vampytest.assert_is(copy.guild, new_guild)
@@ -362,4 +383,160 @@ def test__InteractionEvent__has_sku(interaction_event, sku):
     """
     output = interaction_event.has_sku(sku)
     vampytest.assert_instance(output, bool)
+    return output
+
+
+
+def _iter_options__get_authorizer_user_id():
+    user_id = 202407170025
+    
+    yield (
+        None,
+        ApplicationIntegrationType.user_install,
+        0,
+    )
+    
+    yield (
+        {
+            ApplicationIntegrationType.user_install: user_id,
+        },
+        ApplicationIntegrationType.user_install,
+        user_id,
+    )
+    
+    yield (
+        {
+            ApplicationIntegrationType.guild_install: user_id,
+        },
+        ApplicationIntegrationType.user_install,
+        0,
+    )
+    
+    yield (
+        {
+            ApplicationIntegrationType.guild_install: user_id,
+        },
+        ApplicationIntegrationType.guild_install,
+        user_id,
+    )
+    
+    yield (
+        {
+            ApplicationIntegrationType.guild_install: user_id,
+        },
+        ApplicationIntegrationType.user_install,
+        0,
+    )
+    
+    
+    yield (
+        {
+            ApplicationIntegrationType.user_install: user_id,
+        },
+        ApplicationIntegrationType.user_install.value,
+        user_id,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__get_authorizer_user_id()).returning_last())
+def test__InteractionEvent__get_authorizer_user_id(authorizer_user_ids, integration_type):
+    """
+    Tests whether ``InteractionEvent.get_authorizer_user_id`` works as intended.
+    
+    Parameters
+    ----------
+    authorizer_user_ids : `dict<ApplicationIntegrationType, int>`
+        The authorizer users identifiers.
+    
+    integration_type : `ApplicationIntegrationType | int`
+        Integration type to query for.
+    
+    Returns
+    -------
+    output : `int`
+    """
+    interaction_event = InteractionEvent(
+        authorizer_user_ids = authorizer_user_ids,
+    )
+    
+    output = interaction_event.get_authorizer_user_id(integration_type)
+    vampytest.assert_instance(output, int)
+    return output
+
+
+def _iter_options__get_authorizer_user():
+    user_id = 202407170026
+    user = create_partial_user_from_id(user_id)
+    
+    yield (
+        None,
+        ApplicationIntegrationType.user_install,
+        None,
+    )
+    
+    yield (
+        {
+            ApplicationIntegrationType.user_install: user_id,
+        },
+        ApplicationIntegrationType.user_install,
+        user,
+    )
+    
+    yield (
+        {
+            ApplicationIntegrationType.guild_install: user_id,
+        },
+        ApplicationIntegrationType.user_install,
+        None,
+    )
+    
+    yield (
+        {
+            ApplicationIntegrationType.guild_install: user_id,
+        },
+        ApplicationIntegrationType.guild_install,
+        user,
+    )
+    
+    yield (
+        {
+            ApplicationIntegrationType.guild_install: user_id,
+        },
+        ApplicationIntegrationType.user_install,
+        None,
+    )
+    
+    
+    yield (
+        {
+            ApplicationIntegrationType.user_install: user_id,
+        },
+        ApplicationIntegrationType.user_install.value,
+        user,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__get_authorizer_user()).returning_last())
+def test__InteractionEvent__get_authorizer_user(authorizer_user_ids, integration_type):
+    """
+    Tests whether ``InteractionEvent.get_authorizer_user`` works as intended.
+    
+    Parameters
+    ----------
+    authorizer_user_ids : `dict<ApplicationIntegrationType, int>`
+        The authorizer users identifiers.
+    
+    integration_type : `ApplicationIntegrationType | int`
+        Integration type to query for.
+    
+    Returns
+    -------
+    output : `None | ClientUserBase`
+    """
+    interaction_event = InteractionEvent(
+        authorizer_user_ids = authorizer_user_ids,
+    )
+    
+    output = interaction_event.get_authorizer_user(integration_type)
+    vampytest.assert_instance(output, ClientUserBase, nullable = True)
     return output

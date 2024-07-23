@@ -61,17 +61,20 @@ def test__AuditLogIterator__new__min_fields():
         now_as_id = now_as_id_mock,
     )
     
+    expected_data = {
+        'limit': 100,
+        'before': current_time_as_id,
+    }
+    
     try:
         audit_log_iterator = mocked(AuditLogIterator, client, guild_id)
         _assert_fields_set(audit_log_iterator)
         
-        vampytest.assert_eq(
-            audit_log_iterator._data,
-            {
-                'limit': 100,
-                'before': current_time_as_id,
-            },
-        )
+        vampytest.assert_eq(audit_log_iterator._data, expected_data)
+        
+        for key, value in expected_data.items():
+            vampytest.assert_instance(audit_log_iterator._data[key], type(value))
+        
         vampytest.assert_is(audit_log_iterator.client, client)
         vampytest.assert_eq(audit_log_iterator.guild_id, guild_id)
         
@@ -106,19 +109,22 @@ def test__AuditLogIterator__new__max_fields():
         now_as_id = now_as_id_mock,
     )
     
+    expected_data = {
+        'limit': 100,
+        'before': current_time_as_id,
+        'action_type': entry_type.value,
+        'user_id': str(user_id),
+    }
+    
     try:
         audit_log_iterator = mocked(AuditLogIterator, client, guild_id, entry_type = entry_type, user_id = user_id)
         _assert_fields_set(audit_log_iterator)
         
-        vampytest.assert_eq(
-            audit_log_iterator._data,
-            {
-                'limit': 100,
-                'before': current_time_as_id,
-                'action_type': entry_type.value,
-                'user_id': str(user_id),
-            },
-        )
+        vampytest.assert_eq(audit_log_iterator._data, expected_data)
+        
+        for key, value in expected_data.items():
+            vampytest.assert_instance(audit_log_iterator._data[key], type(value))
+        
         vampytest.assert_is(audit_log_iterator.client, client)
         vampytest.assert_eq(audit_log_iterator.guild_id, guild_id)
         

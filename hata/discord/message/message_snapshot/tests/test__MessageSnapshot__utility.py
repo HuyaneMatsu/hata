@@ -2,10 +2,13 @@ from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
+from ....channel import Channel
 from ....embed import Embed
+from ....role import Role
+from ....user import User
 
 from ...attachment import Attachment
-from ...message import MessageFlag
+from ...message import MessageFlag, MessageType
 
 from ..message_snapshot import MessageSnapshot
 
@@ -25,6 +28,12 @@ def test__MessageSnapshot__copy():
     edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
+    mentioned_role_ids = [202407200024, 202407200025]
+    mentioned_users = [
+        User.precreate(202407200052, name = 'Kaenbyou'),
+        User.precreate(202407200053, name = 'Rin'),
+    ]
+    message_type = MessageType.call
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
@@ -33,6 +42,9 @@ def test__MessageSnapshot__copy():
         edited_at = edited_at,
         embeds = embeds,
         flags = flags,
+        mentioned_role_ids = mentioned_role_ids,
+        mentioned_users = mentioned_users,
+        message_type = message_type
     )
     copy = message_snapshot.copy()
     
@@ -57,6 +69,12 @@ def test__MessageSnapshot__copy_with__no_fields():
     edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
+    mentioned_role_ids = [202407200026, 202407200027]
+    mentioned_users = [
+        User.precreate(202407200054, name = 'Kaenbyou'),
+        User.precreate(202407200055, name = 'Rin'),
+    ]
+    message_type = MessageType.call
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
@@ -65,6 +83,9 @@ def test__MessageSnapshot__copy_with__no_fields():
         edited_at = edited_at,
         embeds = embeds,
         flags = flags,
+        mentioned_role_ids = mentioned_role_ids,
+        mentioned_users = mentioned_users,
+        message_type = message_type,
     )
     copy = message_snapshot.copy_with()
     
@@ -89,6 +110,12 @@ def test__MessageSnapshot__copy_with__all_fields():
     old_edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     old_embeds = [Embed('okuu'), Embed('egg')]
     old_flags = MessageFlag(12)
+    old_mentioned_role_ids = [202407200028, 202407200029]
+    old_mentioned_users = [
+        User.precreate(202407200056, name = 'Kaenbyou'),
+        User.precreate(202407200057, name = 'Rin'),
+    ]
+    old_message_type = MessageType.call
     
     new_attachments = [
         Attachment.precreate(202405250020, name = 'komeiji'),
@@ -99,6 +126,12 @@ def test__MessageSnapshot__copy_with__all_fields():
     new_edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     new_embeds = [Embed('boils'), Embed('them')]
     new_flags = MessageFlag(78)
+    new_mentioned_role_ids = [202407200030, 202407200031]
+    new_mentioned_users = [
+        User.precreate(202407200058, name = 'Kaenbyou'),
+        User.precreate(202407200059, name = 'Rin'),
+    ]
+    new_message_type = MessageType.user_add
     
     message_snapshot = MessageSnapshot(
         attachments = old_attachments,
@@ -107,6 +140,9 @@ def test__MessageSnapshot__copy_with__all_fields():
         edited_at = old_edited_at,
         embeds = old_embeds,
         flags = old_flags,
+        mentioned_role_ids = old_mentioned_role_ids,
+        mentioned_users = old_mentioned_users,
+        message_type = old_message_type,
     )
     copy = message_snapshot.copy_with(
         attachments = new_attachments,
@@ -115,6 +151,9 @@ def test__MessageSnapshot__copy_with__all_fields():
         edited_at = new_edited_at,
         embeds = new_embeds,
         flags = new_flags,
+        mentioned_role_ids = new_mentioned_role_ids,
+        mentioned_users = new_mentioned_users,
+        message_type = new_message_type,
     )
     
     _assert_fields_set(copy)
@@ -126,6 +165,9 @@ def test__MessageSnapshot__copy_with__all_fields():
     vampytest.assert_eq(copy.edited_at, new_edited_at)
     vampytest.assert_eq(copy.embeds, tuple(new_embeds))
     vampytest.assert_eq(copy.flags, new_flags)
+    vampytest.assert_eq(copy.mentioned_role_ids, tuple(new_mentioned_role_ids))
+    vampytest.assert_eq(copy.mentioned_users, tuple(new_mentioned_users))
+    vampytest.assert_is(copy.type, new_message_type)
 
 
 def _iter_options__embed():
@@ -249,3 +291,170 @@ def test__MessageSnapshot__iter_attachments(attachments):
     )
     
     return [*message_snapshot.iter_attachments()]
+
+
+
+def _iter_options__iter_mentioned_role_ids():
+    role_id_0 = 202407200032
+    role_id_1 = 202407200033
+    
+    yield None, []
+    yield [role_id_0], [role_id_0]
+    yield [role_id_0, role_id_1], [role_id_0, role_id_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_mentioned_role_ids()).returning_last())
+def test__MessageSnapshot__iter_mentioned_role_ids(input_value):
+    """
+    Tests whether ``MessageSnapshot.iter_mentioned_role_ids`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<int>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<int>`
+    """
+    message_snapshot = MessageSnapshot(mentioned_role_ids = input_value)
+    return [*message_snapshot.iter_mentioned_role_ids()]
+
+
+def _iter_options__iter_mentioned_roles():
+    role_id_0 = 202407200034
+    role_id_1 = 202407200035
+    role_0 = Role.precreate(role_id_0)
+    role_1 = Role.precreate(role_id_1)
+    
+    yield None, []
+    yield [role_id_0], [role_0]
+    yield [role_id_0, role_id_1], [role_0, role_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_mentioned_roles()).returning_last())
+def test__MessageSnapshot__iter_mentioned_roles(input_value):
+    """
+    Tests whether ``MessageSnapshot.iter_mentioned_roles`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<int>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<Role>`
+    """
+    message_snapshot = MessageSnapshot(mentioned_role_ids = input_value)
+    return [*message_snapshot.iter_mentioned_roles()]
+
+
+def _iter_options__mentioned_roles():
+    role_id_0 = 202407200036
+    role_id_1 = 202407200037
+    role_0 = Role.precreate(role_id_0)
+    role_1 = Role.precreate(role_id_1)
+    
+    yield None, None
+    yield [role_id_0], (role_0,)
+    yield [role_id_0, role_id_1], (role_0, role_1)
+
+
+@vampytest._(vampytest.call_from(_iter_options__mentioned_roles()).returning_last())
+def test__MessageSnapshot__mentioned_roles(input_value):
+    """
+    Tests whether ``MessageSnapshot.mentioned_roles`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<int>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `None | tuple<Role>`
+    """
+    message_snapshot = MessageSnapshot(mentioned_role_ids = input_value)
+    return message_snapshot.mentioned_roles
+
+
+def _iter_options__iter_mentioned_users():
+    user_0 = User.precreate(202407200060)
+    user_1 = User.precreate(202407200061)
+    
+    yield None, []
+    yield [user_0], [user_0]
+    yield [user_0, user_1], [user_0, user_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_mentioned_users()).returning_last())
+def test__MessageSnapshot__iter_mentioned_users(input_value):
+    """
+    Tests whether ``MessageSnapshot.iter_mentioned_users`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<ClientUserBase>`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<ClientUserBase>`
+    """
+    message_snapshot = MessageSnapshot(mentioned_users = input_value)
+    return [*message_snapshot.iter_mentioned_users()]
+
+
+def _iter_options__mentioned_channels():
+    channel_0 = Channel.precreate(202407210000)
+    channel_1 = Channel.precreate(202407210001)
+    
+    yield None, None
+    yield channel_0.mention, (channel_0, )
+    yield channel_0.mention + channel_1.mention, (channel_0, channel_1)
+
+
+@vampytest._(vampytest.call_from(_iter_options__mentioned_channels()).returning_last())
+def test__MessageSnapshot__mentioned_channels(input_value):
+    """
+    Tests whether ``MessageSnapshot.mentioned_channels`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | str`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `None | tuple<Channel>`
+    """
+    message_snapshot = MessageSnapshot(content = input_value)
+    return message_snapshot.mentioned_channels
+
+
+def _iter_options__iter_mentioned_channels():
+    channel_0 = Channel.precreate(202407210002)
+    channel_1 = Channel.precreate(202407210003)
+    
+    yield None, []
+    yield channel_0.mention, [channel_0]
+    yield channel_0.mention + channel_1.mention, [channel_0, channel_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_mentioned_channels()).returning_last())
+def test__MessageSnapshot__iter_mentioned_channels(input_value):
+    """
+    Tests whether ``MessageSnapshot.iter_mentioned_channels`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | str`
+        Value to test with.
+    
+    Returns
+    -------
+    output : `list<Channel>`
+    """
+    message_snapshot = MessageSnapshot(content = input_value)
+    return [*message_snapshot.iter_mentioned_channels()]

@@ -100,18 +100,19 @@ class EmbedVideo(EmbedFieldBase):
     
     @copy_docs(EmbedFieldBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
-        # height
-        # Receive only | check `.url` instead
-        
-        # proxy_url
-        # Receive only | check `.url` instead
-        
         # url
         if self.url != other.url:
             return False
         
-        # width
-        # Receive only | check `.url` instead
+        # proxy_url -> ignore
+        if (self.proxy_url is not None) and (other.proxy_url is not None):
+            # height
+            if self.height != other.height:
+                return False
+            
+            # width
+            if self.width != other.width:
+                return False
         
         return True
     

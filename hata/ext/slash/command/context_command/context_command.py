@@ -3,7 +3,7 @@ __all__ = ('ContextCommand',)
 from warnings import warn
 
 from scarletio import copy_docs
-4
+
 from .....discord.events.handling_helpers import Router, check_name, route_name, route_value
 
 from ...converters import get_context_command_parameter_converters
@@ -306,6 +306,7 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
                     integration_context_types = None
                 
                 self = object.__new__(cls)
+                self.default = False
                 self.guild_ids = guild_ids
                 self.global_ = is_global
                 self.name = name
@@ -359,6 +360,7 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
             self = object.__new__(cls)
             self.guild_ids = guild_ids
             self.global_ = is_global
+            self.default = False
             self.name = name
             self._schema = None
             self._registered_application_command_ids = None

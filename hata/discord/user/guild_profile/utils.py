@@ -7,10 +7,10 @@ from ..voice_state.fields import (
 )
 
 from .fields import (
-    put_nick_into, put_role_ids_into, put_timed_out_until_into, validate_nick, validate_role_ids,
-    validate_timed_out_until, validate_timeout_duration
+    put_avatar_decoration_into, put_nick_into, put_role_ids_into, put_timed_out_until_into, validate_avatar_decoration,
+    validate_nick, validate_role_ids, validate_timed_out_until, validate_timeout_duration
 )
-from .guild_profile import GUILD_PROFILE_AVATAR
+from .guild_profile import GUILD_PROFILE_AVATAR, GUILD_PROFILE_BANNER
 
 
 GUILD_PROFILE_FIELD_CONVERTERS = {
@@ -29,6 +29,11 @@ GUILD_PROFILE_SELF_FIELD_CONVERTERS = {
     'avatar': (
         partial_func(GUILD_PROFILE_AVATAR.validate_icon, allow_data = True),
         partial_func(GUILD_PROFILE_AVATAR.put_into, as_data = True),
+    ),
+    'avatar_decoration': (validate_avatar_decoration, put_avatar_decoration_into),
+    'banner': (
+        partial_func(GUILD_PROFILE_BANNER.validate_icon, allow_data = True),
+        partial_func(GUILD_PROFILE_BANNER.put_into, as_data = True),
     ),
     'nick': (validate_nick, put_nick_into),
 }

@@ -1,6 +1,6 @@
 import vampytest
 
-from ....application import Entitlement
+from ....application import ApplicationIntegrationType, Entitlement
 from ....channel import Channel
 from ....guild import create_interaction_guild_data, create_partial_guild_from_id
 from ....localization import Locale
@@ -22,6 +22,10 @@ def test__InteractionEvent__from_data():
     """
     application_id = 202211070005
     application_permissions = Permission(123)
+    authorizer_user_ids = {
+        ApplicationIntegrationType.user_install: 202407170004,
+        ApplicationIntegrationType.guild_install: 202407170005,
+    }
     channel = Channel.precreate(202211070006)
     entitlements = [Entitlement.precreate(202310050014), Entitlement.precreate(202310050015)]
     guild = create_partial_guild_from_id(202211070007)
@@ -39,6 +43,9 @@ def test__InteractionEvent__from_data():
     data = {
         'application_id': str(application_id),
         'app_permissions': format(application_permissions, 'd'),
+        'authorizing_integration_owners': {
+            str(integration_type.value): str(user_id) for integration_type, user_id in authorizer_user_ids.items()
+        },
         'channel': channel.to_data(include_internals = True),
         'entitlements': [entitlement.to_data(include_internals = True) for entitlement in entitlements],
         'guild': create_interaction_guild_data(guild),
@@ -61,6 +68,7 @@ def test__InteractionEvent__from_data():
     
     vampytest.assert_eq(interaction_event.application_id, application_id)
     vampytest.assert_eq(interaction_event.application_permissions, application_permissions)
+    vampytest.assert_eq(interaction_event.authorizer_user_ids, authorizer_user_ids)
     vampytest.assert_is(interaction_event.channel, channel)
     vampytest.assert_eq(interaction_event.entitlements, tuple(entitlements))
     vampytest.assert_is(interaction_event.guild, guild)
@@ -83,6 +91,10 @@ def test__InteractionEvent__to_data():
     """
     application_id = 202211070019
     application_permissions = Permission(123)
+    authorizer_user_ids = {
+        ApplicationIntegrationType.user_install: 202407170006,
+        ApplicationIntegrationType.guild_install: 202407170007,
+    }
     channel = Channel.precreate(202211070020)
     entitlements = [Entitlement.precreate(202310050016), Entitlement.precreate(202310050017)]
     guild = create_partial_guild_from_id(202211070021)
@@ -102,6 +114,7 @@ def test__InteractionEvent__to_data():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
+        authorizer_user_ids = authorizer_user_ids,
         channel = channel,
         entitlements = entitlements,
         guild = guild,
@@ -117,6 +130,9 @@ def test__InteractionEvent__to_data():
     expected_output = {
         'application_id': str(application_id),
         'app_permissions': format(application_permissions, 'd'),
+        'authorizing_integration_owners': {
+            str(integration_type.value): str(user_id) for integration_type, user_id in authorizer_user_ids.items()
+        },
         'channel': channel.to_data(defaults = True, include_internals = True),
         'entitlements': [
             entitlement.to_data(defaults = True, include_internals = True) for entitlement in entitlements

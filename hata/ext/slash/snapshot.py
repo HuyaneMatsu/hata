@@ -36,7 +36,7 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the application command difference."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         field_added = False
         
@@ -165,7 +165,7 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
         
         Returns
         -------
-        new : ``ApplicationCommandDifference``
+        new : `instance<type<self>>`
         """
         added_application_commands = self.added_application_commands
         if (added_application_commands is not None):
@@ -181,13 +181,13 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
         return new
     
     
-    def revert_copy(self):
+    def reverse_copy(self):
         """
         Revert copies the application command difference.
         
         Returns
         -------
-        new : ``ApplicationCommandDifference``
+        new : `instance<type<self>>`
         """
         added_application_commands = self.added_application_commands
         if (added_application_commands is not None):
@@ -209,12 +209,12 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        other : ``ApplicationCommandDifference``
+        other : `instance<type<self>>`
             The other difference to subtract from self.
         
         Returns
         -------
-        new : ``ApplicationCommandDifference``
+        new : `instance<type<self>>`
         """
         added_application_commands, removed_application_commands = _get_list_difference(
             _merge_list_groups(self.added_application_commands, other.removed_application_commands),
@@ -241,7 +241,7 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
     def __rsub__(self, other):
         """subtracts other from self."""
         if other is None:
-            return self.revert_copy()
+            return self.reverse_copy()
         
         if type(self) is type(other):
             return other._subtract(self)
@@ -272,8 +272,8 @@ class PermissionOverwriteDifference(RichAttributeErrorBaseType):
         return self
     
     def __repr__(self):
-        """Returns the permission overwrite difference."""
-        repr_parts = ['<', self.__class__.__name__]
+        """Returns the representation of the permission overwrite difference."""
+        repr_parts = ['<', type(self).__name__]
         
         field_added = False
         
@@ -402,7 +402,7 @@ class PermissionOverwriteDifference(RichAttributeErrorBaseType):
         
         Returns
         -------
-        new : ``PermissionOverwriteDifference``
+        new : `instance<type<self>>`
         """
         added_permission_overwrites = self.added_permission_overwrites
         if (added_permission_overwrites is not None):
@@ -418,13 +418,13 @@ class PermissionOverwriteDifference(RichAttributeErrorBaseType):
         return new
     
     
-    def revert_copy(self):
+    def reverse_copy(self):
         """
         Revert copies the permission overwrite difference.
         
         Returns
         -------
-        new : ``PermissionOverwriteDifference``
+        new : `instance<type<self>>`
         """
         added_permission_overwrites = self.added_permission_overwrites
         if (added_permission_overwrites is not None):
@@ -446,12 +446,12 @@ class PermissionOverwriteDifference(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        other : ``PermissionOverwriteDifference``
+        other : `instance<type<self>>`
             The other difference to subtract from self.
         
         Returns
         -------
-        new : ``PermissionOverwriteDifference``
+        new : `instance<type<self>>`
         """
         added_permission_overwrites, removed_permission_overwrites = _get_list_difference(
             _merge_list_groups(self.added_permission_overwrites, other.removed_permission_overwrites),
@@ -478,7 +478,207 @@ class PermissionOverwriteDifference(RichAttributeErrorBaseType):
     def __rsub__(self, other):
         """subtracts other from self."""
         if other is None:
-            return self.revert_copy()
+            return self.reverse_copy()
+        
+        if type(self) is type(other):
+            return other._subtract(self)
+        
+        return NotImplemented
+
+
+class RandomErrorMessageGetterDifference(RichAttributeErrorBaseType):
+    """
+    Snapshot for exception handling.
+    
+    Attributes
+    ----------
+    removed_random_error_message_getter : `None | FunctionType`
+        The removed random error message getter.
+    set_random_error_message_getter : `None | FunctionType`
+        The set random error message getter.
+    """
+    __slots__ = ('removed_random_error_message_getter', 'set_random_error_message_getter',)
+    
+    def __new__(cls):
+        """
+        Creates a new permission overwrite snapshot.
+        """
+        self = object.__new__(cls)
+        self.removed_random_error_message_getter = None
+        self.set_random_error_message_getter = None
+        return self
+    
+    
+    def __repr__(self):
+        """Returns the permission overwrite difference."""
+        repr_parts = ['<', type(self).__name__]
+        
+        field_added = False
+        
+        # set_random_error_message_getter
+        set_random_error_message_getter = self.set_random_error_message_getter
+        if (set_random_error_message_getter is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' set_random_error_message_getter = ')
+            repr_parts.append(repr(set_random_error_message_getter))
+        
+        # removed_random_error_message_getter
+        removed_random_error_message_getter = self.removed_random_error_message_getter
+        if (removed_random_error_message_getter is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' removed_random_error_message_getter = ')
+            repr_parts.append(repr(removed_random_error_message_getter))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    def __bool__(self):
+        """Returns whether the difference contains any changes."""
+        if (self.removed_random_error_message_getter is not None):
+            return True
+        
+        if (self.set_random_error_message_getter is not None):
+            return True
+        
+        return False
+    
+    
+    def set(self, random_error_message_getter):
+        """
+        Sets the random error message getter to self.
+        
+        Parameters
+        ----------
+        random_error_message_getter : `FunctionType`
+            Random error message getter to set.
+        """
+        if self.removed_random_error_message_getter is not random_error_message_getter:
+            self.set_random_error_message_getter = random_error_message_getter
+            return
+        
+        self.removed_random_error_message_getter = None
+        self.set_random_error_message_getter = None
+        return
+    
+    
+    def remove(self, random_error_message_getter):
+        """
+        Removes the random error message getter from self.
+        
+        Parameters
+        ----------
+        random_error_message_getter : `FunctionType`
+            Random error message getter to remove.
+        """
+        if self.set_random_error_message_getter is not random_error_message_getter:
+            self.removed_random_error_message_getter = random_error_message_getter
+            return
+        
+        self.removed_random_error_message_getter = None
+        self.set_random_error_message_getter = None
+        return
+    
+    
+    def copy(self):
+        """
+        Copies the permission overwrite difference.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        new = object.__new__(type(self))
+        new.removed_random_error_message_getter = self.removed_random_error_message_getter
+        new.set_random_error_message_getter = self.set_random_error_message_getter
+        return new
+    
+    
+    def reverse_copy(self):
+        """
+        Revert copies the permission overwrite difference.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        new = object.__new__(type(self))
+        new.removed_random_error_message_getter = self.set_random_error_message_getter
+        new.set_random_error_message_getter = self.removed_random_error_message_getter
+        return new
+    
+    
+    def _subtract(self, other):
+        """
+        Subtracts other from self.
+        
+        Parameters
+        ----------
+        other : `instance<type<self>>`
+            The other difference to subtract from self.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        self_set_random_error_message_getter = self.set_random_error_message_getter
+        other_set_random_error_message_getter = other.set_random_error_message_getter
+        self_removed_random_error_message_getter = self.removed_random_error_message_getter
+        other_removed_random_error_message_getter = other.removed_random_error_message_getter
+        
+        
+        if self_set_random_error_message_getter is other_removed_random_error_message_getter:
+            set_random_error_message_getter = None
+        else:
+            if (self_set_random_error_message_getter is None):
+                set_random_error_message_getter = other_removed_random_error_message_getter
+            else:
+                set_random_error_message_getter = self_set_random_error_message_getter
+        
+        if self_removed_random_error_message_getter is other_set_random_error_message_getter:
+            removed_random_error_message_getter = None
+        else:
+            if (self_removed_random_error_message_getter is None):
+                removed_random_error_message_getter = other_set_random_error_message_getter
+            else:
+                removed_random_error_message_getter = self_removed_random_error_message_getter
+        
+        if (
+            (set_random_error_message_getter is not None) and
+            (set_random_error_message_getter is removed_random_error_message_getter)
+        ):
+            set_random_error_message_getter = None
+            removed_random_error_message_getter = None
+        
+        new = object.__new__(type(self))
+        new.removed_random_error_message_getter = removed_random_error_message_getter
+        new.set_random_error_message_getter = set_random_error_message_getter
+        return new
+    
+    
+    def __sub__(self, other):
+        """Subtracts other from self."""
+        if other is None:
+            return self.copy()
+        
+        if type(self) is type(other):
+            return self._subtract(other)
+        
+        return NotImplemented
+    
+    
+    def __rsub__(self, other):
+        """subtracts other from self."""
+        if other is None:
+            return self.reverse_copy()
         
         if type(self) is type(other):
             return other._subtract(self)
@@ -498,6 +698,8 @@ class SlasherSnapshotType(BaseSnapshotType):
         The added form submit commands.
     application_command_differences_by_guild_id : `dict` of (`int`, ``ApplicationCommandDifference``)
         The added & removed application commands by guild id.
+    random_error_message_getter_difference : `None | RandomErrorMessageGetterDifference`
+        TThe difference between exception handlers.
     permission_overwrite_difference_by_guild_id : `dict` of (`int`, ``PermissionOverwriteDifference``)
         The added & removed application command permission overwrites by guild id.
     removed_component_commands : `None`, `set` of ``ComponentCommand``
@@ -507,7 +709,8 @@ class SlasherSnapshotType(BaseSnapshotType):
     """
     __slots__ = (
         'added_component_commands', 'added_form_submit_commands', 'application_command_differences_by_guild_id',
-        'permission_overwrite_difference_by_guild_id', 'removed_component_commands', 'removed_form_submit_commands',
+        'random_error_message_getter_difference', 'permission_overwrite_difference_by_guild_id',
+        'removed_component_commands', 'removed_form_submit_commands',
     )
     
     
@@ -520,6 +723,7 @@ class SlasherSnapshotType(BaseSnapshotType):
         if (slasher is None) or (not isinstance(slasher, Slasher)):
             added_component_commands = None
             added_form_submit_commands = None
+            random_error_message_getter_difference = None
         
         else:
             command_states = slasher._command_states
@@ -567,13 +771,16 @@ class SlasherSnapshotType(BaseSnapshotType):
                     
                     if permission_overwrite_difference:
                         permission_overwrite_difference_by_guild_id[guild_id] = permission_overwrite_difference
-        
+            
+            random_error_message_getter_difference = RandomErrorMessageGetterDifference()
+            random_error_message_getter_difference.set(slasher.random_error_message_getter)
         
         self = BaseSnapshotType.__new__(cls, client)
         
         self.added_component_commands = added_component_commands
         self.added_form_submit_commands = added_form_submit_commands
         self.application_command_differences_by_guild_id = application_command_differences_by_guild_id
+        self.random_error_message_getter_difference = random_error_message_getter_difference
         self.permission_overwrite_difference_by_guild_id = permission_overwrite_difference_by_guild_id
         self.removed_component_commands = None
         self.removed_form_submit_commands = None
@@ -583,7 +790,7 @@ class SlasherSnapshotType(BaseSnapshotType):
     
     @copy_docs(BaseSnapshotType.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         client = self.client
         if (client is not None):
@@ -604,7 +811,7 @@ class SlasherSnapshotType(BaseSnapshotType):
         if (added_component_commands is not None):
             repr_parts.append(', added_component_commands = ')
             repr_parts.append(repr(added_component_commands))
-            
+        
         removed_component_commands = self.removed_component_commands
         if (removed_component_commands is not None):
             repr_parts.append(', removed_component_commands = ')
@@ -619,6 +826,11 @@ class SlasherSnapshotType(BaseSnapshotType):
         if (removed_form_submit_commands is not None):
             repr_parts.append(', removed_form_submit_commands = ')
             repr_parts.append(repr(removed_form_submit_commands))
+        
+        random_error_message_getter_difference = self.random_error_message_getter_difference
+        if (random_error_message_getter_difference is not None):
+            repr_parts.append(', random_error_message_getter_difference = ')
+            repr_parts.append(repr(random_error_message_getter_difference))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -672,14 +884,29 @@ class SlasherSnapshotType(BaseSnapshotType):
             _merge_set_groups(other.added_form_submit_commands, self.removed_form_submit_commands),
         )
         
-        new = BaseSnapshotType._extract(self, other)
+        self_random_error_message_getter_difference = self.random_error_message_getter_difference
+        other_random_error_message_getter_difference = other.random_error_message_getter_difference
         
+        if (
+            (self_random_error_message_getter_difference is None) and
+            (other_random_error_message_getter_difference is None)
+        ):
+            new_random_error_message_getter_difference = None
+        
+        else: 
+            new_random_error_message_getter_difference = (
+                self_random_error_message_getter_difference -
+                other_random_error_message_getter_difference
+            )
+        
+        new = BaseSnapshotType._extract(self, other)
         new.added_component_commands = added_component_commands
         new.added_form_submit_commands = added_form_submit_commands
         new.application_command_differences_by_guild_id = new_application_command_differences_by_guild_id
         new.permission_overwrite_difference_by_guild_id = new_permission_overwrite_difference_by_guild_id
         new.removed_component_commands = removed_component_commands
         new.removed_form_submit_commands = removed_form_submit_commands
+        new.random_error_message_getter_difference = new_random_error_message_getter_difference
         
         client = self.client
         if client.running and client.application.id:
@@ -722,7 +949,6 @@ class SlasherSnapshotType(BaseSnapshotType):
             for component_command in added_component_commands:
                 slasher._remove_component_command(component_command)
         
-        
         removed_component_commands = self.removed_component_commands
         if (removed_component_commands is not None):
             for component_command in removed_component_commands:
@@ -737,6 +963,14 @@ class SlasherSnapshotType(BaseSnapshotType):
         if (removed_form_submit_commands is not None):
             for form_submit_command in removed_form_submit_commands:
                 slasher._add_form_submit_command(form_submit_command)
+        
+        random_error_message_getter_difference = self.random_error_message_getter_difference
+        if (random_error_message_getter_difference is not None):
+            removed_random_error_message_getter = (
+                random_error_message_getter_difference.removed_random_error_message_getter
+            )
+            if (removed_random_error_message_getter is not None):
+                slasher.random_error_message_getter = removed_random_error_message_getter
     
     
     @copy_docs(BaseSnapshotType.__bool__)
@@ -759,6 +993,9 @@ class SlasherSnapshotType(BaseSnapshotType):
         if (self.removed_form_submit_commands is not None):
             return True
         
+        if (self.random_error_message_getter_difference is not None):
+            return True
+        
         return False
 
 
@@ -772,5 +1009,6 @@ def runtime_sync_hook_is_executing_extension(client):
         The respective client of the ``Slasher``.
     """
     return not PLUGIN_LOADER.is_processing_plugin()
+
 
 RUNTIME_SYNC_HOOKS.append(runtime_sync_hook_is_executing_extension)

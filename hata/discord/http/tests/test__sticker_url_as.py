@@ -1,6 +1,7 @@
 import vampytest
 
 from ...sticker import Sticker, StickerFormat
+from ...utils import is_url
 
 from ..urls import CDN_ENDPOINT, MEDIA_ENDPOINT, sticker_url_as
 
@@ -81,4 +82,8 @@ def test__sticker_url_as(sticker, keyword_parameters):
     """
     output = sticker_url_as(sticker, **keyword_parameters)
     vampytest.assert_instance(output, str, nullable = True)
+    
+    if (output is not None):
+        vampytest.assert_true(is_url(output))
+    
     return output

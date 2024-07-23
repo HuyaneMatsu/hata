@@ -8,6 +8,7 @@ from scarletio import copy_docs
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.interaction import InteractionType
 
+from .responding import InteractionResponse
 
 SlashCommand = include('SlashCommand')
 Slasher = include('Slasher')
@@ -390,6 +391,13 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
     
     
     if (forward is not None):
+        # Process what to forward
+        if isinstance(forward, tuple):
+            forward = InteractionResponse(*forward)
+        else:
+            forward = InteractionResponse(forward)
+        
+        # Get forward function
         if create_new_message:
             function = type(client).interaction_followup_message_create
         else:

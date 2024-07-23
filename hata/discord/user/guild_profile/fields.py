@@ -2,19 +2,28 @@ __all__ = ()
 
 from ...field_parsers import (
     bool_parser_factory, entity_id_array_parser_factory, flag_parser_factory, nullable_date_time_parser_factory,
-    nullable_string_parser_factory
+    nullable_entity_parser_factory, nullable_string_parser_factory
 )
 from ...field_putters import (
     bool_optional_putter_factory, flag_optional_putter_factory, nullable_date_time_optional_putter_factory,
-    optional_entity_id_array_optional_putter_factory, nullable_string_optional_putter_factory
+    optional_entity_id_array_optional_putter_factory, nullable_entity_optional_putter_factory,
+    nullable_string_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, duration_validator_factory, flag_validator_factory, entity_id_array_validator_factory,
-    nullable_date_time_validator_factory, nullable_string_validator_factory
+    nullable_date_time_validator_factory, nullable_entity_validator_factory, nullable_string_validator_factory
 )
+
+from ..avatar_decoration import AvatarDecoration
 
 from .constants import NICK_LENGTH_MAX, NICK_LENGTH_MIN
 from .flags import GuildProfileFlag
+
+# avatar_decoration
+
+parse_avatar_decoration = nullable_entity_parser_factory('avatar_decoration_data', AvatarDecoration)
+put_avatar_decoration_into = nullable_entity_optional_putter_factory('avatar_decoration_data', AvatarDecoration)
+validate_avatar_decoration = nullable_entity_validator_factory('avatar_decoration', AvatarDecoration)
 
 # boosts_since
 

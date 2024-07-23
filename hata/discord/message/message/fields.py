@@ -49,6 +49,7 @@ from .preinstanced import MessageType
 
 Channel = include('Channel')
 Message = include('Message')
+MessageSnapshot = include('MessageSnapshot')
 Resolved = include('Resolved')
 
 
@@ -352,26 +353,24 @@ def put_mentioned_users_into(mentioned_users, data, defaults, *, guild_id = 0):
     -------
     data : `dict` of (`str`, `object`) items
     """
-    if (mentioned_users is not None):
+    if defaults or (mentioned_users is not None):
         user_mention_datas = []
         
-        for user in mentioned_users:
-            user_data = user.to_data(defaults = defaults, include_internals = True)
+        if (mentioned_users is not None):
+            for user in mentioned_users:
+                user_data = user.to_data(defaults = defaults, include_internals = True)
+                
+                if guild_id:
+                    try:
+                        guild_profile = user.guild_profiles[guild_id]
+                    except KeyError:
+                        pass
+                    else:
+                        user_data['member'] = guild_profile.to_data(defaults = defaults, include_internals = True)
+                
+                user_mention_datas.append(user_data)
             
-            if guild_id:
-                try:
-                    guild_profile = user.guild_profiles[guild_id]
-                except KeyError:
-                    pass
-                else:
-                    user_data['member'] = guild_profile.to_data(defaults = defaults, include_internals = True)
-            
-            user_mention_datas.append(user_data)
-        
         data['mentions'] = user_mention_datas
-    
-    elif defaults:
-        data['mentions'] = []
     
     return data
 
@@ -653,12 +652,12 @@ validate_referenced_message = nullable_entity_validator_factory(
 
 def parse_resolved(data, guild_id = 0):
     """
-    Parsers out a resolved object from the given data.
+    Parsers out a resolved value from the given data.
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
-        Interaction metadata data.
+    data : `dict<str, object>`
+        Data to parse from.
     
     guild_id : `int` = `0`, Optional
         The respective guild's identifier.
@@ -674,15 +673,15 @@ def parse_resolved(data, guild_id = 0):
 
 def put_resolved_into(resolved, data, defaults, *, guild_id = 0):
     """
-    Puts the given `resolved` into the given interaction metadata data.
+    Serialises the given resolved value.
     
     Parameters
     ----------
     resolved  : `None`, ``Resolved``
         The instance to serialise.
         
-    data : `dict` of (`str`, `object`) items
-        Interaction metadata data.
+    data : `dict<str, object>`
+        Data to parse from.
     
     defaults : `bool`
         Whether default field values should be included as well.
@@ -692,7 +691,7 @@ def put_resolved_into(resolved, data, defaults, *, guild_id = 0):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     while True:
         if (resolved is None):
@@ -723,8 +722,61 @@ validate_role_subscription = nullable_entity_validator_factory('role_subscriptio
 
 # snapshots
 
-parse_snapshots = nullable_object_array_parser_factory('message_snapshots', NotImplemented, include = 'MessageSnapshot')
-put_snapshots_into = nullable_object_array_optional_putter_factory('message_snapshots')
+
+def parse_snapshots(data, guild_id = 0):
+    """
+    Parsers out the snapshots from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    guild_id : `int` = `0`, Optional
+        The respective guild's identifier.
+    
+    Returns
+    -------
+    snapshots : `None | tuple<MessageSnapshot>`
+    """
+    snapshot_datas = data.get('message_snapshots', None)
+    if (snapshot_datas is not None) and snapshot_datas:
+        return (*(MessageSnapshot.from_data(snapshot_data, guild_id) for snapshot_data in snapshot_datas),)
+
+
+def put_snapshots_into(snapshots, data, defaults, *, guild_id = 0):
+    """
+    Serailises the given snapshots,
+    
+    Parameters
+    ----------
+    snapshots : `None | tuple<MessageSnapshot>`
+        The instances to serialise.
+        
+    data : `dict<str, object>`
+        Interaction metadata data.
+    
+    defaults : `bool`
+        Whether default field values should be included as well.
+    
+    guild_id : `int` = `None`, Optional (Keyword only)
+        The respective guild's identifier to use for handing user guild profiles.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if defaults or (snapshots is not None):
+        if snapshots is None:
+            snapshot_datas = []
+        else:
+            snapshot_datas = [snapshot.to_data(defaults = defaults, guild_id = guild_id) for snapshot in snapshots]
+        
+        data['message_snapshots'] = snapshot_datas
+    
+    return data
+
+
 validate_snapshots = nullable_object_array_validator_factory('snapshots', NotImplemented, include = 'MessageSnapshot')
 
 # stickers

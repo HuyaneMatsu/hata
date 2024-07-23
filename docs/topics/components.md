@@ -573,7 +573,7 @@ Selects are not as useful as buttons in practice, since lacking form functionali
 slash command choice parameter.
 
 ```py3
-from import Embed
+from hata import Embed
 from hata.ext.slash import Select, Option, InteractionResponse
 
 

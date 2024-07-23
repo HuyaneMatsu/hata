@@ -177,7 +177,7 @@ class EventHandlerDifference(RichAttributeErrorBaseType):
         return new
     
     
-    def revert_copy(self):
+    def reverse_copy(self):
         """
         Revert copies the event handler difference.
         
@@ -237,7 +237,7 @@ class EventHandlerDifference(RichAttributeErrorBaseType):
     def __rsub__(self, other):
         """subtracts other from self."""
         if other is None:
-            return self.revert_copy()
+            return self.reverse_copy()
         
         if type(self) is type(other):
             return other._subtract(self)

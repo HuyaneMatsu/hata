@@ -19,7 +19,9 @@ from ...message.message_builder import (
     MessageBuilderInteractionFollowupEdit, MessageBuilderInteractionResponseCreate,
     MessageBuilderInteractionResponseEdit
 )
+
 from ..functionality_helpers import application_command_autocomplete_choice_parser
+from ..request_helpers import get_message_id
 
 MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY = MessageFlag().update_by_keys(invoking_user_only = True)
 
@@ -996,7 +998,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         )
     
     
-    async def interaction_followup_message_get(self, interaction_event, message_id):
+    async def interaction_followup_message_get(self, interaction_event, message):
         """
         Gets a previously sent message with an interaction.
         
@@ -1006,8 +1008,8 @@ class ClientCompoundInteractionEndpoints(Compound):
         ----------
         interaction_event : ``InteractionEvent``
             Interaction with what the followup message was sent with.
-        message_id : `int`
-            The webhook's message's identifier to get.
+        message : ``Message``, `int`
+            The message or it's identifier to get.
         
         Returns
         -------
@@ -1027,12 +1029,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         application_id = self.application.id
         assert _assert__application_id(application_id)
         
-        
-        message_id_value = maybe_snowflake(message_id)
-        if message_id_value is None:
-            raise TypeError(
-                f'`message_id` can be `int`, got {message_id.__class__.__name__}; {message_id!r}.'
-            )
+        message_id = get_message_id(message)
         
         message_data = await self.api.interaction_followup_message_get(
             application_id, interaction_event.id, interaction_event.token, message_id

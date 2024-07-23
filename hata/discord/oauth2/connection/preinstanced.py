@@ -58,6 +58,8 @@ class ConnectionType(PreinstancedBase):
     +-----------------------+-----------------------+-------------------+
     | riot_games            | Riot Games            | riotgames         |
     +-----------------------+-----------------------+-------------------+
+    | roblox                | Roblox                | roblox            |
+    +-----------------------+-----------------------+-------------------+
     | samsung_galaxy        | Samsung Galaxy        | samsunggalaxy     |
     +-----------------------+-----------------------+-------------------+
     | spotify               | Spotify               | spotify           |
@@ -98,6 +100,7 @@ class ConnectionType(PreinstancedBase):
     playstation = P('playstation', 'PlayStation Network')
     reddit = P('reddit', 'Reddit')
     riot_games = P('riotgames', 'Riot Games')
+    roblox = P('roblox', 'Roblox') # Only kids play roblox
     samsung_galaxy = P('samsunggalaxy', 'Samsung Galaxy')
     spotify = P('spotify', 'Spotify')
     skype = P('skype', 'Skype')

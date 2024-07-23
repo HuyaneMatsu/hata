@@ -1534,44 +1534,44 @@ def sanitize_mentions(content, guild = None):
     -------
     content : `None`, `str`
     """
-    if (content is None):
-        return
+    if (content is None) or (not content):
+        return content
     
     transformations = {
         '@everyone':'@\u200beveryone',
         '@here':'@\u200bhere',
     }
     
-    for id_ in USER_MENTION_RP.findall(content):
-        id_ = int(id_)
-        user = USERS.get(id_, None)
+    for entity_id in USER_MENTION_RP.findall(content):
+        entity_id = int(entity_id)
+        user = USERS.get(entity_id, None)
         if (user is None):
             sanitized_mention = '@invalid-user'
         else:
             sanitized_mention = '@' + user.name_at(guild)
         
-        transformations[f'<@{id_}>'] = sanitized_mention
-        transformations[f'<@!{id_}>'] = sanitized_mention
+        transformations[f'<@{entity_id}>'] = sanitized_mention
+        transformations[f'<@!{entity_id}>'] = sanitized_mention
     
-    for id_ in CHANNEL_MENTION_RP.findall(content):
-        id_ = int(id_)
-        channel = CHANNELS.get(id_, None)
+    for entity_id in CHANNEL_MENTION_RP.findall(content):
+        entity_id = int(entity_id)
+        channel = CHANNELS.get(entity_id, None)
         if (channel is None):
             sanitized_mention = '@deleted channel'
         else:
             sanitized_mention = '#' + channel.name
         
-        transformations[f'<#{id_}>'] = sanitized_mention
+        transformations[f'<#{entity_id}>'] = sanitized_mention
     
-    for id_ in ROLE_MENTION_RP.findall(content):
-        id_ = int(id_)
-        role = ROLES.get(id_, None)
+    for entity_id in ROLE_MENTION_RP.findall(content):
+        entity_id = int(entity_id)
+        role = ROLES.get(entity_id, None)
         if (role is None):
             sanitized_mention = '@deleted role'
         else:
             sanitized_mention = '@' + role.name
         
-        transformations[f'<@&{id_}>'] = sanitized_mention
+        transformations[f'<@&{entity_id}>'] = sanitized_mention
     
     return re_compile('|'.join(transformations)).sub(partial_func(sanitise_mention_escaper, transformations), content)
 
@@ -1591,9 +1591,12 @@ def sanitize_content(content, guild = None):
     -------
     content : `None`, `str`
     """
-    content = escape_markdown(content)
     content = sanitize_mentions(content, guild = guild)
+    content = escape_markdown(content)
     return content
+
+
+ESCAPEABLE = frozenset(('\\', '_', '*', '|', '~', '>', ':', '[', ']', '#', '-'))
 
 
 def escape_markdown(content):
@@ -1609,20 +1612,17 @@ def escape_markdown(content):
     -------
     content : `None`, `str`
     """
-    if (content is None):
-        return
+    if (content is None) or (not content):
+        return content
     
-    content = content.replace('\\', '\\\\')
-    content = content.replace('_', '\\_')
-    content = content.replace('*', '\\*')
-    content = content.replace('|', '\\|')
-    content = content.replace('~', '\\~')
-    content = content.replace('`', '\\`')
-    content = content.replace('>', '\\>')
-    content = content.replace(':', '\\:')
-    content = content.replace('[', '\\[')
-    content = content.replace(']', '\\]')
-    return content
+    characters = []
+    
+    for character in content:
+        if character in ESCAPEABLE:
+            characters.append('\\')
+        characters.append(character)
+    
+    return ''.join(characters)
 
 
 def parse_date_header_to_datetime(date_data):

@@ -3,9 +3,10 @@ from datetime import datetime as DateTime, timezone as TimeZone
 import vampytest
 
 from ....embed import Embed
+from ....user import User
 
 from ...attachment import Attachment
-from ...message import MessageFlag
+from ...message import MessageFlag, MessageType
 
 from ..message_snapshot import MessageSnapshot
 
@@ -23,6 +24,12 @@ def test__MessageSnapshot__repr():
     edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
+    mentioned_role_ids = [202407200018, 202407200019]
+    mentioned_users = [
+        User.precreate(202407200046, name = 'Kaenbyou'),
+        User.precreate(202407200047, name = 'Rin'),
+    ]
+    message_type = MessageType.call
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
@@ -31,6 +38,9 @@ def test__MessageSnapshot__repr():
         edited_at = edited_at,
         embeds = embeds,
         flags = flags,
+        mentioned_role_ids = mentioned_role_ids,
+        mentioned_users = mentioned_users,
+        message_type = message_type,
     )
     
     vampytest.assert_instance(repr(message_snapshot), str)
@@ -49,6 +59,12 @@ def test__MessageSnapshot__hash():
     edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
+    mentioned_role_ids = [202407200020, 202407200021]
+    mentioned_users = [
+        User.precreate(202407200048, name = 'Kaenbyou'),
+        User.precreate(202407200049, name = 'Rin'),
+    ]
+    message_type = MessageType.call
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
@@ -57,6 +73,9 @@ def test__MessageSnapshot__hash():
         edited_at = edited_at,
         embeds = embeds,
         flags = flags,
+        mentioned_role_ids = mentioned_role_ids,
+        mentioned_users = mentioned_users,
+        message_type = message_type,
     )
     
     vampytest.assert_instance(hash(message_snapshot), int)
@@ -82,24 +101,7 @@ def test__messageSnapshot__eq__different_type(other):
     -------
     output : `bool`
     """
-    attachments = [
-        Attachment.precreate(202405250010, name = 'Koishi'),
-        Attachment.precreate(202405250011, name = 'Komeiji'),
-    ]
-    content = 'orin'
-    created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
-    edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
-    embeds = [Embed('okuu'), Embed('egg')]
-    flags = MessageFlag(12)
-    
-    message_snapshot = MessageSnapshot(
-        attachments = attachments,
-        content = content,
-        created_at = created_at,
-        edited_at = edited_at,
-        embeds = embeds,
-        flags = flags,
-    )
+    message_snapshot = MessageSnapshot()
     
     output = message_snapshot == other
     vampytest.assert_instance(output, bool)
@@ -117,6 +119,12 @@ def _iter_options__eq__same_type():
     edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
     embeds = [Embed('okuu'), Embed('egg')]
     flags = MessageFlag(12)
+    mentioned_role_ids = [202407200022, 202407200023]
+    mentioned_users = [
+        User.precreate(202407200050, name = 'Kaenbyou'),
+        User.precreate(202407200051, name = 'Rin'),
+    ]
+    message_type = MessageType.call
     
     keyword_parameters = {
         'attachments': attachments,
@@ -125,6 +133,9 @@ def _iter_options__eq__same_type():
         'edited_at': edited_at,
         'embeds': embeds,
         'flags': flags,
+        'mentioned_role_ids': mentioned_role_ids,
+        'mentioned_users': mentioned_users,
+        'message_type': message_type,
     }
     
     yield (
@@ -183,6 +194,33 @@ def _iter_options__eq__same_type():
         {
             **keyword_parameters,
             'flags': MessageFlag(78),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'mentioned_role_ids': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'mentioned_users': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'message_type': MessageType.user_add,
         },
         False,
     )

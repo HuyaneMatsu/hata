@@ -11,7 +11,7 @@ from ...localization.utils import LOCALE_DEFAULT
 from ...message import Message
 from ...permission import Permission
 from ...precreate_helpers import process_precreate_parameters, raise_extra
-from ...user import ClientUserBase, ZEROUSER
+from ...user import ClientUserBase, ZEROUSER, create_partial_user_from_id
 from ...utils import now_as_id
 
 from ..interaction_metadata import InteractionMetadataBase
@@ -22,13 +22,14 @@ from ..responding.constants import (
 
 from .constants import DEFAULT_INTERACTION_METADATA, INTERACTION_EVENT_EXPIRE_AFTER_ID_DIFFERENCE
 from .fields import (
-    parse_application_id, parse_application_permissions, parse_channel, parse_entitlements, parse_guild, parse_id,
-    parse_message, parse_token, parse_type, parse_user, parse_user_locale, parse_user_permissions,
-    put_application_id_into, put_application_permissions_into, put_channel_into, put_entitlements_into, put_guild_into,
-    put_id_into, put_message_into, put_token_into, put_type_into, put_user_into, put_user_locale_into,
-    put_user_permissions_into, validate_application_id, validate_application_permissions, validate_channel,
-    validate_entitlements, validate_guild, validate_id, validate_interaction, validate_message,
-    validate_token, validate_type, validate_user, validate_user_locale, validate_user_permissions
+    parse_application_id, parse_application_permissions, parse_authorizer_user_ids, parse_channel, parse_entitlements,
+    parse_guild, parse_id, parse_message, parse_token, parse_type, parse_user, parse_user_locale,
+    parse_user_permissions, put_application_id_into, put_application_permissions_into, put_authorizer_user_ids_into,
+    put_channel_into, put_entitlements_into, put_guild_into, put_id_into, put_message_into, put_token_into,
+    put_type_into, put_user_into, put_user_locale_into, put_user_permissions_into, validate_application_id,
+    validate_application_permissions, validate_authorizer_user_ids, validate_channel, validate_entitlements,
+    validate_guild, validate_id, validate_interaction, validate_message, validate_token, validate_type, validate_user,
+    validate_user_locale, validate_user_permissions
 )
 from .preinstanced import InteractionType
 
@@ -41,6 +42,7 @@ PRECREATE_FIELDS = {
     'application': ('application_id', validate_application_id),
     'application_id': ('application_id', validate_application_id),
     'application_permissions': ('application_permissions', validate_application_permissions),
+    'authorizer_user_ids': ('authorizer_user_ids', validate_authorizer_user_ids),
     'channel': ('channel', validate_channel),
     'entitlements': ('entitlements', validate_entitlements),
     'guild': ('guild', validate_guild),
@@ -92,6 +94,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     application_permissions : ``Permission``
         The permissions granted to the application in the guild.
     
+    authorizer_user_ids : `None | dict<ApplicationIntegrationType, int>`
+        The users' identifier who authorized the integration.
+    
     entitlements : `None`, `tuple` of ``Entitlement``
         The applicable entitlements for the event's context.
         These can both target guild and user as well.
@@ -131,8 +136,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     Interaction event instances are weakreferable.
     """
     __slots__ = (
-        '_async_task', '_response_flags', 'application_id', 'application_permissions', 'entitlements', 'channel',
-        'guild', 'interaction', 'message', 'token', 'type', 'user', 'user_locale', 'user_permissions'
+        '_async_task', '_response_flags', 'application_id', 'application_permissions', 'authorizer_user_ids',
+        'entitlements', 'channel', 'guild', 'interaction', 'message', 'token', 'type', 'user', 'user_locale',
+        'user_permissions'
     )
     
     def __new__(
@@ -140,6 +146,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         *,
         application_id = ...,
         application_permissions = ...,
+        authorizer_user_ids = ...,
         channel = ...,
         entitlements = ...,
         guild = ...,
@@ -163,6 +170,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         application_permissions : ``Permission``, `int`, Optional (Keyword only)
             The permissions granted to the application in the guild.
+        
+        authorizer_user_ids : `None | dict<ApplicationIntegrationType | int, int | ClientUserBase>` \
+                , Optional (Keyword only)
+            The users' identifier who authorized the integration.
         
         channel : ``Channel``, Optional (Keyword only)
             The channel from where the interaction was called.
@@ -216,6 +227,12 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             application_permissions = Permission()
         else:
             application_permissions = validate_application_permissions(application_permissions)
+        
+        # authorizer_user_ids
+        if authorizer_user_ids is ...:
+            authorizer_user_ids = None
+        else:
+            authorizer_user_ids = validate_authorizer_user_ids(authorizer_user_ids)
         
         # channel
         if channel is ...:
@@ -284,6 +301,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         self.id = 0
         self.application_id = application_id
         self.application_permissions = application_permissions
+        self.authorizer_user_ids = authorizer_user_ids
         self.channel = channel
         self.entitlements = entitlements
         self.guild = guild
@@ -318,6 +336,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         interaction_id = parse_id(data)
         application_id = parse_application_id(data)
         application_permissions = parse_application_permissions(data)
+        authorizer_user_ids = parse_authorizer_user_ids(data)
         channel = parse_channel(data)
         entitlements = parse_entitlements(data)
         interaction_type = parse_type(data)
@@ -333,6 +352,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         self._response_flags = RESPONSE_FLAG_NONE
         self.application_id = application_id
         self.application_permissions = application_permissions
+        self.authorizer_user_ids = authorizer_user_ids
         self.channel = channel
         self.entitlements = entitlements
         self.guild = guild
@@ -367,6 +387,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         data = {}
         put_application_id_into(self.application_id, data, defaults)
         put_application_permissions_into(self.application_permissions, data, defaults)
+        put_authorizer_user_ids_into(self.authorizer_user_ids, data, defaults)
         put_channel_into(self.channel, data, defaults)
         put_entitlements_into(self.entitlements, data, defaults)
         put_guild_into(self.guild, data, defaults)
@@ -400,6 +421,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         self._response_flags = RESPONSE_FLAG_NONE
         self.application_id = 0
         self.application_permissions = Permission()
+        self.authorizer_user_ids = None
         self.channel = create_partial_channel_from_id(0, ChannelType.unknown, 0)
         self.entitlements = None
         self.guild = None
@@ -443,6 +465,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         application_permissions : ``Permission``, `int`, Optional (Keyword only)
             The permissions granted to the application in the guild.
+        
+        authorizer_user_ids : `None | dict<ApplicationIntegrationType | int, int | ClientUserBase>` \
+                , Optional (Keyword only)
+            The users' identifier who authorized the integration.
         
         channel : ``Channel``, Optional (Keyword only)
             The channel from where the interaction was called.
@@ -540,12 +566,20 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         new.id = 0
         new.application_id = self.application_id
         new.application_permissions = self.application_permissions
+        
+        authorizer_user_ids = self.authorizer_user_ids
+        if (authorizer_user_ids is not None):
+            authorizer_user_ids = authorizer_user_ids.copy()
+        new.authorizer_user_ids = authorizer_user_ids
+        
         new.type = self.type
         new.channel = self.channel
+        
         entitlements = self.entitlements
         if (entitlements is not None):
             entitlements = (*entitlements,)
         new.entitlements = entitlements
+        
         new.guild = self.guild
         new.interaction = self.interaction.copy()
         new.token = self.token
@@ -561,15 +595,12 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         *,
         application_id = ...,
         application_permissions = ...,
+        authorizer_user_ids = ...,
         channel = ...,
-        channel_id = ...,
         entitlements = ...,
         guild = ...,
-        guild_id = ...,
-        guild_locale = ...,
         interaction = ...,
         interaction_type = ...,
-        locale = ...,
         message = ...,
         token = ..., 
         user = ...,
@@ -587,6 +618,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         application_permissions : ``Permission``, `int`, Optional (Keyword only)
             The permissions granted to the application in the guild.
+        
+        authorizer_user_ids : `None | dict<ApplicationIntegrationType | int, int | ClientUserBase>` \
+                , Optional (Keyword only)
+            The users' identifier who authorized the integration.
         
         channel : ``Channel``, Optional (Keyword only)
             The channel from where the interaction was called.
@@ -643,6 +678,15 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             application_permissions = self.application_permissions
         else:
             application_permissions = validate_application_permissions(application_permissions)
+        
+        # authorizer_user_ids
+        if authorizer_user_ids is ...:
+            authorizer_user_ids = self.authorizer_user_ids
+            if (authorizer_user_ids is not None):
+                authorizer_user_ids = authorizer_user_ids.copy()
+        
+        else:
+            authorizer_user_ids = validate_authorizer_user_ids(authorizer_user_ids)
         
         # guild
         if guild is ...:
@@ -715,6 +759,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         new.id = 0
         new.application_id = application_id
         new.application_permissions = application_permissions
+        new.authorizer_user_ids = authorizer_user_ids
         new.type = interaction_type
         new.channel = channel
         new.entitlements = entitlements
@@ -826,6 +871,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         repr_parts.append(' ~ ')
         repr_parts.append(repr(metadata_type.value))
         
+        authorizer_user_ids = self.authorizer_user_ids
+        if (authorizer_user_ids is not None):
+            repr_parts.append(', authorizer_user_ids = ')
+            repr_parts.append(repr(authorizer_user_ids))
         
         guild = self.guild
         if guild is not None:
@@ -908,6 +957,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         if self.application_permissions != other.application_permissions:
             return False
         
+        # authorizer_user_ids
+        if self.authorizer_user_ids != other.authorizer_user_ids:
+            return False
+        
         # channel
         if self.channel is not other.channel:
             return False
@@ -964,6 +1017,13 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         # application_permissions
         hash_value ^= self.application_permissions
+        
+        # authorizer_user_ids
+        authorizer_user_ids = self.authorizer_user_ids
+        if (authorizer_user_ids is not None):
+            hash_value ^= len(authorizer_user_ids) << 8
+            for integration_type, user_id in authorizer_user_ids.items():
+                hash_value ^= (integration_type.value << 22) & user_id
         
         # channel
         hash_value ^= hash(self.channel)
@@ -1466,3 +1526,46 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     @copy_docs(InteractionMetadataBase.resolve_entity)
     def resolve_entity(self, entity_id):
         return self.interaction.resolve_entity(entity_id)
+    
+    
+    # authorized_user_ids
+    
+    def get_authorizer_user_id(self, integration_type):
+        """
+        Gets the authorizer user's identifier for the given integration type.
+        
+        Parameters
+        ----------
+        integration_type : `ApplicationIntegrationType | int`
+            Integration type to query for.
+        
+        Returns
+        -------
+        user_id : `int`
+        """
+        authorizer_user_ids = self.authorizer_user_ids
+        if (authorizer_user_ids is not None):
+            try:
+                return authorizer_user_ids[integration_type]
+            except KeyError:
+                pass
+        
+        return 0
+    
+    
+    def get_authorizer_user(self, integration_type):
+        """
+        Gets the authorizer user for the given integration type.
+        
+        Parameters
+        ----------
+        integration_type : `ApplicationIntegrationType | int`
+            Integration type to query for.
+        
+        Returns
+        -------
+        user : `None | ClientUserBase`
+        """
+        user_id = self.get_authorizer_user_id(integration_type)
+        if user_id:
+            return create_partial_user_from_id(user_id)

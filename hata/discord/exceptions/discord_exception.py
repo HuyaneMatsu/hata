@@ -14,11 +14,12 @@ if RICH_DISCORD_EXCEPTION:
 else:
     reconstruct_payload = None
 
+
 EXCEPTION_RESPONSE_RP = re.compile('\\d+\\: (.*)')
 
 
 class DiscordException(Exception):
-    """
+    r"""
     Represents an exception raised by Discord, when it response with a not expected response code.
     
     Depending on Discord's response code, the http client's behaviours differently.
@@ -46,14 +47,14 @@ class DiscordException(Exception):
     +-------+-----------------------+---------------+
     | 429   | TOO MANY REQUESTS     | rate limited  |
     +-------+-----------------------+---------------+
-    | 500   | SERVER ERROR          | \\*retry       |
+    | 500   | SERVER ERROR          | \*retry       |
     +-------+-----------------------+---------------+
-    | 502   | GATEWAY UNAVAILABLE   | \\*retry       |
+    | 502   | GATEWAY UNAVAILABLE   | \*retry       |
     +-------+-----------------------+---------------+
     | 5XX   | SERVER ERROR          | raise         |
     +-------+-----------------------+---------------+
     
-    \\* For five times a request can fail with `OsError` or return `501` / `502` response code. If the request fails
+    \* For five times a request can fail with `OsError` or return `501` / `502` response code. If the request fails
     with these cases for the fifth try and the last one resulted `501` / `502` response code, then
     ``DiscordException`` will be raised.
     
@@ -333,7 +334,7 @@ class DiscordException(Exception):
                             
                             if error_data_length:
                                 error_extra = ' '.join(
-                                    f'{key}={value!r}' for key, value in error_data.items()
+                                    f'{key} = {value!r}' for key, value in error_data.items()
                                     if key not in ('code', 'message')
                                 )
                                 

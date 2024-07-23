@@ -590,12 +590,27 @@ class Message(DiscordEntity, immortal = True):
         except KeyError:
             pass
         else:
-            if (self._state & MESSAGE_STATE_MASK_PARTIAL_ALL) or self.flags.loading:
-                self._set_attributes(data, False)
-            
-            elif (not self.has_any_content_field()):
-                self._update_content_fields(data)
-                self.referenced_message = parse_referenced_message(data)
+            while True:
+                # if the message is partial or loading update the whole
+                if (self._state & MESSAGE_STATE_MASK_PARTIAL_ALL) or self.flags.loading:
+                    self._set_attributes(data, False)
+                    break
+                
+                # If no client can see the message update the whole.
+                # This can happen when we use user installed interactions and request back a message.
+                channel = self.channel
+                if not any(channel.cached_permissions_for(client).can_view_channel for client in channel.clients):
+                    self._set_attributes(data, False)
+                    break
+                
+                # If the message has no content fields we update them.
+                if not self.has_any_content_field():
+                    self._update_content_fields(data)
+                    self.referenced_message = parse_referenced_message(data)
+                    break
+                
+                # No other cases for now
+                break
             
             return self
         
@@ -791,7 +806,7 @@ class Message(DiscordEntity, immortal = True):
         self.referenced_message = parse_referenced_message(data)
         self.resolved = parse_resolved(data, guild_id = guild_id)
         self.role_subscription = parse_role_subscription(data)
-        self.snapshots = parse_snapshots(data)
+        self.snapshots = parse_snapshots(data, guild_id)
         self.stickers = parse_stickers(data)
         self.thread = parse_thread(data, guild_id)
         self.tts = parse_tts(data)
@@ -1730,7 +1745,7 @@ class Message(DiscordEntity, immortal = True):
             )
             put_resolved_into(self.resolved, data, defaults, guild_id = self.guild_id)
             put_role_subscription_into(self.role_subscription, data, defaults)
-            put_snapshots_into(self.snapshots, data, defaults)
+            put_snapshots_into(self.snapshots, data, defaults, guild_id = self.guild_id)
             put_stickers_into(self.stickers, data, defaults)
             put_thread_into(self.thread, data, defaults)
         

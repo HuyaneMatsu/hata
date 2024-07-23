@@ -831,6 +831,10 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +===================+===============================+
         | avatar            | ``Icon``                      |
         +-------------------+-------------------------------+
+        | avatar_decoration | `None`, ``AvatarDecoration``  |
+        +-------------------+-------------------------------+
+        | banner            | ``Icon``                      |
+        +-------------------+-------------------------------+
         | boosts_since      | `None`, `DateTime`            |
         +-------------------+-------------------------------+
         | flags             | `None`, ``GuildProfileFlags`` |

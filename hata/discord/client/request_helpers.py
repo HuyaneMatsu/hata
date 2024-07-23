@@ -1662,3 +1662,34 @@ def get_poll_answer_and_id(poll_answer):
         )
     
     return None, poll_answer_id
+
+
+def get_message_id(message):
+    """
+    Gets the message's identifier from the given message or of it's identifier.
+    
+    Parameters
+    ----------
+    message : ``Message``, `int`
+        The message, or it's identifier.
+    
+    Returns
+    -------
+    message_id : `int`
+        The message's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `message`'s type is incorrect.
+    """
+    if isinstance(message, Message):
+        message_id = message.id
+    else:
+        message_id = maybe_snowflake(message)
+        if message_id is None:
+            raise TypeError(
+                f'`message` can be `{Message.__name__}`, `int`, got {type(message).__name__}; {message!r}.'
+            )
+    
+    return message_id

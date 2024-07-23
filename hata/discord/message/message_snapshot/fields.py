@@ -3,11 +3,13 @@ __all__ = ()
 from ...field_validators import force_date_time_validator_factory
 from ...utils import DISCORD_EPOCH_START, datetime_to_timestamp, timestamp_to_datetime
 
-from ..message import MessageFlag
+from ..message import MessageFlag, MessageType
 from ..message.fields import (
     parse_attachments as _parse_attachments, parse_content as _parse_content, parse_edited_at as _parse_edited_at,
-    parse_embeds as _parse_embeds, parse_flags as _parse_flags, validate_attachments, validate_content,
-    validate_edited_at, validate_embeds, validate_flags
+    parse_embeds as _parse_embeds, parse_flags as _parse_flags, parse_mentioned_role_ids as _parse_mentioned_role_ids,
+    parse_mentioned_users as _parse_mentioned_users, parse_type as _parse_type, validate_attachments, validate_content,
+    validate_edited_at, validate_embeds, validate_flags, validate_mentioned_role_ids, validate_mentioned_users,
+    validate_type
 )
 
 
@@ -333,5 +335,180 @@ def put_flags_into(flags, data, defaults):
             data['message'] = message_data
         
         message_data['flags'] = int(flags)
+    
+    return data
+
+
+# mentioned_users
+
+def parse_mentioned_users(data, guild_id = 0):
+    """
+    Parses out mentioned users value from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    guild_id : `int` = `0`, Optional (Keyword only)
+        The guild's id where the message was created at.
+    
+    Returns
+    -------
+    message_mentioned_users : `None | tuple<ClientUserBase>`
+    """
+    message_data = data.get('message', None)
+    if message_data is None:
+        return None
+    
+    return _parse_mentioned_users(message_data, guild_id)
+
+
+def put_mentioned_users_into(mentioned_users, data, defaults, *, guild_id = 0):
+    """
+    Serializes the given mentioned users into the given data.
+    
+    Parameters
+    ----------
+    mentioned_users : `None | tuple<ClientUserBase>`
+        The mentioned users to serialize.
+    data : `dict<str, object>`
+        Reaction event data.
+    defaults : `bool`
+        Whether fields with their default values should be included as well.
+    guild_id : `int` = `0`, Optional (Keyword only)
+        The guild's id where the message was created at.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if (mentioned_users is not None) or defaults:
+        message_data = data.get('message', None)
+        if message_data is None:
+            message_data = {}
+            data['message'] = message_data
+    
+        user_mention_datas = []
+        
+        if (mentioned_users is not None):
+            for user in mentioned_users:
+                user_data = user.to_data(defaults = defaults, include_internals = True)
+                
+                if guild_id:
+                    try:
+                        guild_profile = user.guild_profiles[guild_id]
+                    except KeyError:
+                        pass
+                    else:
+                        user_data['member'] = guild_profile.to_data(defaults = defaults, include_internals = True)
+                
+                user_mention_datas.append(user_data)
+        
+        message_data['mentions'] = user_mention_datas
+    
+    return data
+
+
+# mentioned_role_ids
+
+def parse_mentioned_role_ids(data):
+    """
+    Parses out mentioned role ids value from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    mentioned_role_ids : ``MessageFlag``
+    """
+    message_data = data.get('message', None)
+    if message_data is None:
+        return None
+    
+    return _parse_mentioned_role_ids(message_data)
+
+
+def put_mentioned_role_ids_into(mentioned_role_ids, data, defaults):
+    """
+    Serializes the given mentioned_role_ids into the given data.
+    
+    Parameters
+    ----------
+    mentioned_role_ids : ``MessageFlag``
+        The mentioned_role_ids to serialize.
+    data : `dict<str, object>`
+        Reaction event data.
+    defaults : `bool`
+        Whether fields with their default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if mentioned_role_ids or defaults:
+        message_data = data.get('message', None)
+        if message_data is None:
+            message_data = {}
+            data['message'] = message_data
+        
+        if mentioned_role_ids is None:
+            role_id_array = []
+        else:
+            role_id_array = [str(role_id) for role_id in mentioned_role_ids]
+            
+        message_data['mention_roles'] = role_id_array
+    
+    return data
+
+
+# type
+
+def parse_type(data):
+    """
+    Parses out type value from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    message_type : ``MessageType``
+    """
+    message_data = data.get('message', None)
+    if message_data is None:
+        return MessageType.default
+    
+    return _parse_type(message_data)
+
+
+def put_type_into(message_type, data, defaults):
+    """
+    Serializes the given type into the given data.
+    
+    Parameters
+    ----------
+    message_type : ``MessageType``
+        The type to serialize.
+    data : `dict<str, object>`
+        Reaction event data.
+    defaults : `bool`
+        Whether fields with their default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if (message_type is not MessageType.default) or defaults:
+        message_data = data.get('message', None)
+        if message_data is None:
+            message_data = {}
+            data['message'] = message_data
+        
+        message_data['type'] = message_type.value
     
     return data

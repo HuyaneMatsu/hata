@@ -836,60 +836,6 @@ def activity_asset_image_small_url_as(activity, ext = None, size = None):
     return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_small}.{ext}{end}'
 
 
-def user_avatar_url(user):
-    """
-    Returns the user's avatar's url. If the user has no avatar, then returns it's default avatar's url.
-    
-    This function is a shared property of ``UserBase``-s.
-    
-    Returns
-    -------
-    url : `None`, `str`
-    """
-    icon_type = user.avatar_type
-    if not icon_type.can_create_url():
-        return user.default_avatar.url
-    
-    prefix = icon_type.prefix
-    ext = icon_type.default_postfix
-    
-    return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}'
-
-
-def user_avatar_url_as(user, ext = None, size = None):
-    """
-    Returns the user's avatar's url. If the user has no avatar, then returns it's default avatar's url.
-    
-    This function is a shared method of ``UserBase``-s.
-    
-    Parameters
-    ----------
-    ext : `None`, `str` = `None`, Optional
-        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
-        animated avatar, it can `'gif'` as well.
-    size : `None`, `int` = `None`, Optional
-        The preferred minimal size of the avatar's url.
-    
-    Returns
-    -------
-    url : `None`, `str`
-    
-    Raises
-    ------
-    ValueError
-        If `ext`, `size` was not passed as any of the expected values.
-    """
-    icon_type = user.avatar_type
-    if not icon_type.can_create_url():
-        return user.default_avatar.url
-    
-    prefix = icon_type.prefix
-    ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
-    
-    return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}{end}'
-
-
 def user_banner_url(user):
     """
     Returns the user's banner's url. If the user has no banner, then returns `None`.
@@ -942,6 +888,189 @@ def user_banner_url_as(user, ext = None, size = None):
     end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/banners/{user.id}/{prefix}{user.banner_hash:0>32x}.{ext}{end}'
+
+
+def user_banner_url_for(user, guild):
+    """
+    Returns the user's guild specific banner. If the user has no guild local banner, returns `None`.
+    
+    This function is a shared method of ``UserBase``-s.
+    
+    Parameters
+    ----------
+    guild : ``Guild``, `int`
+        The respective guild or it's identifier.
+    
+    Returns
+    -------
+    url : `None`, `str`
+    """
+    guild_id = _try_get_guild_id(guild)
+    
+    try:
+        guild_profile = user.guild_profiles[guild_id]
+    except KeyError:
+        return None
+    
+    icon_type = guild_profile.banner_type
+    if not icon_type.can_create_url():
+        return None
+    
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
+    
+    return f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user.id}/banners/{prefix}{guild_profile.banner_hash:0>32x}.{ext}'
+
+
+def user_banner_url_for_as(user, guild, ext = None, size = None):
+    """
+    Returns the user's guild specific banner. If the user has no guild local banner, then returns `None`.
+    
+    This function is a shared method of ``UserBase``-s.
+    
+    Parameters
+    ----------
+    guild : ``Guild``, `int`
+        The respective guild or it's identifier.
+    ext : `None`, `str` = `None`, Optional
+        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'` and `'gif'`.
+    size : `None`, `int` = `None`, Optional
+        The preferred minimal size of the banner's url.
+    
+    Returns
+    -------
+    url : `None`, `str`
+    
+    Raises
+    ------
+    ValueError
+        If `ext`, `size` was not passed as any of the expected values.
+    """
+    guild_id = _try_get_guild_id(guild)
+    
+    try:
+        guild_profile = user.guild_profiles[guild_id]
+    except KeyError:
+        return None
+    
+    icon_type = guild_profile.banner_type
+    if not icon_type.can_create_url():
+        return None
+
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
+    
+    return (
+        f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user.id}/banners/{prefix}{guild_profile.banner_hash:0>32x}.{ext}{end}'
+    )
+
+
+def user_banner_url_at(user, guild):
+    """
+    Returns the user's banner's url at the guild.
+    
+    This function is a shared method of ``UserBase``-s.
+    
+    Parameters
+    ----------
+    guild : ``Guild``, `int`
+        The respective guild or it's identifier.
+    
+    Returns
+    -------
+    url : `None`, `str`
+    """
+    banner_url = user_banner_url_for(user, guild)
+    if banner_url is None:
+        banner_url = user_banner_url(user)
+    
+    return banner_url
+
+
+def user_banner_url_at_as(user, guild, ext = None, size = None):
+    """
+    Returns the user's banner's url at the guild. If the user has no banner, then returns it's default banner's url.
+    
+    This function is a shared method of ``UserBase``-s.
+    
+    Parameters
+    ----------
+    guild : ``Guild``, `int`
+        The respective guild or it's identifier.
+    ext : `None`, `str` = `None`, Optional
+        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'` and `'gif'`.
+    size : `None`, `int` = `None`, Optional
+        The preferred minimal size of the banner's url.
+    
+    Returns
+    -------
+    url : `None`, `str`
+    
+    Raises
+    ------
+    ValueError
+        If `ext`, `size` was not passed as any of the expected values.
+    """
+    banner_url = user_banner_url_for_as(user, guild, ext = ext, size = size)
+    if banner_url is None:
+        banner_url = user_banner_url_as(user, ext = ext, size = size)
+    
+    return banner_url
+
+
+def user_avatar_url(user):
+    """
+    Returns the user's avatar's url. If the user has no avatar, then returns it's default avatar's url.
+    
+    This function is a shared property of ``UserBase``-s.
+    
+    Returns
+    -------
+    url : `None`, `str`
+    """
+    icon_type = user.avatar_type
+    if not icon_type.can_create_url():
+        return user.default_avatar.url
+    
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
+    
+    return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}'
+
+
+def user_avatar_url_as(user, ext = None, size = None):
+    """
+    Returns the user's avatar's url. If the user has no avatar, then returns it's default avatar's url.
+    
+    This function is a shared method of ``UserBase``-s.
+    
+    Parameters
+    ----------
+    ext : `None`, `str` = `None`, Optional
+        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
+        animated avatar, it can `'gif'` as well.
+    size : `None`, `int` = `None`, Optional
+        The preferred minimal size of the avatar's url.
+    
+    Returns
+    -------
+    url : `None`, `str`
+    
+    Raises
+    ------
+    ValueError
+        If `ext`, `size` was not passed as any of the expected values.
+    """
+    icon_type = user.avatar_type
+    if not icon_type.can_create_url():
+        return user.default_avatar.url
+    
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
+    
+    return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}{end}'
 
 
 def user_avatar_url_for(user, guild):
@@ -1016,8 +1145,9 @@ def user_avatar_url_for_as(user, guild, ext = None, size = None):
     ext = _validate_extension(icon_type, ext)
     end = _build_end(size)
     
-    return f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user.id}/avatars/{prefix}{guild_profile.avatar_hash:0>32x}.' \
-           f'{ext}{end}'
+    return (
+        f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user.id}/avatars/{prefix}{guild_profile.avatar_hash:0>32x}.{ext}{end}'
+    )
 
 
 def user_avatar_url_at(user, guild):
@@ -1546,17 +1676,17 @@ def scheduled_event_url(scheduled_event):
     return f'{DISCORD_ENDPOINT}/events/{scheduled_event.guild_id}/{scheduled_event.id}'
 
 
-def user_avatar_decoration_url(user):
+def user_avatar_decoration_url(user_or_guild_profile):
     """
-    Returns the user's avatar decoration's url. If the user has no avatar decoration returns `None`.
+    Returns the user's or guild profile's avatar decoration's url. If the user has no avatar decoration returns `None`.
     
-    This function is a property of ``UserBase``.
+    This function is a property of ``UserBase`` and ``GuildProfile``.
     
     Returns
     -------
     url : `None`, `str`
     """
-    avatar_decoration = user.avatar_decoration
+    avatar_decoration = user_or_guild_profile.avatar_decoration
     if avatar_decoration is None:
         return None
 
@@ -1570,11 +1700,11 @@ def user_avatar_decoration_url(user):
     return f'{CDN_ENDPOINT}/avatar-decoration-presets/{prefix}{avatar_decoration.asset_hash:0>32x}.{ext}'
 
 
-def user_avatar_decoration_url_as(user, ext = None, size = None):
+def user_avatar_decoration_url_as(user_or_guild_profile, ext = None, size = None):
     """
-    Returns the user's avatar decoration's url. If the user has no avatar decoration returns `None`.
+    Returns the user's or guild profile's avatar decoration's url. If the user has no avatar decoration returns `None`.
     
-    This function is a method of ``UserBase``.
+    This function is a method of ``UserBase`` and ``GuildProfile``.
     
     Returns
     -------
@@ -1592,7 +1722,7 @@ def user_avatar_decoration_url_as(user, ext = None, size = None):
     ValueError
         If `ext`, `size` was not passed as any of the expected values.
     """
-    avatar_decoration = user.avatar_decoration
+    avatar_decoration = user_or_guild_profile.avatar_decoration
     if avatar_decoration is None:
         return None
     

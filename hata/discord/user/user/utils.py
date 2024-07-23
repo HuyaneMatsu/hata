@@ -7,8 +7,8 @@ from scarletio import export
 from ...core import USERS
 
 from .fields import (
-    put_banner_color_into, put_display_name_into, put_name_into, validate_banner_color, validate_display_name,
-    validate_name
+    put_avatar_decoration_into, put_banner_color_into, put_display_name_into, put_name_into,
+    validate_avatar_decoration, validate_banner_color, validate_display_name, validate_name
 )
 from .orin_user_base import USER_BANNER
 from .user import User
@@ -48,6 +48,7 @@ USER_SELF_FIELD_CONVERTERS = {
         partial_func(USER_AVATAR.validate_icon, allow_data = True),
         partial_func(USER_AVATAR.put_into, as_data = True),
     ),
+    'avatar_decoration': (validate_avatar_decoration, put_avatar_decoration_into),
     'banner': (
         partial_func(USER_BANNER.validate_icon, allow_data = True),
         partial_func(USER_BANNER.put_into, as_data = True),

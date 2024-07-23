@@ -3534,3 +3534,26 @@ class Slasher(
         
         self._sync_should.add(guild_id)
         self._sync_done.discard(guild_id)
+    
+    
+    @property
+    def random_error_message_getter(self):
+        """
+        Returns the random error message getter used by the default exception handler.
+        
+        Returns
+        -------
+        random_error_message_getter : `None | FunctionType`
+        """
+        return self._random_error_message_getter
+    
+    
+    @random_error_message_getter.setter
+    def random_error_message_getter(self, random_error_message_getter):
+        # random_error_message_getter
+        if random_error_message_getter is None:
+            random_error_message_getter = default_slasher_random_error_message_getter
+        else:
+            _validate_random_error_message_getter(random_error_message_getter)
+        
+        self._random_error_message_getter = random_error_message_getter

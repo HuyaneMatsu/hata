@@ -284,8 +284,8 @@ def test__MessageInteraction__get_authorizer_user_id(authorizer_user_ids, integr
     
     Parameters
     ----------
-    authorizer_user_ids : `int`
-        The invoking authorizer_user_id's identifier.
+    authorizer_user_ids : `dict<ApplicationIntegrationType, int>`
+        The authorizer users identifiers.
     
     integration_type : `ApplicationIntegrationType | int`
         Integration type to query for.
@@ -362,8 +362,8 @@ def test__MessageInteraction__get_authorizer_user(authorizer_user_ids, integrati
     
     Parameters
     ----------
-    authorizer_user_ids : `int`
-        The invoking authorizer_user_id's identifier.
+    authorizer_user_ids : `dict<ApplicationIntegrationType, int>`
+        The authorizer users identifiers.
     
     integration_type : `ApplicationIntegrationType | int`
         Integration type to query for.

@@ -9,7 +9,7 @@ from ...utils import now_as_id
 
 from ..audit_log import AuditLog
 
-from .fields import validate_entry_type, validate_guild_id, validate_user_id 
+from .fields import validate_entry_type, validate_guild_id, validate_user_id
 
 
 class AuditLogIterator(RichAttributeErrorBaseType):
@@ -70,12 +70,13 @@ class AuditLogIterator(RichAttributeErrorBaseType):
         
         # entry_type
         if (entry_type is not ...):
-            data['action_type'] = validate_entry_type(entry_type)
+            data['action_type'] = validate_entry_type(entry_type).value
         
         # user_id
         if (user_id is not ...):
             user_id = validate_user_id(user_id)
-            data['user_id'] = str(user_id) if user_id else None
+            if user_id:
+                data['user_id'] = str(user_id)
         
         
         self = object.__new__(cls)

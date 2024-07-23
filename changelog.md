@@ -1,3 +1,47 @@
+## 1.3.61 *\[2024-07-23\]*
+
+### Improvements
+
+- Add `GuildProfile.avatar_decoration`.
+- Add `GuildProfile.avatar_decoration_url`.
+- Add `GuildProfile.avatar_decoration_url_as`.
+- Add `GuildProfile.banner`.
+- Add `UserBase.user_banner_url_for`.
+- Add `UserBase.user_banner_url_for_as`.
+- Add `UserBase.user_banner_url_at`.
+- Add `UserBase.user_banner_url_at_as`.
+- `EmbedImage` now respects dimensions in `==` operation if the instance was received.
+- `EmbedThumbnail` now respects dimensions in `==` operation if the instance was received.
+- `EmbedVideo` now respects dimensions in `==` operation if the instance was received.
+- Add `InteractionEvent.authorizer_user_ids`.
+- Add `InteractionEvent.get_authorizer_user_id`.
+- Add `InteractionEvent.get_authorizer_user`.
+- `create_partial_guild_from_data` now also sets `.banner`.
+- Add `MessageSnapshot.type`.
+- Add `MessageSnapshot.mentioned_users`.
+- Add `MessageSnapshot.mentioned_role_ids`.
+- Add `#` and `-` characters to escape in `escape_markdown`.
+- Add `MessageSnapshot.iter_mentioned_role_ids`.
+- Add `MessageSnapshot.iter_mentioned_roles`.
+- Add `MessageSnapshot.mentioned_roles`.
+- Add `MessageSnapshot.iter_mentioned_users`.
+- Add `MessageSnapshot.iter_mentioned_channels`.
+- Add `MessageSnapshot.mentioned_channels`.
+- `Message.from_data` now force updates the embed if non of the clients has access to it.
+- `Client.interaction_followup_message_get` now also accepts `Message` too as parameter (from `int` only).
+
+#### ext.slash
+- Add `Slasher.random_error_message_getter` property to set it after constructor.
+- Allow more relaxed returns from `random_error_message_getter`.
+
+### Bug fixes
+
+- `AuditLogIterator` did not serialize every field for its query parameters correctly. (from 1.3.59)
+
+#### ext.slash
+- Returning value like `(InteractionResponse(...), ...)` caused error while it should not have.
+- Fix `ContextCommand` has no attribute `.default`.
+
 ## 1.3.60 *\[2024-07-14\]*
 
 ### Improvements

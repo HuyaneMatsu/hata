@@ -15,6 +15,7 @@ def test__create_partial_guild_from_data__new():
     """
     guild_id = 202307300008
     available = True
+    banner = Icon(IconType.animated, 144)
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     features = [GuildFeature.animated_icon]
@@ -27,6 +28,7 @@ def test__create_partial_guild_from_data__new():
     data = {
         'id': str(guild_id),
         'unavailable': not available,
+        'banner': banner.as_base_16_hash,
         'description': description,
         'features': [feature.value for feature in features],
         'name': name,
@@ -43,6 +45,7 @@ def test__create_partial_guild_from_data__new():
     
     vampytest.assert_eq(guild.id, guild_id)
     vampytest.assert_eq(guild.available, available)
+    vampytest.assert_eq(guild.banner, banner)
     vampytest.assert_eq(guild.description, description)
     vampytest.assert_eq(guild.discovery_splash, discovery_splash)
     vampytest.assert_eq(guild.features, tuple(features))

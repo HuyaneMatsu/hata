@@ -1,30 +1,56 @@
 import vampytest
 
-from ....user import ClientUserBase, GuildProfile
+from ....user import ClientUserBase, GuildProfile, User
 
 from ..fields import parse_mentioned_users
 
 
-def test__parse_mentioned_users__0():
+def _iter_options():
+    user_0 = User.precreate(202407200000)
+    user_1 = User.precreate(202407200001)
+    
+    yield {}, None
+    yield {'mentions': None}, None
+    yield {'mentions': []}, None
+    yield (
+        {'mentions': [user_0.to_data(include_internals = True), user_1.to_data(include_internals = True)]},
+        (user_0, user_1),
+    )
+    yield (
+        {'mentions': [user_1.to_data(include_internals = True), user_0.to_data(include_internals = True)]},
+        (user_0, user_1),
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_mentioned_users(input_data):
     """
     Tests whether ``parse_mentioned_users`` works as intended.
     
-    Case: No input.
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | tuple<ClientUserBase>`
     """
-    for input_data in (
-        {},
-        {'mentions': None},
-        {'mentions': []},
-    ):
-        output = parse_mentioned_users(input_data)
-        vampytest.assert_is(output, None)
+    output = parse_mentioned_users(input_data)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    
+    if (output is not None):
+        for element in output:
+            vampytest.assert_instance(element, ClientUserBase)
+    
+    return output
 
 
-def test__parse_mentioned_users__1():
+def test__parse_mentioned_users__with_guild_profile():
     """
     Tests whether ``parse_mentioned_users`` works as intended.
     
-    Case: Users.
+    Case: with guild profile.
     """
     user_id_0 = 202305010000
     user_id_1 = 202305010001

@@ -445,6 +445,7 @@ def MESSAGE_UPDATE__CAL_SC(client, data):
         
         Task(KOKORO, client.events.embed_update(client, message, change_state))
 
+
 def MESSAGE_UPDATE__CAL_MC(client, data):
     message_id = int(data['id'])
     message = MESSAGES.get(message_id, None)
@@ -469,7 +470,6 @@ def MESSAGE_UPDATE__CAL_MC(client, data):
     if clients.send(None) is not client:
         clients.close()
         return
-    
     
     if 'edited_timestamp' in data:
         if message_cached_before:

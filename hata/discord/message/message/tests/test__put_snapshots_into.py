@@ -12,12 +12,14 @@ def _iter_options():
     yield (
         None,
         False,
+        0,
         {},
     )
     
     yield (
         None,
         True,
+        0,
         {
             'message_snapshots': [],
         },
@@ -26,10 +28,11 @@ def _iter_options():
     yield (
         (snapshot_0, snapshot_1),
         False,
+        0,
         {
             'message_snapshots': [
-                snapshot_0.to_data(defaults = False),
-                snapshot_1.to_data(defaults = False),
+                snapshot_0.to_data(defaults = False, guild_id = 0),
+                snapshot_1.to_data(defaults = False, guild_id = 0),
             ],
         },
     )
@@ -37,17 +40,18 @@ def _iter_options():
     yield (
         (snapshot_0, snapshot_1),
         True,
+        0,
         {
             'message_snapshots': [
-                snapshot_0.to_data(defaults = True),
-                snapshot_1.to_data(defaults = True),
+                snapshot_0.to_data(defaults = True, guild_id = 0),
+                snapshot_1.to_data(defaults = True, guild_id = 0),
             ],
         },
     )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_snapshots_into(input_value, defaults):
+def test__put_snapshots_into(input_value, defaults, guild_id):
     """
     Tests whether ``put_snapshots_into`` works as intended.
     
@@ -57,9 +61,11 @@ def test__put_snapshots_into(input_value, defaults):
         Value to serialize.
     defaults : `bool`
         Whether values as their defaults should be included as well.
+    guild_id : `int`
+        Respective guild's identifier.
     
     Returns
     -------
     output : `dict<str, object>`
     """
-    return put_snapshots_into(input_value, {}, defaults)
+    return put_snapshots_into(input_value, {}, defaults, guild_id = guild_id)

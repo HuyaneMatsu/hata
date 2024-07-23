@@ -212,7 +212,7 @@ class UserBase(DiscordEntity, immortal = True):
         self : `instance<cls>`
         """
         raise NotImplementedError(
-            f'`{cls.__class__.__name__}` does not support `.from_data` operation, please call it on a sub-type of it.'
+            f'`{cls.__name__}` does not support `.from_data` operation, please call it on a sub-type of it.'
         )
     
     
@@ -317,7 +317,7 @@ class UserBase(DiscordEntity, immortal = True):
         """Returns the user's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         user_id = self.id
@@ -668,9 +668,6 @@ class UserBase(DiscordEntity, immortal = True):
     )
     
     
-    banner_url = property(module_urls.user_banner_url)
-    banner_url_as = module_urls.user_banner_url_as
-
     avatar_decoration_url = property(module_urls.user_avatar_decoration_url)
     avatar_decoration_url_as = module_urls.user_avatar_decoration_url_as
     
@@ -1297,10 +1294,19 @@ class UserBase(DiscordEntity, immortal = True):
         return False
     
     
+    # User base does not have `.banner` assigned, so manually add banner functions
+    banner_url = property(module_urls.user_banner_url)
+    banner_url_as = module_urls.user_banner_url_as
+    
     avatar_url_for = module_urls.user_avatar_url_for
     avatar_url_for_as = module_urls.user_avatar_url_for_as
     avatar_url_at = module_urls.user_avatar_url_at
     avatar_url_at_as = module_urls.user_avatar_url_at_as
+    
+    banner_url_for = module_urls.user_banner_url_for
+    banner_url_for_as = module_urls.user_banner_url_for_as
+    banner_url_at = module_urls.user_banner_url_at
+    banner_url_at_as = module_urls.user_banner_url_at_as
     
     
     def _delete(self):
@@ -1428,6 +1434,10 @@ class UserBase(DiscordEntity, immortal = True):
             +===================+===============================+
             | avatar            | ``Icon``                      |
             +-------------------+-------------------------------+
+            | avatar_decoration | `None`, ``AvatarDecoration``  |
+            +-------------------+-------------------------------+
+            | banner            | ``Icon``                      |
+            +-------------------+-------------------------------+
             | boosts_since      | `None`, `DateTime`            |
             +-------------------+-------------------------------+
             | flags             | `None`, ``GuildProfileFlags`` |
@@ -1469,6 +1479,10 @@ class UserBase(DiscordEntity, immortal = True):
             | Keys              | Values                        |
             +===================+===============================+
             | avatar            | ``Icon``                      |
+            +-------------------+-------------------------------+
+            | avatar_decoration | `None`, ``AvatarDecoration``  |
+            +-------------------+-------------------------------+
+            | banner            | ``Icon``                      |
             +-------------------+-------------------------------+
             | boosts_since      | `None`, `DateTime`            |
             +-------------------+-------------------------------+

@@ -17,7 +17,6 @@ from ...field_validators import (
 )
 from ...user import ClientUserBase, User, ZEROUSER
 
-
 # authorizer_user_ids
 
 def parse_authorizer_user_ids(data):
@@ -55,14 +54,14 @@ def put_authorizer_user_ids_into(authorizer_user_ids, data, defaults):
     ----------
     authorizer_user_ids : `None | dict<ApplicationIntegrationType, int>`
         The identifiers of the authorizer users.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     authorizer_user_ids_data = {}
     

@@ -32,45 +32,6 @@ from .guild import GUILD_BANNER, GUILD_DISCOVERY_SPLASH, GUILD_ICON, GUILD_INVIT
 from .preinstanced import ExplicitContentFilterLevel, MessageNotificationLevel, NsfwLevel, VerificationLevel
 
 
-def _deprecate_validate_content_filter(value):
-    warn(
-        (
-            f'`content_filter` parameter is deprecated. '
-            f'And will be removed in 2024 April. '
-            f'Please use `explicit_content_filter_level` instead.'
-        ),
-        FutureWarning,
-        stacklevel = 5,
-    )
-    return validate_explicit_content_filter_level(value)
-
-
-def _deprecate_validate_mfa(value):
-    warn(
-        (
-            f'`mfa` parameter is deprecated. '
-            f'And will be removed in 2024 April. '
-            f'Please use `mfa_level` instead.'
-        ),
-        FutureWarning,
-        stacklevel = 5,
-    )
-    return validate_mfa_level(value)
-
-
-def _deprecate_validate_message_notification(value):
-    warn(
-        (
-            f'`message_notification` parameter is deprecated. '
-            f'And will be removed in 2024 April. '
-            f'Please use `default_message_notification_level` instead.'
-        ),
-        FutureWarning,
-        stacklevel = 5,
-    )
-    return validate_default_message_notification_level(value)
-
-
 GUILD_FIELD_CONVERTERS = {
     'afk_channel_id': (validate_afk_channel_id, put_afk_channel_id_into),
     'afk_timeout': (validate_afk_timeout, put_afk_timeout_into),
@@ -79,8 +40,6 @@ GUILD_FIELD_CONVERTERS = {
         partial_func(GUILD_BANNER.put_into, as_data = True),
     ),
     'boost_progress_bar_enabled': (validate_boost_progress_bar_enabled, put_boost_progress_bar_enabled_into),
-    'content_filter': (_deprecate_validate_content_filter, put_explicit_content_filter_level_into),
-    'message_notification': (_deprecate_validate_message_notification, put_default_message_notification_level_into),
     'default_message_notification_level': (
         validate_default_message_notification_level, put_default_message_notification_level_into)
     ,
@@ -101,7 +60,6 @@ GUILD_FIELD_CONVERTERS = {
         partial_func(GUILD_INVITE_SPLASH.put_into, as_data = True),
     ),
     'locale': (validate_locale, put_locale_into),
-    'mfa': (_deprecate_validate_mfa, put_mfa_level_into),
     'mfa_level': (validate_mfa_level, put_mfa_level_into),
     'name': (validate_name, put_name_into),
     'nsfw_level': (validate_nsfw_level, put_nsfw_level_into),
@@ -144,6 +102,7 @@ def create_partial_guild_from_data(data):
     
     guild.available = parse_available(data)
     guild.description = parse_description(data)
+    guild._set_banner(data)
     guild._set_discovery_splash(data)
     guild._set_icon(data)
     guild._set_invite_splash(data)

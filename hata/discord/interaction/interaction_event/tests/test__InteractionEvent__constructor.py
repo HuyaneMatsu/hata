@@ -2,7 +2,7 @@ import vampytest
 
 from scarletio import Task
 
-from ....application import Entitlement
+from ....application import ApplicationIntegrationType, Entitlement
 from ....channel import Channel
 from ....guild import Guild, create_partial_guild_from_id
 from ....localization import Locale
@@ -32,6 +32,7 @@ def _assert_attributes_set(interaction_event):
     
     vampytest.assert_instance(interaction_event.application_id, int)
     vampytest.assert_instance(interaction_event.application_permissions, Permission)
+    vampytest.assert_instance(interaction_event.authorizer_user_ids, dict, nullable = True)
     vampytest.assert_instance(interaction_event.channel, Channel)
     vampytest.assert_instance(interaction_event.entitlements, tuple, nullable = True)
     vampytest.assert_instance(interaction_event.guild, Guild, nullable = True)
@@ -64,6 +65,10 @@ def test__InteractionEvent__new__all_fields():
     """
     application_id = 202211070000
     application_permissions = Permission(123)
+    authorizer_user_ids = {
+        ApplicationIntegrationType.user_install: 202407170000,
+        ApplicationIntegrationType.guild_install: 202407170001,
+    }
     channel = Channel.precreate(202211070001)
     entitlements = [Entitlement.precreate(202310050010), Entitlement.precreate(202310050011)]
     guild = create_partial_guild_from_id(202211070002)
@@ -78,6 +83,7 @@ def test__InteractionEvent__new__all_fields():
     interaction_event = InteractionEvent(
         application_id = application_id,
         application_permissions = application_permissions,
+        authorizer_user_ids = authorizer_user_ids,
         channel = channel,
         entitlements = entitlements,
         guild = guild,
@@ -94,6 +100,7 @@ def test__InteractionEvent__new__all_fields():
     
     vampytest.assert_eq(interaction_event.application_id, application_id)
     vampytest.assert_eq(interaction_event.application_permissions, application_permissions)
+    vampytest.assert_eq(interaction_event.authorizer_user_ids, authorizer_user_ids)
     vampytest.assert_is(interaction_event.channel, channel)
     vampytest.assert_eq(interaction_event.entitlements, tuple(entitlements))
     vampytest.assert_is(interaction_event.guild, guild)
@@ -143,6 +150,10 @@ def test__InteractionEvent__precreate__all_fields():
     """
     application_id = 202211070012
     application_permissions = Permission(123)
+    authorizer_user_ids = {
+        ApplicationIntegrationType.user_install: 202407170002,
+        ApplicationIntegrationType.guild_install: 202407170003,
+    }
     channel = Channel.precreate(202211070013)
     entitlements = [Entitlement.precreate(202310050012), Entitlement.precreate(202310050013)]
     guild = create_partial_guild_from_id(202211070014)
@@ -160,6 +171,7 @@ def test__InteractionEvent__precreate__all_fields():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
+        authorizer_user_ids = authorizer_user_ids,
         channel = channel,
         entitlements = entitlements,
         guild = guild,
@@ -177,6 +189,7 @@ def test__InteractionEvent__precreate__all_fields():
     
     vampytest.assert_eq(interaction_event.application_id, application_id)
     vampytest.assert_eq(interaction_event.application_permissions, application_permissions)
+    vampytest.assert_eq(interaction_event.authorizer_user_ids, authorizer_user_ids)
     vampytest.assert_is(interaction_event.channel, channel)
     vampytest.assert_eq(interaction_event.entitlements, tuple(entitlements))
     vampytest.assert_is(interaction_event.guild, guild)

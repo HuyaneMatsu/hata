@@ -21,6 +21,9 @@ from ...guild import (
 from ...localization import Locale
 from ...localization.utils import LOCALE_DEFAULT
 from ...message import Message
+from ...message.message_interaction.fields import (
+    parse_authorizer_user_ids, put_authorizer_user_ids_into, validate_authorizer_user_ids
+)
 from ...permission import Permission
 from ...permission.permission import PERMISSION_PRIVATE
 from ...user import ClientUserBase, User, ZEROUSER
@@ -40,6 +43,16 @@ validate_application_id = entity_id_validator_factory('application_id', Applicat
 parse_application_permissions = flag_parser_factory('app_permissions', Permission)
 put_application_permissions_into = string_flag_putter_factory('app_permissions')
 validate_application_permissions = flag_validator_factory('application_permissions', Permission)
+
+# authorizer_user_ids
+
+# Imported from `...message.message_interaction.fields`.
+# They are the same.
+# It does not matter where we define them.
+#
+# parse_authorizer_user_ids = ...
+# put_authorizer_user_ids_into = ...
+# validate_authorizer_user_ids = ...
 
 # channel
 

@@ -331,7 +331,7 @@ class ClientCompoundMessageEndpoints(Compound):
             The message's flags.
         
         forward_message : `int`, ``Message``, Optional (Keyword only)
-            
+            The message to forward.
         
         nonce : `None`, `str`, Optional (Keyword only)
             Used for optimistic message sending. The sent nonce with be present as `Message.nonce`,

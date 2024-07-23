@@ -118,7 +118,10 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
         return
     
     if not isinstance(response, InteractionResponse):
-        response = InteractionResponse(response)
+        if isinstance(response, tuple):
+            response = InteractionResponse(*response)
+        else:
+            response = InteractionResponse(response)
     
     for request_coroutine in response.get_request_coroutines(
         client,

@@ -40,6 +40,9 @@ class ClientCompoundClientEndpoints(Compound):
             An `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
             `'gif'` as well. By passing `None` you can remove the client's current avatar.
         
+        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+            The client's new avatar decoration.
+        
         banner : `None`, `bytes-like`, Optional (Keyword only)
             An `'jpg'`, `'png'`, `'webp'`, 'gif'` image's raw data. By passing `None` you can remove the client's
             current avatar.
@@ -106,6 +109,15 @@ class ClientCompoundClientEndpoints(Compound):
             
             Can be a `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
             `'gif'` as well. By passing `None` you can remove the client's current avatar.
+        
+        avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
+            The client's new avatar decoration.
+        
+        banner : `None`, `bytes-like`, Optional (Keyword only)
+            The client's new guild specific banner.
+            
+            Can be a `'jpg'`, `'png'`, `'webp'` and `'gif'`image's raw data.
+            By passing `None` you can remove the client's current banner.
         
         Raises
         ------

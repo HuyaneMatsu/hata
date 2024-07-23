@@ -35,7 +35,7 @@ class StringSelectOption(RichAttributeErrorBaseType):
     """
     def __new__(cls, value, label = ..., emoji = ..., *, default = ..., description = ...):
         """
-        Creates a new component option with the given parameters.
+        Creates a new string select option with the given parameters.
         
         Parameters
         ----------
@@ -154,7 +154,7 @@ class StringSelectOption(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the string select option's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # System fields : value
         

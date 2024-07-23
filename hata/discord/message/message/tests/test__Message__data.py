@@ -3,6 +3,7 @@ from datetime import datetime as DateTime, timezone as TimeZone
 import vampytest
 
 from ....channel import Channel, ChannelType, create_partial_channel_data
+from ....client import Client
 from ....component import Component, ComponentType
 from ....core import BUILTIN_EMOJIS
 from ....embed import Embed
@@ -118,7 +119,7 @@ def test__Message__from_data__all_fields():
         'message_reference': referenced_message.to_message_reference_data(),
         'resolved': resolved.to_data(),
         'role_subscription_data': role_subscription.to_data(),
-        'message_snapshots': [snapshot.to_data() for snapshot in snapshots],
+        'message_snapshots': [snapshot.to_data(guild_id = guild_id) for snapshot in snapshots],
         'sticker_items': [create_partial_sticker_data(sticker) for sticker in stickers],
         'thread': thread.to_data(include_internals = True),
         
@@ -190,24 +191,70 @@ def test__Message__from_data__should_not_update_if_updated():
     """
     Tests whether ``from_data`` works as intended.
     
-    Case: Should not update if already up to date.
+    Case: Should not update if already up to date & at least 1 client can see it.
     """
-    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
+    client_id = 202407230000
+    channel_id = 202407230001
     message_id = 202305030059
+    
+    client = Client(
+        'token_' + str(client_id),
+        client_id = client_id,
+    )
+    
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
+    channel = Channel.precreate(channel_id, channel_type = ChannelType.private, users = [client])
+    
+    try:
+        input_data = {
+            'id': str(message_id),
+            'channel_id': str(channel_id),
+        }
+        
+        message = Message.from_data(input_data)
+        
+        input_data = {
+            'id': str(message_id),
+            'channel_id': str(channel_id),
+            'call': call.to_data(),
+        }
+        
+        Message.from_data(input_data)
+    
+    finally:
+        client = None
+    
+    vampytest.assert_is(message.call, None)
+
+
+def test__Message__from_data__should_update_if_no_clients_can_see_it():
+    """
+    Tests whether ``from_data`` works as intended.
+    
+    Case: Should update if no clients can see it.
+    """
+    channel_id = 202407230002
+    message_id = 202305030003
+    
+    call = MessageCall(ended_at = DateTime(2045, 3, 4, tzinfo = TimeZone.utc))
+    channel = Channel.precreate(channel_id, channel_type = ChannelType.private, users = [])
     
     input_data = {
         'id': str(message_id),
+        'channel_id': str(channel_id),
     }
     
     message = Message.from_data(input_data)
     
     input_data = {
         'id': str(message_id),
+        'channel_id': str(channel_id),
         'call': call.to_data(),
     }
     
     Message.from_data(input_data)
-    vampytest.assert_is(message.call, None)
+    
+    vampytest.assert_is_not(message.call, None)
 
 
 def test__Message__from_data__should_update_if_precreate():
@@ -320,7 +367,7 @@ def test__Message__to_data():
         'message_reference': referenced_message.to_message_reference_data(),
         'resolved': resolved.to_data(defaults = True),
         'role_subscription_data': role_subscription.to_data(defaults = True),
-        'message_snapshots': [snapshots.to_data(defaults = True) for snapshots in snapshots],
+        'message_snapshots': [snapshots.to_data(defaults = True, guild_id = guild_id) for snapshots in snapshots],
         'sticker_items': [create_partial_sticker_data(sticker) for sticker in stickers],
         'thread': thread.to_data(defaults = True, include_internals = True),
         'type': message_type.value,

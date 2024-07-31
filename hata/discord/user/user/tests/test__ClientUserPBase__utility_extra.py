@@ -15,7 +15,7 @@ def test__ClientUserPBase__activity__0():
     activities = [
         Activity(state = 'orin dance', activity_type = ActivityType.custom),
         Activity('orin dance', activity_type = ActivityType.competing),
-        Activity('orin dance', activity_type = ActivityType.game),
+        Activity('orin dance', activity_type = ActivityType.playing),
     ]
     user = ClientUserPBase(
         activities = activities,
@@ -70,7 +70,7 @@ def test__ClientUserPBase__custom_activity__0():
     activities = [
         Activity('orin dance', activity_type = ActivityType.competing),
         Activity(state = 'orin dance', activity_type = ActivityType.custom),
-        Activity('orin dance', activity_type = ActivityType.game),
+        Activity('orin dance', activity_type = ActivityType.playing),
     ]
     user = ClientUserPBase(
         activities = activities,
@@ -103,7 +103,7 @@ def test__ClientUserPBase__custom_activity__2():
     Case: No custom activity.
     """
     activities = [
-        Activity('orin dance', activity_type = ActivityType.game),
+        Activity('orin dance', activity_type = ActivityType.playing),
     ]
     
     user = ClientUserPBase(

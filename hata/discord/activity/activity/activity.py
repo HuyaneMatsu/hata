@@ -79,7 +79,7 @@ class Activity(RichAttributeErrorBaseType):
         """
         # activity_type
         if activity_type is ...:
-            activity_type = ActivityType.game
+            activity_type = ActivityType.playing
         else:
             activity_type = validate_type(activity_type)
         
@@ -494,7 +494,7 @@ class Activity(RichAttributeErrorBaseType):
         color : ``Color``
         """
         activity_type = self.type
-        if (activity_type is ActivityType.game):
+        if (activity_type is ActivityType.playing):
             color = ACTIVITY_COLOR_GAME
             
         elif (activity_type is ActivityType.custom):

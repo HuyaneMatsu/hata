@@ -28,7 +28,7 @@ def test__ClientUserPBase__copy():
     flags = UserFlag(1)
     name = 'orin'
     bot = True
-    activities = [Activity('orin dance', activity_type = ActivityType.game)]
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     
@@ -71,7 +71,7 @@ def test__ClientUserPBase__copy_with__no_fields():
     flags = UserFlag(1)
     name = 'orin'
     bot = True
-    activities = [Activity('orin dance', activity_type = ActivityType.game)]
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     
@@ -114,7 +114,7 @@ def test__ClientUserPBase__copy_with__all_fields():
     old_flags = UserFlag(1)
     old_name = 'orin'
     old_bot = True
-    old_activities = [Activity('orin dance', activity_type = ActivityType.game)]
+    old_activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     old_status = Status.online
     old_statuses = {'mobile': Status.online.value}
     
@@ -128,7 +128,7 @@ def test__ClientUserPBase__copy_with__all_fields():
     new_flags = UserFlag(2)
     new_name = 'okuu'
     new_bot = False
-    new_activities = [Activity('okuu dance', activity_type = ActivityType.game)]
+    new_activities = [Activity('okuu dance', activity_type = ActivityType.playing)]
     new_status = Status.idle
     new_statuses = {'desktop': Status.online.value}
     

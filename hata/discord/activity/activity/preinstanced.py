@@ -1,5 +1,7 @@
 __all__ = ('ActivityType',)
 
+from scarletio import class_property
+
 from ...bases import Preinstance as P, PreinstancedBase
 
 from ..activity_metadata import ActivityMetadataBase, ActivityMetadataCustom, ActivityMetadataRich
@@ -36,7 +38,7 @@ class ActivityType(PreinstancedBase):
     +=======================+=======================+===========+=======================================+
     | unknown               | unknown               | -1        | ``ActivityMetadataBase``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
-    | game                  | game                  | 0         | ``ActivityMetadataRich``              |
+    | playing               | playing               | 0         | ``ActivityMetadataRich``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
     | stream                | block stream          | 1         | ``ActivityMetadataRich``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
@@ -98,9 +100,17 @@ class ActivityType(PreinstancedBase):
     
     # predefined
     unknown = P(-1, 'unknown', ActivityMetadataBase)
-    game = P(0, 'game', ActivityMetadataRich)
+    playing = P(0, 'playing', ActivityMetadataRich)
     stream = P(1, 'stream message', ActivityMetadataRich)
     spotify = P(2, 'spotify', ActivityMetadataRich)
     watching = P(3, 'watching', ActivityMetadataRich)
     custom = P(4, 'custom', ActivityMetadataCustom)
     competing = P(5, 'competing', ActivityMetadataRich)
+    
+    
+    @class_property
+    def game(self):
+        """
+        Please use `.playing instead. Will be deprecated in the future.
+        """
+        return self.playing

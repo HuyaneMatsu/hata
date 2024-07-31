@@ -6,8 +6,8 @@ from ..auto_moderation import AutoModerationRule
 from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token_pair
 from ..channel import Channel, ForumTag, PermissionOverwrite
 from ..core import (
-    APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, FORUM_TAGS, GUILDS, MESSAGES, ROLES, SCHEDULED_EVENTS,
-    SOUNDBOARD_SOUNDS, STICKERS, STICKER_PACKS, USERS
+    APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, EMOJIS, FORUM_TAGS, GUILDS, MESSAGES, ROLES,
+    SCHEDULED_EVENTS, SOUNDBOARD_SOUNDS, STICKERS, STICKER_PACKS, USERS
 )
 from ..emoji import Emoji, Reaction, ReactionType
 from ..guild import Guild
@@ -938,23 +938,23 @@ def get_reaction_emoji_value_and_type(reaction):
     
     raise TypeError(
         f'`reaction` can be `{Reaction.__name__}`, `{Emoji.__name__}`, `str`, '
-        f'got {reaction.__class__.__name__}; {reaction!r}.'
+        f'got {type(reaction).__name__}; {reaction!r}.'
     )
 
 
 def get_emoji_guild_id_and_id(emoji):
     """
-    Gets the emoji's and it's guild's identifier from the given emoji.
+    Gets the emoji's guild's and its identifier from the given value.
     
     Parameters
     ----------
-    emoji : ``Emoji``, `tuple` (`int`, `int`)
-        The emoji, or `guild-id`, `emoji-id` pair.
+    emoji : ``Emoji``, `(int, int)`
+        The emoji or `guild-id`, `emoji-id` pair.
     
     Returns
     -------
-    snowflake_pair : `tuple` (`int`, `int`)
-        The emoji's guild's and it's own identifier if applicable.
+    snowflake_pair : `(int, int)`
+        The emoji's guild's and it's own identifier.
     
     Raises
     ------
@@ -968,11 +968,97 @@ def get_emoji_guild_id_and_id(emoji):
         snowflake_pair = maybe_snowflake_pair(emoji)
         if snowflake_pair is None:
             raise TypeError(
-                f'`emoji` can be `{Emoji.__name__}`, `tuple` (`int`, `int`), got {emoji.__class__.__name__}; '
-                f'{emoji!r}.'
+                f'`emoji` can be `{Emoji.__name__}`, `(int, int)`, got {type(emoji).__name__}; {emoji!r}.'
             )
     
     return snowflake_pair
+
+
+def get_emoji_id(emoji):
+    """
+    Gets the emoji's identifier.
+    
+    Parameters
+    ----------
+    emoji : ``Emoji``, `int`
+        The emoji or its identifier.
+    
+    Returns
+    -------
+    emoji_id : `int`
+    """
+    if isinstance(emoji, Emoji):
+        emoji_id = emoji.id
+    else:
+        emoji_id = maybe_snowflake(emoji)
+        if (emoji_id is None):
+            raise TypeError(
+                f'`emoji` can be `{Emoji.__name__}`, `int`, got {type(emoji).__name__}; {emoji!r}.'
+            )
+    
+    return emoji_id
+
+
+def get_emoji_and_id(emoji):
+    """
+    Gets the emoji and its identifier.
+    
+    Parameters
+    ----------
+    emoji : ``Emoji``, `int`
+        The emoji or its identifier.
+    
+    Returns
+    -------
+    emoji_and_emoji_id : `(None | Emoji, int)`
+    """
+    if isinstance(emoji, Emoji):
+        emoji_id = emoji.id
+    else:
+        emoji_id = maybe_snowflake(emoji)
+        if (emoji_id is None):
+            raise TypeError(
+                f'`emoji` can be `{Emoji.__name__}`, `int`, got {type(emoji).__name__}; {emoji!r}.'
+            )
+        emoji = EMOJIS.get(emoji_id, None)
+    
+    return emoji, emoji_id
+
+
+def get_emoji_and_guild_id_and_id(emoji):
+    """
+    Gets the emoji and it's guild's identifier from the given emoji.
+    
+    Parameters
+    ----------
+    emoji : ``Emoji``, `(int, int)`
+        The emoji or `guild-id`, `emoji-id` pair.
+    
+    Returns
+    -------
+    emoji_and_guild_id_and_emoji_id : `(None | Emoji, int, int)`
+        The emoji and its guild's and it's own identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `emoji`'s type is incorrect.
+    """
+    if isinstance(emoji, Emoji):
+        guild_id = emoji.guild_id
+        emoji_id = emoji.id
+    
+    else:
+        snowflake_pair = maybe_snowflake_pair(emoji)
+        if snowflake_pair is None:
+            raise TypeError(
+                f'`emoji` can be `{Emoji.__name__}`, `(int, int)`, got {type(emoji).__name__}; {emoji!r}.'
+            )
+        
+        guild_id, emoji_id = snowflake_pair
+        emoji = EMOJIS.get(emoji_id, None)
+    
+    return emoji, guild_id, emoji_id
 
 
 def get_sticker_and_id(sticker):

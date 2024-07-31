@@ -180,6 +180,9 @@ from .preinstanced import (
 # - type - X
 # - verify_key - X
 #
+# Cache fields for other use
+# - _cache_emojis
+#
 # Table format:
 #
 # +-------------------------------------+-----------+-----------+---------------+
@@ -327,24 +330,10 @@ APPLICATION_SPLASH = IconSlot(
 
 
 
-def _require_code_grant_validator_deprecated(value):
-    warn(
-        (
-            f'`{Application.__name__}`\'s `bot_require_code_grant` parameter is deprecated and will be removed in '
-            f'2024 April. '
-            f'Please use `bot_requires_code_grant` instead.'
-        ),
-        FutureWarning,
-        stacklevel = 4,
-    )
-    return validate_bot_requires_code_grant(value)
-
-
 COMMON_CONSTRUCT_FIELDS = {
     'aliases': ('aliases', validate_aliases),
     'approximate_guild_count': ('approximate_guild_count', validate_approximate_guild_count),
     'bot_public': ('bot_public', validate_bot_public),
-    'bot_require_code_grant': ('bot_requires_code_grant', _require_code_grant_validator_deprecated),
     'bot_requires_code_grant': ('bot_requires_code_grant', validate_bot_requires_code_grant),
     'creator_monetization_state': ('creator_monetization_state', validate_creator_monetization_state),
     'custom_install_url': ('custom_install_url', validate_custom_install_url),
@@ -420,6 +409,9 @@ class Application(DiscordEntity, immortal = True):
     
     Attributes
     ----------
+    _cache_emojis : `None | dict<int, Emoji>`
+        Application emoji cache.
+    
     aliases : `None`, `tuple` of `str`
         Aliases of the application's name.
     
@@ -631,11 +623,11 @@ class Application(DiscordEntity, immortal = True):
     The instances of the class support weakreferencing.
     """
     __slots__ = (
-        'aliases', 'approximate_guild_count', 'bot_public', 'bot_requires_code_grant', 'creator_monetization_state',
-        'custom_install_url', 'deeplink_url', 'description', 'developers', 'discoverability_state',
-        'discovery_eligibility_flags',  'embedded_activity_configuration', 'eula_id', 'executables',
-        'explicit_content_filter_level', 'flags', 'guild_id', 'hook', 'install_parameters', 'integration_public',
-        'integration_requires_code_grant', 'integration_types', 'integration_types_configuration',
+        '_cache_emojis', 'aliases', 'approximate_guild_count', 'bot_public', 'bot_requires_code_grant',
+        'creator_monetization_state', 'custom_install_url', 'deeplink_url', 'description', 'developers',
+        'discoverability_state', 'discovery_eligibility_flags',  'embedded_activity_configuration', 'eula_id',
+        'executables', 'explicit_content_filter_level', 'flags', 'guild_id', 'hook', 'install_parameters',
+        'integration_public', 'integration_requires_code_grant', 'integration_types', 'integration_types_configuration',
         'interaction_endpoint_url', 'interaction_event_types', 'interaction_version', 'internal_guild_restriction',
         'max_participants', 'monetization_eligibility_flags', 'monetization_state', 'monetized', 'name', 'overlay',
         'overlay_compatibility_hook', 'overlay_method_flags', 'owner', 'primary_sku_id', 'privacy_policy_url',
@@ -663,7 +655,8 @@ class Application(DiscordEntity, immortal = True):
             The created application.
         """
         self = object.__new__(cls)
-        
+
+        self._cache_emojis = None
         self.aliases = None
         self.approximate_guild_count = 0
         self.bot_public = BOT_PUBLIC_DEFAULT
@@ -2432,6 +2425,7 @@ class Application(DiscordEntity, immortal = True):
         new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
+        new._cache_emojis = None
         aliases = self.aliases
         if (aliases is not None):
             aliases = (*aliases,)
@@ -2779,3 +2773,70 @@ class Application(DiscordEntity, immortal = True):
                 pass
         
         return ApplicationIntegrationTypeConfiguration._create_empty()
+    
+    
+    # emoji cache
+    
+    def _add_cache_emoji(self, emoji):
+        """
+        Adds an emoji to the application's cached emojis.
+        
+        Parameters
+        ----------
+        emoji : ``Emoji``
+            The emoji to add.
+        """
+        cache_emojis = self._cache_emojis
+        if cache_emojis is None:
+            cache_emojis = {}
+            self._cache_emojis = cache_emojis
+        
+        cache_emojis[emoji.id] = emoji
+    
+    
+    def _delete_cache_emoji_by_id(self, emoji_id):
+        """
+        Deletes an emoji from the application's cached emojis by its identifier.
+        
+        Parameters
+        ----------
+        emoji_id : `int`
+            The emoji identifier to delete.
+        
+        Returns
+        -------
+        success : `bool`
+        """
+        cache_emojis = self._cache_emojis
+        if cache_emojis is None:
+            return False
+        
+        try:
+            del cache_emojis[emoji_id]
+        except KeyError:
+            return False
+        
+        if not cache_emojis:
+            self._cache_emojis = None
+        
+        return True
+    
+    
+    def _has_cache_emoji_by_id(self, emoji_id):
+        """
+        Returns whether the application has the given emoji cached by its identifier.
+        
+        Parameters
+        ----------
+        emoji_id : `int`
+            The emoji identifier to check for.
+        
+        Returns
+        -------
+        has_emoji : `bool`
+        """
+        cache_emojis = self._cache_emojis
+        if cache_emojis is None:
+            return False
+        
+        return emoji_id in cache_emojis

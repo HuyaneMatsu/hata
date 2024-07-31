@@ -364,6 +364,66 @@ def convert_purchase_notification(self):
     return f'Thank you,\n {self.author.name_at(self.guild_id)!s}'
 
 
+def convert_poll_result(self):
+    embed = self.embed
+    if embed is None or embed.type is not EmbedType.poll_result:
+        return None
+    
+    content_parts = []
+    should_add_next = ''
+    
+    description = embed.description
+    if description is not None:
+        content_parts.append(description)
+        should_add_next = '\n'
+    
+    
+    for field in embed.iter_fields():
+        if field.name == 'poll_question_text':
+            content_parts.append(should_add_next)
+            content_parts.append('The poll ')
+            content_parts.append(field.value)
+            content_parts.append(' has closed.')
+            should_add_next = '\n'
+            break
+    
+    for field in embed.iter_fields():
+        if field.name == 'victor_answer_text':
+            content_parts.append(should_add_next)
+            content_parts.append(field.value)
+            should_add_next = '\n'
+            break
+    
+    winning_answer_votes = -1
+    
+    for field in embed.iter_fields():
+        if field.name == 'victor_answer_votes':
+            try:
+                winning_answer_votes = int(field.value)
+            except ValueError:
+                pass
+            break
+    
+    total_votes = -1
+    
+    for field in embed.iter_fields():
+        if field.name == 'total_votes':
+            try:
+                total_votes = int(field.value)
+            except ValueError:
+                pass
+            break
+    
+    if (winning_answer_votes != -1) and (total_votes != -1):
+        content_parts.append(should_add_next)
+        content_parts.append('Winning answer • ')
+        content_parts.append(format(winning_answer_votes * 100 / total_votes, '.0f'))
+        content_parts.append('%')
+    
+    if content_parts:
+        return ''.join(content_parts)
+
+
 class MessageType(PreinstancedBase):
     """
     Represents a ``Message``'s type.
@@ -483,6 +543,10 @@ class MessageType(PreinstancedBase):
     | poll                                      | poll                                      | 43    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | purchase_notification                     | purchase notification                     | 44    | MESSAGE_DEFAULT_CONVERTER                         | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | ???                                       | ???                                       | 45    | ???                                               | ???       |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | poll_result                               | poll result                               | 46    | convert_poll_result                               | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     """
     INSTANCES = {}
@@ -613,6 +677,8 @@ class MessageType(PreinstancedBase):
     guild_gaming_stats = P(42, 'guild gaming stats', MESSAGE_DEFAULT_CONVERTER, True)
     poll = P(43, 'poll', MESSAGE_DEFAULT_CONVERTER, True)
     purchase_notification = P(44, 'purchase notification', convert_purchase_notification, False)
+    # 45 ???
+    poll_result = P(46, 'poll result', convert_poll_result, True)
 
 
 GENERIC_MESSAGE_TYPES = frozenset((

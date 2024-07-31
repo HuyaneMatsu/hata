@@ -275,7 +275,7 @@ def test__EmbeddedActivityState__update_activity():
     Tests whether ``EmbeddedActivityState._update_activity`` works as intended.
     """
     old_activity = Activity('tsuki', activity_type = ActivityType.competing)
-    new_activity = Activity('shiki', activity_type = ActivityType.game)
+    new_activity = Activity('shiki', activity_type = ActivityType.playing)
     
     embedded_activity_state = EmbeddedActivityState(
         activity = old_activity,
@@ -291,7 +291,7 @@ def test__EmbeddedActivityState__difference_update_activity():
     Tests whether ``EmbeddedActivityState._difference_update_activity`` works as intended.
     """
     old_activity = Activity('tsuki', activity_type = ActivityType.competing)
-    new_activity = Activity('shiki', activity_type = ActivityType.game)
+    new_activity = Activity('shiki', activity_type = ActivityType.playing)
     
     embedded_activity_state = EmbeddedActivityState(
         activity = old_activity,

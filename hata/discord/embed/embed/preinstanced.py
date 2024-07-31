@@ -43,6 +43,8 @@ class EmbedType(PreinstancedBase):
     +-------------------------------+-------------------------------+-------------------------------+
     | image                         | image                         | image                         |
     +-------------------------------+-------------------------------+-------------------------------+
+    | poll_result                   | poll result                   | poll_result                   |
+    +-------------------------------+-------------------------------+-------------------------------+
     | post_preview                  | post preview                  | post_preview                  |
     +-------------------------------+-------------------------------+-------------------------------+
     | link                          | link                          | link                          |
@@ -71,6 +73,7 @@ class EmbedType(PreinstancedBase):
     gift = P('gift', 'gift')
     gifv = P('gifv', 'gifv')
     image = P('image', 'image')
+    poll_result = P('poll_result', 'poll result')
     post_preview = P('post_preview', 'post preview')
     link = P('link', 'link')
     rich = P('rich', 'rich')

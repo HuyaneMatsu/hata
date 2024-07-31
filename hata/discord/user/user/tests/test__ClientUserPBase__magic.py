@@ -27,7 +27,7 @@ def test__ClientUserPBase__repr():
     flags = UserFlag(1)
     name = 'orin'
     bot = True
-    activities = [Activity('orin dance', activity_type = ActivityType.game)]
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     
@@ -67,7 +67,7 @@ def test__ClientUserPBase__hash():
     flags = UserFlag(1)
     name = 'orin'
     bot = True
-    activities = [Activity('orin dance', activity_type = ActivityType.game)]
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     
@@ -108,7 +108,7 @@ def test__ClientUserPBase__eq():
     flags = UserFlag(1)
     name = 'orin'
     bot = True
-    activities = [Activity('orin dance', activity_type = ActivityType.game)]
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     
@@ -171,7 +171,7 @@ def test__ClientUserPBase__format():
     flags = UserFlag(1)
     name = 'orin'
     bot = True
-    activities = [Activity('orin dance', activity_type = ActivityType.game)]
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     

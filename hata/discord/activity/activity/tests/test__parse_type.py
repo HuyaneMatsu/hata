@@ -5,7 +5,7 @@ from ..preinstanced import ActivityType
 
 
 def _iter_options():
-    yield {}, ActivityType.game
+    yield {}, ActivityType.playing
     yield {'type': ActivityType.competing.value}, ActivityType.competing
 
 

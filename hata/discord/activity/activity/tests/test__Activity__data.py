@@ -37,7 +37,7 @@ def test__Activity__to_data():
     Tests whether ``Activity.to_data`` works as expected.
     """
     name = 'ZYTOKINE'
-    activity_type = ActivityType.game
+    activity_type = ActivityType.playing
     url = 'https://www.astil.dev/'
     state = 'Hollow'
     session_id = 'Ensemble'
@@ -60,7 +60,7 @@ def test__Activity__to_data__user():
     Tests whether `Activity.to_data(user = True)` works as expected.
     """
     name = 'ZYTOKINE'
-    activity_type = ActivityType.game
+    activity_type = ActivityType.playing
     url = 'https://www.astil.dev/'
     state = 'Hollow'
     session_id = 'Ensemble'
@@ -85,7 +85,7 @@ def test__Activity__to_data__include_internals():
     Tests whether `Activity.to_data(include_internals = True)` works as expected.
     """
     name = 'ZYTOKINE'
-    activity_type = ActivityType.game
+    activity_type = ActivityType.playing
     url = 'https://www.astil.dev/'
     state = 'Hollow'
     session_id = 'Ensemble'
@@ -113,7 +113,7 @@ def test__Activity__update_attributes():
     """
     old_name = 'ZYTOKINE'
     new_name = 'Linjin'
-    activity_type = ActivityType.game
+    activity_type = ActivityType.playing
     old_url = 'https://www.astil.dev/'
     new_url = 'https://www.astil.dev/project/hata/'
     old_state = 'Hollow'
@@ -144,7 +144,7 @@ def test__Activity__difference_update_attributes():
     """
     old_name = 'ZYTOKINE'
     new_name = 'Linjin'
-    activity_type = ActivityType.game
+    activity_type = ActivityType.playing
     old_url = 'https://www.astil.dev/'
     new_url = 'https://www.astil.dev/project/hata/'
     old_state = 'Hollow'

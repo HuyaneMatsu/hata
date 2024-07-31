@@ -1,6 +1,7 @@
 import vampytest
 
 from ....bases import Icon, IconType
+from ....emoji import Emoji
 from ....guild import Guild
 from ....user import User
 
@@ -963,3 +964,129 @@ def test__Application__get_integration_type_configuration(input_value, integrati
     """
     application = Application(integration_types_configuration = input_value)
     return application.get_integration_type_configuration(integration_type)
+
+
+def test__Application__add_cache_emoji():
+    """
+    Tests whether ``Application._add_cache_emoji`` works as intended.
+    """
+    emoji_id_0 = 202407300000
+    emoji_id_1 = 202407300001
+    application_id = 202407300002
+    
+    emoji_0 = Emoji.precreate(emoji_id_0)
+    emoji_1 = Emoji.precreate(emoji_id_1)
+    
+    application = Application.precreate(application_id)
+    
+    vampytest.assert_eq(
+        application._cache_emojis,
+        None,
+    )
+    
+    # add emoji 0
+    application._add_cache_emoji(emoji_0)
+    
+    vampytest.assert_eq(
+        application._cache_emojis,
+        {
+            emoji_id_0: emoji_0,
+        },
+    )
+    
+    # add emoji 1
+    application._add_cache_emoji(emoji_1)
+    
+    vampytest.assert_eq(
+        application._cache_emojis,
+        {
+            emoji_id_0: emoji_0,
+            emoji_id_1: emoji_1,
+        },
+    )
+
+
+def test__Application__delete_cache_emoji_by_id():
+    """
+    Tests whether ``Application._delete_cache_emoji_by_id`` works as intended.
+    """
+    emoji_id_0 = 202407300003
+    emoji_id_1 = 202407300004
+    application_id = 202407300005
+    
+    emoji_0 = Emoji.precreate(emoji_id_0)
+    emoji_1 = Emoji.precreate(emoji_id_1)
+    
+    application = Application.precreate(application_id)
+    application._add_cache_emoji(emoji_0)
+    application._add_cache_emoji(emoji_1)
+    
+    # delete emoji 1 twice
+    output = application._delete_cache_emoji_by_id(emoji_id_1)
+    
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
+    vampytest.assert_eq(
+        application._cache_emojis,
+        {
+            emoji_id_0: emoji_0,
+        },
+    )
+        
+    output = application._delete_cache_emoji_by_id(emoji_id_1)
+    
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
+
+    # delete emoji 0 twice
+    output = application._delete_cache_emoji_by_id(emoji_id_0)
+    
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
+    vampytest.assert_eq(
+        application._cache_emojis,
+        None
+    )
+        
+    output = application._delete_cache_emoji_by_id(emoji_id_0)
+    
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
+
+
+
+def test__Application__has_cache_emoji_by_id():
+    """
+    Tests whether ``Application._has_cache_emoji_by_id`` works as intended.
+    """
+    emoji_id_0 = 202407300006
+    emoji_id_1 = 202407300007
+    application_id = 202407300008
+    
+    emoji_0 = Emoji.precreate(emoji_id_0)
+    emoji_1 = Emoji.precreate(emoji_id_1)
+    
+    application = Application.precreate(application_id)
+    
+    # has emoji 0, but we have no emoji yet
+    
+    output = application._has_cache_emoji_by_id(emoji_id_0)
+    
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)
+    
+    # has emoji 0, we have emoji 0
+    
+    application._add_cache_emoji(emoji_0)
+    output = application._has_cache_emoji_by_id(emoji_id_0)
+    
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, True)
+    
+    
+    # has emoji 1, we have emoji 0
+    
+    output = application._has_cache_emoji_by_id(emoji_id_1)
+    
+    vampytest.assert_instance(output, bool)
+    vampytest.assert_eq(output, False)

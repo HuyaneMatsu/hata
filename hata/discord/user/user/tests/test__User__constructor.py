@@ -73,7 +73,7 @@ def test__User__precreate__all_fields():
     flags = UserFlag(1)
     name = 'voice in the dark'
     bot = True
-    activities = [Activity('orin dance', activity_type = ActivityType.game)]
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     

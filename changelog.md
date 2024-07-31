@@ -1,3 +1,47 @@
+## 1.3.62 *\[2024-07-31\]*
+
+### Improvements
+
+- `Client.emoji_create` and `.emoji_edit`
+    This also changes how positional parameters are ordered.
+- Add `MessageType.poll_result`.
+- Add `EmbedType.poll_result`.
+- Add `Client.emoji_get_application`.
+- Add `Client.emoji_get_all_application`.
+- Add `Client.emoji_create_application`.
+- Add `Client.emoji_edit_application`.
+- Add `Client.emoji_delete_application`.
+- Add `DiscordApiClient.emoji_get_application`.
+- Add `DiscordApiClient.emoji_get_all_application`.
+- Add `DiscordApiClient.emoji_create_application`.
+- Add `DiscordApiClient.emoji_edit_application`.
+- Add `DiscordApiClient.emoji_delete_application`.
+- Add `RATELIMIT_GROUPS.emoji_get_application`.
+- Add `RATELIMIT_GROUPS.emoji_get_all_application`.
+- Add `RATELIMIT_GROUPS.emoji_create_application`.
+- Add `RATELIMIT_GROUPS.emoji_edit_application`.
+- Add `RATELIMIT_GROUPS.emoji_delete_application`.
+- Add `Client.emoji_create_guild` as an alias for `.emoji_create`.
+- Add `Client.emoji_delete_guild` as an alias for `.emoji_delete`.
+- Add `Client.emoji_edit_guild` as an alias for `.emoji_edit`.
+
+### Renames, Deprecations & Removals
+
+- Rename `ActivityType.game` to `.playing`. `.game` is still available as a property.
+- Deprecate using `name` parameter in `Client.emoji_create` as positional.
+- Rename `Client.emoji_guild_get_all` to `emoji_get_all_guild`. Old version is being deprecated.
+- Rename `Client.emoji_get` to `emoji_get_guild`. Old version is being deprecated.
+- Rename `RATELIMIT_GROUPS.emoji_get` to `.emoji_get_guild`.
+- Rename `RATELIMIT_GROUPS.emoji_guild_get_all` to `.emoji_get_all_guild`.
+- Rename `DiscordApiClient.emoji_get` to `.emoji_get_guild`.
+- Rename `DiscordApiClient.emoji_guild_get_all` to `.emoji_get_all_guild`.
+- Rename `RATELIMIT_GROUPS.emoji_create` to `.emoji_create_guild`.
+- Rename `RATELIMIT_GROUPS.emoji_delete` to `.emoji_delete_guild`.
+- Rename `RATELIMIT_GROUPS.emoji_edit` to `.emoji_edit_guild`.
+- Rename `DiscordApiClient.emoji_create` to `.emoji_create_guild`.
+- Rename `DiscordApiClient.emoji_delete` to `.emoji_delete_guild`.
+- Rename `DiscordApiClient.emoji_edit` to `.emoji_edit_guild`.
+
 ## 1.3.61 *\[2024-07-23\]*
 
 ### Improvements

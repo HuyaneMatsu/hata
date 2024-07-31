@@ -70,7 +70,7 @@ def test__ClientUserPBase__new__all_fields():
     flags = UserFlag(1)
     name = 'voice in the dark'
     bot = True
-    activities = [Activity('orin dance', activity_type = ActivityType.game)]
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     
@@ -138,7 +138,7 @@ def test_ClientUserPBase___from_client__0():
     guild_profiles = {2023020700002: GuildProfile(nick = 'hello')}
     thread_profiles = {202302070003: ThreadProfile(flags = 2)}
     
-    activities = [Activity('orin dance', activity_type = ActivityType.game)]
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     
@@ -216,7 +216,7 @@ def test_ClientUserPBase___from_client__1():
     guild_profiles = {202302070005: GuildProfile(nick = 'hello')}
     thread_profiles = {202302070006: ThreadProfile(flags = 2)}
 
-    activities = [Activity('orin dance', activity_type = ActivityType.game)]
+    activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
     statuses = {'mobile': Status.online.value}
     

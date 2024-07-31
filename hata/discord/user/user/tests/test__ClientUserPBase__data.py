@@ -24,8 +24,8 @@ def test__ClientUserPBase__update_presence():
     Tests whether ``ClientUserPBase._update_presence`` works as intended.
     """
     activities = [
-        Activity('orin dance', activity_id = 202302080000, activity_type = ActivityType.game),
-        Activity('okuu dance', activity_id = 202302080001, activity_type = ActivityType.game),
+        Activity('orin dance', activity_id = 202302080000, activity_type = ActivityType.playing),
+        Activity('okuu dance', activity_id = 202302080001, activity_type = ActivityType.playing),
     ]
     status = Status.online
     statuses = {'mobile': Status.online.value}
@@ -51,15 +51,15 @@ def test__ClientUserPBase__difference_update_presence():
     Tests whether ``ClientUserPBase._difference_update_presence`` works as intended.
     """
     old_activities = [
-        Activity('orin dance', activity_id = 202302080002, activity_type = ActivityType.game),
-        Activity('okuu dance', activity_id = 202302080003, activity_type = ActivityType.game),
+        Activity('orin dance', activity_id = 202302080002, activity_type = ActivityType.playing),
+        Activity('okuu dance', activity_id = 202302080003, activity_type = ActivityType.playing),
     ]
     old_status = Status.online
     old_statuses = {'mobile': Status.online.value}
     
     new_activities = [
-        Activity('okuu lay', activity_id = 202302080003, activity_type = ActivityType.game),
-        Activity('satori dance', activity_id = 202302080004, activity_type = ActivityType.game),
+        Activity('okuu lay', activity_id = 202302080003, activity_type = ActivityType.playing),
+        Activity('satori dance', activity_id = 202302080004, activity_type = ActivityType.playing),
     ]
     new_status = Status.idle
     new_statuses = {'desktop': Status.online.value}
@@ -78,11 +78,11 @@ def test__ClientUserPBase__difference_update_presence():
     
     expected_output = {
         'activities': ActivityChange(
-            added = [Activity('satori dance', activity_id = 202302080004, activity_type = ActivityType.game)],
-            removed = [Activity('orin dance', activity_id = 202302080002, activity_type = ActivityType.game)],
+            added = [Activity('satori dance', activity_id = 202302080004, activity_type = ActivityType.playing)],
+            removed = [Activity('orin dance', activity_id = 202302080002, activity_type = ActivityType.playing)],
             updated = [
                 ActivityUpdate(
-                    activity = Activity('okuu lay', activity_id = 202302080003, activity_type = ActivityType.game),
+                    activity = Activity('okuu lay', activity_id = 202302080003, activity_type = ActivityType.playing),
                     old_attributes = {'name': 'okuu dance'}
                 ),
             ],

@@ -18,7 +18,7 @@ def test__Activity__color():
     """
     Tests whether ``Activity.color`` works as intended.
     """
-    activity = Activity(activity_type = ActivityType.game)
+    activity = Activity(activity_type = ActivityType.playing)
     vampytest.assert_instance(activity.color, Color)
 
 
@@ -28,7 +28,7 @@ def test__Activity__discord_side_id__0():
     
     Case: no id.
     """
-    activity = Activity(activity_type = ActivityType.game)
+    activity = Activity(activity_type = ActivityType.playing)
     vampytest.assert_instance(activity.discord_side_id, str)
 
 
@@ -39,7 +39,7 @@ def test__Activity__discord_side_id__1():
     Case: id given.
     """
     activity_id = 202209080000
-    activity = Activity(activity_type = ActivityType.game, activity_id = activity_id)
+    activity = Activity(activity_type = ActivityType.playing, activity_id = activity_id)
     vampytest.assert_instance(activity.discord_side_id, str)
 
 
@@ -277,7 +277,7 @@ def test__Activity__copy_with__1():
     
     Case: Fields given.
     """
-    old_activity_type = ActivityType.game
+    old_activity_type = ActivityType.playing
     old_name = 'Yuuka'
     new_activity_type = ActivityType.competing
     new_name = 'koishi'

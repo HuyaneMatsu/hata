@@ -35,7 +35,7 @@ def test__Activity__new__0():
     Case: Creating rich activity.
     """
     name = 'Iceon'
-    activity_type = ActivityType.game
+    activity_type = ActivityType.playing
     
     application_id = 202209070019
     assets = ActivityAssets(image_large = 'senya')

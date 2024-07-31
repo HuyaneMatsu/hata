@@ -942,19 +942,23 @@ class Client(
         
         This endpoint is available only for bot accounts.
         """
-        if self.bot:
-            data = await self.api.application_get_own()
-            application = self.application
-            old_application_id = application.id
-            application = application.from_data_own(data)
-            self.application = application
-            new_application_id = application.id
+        if not self.bot:
+            return
+        
+        data = await self.api.application_get_own()
+        application = self.application
+        old_application_id = application.id
+        application = application.from_data_own(data)
+        self.application = application
+        new_application_id = application.id
+        
+        if old_application_id != new_application_id:
+            if APPLICATION_ID_TO_CLIENT.get(old_application_id, None) is self:
+                del APPLICATION_ID_TO_CLIENT[old_application_id]
             
-            if old_application_id != new_application_id:
-                if APPLICATION_ID_TO_CLIENT.get(old_application_id, None) is self:
-                    del APPLICATION_ID_TO_CLIENT[old_application_id]
-                
-                APPLICATION_ID_TO_CLIENT[new_application_id] = self
+            APPLICATION_ID_TO_CLIENT[new_application_id] = self
+        
+        await self.emoji_get_all_application()
     
     
     async def client_gateway(self):

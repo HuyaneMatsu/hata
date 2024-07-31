@@ -32,6 +32,7 @@ def _assert_fields_set(application):
         The application to check.
     """
     vampytest.assert_instance(application, Application)
+    vampytest.assert_instance(application._cache_emojis, dict, nullable = True)
     vampytest.assert_instance(application.aliases, tuple, nullable = True)
     vampytest.assert_instance(application.approximate_guild_count, int)
     vampytest.assert_instance(application.bot_public, bool)

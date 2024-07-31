@@ -80,7 +80,7 @@ def test__Activity__eq():
     Tests whether ``Activity.__eq__`` works as expected.
     """
     name = ''
-    activity_type = ActivityType.game
+    activity_type = ActivityType.playing
     
     keyword_parameters = {
         'name': name,

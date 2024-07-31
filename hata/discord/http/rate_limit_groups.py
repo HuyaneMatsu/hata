@@ -249,6 +249,54 @@ Group Details
     - Limit : `5`
     - Resets after : `20.0`
 
+- emoji_get_all_application
+    - Endpoint : `/applications/{application_id}/emojis`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `5`
+    - Resets after : `1.0`
+
+- emoji_create_application
+    - Endpoint : `/applications/{application_id}/emojis`
+    - Method : `POST`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `1`
+    - Resets after : `1.5`
+
+- emoji_delete_application
+    - Endpoint : `/applications/{application_id}/emojis/{emoji_id}`
+    - Method : `DELETE`
+    - Required auth : `bot`
+    - Limiter : `UNLIMITED`
+    - Limit : `UN`
+    - Resets after : `UN`
+
+- emoji_get_application
+    - Endpoint : `/applications/{application_id}/emojis/{emoji_id}`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `10`
+    - Resets after : `1.0`
+
+- emoji_edit_application
+    - Endpoint : `/applications/{application_id}/emojis/{emoji_id}`
+    - Method : `PATCH`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `10`
+    - Resets after : `10.0`
+
+- emoji_create_application
+    - Endpoint : `/applications/{application_id}/emojis/{emoji_id}`
+    - Method : `POST`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `UN`
+    - Resets after : `UN`
+
 - entitlement_get_chunk
     - Endpoint : `/applications/{application_id}/entitlements`
     - Method : `GET`
@@ -1160,7 +1208,7 @@ Group Details
     - Resets after : `N/A`
     - Notes : Deprecated. Works on v6, v7.
 
-- emoji_guild_get_all
+- emoji_get_all_guild
     - Endpoint : `/guilds/{guild_id}/emojis`
     - Method : `GET`
     - Required auth : `bot`
@@ -1168,7 +1216,7 @@ Group Details
     - Limit : `OPT`
     - Resets after : `OPT`
 
-- emoji_create
+- emoji_create_guild
     - Endpoint : `/guilds/{guild_id}/emojis`
     - Method : `POST`
     - Required auth : `bot`
@@ -1177,7 +1225,7 @@ Group Details
     - Resets after : `3600.0`
     - Notes : Discord does not return rate limit information, still figured it out. :LeSanae:
 
-- emoji_delete
+- emoji_delete_guild
     - Endpoint : `/guilds/{guild_id}/emojis`
     - Method : `DELETE`
     - Required auth : `bot`
@@ -1185,7 +1233,7 @@ Group Details
     - Limit : `10`
     - Resets after : `20.0`
 
-- emoji_get
+- emoji_get_guild
     - Endpoint : `/guilds/{guild_id}/emojis/{emoji_id}`
     - Method : `GET`
     - Required auth : `bot`
@@ -1193,7 +1241,7 @@ Group Details
     - Limit : `OPT`
     - Resets after : `OPT`
 
-- emoji_edit
+- emoji_edit_guild
     - Endpoint : `/guilds/{guild_id}/emojis/{emoji_id}`
     - Method : `PATCH`
     - Required auth : `bot`
@@ -2162,6 +2210,12 @@ application_command_global_create = RateLimitGroup()
 application_command_global_update_multiple = RateLimitGroup()
 application_command_global_get = RateLimitGroup.unlimited()
 application_command_global_edit = RateLimitGroup()
+
+emoji_get_all_application = RateLimitGroup()
+emoji_create_application = RateLimitGroup()
+emoji_delete_application = RateLimitGroup.unlimited()
+emoji_get_application = RateLimitGroup()
+emoji_edit_application = RateLimitGroup()
 entitlement_get_chunk = RateLimitGroup.unlimited()
 entitlement_create = GROUP_ENTITLEMENT_ACTION
 entitlement_delete = GROUP_ENTITLEMENT_ACTION
@@ -2271,11 +2325,11 @@ guild_discovery_get = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_discovery_edit = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_embed_get = RateLimitGroup(LIMITER_GUILD, optimistic = True) # deprecated
 guild_embed_edit = RateLimitGroup(LIMITER_GUILD, optimistic = True) # deprecated
-emoji_guild_get_all = RateLimitGroup(LIMITER_GUILD, optimistic = True)
-emoji_create = RateLimitGroup(LIMITER_GUILD)
-emoji_delete = RateLimitGroup()
-emoji_get = RateLimitGroup(LIMITER_GUILD, optimistic = True)
-emoji_edit = RateLimitGroup()
+emoji_get_all_guild = RateLimitGroup(LIMITER_GUILD, optimistic = True)
+emoji_create_guild = RateLimitGroup(LIMITER_GUILD)
+emoji_delete_guild = RateLimitGroup()
+emoji_get_guild = RateLimitGroup(LIMITER_GUILD, optimistic = True)
+emoji_edit_guild = RateLimitGroup()
 guild_incidents_edit = RateLimitGroup.unlimited()
 integration_get_all = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 integration_create = RateLimitGroup(optimistic = True) # untested

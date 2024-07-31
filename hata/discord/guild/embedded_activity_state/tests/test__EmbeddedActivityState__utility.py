@@ -79,7 +79,7 @@ def test__EmbeddedActivityState__copy_with__1():
     old_channel_id = 202212260110
     old_guild_id = 202212260111
     old_user_ids = [202212260112, 2022122600113]
-    new_activity = Activity('shiki', activity_type = ActivityType.game, application_id = 202212260114)
+    new_activity = Activity('shiki', activity_type = ActivityType.playing, application_id = 202212260114)
     new_channel_id = 202212260115
     new_guild_id = 202212260116
     new_user_ids = [202212260117]

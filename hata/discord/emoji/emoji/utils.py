@@ -1,8 +1,8 @@
 __all__ = (
-    'create_emoji_from_exclusive_data', 'create_emoji_from_exclusive_inline_data', 'create_partial_emoji_data',
-    'create_partial_emoji_from_data', 'create_partial_emoji_from_id', 'create_partial_emoji_from_inline_data',
-    'create_unicode_emoji', 'put_exclusive_emoji_data_into', 'put_exclusive_emoji_inline_data_into',
-    'put_partial_emoji_inline_data_into'
+    'EMOJI_FIELD_CONVERTERS', 'create_emoji_from_exclusive_data', 'create_emoji_from_exclusive_inline_data',
+    'create_partial_emoji_data', 'create_partial_emoji_from_data', 'create_partial_emoji_from_id',
+    'create_partial_emoji_from_inline_data', 'create_unicode_emoji', 'put_exclusive_emoji_data_into',
+    'put_exclusive_emoji_inline_data_into', 'put_partial_emoji_inline_data_into'
 )
 
 from scarletio import export, include
@@ -12,7 +12,19 @@ from ....utils.debug import call_debug_logger
 
 from ...core import EMOJIS, UNICODE_TO_EMOJI
 
+from .fields import put_name_into, put_role_ids_into, validate_name, validate_role_ids
 from .emoji import Emoji
+
+
+EMOJI_FIELD_CONVERTERS = {
+    'name': (validate_name, put_name_into),
+    'role_ids': (validate_role_ids, put_role_ids_into),
+    'roles': (validate_role_ids, put_role_ids_into),
+}
+
+EMOJI_APPLICATION_FIELD_CONVERTERS = {
+    'name': (validate_name, put_name_into),
+}
 
 
 Unicode = include('Unicode')

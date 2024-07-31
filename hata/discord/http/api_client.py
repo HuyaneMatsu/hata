@@ -1314,27 +1314,28 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             reason = reason,
         )
     
-    # emoji
     
-    async def emoji_get(self, guild_id, emoji_id):
+    # emoji guild
+    
+    async def emoji_get_guild(self, guild_id, emoji_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_get, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_get_guild, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/emojis/{emoji_id}',
         )
     
     
-    async def emoji_guild_get_all(self, guild_id):
+    async def emoji_get_all_guild(self, guild_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_guild_get_all, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_get_all_guild, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/emojis'
         )
     
     
-    async def emoji_edit(self, guild_id, emoji_id, data, reason):
+    async def emoji_edit_guild(self, guild_id, emoji_id, data, reason):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_edit, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_edit_guild, guild_id),
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/emojis/{emoji_id}',
             data,
@@ -1342,9 +1343,9 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         )
     
     
-    async def emoji_create(self, guild_id, data, reason):
+    async def emoji_create_guild(self, guild_id, data, reason):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_create, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_create_guild, guild_id),
             METHOD_POST,
             f'{API_ENDPOINT}/guilds/{guild_id}/emojis',
             data,
@@ -1352,13 +1353,59 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         )
     
     
-    async def emoji_delete(self, guild_id, emoji_id, reason):
+    async def emoji_delete_guild(self, guild_id, emoji_id, reason):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_delete, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_delete_guild, guild_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/emojis/{emoji_id}',
             reason = reason,
         )
+    
+    
+    # emoji / application
+    
+    
+    async def emoji_get_application(self, application_id, emoji_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_get_application, application_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/applications/{application_id}/emojis/{emoji_id}',
+        )
+    
+    
+    async def emoji_get_all_application(self, application_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_get_all_application, application_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/applications/{application_id}/emojis'
+        )
+    
+    
+    async def emoji_edit_application(self, application_id, emoji_id, data):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_edit_application, application_id),
+            METHOD_PATCH,
+            f'{API_ENDPOINT}/applications/{application_id}/emojis/{emoji_id}',
+            data,
+        )
+    
+    
+    async def emoji_create_application(self, application_id, data):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_create_application, application_id),
+            METHOD_POST,
+            f'{API_ENDPOINT}/applications/{application_id}/emojis',
+            data,
+        )
+    
+    
+    async def emoji_delete_application(self, application_id, emoji_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.emoji_delete_application, application_id),
+            METHOD_DELETE,
+            f'{API_ENDPOINT}/applications/{application_id}/emojis/{emoji_id}',
+        )
+    
     
     # relations
     

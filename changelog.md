@@ -2,7 +2,7 @@
 
 ### Improvements
 
-- `Client.emoji_create` and `.emoji_edit`
+- `Client.emoji_create` and `.emoji_edit` now accepts an `emoji_template` parameter.
     This also changes how positional parameters are ordered.
 - Add `MessageType.poll_result`.
 - Add `EmbedType.poll_result`.

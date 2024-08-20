@@ -99,12 +99,12 @@ class PermissionOverwrite(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received permission overwrite data.
         
         Returns
         -------
-        self : ``PermissionOverwrite``
+        self : `instance<cls>`
         """
         self = object.__new__(cls)
         

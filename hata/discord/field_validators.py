@@ -723,7 +723,7 @@ def flag_validator_factory(field_name, flag_type, *, default_value = ...):
         else:
             raise TypeError(
                 f'`{field_name}` can be `None`, `int`, `{flag_type.__name__}`, '
-                f'got {flag.__class__.__name__}; {flag!r}.'
+                f'got {type(flag).__name__}; {flag!r}.'
             )
         
         return flag
@@ -1119,17 +1119,17 @@ def nullable_string_array_validator_factory(field_name, *, ordered = True):
             
             Parameters
             ----------
-            string_array : `None`, `str`, `iterable` of `str`
+            string_array : `None | str | iterable<str>`
                 The string to validate.
             
             Returns
             -------
-            string_array : `None`, `str`
+            string_array : `None | tuple<str>
                     
             Raises
             ------
             TypeError
-                - If `string_array` is not `None`, `str`, `iterable` of `str`.
+                - If `string_array`'s type is incorrect.
             """
             nonlocal field_name
             
@@ -1151,7 +1151,7 @@ def nullable_string_array_validator_factory(field_name, *, ordered = True):
                 if not isinstance(string, str):
                     raise TypeError(
                         f'`{field_name}` elements can be `str`, got '
-                        f'{string.__class__.__name__}; {string!r}; {field_name} = {string_array!r}.'
+                        f'{type(string).__name__}; {string!r}; {field_name} = {string_array!r}.'
                     )
                 
                 if (processed_values is None):
@@ -1171,17 +1171,17 @@ def nullable_string_array_validator_factory(field_name, *, ordered = True):
             
             Parameters
             ----------
-            string_array : `None`, `str`, `iterable` of `str`
+            string_array : `None | str, iterable<str>`
                 The string to validate.
             
             Returns
             -------
-            string_array : `None`, `str`
+            string_array : `None | tuple<str>`
                     
             Raises
             ------
             TypeError
-                - If `string_array` is not `None`, `str`, `iterable` of `str`.
+                - If `string_array`'s type is incorrect.
             """
             nonlocal field_name
             
@@ -1194,7 +1194,7 @@ def nullable_string_array_validator_factory(field_name, *, ordered = True):
             if getattr(string_array, '__iter__', None) is None:
                 raise TypeError(
                     f'`{field_name}` can be `None`, `iterable` of `str`, got '
-                    f'{string_array.__class__.__name__}; {string_array!r}.'
+                    f'{type(string_array).__name__}; {string_array!r}.'
                 )
             
             processed_values = None
@@ -1203,7 +1203,7 @@ def nullable_string_array_validator_factory(field_name, *, ordered = True):
                 if not isinstance(string, str):
                     raise TypeError(
                         f'`{field_name}` elements can be `str`, got '
-                        f'{string.__class__.__name__}; {string!r}; {field_name} = {string_array!r}.'
+                        f'{type(string).__name__}; {string!r}; {field_name} = {string_array!r}.'
                     )
                 
                 if (processed_values is None):
@@ -1214,6 +1214,91 @@ def nullable_string_array_validator_factory(field_name, *, ordered = True):
             if processed_values is not None:
                 return tuple(processed_values)
     
+    
+    return validator
+
+
+
+def nullable_sorted_int_array_conditional_validator_factory(field_name, condition_check, condition_message):
+    """
+    Returns a nullable sorted int array validator with
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    condition_check : `callable`
+        The condition which needs to pass.
+    condition_message : `str`
+        Condition message to use when building the error message.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    def validator(int_array):
+        """
+        Validates the given int array. Returns the elements in order.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        string_array : `None | int | iterable<int>`
+            The string to validate.
+        
+        Returns
+        -------
+        string_array : `None | tuple<int>`
+                
+        Raises
+        ------
+        TypeError
+            - If `int_array`'s type is incorrect.
+            - If a value in `int_array` is incorrect.
+        """
+        nonlocal field_name
+        nonlocal condition_check
+        nonlocal condition_message
+        
+        if (int_array is None):
+            return None
+        
+        if isinstance(int_array, int):
+            if not condition_check(int_array):
+                raise ValueError(
+                    f'`{field_name}` must be {condition_message}, got {int_array!r}.'
+                )
+            
+            return (int_array, )
+        
+        if getattr(int_array, '__iter__', None) is None:
+            raise TypeError(
+                f'`{field_name}` can be `None`, `iterable` of `int`, got '
+                f'{type(int_array).__name__}; {int_array!r}.'
+            )
+        
+        processed_values = None
+        
+        for int_value in int_array:
+            if not isinstance(int_value, int):
+                raise TypeError(
+                    f'`{field_name}` elements can be `int`, got '
+                    f'{type(int_array).__name__}; {int_value!r}; {field_name} = {int_value!r}.'
+                )
+            
+            if not condition_check(int_value):
+                raise ValueError(
+                    f'`{field_name}` must be {condition_message}, got {int_value!r}.'
+                )
+            
+            if (processed_values is None):
+                processed_values = set()
+            
+            processed_values.add(int_value)
+        
+        if processed_values is not None:
+            return tuple(sorted(processed_values))
     
     return validator
 
@@ -1397,7 +1482,7 @@ def url_array_optional_validator_factory(field_name):
         if getattr(url_array, '__iter__', None) is None:
             raise TypeError(
                 f'`{field_name}` can be `None`, `iterable` of `str`, got '
-                f'{url_array.__class__.__name__}; {url_array!r}.'
+                f'{type(url_array).__name__}; {url_array!r}.'
             )
         
         processed_values = None
@@ -1406,7 +1491,7 @@ def url_array_optional_validator_factory(field_name):
             if not isinstance(url, str):
                 raise TypeError(
                     f'`{field_name}` elements can be `str`, got '
-                    f'{url.__class__.__name__}; {url!r}; {field_name} = {url_array!r}.'
+                    f'{type(url).__name__}; {url!r}; {field_name} = {url_array!r}.'
                 )
             
             if not is_url(url):

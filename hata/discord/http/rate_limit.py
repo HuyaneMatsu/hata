@@ -853,7 +853,7 @@ class RateLimitHandlerCTX:
         return self
     
     
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exception_type, exception_value, exception_traceback):
         """Exists the context manager and if the context manager was not exited yet, exists it's parent as well."""
         if not self.exited:
             self.exited = True

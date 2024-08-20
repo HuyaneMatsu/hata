@@ -1211,22 +1211,39 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             reason = reason,
         )
     
+    # Voice
     
-    async def voice_state_client_edit(self, guild_id, data):
+    async def voice_state_edit_own(self, guild_id, data):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.voice_state_client_edit, NO_SPECIFIC_RATE_LIMITER),
+            RateLimitHandler(RATE_LIMIT_GROUPS.voice_state_edit_own, NO_SPECIFIC_RATE_LIMITER),
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/voice-states/@me',
             data,
         )
     
     
-    async def voice_state_user_edit(self, guild_id, user_id, data):
+    async def voice_state_edit(self, guild_id, user_id, data):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.voice_state_user_edit, NO_SPECIFIC_RATE_LIMITER),
+            RateLimitHandler(RATE_LIMIT_GROUPS.voice_state_edit, NO_SPECIFIC_RATE_LIMITER),
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/voice-states/{user_id}',
             data,
+        )
+    
+    
+    async def voice_state_get(self, guild_id, user_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.voice_state_get, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/guilds/{guild_id}/voice-states/{user_id}',
+        )
+    
+    
+    async def voice_state_get_own(self, guild_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.voice_state_get_own, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/guilds/{guild_id}/voice-states/@me',
         )
     
     # Invite
@@ -1680,6 +1697,14 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             METHOD_PUT,
             f'{API_ENDPOINT}/applications/{application_id}/role-connections/metadata',
             data,
+        )
+    
+    
+    async def application_role_connection_metadata_delete_all(self, application_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.application_role_connection_metadata_delete_all, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_DELETE,
+            f'{API_ENDPOINT}/applications/{application_id}/role-connections/metadata',
         )
     
     # random

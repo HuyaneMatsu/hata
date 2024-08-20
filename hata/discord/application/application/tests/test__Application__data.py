@@ -154,6 +154,7 @@ def test__Application__from_data_own__attributes():
     application_id = 202211290019
     
     approximate_guild_count = 11
+    approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
     cover = Icon(IconType.static, 23)
@@ -209,6 +210,7 @@ def test__Application__from_data_own__attributes():
     data = {
         'id': str(application_id),
         'approximate_guild_count': approximate_guild_count,
+        'approximate_user_install_count': approximate_user_install_count,
         'bot_public': bot_public,
         'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,
@@ -267,6 +269,7 @@ def test__Application__from_data_own__attributes():
     vampytest.assert_eq(application.id, application_id)
     
     vampytest.assert_eq(application.approximate_guild_count, approximate_guild_count)
+    vampytest.assert_eq(application.approximate_user_install_count, approximate_user_install_count)
     vampytest.assert_eq(application.bot_public, bot_public)
     vampytest.assert_eq(application.bot_requires_code_grant, bot_requires_code_grant)
     vampytest.assert_eq(application.cover, cover)
@@ -692,6 +695,7 @@ def test__Application__to_data_own():
     application_id = 202211290041
     
     approximate_guild_count = 11
+    approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
     cover = Icon(IconType.static, 23)
@@ -747,6 +751,7 @@ def test__Application__to_data_own():
     application = Application.precreate(
         application_id,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
         cover = cover,
@@ -795,6 +800,7 @@ def test__Application__to_data_own():
     expected_data = {
         'id': str(application_id),
         'approximate_guild_count': approximate_guild_count,
+        'approximate_user_install_count': approximate_user_install_count,
         'bot_public': bot_public,
         'bot_require_code_grant': bot_requires_code_grant,
         'cover_image': cover.as_base_16_hash,

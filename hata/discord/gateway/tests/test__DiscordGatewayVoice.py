@@ -845,6 +845,78 @@ async def test__DiscordGatewayVoice__connect__success_default():
         client = None
 
 
+async def test__DiscordGatewayVoice__handle_operation_users_connect__no_data():
+    """
+    Tests whether ``DiscordGatewayVoice._handle_operation_users_connect`` works as intended.
+    
+    This function is a coroutine.
+    
+    Case: no data.
+    """
+    client_id = 202408110005
+    guild_id = 202408110006
+    channel_id = 202408110007
+    client = Client(
+        'token_' + str(client_id),
+        client_id = client_id,
+    )
+    
+    message = {
+        'd': None,
+    }
+    
+    try:
+        voice_client = VoiceClient(client, guild_id, channel_id)
+        gateway = DiscordGatewayVoice(voice_client)
+        
+        output = await gateway._handle_operation_users_connect(message)
+        
+        vampytest.assert_instance(output, int)
+        vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
+        
+    finally:
+        client._delete()
+        client = None
+
+
+async def test__DiscordGatewayVoice__handle_operation_users_connect__with_data():
+    """
+    Tests whether ``DiscordGatewayVoice._handle_operation_users_connect`` works as intended.
+    
+    This function is a coroutine.
+    
+    Case: with data.
+    """
+    client_id = 202408110000
+    guild_id = 202408110001
+    channel_id = 202408110002
+    user_id_0 = 202408110003
+    user_id_1 = 202408110004
+    client = Client(
+        'token_' + str(client_id),
+        client_id = client_id,
+    )
+    
+    message = {
+        'd': {
+            'user_ids': [str(user_id_0), str(user_id_1)]
+        },
+    }
+    
+    try:
+        voice_client = VoiceClient(client, guild_id, channel_id)
+        gateway = DiscordGatewayVoice(voice_client)
+        
+        output = await gateway._handle_operation_users_connect(message)
+        
+        vampytest.assert_instance(output, int)
+        vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
+        
+    finally:
+        client._delete()
+        client = None
+
+
 async def test__DiscordGatewayVoice__handle_operation_client_connect__no_data():
     """
     Tests whether ``DiscordGatewayVoice._handle_operation_client_connect`` works as intended.

@@ -111,38 +111,9 @@ def put_integration_context_types_into(integration_context_types, data, defaults
     return data
 
 
-_validate_integration_context_types = preinstanced_array_validator_factory(
+validate_integration_context_types = preinstanced_array_validator_factory(
     'integration_context_types', ApplicationCommandIntegrationContextType
 )
-
-
-def validate_integration_context_types(integration_context_types):
-    """
-    Validates whether the given `integration_context_types` are valid and returns the validated version.
-    
-    Parameters
-    ----------
-    integration_context_types : `None`, ``ApplicationCommandIntegrationContextType``, `int`, \
-            `iterable<ApplicationCommandIntegrationContextType | int>`
-        Value to validate.
-    
-    Returns
-    -------
-    integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
-    
-    Raises
-    ------
-    TypeError
-        - If `integration_context_types` type is invalid.
-    """
-    integration_context_types = _validate_integration_context_types(integration_context_types)
-    if (
-        (integration_context_types is not None) and
-        (integration_context_types == INTEGRATION_CONTEXT_TYPES_ALL)
-    ):
-        integration_context_types = None
-    
-    return integration_context_types
 
 
 # integration_types

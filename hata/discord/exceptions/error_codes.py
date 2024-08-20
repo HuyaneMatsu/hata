@@ -99,6 +99,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | unknown_sticker                                                   | 10060     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| unknown_sticker_pack                                              | 10061     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | unknown_interaction                                               | 10062     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | unknown_application_command                                       | 10063     | -         |
@@ -702,6 +704,7 @@ unknown_guild_boost_cooldown = 10050
 unknown_guild_template = 10057
 unknown_discovery_category = 10059
 unknown_sticker = 10060
+unknown_sticker_pack = 10061
 unknown_interaction = 10062
 unknown_application_command = 10063
 unknown_voice_state = 10065

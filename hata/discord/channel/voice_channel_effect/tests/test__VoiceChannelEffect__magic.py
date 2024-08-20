@@ -15,6 +15,8 @@ def test__VoiceChannelEffect__repr():
     channel_id = 202304040013
     emoji = BUILTIN_EMOJIS['x']
     guild_id = 202304040014
+    sound_id = 202408180006
+    sound_volume = 0.5
     user_id = 202304040015
     
     voice_channel_effect = VoiceChannelEffect(
@@ -23,21 +25,22 @@ def test__VoiceChannelEffect__repr():
         channel_id = channel_id,
         emoji = emoji,
         guild_id = guild_id,
+        sound_id = sound_id,
+        sound_volume = sound_volume,
         user_id = user_id,
     )
     
     vampytest.assert_instance(repr(voice_channel_effect), str)
 
 
-def test__VoiceChannelEffect__eq():
-    """
-    Tests whether ``VoiceChannelEffect.__repr__`` works as intended.
-    """
+def _iter_options__eq():
     animation_id = 202304040012
     animation_type = VoiceChannelEffectAnimationType.basic
     channel_id = 202304040013
     emoji = BUILTIN_EMOJIS['x']
     guild_id = 202304040014
+    sound_id = 202408180007
+    sound_volume = 0.5
     user_id = 202304040015
     
     keyword_parameters = {
@@ -46,23 +49,118 @@ def test__VoiceChannelEffect__eq():
         'channel_id': channel_id,
         'emoji': emoji,
         'guild_id': guild_id,
+        'sound_id': sound_id,
+        'sound_volume': sound_volume,
         'user_id': user_id,
     }
     
-    voice_channel_effect_original = VoiceChannelEffect(**keyword_parameters)
+    yield (
+        {},
+        {},
+        True,
+    )
     
-    vampytest.assert_eq(voice_channel_effect_original, voice_channel_effect_original)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    for field_name, field_value in (
-        ('animation_id', 202304040016),
-        ('animation_type', VoiceChannelEffectAnimationType.premium),
-        ('channel_id', 202304040017),
-        ('emoji', BUILTIN_EMOJIS['heart']),
-        ('guild_id', 202304040018),
-        ('user_id', 202304040019),
-    ):
-        voice_channel_effect_altered = VoiceChannelEffect(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(voice_channel_effect_original, voice_channel_effect_altered)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'animation_id': 202304040016,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'animation_type': VoiceChannelEffectAnimationType.premium,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'channel_id': 202304040017,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'emoji': BUILTIN_EMOJIS['heart'],
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'guild_id': 202304040018,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'sound_id': 202408180008,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'sound_volume': 0.6,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'user_id': 202304040019,
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__GuildProfile__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``VoiceChannelEffect.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    keyword_parameters_1 : `dict<object, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    voice_channel_effect_0 = VoiceChannelEffect(**keyword_parameters_0)
+    voice_channel_effect_1 = VoiceChannelEffect(**keyword_parameters_1)
+    
+    output = voice_channel_effect_0 == voice_channel_effect_1
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def test__VoiceChannelEffect__hash():
@@ -74,6 +172,8 @@ def test__VoiceChannelEffect__hash():
     channel_id = 202304040021
     emoji = BUILTIN_EMOJIS['x']
     guild_id = 202304040022
+    sound_id = 202408180009
+    sound_volume = 0.5
     user_id = 202304040023
     
     voice_channel_effect = VoiceChannelEffect(
@@ -82,6 +182,8 @@ def test__VoiceChannelEffect__hash():
         channel_id = channel_id,
         emoji = emoji,
         guild_id = guild_id,
+        sound_id = sound_id,
+        sound_volume = sound_volume,
         user_id = user_id,
     )
     
@@ -97,6 +199,8 @@ def test__VoiceChannelEffect__unpack():
     channel_id = 202304040025
     emoji = BUILTIN_EMOJIS['x']
     guild_id = 202304040026
+    sound_id = 202408180010
+    sound_volume = 0.5
     user_id = 202304040027
     
     voice_channel_effect = VoiceChannelEffect(
@@ -105,6 +209,8 @@ def test__VoiceChannelEffect__unpack():
         channel_id = channel_id,
         emoji = emoji,
         guild_id = guild_id,
+        sound_id = sound_id,
+        sound_volume = sound_volume,
         user_id = user_id,
     )
     

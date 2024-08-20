@@ -1,6 +1,6 @@
 import vampytest
 
-from ......discord import  ApplicationCommandIntegrationContextType
+from ......discord import ApplicationCommandIntegrationContextType, INTEGRATION_CONTEXT_TYPES_ALL
 
 from ..helpers import _validate_integration_context_types
 
@@ -36,7 +36,7 @@ def _iter_options__passing():
             ApplicationCommandIntegrationContextType.any_private_channel,
             ApplicationCommandIntegrationContextType.guild,
         ],
-        None,
+        INTEGRATION_CONTEXT_TYPES_ALL,
     )
 
 

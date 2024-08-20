@@ -1,9 +1,10 @@
 __all__ = ()
 
 from .fields import (
-    put_description_into, put_end_into, put_name_into, put_privacy_level_into, put_start_into, put_status_into,
-    put_target_into, validate_description, validate_end, validate_name, validate_privacy_level, validate_start,
-    validate_status, validate_target_location, validate_target_stage, validate_target_voice
+    put_description_into, put_end_into, put_name_into, put_privacy_level_into, put_schedule_into, put_start_into,
+    put_status_into, put_target_into, validate_description, validate_end, validate_name, validate_privacy_level,
+    validate_schedule, validate_start, validate_status, validate_target_location, validate_target_stage,
+    validate_target_voice
 )
 
 
@@ -13,6 +14,7 @@ SCHEDULED_EVENT_CREATE_FIELD_CONVERTERS = {
     'location': (validate_target_location, put_target_into),
     'name': (validate_name, put_name_into),
     'privacy_level': (validate_privacy_level, put_privacy_level_into),
+    'schedule': (validate_schedule, put_schedule_into),
     'stage': (validate_target_stage, put_target_into),
     'start': (validate_start, put_start_into),
     'voice': (validate_target_voice, put_target_into),

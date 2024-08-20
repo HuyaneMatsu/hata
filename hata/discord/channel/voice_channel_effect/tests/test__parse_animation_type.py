@@ -4,18 +4,32 @@ from ..fields import parse_animation_type
 from ..preinstanced import VoiceChannelEffectAnimationType
 
 
-def test__parse_animation_type__0():
+def _iter_options():
+    yield (
+        {},
+        VoiceChannelEffectAnimationType.premium,
+    )
+    
+    yield (
+        {'animation_type': VoiceChannelEffectAnimationType.basic.value},
+        VoiceChannelEffectAnimationType.basic,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_animation_type(input_data):
     """
     Tests whether `parse_animation_type` works as intended.
     
-    Case: passing.
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : ``VoiceChannelEffectAnimationType``
     """
-    for input_value, expected_output in (
-        ({}, VoiceChannelEffectAnimationType.premium),
-        (
-            {'animation_type': VoiceChannelEffectAnimationType.basic.value},
-            VoiceChannelEffectAnimationType.basic,
-        ),
-    ):
-        output = parse_animation_type(input_value)
-        vampytest.assert_is(output, expected_output)
+    output = parse_animation_type(input_data)
+    vampytest.assert_instance(output, VoiceChannelEffectAnimationType)
+    return output

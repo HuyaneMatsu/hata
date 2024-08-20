@@ -182,6 +182,8 @@ setup(
         'hata.discord.role.role',
         'hata.discord.role.role_manager_metadata',
         'hata.discord.scheduled_event',
+        'hata.discord.scheduled_event.schedule',
+        'hata.discord.scheduled_event.schedule_nth_weeks_day',
         'hata.discord.scheduled_event.scheduled_event',
         'hata.discord.scheduled_event.scheduled_event_entity_metadata',
         'hata.discord.scheduled_event.scheduled_event_subscribe_event',

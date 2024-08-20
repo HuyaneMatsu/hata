@@ -124,6 +124,13 @@ Shared Groups
     - Limit : `6`
     - Resets after : `5.0`
 
+- GROUP_VOICE_STATE_ACTION
+    - Used by : `voice_state_get_own`, `voice_state_edit_own`, `voice_state_get` , `voice_state_edit`
+    - Limiter : `GLOBAL`
+    - Limit : `15`
+    - Resets after : `5.0`
+
+
 Group Details
 -----------
 - oauth2_token
@@ -401,13 +408,22 @@ Group Details
     - Limit : `5.0`
     - Resets after : `20.0`
 
+- application_role_connection_metadata_delete_all
+    - Endpoint : `/applications/{application_id}/role-connections/metadata`
+    - Method : `DELETE`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `UN`
+    - Resets after : `UN`
+    - Notes: Method not allowed.
+
 - application_role_connection_metadata_get_all
     - Endpoint : `/applications/{application_id}/role-connections/metadata`
     - Method : `GET`
     - Required auth : `bot`
     - Limiter : `GLOBAL`
     - Limit : `1`
-    - Resets after : `0.999`
+    - Resets after : `1.0`
 
 - application_role_connection_metadata_edit_all
     - Endpoint : `/applications/{application_id}/role-connections/metadata`
@@ -415,7 +431,7 @@ Group Details
     - Required auth : `bot`
     - Limiter : `GLOBAL`
     - Limit : `1`
-    - Resets after : `4.999`
+    - Resets after : `5.0`
 
 - sku_get_all
     - Endpoint : `/applications/{application_id}/skus`
@@ -1647,16 +1663,32 @@ Group Details
     - Limit : `10`
     - Resets after : `60.0`
 
-- voice_state_client_edit
+- voice_state_get_own
+    - Endpoint : `/guilds/{guild_id}/voice-states/@me`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : GLOBAL
+    - Limit : `15`
+    - Resets after : `5`
+
+- voice_state_edit_own
     - Endpoint : `/guilds/{guild_id}/voice-states/@me`
     - Method : `PATCH`
     - Required auth : `bot`
     - Limiter : GLOBAL
-    - Limit : 15
+    - Limit : `15`
     - Resets after : `5.0`
 
-- voice_state_user_edit
-    - Endpoint : `/guilds/{guild_id}/voice-states/@me`
+- voice_state_get
+    - Endpoint : `/guilds/{guild_id}/voice-states/{user_id}`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : GLOBAL
+    - Limit : `15`
+    - Resets after : `5.0`
+
+- voice_state_edit
+    - Endpoint : `/guilds/{guild_id}/voice-states/{user_id}`
     - Method : `PATCH`
     - Required auth : `bot`
     - Limiter : GLOBAL
@@ -2194,6 +2226,7 @@ GROUP_PERMISSION_OVERWRITE_MODIFY = RateLimitGroup(LIMITER_CHANNEL)
 GROUP_THREAD_CREATE = RateLimitGroup()
 GROUP_THREAD_ACTION = RateLimitGroup()
 GROUP_ENTITLEMENT_ACTION = RateLimitGroup()
+GROUP_VOICE_STATE_ACTION = RateLimitGroup()
 
 oauth2_token = RateLimitGroup(optimistic = True)
 application_get = RateLimitGroup().unlimited()
@@ -2229,6 +2262,7 @@ application_command_guild_get = RateLimitGroup.unlimited()
 application_command_guild_edit = RateLimitGroup(LIMITER_GUILD)
 application_command_permission_get = RateLimitGroup.unlimited()
 application_command_permission_edit = RateLimitGroup()
+application_role_connection_metadata_delete_all = RateLimitGroup()
 application_role_connection_metadata_get_all = RateLimitGroup()
 application_role_connection_metadata_edit_all = RateLimitGroup()
 sku_get_all = RateLimitGroup.unlimited()
@@ -2379,8 +2413,10 @@ sticker_get_guild = RateLimitGroup.unlimited()
 guild_thread_get_all_active = RateLimitGroup.unlimited()
 invite_get_vanity = RateLimitGroup.unlimited()
 invite_edit_vanity = RateLimitGroup()
-voice_state_client_edit = RateLimitGroup()
-voice_state_user_edit = RateLimitGroup.unlimited() # untested
+voice_state_get_own = GROUP_VOICE_STATE_ACTION
+voice_state_edit_own = GROUP_VOICE_STATE_ACTION
+voice_state_get = GROUP_VOICE_STATE_ACTION
+voice_state_edit = GROUP_VOICE_STATE_ACTION
 welcome_screen_get = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 welcome_screen_edit = RateLimitGroup(LIMITER_GUILD)
 webhook_get_all_guild = RateLimitGroup(LIMITER_GUILD, optimistic = True)

@@ -681,7 +681,7 @@ class VoiceClient(RichAttributeErrorBaseType):
             'channel_id': self.channel_id
         }
         
-        await self.client.api.voice_state_client_edit(guild_id, data)
+        await self.client.api.voice_state_edit_own(guild_id, data)
     
     
     async def join_audience(self):
@@ -712,7 +712,7 @@ class VoiceClient(RichAttributeErrorBaseType):
             'channel_id': self.channel_id
         }
         
-        await self.client.api.voice_state_client_edit(guild_id, data)
+        await self.client.api.voice_state_edit_own(guild_id, data)
    
     
     def append(self, source):

@@ -64,6 +64,9 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         privacy_level : ``PrivacyLevel``, `int` = `None`, Optional (Keyword only)
             The privacy level of the event. Whether it is global or guild only.
         
+        schedule : `None | Schedule` = `None`, Optional (Keyword only)
+            How the scheduled event should re-occur.
+        
         stage : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
             The stage channel, where the event will take place.
         
@@ -142,6 +145,9 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         
         privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
             The privacy level of the event. Whether it is global or guild only.
+        
+        schedule : `None | Schedule` = `None`, Optional (Keyword only)
+            How the scheduled event should re-occur.
         
         stage : ``Channel``, `int`, Optional (Keyword only)
             The new stage channel, where the event will take place.

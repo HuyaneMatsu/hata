@@ -19,10 +19,12 @@ def test__parse_guild_id(input_data):
     Parameters
     ----------
     input_data : `dict<str, object>`
-        Data to try to parse the guild identifier from.
+        Data to parse from.
     
     Returns
     -------
     output : `int`
     """
-    return parse_guild_id(input_data)
+    output = parse_guild_id(input_data)
+    vampytest.assert_instance(output, int)
+    return output

@@ -33,6 +33,7 @@ def test__Application__copy():
     """
     aliases = ['orin', 'rin']
     approximate_guild_count = 11
+    approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
     cover = Icon(IconType.static, 23)
@@ -96,6 +97,7 @@ def test__Application__copy():
     application = Application(
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
         cover = cover,
@@ -163,6 +165,7 @@ def test__Application__copy_with__no_fields():
     """
     aliases = ['orin', 'rin']
     approximate_guild_count = 11
+    approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
     cover = Icon(IconType.static, 23)
@@ -226,6 +229,7 @@ def test__Application__copy_with__no_fields():
     application = Application(
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
         cover = cover,
@@ -294,6 +298,7 @@ def test__Application__copy_with__all_fields():
     """
     old_aliases = ['orin', 'rin']
     old_approximate_guild_count = 12
+    old_approximate_user_install_count = 13
     old_bot_requires_code_grant = True
     old_bot_public = True
     old_cover = Icon(IconType.static, 23)
@@ -356,6 +361,7 @@ def test__Application__copy_with__all_fields():
     
     new_aliases = ['nue']
     new_approximate_guild_count = 15
+    new_approximate_user_install_count = 14
     new_bot_public = False
     new_bot_requires_code_grant = False
     new_cover = Icon(IconType.static, 33)
@@ -416,6 +422,7 @@ def test__Application__copy_with__all_fields():
     application = Application(
         aliases = old_aliases,
         approximate_guild_count = old_approximate_guild_count,
+        approximate_user_install_count = old_approximate_user_install_count,
         bot_public = old_bot_public,
         bot_requires_code_grant = old_bot_requires_code_grant,
         cover = old_cover,
@@ -473,6 +480,7 @@ def test__Application__copy_with__all_fields():
     copy = application.copy_with(
         aliases = new_aliases,
         approximate_guild_count = new_approximate_guild_count,
+        approximate_user_install_count = new_approximate_user_install_count,
         bot_public = new_bot_public,
         bot_requires_code_grant = new_bot_requires_code_grant,
         cover = new_cover,
@@ -531,6 +539,7 @@ def test__Application__copy_with__all_fields():
     
     vampytest.assert_eq(copy.aliases, tuple(new_aliases))
     vampytest.assert_eq(copy.approximate_guild_count, new_approximate_guild_count)
+    vampytest.assert_eq(copy.approximate_user_install_count, new_approximate_user_install_count)
     vampytest.assert_eq(copy.bot_public, new_bot_public)
     vampytest.assert_eq(copy.bot_requires_code_grant, new_bot_requires_code_grant)
     vampytest.assert_eq(copy.cover, new_cover)

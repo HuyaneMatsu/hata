@@ -1,3 +1,42 @@
+## 1.3.63 *\[2024-08-20\]*
+
+### Improvements
+
+- Add `Application.approximate_user_install_count`.
+- Add `DiscordApiClient.voice_state_get`.
+- Add `RATELIMIT_GROUPS.voice_state_get`.
+- Add `DiscordApiClient.voice_state_get_own`.
+- Add `RATELIMIT_GROUPS.voice_state_get_own`.
+- Update rate limit group of `voice_state_edit_own` and `voice_state_edit`.
+- Add `Client.voice_state_get`.
+- Add `Client.voice_state_get_own`.
+- Add `Client.application_role_connection_metadata_delete_all`. (Tho it drops method not allowed lul.)
+- Add `DiscordApiClient.application_role_connection_metadata_delete_all`.
+- Add `RATELIMIT_GROUPS.application_role_connection_metadata_delete_all`.
+- Add `ScheduleFrequency`.
+- Add `ScheduleWeekDay`.
+- Add `ScheduleNthWeeksDay`.
+- Add `ScheduleMonth`.
+- Add `Schedule`.
+- Add `ERROR_CODES.unknown_sticker_pack`.
+- Add `ScheduledEvent.schedule`.
+- Add `VoiceChannelEffect.sound_id`.
+- Add `VoiceChannelEffect.sound_volume`.
+- Add `VoiceChannelEffect.sound`.
+
+### Bug fixes
+
+- Fix `CommandFunction` used in cli put an extra linebreak between sign note descriptions.
+
+### Renames, Deprecations & Removals
+
+- Rename `DiscordApiClient.voice_state_user_edit` to `voice_state_edit`.
+- Rename `RATELIMIT_GROUPS.voice_state_user_edit` to `voice_state_edit`.
+- Rename `DiscordApiClient.voice_state_client_edit` to `voice_state_edit_own`.
+- Rename `RATELIMIT_GROUPS.voice_state_client_edit` to `voice_state_edit_own`.
+- `VoiceChannelEffect.__iter__` now yields 0 elements.
+    Now it has to represent 2 things and could not decide what it should yield when unpacked.
+
 ## 1.3.62 *\[2024-07-31\]*
 
 ### Improvements

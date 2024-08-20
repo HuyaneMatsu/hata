@@ -3,16 +3,29 @@ import vampytest
 from ..fields import put_animation_id_into
 
 
-def test__put_animation_id_into():
-    """
-    Tests whether ``put_animation_id_into`` works as intended.
-    """
+def _iter_options():
     animation_id = 202304030012
     
-    for input_value, defaults, expected_output in (
-        (0, False, {'animation_id': None}),
-        (0, True, {'animation_id': None}),
-        (animation_id, False, {'animation_id': str(animation_id)}),
-    ):
-        data = put_animation_id_into(input_value, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    yield 0, False, {}
+    yield 0, True, {'animation_id': None}
+    yield animation_id, False, {'animation_id': str(animation_id)}
+    yield animation_id, False, {'animation_id': str(animation_id)}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_animation_id_into(input_value, defaults):
+    """
+    Tests whether ``put_animation_id_into`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `int`
+        The value to serialize.
+    defaults : `bool`
+        Whether values as their defaults should be included.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
+    """
+    return put_animation_id_into(input_value, {}, defaults)

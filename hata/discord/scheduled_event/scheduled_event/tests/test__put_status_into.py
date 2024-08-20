@@ -4,14 +4,27 @@ from ..fields import put_status_into
 from ..preinstanced import ScheduledEventStatus
 
 
-def test__put_status_into():
+def _iter_options():
+    yield ScheduledEventStatus.none, False, {}
+    yield ScheduledEventStatus.none, True, {'status': ScheduledEventStatus.active.none}
+    yield ScheduledEventStatus.active, False, {'status': ScheduledEventStatus.active.value}
+    yield ScheduledEventStatus.active, True, {'status': ScheduledEventStatus.active.value}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_status_into(input_value, defaults):
     """
     Tests whether ``put_status_into`` is working as intended.
+    
+    Parameters
+    ----------
+    input_value : ``ScheduledEventStatus``
+        Value to serialize.
+    defaults : `bool`
+        Whether values as their defaults should be included.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
     """
-    for input_value, defaults, expected_output in (
-        (ScheduledEventStatus.none, False, {}),
-        (ScheduledEventStatus.none, True, {'status': ScheduledEventStatus.active.none}),
-        (ScheduledEventStatus.active, False, {'status': ScheduledEventStatus.active.value}),
-    ):
-        data = put_status_into(input_value, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    return put_status_into(input_value, {}, defaults)

@@ -1,7 +1,7 @@
 import vampytest
 
 from ..fields import validate_integration_context_types
-from ..preinstanced import ApplicationCommandIntegrationContextType
+from ..preinstanced import ApplicationCommandIntegrationContextType, INTEGRATION_CONTEXT_TYPES_ALL
 
 
 def _iter_options__passing():
@@ -31,7 +31,7 @@ def _iter_options__passing():
             ApplicationCommandIntegrationContextType.any_private_channel,
             ApplicationCommandIntegrationContextType.guild,
         ],
-        None,
+        INTEGRATION_CONTEXT_TYPES_ALL,
     )
 
 

@@ -282,8 +282,10 @@ class EngineTransactionContextManager:
         return AsyncConnection(self._context.__enter__(), self.executor)
     
     
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        return await self.executor.execute(alchemy_incendiary(self._context.__exit__, (exc_type, exc_val, exc_tb),))
+    async def __aexit__(self, exception_type, exception_value, exception_traceback):
+        return await self.executor.execute(
+            alchemy_incendiary(self._context.__exit__, (exception_type, exception_value, exception_traceback),)
+        )
 
 
 class ConnectionContextManager:
@@ -303,14 +305,14 @@ class ConnectionContextManager:
         return self.result
     
     
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exception_type, exception_value, exception_traceback):
         await self.result.close()
 
 
 class TransactionContextManager(ConnectionContextManager):
     
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if exc_type is None and self.result._transaction.is_active:
+    async def __aexit__(self, exception_type, exception_value, exception_traceback):
+        if exception_type is None and self.result._transaction.is_active:
             try:
                 await self.result.commit()
             except:

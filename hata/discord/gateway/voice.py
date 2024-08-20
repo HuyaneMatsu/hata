@@ -14,8 +14,8 @@ from .constants import (
     GATEWAY_OPERATION_VOICE_IDENTIFY, GATEWAY_OPERATION_VOICE_PLATFORM, GATEWAY_OPERATION_VOICE_READY,
     GATEWAY_OPERATION_VOICE_RESUME, GATEWAY_OPERATION_VOICE_RESUMED, GATEWAY_OPERATION_VOICE_SELECT_PROTOCOL,
     GATEWAY_OPERATION_VOICE_SESSION_DESCRIPTION, GATEWAY_OPERATION_VOICE_SPEAKING,
-    GATEWAY_OPERATION_VOICE_VIDEO_SESSION_DESCRIPTION, GATEWAY_OPERATION_VOICE_VIDEO_SINK, LATENCY_DEFAULT,
-    POLL_TIMEOUT
+    GATEWAY_OPERATION_VOICE_USERS_CONNECT, GATEWAY_OPERATION_VOICE_VIDEO_SESSION_DESCRIPTION,
+    GATEWAY_OPERATION_VOICE_VIDEO_SINK, LATENCY_DEFAULT, POLL_TIMEOUT
 )
 from .heartbeat import Kokoro
 from .rate_limit import GatewayRateLimiter
@@ -91,6 +91,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
             # GATEWAY_OPERATION_VOICE_RESUME: send only 
             GATEWAY_OPERATION_VOICE_HELLO: cls._handle_operation_hello,
             GATEWAY_OPERATION_VOICE_RESUMED: cls._handle_operation_resumed,
+            GATEWAY_OPERATION_VOICE_USERS_CONNECT: cls._handle_operation_users_connect,
             GATEWAY_OPERATION_VOICE_CLIENT_CONNECT: cls._handle_operation_client_connect,
             GATEWAY_OPERATION_VOICE_CLIENT_DISCONNECT: cls._handle_operation_client_disconnect,
             GATEWAY_OPERATION_VOICE_VIDEO_SESSION_DESCRIPTION: _handle_operation_dummy,
@@ -376,6 +377,13 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
             self.websocket = None
             return GATEWAY_ACTION_CONNECT
         
+        return GATEWAY_ACTION_KEEP_GOING
+    
+    
+    async def _handle_operation_users_connect(self, message):
+        # Dont know what to do with the payload currently.
+        # It looks like:
+        # message = {'op': 11, 'd': {'user_ids': ['22221231231231231231']}}
         return GATEWAY_ACTION_KEEP_GOING
     
     

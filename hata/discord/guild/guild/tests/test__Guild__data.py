@@ -1612,7 +1612,10 @@ def test__Guild__update_voice_state_restricted__join():
     
     matching_voice_state = VoiceState(guild_id = guild_id, user_id = user_id, channel_id = channel_id)
     
-    guild._update_voice_state_restricted(data, user)
+    output = guild._update_voice_state_restricted(data, user)
+    
+    vampytest.assert_instance(output, VoiceState)
+    vampytest.assert_eq(output.user_id, user_id)
     
     vampytest.assert_eq(guild.voice_states, {user_id: matching_voice_state})
     vampytest.assert_is(guild.voice_states[user_id]._cache_user, user)
@@ -1663,7 +1666,10 @@ def test__Guild__update_voice_state_restricted__update():
     
     matching_voice_state = VoiceState(guild_id = guild_id, user_id = user_id, channel_id = channel_id, mute = True)
     
-    guild._update_voice_state_restricted(data, user)
+    output = guild._update_voice_state_restricted(data, user)
+    
+    vampytest.assert_instance(output, VoiceState)
+    vampytest.assert_eq(output.user_id, user_id)
     
     vampytest.assert_eq(guild.voice_states, {user_id: matching_voice_state})
     vampytest.assert_is(voice_state._cache_user, user)
@@ -1688,7 +1694,10 @@ def test__Guild__update_voice_state_restricted__leave():
         'user_id': str(user_id),
     }
     
-    guild._update_voice_state_restricted(data, user)
+    output = guild._update_voice_state_restricted(data, user)
+    
+    vampytest.assert_instance(output, VoiceState)
+    vampytest.assert_eq(output.user_id, user_id)
     
     vampytest.assert_eq(guild.voice_states, None)
     vampytest.assert_is(voice_state._cache_user, user)
@@ -1717,7 +1726,10 @@ def test__Guild__update_voice_state_restricted__move():
     
     matching_voice_state = VoiceState(guild_id = guild_id, user_id = user_id, channel_id = channel_id_1)
     
-    guild._update_voice_state_restricted(data, user)
+    output = guild._update_voice_state_restricted(data, user)
+    
+    vampytest.assert_instance(output, VoiceState)
+    vampytest.assert_eq(output.user_id, user_id)
     
     vampytest.assert_eq(guild.voice_states, {user_id: matching_voice_state})
     vampytest.assert_is(voice_state._cache_user, user)
@@ -1745,7 +1757,10 @@ def test__Guild__update_voice_state_restricted__no_change():
     
     matching_voice_state = VoiceState(guild_id = guild_id, user_id = user_id, channel_id = channel_id)
     
-    guild._update_voice_state_restricted(data, user)
+    output = guild._update_voice_state_restricted(data, user)
+    
+    vampytest.assert_instance(output, VoiceState)
+    vampytest.assert_eq(output.user_id, user_id)
     
     vampytest.assert_eq(guild.voice_states, {user_id: matching_voice_state})
     vampytest.assert_is(voice_state._cache_user, user)

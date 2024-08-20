@@ -5,34 +5,43 @@ from ....channel import Channel
 from ..fields import validate_channel_ids
 
 
-def test__validate_channel_ids__0():
+def _iter_options__passing():
+    channel_id_0 = 202303030003
+    channel_id_1 = 202303030004
+    
+    channel_0 = Channel.precreate(channel_id_0)
+    channel_1 = Channel.precreate(channel_id_1)
+    
+    yield None, None
+    yield [], None
+    yield [channel_id_0, channel_id_1], (channel_id_0, channel_id_1)
+    yield [channel_id_1, channel_id_0], (channel_id_0, channel_id_1)
+    yield [channel_0, channel_1], (channel_id_0, channel_id_1)
+    yield [channel_1, channel_0], (channel_id_0, channel_id_1)
+
+
+def _iter_options__type_error():
+    yield 12.6
+    yield [12.6]
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_channel_ids(input_value):
     """
     Tests whether `validate_channel_ids` works as intended.
     
-    Case: passing.
-    """
-    channel_id_1 = 202303030003
-    channel_id_2 = 202303030004
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    for input_value, expected_output in (
-        (None, None),
-        ([], None),
-        ([channel_id_2, channel_id_1], (channel_id_1, channel_id_2)),
-        ([Channel.precreate(channel_id_1)], (channel_id_1, )),
-    ):
-        output = validate_channel_ids(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_channel_ids__1():
-    """
-    Tests whether `validate_channel_ids` works as intended.
+    Returns
+    -------
+    output : `None | list<int>`
     
-    Case: `TypeError`.
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-        [12.6],
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_channel_ids(input_value)
+    return validate_channel_ids(input_value)

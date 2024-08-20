@@ -261,12 +261,12 @@ class VoiceRegion(PreinstancedBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received voice region data.
 
         Returns
         -------
-        self : ``VoiceRegion``
+        self : `instance<cls>`
         """
         value = data['id']
         try:

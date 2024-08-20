@@ -1018,7 +1018,7 @@ class ModuleUnit(DirectoryUnit):
         """
         references = {}
         
-        base_path_pattern = re.compile(f'{re.escape(str(path))}\.([^\.]+)')
+        base_path_pattern = re.compile(f'{re.escape(str(path))}\\.([^\\.]+)')
         for module_object in modules:
             parsed = base_path_pattern.fullmatch(module_object.__name__)
             if parsed is None:
@@ -1076,7 +1076,7 @@ def map_module(module_name):
     # Invalidate search cache
     CachedSearcher._cache_valid = False
     
-    module_name_pattern = re.compile(f'{re.escape(module_name)}(?:\..*)?')
+    module_name_pattern = re.compile(f'{re.escape(module_name)}(?:\\..*)?')
     modules = []
     
     for name, module_object in sys.modules.items():

@@ -5,7 +5,7 @@ from warnings import warn
 
 from scarletio import copy_docs, export
 
-from .....discord.application_command import ApplicationCommandTargetType
+from .....discord.application_command import ApplicationCommandTargetType, INTEGRATION_CONTEXT_TYPES_ALL
 from .....discord.application_command.application_command.constants import (
     OPTIONS_MAX as APPLICATION_COMMAND_OPTIONS_MAX
 )
@@ -351,7 +351,10 @@ class SlashCommand(
                     allow_in_dm, integration_context_types
                 )
                 
-                if not is_global:
+                if is_global:
+                    if integration_context_types is None:
+                        integration_context_types = INTEGRATION_CONTEXT_TYPES_ALL
+                else:
                     integration_types = None
                     integration_context_types = None
                 
@@ -415,7 +418,10 @@ class SlashCommand(
                 allow_in_dm, integration_context_types
             )
             
-            if not is_global:
+            if is_global:
+                if integration_context_types is None:
+                    integration_context_types = INTEGRATION_CONTEXT_TYPES_ALL
+            else:
                 integration_types = None
                 integration_context_types = None
             

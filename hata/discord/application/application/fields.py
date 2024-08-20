@@ -64,6 +64,17 @@ validate_approximate_guild_count = int_conditional_validator_factory(
     '>= 0',
 )
 
+# approximate_user_install_count
+
+parse_approximate_user_install_count = int_parser_factory('approximate_user_install_count', 0)
+put_approximate_user_install_count_into = int_putter_factory('approximate_user_install_count')
+validate_approximate_user_install_count = int_conditional_validator_factory(
+    'approximate_user_install_count',
+    0,
+    (lambda approximate_user_install_count : approximate_user_install_count >= 0),
+    '>= 0',
+)
+
 # bot_public
 
 parse_bot_public = bool_parser_factory('bot_public', BOT_PUBLIC_DEFAULT)
@@ -558,7 +569,7 @@ def validate_owner(owner):
     elif not isinstance(owner, (ClientUserBase, Team)):
         raise TypeError(
             f'`owner` can be `None`, `{ClientUserBase.__name__}`, {Team.__name__}, '
-            f'got {owner.__class__.__name__}; {owner!r}'
+            f'got {type(owner).__name__}; {owner!r}'
         )
     
     return owner

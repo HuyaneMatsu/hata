@@ -241,7 +241,7 @@ class Embed(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Embed data received from Discord.
         
         Returns

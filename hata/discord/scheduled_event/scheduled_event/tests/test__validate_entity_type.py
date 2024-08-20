@@ -4,29 +4,35 @@ from ..fields import validate_entity_type
 from ..preinstanced import ScheduledEventEntityType
 
 
-def test__validate_entity_type__0():
-    """
-    Tests whether `validate_entity_type` works as intended.
-    
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (None, ScheduledEventEntityType.none),
-        (ScheduledEventEntityType.stage, ScheduledEventEntityType.stage),
-        (ScheduledEventEntityType.stage.value, ScheduledEventEntityType.stage)
-    ):
-        output = validate_entity_type(input_value)
-        vampytest.assert_eq(output, expected_output)
+def _iter_options__passing():
+    yield None, ScheduledEventEntityType.none
+    yield ScheduledEventEntityType.stage, ScheduledEventEntityType.stage
+    yield ScheduledEventEntityType.stage.value, ScheduledEventEntityType.stage
 
 
-def test__validate_entity_type__1():
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_entity_type(input_value):
     """
-    Tests whether `validate_entity_type` works as intended.
+    Validates whether ``validate_entity_type`` works as intended.
     
-    Case: `TypeError`.
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
+    
+    Returns
+    -------
+    output : ``ScheduledEventEntityType``
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_entity_type(input_value)
+    output = validate_entity_type(input_value)
+    vampytest.assert_instance(output, ScheduledEventEntityType)
+    return output

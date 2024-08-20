@@ -4,14 +4,26 @@ from ..fields import parse_entity_type
 from ..preinstanced import ScheduledEventEntityType
 
 
-def test__parse_entity_type():
+def _iter_options():
+    yield {}, ScheduledEventEntityType.none
+    yield {'entity_type': None}, ScheduledEventEntityType.none
+    yield {'entity_type': ScheduledEventEntityType.stage.value}, ScheduledEventEntityType.stage
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_entity_type(input_data):
     """
     Tests whether ``parse_entity_type`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : ``ScheduledEventEntityType``
     """
-    for input_data, expected_output in (
-        ({}, ScheduledEventEntityType.none),
-        ({'entity_type': None}, ScheduledEventEntityType.none),
-        ({'entity_type': ScheduledEventEntityType.stage.value}, ScheduledEventEntityType.stage),
-    ):
-        output = parse_entity_type(input_data)
-        vampytest.assert_is(output, expected_output)
+    output = parse_entity_type(input_data)
+    vampytest.assert_instance(output, ScheduledEventEntityType)
+    return output

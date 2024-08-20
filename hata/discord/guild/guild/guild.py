@@ -1156,7 +1156,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received guild data.
         client : `None`, ``Client`` = `None`, Optional
             The client who received the guild's data.
@@ -2646,14 +2646,17 @@ class Guild(DiscordEntity, immortal = True):
         """
         Called by dispatch event. Updates the voice state of the represented user by `user_id` with the given `data`.
         
-        This method is an iterable generator.
-        
         Parameters
         ----------
         data : `dict` of (`str`, `object`) items
             Data received from Discord.
         user : ``ClientUserBase``
             The respective user.
+        
+        Returns
+        -------
+        voice_state : ``VoiceState``
+            The created or updated voice state.
         """
         voice_state = self.get_voice_state(user.id)
         if voice_state is None:
@@ -2664,6 +2667,8 @@ class Guild(DiscordEntity, immortal = True):
             voice_state._set_cache_user(user)
             voice_state._update_channel(data)
             voice_state._update_attributes(data)
+        
+        return voice_state
     
     
     def _difference_update_emojis(self, data):

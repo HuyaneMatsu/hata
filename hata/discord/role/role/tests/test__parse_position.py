@@ -16,7 +16,7 @@ def test__parse_position(input_data):
     Parameters
     ----------
     input_data : `dict<str, object>`
-        Data to try to parse the position from.
+        Data to parse from.
     
     Returns
     -------

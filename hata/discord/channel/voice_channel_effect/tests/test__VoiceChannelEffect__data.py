@@ -8,7 +8,7 @@ from ..voice_channel_effect import VoiceChannelEffect
 from .test__VoiceChannelEffect__constructor import _assert_fields_set
 
 
-def test__VoiceChannelEffect__from_data__0():
+def test__VoiceChannelEffect__from_data():
     """
     Tests whether ``VoiceChannelEffect.from_data`` works as intended.
     
@@ -19,6 +19,8 @@ def test__VoiceChannelEffect__from_data__0():
     channel_id = 202304040005
     emoji = BUILTIN_EMOJIS['x']
     guild_id = 202304040006
+    sound_id = 202408180004
+    sound_volume = 0.5
     user_id = 202304040007
     
     data = {
@@ -27,6 +29,8 @@ def test__VoiceChannelEffect__from_data__0():
         'channel_id': str(channel_id),
         'emoji': {'name': emoji.unicode},
         'guild_id': str(guild_id),
+        'sound_id': str(sound_id),
+        'sound_volume': sound_volume,
         'user_id': str(user_id),
     }
     
@@ -38,10 +42,12 @@ def test__VoiceChannelEffect__from_data__0():
     vampytest.assert_eq(voice_channel_effect.channel_id, channel_id)
     vampytest.assert_is(voice_channel_effect.emoji, emoji)
     vampytest.assert_eq(voice_channel_effect.guild_id, guild_id)
+    vampytest.assert_eq(voice_channel_effect.sound_id, sound_id)
+    vampytest.assert_eq(voice_channel_effect.sound_volume, sound_volume)
     vampytest.assert_eq(voice_channel_effect.user_id, user_id)
 
 
-def test__VoiceChannelEffect__to_data__0():
+def test__VoiceChannelEffect__to_data():
     """
     Tests whether ``VoiceChannelEffect.to_data`` works as intended.
     
@@ -52,6 +58,8 @@ def test__VoiceChannelEffect__to_data__0():
     channel_id = 202304040009
     emoji = BUILTIN_EMOJIS['x']
     guild_id = 202304040010
+    sound_id = 202408180005
+    sound_volume = 0.5
     user_id = 202304040011
     
     voice_channel_effect = VoiceChannelEffect(
@@ -60,6 +68,8 @@ def test__VoiceChannelEffect__to_data__0():
         channel_id = channel_id,
         emoji = emoji,
         guild_id = guild_id,
+        sound_id = sound_id,
+        sound_volume = sound_volume,
         user_id = user_id,
     )
     
@@ -69,6 +79,8 @@ def test__VoiceChannelEffect__to_data__0():
         'channel_id': str(channel_id),
         'emoji': {'name': emoji.unicode},
         'guild_id': str(guild_id),
+        'sound_id': str(sound_id),
+        'sound_volume': sound_volume,
         'user_id': str(user_id),
     }
     

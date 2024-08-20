@@ -303,7 +303,7 @@ class ChannelOutputStream:
         """Enters the stream returning itself."""
         return self
     
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exception_type, exception_value, exception_traceback):
         """Exists the stream by closing it."""
         self.close()
         return False
@@ -828,7 +828,7 @@ class ChannelInputStream:
         """Enters the stream returning itself."""
         return self
     
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exception_type, exception_value, exception_traceback):
         """Exists the stream by closing it."""
         self.close()
         return False

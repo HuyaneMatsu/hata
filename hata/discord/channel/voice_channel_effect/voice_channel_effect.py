@@ -4,6 +4,7 @@ from scarletio import copy_docs
 
 from ...bases import EventBase
 from ...core import GUILDS
+from ...soundboard import create_partial_soundboard_sound_from_id
 from ...user import create_partial_user_from_id
 
 from ..channel import ChannelType, create_partial_channel_from_id
@@ -12,14 +13,15 @@ from .fields import (
     parse_animation_id, parse_animation_type, parse_channel_id, parse_emoji, parse_guild_id, parse_user_id,
     put_animation_id_into, put_animation_type_into, put_channel_id_into, put_emoji_into, put_guild_id_into,
     put_user_id_into, validate_animation_id, validate_animation_type, validate_channel_id, validate_emoji,
-    validate_guild_id, validate_user_id
+    validate_guild_id, validate_user_id, parse_sound_id, put_sound_id_into, validate_sound_id,
+    parse_sound_volume, put_sound_volume_into, validate_sound_volume
 )
 from .preinstanced import VoiceChannelEffectAnimationType
 
 
 class VoiceChannelEffect(EventBase):
     """
-    Represents a voice channel effect sent to a voice channel.
+    Represents a voice channel effect or a played sound.
     
     Attributes
     ----------
@@ -33,10 +35,16 @@ class VoiceChannelEffect(EventBase):
         The emoji sent.
     guild_id : `int`
         The guild's identifier where the event was sent.
+    sound_id : `int`
+        The played sound's identifier.
+    sound_volume : `float`
+        The played sound's volume.
     user_id : `int`
         The user's identifier who sent the effect.
     """
-    __slots__ = ('animation_id', 'animation_type', 'channel_id', 'emoji', 'guild_id', 'user_id')
+    __slots__ = (
+        'animation_id', 'animation_type', 'channel_id', 'emoji', 'guild_id', 'sound_id', 'sound_volume', 'user_id'
+    )
     
     def __new__(
         cls,
@@ -46,6 +54,8 @@ class VoiceChannelEffect(EventBase):
         channel_id = ...,
         emoji = ...,
         guild_id = ...,
+        sound_id = ...,
+        sound_volume = ...,
         user_id = ...,
     ):
         """
@@ -63,6 +73,10 @@ class VoiceChannelEffect(EventBase):
             The emoji sent.
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild or its identifier where the event was sent.
+        sound_id : `int`, ``SoundboardSound``, Optional (Keyword only)
+            The played sound's identifier.
+        sound_volume : `float`, Optional (Keyword only)
+            The played sound's volume.
         user_id : `int`, ``ClientUserBase``, Optional (Keyword only)
             The user or its identifier who sent the effect.
         
@@ -103,6 +117,18 @@ class VoiceChannelEffect(EventBase):
         else:
             guild_id = validate_guild_id(guild_id)
         
+        # sound_id
+        if sound_id is ...:
+            sound_id = 0
+        else:
+            sound_id = validate_sound_id(sound_id)
+        
+        # sound_volume
+        if sound_volume is ...:
+            sound_volume = 1.0
+        else:
+            sound_volume = validate_sound_volume(sound_volume)
+        
         # user_id
         if user_id is ...:
             user_id = 0
@@ -116,6 +142,8 @@ class VoiceChannelEffect(EventBase):
         self.channel_id = channel_id
         self.emoji = emoji
         self.guild_id = guild_id
+        self.sound_id = sound_id
+        self.sound_volume = sound_volume
         self.user_id = user_id
         return self
     
@@ -140,6 +168,8 @@ class VoiceChannelEffect(EventBase):
         self.channel_id = parse_channel_id(data)
         self.emoji = parse_emoji(data)
         self.guild_id = parse_guild_id(data)
+        self.sound_id = parse_sound_id(data)
+        self.sound_volume = parse_sound_volume(data)
         self.user_id = parse_user_id(data)
         return self
     
@@ -164,6 +194,8 @@ class VoiceChannelEffect(EventBase):
         put_animation_id_into(self.animation_id, data, defaults)
         put_animation_type_into(self.animation_type, data, defaults)
         put_emoji_into(self.emoji, data, defaults)
+        put_sound_id_into(self.sound_id, data, defaults)
+        put_sound_volume_into(self.sound_volume, data, defaults)
         
         if include_internals:
             put_channel_id_into(self.channel_id, data, defaults)
@@ -186,20 +218,27 @@ class VoiceChannelEffect(EventBase):
         repr_parts.append(', user_id = ')
         repr_parts.append(repr(self.user_id))
         
-        animation_type = self.animation_type
-        repr_parts.append(', animation_type = ')
-        repr_parts.append(animation_type.name)
-        repr_parts.append(' ~ ')
-        repr_parts.append(repr(animation_type.value))
-        
-        repr_parts.append(', animation_id = ')
-        repr_parts.append(repr(self.animation_id))
-        
         emoji = self.emoji
         if (emoji is not None):
             repr_parts.append(', emoji = ')
             repr_parts.append(repr(emoji))
+            
+            animation_type = self.animation_type
+            repr_parts.append(', animation_type = ')
+            repr_parts.append(animation_type.name)
+            repr_parts.append(' ~ ')
+            repr_parts.append(repr(animation_type.value))
+            
+            repr_parts.append(', animation_id = ')
+            repr_parts.append(repr(self.animation_id))
         
+        sound_id = self.sound_id
+        if sound_id:
+            repr_parts.append(', sound_id = ')
+            repr_parts.append(repr(sound_id))
+            
+            repr_parts.append(', sound_volume = ')
+            repr_parts.append(repr(self.sound_volume))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -207,17 +246,14 @@ class VoiceChannelEffect(EventBase):
     
     @copy_docs(EventBase.__len__)
     def __len__(self):
-        return 5
+        return 0
     
     
     @copy_docs(EventBase.__iter__)
     def __iter__(self):
-        yield self.channel
-        yield self.user
-        yield self.animation_type
-        yield self.animation_type
-        yield self.emoji
-        
+        return
+        yield
+    
     
     @copy_docs(EventBase.__eq__)
     def __eq__(self, other):
@@ -242,6 +278,14 @@ class VoiceChannelEffect(EventBase):
         
         # guild_id
         if self.guild_id != other.guild_id:
+            return False
+        
+        # sound_id
+        if self.sound_id != other.sound_id:
+            return False
+        
+        # sound_volume
+        if self.sound_volume != other.sound_volume:
             return False
         
         # user_id
@@ -272,6 +316,14 @@ class VoiceChannelEffect(EventBase):
         # guild_id
         hash_value ^= self.guild_id
         
+        # sound_id
+        hash_value ^= self.sound_id
+        
+        # sound_volume
+        sound_volume = self.sound_volume
+        if (sound_volume != 1.0):
+            hash_value ^= hash(sound_volume)
+        
         # user_id
         hash_value ^= self.user_id
         
@@ -292,6 +344,8 @@ class VoiceChannelEffect(EventBase):
         new.channel_id = self.channel_id
         new.emoji = self.emoji
         new.guild_id = self.guild_id
+        new.sound_id = self.sound_id
+        new.sound_volume = self.sound_volume
         new.user_id = self.user_id
         return new
     
@@ -304,6 +358,8 @@ class VoiceChannelEffect(EventBase):
         channel_id = ...,
         emoji = ...,
         guild_id = ...,
+        sound_id = ...,
+        sound_volume = ...,
         user_id = ...,
     ):
         """
@@ -321,6 +377,10 @@ class VoiceChannelEffect(EventBase):
             The emoji sent.
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild or its identifier where the event was sent.
+        sound_id : `int`, ``SoundboardSound``, Optional (Keyword only)
+            The played sound's identifier.
+        sound_volume : `float`, Optional (Keyword only)
+            The played sound's volume.
         user_id : `int`, ``ClientUserBase``, Optional (Keyword only)
             The user or its identifier who sent the effect.
         
@@ -365,6 +425,18 @@ class VoiceChannelEffect(EventBase):
         else:
             guild_id = validate_guild_id(guild_id)
         
+        # sound_id
+        if sound_id is ...:
+            sound_id = self.sound_id
+        else:
+            sound_id = validate_sound_id(sound_id)
+        
+        # sound_volume
+        if sound_volume is ...:
+            sound_volume = self.sound_volume
+        else:
+            sound_volume = validate_sound_volume(sound_volume)
+        
         # user_id
         if user_id is ...:
             user_id = self.user_id
@@ -378,6 +450,8 @@ class VoiceChannelEffect(EventBase):
         new.channel_id = channel_id
         new.emoji = emoji
         new.guild_id = guild_id
+        new.sound_id = sound_id
+        new.sound_volume = sound_volume
         new.user_id = user_id
         return new
     
@@ -418,3 +492,17 @@ class VoiceChannelEffect(EventBase):
         user : ``ClientUserBase``
         """
         return create_partial_user_from_id(self.user_id)
+    
+    
+    @property
+    def sound(self):
+        """
+        Returns the voice channel effect event's sound.
+        
+        Returns
+        -------
+        sound : `None | SoundboardSound`
+        """
+        sound_id = self.sound_id
+        if sound_id:
+            return create_partial_soundboard_sound_from_id(sound_id, self.guild_id)

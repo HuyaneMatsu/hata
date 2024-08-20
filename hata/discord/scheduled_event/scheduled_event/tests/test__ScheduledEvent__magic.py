@@ -5,6 +5,8 @@ import vampytest
 from ....bases import Icon, IconType
 from ....user import User
 
+from ...schedule import Schedule
+
 from ..preinstanced import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
 from ..scheduled_event import ScheduledEvent
 
@@ -22,6 +24,7 @@ def test__ScheduledEvent__repr():
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
+    schedule = Schedule(occurrence_spacing = 2)
     start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
@@ -41,6 +44,7 @@ def test__ScheduledEvent__repr():
         'image': image,
         'name': name,
         'privacy_level': privacy_level,
+        'schedule': schedule,
         'start': start,
         'status': status,
         'location': location,
@@ -76,6 +80,7 @@ def test__ScheduledEvent__hash():
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
+    schedule = Schedule(occurrence_spacing = 2)
     start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
@@ -94,6 +99,7 @@ def test__ScheduledEvent__hash():
         'image': image,
         'name': name,
         'privacy_level': privacy_level,
+        'schedule': schedule,
         'start': start,
         'status': status,
         'location': location,
@@ -116,12 +122,7 @@ def test__ScheduledEvent__hash():
     vampytest.assert_instance(hash(scheduled_event), int)
 
 
-def test__ScheduledEvent__eq():
-    """
-    Tests whether ``ScheduledEvent.__eq__`` works as intended.
-    """
-    scheduled_event_id = 202303160063
-    
+def _iter_options__eq():
     channel_id = 202303160064
     description = 'koishi'
     end = DateTime(2016, 3, 10, tzinfo = TimeZone.utc)
@@ -129,15 +130,10 @@ def test__ScheduledEvent__eq():
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
+    schedule = Schedule(occurrence_spacing = 2)
     start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
-    
-    creator = User.precreate(202303160065, name = 'Orin')
-    entity_id = 202303160066
-    guild_id = 202303160067
-    sku_ids = [202303160068, 202303160069]
-    user_count = 66
     
     keyword_parameters = {
         'channel_id': channel_id,
@@ -147,46 +143,175 @@ def test__ScheduledEvent__eq():
         'image': image,
         'name': name,
         'privacy_level': privacy_level,
+        'schedule': schedule,
         'start': start,
         'status': status,
         'location': location,
     }
     
+    yield (
+        {},
+        {},
+        True,
+    )
+    
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'channel_id': 202303160070,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'description': 'yakumo',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'end': DateTime(2016, 5, 10, tzinfo = TimeZone.utc),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **{key: value for key, value in keyword_parameters.items() if key != 'location'},
+            'entity_type': ScheduledEventEntityType.stage,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'image': Icon(IconType.animated, 42),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'yukari',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'privacy_level': PrivacyLevel.guild_only,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'schedule': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'start': DateTime(2016, 3, 12, tzinfo = TimeZone.utc),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'status': ScheduledEventStatus.cancelled,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'location': 'beat',
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__ScheduledEvent__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``ScheduledEvent.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    scheduled_event_0 = ScheduledEvent(**keyword_parameters_0)
+    scheduled_event_1 = ScheduledEvent(**keyword_parameters_1)
+    
+    output = scheduled_event_0 == scheduled_event_1
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def test__ScheduledEvent__eq__non_partial():
+    """
+    Tests whether ``ScheduledEvent.__eq__`` works as intended.
+    
+    Case: Testing against non partial instance.
+    """
+    scheduled_event_id = 202303160063
+    name = 'hey mister'
+    
+    creator = User.precreate(202303160065, name = 'Orin')
+    entity_id = 202303160066
+    guild_id = 202303160067
+    sku_ids = [202303160068, 202303160069]
+    user_count = 66
+    
     scheduled_event = ScheduledEvent.precreate(
         scheduled_event_id,
-        **keyword_parameters,
+        name = name,
         creator = creator,
         entity_id = entity_id,
         guild_id = guild_id,
         sku_ids = sku_ids,
         user_count = user_count,
     )
+    
     vampytest.assert_eq(scheduled_event, scheduled_event)
     vampytest.assert_ne(scheduled_event, object())
     
-    test_scheduled_event = ScheduledEvent(**keyword_parameters)
-    vampytest.assert_eq(scheduled_event, test_scheduled_event)
-    
-    
-    for field_name, field_value in (
-        ('channel_id', 202303160070),
-        ('description', 'yakumo'),
-        ('end', DateTime(2016, 5, 10, tzinfo = TimeZone.utc)),
-        ('entity_type', ScheduledEventEntityType.stage),
-        ('image', Icon(IconType.animated, 42)),
-        ('name', 'yukari'),
-        ('privacy_level', PrivacyLevel.guild_only),
-        ('start', DateTime(2016, 3, 12, tzinfo = TimeZone.utc)),
-        ('status', ScheduledEventStatus.cancelled),
-        ('location', 'beat'),
-
-    ):
-        test_keyword_parameters = keyword_parameters.copy()    
-        if field_name == 'entity_type':
-            test_keyword_parameters.pop('location', None)
-        else:
-            test_keyword_parameters['location'] = location
-        test_keyword_parameters[field_name] = field_value
-        
-        test_scheduled_event = ScheduledEvent(**test_keyword_parameters)
-        vampytest.assert_ne(scheduled_event, test_scheduled_event)
+    vampytest.assert_ne(scheduled_event, ScheduledEvent())
+    vampytest.assert_eq(scheduled_event, ScheduledEvent(name = name))

@@ -25,7 +25,8 @@ from .fields import (
     validate_version
 )
 from .preinstanced import (
-    CONTEXT_TARGET_TYPES, ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
+    CONTEXT_TARGET_TYPES, ApplicationCommandIntegrationContextType, ApplicationCommandTargetType,
+    INTEGRATION_CONTEXT_TYPES_ALL
 )
 
 
@@ -77,7 +78,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         The application command's id.
     
     integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
-        The places where the application command shows up. `None` means all.
+        The places where the application command shows up.
     
     integration_types : `None | tuple<ApplicationIntegrationType>`
         The options where the application command can be integrated to.
@@ -148,7 +149,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         integration_context_types : `None | iterable<ApplicationCommandIntegrationContextType | int>` \
                 , Optional (Keyword only)
-            The places where the application command shows up. `None` means all.
+            The places where the application command shows up.
         
         integration_types : `None | iterable<ApplicationIntegrationType | int>`, Optional (Keyword only)
             The options where the application command can be integrated to.
@@ -203,7 +204,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         # integration_context_types
         if integration_context_types is ...:
-            integration_context_types = None
+            integration_context_types = INTEGRATION_CONTEXT_TYPES_ALL
         else:
             integration_context_types = validate_integration_context_types(integration_context_types)
         
@@ -318,7 +319,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         integration_context_types : `None | iterable<ApplicationCommandIntegrationContextType | int>` \
                 , Optional (Keyword only)
-            The places where the application command shows up. `None` means all.
+            The places where the application command shows up.
         
         integration_types : `None | iterable<ApplicationIntegrationType | int>`, Optional (Keyword only)
             The options where the application command can be integrated to.
@@ -1116,7 +1117,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         integration_context_types : `None | iterable<ApplicationCommandIntegrationContextType | int>` \
                 , Optional (Keyword only)
-            The places where the application command shows up. `None` means all.
+            The places where the application command shows up.
         
         integration_types : `None | iterable<ApplicationIntegrationType | int>`, Optional (Keyword only)
             The options where the application command can be integrated to.
@@ -1507,7 +1508,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         """
         integration_context_types = self.integration_context_types
         if integration_context_types is None:
-            return True
+            return False
         
         return integration_context_type in integration_context_types
     

@@ -19,19 +19,20 @@ from .constants import (
     OVERLAY_DEFAULT
 )
 from .fields import (
-    parse_aliases, parse_approximate_guild_count, parse_bot_public, parse_bot_requires_code_grant,
-    parse_creator_monetization_state, parse_custom_install_url, parse_deeplink_url, parse_description, parse_developers,
-    parse_discoverability_state, parse_discovery_eligibility_flags, parse_embedded_activity_configuration,
-    parse_eula_id, parse_executables, parse_explicit_content_filter_level, parse_flags, parse_guild_id, parse_hook,
-    parse_id, parse_install_parameters, parse_integration_public, parse_integration_requires_code_grant,
-    parse_integration_types, parse_integration_types_configuration, parse_interaction_endpoint_url,
-    parse_interaction_event_types, parse_interaction_version, parse_internal_guild_restriction, parse_max_participants,
-    parse_monetization_eligibility_flags, parse_monetization_state, parse_monetized, parse_name, parse_overlay,
-    parse_overlay_compatibility_hook, parse_overlay_method_flags, parse_owner, parse_primary_sku_id,
-    parse_privacy_policy_url, parse_publishers, parse_redirect_urls, parse_role_connection_verification_url,
-    parse_rpc_origins, parse_rpc_state, parse_slug, parse_store_state, parse_tags, parse_terms_of_service_url,
-    parse_third_party_skus, parse_type, parse_verification_state, parse_verify_key, put_aliases_into,
-    put_approximate_guild_count_into, put_bot_public_into, put_bot_requires_code_grant_into,
+    parse_aliases, parse_approximate_guild_count, parse_approximate_user_install_count, parse_bot_public,
+    parse_bot_requires_code_grant, parse_creator_monetization_state, parse_custom_install_url, parse_deeplink_url,
+    parse_description, parse_developers, parse_discoverability_state, parse_discovery_eligibility_flags,
+    parse_embedded_activity_configuration, parse_eula_id, parse_executables, parse_explicit_content_filter_level,
+    parse_flags, parse_guild_id, parse_hook, parse_id, parse_install_parameters, parse_integration_public,
+    parse_integration_requires_code_grant, parse_integration_types, parse_integration_types_configuration,
+    parse_interaction_endpoint_url, parse_interaction_event_types, parse_interaction_version,
+    parse_internal_guild_restriction, parse_max_participants, parse_monetization_eligibility_flags,
+    parse_monetization_state, parse_monetized, parse_name, parse_overlay, parse_overlay_compatibility_hook,
+    parse_overlay_method_flags, parse_owner, parse_primary_sku_id, parse_privacy_policy_url, parse_publishers,
+    parse_redirect_urls, parse_role_connection_verification_url, parse_rpc_origins, parse_rpc_state, parse_slug,
+    parse_store_state, parse_tags, parse_terms_of_service_url, parse_third_party_skus, parse_type,
+    parse_verification_state, parse_verify_key, put_aliases_into, put_approximate_guild_count_into,
+    put_approximate_user_install_count_into, put_bot_public_into, put_bot_requires_code_grant_into,
     put_creator_monetization_state_into, put_custom_install_url_into, put_deeplink_url_into, put_description_into,
     put_developers_into, put_discoverability_state_into, put_discovery_eligibility_flags_into,
     put_embedded_activity_configuration_into, put_eula_id_into, put_executables_into,
@@ -45,20 +46,20 @@ from .fields import (
     put_role_connection_verification_url_into, put_rpc_origins_into, put_rpc_state_into, put_slug_into,
     put_store_state_into, put_tags_into, put_terms_of_service_url_into, put_third_party_skus_into, put_type_into,
     put_verification_state_into, put_verify_key_into, validate_aliases, validate_approximate_guild_count,
-    validate_bot_public, validate_bot_requires_code_grant, validate_creator_monetization_state,
-    validate_custom_install_url, validate_deeplink_url, validate_description, validate_developers,
-    validate_discoverability_state, validate_discovery_eligibility_flags, validate_embedded_activity_configuration,
-    validate_eula_id, validate_executables, validate_explicit_content_filter_level, validate_flags, validate_guild_id,
-    validate_hook, validate_id, validate_install_parameters, validate_integration_public,
-    validate_integration_requires_code_grant, validate_integration_types, validate_integration_types_configuration,
-    validate_interaction_endpoint_url, validate_interaction_event_types, validate_interaction_version,
-    validate_internal_guild_restriction, validate_max_participants, validate_monetization_eligibility_flags,
-    validate_monetization_state, validate_monetized, validate_name, validate_overlay,
-    validate_overlay_compatibility_hook, validate_overlay_method_flags, validate_owner, validate_primary_sku_id,
-    validate_privacy_policy_url, validate_publishers, validate_redirect_urls, validate_role_connection_verification_url,
-    validate_rpc_origins, validate_rpc_state, validate_slug, validate_store_state, validate_tags,
-    validate_terms_of_service_url, validate_third_party_skus, validate_type, validate_verification_state,
-    validate_verify_key
+    validate_approximate_user_install_count, validate_bot_public, validate_bot_requires_code_grant,
+    validate_creator_monetization_state, validate_custom_install_url, validate_deeplink_url, validate_description,
+    validate_developers, validate_discoverability_state, validate_discovery_eligibility_flags,
+    validate_embedded_activity_configuration, validate_eula_id, validate_executables,
+    validate_explicit_content_filter_level, validate_flags, validate_guild_id, validate_hook, validate_id,
+    validate_install_parameters, validate_integration_public, validate_integration_requires_code_grant,
+    validate_integration_types, validate_integration_types_configuration, validate_interaction_endpoint_url,
+    validate_interaction_event_types, validate_interaction_version, validate_internal_guild_restriction,
+    validate_max_participants, validate_monetization_eligibility_flags, validate_monetization_state, validate_monetized,
+    validate_name, validate_overlay, validate_overlay_compatibility_hook, validate_overlay_method_flags, validate_owner,
+    validate_primary_sku_id, validate_privacy_policy_url, validate_publishers, validate_redirect_urls,
+    validate_role_connection_verification_url, validate_rpc_origins, validate_rpc_state, validate_slug,
+    validate_store_state, validate_tags, validate_terms_of_service_url, validate_third_party_skus, validate_type,
+    validate_verification_state, validate_verify_key
 )
 from .flags import (
     ApplicationDiscoveryEligibilityFlags, ApplicationFlag, ApplicationMonetizationEligibilityFlags,
@@ -96,6 +97,7 @@ from .preinstanced import (
 # Own application fields
 #
 # - approximate_guild_count
+# - approximate_user_install_count
 # - bot_public
 # - bot_requires_code_grant
 # - creator_monetization_state
@@ -191,6 +193,8 @@ from .preinstanced import (
 # | aliases                             | NO        | NO        | YES           |
 # +-------------------------------------+-----------+-----------+---------------+
 # | approximate_guild_count             | YES       | NO        | NO            |
+# +-------------------------------------+-----------+-----------+---------------+
+# | approximate_user_install_count      | YES       | NO        | NO            |
 # +-------------------------------------+-----------+-----------+---------------+
 # | bot_public                          | YES       | YES       | YES           |
 # +-------------------------------------+-----------+-----------+---------------+
@@ -333,6 +337,7 @@ APPLICATION_SPLASH = IconSlot(
 COMMON_CONSTRUCT_FIELDS = {
     'aliases': ('aliases', validate_aliases),
     'approximate_guild_count': ('approximate_guild_count', validate_approximate_guild_count),
+    'approximate_user_install_count': ('approximate_user_install_count', validate_approximate_user_install_count),
     'bot_public': ('bot_public', validate_bot_public),
     'bot_requires_code_grant': ('bot_requires_code_grant', validate_bot_requires_code_grant),
     'creator_monetization_state': ('creator_monetization_state', validate_creator_monetization_state),
@@ -417,6 +422,9 @@ class Application(DiscordEntity, immortal = True):
     
     approximate_guild_count : `int`
         The approximate count of the guilds the application is in.
+    
+    approximate_user_install_count : `int`
+        The approximate count of the users who installed the application.
     
     bot_public : `bool`.
         Whether not only the application's owner can join the application's bot to guilds.
@@ -623,10 +631,10 @@ class Application(DiscordEntity, immortal = True):
     The instances of the class support weakreferencing.
     """
     __slots__ = (
-        '_cache_emojis', 'aliases', 'approximate_guild_count', 'bot_public', 'bot_requires_code_grant',
-        'creator_monetization_state', 'custom_install_url', 'deeplink_url', 'description', 'developers',
-        'discoverability_state', 'discovery_eligibility_flags',  'embedded_activity_configuration', 'eula_id',
-        'executables', 'explicit_content_filter_level', 'flags', 'guild_id', 'hook', 'install_parameters',
+        '_cache_emojis', 'aliases', 'approximate_guild_count', 'approximate_user_install_count', 'bot_public',
+        'bot_requires_code_grant', 'creator_monetization_state', 'custom_install_url', 'deeplink_url', 'description',
+        'developers', 'discoverability_state', 'discovery_eligibility_flags',  'embedded_activity_configuration',
+        'eula_id', 'executables', 'explicit_content_filter_level', 'flags', 'guild_id', 'hook', 'install_parameters',
         'integration_public', 'integration_requires_code_grant', 'integration_types', 'integration_types_configuration',
         'interaction_endpoint_url', 'interaction_event_types', 'interaction_version', 'internal_guild_restriction',
         'max_participants', 'monetization_eligibility_flags', 'monetization_state', 'monetized', 'name', 'overlay',
@@ -659,6 +667,7 @@ class Application(DiscordEntity, immortal = True):
         self._cache_emojis = None
         self.aliases = None
         self.approximate_guild_count = 0
+        self.approximate_user_install_count = 0
         self.bot_public = BOT_PUBLIC_DEFAULT
         self.bot_requires_code_grant = BOT_REQUIRES_CODE_GRANT_DEFAULT
         self.cover_hash = 0
@@ -929,6 +938,7 @@ class Application(DiscordEntity, immortal = True):
         """
         self._update_attributes_common(data)
         self.approximate_guild_count = parse_approximate_guild_count(data)
+        self.approximate_user_install_count = parse_approximate_user_install_count(data)
         self.creator_monetization_state = parse_creator_monetization_state(data)
         self.custom_install_url = parse_custom_install_url(data)
         self.developers = parse_developers(data)
@@ -1118,6 +1128,7 @@ class Application(DiscordEntity, immortal = True):
         """
         data = self._to_data_common(defaults, include_internals)
         put_approximate_guild_count_into(self.approximate_guild_count, data, defaults)
+        put_approximate_user_install_count_into(self.approximate_user_install_count, data, defaults)
         put_creator_monetization_state_into(self.creator_monetization_state, data, defaults)
         put_custom_install_url_into(self.custom_install_url, data, defaults)
         put_developers_into(self.developers, data, defaults, include_internals = True)
@@ -1271,6 +1282,9 @@ class Application(DiscordEntity, immortal = True):
         
         # approximate_guild_count
         hash_value ^= self.approximate_guild_count << 8
+        
+        # approximate_user_install_count
+        hash_value ^= self.approximate_user_install_count <<35
         
         # bot_public
         hash_value ^= self.bot_public << 4
@@ -1547,6 +1561,10 @@ class Application(DiscordEntity, immortal = True):
         if self.approximate_guild_count != other.approximate_guild_count:
             return False
         
+        # approximate_user_install_count
+        if self.approximate_user_install_count != other.approximate_user_install_count:
+            return False
+        
         # bot_public
         if self.bot_public != other.bot_public:
             return False
@@ -1808,6 +1826,9 @@ class Application(DiscordEntity, immortal = True):
         
         approximate_guild_count : `int`, Optional (Keyword only)
             The approximate count of the guilds the application is in.
+    
+        approximate_user_install_count : `int`, Optional (Keyword only)
+            The approximate count of the users who installed the application.
         
         application_type : `int`, ``ApplicationType``, Optional (Keyword only)
             The application's type.
@@ -2015,6 +2036,9 @@ class Application(DiscordEntity, immortal = True):
     
         approximate_guild_count : `int`, Optional (Keyword only)
             The approximate count of the guilds the application is in.
+    
+        approximate_user_install_count : `int`, Optional (Keyword only)
+            The approximate count of the users who installed the application.
         
         application_type : `int`, ``ApplicationType``, Optional (Keyword only)
             The application's type.
@@ -2233,6 +2257,9 @@ class Application(DiscordEntity, immortal = True):
     
         approximate_guild_count : `int`, Optional (Keyword only)
             The approximate count of the guilds the application is in.
+    
+        approximate_user_install_count : `int`, Optional (Keyword only)
+            The approximate count of the users who installed the application.
         
         application_type : `int`, ``ApplicationType``, Optional (Keyword only)
             The application's type.
@@ -2431,6 +2458,7 @@ class Application(DiscordEntity, immortal = True):
             aliases = (*aliases,)
         new.aliases = aliases
         new.approximate_guild_count = self.approximate_guild_count
+        new.approximate_user_install_count = self.approximate_user_install_count
         new.bot_public = self.bot_public
         new.bot_requires_code_grant = self.bot_requires_code_grant
         new.cover_hash = self.cover_hash

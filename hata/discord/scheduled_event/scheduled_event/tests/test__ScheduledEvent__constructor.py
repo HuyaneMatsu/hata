@@ -5,6 +5,7 @@ import vampytest
 from ....bases import Icon, IconType
 from ....user import ClientUserBase, User
 
+from ...schedule import Schedule
 from ...scheduled_event_entity_metadata import ScheduledEventEntityMetadataBase
 
 from ..preinstanced import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
@@ -33,13 +34,14 @@ def _assert_fields_set(scheduled_event):
     vampytest.assert_instance(scheduled_event.image, Icon)
     vampytest.assert_instance(scheduled_event.name, str)
     vampytest.assert_instance(scheduled_event.privacy_level, PrivacyLevel)
+    vampytest.assert_instance(scheduled_event.schedule, Schedule, nullable = True)
     vampytest.assert_instance(scheduled_event.start, DateTime, nullable = True)
     vampytest.assert_instance(scheduled_event.sku_ids, tuple, nullable = True)
     vampytest.assert_instance(scheduled_event.status, ScheduledEventStatus)
     vampytest.assert_instance(scheduled_event.user_count, int)
 
 
-def test__ScheduledEvent__new__0():
+def test__ScheduledEvent__new__no_fields():
     """
     Tests whether ``ScheduledEvent.__new__`` works as intended.
     
@@ -49,7 +51,7 @@ def test__ScheduledEvent__new__0():
     _assert_fields_set(scheduled_event)
 
 
-def test__ScheduledEvent__new__1():
+def test__ScheduledEvent__new__all_fields():
     """
     Tests whether ``ScheduledEvent.__new__`` works as intended.
     
@@ -62,6 +64,7 @@ def test__ScheduledEvent__new__1():
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
+    schedule = Schedule(occurrence_spacing = 2)
     start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
@@ -75,6 +78,7 @@ def test__ScheduledEvent__new__1():
         image = image,
         name = name,
         privacy_level = privacy_level,
+        schedule = schedule,
         start = start,
         status = status,
         location = location,
@@ -89,6 +93,7 @@ def test__ScheduledEvent__new__1():
     vampytest.assert_eq(scheduled_event.image, image)
     vampytest.assert_eq(scheduled_event.name, name)
     vampytest.assert_is(scheduled_event.privacy_level, privacy_level)
+    vampytest.assert_eq(scheduled_event.schedule, schedule)
     vampytest.assert_eq(scheduled_event.start, start)
     vampytest.assert_is(scheduled_event.status, status)
 
@@ -105,7 +110,7 @@ def test__ScheduledEvent__create_empty():
     vampytest.assert_eq(scheduled_event.id, scheduled_event_id)
 
 
-def test__ScheduledEvent__precreate__0():
+def test__ScheduledEvent__precreate__no_fields():
     """
     Tests whether ``ScheduledEvent.precreate`` works as intended.
     
@@ -119,7 +124,7 @@ def test__ScheduledEvent__precreate__0():
     vampytest.assert_eq(scheduled_event.id, scheduled_event_id)
 
 
-def test__ScheduledEvent__precreate__1():
+def test__ScheduledEvent__precreate__all_fields():
     """
     Tests whether ``ScheduledEvent.precreate`` works as intended.
     
@@ -134,6 +139,7 @@ def test__ScheduledEvent__precreate__1():
     image = Icon(IconType.static, 45)
     name = 'komeiji'
     privacy_level = PrivacyLevel.public
+    schedule = Schedule(occurrence_spacing = 2)
     start = DateTime(2017, 4, 6, tzinfo = TimeZone.utc)
     status = ScheduledEventStatus.active
     location = 'hell'
@@ -153,6 +159,7 @@ def test__ScheduledEvent__precreate__1():
         image = image,
         name = name,
         privacy_level = privacy_level,
+        schedule = schedule,
         start = start,
         status = status,
         location = location,
@@ -174,6 +181,7 @@ def test__ScheduledEvent__precreate__1():
     vampytest.assert_eq(scheduled_event.image, image)
     vampytest.assert_eq(scheduled_event.name, name)
     vampytest.assert_is(scheduled_event.privacy_level, privacy_level)
+    vampytest.assert_eq(scheduled_event.schedule, schedule)
     vampytest.assert_eq(scheduled_event.start, start)
     vampytest.assert_is(scheduled_event.status, status)
         
@@ -184,7 +192,7 @@ def test__ScheduledEvent__precreate__1():
     vampytest.assert_eq(scheduled_event.user_count, user_count)
 
 
-def test__ScheduledEvent__precreate__2():
+def test__ScheduledEvent__precreate__caching():
     """
     Tests whether ``ScheduledEvent.precreate`` works as intended.
     

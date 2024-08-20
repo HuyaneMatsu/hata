@@ -3,43 +3,42 @@ import vampytest
 from ..fields import validate_volume
 
 
-def test__validate_volume__0():
+def _iter_options__passing():
+    yield None, 1.0
+    yield 1.0, 1.0
+    yield 0.0, 0.0
+    yield 0.5, 0.5
+
+
+def _iter_options__type_error():
+    yield 'senya'
+
+
+def _iter_options__value_error():
+    yield -1.0
+    yield +2.0
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_volume(input_value):
     """
     Tests whether `validate_volume` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (1.0, 1.0),
-        (0.0, 0.0),
-        (0.5, 0.5),
-    ):
-        output = validate_volume(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_volume__1():
-    """
-    Tests whether `validate_volume` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    Case: `ValueError`.
-    """
-    for input_value in (
-        -1.0,
-        +2.0,
-    ):
-        with vampytest.assert_raises(ValueError):
-            validate_volume(input_value)
-
-
-def test__validate_volume__2():
-    """
-    Tests whether `validate_volume` works as intended.
+    Returns
+    -------
+    output : `float`
     
-    Case: `TypeError`.
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        'senya',
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_volume(input_value)
+    output = validate_volume(input_value)
+    vampytest.assert_instance(output, float)
+    return output

@@ -160,7 +160,7 @@ class InteractionResponseContext:
         return self
     
     
-    async def __aexit__(self, exception_type, exception_val, exception_tb):
+    async def __aexit__(self, exception_type, exception_value, exception_traceback):
         """
         Exits the context manager, marking the interaction event as deferred or responded if no exception occurred.
         

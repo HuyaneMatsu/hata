@@ -4,6 +4,7 @@ from types import FunctionType
 import vampytest
 
 from ....embed import Embed, EmbedType
+from ....emoji import Emoji
 from ....user import User
 
 from ..message import Message
@@ -59,7 +60,10 @@ def test__MessageType__call(message):
 
 
 def _iter_options__poll_result():
+    emoji = Emoji.precreate(772496201642934272, name = 'KoishiYay')
+    
     yield Message(), None
+    
     yield (
         Message(
             embeds = [
@@ -77,13 +81,19 @@ def _iter_options__poll_result():
                 ).add_field(
                     'total_votes',
                     '2',
-                ),
+                ).add_field(
+                    'victor_answer_emoji_id',
+                    str(emoji.id),
+                ).add_field(
+                    'victor_answer_emoji_name',
+                    emoji.name,
+                )
             ],
         ),
         (
-            'The poll Hey mister has closed.\n'
-            'Remilia\n'
-            'Winning answer • 50%'
+            f'The poll Hey mister has closed.\n'
+            f'{emoji} Remilia\n'
+            f'Winning answer • 50%'
         ),
     )
 

@@ -54,14 +54,14 @@ def entity_id_optional_putter_factory(field_key):
         ----------
         entity_id : `int`
             An entity's identifier.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -100,14 +100,14 @@ def entity_id_putter_factory(field_key):
         ----------
         entity_id : `int`
             An entity's identifier.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -145,14 +145,14 @@ def optional_entity_id_array_optional_putter_factory(field_key):
         ----------
         entity_id_array : `None`, `tuple` of `int`
             An entity's identifier.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
             
@@ -192,14 +192,14 @@ def nullable_entity_id_array_putter_factory(field_key):
         ----------
         entity_id_array : `None`, `tuple` of `int`
             An entity's identifier.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -238,14 +238,14 @@ def preinstanced_putter_factory(field_key):
         ----------
         preinstanced : ``PreinstancedBase``
             The preinstanced object.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -281,14 +281,14 @@ def preinstanced_optional_putter_factory(field_key, default):
         ----------
         preinstanced : ``PreinstancedBase``
             The preinstanced object.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal default
         nonlocal field_key
@@ -324,14 +324,14 @@ def preinstanced_array_putter_factory(field_key):
         ----------
         preinstanced_array :`None`, `tuple` of  ``PreinstancedBase``
             The preinstanced object.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -340,6 +340,52 @@ def preinstanced_array_putter_factory(field_key):
         else:
             field_value = [preinstanced.value for preinstanced in preinstanced_array]
         data[field_key] = field_value
+        
+        return data
+    
+    return putter
+
+
+def preinstanced_array_optional_putter_factory(field_key):
+    """
+    Returns a new optional preinstanced array putter.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(preinstanced_array, data, defaults):
+        """
+        Puts the `preinstanced` into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        preinstanced_array :`None`, `tuple` of  ``PreinstancedBase``
+            The preinstanced object.
+        data : `dict<str, object>`
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict<str, object>`
+        """
+        nonlocal field_key
+        
+        if defaults or (preinstanced_array is not None):
+            if preinstanced_array is None:
+                field_value = []
+            else:
+                field_value = [preinstanced.value for preinstanced in preinstanced_array]
+            data[field_key] = field_value
         
         return data
     
@@ -360,6 +406,50 @@ def int_putter_factory(field_key):
     putter : `FunctionType`
     """
     return field_putter_factory(field_key)
+
+
+def int_postprocess_putter_factory(field_key, postprocessor):
+    """
+    Returns an `int` putter with a postprocessor function which is called if the value should be put in the payload.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    postprocessor : `callable`
+        Postprocessor to apply before putting the value into the the `data` object.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(field_value, data, defaults):
+        """
+        Puts the given `int` into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        field_value : `int`
+            Integer field value.
+        data : `dict<str, object>`
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict<str, object>`
+        """
+        nonlocal field_key
+        nonlocal postprocessor
+        
+        data[field_key] = postprocessor(field_value)
+        
+        return data
+    
+    return putter
 
 
 def field_putter_factory(field_key):
@@ -385,14 +475,14 @@ def field_putter_factory(field_key):
         ----------
         field_value : `object`
             Object field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -426,14 +516,14 @@ def nullable_field_optional_putter_factory(field_key):
         ----------
         field_value : `object`
             Object field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -470,14 +560,14 @@ def field_optional_putter_factory(field_key, default_value):
         ----------
         field_value : `object`
             Object field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal default_value
         nonlocal field_key
@@ -572,14 +662,14 @@ def int_optional_postprocess_putter_factory(field_key, default_value, postproces
         ----------
         field_value : `int`
             Integer field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         nonlocal default_value
@@ -618,14 +708,14 @@ def nulled_int_optional_putter_factory(field_key, default_value):
         ----------
         field_value : `int`
             Integer field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         nonlocal default_value
@@ -664,14 +754,14 @@ def force_bool_putter_factory(field_key):
         ----------
         field_value : `bool`
             Boolean field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -707,14 +797,14 @@ def negated_bool_optional_putter_factory(field_key, default_value):
         ----------
         field_value : `bool`
             Boolean field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         nonlocal default_value
@@ -750,14 +840,14 @@ def nullable_date_time_putter_factory(field_key):
         ----------
         field_value : `DateTime`
             Date time field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -795,14 +885,14 @@ def nullable_date_time_optional_putter_factory(field_key):
         ----------
         field_value : `DateTime`
             Date time field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -841,14 +931,14 @@ def force_string_putter_factory(field_key):
         ----------
         field_value : `string`
             String field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -882,14 +972,14 @@ def nullable_string_putter_factory(field_key):
         ----------
         field_value : `None`, `string`
             String field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -926,14 +1016,14 @@ def nullable_string_optional_putter_factory(field_key):
         ----------
         field_value : `None`, `string`
             String field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -974,14 +1064,14 @@ def url_optional_putter_factory(field_key):
         ----------
         field_value : `None`, `string`
             String field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -995,7 +1085,7 @@ def url_optional_putter_factory(field_key):
 
 def nullable_string_array_optional_putter_factory(field_key):
     """
-    Returns an nullable optional string putter.
+    Returns a nullable optional string putter.
     
     Returns
     -------
@@ -1006,34 +1096,100 @@ def nullable_string_array_optional_putter_factory(field_key):
     -------
     putter : `FunctionType`
     """
-    def putter(field_value, data, defaults):
+    return nullable_value_array_optional_putter_factory(field_key)
+
+
+def nullable_value_array_optional_putter_factory(field_key):
+    """
+    Returns a nullable optional value putter.
+    
+    Returns
+    -------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(value_array, data, defaults):
         """
-        Puts the given `string` array into the given `data` json serializable object.
+        Puts the given value array into the given `data` json serializable object.
         
         > This function is generated.
         
         Parameters
         ----------
-        field_value : `None`, `tuple` of `str`
-            String field value.
-        data : `dict` of (`str`, `object`) items
+        value_array : `None | tuple<object>`
+            Field values.
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
-        if defaults or (field_value is not None):
-            if field_value is None:
-                string_array = []
+        if defaults or (value_array is not None):
+            if value_array is None:
+                raw_value_array = []
             else:
-                string_array = [*field_value]
+                raw_value_array = [*value_array]
             
-            data[field_key] = string_array
+            data[field_key] = raw_value_array
+        
+        return data
+    
+    return putter
+
+
+def nullable_value_array_postprocess_optional_putter_factory(field_key, postprocessor):
+    """
+    Returns a nullable optional value putter that applies the given `postprocessor` to every value.
+    
+    Returns
+    -------
+    field_key : `str`
+        The field's key used in payload.
+    postprocessor : `callable`
+        Postprocessor to apply on each value in the array.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(value_array, data, defaults):
+        """
+        Puts the given value array into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        value_array : `None | tuple<object>`
+            Field values.
+        data : `dict<str, object>`
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict<str, object>`
+        """
+        nonlocal field_key
+        nonlocal postprocessor
+        
+        if defaults or (value_array is not None):
+            if value_array is None:
+                raw_value_array = []
+            else:
+                raw_value_array = [postprocessor(value) for value in value_array]
+            
+            data[field_key] = raw_value_array
         
         return data
     
@@ -1078,14 +1234,14 @@ def nullable_entity_array_putter_factory(
             ----------
             entity_array : `None`, `tuple` of `object`
                 Entity array.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
                 
@@ -1114,7 +1270,7 @@ def nullable_entity_array_putter_factory(
             ----------
             entity_array : `None`, `tuple` of `object`
                 Entity array.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
@@ -1123,7 +1279,7 @@ def nullable_entity_array_putter_factory(
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
                 
@@ -1150,14 +1306,14 @@ def nullable_entity_array_putter_factory(
             ----------
             entity_array : `None`, `tuple` of `object`
                 Entity array.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
                 
@@ -1236,14 +1392,14 @@ def entity_dictionary_putter_factory(
             ----------
             entity_dictionary : `None`, `dict` of (`int`, `object`) items.
                 Entity dictionary.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             data[field_key] = [
@@ -1265,7 +1421,7 @@ def entity_dictionary_putter_factory(
             ----------
             entity_dictionary : `None`, `dict` of (`int`, `object`) items.
                 Entity dictionary.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
@@ -1274,7 +1430,7 @@ def entity_dictionary_putter_factory(
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             data[field_key] = [
@@ -1293,14 +1449,14 @@ def entity_dictionary_putter_factory(
             ----------
             entity_dictionary : `None`, `dict` of (`int`, `object`) items.
                 Entity dictionary.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             data[field_key] = [
@@ -1357,14 +1513,14 @@ def nullable_entity_array_optional_putter_factory(
             ----------
             entity_array : `None`, `tuple` of `object`
                 Entity array.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             
@@ -1395,7 +1551,7 @@ def nullable_entity_array_optional_putter_factory(
             ----------
             entity_array : `None`, `tuple` of `object`
                 Entity array.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
@@ -1404,7 +1560,7 @@ def nullable_entity_array_optional_putter_factory(
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             
@@ -1432,14 +1588,14 @@ def nullable_entity_array_optional_putter_factory(
             ----------
             entity_array : `None`, `tuple` of `object`
                 Entity array.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             
@@ -1494,7 +1650,7 @@ def nullable_object_array_optional_putter_factory(field_key, entity_type = None)
             ----------
             entity_array : `None`, `tuple` of `object`
                 Entity array.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
@@ -1503,7 +1659,7 @@ def nullable_object_array_optional_putter_factory(field_key, entity_type = None)
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             
@@ -1531,14 +1687,14 @@ def nullable_object_array_optional_putter_factory(field_key, entity_type = None)
             ----------
             entity_array : `None`, `tuple` of `object`
                 Entity array.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             
@@ -1612,14 +1768,14 @@ def default_entity_putter_factory(field_key, entity_type, default, *, force_incl
             ----------
             entity : `object` with `{to_data}`
                 Entity.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal default
             nonlocal field_key
@@ -1644,7 +1800,7 @@ def default_entity_putter_factory(field_key, entity_type, default, *, force_incl
             ----------
             entity : `object` with `{to_data}`
                 Entity.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
@@ -1653,7 +1809,7 @@ def default_entity_putter_factory(field_key, entity_type, default, *, force_incl
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal default
             nonlocal field_key
@@ -1678,14 +1834,14 @@ def default_entity_putter_factory(field_key, entity_type, default, *, force_incl
             ----------
             entity : `object` with `{to_data}`
                 Entity.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal default
             nonlocal field_key
@@ -1743,14 +1899,14 @@ def nullable_entity_optional_putter_factory(
             ----------
             entity : `object` with `{to_data}`
                 Entity.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             
@@ -1777,7 +1933,7 @@ def nullable_entity_optional_putter_factory(
             ----------
             entity : `object` with `{to_data}`
                 Entity.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
@@ -1786,7 +1942,7 @@ def nullable_entity_optional_putter_factory(
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             
@@ -1811,14 +1967,14 @@ def nullable_entity_optional_putter_factory(
             ----------
             entity : `object` with `{to_data}`
                 Entity.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             
@@ -1874,14 +2030,14 @@ def entity_putter_factory(field_key, entity_type, *, force_include_internals = F
             ----------
             entity : `object` with `{to_data}`
                 Entity.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             
@@ -1900,7 +2056,7 @@ def entity_putter_factory(field_key, entity_type, *, force_include_internals = F
             ----------
             entity : `object` with `{to_data}`
                 Entity.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
@@ -1909,7 +2065,7 @@ def entity_putter_factory(field_key, entity_type, *, force_include_internals = F
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             
@@ -1928,14 +2084,14 @@ def entity_putter_factory(field_key, entity_type, *, force_include_internals = F
             ----------
             entity : `object` with `{to_data}`
                 Entity.
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
                 Json serializable dictionary.
             defaults : `bool`
                 Whether default values should be included as well.
             
             Returns
             -------
-            data : `dict` of (`str`, `object`) items
+            data : `dict<str, object>`
             """
             nonlocal field_key
             
@@ -1976,14 +2132,14 @@ def nullable_functional_optional_putter_factory(field_key, function, *, include 
         ----------
         field_value : `object`
             Field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal function
         nonlocal field_key
@@ -2036,14 +2192,14 @@ def nullable_functional_array_optional_putter_factory(field_key, function, *, in
         ----------
         values : `None`, `tuple` of `object`
             Field values.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal function
         nonlocal field_key
@@ -2097,14 +2253,14 @@ def functional_putter_factory(field_key, function, *, include = None):
         ----------
         field_value : `object`
             Field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal function
         nonlocal field_key
@@ -2151,14 +2307,14 @@ def nullable_functional_putter_factory(field_key, function, *, include = None):
         ----------
         field_value : `None`, `object`
             Field value.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal function
         nonlocal field_key
@@ -2200,14 +2356,14 @@ def flag_putter_factory(field_key):
         ----------
         flag : ``FlagBase``
             Flag instance.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -2243,14 +2399,14 @@ def flag_optional_putter_factory(field_key, default_value):
         ----------
         flag : ``FlagBase``
             Flag instance.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         nonlocal default_value
@@ -2288,14 +2444,14 @@ def string_flag_optional_putter_factory(field_key, default_value):
         ----------
         flag : ``FlagBase``
             Flag instance.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         nonlocal default_value
@@ -2333,14 +2489,14 @@ def nullable_flag_optional_putter_factory(field_key):
         ----------
         flag : ``FlagBase``
             Flag instance.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         
@@ -2380,14 +2536,14 @@ def string_flag_putter_factory(field_key):
         ----------
         flag : ``FlagBase``
             Flag instance.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         nonlocal field_key
         

@@ -331,7 +331,6 @@ class CommandFunction(RichAttributeErrorBaseType):
                 into.append(note_sign)
                 into.append(' ' * (note_sign_adjustment - len(note_sign)))
                 into.append(NOTE_SIGN_DESCRIPTION[note_sign])
-                into.append('\n')
         
         return into
     

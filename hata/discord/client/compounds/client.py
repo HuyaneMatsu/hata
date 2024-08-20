@@ -223,7 +223,7 @@ class ClientCompoundClientEndpoints(Compound):
             'channel_id': channel_id
         }
         
-        await self.api.voice_state_client_edit(guild_id, data)
+        await self.api.voice_state_edit_own(guild_id, data)
     
     
     async def join_audience(self, channel):
@@ -255,7 +255,7 @@ class ClientCompoundClientEndpoints(Compound):
             'channel_id': channel_id
         }
         
-        await self.api.voice_state_client_edit(guild_id, data)
+        await self.api.voice_state_edit_own(guild_id, data)
     
     
     async def application_edit_own(self, application_template = None, **keyword_parameters):

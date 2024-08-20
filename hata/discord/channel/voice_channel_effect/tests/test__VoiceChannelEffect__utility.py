@@ -2,6 +2,7 @@ import vampytest
 
 from ....core import BUILTIN_EMOJIS
 from ....guild import Guild
+from ....soundboard import SoundboardSound
 from ....user import ClientUserBase, User
 
 from ...channel import Channel
@@ -21,6 +22,8 @@ def test__VoiceChannelEffect__copy():
     channel_id = 202304040029
     emoji = BUILTIN_EMOJIS['x']
     guild_id = 202304040030
+    sound_id = 202408180011
+    sound_volume = 0.5
     user_id = 202304040031
     
     voice_channel_effect = VoiceChannelEffect(
@@ -29,6 +32,8 @@ def test__VoiceChannelEffect__copy():
         channel_id = channel_id,
         emoji = emoji,
         guild_id = guild_id,
+        sound_id = sound_id,
+        sound_volume = sound_volume,
         user_id = user_id,
     )
     
@@ -50,6 +55,8 @@ def test__VoiceChannelEffect__copy_with__0():
     channel_id = 202304040033
     emoji = BUILTIN_EMOJIS['x']
     guild_id = 202304040034
+    sound_id = 202408180012
+    sound_volume = 0.5
     user_id = 202304040035
     
     voice_channel_effect = VoiceChannelEffect(
@@ -58,6 +65,8 @@ def test__VoiceChannelEffect__copy_with__0():
         channel_id = channel_id,
         emoji = emoji,
         guild_id = guild_id,
+        sound_id = sound_id,
+        sound_volume = sound_volume,
         user_id = user_id,
     )
     copy = voice_channel_effect.copy_with()
@@ -78,6 +87,8 @@ def test__VoiceChannelEffect__copy_with__1():
     old_channel_id = 202304040037
     old_emoji = BUILTIN_EMOJIS['x']
     old_guild_id = 202304040038
+    old_sound_id = 202408180013
+    old_sound_volume = 0.5
     old_user_id = 202304040039
     
     new_animation_id = 202304040040
@@ -85,6 +96,8 @@ def test__VoiceChannelEffect__copy_with__1():
     new_channel_id = 202304040041
     new_emoji = BUILTIN_EMOJIS['heart']
     new_guild_id = 202304040042
+    new_sound_id = 202408180014
+    new_sound_volume = 0.6
     new_user_id = 202304040043
     
     voice_channel_effect = VoiceChannelEffect(
@@ -93,6 +106,8 @@ def test__VoiceChannelEffect__copy_with__1():
         channel_id = old_channel_id,
         emoji = old_emoji,
         guild_id = old_guild_id,
+        sound_id = old_sound_id,
+        sound_volume = old_sound_volume,
         user_id = old_user_id,
     )
     copy = voice_channel_effect.copy_with(
@@ -101,6 +116,8 @@ def test__VoiceChannelEffect__copy_with__1():
         channel_id = new_channel_id,
         emoji = new_emoji,
         guild_id = new_guild_id,
+        sound_id = new_sound_id,
+        sound_volume = new_sound_volume,
         user_id = new_user_id,
     )
     _assert_fields_set(copy)
@@ -111,10 +128,12 @@ def test__VoiceChannelEffect__copy_with__1():
     vampytest.assert_eq(copy.channel_id, new_channel_id)
     vampytest.assert_eq(copy.emoji, new_emoji)
     vampytest.assert_eq(copy.guild_id, new_guild_id)
+    vampytest.assert_eq(copy.sound_id, new_sound_id)
+    vampytest.assert_eq(copy.sound_volume, new_sound_volume)
     vampytest.assert_eq(copy.user_id, new_user_id)
 
 
-def test__VoiceChannelEffect__channel__0():
+def test__VoiceChannelEffect__channel__not_cached():
     """
     Tests whether ``VoiceChannelEffect.channel`` works as intended.
     
@@ -130,7 +149,7 @@ def test__VoiceChannelEffect__channel__0():
     vampytest.assert_is(output, voice_channel_effect.channel)
 
 
-def test__VoiceChannelEffect__channel__1():
+def test__VoiceChannelEffect__channel__cached():
     """
     Tests whether ``VoiceChannelEffect.channel`` works as intended.
     
@@ -145,7 +164,7 @@ def test__VoiceChannelEffect__channel__1():
     vampytest.assert_is(voice_channel_effect.channel, channel)
 
 
-def test__VoiceChannelEffect__guild__0():
+def test__VoiceChannelEffect__guild__not_cached():
     """
     Tests whether ``VoiceChannelEffect.guild`` works as intended.
     
@@ -159,7 +178,7 @@ def test__VoiceChannelEffect__guild__0():
     vampytest.assert_is(output, None)
 
 
-def test__VoiceChannelEffect__guild__1():
+def test__VoiceChannelEffect__guild__cached():
     """
     Tests whether ``VoiceChannelEffect.guild`` works as intended.
     
@@ -174,7 +193,7 @@ def test__VoiceChannelEffect__guild__1():
     vampytest.assert_is(voice_channel_effect.guild, guild)
 
 
-def test__VoiceChannelEffect__user__0():
+def test__VoiceChannelEffect__user__not_cached():
     """
     Tests whether ``VoiceChannelEffect.user`` works as intended.
     
@@ -190,7 +209,7 @@ def test__VoiceChannelEffect__user__0():
     vampytest.assert_is(output, voice_channel_effect.user)
 
 
-def test__VoiceChannelEffect__user__1():
+def test__VoiceChannelEffect__user__cached():
     """
     Tests whether ``VoiceChannelEffect.user`` works as intended.
     
@@ -203,3 +222,45 @@ def test__VoiceChannelEffect__user__1():
     voice_channel_effect = VoiceChannelEffect(user_id = user_id)
     
     vampytest.assert_is(voice_channel_effect.user, user)
+
+
+def test__VoiceChannelEffect__sound__not_cached():
+    """
+    Tests whether ``VoiceChannelEffect.sound`` works as intended.
+    
+    Case: Not cached.
+    """
+    sound_id = 202408180015
+    
+    voice_channel_effect = VoiceChannelEffect(sound_id = sound_id)
+    
+    output = voice_channel_effect.sound
+    vampytest.assert_instance(output, SoundboardSound)
+    vampytest.assert_eq(output.id, sound_id)
+    vampytest.assert_is(output, voice_channel_effect.sound)
+
+
+def test__VoiceChannelEffect__sound__cached():
+    """
+    Tests whether ``VoiceChannelEffect.sound`` works as intended.
+    
+    Case: Cached.
+    """
+    sound_id = 202408180016
+    
+    sound = SoundboardSound.precreate(sound_id)
+    
+    voice_channel_effect = VoiceChannelEffect(sound_id = sound_id)
+    
+    vampytest.assert_is(voice_channel_effect.sound, sound)
+
+
+def test__VoiceChannelEffect__sound__no_sound():
+    """
+    Tests whether ``VoiceChannelEffect.sound`` works as intended.
+    
+    Case: No sound.
+    """
+    voice_channel_effect = VoiceChannelEffect()
+    
+    vampytest.assert_is(voice_channel_effect.sound, None)

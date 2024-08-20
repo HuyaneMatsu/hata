@@ -1035,6 +1035,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------+-----------------------------------------------+
         | privacy_level             | ``PrivacyLevel``                              |
         +---------------------------+-----------------------------------------------+
+        | schedule                  | `None`, ``Schedule``                          |
+        +---------------------------+-----------------------------------------------+
         | sku_ids                   | `None`, `tuple` of `int`                      |
         +---------------------------+-----------------------------------------------+
         | start                     | `None`, `DateTime`                            |
@@ -1256,6 +1258,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     
     voice_channel_effect(client : ``Client``, event : ``VoiceChannelEffect``)
         Called when a user invokes (or sends) a voice channel effect.
+        
+        > This also includes soundboard sounds as well. The other event is likely to not be working anymore.
     
     voice_client_join(client : ``Client``, voice_state : ``VoiceState``)
         Called when the client join a voice channel.

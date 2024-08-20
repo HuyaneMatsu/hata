@@ -65,3 +65,20 @@ class ClientCompoundApplicationRoleConnectionEndpoints(Compound):
         
         datas = await self.api.application_role_connection_metadata_edit_all(application_id, datas)
         return [ApplicationRoleConnectionMetadata.from_data(data) for data in datas]
+    
+    
+    async def application_role_connection_metadata_delete_all(self):
+        """
+        Deletes all the application role connections of the client's application.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        application_id = self.application.id
+        assert _assert__application_id(application_id)
+        
+        await self.api.application_role_connection_metadata_delete_all(application_id)

@@ -31,6 +31,7 @@ def test__Application__repr():
     
     aliases = ['orin', 'rin']
     approximate_guild_count = 11
+    approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
     cover = Icon(IconType.static, 23)
@@ -95,6 +96,7 @@ def test__Application__repr():
         application_id,
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
         cover = cover,
@@ -154,6 +156,7 @@ def test__Application__repr():
     application = Application(
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
         cover = cover,
@@ -219,6 +222,7 @@ def test__Application__hash():
     
     aliases = ['orin', 'rin']
     approximate_guild_count = 11
+    approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
     cover = Icon(IconType.static, 23)
@@ -283,6 +287,7 @@ def test__Application__hash():
         application_id,
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
         cover = cover,
@@ -342,6 +347,7 @@ def test__Application__hash():
     application = Application(
         aliases = aliases,
         approximate_guild_count = approximate_guild_count,
+        approximate_user_install_count = approximate_user_install_count,
         bot_public = bot_public,
         bot_requires_code_grant = bot_requires_code_grant,
         cover = cover,
@@ -399,14 +405,11 @@ def test__Application__hash():
     vampytest.assert_instance(hash(application), int)
 
 
-def test__Application__eq():
-    """
-    Tests whether ``Application.__eq__`` works as intended.
-    """
-    application_id = 202211290064
-    
+
+def _iter_options__eq():
     aliases = ['orin', 'rin']
     approximate_guild_count = 11
+    approximate_user_install_count = 13
     bot_public = True
     bot_requires_code_grant = True
     cover = Icon(IconType.static, 23)
@@ -470,6 +473,7 @@ def test__Application__eq():
     keyword_parameters = {
         'aliases': aliases,
         'approximate_guild_count': approximate_guild_count,
+        'approximate_user_install_count': approximate_user_install_count,
         'bot_public': bot_public,
         'bot_requires_code_grant': bot_requires_code_grant,
         'cover': cover,
@@ -524,69 +528,549 @@ def test__Application__eq():
         'verify_key': verify_key,
     }
     
-    application = Application.precreate(application_id, **keyword_parameters,)
+    yield (
+        {},
+        {},
+        True,
+    )
+    
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'aliases': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'approximate_guild_count': 26,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'approximate_user_install_count': 14,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'bot_public': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'bot_requires_code_grant': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'cover': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'creator_monetization_state': ApplicationMonetizationState.approved,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'custom_install_url': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'deeplink_url': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'description': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'developers': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'discoverability_state': ApplicationDiscoverabilityState.featurable,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'discovery_eligibility_flags': ApplicationDiscoveryEligibilityFlags(10),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'embedded_activity_configuration': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'eula_id': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'executables': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'explicit_content_filter_level': ApplicationExplicitContentFilterLevel.none,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'flags': ApplicationFlag(2),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'guild_id': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'hook': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'icon': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'install_parameters': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'integration_public': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'integration_requires_code_grant': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'integration_types': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'integration_types_configuration': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'interaction_endpoint_url': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'interaction_event_types': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'interaction_version': ApplicationInteractionVersion.every,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'internal_guild_restriction': ApplicationInternalGuildRestriction.none,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'max_participants': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'monetization_eligibility_flags': ApplicationMonetizationEligibilityFlags(18),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'monetization_state': ApplicationMonetizationState.approved,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'monetized': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'Kagerou',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'overlay': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'overlay_compatibility_hook': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'overlay_method_flags': ApplicationOverlayMethodFlags(27),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'owner': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'primary_sku_id': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'privacy_policy_url': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'publishers': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'redirect_urls': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'role_connection_verification_url': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'rpc_origins': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'rpc_state': ApplicationRPCState.submitted,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'slug': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'splash': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'store_state': ApplicationStoreState.submitted,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'tags': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'terms_of_service_url': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'third_party_skus': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'application_type': ApplicationType.music,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'verification_state': ApplicationVerificationState.submitted,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'verify_key': None,
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__Application__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``Application.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    application_0 = Application(**keyword_parameters_0)
+    application_1 = Application(**keyword_parameters_1)
+    output = application_0 == application_1
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def test__Application__eq__various():
+    """
+    Tests whether ``Application.__eq__`` works as intended.
+    
+    Case: other various cases.
+    """
+    application_id = 202211290064
+    
+    application = Application.precreate(application_id, name = 'hey mister')
     vampytest.assert_eq(application, application)
     vampytest.assert_ne(application, object())
     
-    test_application = Application(**keyword_parameters)
+    test_application = Application(name = 'hey mister')
     vampytest.assert_eq(application, test_application)
     vampytest.assert_eq(application, application)
-    
-    for field_name, field_value in (
-        ('aliases', None),
-        ('approximate_guild_count', 26),
-        ('bot_public', False),
-        ('bot_requires_code_grant', False),
-        ('cover', None),
-        ('creator_monetization_state', ApplicationMonetizationState.approved),
-        ('custom_install_url', None),
-        ('deeplink_url', None),
-        ('description', None),
-        ('developers', None),
-        ('discoverability_state', ApplicationDiscoverabilityState.featurable),
-        ('discovery_eligibility_flags', ApplicationDiscoveryEligibilityFlags(10)),
-        ('embedded_activity_configuration', None),
-        ('eula_id', 0),
-        ('executables', None),
-        ('explicit_content_filter_level', ApplicationExplicitContentFilterLevel.none),
-        ('flags', ApplicationFlag(2)),
-        ('guild_id', 0),
-        ('hook', False),
-        ('icon', None),
-        ('install_parameters', None),
-        ('integration_public', False),
-        ('integration_requires_code_grant', False),
-        ('integration_types', None),
-        ('integration_types_configuration', None),
-        ('interaction_endpoint_url', None),
-        ('interaction_event_types', None),
-        ('interaction_version', ApplicationInteractionVersion.every),
-        ('internal_guild_restriction', ApplicationInternalGuildRestriction.none),
-        ('max_participants', 0),
-        ('monetization_eligibility_flags', ApplicationMonetizationEligibilityFlags(18)),
-        ('monetization_state', ApplicationMonetizationState.approved),
-        ('monetized', False),
-        ('name', 'Kagerou'),
-        ('overlay', False),
-        ('overlay_compatibility_hook', False),
-        ('overlay_method_flags', ApplicationOverlayMethodFlags(27)),
-        ('owner', None),
-        ('primary_sku_id', 0),
-        ('privacy_policy_url', None),
-        ('publishers', None),
-        ('redirect_urls', None),
-        ('role_connection_verification_url', None),
-        ('rpc_origins', None),
-        ('rpc_state', ApplicationRPCState.submitted),
-        ('slug', None),
-        ('splash', None),
-        ('store_state', ApplicationStoreState.submitted),
-        ('tags', None),
-        ('terms_of_service_url', None),
-        ('third_party_skus', None),
-        ('application_type', ApplicationType.music),
-        ('verification_state', ApplicationVerificationState.submitted),
-        ('verify_key', None),
-    ):
-        test_application = Application(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(application, test_application)

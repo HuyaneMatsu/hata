@@ -5,6 +5,7 @@ from scarletio import include
 from ...activity import ActivityType
 from ...bases import Preinstance as P, PreinstancedBase
 from ...embed import EmbedType
+from ...emoji.emoji.utils import _create_partial_emoji_from_fields
 from ...utils import DATETIME_FORMAT_CODE, elapsed_time, sanitize_mentions, timestamp_to_datetime
 
 
@@ -389,20 +390,61 @@ def convert_poll_result(self):
     
     for field in embed.iter_fields():
         if field.name == 'victor_answer_text':
-            content_parts.append(should_add_next)
-            content_parts.append(field.value)
-            should_add_next = '\n'
+            answer_text = field.value
             break
+    else:
+        answer_text = None
     
-    winning_answer_votes = -1
+    for field in embed.iter_fields():
+        if field.name == 'victor_answer_emoji_id':
+            answer_emoji_id = field.value
+            break
+    else:
+        answer_emoji_id = None
+    
+    for field in embed.iter_fields():
+        if field.name == 'victor_answer_emoji_name':
+            answer_emoji_name = field.value
+            break
+    else:
+        answer_emoji_name = ''
+    
+    for field in embed.iter_fields():
+        if field.name == 'victor_answer_emoji_animated':
+            answer_emoji_animated = field.value == 'true'
+            break
+    else:
+        answer_emoji_animated = False
+    
+    if answer_emoji_id or answer_emoji_name:
+        emoji = _create_partial_emoji_from_fields(answer_emoji_name, answer_emoji_id, answer_emoji_animated)
+    else:
+        emoji = None
+    
+    text_flag = ((answer_text is not None) << 1) | (emoji is not None)
+    if text_flag:
+        content_parts.append(should_add_next)
+        should_add_next = '\n'
+        
+        if text_flag & 0b01:
+            content_parts.append(emoji.as_emoji)
+        
+        if text_flag == 0b11:
+            content_parts.append(' ')
+        
+        if text_flag & 0b10:
+            content_parts.append(answer_text)
+    
     
     for field in embed.iter_fields():
         if field.name == 'victor_answer_votes':
             try:
                 winning_answer_votes = int(field.value)
             except ValueError:
-                pass
+                winning_answer_votes = -1
             break
+    else:
+        winning_answer_votes = -1
     
     total_votes = -1
     

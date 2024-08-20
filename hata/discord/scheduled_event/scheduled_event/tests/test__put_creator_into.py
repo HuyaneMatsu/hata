@@ -5,14 +5,27 @@ from ....user import User
 from ..fields import put_creator_into
 
 
-def test__put_creator_into():
-    """
-    Tests whether ``put_creator_into`` is working as intended.
-    """
+def _iter_options():
     creator = User.precreate(202303140004, name = 'Orin')
     
-    for input_value, defaults, expected_output in (
-        (creator, True, {'creator': creator.to_data(defaults = True, include_internals = True)}),
-    ):
-        data = put_creator_into(input_value, {}, defaults, include_internals = True)
-        vampytest.assert_eq(data, expected_output)
+    yield creator, True, {'creator': creator.to_data(defaults = True, include_internals = True)}
+    yield creator, False, {'creator': creator.to_data(defaults = False, include_internals = True)}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_creator_into(input_value, defaults):
+    """
+    Tests whether ``put_creator_into`` is working as intended.
+    
+    Parameters
+    ----------
+    input_value : ``ClientUserBase``
+        Value to serialize.
+    defaults : `bool`
+        Whether fields with their default values should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
+    """
+    return put_creator_into(input_value, {}, defaults)

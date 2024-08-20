@@ -300,7 +300,7 @@ def _iter_options__has_integration_context_type():
     integration_context_type_0 = ApplicationCommandIntegrationContextType.guild
     integration_context_type_1 = ApplicationCommandIntegrationContextType.bot_private_channel
     
-    yield None, integration_context_type_0, True
+    yield None, integration_context_type_0, False
     yield [integration_context_type_0], integration_context_type_0, True
     yield [integration_context_type_0], integration_context_type_1, False
     yield [integration_context_type_0, integration_context_type_1], integration_context_type_1, True

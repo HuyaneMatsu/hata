@@ -82,7 +82,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        self : instance<cls>
+        self : `instance<cls>`
         """
         self = object.__new__(cls)
         

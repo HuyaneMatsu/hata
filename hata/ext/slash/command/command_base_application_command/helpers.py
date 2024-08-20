@@ -9,7 +9,6 @@ from .....discord.application_command.application_command.constants import (
 from .....discord.application_command.application_command.fields import validate_nsfw as _validate_nsfw
 from .....discord.application_command.application_command.preinstanced import (
     ApplicationCommandIntegrationContextType,
-    INTEGRATION_CONTEXT_TYPES_ALL as APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL
 )
 from .....discord.permission import Permission
 from .....discord.preconverters import preconvert_bool, preconvert_flag, preconvert_snowflake
@@ -438,19 +437,12 @@ def _validate_integration_context_types(integration_context_types):
     ------
     TypeError
     """
-    integration_context_types = _pre_validate_preinstanced_array(
+    return _pre_validate_preinstanced_array(
         'integration_context_types',
         ApplicationCommandIntegrationContextType,
         APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_BY_ATTRIBUTE_NAME,
         integration_context_types,
     )
-    if (
-        (integration_context_types is not None) and
-        (integration_context_types == APPLICATION_COMMAND_INTEGRATION_CONTEXT_TYPES_ALL)
-    ):
-        integration_context_types = None
-    
-    return integration_context_types
 
 
 def _validate_integration_types(integration_types):

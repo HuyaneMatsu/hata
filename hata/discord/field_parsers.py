@@ -712,6 +712,50 @@ def nullable_sorted_array_parser_factory(field_key):
     return parser
 
 
+def nullable_sorted_array_postprocess_parser_factory(field_key, postprocessor):
+    """
+    Returns a nullable sorted object array parser with postprocessor applied on each value.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    postprocessor : `callable`
+        Postprocessor to call on the field.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    def parser(data):
+        """
+        Parses out a nullable sorted object array from the given payload.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Entity data.
+        
+        Returns
+        -------
+        sorted_array : `None`, `tuple` of `object`
+        """
+        nonlocal field_key
+        nonlocal postprocessor
+        
+        raw_object_array = data.get(field_key, None)
+        if (raw_object_array is None) or (not raw_object_array):
+            object_array = None
+        else:
+            object_array = tuple(sorted(postprocessor(value) for value in raw_object_array))
+        
+        return object_array
+    
+    return parser
+
+
 def nullable_entity_array_parser_factory(field_key, entity_type, *, include = None):
     """
     Returns a new nullable entity array parser.

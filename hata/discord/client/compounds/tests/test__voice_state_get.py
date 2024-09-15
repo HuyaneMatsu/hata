@@ -56,7 +56,7 @@ async def test__Client__voice_state_get__stuffed():
         
         vampytest.assert_instance(output, VoiceState)
         vampytest.assert_eq(output.user_id, user_id)
-        vampytest.assert_is(output.guild_id, guild_id)
+        vampytest.assert_eq(output.guild_id, guild_id)
         vampytest.assert_eq(output.channel_id, channel_id)
         
         vampytest.assert_is(guild.get_voice_state(user_id), output)

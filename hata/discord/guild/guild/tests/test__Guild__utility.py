@@ -2,10 +2,10 @@ from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
-from ....activity import Activity
 from ....bases import Icon, IconType
 from ....channel import Channel, ChannelType
 from ....client import Client
+from ....embedded_activity import EmbeddedActivity
 from ....emoji import Emoji
 from ....localization import Locale
 from ....permission import Permission
@@ -18,8 +18,6 @@ from ....sticker import Sticker, StickerFormat
 from ....user import ClientUserBase, GuildProfile, User, VoiceState
 from ....utils import is_url
 from ....webhook import Webhook
-
-from ...embedded_activity_state import EmbeddedActivityState
 
 from ..constants import GUILD_STATE_MASK_CACHE_ALL, GUILD_STATE_MASK_CACHE_BOOSTERS
 from ..emoji_counts import EmojiCounts
@@ -1840,40 +1838,47 @@ def test__Guild__iter_scheduled_events(guild):
     return {*guild.iter_scheduled_events()}
 
 
-def _iter_options__iter_embedded_activity_states():
-    embedded_activity_state_0 = EmbeddedActivityState(
-        activity = Activity('dance'), guild_id = 202306270012, channel_id = 202306270013
-    )
-    embedded_activity_state_1 = EmbeddedActivityState(
-        activity = Activity('party'), guild_id = 202306270014, channel_id = 202306270015
-    )
-
-    yield Guild.precreate(202306270016), set()
+def _iter_options__iter_embedded_activities():
+    embedded_activity_0 = EmbeddedActivity.precreate(202409040016)
+    embedded_activity_1 = EmbeddedActivity.precreate(202409040017)
+    
     yield (
-        Guild.precreate(202306270017, embedded_activity_states = [embedded_activity_state_0]),
-        {embedded_activity_state_0},
+        202306270016,
+        None,
+        set(),
     )
+    
     yield (
-        Guild.precreate(202306270018, embedded_activity_states = [embedded_activity_state_0, embedded_activity_state_1]),
-        {embedded_activity_state_0, embedded_activity_state_1}
+        202306270017,
+        [embedded_activity_0],
+        {embedded_activity_0},
+    )
+    
+    yield (
+        202306270018,
+        [embedded_activity_0, embedded_activity_1],
+        {embedded_activity_0, embedded_activity_1},
     )
 
 
-@vampytest._(vampytest.call_from(_iter_options__iter_embedded_activity_states()).returning_last())
-def test__Guild__iter_embedded_activity_states(guild):
+@vampytest._(vampytest.call_from(_iter_options__iter_embedded_activities()).returning_last())
+def test__Guild__iter_embedded_activities(guild_id, embedded_activities):
     """
-    Tests whether ``Guild.iter_embedded_activity_states`` works as intended.
+    Tests whether ``Guild.iter_embedded_activities`` works as intended.
     
     Parameters
     ----------
-    guild : ``Guild``
-        The guild to iterate its embedded activity states of.
+    guild_id : ``Guild``
+        The guild identifier to create guild as.
+    embedded_activities : `None | list<EmbeddedActivity>`
+        Embedded activities to create the guild with.
     
     Returns
     -------
-    output : `set` of ``EmbeddedActivityState``
+    output : `set` of ``EmbeddedActivity``
     """
-    return {*guild.iter_embedded_activity_states()}
+    guild = Guild.precreate(guild_id, embedded_activities = embedded_activities)
+    return {*guild.iter_embedded_activities()}
 
 
 def _iter_options__iter_stages():

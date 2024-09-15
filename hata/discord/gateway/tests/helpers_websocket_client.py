@@ -1,4 +1,4 @@
-from scarletio.websocket import WebSocketClient, WebSocketCommonProtocol
+from scarletio.web_socket import WebSocketClient, WebSocketCommonProtocol
 
 
 class TestWebSocketClient(WebSocketClient):

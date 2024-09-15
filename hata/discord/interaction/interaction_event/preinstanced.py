@@ -27,8 +27,7 @@ class InteractionType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``InteractionType``) items
-        Stores the predefined ``InteractionType``-s. These can be accessed with their `value` as
-        key.
+        Stores the predefined ``InteractionType``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The application command option types' values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`

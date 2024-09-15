@@ -7,6 +7,7 @@ def _iter_options():
     yield None, False, {}
     yield None, True, {'nonce': None}
     yield 'Orin', False, {'nonce': 'Orin'}
+    yield 'Orin', True, {'nonce': 'Orin'}
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -17,7 +18,7 @@ def test__put_nonce_into(nonce, defaults):
     Parameters
     ---------
     nonce : `None | str`
-        The nonce to serialize.
+        The value to serialize.
     defaults : `bool`
         Whether default should be included as well in the output.
     

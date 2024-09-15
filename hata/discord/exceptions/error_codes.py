@@ -95,6 +95,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | unknown_guild_template                                            | 10057     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| unknown_user_identity_verification                                | 10058     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | unknown_discovery_category                                        | 10059     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | unknown_sticker                                                   | 10060     | -         |
@@ -136,6 +138,8 @@ Error Codes
 | account_disabled                                                  | 20013     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | rate_limit_slowmode                                               | 20016     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| staff_required                                                    | 20017     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | team_ownership_required                                           | 20018     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -236,6 +240,8 @@ Error Codes
 | channels_too_large                                                | 30061     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | max_published_product_listing                                     | 30065     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| max_saved_messages                                                | 30074     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | rate_limit_resource                                               | 31002     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -702,6 +708,7 @@ unknown_team_member = 10040
 unknown_stream = 10049
 unknown_guild_boost_cooldown = 10050
 unknown_guild_template = 10057
+unknown_user_identity_verification = 10058
 unknown_discovery_category = 10059
 unknown_sticker = 10060
 unknown_sticker_pack = 10061
@@ -724,6 +731,7 @@ account_scheduled_for_deletion = 20011
 user_not_authorized_for_application = 20012
 account_disabled = 20013
 rate_limit_slowmode = 20016
+staff_required = 20017
 team_ownership_required = 20018
 rate_limit_announcement_message_edit = 20022
 under_minimum_age = 20024
@@ -775,6 +783,7 @@ max_webhooks_of_guilds = 30058
 max_blocked_users = 30059
 channels_too_large = 30061
 max_published_product_listing = 30065
+max_saved_messages = 30074
 rate_limit_resource = 31002
 
 unauthorized = 40001

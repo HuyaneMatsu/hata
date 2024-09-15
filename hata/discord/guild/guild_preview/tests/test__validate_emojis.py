@@ -5,43 +5,43 @@ from ....emoji import Emoji
 from ..fields import validate_emojis
 
 
-def test__validate_emojis__0():
+def _iter_options__passing():
+    emoji_id_0 = 202301080003
+    emoji_id_1 = 202301080004
+    
+    emoji_0 = Emoji.precreate(emoji_id_0, name = 'Koishi')
+    emoji_1 = Emoji.precreate(emoji_id_1, name = 'Satori')
+    
+    yield None, {}
+    yield [], {}
+    yield [emoji_0], {emoji_id_0: emoji_0}
+    yield [emoji_0, emoji_1], {emoji_id_0: emoji_0, emoji_id_1: emoji_1}
+
+
+def _iter_options__type_error():
+    yield 12.6
+    yield [12.6]
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_emojis(input_value):
     """
     Tests whether ``validate_emojis`` works as intended.
     
-    Case: Passing.
-    """
-    emoji_0 = Emoji.precreate(202301080003, name = 'rose')
-    emoji_1 = Emoji.precreate(202301080004, name = 'slayer')
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    for input_value, expected_output in (
-        (
-            None,
-            {},
-        ), (
-            [],
-            {},
-        ), (
-            [emoji_1],
-            {emoji_1.id: emoji_1},
-        ), (
-            [emoji_0, emoji_1],
-            {emoji_0.id: emoji_0, emoji_1.id: emoji_1},
-        ),
-    ):
-        output = validate_emojis(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_emojis__1():
-    """
-    Tests whether ``validate_emojis`` works as intended.
+    Returns
+    -------
+    output : `dict<int, Emoji>`
     
-    Case: `TypeError`.
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-        [12.5],
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_emojis(input_value)
+    output = validate_emojis(input_value)
+    vampytest.assert_instance(output, dict)
+    return output

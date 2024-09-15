@@ -65,11 +65,7 @@ def test__Guild__format__wrong_code(code):
     return format(guild, code)
 
 
-def test__Guild__eq():
-    """
-    Tests whether ``Guild.__eq__`` works as intended.
-    """
-    guild_id = 202306220142
+def _iter_options__eq():
     
     afk_channel_id = 202306220134
     afk_timeout = 1800
@@ -127,43 +123,299 @@ def test__Guild__eq():
         'widget_enabled': widget_enabled,
     }
     
-    guild = Guild.precreate(guild_id, **keyword_parameters)
-    vampytest.assert_eq(guild, guild)
-    vampytest.assert_ne(guild, object())
     
-    test_guild = Guild(**keyword_parameters)
-    vampytest.assert_eq(guild, test_guild)
+    yield (
+        {},
+        {},
+        True,
+    )
     
-    for field_name, field_value in (
-        ('afk_channel_id', 202306220143),
-        ('afk_timeout', 60),
-        ('banner', Icon(IconType.animated, 112)),
-        ('boost_progress_bar_enabled', False),
-        ('explicit_content_filter_level', ExplicitContentFilterLevel.everyone),
-        ('description', 'Orin'),
-        ('discovery_splash', Icon(IconType.animated, 114)),
-        ('features', [GuildFeature.animated_banner]),
-        ('hub_type', HubType.high_school),
-        ('icon', Icon(IconType.animated, 116)),
-        ('invite_splash', Icon(IconType.animated, 118)),
-        ('default_message_notification_level', MessageNotificationLevel.only_mentions),
-        ('mfa_level', MfaLevel.none),
-        ('name', 'Okuu'),
-        ('nsfw_level', NsfwLevel.safe),
-        ('owner_id', 202306220144),
-        ('locale', Locale.dutch),
-        ('public_updates_channel_id', 202306220145),
-        ('rules_channel_id', 202306220146),
-        ('safety_alerts_channel_id', 202306220147),
-        ('system_channel_id', 202306220148),
-        ('system_channel_flags', SystemChannelFlag(11)),
-        ('vanity_code', 'Satori'),
-        ('verification_level', VerificationLevel.high),
-        ('widget_channel_id', 202306220149),
-        ('widget_enabled', False),
-    ):
-        test_guild = Guild(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(guild, test_guild)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'afk_channel_id': 202306220143,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'afk_timeout': 60,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'banner': Icon(IconType.animated, 112),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'boost_progress_bar_enabled': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'explicit_content_filter_level': ExplicitContentFilterLevel.everyone,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'description': 'Orin',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'discovery_splash': Icon(IconType.animated, 114),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'features': [GuildFeature.animated_banner],
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'hub_type': HubType.high_school,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'icon': Icon(IconType.animated, 116),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'invite_splash': Icon(IconType.animated, 118),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'default_message_notification_level': MessageNotificationLevel.only_mentions,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'mfa_level': MfaLevel.none,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'Okuu',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'nsfw_level': NsfwLevel.safe,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'owner_id': 202306220144,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'locale': Locale.dutch,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'public_updates_channel_id': 202306220145,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'rules_channel_id': 202306220146,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'safety_alerts_channel_id': 202306220147,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'system_channel_id': 202306220148,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'system_channel_flags': SystemChannelFlag(11),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'vanity_code': 'Satori',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'verification_level': VerificationLevel.high,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'widget_channel_id': 202306220149,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'widget_enabled': False,
+        },
+        False,
+    )
+
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__Guild__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``Guild.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    guild_0 = Guild(**keyword_parameters_0)
+    guild_1 = Guild(**keyword_parameters_1)
+    
+    output = guild_0 == guild_1
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def test__Guild__eq__has_id():
+    """
+    Tests whether ``Guild.__eq__`` works as intended.
+    
+    Case: has id.
+    """
+    guild_id_0 = 202409040011
+    guild_id_1 = 202409040012
+    
+    name_0 = 'hey mister'
+    name_1 = 'water heater for sale'
+    
+    guild_0 = Guild.precreate(guild_id_0, name = name_0)
+    guild_1 = Guild.precreate(guild_id_1, name = name_1)
+    guild_2 = Guild(name = name_0)
+    
+    vampytest.assert_eq(guild_0, guild_0)
+    vampytest.assert_ne(guild_0, guild_1)
+    vampytest.assert_eq(guild_0, guild_2)
+    vampytest.assert_ne(guild_1, guild_2)
 
 
 def test__Guild__hash():

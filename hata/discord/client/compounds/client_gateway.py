@@ -150,12 +150,12 @@ class ClientCompoundClientGateway(Compound):
             activity = self._activity
         elif activity is None:
             self._activity = ACTIVITY_UNKNOWN
-        elif isinstance(activity, Activity) and (activity.type is not ActivityType.custom):
+        elif isinstance(activity, Activity):
             self._activity = activity
         else:
             raise TypeError(
-                f'`activity` can be `{Activity.__name__}` (except `{ActivityType.custom.name}`), got: '
-                f'{activity.__class__.__name__}; {activity!r}.'
+                f'`activity` can be `{Activity.__name__}`, got: '
+                f'{type(activity).__name__}; {activity!r}.'
             )
         
         if activity is None:

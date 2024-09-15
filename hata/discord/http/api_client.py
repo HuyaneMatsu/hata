@@ -54,12 +54,16 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             Whether the respective client is a bot.
         token : `str`
             The client's token.
+        
         debug_options: `None | set<str>` = `None`, Optional (Keyword only)
             Http debug options, like `'canary'` (I don't know more either).
-        proxy_auth :  `None | str` = `None`, Optional (Keyword only)
-            Proxy authorization for the session's requests.
+        
         http : `None | HTTPClient`` = `None`, Optional (Keyword only)
             The http client to use instead of creating a new one.
+        
+        proxy_auth :  `None | str` = `None`, Optional (Keyword only)
+            Proxy authorization for the session's requests.
+        
         proxy_url : `None | str` = `None`, Optional (Keyword only)
             Proxy url for the session's requests.
         """
@@ -67,7 +71,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         headers = build_headers(bot, token, debug_options)
         
         if http is None:
-            http = HTTPClient(KOKORO, proxy_url, proxy_auth, connector = connector)
+            http = HTTPClient(KOKORO, connector = connector, proxy_auth = proxy_auth, proxy_url = proxy_url)
         
         self = object.__new__(cls)
         self.debug_options = debug_options
@@ -146,7 +150,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             with handler.ctx() as lock:
                 try:
                     async with RequestContextManager(
-                        self.http._request(method, url, headers, data, params)
+                        self.http._request(method, url, headers, data = data, params = params)
                     ) as response:
                         response_data = await response.text(encoding = 'utf-8')
                 except OSError as err:
@@ -2244,6 +2248,15 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             RateLimitHandler(RATE_LIMIT_GROUPS.message_interaction, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/interaction-data',
+        )
+    
+    # Embedded activity
+    
+    async def embedded_activity_get(self, application_id, embedded_activity_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.embedded_activity_get, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/applications/{application_id}/activity-instances/{embedded_activity_id}'
         )
     
     # Soundboard

@@ -2,10 +2,10 @@ from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
-from ....activity import Activity
 from ....bases import Icon, IconType
 from ....channel import Channel, ChannelType
 from ....client import Client
+from ....embedded_activity import EmbeddedActivity
 from ....emoji import Emoji
 from ....localization import Locale
 from ....role import Role
@@ -15,7 +15,6 @@ from ....stage import Stage
 from ....sticker import Sticker
 from ....user import GuildProfile, User, VoiceState
 
-from ...embedded_activity_state import EmbeddedActivityState
 from ...guild_incidents import GuildIncidents
 from ...guild_inventory_settings import GuildInventorySettings
 
@@ -75,9 +74,9 @@ def test__Guild__from_data__all_fields():
     explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
-    embedded_activity_states = [
-        EmbeddedActivityState(activity = Activity('dance'), guild_id = guild_id, channel_id = 202306220032),
-        EmbeddedActivityState(activity = Activity('party'), guild_id = guild_id, channel_id = 202306220033),
+    embedded_activities = [
+        EmbeddedActivity.precreate(202409040003, guild_id = guild_id),
+        EmbeddedActivity.precreate(202409040004, guild_id = guild_id),
     ]
     emojis = [
         Emoji.precreate(202306210042),
@@ -154,8 +153,8 @@ def test__Guild__from_data__all_fields():
         'channels': [channel.to_data(include_internals = True) for channel in channels],
         'explicit_content_filter': explicit_content_filter_level.value,
         'description': description,
-        'embedded_activities': [
-            embedded_activity_state.to_data() for embedded_activity_state in embedded_activity_states
+        'activity_instances': [
+            embedded_activity.to_data(include_internals = True) for embedded_activity in embedded_activities
         ],
         'emojis': [emoji.to_data(include_internals = True) for emoji in emojis],
         'features': [feature.value for feature in features],
@@ -219,7 +218,7 @@ def test__Guild__from_data__all_fields():
     vampytest.assert_is(guild.explicit_content_filter_level, explicit_content_filter_level)
     vampytest.assert_eq(guild.description, description)
     vampytest.assert_eq(guild.discovery_splash, discovery_splash)
-    vampytest.assert_eq(guild.embedded_activity_states, set(embedded_activity_states))
+    vampytest.assert_eq(guild.embedded_activities, set(embedded_activities))
     vampytest.assert_eq(guild.emojis, {emoji.id: emoji for emoji in emojis})
     vampytest.assert_eq(guild.features, tuple(features))
     vampytest.assert_is(guild.hub_type, hub_type)
@@ -330,9 +329,9 @@ def test__Guild__to_data():
     explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
-    embedded_activity_states = [
-        EmbeddedActivityState(activity = Activity('dance'), guild_id = guild_id, channel_id = 202306220030),
-        EmbeddedActivityState(activity = Activity('party'), guild_id = guild_id, channel_id = 202306220031),
+    embedded_activities = [
+        EmbeddedActivity.precreate(202409040005, guild_id = guild_id),
+        EmbeddedActivity.precreate(202409040006, guild_id = guild_id),
     ]
     emojis = [
         Emoji.precreate(202306220004),
@@ -411,8 +410,9 @@ def test__Guild__to_data():
         'channels': [channel.to_data(defaults = True, include_internals = True) for channel in channels],
         'explicit_content_filter': explicit_content_filter_level.value,
         'description': description,
-        'embedded_activities': [
-            embedded_activity_state.to_data(defaults = True) for embedded_activity_state in embedded_activity_states
+        'activity_instances': [
+            embedded_activity.to_data(defaults = True, include_internals = True)
+            for embedded_activity in embedded_activities
         ],
         'emojis': [emoji.to_data(defaults = True, include_internals = True) for emoji in emojis],
         'features': [feature.value for feature in features],
@@ -477,7 +477,7 @@ def test__Guild__to_data():
         explicit_content_filter_level = explicit_content_filter_level,
         description = description,
         discovery_splash = discovery_splash,
-        embedded_activity_states = embedded_activity_states,
+        embedded_activities = embedded_activities,
         emojis = emojis,
         features = features,
         hub_type = hub_type,
@@ -546,9 +546,9 @@ def test__Guild__set_attributes__create():
     explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
-    embedded_activity_states = [
-        EmbeddedActivityState(activity = Activity('dance'), guild_id = guild_id, channel_id = 202306220040),
-        EmbeddedActivityState(activity = Activity('party'), guild_id = guild_id, channel_id = 202306220041),
+    embedded_activities = [
+        EmbeddedActivity.precreate(202409040007, guild_id = guild_id),
+        EmbeddedActivity.precreate(202409040008, guild_id = guild_id),
     ]
     emojis = [
         Emoji.precreate(202306220042),
@@ -625,8 +625,8 @@ def test__Guild__set_attributes__create():
         'channels': [channel.to_data(include_internals = True) for channel in channels],
         'explicit_content_filter': explicit_content_filter_level.value,
         'description': description,
-        'embedded_activities': [
-            embedded_activity_state.to_data() for embedded_activity_state in embedded_activity_states
+        'activity_instances': [
+            embedded_activity.to_data(include_internals = True) for embedded_activity in embedded_activities
         ],
         'emojis': [emoji.to_data(include_internals = True) for emoji in emojis],
         'features': [feature.value for feature in features],
@@ -692,7 +692,7 @@ def test__Guild__set_attributes__create():
     vampytest.assert_is(guild.explicit_content_filter_level, explicit_content_filter_level)
     vampytest.assert_eq(guild.description, description)
     vampytest.assert_eq(guild.discovery_splash, discovery_splash)
-    vampytest.assert_eq(guild.embedded_activity_states, set(embedded_activity_states))
+    vampytest.assert_eq(guild.embedded_activities, set(embedded_activities))
     vampytest.assert_eq(guild.emojis, {emoji.id: emoji for emoji in emojis})
     vampytest.assert_eq(guild.features, tuple(features))
     vampytest.assert_is(guild.hub_type, hub_type)
@@ -757,9 +757,9 @@ def test__Guild__set_attributes__existing():
     explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
-    embedded_activity_states = [
-        EmbeddedActivityState(activity = Activity('dance'), guild_id = guild_id, channel_id = 202306220072),
-        EmbeddedActivityState(activity = Activity('party'), guild_id = guild_id, channel_id = 202306220073),
+    embedded_activities = [
+        EmbeddedActivity.precreate(202409040009, guild_id = guild_id),
+        EmbeddedActivity.precreate(202409040010, guild_id = guild_id),
     ]
     emojis = [
         Emoji.precreate(202306220074),
@@ -836,8 +836,8 @@ def test__Guild__set_attributes__existing():
         'channels': [channel.to_data(include_internals = True) for channel in channels],
         'explicit_content_filter': explicit_content_filter_level.value,
         'description': description,
-        'embedded_activities': [
-            embedded_activity_state.to_data() for embedded_activity_state in embedded_activity_states
+        'activity_instances': [
+            embedded_activity.to_data(include_internals = True) for embedded_activity in embedded_activities
         ],
         'emojis': [emoji.to_data(include_internals = True) for emoji in emojis],
         'features': [feature.value for feature in features],
@@ -902,7 +902,7 @@ def test__Guild__set_attributes__existing():
     vampytest.assert_is(guild.explicit_content_filter_level, explicit_content_filter_level)
     vampytest.assert_eq(guild.description, description)
     vampytest.assert_eq(guild.discovery_splash, discovery_splash)
-    vampytest.assert_eq(guild.embedded_activity_states, set(embedded_activity_states))
+    vampytest.assert_eq(guild.embedded_activities, set(embedded_activities))
     vampytest.assert_eq(guild.emojis, {emoji.id: emoji for emoji in emojis})
     vampytest.assert_eq(guild.features, tuple(features))
     vampytest.assert_is(guild.hub_type, hub_type)

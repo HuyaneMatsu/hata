@@ -3,15 +3,25 @@ import vampytest
 from ..fields import parse_state
 
 
-def test__parse_state():
+def _iter_options():
+    yield {}, None
+    yield {'state': None}, None
+    yield {'state': ''}, None
+    yield {'state': 'a'}, 'a'
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_state(input_data):
     """
     Tests whether ``parse_state`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | str`
     """
-    for input_data, expected_output in (
-        ({}, None),
-        ({'state': None}, None),
-        ({'state': ''}, None),
-        ({'state': 'a'}, 'a'),
-    ):
-        output = parse_state(input_data)
-        vampytest.assert_eq(output, expected_output)
+    return parse_state(input_data)

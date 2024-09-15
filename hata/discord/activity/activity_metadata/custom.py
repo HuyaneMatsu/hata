@@ -34,7 +34,7 @@ class ActivityMetadataCustom(ActivityMetadataBase):
         Parameters
         ----------
         created_at : `None`, `datetime`, Optional (Keyword only)
-            When the status was created.
+            When the activity was created.
         emoji : `None`, ``Emoji``, Optional (Keyword only)
             The emoji of the activity.
         state : `None`, `str`, Optional (Keyword only)
@@ -173,11 +173,13 @@ class ActivityMetadataCustom(ActivityMetadataBase):
     def to_data(self, *, defaults = False, include_internals = False, user = False):
         data = {}
         
+        if (not user) or include_internals:
+            put_state_into(self.state, data, defaults)
+        
         if include_internals:
             data['name'] = 'Custom Status'
             put_created_at_into(self.created_at, data, defaults)
             put_emoji_into(self.emoji, data, defaults)
-            put_state_into(self.state, data, defaults)
         
         return data
     

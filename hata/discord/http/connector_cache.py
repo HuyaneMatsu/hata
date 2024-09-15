@@ -1,6 +1,6 @@
 __all__ = ()
 
-from scarletio.http_client import TCPConnector
+from scarletio.http_client import ConnectorTCP
 
 from ..core import KOKORO
 
@@ -14,10 +14,10 @@ def get_connector():
     
     Returns
     -------
-    connector : ``TCPConnector`` 
+    connector : ``ConnectorTCP`` 
     """
     global CONNECTOR
     if (CONNECTOR is None) or CONNECTOR.closed:
-        CONNECTOR = TCPConnector(KOKORO)
+        CONNECTOR = ConnectorTCP(KOKORO)
     
     return CONNECTOR

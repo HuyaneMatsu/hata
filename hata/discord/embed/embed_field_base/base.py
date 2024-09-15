@@ -47,7 +47,7 @@ class EmbedFieldBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        repr_parts : `list` of `str`
+        repr_parts : `list<str>`
         """
         pass
     

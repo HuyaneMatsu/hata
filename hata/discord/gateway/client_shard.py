@@ -29,14 +29,14 @@ from .rate_limit import GatewayRateLimiter
 
 async def _poll_compressed_message(websocket):
     """
-    Polls a compressed message from the given websocket.
+    Polls a compressed message from the given web socket.
     
     This function is a coroutine.
     
     Parameters
     ----------
     websocket : ``WebSocketClient``
-        The websocket to poll with.
+        The web socket to poll with.
     
     Returns
     -------
@@ -45,7 +45,7 @@ async def _poll_compressed_message(websocket):
     Raises
     ------
     ConnectionClosed
-        If the websocket connection closed.
+        If the web socket connection closed.
     """
     buffer = None
     
@@ -96,7 +96,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
     shard_id : `int`
         The shard id of the gateway. If the respective client is not using sharding, it is set to `0` every time.
     websocket : `None | WebSocketClient`
-        The websocket client of the gateway.
+        The web socket client of the gateway.
     """
     __slots__ = (
         '_buffer', '_decompressor', '_operation_handlers', '_should_run', 'client', 'kokoro', 'rate_limit_handler',
@@ -132,7 +132,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         self.kokoro = None
         self.rate_limit_handler = GatewayRateLimiter()
         self.resume_gateway_url = None
-        self.sequence = None
+        self.sequence = -1
         self.session_id = None
         self.shard_id = shard_id
         self.websocket = None
@@ -387,7 +387,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         
         self._decompressor = create_zlib_decompressor()
         
-        self.websocket = await self.client.http.connect_websocket(gateway_url)
+        self.websocket = await self.client.http.connect_web_socket(gateway_url)
         self.kokoro.start()
         # skip one loop to wait for kokoro to start up.
         await skip_ready_cycle()
@@ -506,7 +506,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         message = from_json(message)
         
         sequence = message.get('s', None)
-        if sequence is not None:
+        if (sequence is not None):
             self.sequence = sequence
         
         operation = message['op']
@@ -693,7 +693,6 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
             # pass
         
         return GATEWAY_ACTION_KEEP_GOING
-        
     
     
     def _clear_session(self):
@@ -701,7 +700,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         Clears current session data, disabling the option of resuming the connection.
         """
         self.session_id = None
-        self.sequence = None
+        self.sequence = -1
         self.resume_gateway_url = None
     
     

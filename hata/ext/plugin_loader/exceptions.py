@@ -14,19 +14,25 @@ class PluginError(Exception):
     
     Attributes
     ----------
-    _message : `None`, `str`
+    _message : `None | str`
         The error's message.
+    
     action : `int`
         Bitwise flags of the actions that were executed.
-    plugin : `None`, `list`
+    
+    plugin : `None | Plugin`
         The plugin being actioned when the exception occurred.
-    plugin_tree_iterators : `None`, `list` of ``PluginTreeIterator``
+    
+    plugin_tree_iterators : `None | list<PluginTreeIterator>`
         Plugin tree iterators used in the executed actions.
-    value : `None`, `object`
+    
+    value : `None | object`
         If finding a plugin failed, this value may be set with additional information.
     """
-    def __init__(
-        self,
+    __slots__ = ('_message', 'action', 'plugin', 'plugin_tree_iterators', 'value')
+    
+    def __new__(
+        cls,
         message = None,
         *,
         action = PLUGIN_ACTION_FLAG_NONE,
@@ -58,19 +64,24 @@ class PluginError(Exception):
         value : `None`, `object` = `None`, Optional (Keyword only)
             If finding a plugin failed this value might be set with additional information.
         """
+        if message is None:
+            self = BaseException.__new__(cls)
+        else:
+            self = BaseException.__new__(cls, message)
+        
         self._message = message
         self.action = action
         self.plugin = plugin
         self.plugin_tree_iterators = plugin_tree_iterators
         self.value = value
         
-        if message is None:
-            Exception.__init__(self)
-        else:
-            Exception.__init__(self, message)
-        
         if (cause is not None):
             self.__cause__ = cause
+        
+        return self
+    
+    
+    __init__ = object.__init__
     
     
     def get_plugins(self):
@@ -264,3 +275,6 @@ class DoNotLoadPlugin(BaseException):
     """
     Raised to stop a plugin loaded without error.
     """
+    __slots__ = ()
+    
+    __init__ = object.__init__

@@ -2,7 +2,6 @@ from .ban_add_multiple_result import *
 from .ban_entry import *
 from .discovery import *
 from .discovery_category import *
-from .embedded_activity_state import *
 from .guild import *
 from .guild_incidents import *
 from .guild_inventory_settings import *
@@ -25,7 +24,6 @@ __all__ = (
     *ban_entry.__all__,
     *discovery.__all__,
     *discovery_category.__all__,
-    *embedded_activity_state.__all__,
     *guild.__all__,
     *guild_incidents.__all__,
     *guild_inventory_settings.__all__,

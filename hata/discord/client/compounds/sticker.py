@@ -3,7 +3,7 @@ __all__ = ()
 from reprlib import repr as short_repr
 
 from scarletio import Compound
-from scarletio.web_common import Formdata
+from scarletio.web_common import FormData
 
 from ...bases import maybe_snowflake_pair
 from ...core import GUILDS, STICKERS
@@ -245,12 +245,12 @@ class ClientCompoundStickerEndpoints(Compound):
         
         extension = MEDIA_TYPE_TO_EXTENSION[media_type]
         
-        form_data = Formdata()
+        form_data = FormData()
         form_data.add_field('name', name)
         # If no description is given Discord drops back an unrelated error
         form_data.add_field('description', '' if description is None else description)
         form_data.add_field('tags', '' if tags is None else ', '.join(tags))
-        form_data.add_field('file', image, filename = f'file.{extension}', content_type = media_type)
+        form_data.add_field('file', image, file_name = f'file.{extension}', content_type = media_type)
         
         sticker_data = await self.api.sticker_create(guild_id, form_data, reason)
         

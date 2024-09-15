@@ -3,14 +3,27 @@ import vampytest
 from ..fields import put_keywords_into
 
 
-def test__put_keywords_into():
+def _iter_options():
+    yield None, False, {}
+    yield None, True, {'keywords': []}
+    yield ('a', ), False, {'keywords': ['a']}
+    yield ('a', ), True, {'keywords': ['a']}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_keywords_into(input_value, defaults):
     """
     Tests whether ``put_keywords_into`` is working as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | tuple<str>`
+        Value to serialize.
+    defaults : `bool`
+        Whether fields with the default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
     """
-    for input_value, defaults, expected_output in (
-        (None, False, {}),
-        (None, True, {'keywords': []}),
-        (('a', ), False, {'keywords': ['a']}),
-    ):
-        data = put_keywords_into(input_value, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    return put_keywords_into(input_value, {}, defaults)

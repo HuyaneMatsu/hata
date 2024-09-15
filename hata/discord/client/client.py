@@ -1013,6 +1013,9 @@ class Client(
                 
                 break
             
+            # Note:
+            # `max_concurrency` for small bots is 1000.
+            # For large bots it is: `max(2000, (guild_count / 1000) * 5)`
             try:
                 session_start_limit_data = data['session_start_limit']
             except KeyError:
@@ -1068,8 +1071,8 @@ class Client(
         
         Returns
         -------
-        gateway_url : `str`
-            The url to what the gateways' websocket will be connected.
+        gateway_url : `str` 
+            The url to what the gateways' web socket will be connected.
         """
         if self._gateway_time > (LOOP_TIME() - 60.0):
             return self._gateway_url
@@ -1418,7 +1421,7 @@ class Client(
     
     async def disconnect(self):
         """
-        Disconnects the client and closes it's websocket(s). Till the client goes offline, it might take even over
+        Disconnects the client and closes it's web socket(s). Till the client goes offline, it might take even over
         than `1` minute. Because bot accounts can not logout, so they need to wait for timeout.
         
         This method is a coroutine.

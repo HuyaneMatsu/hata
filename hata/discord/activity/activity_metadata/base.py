@@ -5,6 +5,7 @@ from scarletio import RichAttributeErrorBaseType
 from ...bases import PlaceHolder
 
 from .flags import ActivityFlag
+from .preinstanced import HangType
 
 
 def _pop_empty_name(keyword_parameters):
@@ -13,7 +14,7 @@ def _pop_empty_name(keyword_parameters):
 
     Parameters
     ----------
-    keyword_parameters : `dict` of (`str`, `object`) items
+    keyword_parameters : `dict<str, object>`
         Keyword parameters passed to ``Activity.__new__``
     """
     try:
@@ -142,7 +143,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        activity_data : `dict` of (`str`, `object`) items
+        activity_data : `dict<str, object>`
         """
         return {}
     
@@ -165,12 +166,12 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -181,13 +182,17 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         +===================+===================================+
         | assets            | `None`, ``ActivityAssets``        |
         +-------------------+-----------------------------------+
-        | created_at        | `None`, `datetime`                |
+        | buttons           | `None`, `tuple` of `str`          |
+        +-------------------+-----------------------------------+
+        | created_at        | `None`, `dateTime`                |
         +-------------------+-----------------------------------+
         | details           | `None`, `str`                     |
         +-------------------+-----------------------------------+
         | emoji             | `None`, ``Emoji``                 |
         +-------------------+-----------------------------------+
         | flags             | ``ActivityFlag``                  |
+        +-------------------+-----------------------------------+
+        | hang_type         | ``HangType``                      |
         +-------------------+-----------------------------------+
         | name              | `str`                             |
         +-------------------+-----------------------------------+
@@ -288,6 +293,18 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
     )
     
     
+    buttons = PlaceHolder(
+        None,
+        """
+        Returns the activity's buttons.
+        
+        Returns
+        -------
+        buttons : `None`, `tuple` of `str`
+        """
+    )
+    
+    
     created_at = PlaceHolder(
         None,
         """
@@ -295,7 +312,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        created_at : `None`, `datetime`
+        created_at : `None`, `Datetime`
         """
     )
     
@@ -307,10 +324,9 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        assets : `None`, `str`
+        details : `None`, `str`
         """
     )
-
     
     
     emoji = PlaceHolder(
@@ -332,7 +348,19 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        assets : ``ActivityFlag``
+        flags : ``ActivityFlag``
+        """
+    )
+    
+    
+    hang_type = PlaceHolder(
+        HangType.none,
+        """
+        Returns the activity's hang state.
+        
+        Returns
+        -------
+        hang_type : ``HangType``
         """
     )
     

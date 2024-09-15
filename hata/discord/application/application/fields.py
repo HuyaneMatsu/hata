@@ -2,8 +2,8 @@ __all__ = ()
 
 from ...field_parsers import (
     bool_parser_factory, entity_id_parser_factory, flag_parser_factory, force_string_parser_factory, int_parser_factory,
-    int_postprocess_parser_factory, nullable_entity_array_parser_factory, nullable_entity_parser_factory,
-    nullable_sorted_array_parser_factory, nullable_string_parser_factory, preinstanced_array_parser_factory,
+    int_postprocess_parser_factory, nullable_array_parser_factory, nullable_entity_array_parser_factory,
+    nullable_entity_parser_factory, nullable_string_parser_factory, preinstanced_array_parser_factory,
     preinstanced_parser_factory
 )
 from ...field_putters import (
@@ -49,7 +49,7 @@ from .preinstanced import (
 
 # aliases
 
-parse_aliases = nullable_sorted_array_parser_factory('aliases')
+parse_aliases = nullable_array_parser_factory('aliases')
 put_aliases_into = nullable_string_array_optional_putter_factory('aliases')
 validate_aliases = nullable_string_array_validator_factory('aliases')
 
@@ -641,7 +641,7 @@ validate_role_connection_verification_url = url_optional_validator_factory('role
 
 # rpc_origins
 
-parse_rpc_origins = nullable_sorted_array_parser_factory('rpc_origins')
+parse_rpc_origins = nullable_array_parser_factory('rpc_origins')
 put_rpc_origins_into = nullable_string_array_optional_putter_factory('rpc_origins')
 validate_rpc_origins = url_array_optional_validator_factory('rpc_origins')
 
@@ -668,7 +668,7 @@ validate_store_state = preinstanced_validator_factory('store_state', Application
 
 # tags
 
-parse_tags = nullable_sorted_array_parser_factory('tags')
+parse_tags = nullable_array_parser_factory('tags')
 put_tags_into = nullable_string_array_optional_putter_factory('tags')
 validate_tags = nullable_string_array_validator_factory('tags')
 

@@ -66,14 +66,14 @@ async def test__Client__emoji_get_all_guild():
         output_emoji_0 = output[0]
         vampytest.assert_instance(output_emoji_0, Emoji)
         vampytest.assert_eq(output_emoji_0.id, emoji_id_0)
-        vampytest.assert_is(output_emoji_0.guild_id, guild_id)
+        vampytest.assert_eq(output_emoji_0.guild_id, guild_id)
         vampytest.assert_eq(output_emoji_0.name, name_0)
         vampytest.assert_eq(output_emoji_0.role_ids, tuple(role_ids_0))
         
         output_emoji_1 = output[1]
         vampytest.assert_instance(output_emoji_1, Emoji)
         vampytest.assert_eq(output_emoji_1.id, emoji_id_1)
-        vampytest.assert_is(output_emoji_1.guild_id, guild_id)
+        vampytest.assert_eq(output_emoji_1.guild_id, guild_id)
         vampytest.assert_eq(output_emoji_1.name, name_1)
         vampytest.assert_eq(output_emoji_1.role_ids, tuple(role_ids_1))
         

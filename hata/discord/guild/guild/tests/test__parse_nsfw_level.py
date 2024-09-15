@@ -6,6 +6,7 @@ from ..preinstanced import NsfwLevel
 
 def _iter_options():
     yield {}, NsfwLevel.none
+    yield {'nsfw_level': None}, NsfwLevel.none
     yield {'nsfw_level': NsfwLevel.safe.value}, NsfwLevel.safe
 
 
@@ -23,4 +24,6 @@ def test__parse_nsfw_level(input_data):
     -------
     output : ``NsfwLevel``
     """
-    return parse_nsfw_level(input_data)
+    output = parse_nsfw_level(input_data)
+    vampytest.assert_instance(output, NsfwLevel)
+    return output

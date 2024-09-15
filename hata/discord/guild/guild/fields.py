@@ -5,6 +5,7 @@ from scarletio import set_docs
 from ....env import CACHE_PRESENCE
 
 from ...channel import Channel
+from ...embedded_activity import EmbeddedActivity
 from ...emoji import Emoji
 from ...field_parsers import (
     bool_parser_factory, entity_id_parser_factory, flag_parser_factory, force_string_parser_factory, int_parser_factory,
@@ -33,7 +34,6 @@ from ...stage import Stage
 from ...sticker import Sticker
 from ...user import ClientUserBase, User, VoiceState
 
-from ..embedded_activity_state import EmbeddedActivityState
 from ..guild_incidents import GuildIncidents
 from ..guild_inventory_settings import GuildInventorySettings
 
@@ -201,78 +201,77 @@ parse_description = nullable_string_parser_factory('description')
 put_description_into = nullable_string_optional_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', 0, DESCRIPTION_LENGTH_MAX)
 
-# embedded_activity_states
+# embedded_activities
 
-def parse_embedded_activity_states(data, embedded_activity_states, guild_id = 0):
+def parse_embedded_activities(data, embedded_activities, guild_id = 0):
     """
-    Parses the guild's embedded_activity_states from the given data.
+    Parses the guild's embedded_activities from the given data.
     
     Parameters
     ----------
     data : `dict<str, object>`
         Guild data.
-    embedded_activity_states : `None | set<EmbeddedActivityState>`
-        The guild's embedded activity states.
+    embedded_activities : `None | set<EmbeddedActivity>`
+        The guild's embedded activities.
     guild_id : `int` = `0`, Optional
         The guild's identifier.
         
     Returns
     -------
-    embedded_activity_states : `None | set<EmbeddedActivityState>`
-        Returns the `embedded_activity_states` parameter.
+    embedded_activities : `None | set<EmbeddedActivity>`
     """
-    if (embedded_activity_states is not None):
-        old_embedded_activity_states = [*embedded_activity_states]
-        embedded_activity_states.clear()
+    if (embedded_activities is not None):
+        old_embedded_activities = [*embedded_activities]
+        embedded_activities.clear()
     
-    embedded_activity_state_datas = data.get('embedded_activities', None)
-    if (embedded_activity_state_datas is not None):
-        for embedded_activity_state_data in embedded_activity_state_datas:
-            embedded_activity_state = EmbeddedActivityState.from_data(
-                embedded_activity_state_data, guild_id, strong_cache = False
-            )
+    embedded_activity_datas = data.get('activity_instances', None)
+    if (embedded_activity_datas is not None):
+        for embedded_activity_data in embedded_activity_datas:
+            embedded_activity = EmbeddedActivity.from_data(embedded_activity_data, guild_id)
             
-            if embedded_activity_states is None:
-                embedded_activity_states = set()
+            if embedded_activities is None:
+                embedded_activities = set()
                 
-            embedded_activity_states.add(embedded_activity_state)
+            embedded_activities.add(embedded_activity)
     
-    if (embedded_activity_states is not None) and (not embedded_activity_states):
-        embedded_activity_states = None
+    if (embedded_activities is not None) and (not embedded_activities):
+        embedded_activities = None
     
-    return embedded_activity_states
+    return embedded_activities
 
 
-def put_embedded_activity_states_into(embedded_activity_states, data, defaults):
+def put_embedded_activities_into(embedded_activities, data, defaults):
     """
-    Puts the given embedded activity states into the given `data` json serializable object.
+    Puts the given embedded activities into the given `data` json serializable object.
     
     Parameters
     ----------
-    embedded_activity_states : `None | set<EmbeddedActivityState>`
+    embedded_activities : `None | set<EmbeddedActivity>`
         Entity array.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
-    if embedded_activity_states is None:
-        embedded_activity_state_datas = []
+    if embedded_activities is None:
+        embedded_activity_datas = []
     else:
-        embedded_activity_state_datas = [
-            embedded_activity_state.to_data(defaults = defaults) for embedded_activity_state in embedded_activity_states
+        embedded_activity_datas = [
+            embedded_activity.to_data(defaults = defaults, include_internals = True)
+            for embedded_activity in embedded_activities
         ]
     
-    data['embedded_activities'] = embedded_activity_state_datas
+    data['activity_instances'] = embedded_activity_datas
     
     return data
 
-validate_embedded_activity_states = nullable_entity_set_validator_factory(
-    'embedded_activity_states', EmbeddedActivityState
+
+validate_embedded_activities = nullable_entity_set_validator_factory(
+    'embedded_activities', EmbeddedActivity
 )
 
 # emojis

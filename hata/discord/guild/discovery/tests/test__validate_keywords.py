@@ -6,9 +6,10 @@ from ..fields import validate_keywords
 def _iter_options__passing():
     yield None, None
     yield [], None
-    yield 'a', ('a', )
-    yield ['a'], ('a', )
-    yield ['b', 'a'], ('a', 'b')
+    yield 'apple', ('apple',)
+    yield ['apple'], ('apple', )
+    yield ['apple', 'bad'], ('apple', 'bad')
+    yield ['bad', 'apple'], ('apple', 'bad')
 
 
 def _iter_options__type_error():
@@ -30,9 +31,12 @@ def test__validate_keywords(input_value):
     Returns
     -------
     output : `None | tuple<str>`
+        Validated value.
     
     Raises
     ------
     TypeError
     """
-    return validate_keywords(input_value)
+    output = validate_keywords(input_value)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    return output

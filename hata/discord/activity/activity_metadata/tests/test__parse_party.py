@@ -5,16 +5,28 @@ from ...activity_party import ActivityParty
 from ..fields import parse_party
 
 
-def test__parse_party():
-    """
-    Tests whether ``parse_party`` works as intended.
-    """
+def _iter_options():
     party = ActivityParty(party_id = 'hell')
     
-    for input_data, expected_output in (
-        ({}, None),
-        ({'party': None}, None),
-        ({'party': party.to_data()}, party),
-    ):
-        output = parse_party(input_data)
-        vampytest.assert_eq(output, expected_output)
+    yield ({}, None)
+    yield ({'party': None}, None)
+    yield ({'party': party.to_data()}, party)
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_party(input_data):
+    """
+    Tests whether ``parse_party`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | ActivityParty`
+    """
+    output = parse_party(input_data)
+    vampytest.assert_instance(output, ActivityParty, nullable = True)
+    return output

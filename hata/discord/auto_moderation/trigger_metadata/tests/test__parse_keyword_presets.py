@@ -5,15 +5,60 @@ from ..fields import parse_keyword_presets
 from ..preinstanced import AutoModerationKeywordPresetType
 
 
-def test__parse_keyword_presets():
+def _iter_options():
+    yield {}, None
+    yield {'presets': None}, None
+    yield {'presets': []}, None
+    yield (
+        {
+            'presets': [
+                AutoModerationKeywordPresetType.slur.value,
+            ],
+        },
+        (
+            AutoModerationKeywordPresetType.slur,
+        ),
+    )
+    yield (
+        {
+            'presets': [
+                AutoModerationKeywordPresetType.cursing.value,
+                AutoModerationKeywordPresetType.slur.value,
+            ],
+        },
+        (
+            AutoModerationKeywordPresetType.cursing,
+            AutoModerationKeywordPresetType.slur,
+        ),
+    )
+    yield (
+        {
+            'presets': [
+                AutoModerationKeywordPresetType.slur.value,
+                AutoModerationKeywordPresetType.cursing.value,
+            ],
+        },
+        (
+            AutoModerationKeywordPresetType.cursing,
+            AutoModerationKeywordPresetType.slur,
+        ),
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_keyword_presets(input_data):
     """
     Tests whether ``parse_keyword_presets`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | tuple<AutoModerationKeywordPresetType>`
     """
-    for input_data, expected_output in (
-        ({}, None),
-        ({'presets': None}, None),
-        ({'presets': []}, None),
-        ({'presets': [AutoModerationKeywordPresetType.slur.value]}, (AutoModerationKeywordPresetType.slur,)),
-    ):
-        output = parse_keyword_presets(input_data)
-        vampytest.assert_eq(output, expected_output)
+    output = parse_keyword_presets(input_data)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    return output

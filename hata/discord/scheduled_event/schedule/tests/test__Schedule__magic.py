@@ -186,7 +186,7 @@ def test__Schedule__eq(keyword_parameters_0, keyword_parameters_1):
     ----------
     keyword_parameters_0 : `dict<str, object>`
         Keyword parameters to create instance with.
-    keyword_parameters_1 : `dict<object, object>`
+    keyword_parameters_1 : `dict<str, object>`
         Keyword parameters to create instance with.
     
     Returns

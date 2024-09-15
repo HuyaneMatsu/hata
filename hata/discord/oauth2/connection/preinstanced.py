@@ -28,6 +28,8 @@ class ConnectionType(PreinstancedBase):
     +-----------------------+-----------------------+-------------------+
     | Class attribute name  | Name                  | Value             |
     +=======================+=======================+===================+
+    | amazon_music          | Amazon Music          | amazon-music      |
+    +-----------------------+-----------------------+-------------------+
     | battlenet             | Battle.net            | battlenet         |
     +-----------------------+-----------------------+-------------------+
     | bungie                | Bungie.net            | bungie            |
@@ -85,6 +87,7 @@ class ConnectionType(PreinstancedBase):
     
     __slots__ = ()
     
+    amazon_music = P('amazon-music', 'Amazon Music')
     battlenet = P('battlenet', 'Battle.net')
     bungie = P('bungie', 'Bungie.net')
     crunchyroll = P('crunchyroll', 'Crunchyroll')
@@ -110,7 +113,7 @@ class ConnectionType(PreinstancedBase):
     twitter = P('twitter', 'X (Twitter)')
     xbox = P('xbox', 'Xbox')
     youtube = P('youtube', 'YouTube')
-    
+
 
 class ConnectionVisibility(PreinstancedBase):
     """

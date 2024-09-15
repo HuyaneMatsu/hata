@@ -1,18 +1,20 @@
 __all__ = ()
 
 from ...field_parsers import (
-    entity_id_parser_factory, flag_parser_factory, force_string_parser_factory, nullable_entity_parser_factory,
-    nullable_functional_parser_factory, nullable_string_parser_factory
+    entity_id_parser_factory, flag_parser_factory, force_string_parser_factory, nullable_array_parser_factory,
+    nullable_entity_parser_factory, nullable_functional_parser_factory, nullable_string_parser_factory,
+    preinstanced_parser_factory
 )
 from ...field_putters import (
     entity_id_optional_putter_factory, flag_optional_putter_factory, force_string_putter_factory,
     nullable_entity_optional_putter_factory, nullable_functional_optional_putter_factory,
-    nullable_string_optional_putter_factory, url_optional_putter_factory
+    nullable_string_array_optional_putter_factory, nullable_string_optional_putter_factory, preinstanced_putter_factory,
+    url_optional_putter_factory
 )
 from ...field_validators import (
     entity_id_validator_factory, flag_validator_factory, force_string_validator_factory,
-    nullable_date_time_validator_factory, nullable_entity_validator_factory, nullable_string_validator_factory,
-    url_optional_validator_factory
+    nullable_date_time_validator_factory, nullable_entity_validator_factory, nullable_string_array_validator_factory,
+    nullable_string_validator_factory, preinstanced_validator_factory, url_optional_validator_factory
 )
 from ...utils import datetime_to_millisecond_unix_time, millisecond_unix_time_to_datetime
 
@@ -22,6 +24,8 @@ from ..activity_secrets import ActivitySecrets
 from ..activity_timestamps import ActivityTimestamps
 
 from .flags import ActivityFlag
+from .preinstanced import HangType
+
 
 # application_id
 
@@ -34,6 +38,14 @@ validate_application_id = entity_id_validator_factory('application_id', NotImple
 parse_assets = nullable_entity_parser_factory('assets', ActivityAssets)
 put_assets_into = nullable_entity_optional_putter_factory('assets', ActivityAssets)
 validate_assets = nullable_entity_validator_factory('assets', ActivityAssets)
+
+
+# buttons
+
+parse_buttons = nullable_array_parser_factory('buttons', ordered = False)
+put_buttons_into = nullable_string_array_optional_putter_factory('buttons')
+validate_buttons = nullable_string_array_validator_factory('buttons', ordered = False)
+
 
 # created_at
 
@@ -83,11 +95,13 @@ def put_created_at_into(created_at, data, defaults):
 
 validate_created_at = nullable_date_time_validator_factory('created_at')
 
+
 # details
 
 parse_details = nullable_string_parser_factory('details')
 put_details_into = nullable_string_optional_putter_factory('details')
 validate_details = nullable_string_validator_factory('details', 0, 1024)
+
 
 # emoji
 
@@ -97,14 +111,21 @@ put_emoji_into = nullable_functional_optional_putter_factory(
 )
 validate_emoji = nullable_entity_validator_factory('emoji', NotImplemented, include = 'Emoji')
 
+
+# hang_type
+
+parse_hang_type = preinstanced_parser_factory('state', HangType, HangType.none)
+put_hang_type_into = preinstanced_putter_factory('state')
+validate_hang_type = preinstanced_validator_factory('hang_type', HangType)
+
 # flags
 
 parse_flags = flag_parser_factory('flags', ActivityFlag)
 put_flags_into = flag_optional_putter_factory('flags', ActivityFlag())
 validate_flags = flag_validator_factory('flags', ActivityFlag)
 
-# id
 
+# id
 
 def parse_id(data):
     """

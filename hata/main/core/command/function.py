@@ -493,7 +493,7 @@ def parse_modifier_parameter_name(parameter_name):
 
 def find_satisfiable_modifier_parameter_result_for(parameter_results, parameter_name):
     """
-    Finds a satisfiable modifier parameter for the given nane.
+    Finds a satisfiable modifier parameter for the given name.
     
     Parameters
     ----------
@@ -518,7 +518,7 @@ def find_satisfiable_modifier_parameter_result_for(parameter_results, parameter_
 
 def find_satisfiable_keyword_parameter_result_for(parameter_results, parameter_name):
     """
-    Finds a satisfiable keyword parameter for the given nane.
+    Finds a satisfiable keyword parameter for the given name.
     
     Parameters
     ----------
@@ -542,7 +542,7 @@ def find_satisfiable_keyword_parameter_result_for(parameter_results, parameter_n
 
 def find_next_satisfiable_positional_parameter_result(parameter_results):
     """
-    Finds a satisfiable positional parameter for the given nane.
+    Finds a satisfiable positional parameter for the given name.
     
     Parameters
     ----------

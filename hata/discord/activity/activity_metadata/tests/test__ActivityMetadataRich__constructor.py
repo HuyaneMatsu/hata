@@ -23,6 +23,7 @@ def _assert_fields_set(activity_metadata):
     vampytest.assert_instance(activity_metadata, ActivityMetadataRich)
     vampytest.assert_instance(activity_metadata.application_id, int)
     vampytest.assert_instance(activity_metadata.assets, ActivityAssets, nullable = True)
+    vampytest.assert_instance(activity_metadata.buttons, tuple, nullable = True)
     vampytest.assert_instance(activity_metadata.created_at, DateTime, nullable = True)
     vampytest.assert_instance(activity_metadata.details, str, nullable = True)
     vampytest.assert_instance(activity_metadata.flags, ActivityFlag)
@@ -55,6 +56,7 @@ def test__ActivityMetadataRich__new__1():
     """
     application_id = 202209070000
     assets = ActivityAssets(image_large = 'senya')
+    buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
@@ -74,6 +76,7 @@ def test__ActivityMetadataRich__new__1():
     activity_metadata = ActivityMetadataRich(
         application_id = application_id,
         assets = assets,
+        buttons = buttons,
         created_at = created_at,
         details = details,
         flags = flags,
@@ -91,6 +94,7 @@ def test__ActivityMetadataRich__new__1():
     
     vampytest.assert_eq(activity_metadata.application_id, application_id)
     vampytest.assert_eq(activity_metadata.assets, assets)
+    vampytest.assert_eq(activity_metadata.buttons, tuple(buttons))
     vampytest.assert_eq(activity_metadata.created_at, created_at)
     vampytest.assert_eq(activity_metadata.details, details)
     vampytest.assert_eq(activity_metadata.flags, flags)
@@ -126,6 +130,7 @@ def test__ActivityMetadataRich__from_keyword_parameters__1():
     """
     application_id = 202304090000
     assets = ActivityAssets(image_large = 'senya')
+    buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
@@ -145,6 +150,7 @@ def test__ActivityMetadataRich__from_keyword_parameters__1():
     keyword_parameters = {
         'application_id': application_id,
         'assets': assets,
+        'buttons': buttons,
         'created_at': created_at,
         'details': details,
         'flags': flags,
@@ -165,6 +171,7 @@ def test__ActivityMetadataRich__from_keyword_parameters__1():
     
     vampytest.assert_eq(activity_metadata.application_id, application_id)
     vampytest.assert_eq(activity_metadata.assets, assets)
+    vampytest.assert_eq(activity_metadata.buttons, tuple(buttons))
     vampytest.assert_eq(activity_metadata.created_at, created_at)
     vampytest.assert_eq(activity_metadata.details, details)
     vampytest.assert_eq(activity_metadata.flags, flags)

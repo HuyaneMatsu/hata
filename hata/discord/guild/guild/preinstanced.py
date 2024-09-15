@@ -130,6 +130,10 @@ class GuildFeature(PreinstancedBase):
     +---------------------------------------+---------------------------------------+---------------------------------------------------+
     | Class attribute names                 | name                                  | value                                             |
     +=======================================+=======================================+===================================================+
+    | activity_list_disabled                | activity list disabled                | ACTIVITY_FEED_DISABLED_BY_USER                    |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
+    | activity_list_enabled                 | activity list enabled                 | ACTIVITY_FEED_ENABLED_BY_USER                     |
+    +---------------------------------------+---------------------------------------+---------------------------------------------------+
     | application_command_permissions_v2    | application command permissions v2    | APPLICATION_COMMAND_PERMISSIONS_V2                |
     +---------------------------------------+---------------------------------------+---------------------------------------------------+
     | animated_banner                       | animated banner                       | ANIMATED_BANNER                                   |
@@ -319,8 +323,7 @@ class GuildFeature(PreinstancedBase):
         
         Returns
         -------
-        self : ``GuildFeature``
-            The created guild feature.
+        self : `instance<cls>`
         """
         self = object.__new__(cls)
         self.value = value
@@ -330,6 +333,8 @@ class GuildFeature(PreinstancedBase):
     
     
     # predefined
+    activity_list_disabled = P('ACTIVITY_FEED_DISABLED_BY_USER', 'activity list disabled')
+    activity_list_enabled = P('ACTIVITY_FEED_ENABLED_BY_USER', 'activity list enabled')
     application_command_permissions_v2 = P('APPLICATION_COMMAND_PERMISSIONS_V2', 'application command permissions v2')
     animated_banner = P('ANIMATED_BANNER', 'animated banner')
     animated_icon = P('ANIMATED_ICON', 'animated icon')

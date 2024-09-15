@@ -22,15 +22,6 @@ from .rate_limit import GatewayRateLimiter
 from .voice_base import DiscordGatewayVoiceBase
 
 
-try:
-    import nacl.secret
-except ImportError:
-    SecretBox = None
-else:
-    SecretBox = nacl.secret.SecretBox
-    del nacl
-
-
 async def _handle_operation_dummy(gateway, data):
     """
     Dummy operation handler.
@@ -51,25 +42,35 @@ async def _handle_operation_dummy(gateway, data):
 
 class DiscordGatewayVoice(DiscordGatewayVoiceBase):
     """
-    The gateway used by ``VoiceClient``-s to communicate with Discord with secure websocket.
+    The gateway used by ``VoiceClient``-s to communicate with Discord with secure web socket.
     
     Attributes
     ----------
     _operation_handlers : `dict<int, (instance, dict<str, object>) -> int>`
         Handler for each expected operation.
+    
     _should_run : `bool`
         Whether the gateway should be running.
+    
     kokoro : `None | Kokoro`
         The heart of the gateway, sends beat-data at set intervals. If does not receives answer in time, restarts
         the gateway.
+    
     rate_limit_handler : ``GatewayRateLimiter``
         The rate limit handler of the gateway.
+    
+    sequence : `int`
+        Last sequence number received.
+    
     voice_client : ``VoiceClient``
-        The owner voice voice_client of the gateway.
+        The owner voice client of the gateway.
+    
     websocket : `None`, ``WebSocketClient``
-        The websocket voice_client of the gateway.
+        The web socket of the gateway.
     """
-    __slots__ = ('_operation_handlers', '_should_run', 'kokoro', 'rate_limit_handler', 'voice_client', 'websocket')
+    __slots__ = (
+        '_operation_handlers', '_should_run', 'kokoro', 'rate_limit_handler', 'sequence', 'voice_client', 'websocket'
+    )
     
     def __new__(cls, voice_client):
         """
@@ -105,6 +106,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         self._should_run = False
         self.kokoro = None
         self.rate_limit_handler = GatewayRateLimiter()
+        self.sequence = -1
         self.voice_client = voice_client
         self.websocket = None
         return self
@@ -157,7 +159,10 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
     async def beat(self):
         data = {
             'op': GATEWAY_OPERATION_VOICE_HEARTBEAT,
-            'd': int(perf_counter() * 1000),
+            'd': {
+                't': int(perf_counter() * 1000),
+                'seq_ack': self.sequence,
+            },
         }
         
         await self.send_as_json(data)
@@ -223,10 +228,11 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         data = {
             'op': GATEWAY_OPERATION_VOICE_IDENTIFY,
             'd': {
+                'seq_ack': self.sequence,
                 'server_id': str(voice_client.guild_id),
-                'user_id': str(voice_client.client.id),
                 'session_id': self._get_session_id(),
                 'token': voice_client._token,
+                'user_id': str(voice_client.client.id),
             },
         }
         
@@ -244,9 +250,10 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         data = {
             'op': GATEWAY_OPERATION_VOICE_RESUME,
             'd': {
-                'token': voice_client._token,
+                'seq_ack': self.sequence,
                 'server_id': str(voice_client.guild_id),
                 'session_id': self._get_session_id(),
+                'token': voice_client._token,
             },
         }
         
@@ -273,7 +280,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
                 'data': {
                     'address': ip,
                     'port': port,
-                    'mode': 'xsalsa20_poly1305'
+                    'mode': self.voice_client.get_encryption_mode(),
                 },
             },
         }
@@ -283,7 +290,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
     
     def _cancel_self_and_get_websocket(self):
         """
-        Cancels the gateway except its websocket. Returns the websocket if still running instead.
+        Cancels the gateway except its web socket. Returns the web socket if still running instead.
         
         Returns
         -------
@@ -359,8 +366,8 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
             self.websocket = None
             await websocket.close(4000)
         
-        gateway_url = f'wss://{self.voice_client._endpoint}/?v=4'
-        self.websocket = await self.voice_client.client.http.connect_websocket(gateway_url)
+        gateway_url = f'wss://{self.voice_client._endpoint}/?v=8'
+        self.websocket = await self.voice_client.client.http.connect_web_socket(gateway_url)
         self.kokoro.start()
         
         if not resume:
@@ -373,6 +380,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
             await self.websocket.ensure_open()
         except ConnectionClosed:
             # websocket got closed so let's just do a regular connect.
+            self._clear_session()
             self.kokoro.stop()
             self.websocket = None
             return GATEWAY_ACTION_CONNECT
@@ -447,12 +455,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
             return GATEWAY_ACTION_KEEP_GOING
         
         voice_client = self.voice_client
-        
-        # data['mode'] is same as our default every time?
-        # So ignore it.
-        
-        secret_box = SecretBox(bytes(data['secret_key']))
-        voice_client._secret_box = secret_box
+        voice_client.set_encryption_mode(data['mode'], bytes(data['secret_key']))
         
         await self.set_speaking(voice_client.speaking)
         
@@ -545,6 +548,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         voice_client._audio_source = audio_source
         voice_client._endpoint_ip = data['ip']
         voice_client._endpoint_port = data['port']
+        voice_client.prefer_encryption_mode_from_options(data['modes'])
         
         # data structure
         # byte  0 -  2 : `version` -> we send 1
@@ -552,10 +556,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         # byte  4 -  8 : `audio_source` value as unsigned integer
         # byte  8 - 72 : `ip` null terminated string, receive only but still have to send for some weird reason?
         # byte 72 - 74 : `port` as integer, receive only, but still have to send for some weird reason?
-        
-        packet = bytearray(74)
-        packet[0 : 4] = b'\x00\x01\x00\x46'
-        packet[4 : 8] = audio_source.to_bytes(4, 'big')
+        packet = b''.join([b'\x00\x01\x00\x46', audio_source.to_bytes(4, 'big'), b'\x00' * 66])
         
         voice_client.send_packet(packet)
         
@@ -574,7 +575,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         ip = received[8 : ip_end].decode('ascii')
         voice_client._ip = ip
         
-         # port is last 2 bytes
+        # port is last 2 bytes
         port = int.from_bytes(received[72 : 74], 'big')
         voice_client._port = port
         
@@ -674,6 +675,10 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         gateway_action : `int`
         """
         message = from_json(message)
+        
+        sequence = message.get('seq', None)
+        if (sequence is not None):
+            self.sequence = sequence
         
         operation = message['op']
         
@@ -802,3 +807,10 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
             self._should_run = False
         
         return False
+    
+    
+    def _clear_session(self):
+        """
+        Clears current session data, disabling the option of resuming the connection.
+        """
+        self.sequence = -1

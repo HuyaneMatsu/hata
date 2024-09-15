@@ -76,7 +76,7 @@ def validate_description(description):
     
     if description_length > DESCRIPTION_LENGTH_MAX:
         raise ValueError(
-            f'`description` length` must be <= {DESCRIPTION_LENGTH_MAX}, '
+            f'`description` length must be <= {DESCRIPTION_LENGTH_MAX}, '
             f'got {description_length}; description = {description!r}.'
         )
     

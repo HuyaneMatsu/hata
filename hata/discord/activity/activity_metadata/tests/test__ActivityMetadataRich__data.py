@@ -15,12 +15,13 @@ from ..rich import ActivityMetadataRich
 from .test__ActivityMetadataRich__constructor import _assert_fields_set
 
 
-def test__ActivityMetadataRich__from_data__0():
+def test__ActivityMetadataRich__from_data():
     """
     Tests whether ``ActivityMetadataRich.from_data`` works as intended.
     """
     application_id = 202209070002
     assets = ActivityAssets(image_large = 'senya')
+    buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
@@ -40,6 +41,7 @@ def test__ActivityMetadataRich__from_data__0():
     data = {
         'application_id': str(application_id),
         'assets': assets.to_data(),
+        'buttons': buttons,
         'created_at': datetime_to_millisecond_unix_time(created_at),
         'details': details,
         'flags': int(flags),
@@ -59,6 +61,7 @@ def test__ActivityMetadataRich__from_data__0():
     
     vampytest.assert_eq(activity_metadata.application_id, application_id)
     vampytest.assert_eq(activity_metadata.assets, assets)
+    vampytest.assert_eq(activity_metadata.buttons, tuple(buttons))
     vampytest.assert_eq(activity_metadata.created_at, created_at)
     vampytest.assert_eq(activity_metadata.details, details)
     vampytest.assert_eq(activity_metadata.flags, flags)
@@ -79,6 +82,7 @@ def test__ActivityMetadataRich__to_data():
     """
     application_id = 202209070004
     assets = ActivityAssets(image_large = 'senya')
+    buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
@@ -98,6 +102,7 @@ def test__ActivityMetadataRich__to_data():
     activity_metadata = ActivityMetadataRich(
         application_id = application_id,
         assets = assets,
+        buttons = buttons,
         created_at = created_at,
         details = details,
         flags = flags,
@@ -114,6 +119,7 @@ def test__ActivityMetadataRich__to_data():
     
     expected_output = {
         'name': name,
+        'state': state,
         'url': url,
     }
     
@@ -129,6 +135,7 @@ def test__ActivityMetadataRich__to_data__user():
     """
     application_id = 202209070006
     assets = ActivityAssets(image_large = 'senya')
+    buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
@@ -148,6 +155,7 @@ def test__ActivityMetadataRich__to_data__user():
     activity_metadata = ActivityMetadataRich(
         application_id = application_id,
         assets = assets,
+        buttons = buttons,
         created_at = created_at,
         details = details,
         flags = flags,
@@ -164,6 +172,7 @@ def test__ActivityMetadataRich__to_data__user():
     
     expected_output = {
         'assets': assets.to_data(defaults = True),
+        'buttons': buttons,
         'details': details,
         'name': name,
         'party': party.to_data(defaults = True),
@@ -185,6 +194,7 @@ def test__ActivityMetadataRich__to_data__include_internals():
     """
     application_id = 202209070008
     assets = ActivityAssets(image_large = 'senya')
+    buttons = ['Party', 'Trick']
     created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
     details = 'vocal'
     flags = ActivityFlag(1)
@@ -204,6 +214,7 @@ def test__ActivityMetadataRich__to_data__include_internals():
     activity_metadata = ActivityMetadataRich(
         application_id = application_id,
         assets = assets,
+        buttons = buttons,
         created_at = created_at,
         details = details,
         flags = flags,
@@ -221,6 +232,7 @@ def test__ActivityMetadataRich__to_data__include_internals():
     expected_output = {
         'application_id': str(application_id),
         'assets': assets.to_data(defaults = True),
+        'buttons': buttons,
         'created_at': datetime_to_millisecond_unix_time(created_at),
         'details': details,
         'flags': int(flags),
@@ -246,41 +258,46 @@ def test__ActivityMetadataRich__update_attributes():
     Tests whether ``ActivityMetadataRich._update_attributes`` works as intended.
     """
     application_id = 202209070010
-    old_assets = ActivityAssets(image_large = 'senya')
-    new_assets = ActivityAssets(image_small = 'merami')
-    old_created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
-    new_created_at = DateTime(2012, 9, 11, tzinfo = TimeZone.utc)
-    old_details = 'vocal'
-    new_details = 'pop'
-    old_flags = ActivityFlag(1)
-    new_flags = ActivityFlag(2)
     activity_id = 202209070011
+    
+    old_assets = ActivityAssets(image_large = 'senya')
+    old_buttons = ['Party', 'Trick']
+    old_created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
+    old_flags = ActivityFlag(1)
+    old_details = 'vocal'
     old_name = 'Iceon'
-    new_name = 'Worldly'
     old_party = ActivityParty(party_id = 'Kamase-Tora')
-    new_party = ActivityParty(max_ = 12, size = 6)
     old_secrets = ActivitySecrets(join = 'deitarabochi')
-    new_secrets = ActivitySecrets(join = 'Flower')
     old_session_id = 'Autobahn'
-    new_session_id = 'flower'
     old_state = 'plain'
-    new_state = 'land'
     old_sync_id = 'asia'
-    new_sync_id = 'past'
     old_timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
         start = DateTime(2014, 9, 10, tzinfo = TimeZone.utc),
     )
+    old_url = 'https://www.astil.dev/'
+    
+    new_assets = ActivityAssets(image_small = 'merami')
+    new_buttons = ['C.L']
+    new_created_at = DateTime(2012, 9, 11, tzinfo = TimeZone.utc)
+    new_details = 'pop'
+    new_flags = ActivityFlag(2)
+    new_name = 'Worldly'
+    new_party = ActivityParty(max_ = 12, size = 6)
+    new_secrets = ActivitySecrets(join = 'Flower')
+    new_session_id = 'flower'
+    new_state = 'land'
+    new_sync_id = 'past'
     new_timestamps = ActivityTimestamps(
         end = DateTime(2012, 9, 12, tzinfo = TimeZone.utc),
         start = DateTime(2012, 9, 10, tzinfo = TimeZone.utc),
     )
-    old_url = 'https://www.astil.dev/'
     new_url = 'https://www.astil.dev/project/hata/'
 
     activity_metadata = ActivityMetadataRich(
         application_id = application_id,
         assets = old_assets,
+        buttons = old_buttons,
         created_at = old_created_at,
         details = old_details,
         flags = old_flags,
@@ -297,6 +314,7 @@ def test__ActivityMetadataRich__update_attributes():
     
     data = {
         'assets': new_assets.to_data(),
+        'buttons': new_buttons,
         'created_at': datetime_to_millisecond_unix_time(new_created_at),
         'details': new_details,
         'flags': int(new_flags),
@@ -313,6 +331,7 @@ def test__ActivityMetadataRich__update_attributes():
 
     vampytest.assert_eq(activity_metadata.assets, new_assets)
     vampytest.assert_eq(activity_metadata.created_at, new_created_at)
+    vampytest.assert_eq(activity_metadata.buttons, tuple(new_buttons))
     vampytest.assert_eq(activity_metadata.details, new_details)
     vampytest.assert_eq(activity_metadata.flags, new_flags)
     vampytest.assert_eq(activity_metadata.name, new_name)
@@ -330,41 +349,46 @@ def test__ActivityMetadataRich__difference_update_attributes():
     Tests whether ``ActivityMetadataRich._difference_update_attributes`` works as intended.
     """
     application_id = 202209070012
-    old_assets = ActivityAssets(image_large = 'senya')
-    new_assets = ActivityAssets(image_small = 'merami')
-    old_created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
-    new_created_at = DateTime(2012, 9, 11, tzinfo = TimeZone.utc)
-    old_details = 'vocal'
-    new_details = 'pop'
-    old_flags = ActivityFlag(1)
-    new_flags = ActivityFlag(2)
     activity_id = 202209070013
+    
+    old_assets = ActivityAssets(image_large = 'senya')
+    old_buttons = ['Party', 'Trick']
+    old_created_at = DateTime(2014, 9, 11, tzinfo = TimeZone.utc)
+    old_details = 'vocal'
+    old_flags = ActivityFlag(1)
     old_name = 'Iceon'
-    new_name = 'Worldly'
     old_party = ActivityParty(party_id = 'Kamase-Tora')
-    new_party = ActivityParty(max_ = 12, size = 6)
     old_secrets = ActivitySecrets(join = 'deitarabochi')
-    new_secrets = ActivitySecrets(join = 'Flower')
     old_session_id = 'Autobahn'
-    new_session_id = 'flower'
     old_state = 'plain'
-    new_state = 'land'
     old_sync_id = 'asia'
-    new_sync_id = 'past'
     old_timestamps = ActivityTimestamps(
         end = DateTime(2014, 9, 12, tzinfo = TimeZone.utc),
         start = DateTime(2014, 9, 10, tzinfo = TimeZone.utc),
     )
+    old_url = 'https://www.astil.dev/'
+    
+    new_assets = ActivityAssets(image_small = 'merami')
+    new_buttons = ['C.L']
+    new_created_at = DateTime(2012, 9, 11, tzinfo = TimeZone.utc)
+    new_details = 'pop'
+    new_flags = ActivityFlag(2)
+    new_name = 'Worldly'
+    new_party = ActivityParty(max_ = 12, size = 6)
+    new_secrets = ActivitySecrets(join = 'Flower')
+    new_session_id = 'flower'
+    new_state = 'land'
+    new_sync_id = 'past'
     new_timestamps = ActivityTimestamps(
         end = DateTime(2012, 9, 12, tzinfo = TimeZone.utc),
         start = DateTime(2012, 9, 10, tzinfo = TimeZone.utc),
     )
-    old_url = 'https://www.astil.dev/'
     new_url = 'https://www.astil.dev/project/hata/'
 
     activity_metadata = ActivityMetadataRich(
         application_id = application_id,
         assets = old_assets,
+        buttons = old_buttons,
         created_at = old_created_at,
         details = old_details,
         flags = old_flags,
@@ -381,6 +405,7 @@ def test__ActivityMetadataRich__difference_update_attributes():
     
     data = {
         'assets': new_assets.to_data(),
+        'buttons': new_buttons,
         'created_at': datetime_to_millisecond_unix_time(new_created_at),
         'details': new_details,
         'flags': int(new_flags),
@@ -396,6 +421,7 @@ def test__ActivityMetadataRich__difference_update_attributes():
     old_attributes = activity_metadata._difference_update_attributes(data)
     
     vampytest.assert_eq(activity_metadata.assets, new_assets)
+    vampytest.assert_eq(activity_metadata.buttons, tuple(new_buttons))
     vampytest.assert_eq(activity_metadata.created_at, new_created_at)
     vampytest.assert_eq(activity_metadata.details, new_details)
     vampytest.assert_eq(activity_metadata.flags, new_flags)
@@ -412,6 +438,7 @@ def test__ActivityMetadataRich__difference_update_attributes():
         old_attributes,
         {
             'assets': old_assets,
+            'buttons': tuple(old_buttons),
             'created_at': old_created_at,
             'details': old_details,
             'flags': old_flags,

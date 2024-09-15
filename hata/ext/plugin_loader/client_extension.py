@@ -21,12 +21,16 @@ class Client:
         """
         plugins = []
         for plugin in PLUGINS.values():
-            if plugin._state == PLUGIN_STATE_LOADED:
-                snapshot_difference = plugin._snapshot_difference
-                if (snapshot_difference is not None):
-                    for snapshot in snapshot_difference:
-                        if (snapshot.client is self) and snapshot_difference:
-                            plugins.append(plugin)
-                            break
+            if plugin._state != PLUGIN_STATE_LOADED:
+                continue
+            
+            snapshot_difference = plugin._snapshot_difference
+            if (snapshot_difference is None):
+                continue
+            
+            for snapshot in snapshot_difference:
+                if (snapshot.client is self) and snapshot_difference:
+                    plugins.append(plugin)
+                    break
         
         return plugins

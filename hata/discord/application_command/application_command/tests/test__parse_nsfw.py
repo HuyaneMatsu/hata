@@ -24,4 +24,6 @@ def test__parse_nsfw(input_data):
     -------
     output : `bool`
     """
-    return parse_nsfw(input_data)
+    output = parse_nsfw(input_data)
+    vampytest.assert_instance(output, bool)
+    return output

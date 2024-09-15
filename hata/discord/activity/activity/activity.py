@@ -22,6 +22,7 @@ class Activity(RichAttributeErrorBaseType):
     ----------
     metadata : ``ActivityMetadataBase``
         Metadata of the activity containing extra fields about itself.
+    
     type : ``ActivityType``
         The activity's type.
     """
@@ -35,8 +36,10 @@ class Activity(RichAttributeErrorBaseType):
         ----------
         name : `None`, `str` =  `None`, Optional
             The name of the activity.
+        
         activity_type : `int`, ``ActivityType``, Optional (Keyword only)
             The type value of the activity.
+        
         **keyword_parameters : Keyword parameters
             Additional parameters to pass to the activity-type specific constructor.
         
@@ -44,29 +47,47 @@ class Activity(RichAttributeErrorBaseType):
         ----------------
         activity_id : `int`, Optional (Keyword only)
             The id of the activity.
+        
         application_id : `int`, Optional (Keyword only)
             The id of the activity's application.
-        assets : `None`, ``ActivityAssets``, Optional (Keyword only)
+        
+        assets : `None | ActivityAssets`, Optional (Keyword only)
              The activity's assets.
-        created_at : `None`, `datetime`, Optional (Keyword only)
+        
+        buttons : `None | str | iterable<str>`, Optional (Keyword only)
+            The labels of the buttons on the activity.
+        
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the activity was created.
-        details : `None`, `str`, Optional (Keyword only)
+        
+        details : `None | str`, Optional (Keyword only)
             What the player is currently doing.
-        flags : ``ActivityFlag``, `int`, Optional (Keyword only)
+        
+        flags : `ActivityFlag | int`, Optional (Keyword only)
             The flags of the activity.
-        party : `None`, ``ActivityParty``, Optional (Keyword only)
+        
+        hang_type : `HangType | str`, Optional (Keyword only)
+            The hang state of the activity.
+        
+        party : `None | ActivityParty`, Optional (Keyword only)
             The activity's party.
-        secrets : `None`, ``ActivitySecrets``, Optional (Keyword only)
+        
+        secrets : `None | ActivitySecrets`, Optional (Keyword only)
             The activity's secrets.
-        session_id : `None`, `str`, Optional (Keyword only)
+        
+        session_id : `None | str`, Optional (Keyword only)
             Spotify activity's session's id.
-        state : `None`, `str`, Optional (Keyword only)
+        
+        state : `None | str`, Optional (Keyword only)
             The player's current party status.
-        sync_id : `None`, `str`, Optional (Keyword only)
+        
+        sync_id : `None | str`, Optional (Keyword only)
             The ID of the currently playing track of a spotify activity.
-        timestamps : ``ActivityTimestamps``, Optional (Keyword only)
+        
+        timestamps : `None | ActivityTimestamps`, Optional (Keyword only)
             The activity's timestamps.
-        url : `None`, `str`, Optional (Keyword only)
+        
+        url : `None | str`, Optional (Keyword only)
             The url of the activity. Only twitch and youtube urls are supported.
         
         Raises
@@ -129,7 +150,7 @@ class Activity(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the activity's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # type
         activity_type = self.type
@@ -160,7 +181,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        activity : ``Activity``
+        activity : `instance<cls>`
         """
         if data is None:
             return ACTIVITY_UNKNOWN
@@ -182,14 +203,16 @@ class Activity(RichAttributeErrorBaseType):
         ----------
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether fields with the default values should be included as well.
+        
         include_internals : `bool` = `False`, Optional (Keyword only)
             Whether internal fields, like id-s should be present as well.
+        
         user : `bool` = `False`, Optional (Keyword only)
             Whether not only bot compatible fields should be included.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = self.metadata.to_data(defaults = defaults, include_internals = include_internals, user = user)
         put_type_into(self.type, data, defaults)
@@ -247,13 +270,17 @@ class Activity(RichAttributeErrorBaseType):
         +===================+===================================+
         | assets            | `None`, ``ActivityAssets``        |
         +-------------------+-----------------------------------+
-        | created_at        | `None`, `datetime`                |
+        | buttons           | `None`, `tuple` of `str`          |
+        +-------------------+-----------------------------------+
+        | created_at        | `None`, `DateTime`                |
         +-------------------+-----------------------------------+
         | details           | `None`, `str`                     |
         +-------------------+-----------------------------------+
         | emoji             | `None`, ``Emoji``                 |
         +-------------------+-----------------------------------+
         | flags             | ``ActivityFlag``                  |
+        +-------------------+-----------------------------------+
+        | hang_type         | ``HangType``                      |
         +-------------------+-----------------------------------+
         | name              | `str`                             |
         +-------------------+-----------------------------------+
@@ -321,6 +348,7 @@ class Activity(RichAttributeErrorBaseType):
         ----------
         activity_type : `int`, ``ActivityType``, Optional (Keyword only)
             The type value of the activity.
+        
         **keyword_parameters : Keyword parameters
             Additional parameters to pass to the activity-type specific constructor.
         
@@ -328,31 +356,50 @@ class Activity(RichAttributeErrorBaseType):
         ----------------
         activity_id : `int`, Optional (Keyword only)
             The id of the activity.
+        
         application_id : `int`, Optional (Keyword only)
             The id of the activity's application.
-        assets : `None`, ``ActivityAssets``, Optional (Keyword only)
+        
+        assets : `None | ActivityAssets`, Optional (Keyword only)
              The activity's assets.
-        created_at : `None`, `datetime`, Optional (Keyword only)
+        
+        buttons : `None | str | iterable<str>`, Optional (Keyword only)
+            The labels of the buttons on the activity.
+        
+        created_at : `None | DateTime`, Optional (Keyword only)
             When the activity was created.
-        details : `None`, `str`, Optional (Keyword only)
+        
+        details : `None | str`, Optional (Keyword only)
             What the player is currently doing.
-        flags : ``ActivityFlag``, `int`, Optional (Keyword only)
+        
+        flags : `ActivityFlag | int`, Optional (Keyword only)
             The flags of the activity.
-        name : `None`, `str`, Optional (Keyword only)
+        
+        hang_type : `HangType | str`, Optional (Keyword only)
+            The hang state of the activity.
+        
+        name : `None | str`, Optional (Keyword only)
             The name of the activity.
-        party : `None`, ``ActivityParty``, Optional (Keyword only)
+        
+        party : `None | ActivityParty`, Optional (Keyword only)
             The activity's party.
-        secrets : `None`, ``ActivitySecrets``, Optional (Keyword only)
+        
+        secrets : `None | ActivitySecrets`, Optional (Keyword only)
             The activity's secrets.
-        session_id : `None`, `str`, Optional (Keyword only)
+        
+        session_id : `None | str`, Optional (Keyword only)
             Spotify activity's session's id.
-        state : `None`, `str`, Optional (Keyword only)
+        
+        state : `None | str`, Optional (Keyword only)
             The player's current party status.
-        sync_id : `None`, `str`, Optional (Keyword only)
+        
+        sync_id : `None | str`, Optional (Keyword only)
             The ID of the currently playing track of a spotify activity.
-        timestamps : ``ActivityTimestamps``, Optional (Keyword only)
+        
+        timestamps : `None | ActivityTimestamps`, Optional (Keyword only)
             The activity's timestamps.
-        url : `None`, `str`, Optional (Keyword only)
+        
+        url : `None | str`, Optional (Keyword only)
             The url of the activity. Only twitch and youtube urls are supported.
         
         Returns
@@ -391,6 +438,7 @@ class Activity(RichAttributeErrorBaseType):
         new.type = activity_type
         return new
     
+    
     # Field proxies
     
     @property
@@ -403,7 +451,19 @@ class Activity(RichAttributeErrorBaseType):
     @copy_docs(ActivityMetadataBase.assets)
     def assets(self):
         return self.metadata.assets
-        
+    
+    
+    @property
+    @copy_docs(ActivityMetadataBase.buttons)
+    def buttons(self):
+        return self.metadata.buttons
+    
+    
+    @property
+    @copy_docs(ActivityMetadataBase.created_at)
+    def created_at(self):
+        return self.metadata.created_at
+    
     
     @property
     @copy_docs(ActivityMetadataBase.created_at)
@@ -427,6 +487,12 @@ class Activity(RichAttributeErrorBaseType):
     @copy_docs(ActivityMetadataBase.flags)
     def flags(self):
         return self.metadata.flags
+    
+    
+    @property
+    @copy_docs(ActivityMetadataBase.hang_type)
+    def hang_type(self):
+        return self.metadata.hang_type
     
     
     @property
@@ -509,12 +575,9 @@ class Activity(RichAttributeErrorBaseType):
         elif (activity_type is ActivityType.spotify):
             color = ACTIVITY_COLOR_SPOTIFY
         
-        elif (activity_type is ActivityType.unknown):
-            color = ACTIVITY_COLOR_NONE
-        
         else:
             # Place holder for new activity types.
-            # Right now covers: watching & competing
+            # Right now covers: watching & competing & hanging
             color = ACTIVITY_COLOR_GAME
         
         return color
@@ -744,7 +807,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        start : `None`, `datetime`
+        start : `None`, `DateTime`
         """
         timestamps = self.timestamps
         if (timestamps is not None):
@@ -758,7 +821,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        start : `None`, `datetime`
+        start : `None`, `DateTime`
         """
         timestamps = self.timestamps
         if (timestamps is not None):

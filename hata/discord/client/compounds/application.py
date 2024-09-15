@@ -8,11 +8,12 @@ from ...application.entitlement.fields import (
     validate_sku_ids as validate_entitlement_sku_ids, validate_user_id as validate_entitlement_user_id
 )
 from ...application.entitlement.utils import ENTITLEMENT_FIELD_CONVERTERS
+from ...embedded_activity import EmbeddedActivity
 from ...http import DiscordApiClient
 from ...payload_building import build_create_payload
 from ...utils import log_time_converter
 
-from ..request_helpers import get_entitlement_id
+from ..request_helpers import get_embedded_activity_and_id, get_entitlement_id
 
 
 def _assert__application_id(application_id):
@@ -356,3 +357,48 @@ class ClientCompoundApplicationEndpoints(Compound):
         
         sku_datas = await self.api.sku_get_all(application_id)
         return [SKU.from_data(sku_data) for sku_data in sku_datas]
+    
+    
+    async def embedded_activity_get(self, embedded_activity, *, force_update = False):
+        """
+        Requests the embedded activity of the application.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        embedded_activity : ``EmbeddedActivity``, `(int, int)`
+            The embedded activity, or its identifier representing it.
+        
+        force_update : `bool` = `False`, Optional (Keyword only)
+            Whether the embedded_activity should be requested even if it supposed to be up to date.
+        
+        Returns
+        -------
+        embedded_activity : ``EmbeddedActivity``
+        
+        Raises
+        ------
+        TypeError
+            - If `embedded_activity` is given as incorrect type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        application_id = self.application.id
+        assert _assert__application_id(application_id)
+        
+        embedded_activity, embedded_activity_id = get_embedded_activity_and_id(embedded_activity)
+        
+        if (not force_update) and (embedded_activity is not None) and (not embedded_activity.partial):
+            return embedded_activity
+        
+        embedded_activity_data = await self.api.embedded_activity_get(application_id, embedded_activity_id)
+        
+        if (embedded_activity is None):
+            embedded_activity = EmbeddedActivity.from_data(embedded_activity_data)
+        else:
+            embedded_activity._set_attributes(embedded_activity_data, False, 0)
+        
+        return embedded_activity

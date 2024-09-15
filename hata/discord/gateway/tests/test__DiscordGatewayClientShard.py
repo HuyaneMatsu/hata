@@ -5,7 +5,7 @@ from zlib import Z_SYNC_FLUSH, compressobj as create_zlib_compressor, decompress
 import vampytest
 from scarletio import Future, from_json, skip_ready_cycle, to_json
 from scarletio.web_common import ConnectionClosed
-from scarletio.websocket import WebSocketClient
+from scarletio.web_socket import WebSocketClient
 
 from ....env import CACHE_PRESENCE, LIBRARY_NAME
 
@@ -52,7 +52,7 @@ def _assert_fields_set(gateway):
     vampytest.assert_instance(gateway.kokoro, Kokoro, nullable = True)
     vampytest.assert_instance(gateway.rate_limit_handler, GatewayRateLimiter)
     vampytest.assert_instance(gateway.resume_gateway_url, str, nullable = True)
-    vampytest.assert_instance(gateway.sequence, int, nullable = True)
+    vampytest.assert_instance(gateway.sequence, int)
     vampytest.assert_instance(gateway.session_id, str, nullable = True)
     vampytest.assert_instance(gateway.shard_id, int)
     vampytest.assert_instance(gateway.websocket, WebSocketClient, nullable = True)
@@ -216,7 +216,7 @@ async def test__DiscordGatewayClientShard__send_json__no_websocket():
     """
     Tests whether ``DiscordGatewayClientShard._send_json`` works as intended.
     
-    Case: No websocket.
+    Case: No web socket.
     
     This function is a coroutine.
     """
@@ -462,7 +462,7 @@ def test__DiscordGatewayClientShard__clear_session():
         gateway._clear_session()
         
         vampytest.assert_is(gateway.session_id, None)
-        vampytest.assert_is(gateway.sequence, None)
+        vampytest.assert_eq(gateway.sequence, -1)
         vampytest.assert_is(gateway.resume_gateway_url, None)
     finally:
         client._delete()
@@ -1660,7 +1660,7 @@ async def test__DiscordGatewayClientShard__handle_received_operation__known_oper
     
     shard_id = 2
     operation = 999
-    sequence = 'koishi'
+    sequence = 123
     
     message = {
         's': sequence,
@@ -1695,6 +1695,8 @@ async def test__DiscordGatewayClientShard__handle_received_operation__known_oper
         vampytest.assert_eq(output, GATEWAY_ACTION_RESUME)
         
         vampytest.assert_true(mock_operation_handler_called)
+        vampytest.assert_eq(gateway.sequence, sequence)
+        
     finally:
         client._delete()
         client = None
@@ -1972,7 +1974,7 @@ async def test__DiscordGatewayClientShard__connect__unexpected_closes_with_resum
         )
         
         vampytest.assert_is(gateway.session_id, None)
-        vampytest.assert_is(gateway.sequence, None)
+        vampytest.assert_eq(gateway.sequence, -1)
         vampytest.assert_is(gateway.resume_gateway_url, None)
         vampytest.assert_is_not(gateway.kokoro, None)
         vampytest.assert_is(gateway.kokoro.runner, None)
@@ -2042,7 +2044,7 @@ async def test__DiscordGatewayClientShard__connect__success_default():
             from_json(data),
             {   
                 'op': GATEWAY_OPERATION_CLIENT_HEARTBEAT,
-                'd': None,
+                'd': -1,
             },
         )
         
@@ -2075,7 +2077,7 @@ async def test__DiscordGatewayClientShard__connect__success_default():
         )
         
         vampytest.assert_is(gateway.session_id, None)
-        vampytest.assert_is(gateway.sequence, None)
+        vampytest.assert_eq(gateway.sequence, -1)
         vampytest.assert_is(gateway.resume_gateway_url, None)
         vampytest.assert_is_not(gateway.kokoro, None)
         vampytest.assert_is_not(gateway.kokoro.runner, None)

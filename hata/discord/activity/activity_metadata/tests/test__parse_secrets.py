@@ -5,16 +5,28 @@ from ...activity_secrets import ActivitySecrets
 from ..fields import parse_secrets
 
 
-def test__parse_secrets():
-    """
-    Tests whether ``parse_secrets`` works as intended.
-    """
+def _iter_options():
     secrets = ActivitySecrets(join = 'hell')
     
-    for input_data, expected_output in (
-        ({}, None),
-        ({'secrets': None}, None),
-        ({'secrets': secrets.to_data()}, secrets),
-    ):
-        output = parse_secrets(input_data)
-        vampytest.assert_eq(output, expected_output)
+    yield ({}, None)
+    yield ({'secrets': None}, None)
+    yield ({'secrets': secrets.to_data()}, secrets)
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__parse_secrets(input_data):
+    """
+    Tests whether ``parse_secrets`` works as intended.
+    
+    Parameters
+    ----------
+    input_data : dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | ActivitySecrets`
+    """
+    output = parse_secrets(input_data)
+    vampytest.assert_instance(output, ActivitySecrets, nullable = True)
+    return output

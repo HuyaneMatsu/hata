@@ -11,7 +11,6 @@ def _iter_options():
     yield ({}, None)
     yield ({'assets': None}, None)
     yield ({'assets': assets.to_data()}, assets)
-    
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
@@ -28,4 +27,6 @@ def test__parse_assets(input_data):
     -------
     output : `None | ActivityAssets`
     """
-    return parse_assets(input_data)
+    output = parse_assets(input_data)
+    vampytest.assert_instance(output, ActivityAssets, nullable = True)
+    return output

@@ -3,9 +3,9 @@ from datetime import datetime as DateTime, timezone as TimeZone
 import vampytest
 from scarletio import WeakValueDictionary
 
-from ....activity import Activity
 from ....bases import Icon, IconType
 from ....channel import Channel, ChannelType
+from ....embedded_activity import EmbeddedActivity
 from ....emoji import Emoji
 from ....localization import Locale
 from ....role import Role
@@ -15,7 +15,6 @@ from ....stage import Stage
 from ....sticker import Sticker
 from ....user import User, VoiceState
 
-from ...embedded_activity_state import EmbeddedActivityState
 from ...guild_incidents import GuildIncidents
 from ...guild_inventory_settings import GuildInventorySettings
 
@@ -54,7 +53,7 @@ def _assert_fields_set(guild):
     vampytest.assert_instance(guild.discovery_splash_hash, int)
     vampytest.assert_instance(guild.discovery_splash_type, IconType)
     vampytest.assert_instance(guild.description, str, nullable = True)
-    vampytest.assert_instance(guild.embedded_activity_states, set, nullable = True)
+    vampytest.assert_instance(guild.embedded_activities, set, nullable = True)
     vampytest.assert_instance(guild.emojis, dict)
     vampytest.assert_instance(guild.features, tuple, nullable = True)
     vampytest.assert_instance(guild.hub_type, HubType)
@@ -261,9 +260,9 @@ def test__Guild__precreate__all_fields():
     explicit_content_filter_level = ExplicitContentFilterLevel.no_role
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
-    embedded_activity_states = [
-        EmbeddedActivityState(activity = Activity('dance'), guild_id = guild_id, channel_id = 202306220034),
-        EmbeddedActivityState(activity = Activity('party'), guild_id = guild_id, channel_id = 202306220035),
+    embedded_activities = [
+        EmbeddedActivity.precreate(202409040000, guild_id = guild_id),
+        EmbeddedActivity.precreate(202409040001, guild_id = guild_id),
     ]
     emojis = [
         Emoji.precreate(202306210014),
@@ -344,7 +343,7 @@ def test__Guild__precreate__all_fields():
         explicit_content_filter_level = explicit_content_filter_level,
         description = description,
         discovery_splash = discovery_splash,
-        embedded_activity_states = embedded_activity_states,
+        embedded_activities = embedded_activities,
         emojis = emojis,
         features = features,
         hub_type = hub_type,
@@ -397,7 +396,7 @@ def test__Guild__precreate__all_fields():
     vampytest.assert_is(guild.explicit_content_filter_level, explicit_content_filter_level)
     vampytest.assert_eq(guild.description, description)
     vampytest.assert_eq(guild.discovery_splash, discovery_splash)
-    vampytest.assert_eq(guild.embedded_activity_states, set(embedded_activity_states))
+    vampytest.assert_eq(guild.embedded_activities, set(embedded_activities))
     vampytest.assert_eq(guild.emojis, {emoji.id: emoji for emoji in emojis})
     vampytest.assert_eq(guild.features, tuple(features))
     vampytest.assert_is(guild.hub_type, hub_type)

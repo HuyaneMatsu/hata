@@ -1,20 +1,20 @@
 __all__ = ()
 
 from collections import deque
+from warnings import warn
 
 from scarletio import CancelledError, Task, sleep, write_exception_async
 
 from ..core import KOKORO
 
 from .audio_source import AudioSource
-from .opus import OpusDecoder, opus
-from .rtp_packet import EMPTY_VOICE_FRAME_DECODED, EMPTY_VOICE_FRAME_ENCODED, RTPPacket, VoicePacket
+from .packets.constants import RTP_PACKET_TYPE_VOICE
+from .packets.rtp_packet import RTPPacket
+from .packets.voice_packet import VoicePacket
 
 
-if opus is None:
-    DECODER = None
-else:
-    DECODER = OpusDecoder()
+EMPTY_VOICE_FRAME_ENCODED = b'\xf8\xff\xfe'
+EMPTY_VOICE_FRAME_DECODED = b'\x00' * 3840
 
 
 class AudioStream(AudioSource):
@@ -23,8 +23,6 @@ class AudioStream(AudioSource):
     
     Attributes
     ----------
-    auto_decode : `bool`
-        Whether the stream should decode the frames as received.
     buffer : `deque` of `VoicePacket`
         A queue of received voice packets.
     done : `bool`
@@ -45,9 +43,9 @@ class AudioStream(AudioSource):
     REPEATABLE : `bool` = `False`
         Whether the source can be repeated after it is exhausted once.
     """
-    __slots__ = ('auto_decode', 'buffer', 'done', 'source', 'user', 'yield_decoded', 'voice_client')
+    __slots__ = ('buffer', 'done', 'source', 'user', 'yield_decoded', 'voice_client')
     
-    def __init__(self, voice_client, user, *, auto_decode = False, yield_decoded = False):
+    def __init__(self, voice_client, user, *, auto_decode = ..., yield_decoded = False):
         """
         Creates a new audio stream instance.
         
@@ -57,11 +55,16 @@ class AudioStream(AudioSource):
             Parent ``AudioReader``.
         user : ``ClientUserBase``
             The user, who's audio is received.
-        auto_decode : `bool` = `False`, Optional (Keyword only)
-            Whether the received packets should be auto decoded.
         yield_decoded : `bool` = `False`, Optional (Keyword only)
             Whether the audio stream should yield decoded data.
         """
+        if (auto_decode is not ...):
+            warn(
+                f'`{type(self).__name__}.__init__`\'s `auto_decode` parameter is deprecated. '
+                f'The packets are decoded now as accessed. '
+                f'The parameter will be removed at 2025 February.'
+            )
+        
         try:
             audio_source = voice_client._audio_sources[user.id]
         except KeyError:
@@ -69,7 +72,6 @@ class AudioStream(AudioSource):
         
         self.voice_client = voice_client
         self.buffer = deque()
-        self.auto_decode = auto_decode
         self.yield_decoded = yield_decoded
         self.done = False
         self.user = user
@@ -119,11 +121,6 @@ class AudioStream(AudioSource):
         packet : ``VoicePacket``
         """
         self.buffer.append(packet)
-        
-        
-        if self.auto_decode:
-            if packet.decoded is None:
-                packet.decoded = DECODER.decode(packet.encoded)
     
     
     async def read(self):
@@ -143,8 +140,6 @@ class AudioStream(AudioSource):
             packet = buffer.popleft()
             if self.yield_decoded:
                 data = packet.decoded
-                if data is None:
-                    data = DECODER.decode(packet.encoded)
             else:
                 data = packet.encoded
         
@@ -169,7 +164,7 @@ class AudioStream(AudioSource):
         -------
         title : `str`
         """
-        return f'{self.__class__.__name__} from {self.user.full_name!r}'
+        return f'{type(self).__name__} from {self.user.full_name!r}'
 
 
 class AudioReader:
@@ -237,11 +232,11 @@ class AudioReader:
                         return
                     
                     # If cancelled, we are probably establishing connection, so wait till that is done.
-                    payload_waiter = protocol.payload_waiter
+                    payload_waiter = protocol._payload_waiter
                     if payload_waiter is None:
                         # Wait some?
                         await sleep(0.2, KOKORO)
-                        payload_waiter = protocol.payload_waiter
+                        payload_waiter = protocol._payload_waiter
                         if payload_waiter is None:
                             continue
                     
@@ -252,18 +247,20 @@ class AudioReader:
                     continue
             
                 try:
-                    if data[1] != 120:
+                    rtp_packet = RTPPacket(data)
+                    if rtp_packet.payload_type != RTP_PACKET_TYPE_VOICE:
                         # not voice data, we don't care
                         continue
                     
-                    packet = RTPPacket(data, voice_client)
-                    source = packet.source
+                    source = rtp_packet.source
                     try:
                         audio_stream = audio_streams[source]
                     except KeyError:
                         pass
                     else:
-                        voice_packet = VoicePacket(bytes(packet.decrypted))
+                        voice_packet = VoicePacket(
+                            voice_client._encryption_adapter.process_received_payload(rtp_packet)
+                        )
                         if type(audio_stream) is list:
                             for audio_stream in audio_stream:
                                 audio_stream.feed(voice_packet)

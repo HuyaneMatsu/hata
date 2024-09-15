@@ -101,6 +101,10 @@ setup(
         'hata.discord.embed.embed_provider',
         'hata.discord.embed.embed_thumbnail',
         'hata.discord.embed.embed_video',
+        'hata.discord.embedded_activity',
+        'hata.discord.embedded_activity.embedded_activity',
+        'hata.discord.embedded_activity.embedded_activity_location',
+        'hata.discord.embedded_activity.embedded_activity_user_state',
         'hata.discord.emoji',
         'hata.discord.emoji.emoji',
         'hata.discord.emoji.parsing',
@@ -118,7 +122,6 @@ setup(
         'hata.discord.guild.ban_entry',
         'hata.discord.guild.discovery',
         'hata.discord.guild.discovery_category',
-        'hata.discord.guild.embedded_activity_state',
         'hata.discord.guild.guild',
         'hata.discord.guild.guild_incidents',
         'hata.discord.guild.guild_inventory_settings',
@@ -207,6 +210,8 @@ setup(
         'hata.discord.user.voice_state',
         'hata.discord.voice',
         'hata.discord.voice.audio_settings',
+        'hata.discord.voice.encryption_adapters',
+        'hata.discord.voice.packets',
         'hata.discord.webhook',
         'hata.discord.webhook.webhook',
         'hata.discord.webhook.webhook_source_channel',
@@ -287,7 +292,7 @@ setup(
     },
     python_requires = '>=3.6',
     install_requires = [
-        'scarletio>=1.0.68',
+        'scarletio>=1.0.77',
         'chardet>=2.0',
     ],
     extras_require = {
@@ -314,6 +319,7 @@ setup(
         ],
         'voice': [
             'PyNaCl>=1.3.0',
+            'libnacl',
         ],
     },
     entry_points = {

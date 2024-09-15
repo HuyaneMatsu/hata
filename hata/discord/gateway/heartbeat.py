@@ -139,10 +139,10 @@ class Kokoro(RichAttributeErrorBaseType):
             If its cancelled we already beat, continue loop.
         - If we did not get answer since last beating (what is triggered first from outside), then we stop the
             gateway. We also break out from the loop to terminate the beating state and we will wait for the
-            websocket to connect again.
+            web socket to connect again.
         - We beat one with starting `gateway.beat` as a ``Task`` and setting it to `.beat_task`. If the task is
             not completed before it's respective timeout, we stop the gateway here as well. We also break out
-            from the loop to terminate the beating state and we will wait for the websocket to connect again.
+            from the loop to terminate the beating state and we will wait for the web socket to connect again.
             This task can also be cancelled. If cancellation occurs, we repeat the loop.
         - If the beating task is done, we update `.last_send` to the current `perf_counter` time. Repeat the loop.
         

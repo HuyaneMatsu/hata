@@ -36,7 +36,7 @@ class SolarNode(RichAttributeErrorBaseType):
     _port : `int`
         Port of a lavalink node to connect to.
     _resume_key : `None`, `str`
-        A resume key to resume websocket connection with lavalink.
+        A resume key to resume web socket connection with lavalink.
     client : ``Client``
         The parent client of the node.
     players : `set` of ``SolarPlayerBase``
@@ -51,7 +51,7 @@ class SolarNode(RichAttributeErrorBaseType):
     stats : `None`, ``Stats``
         The statistics of the node.
     websocket : `None`, ``WebSocketClient``
-        The connected websocket.
+        The connected web socket.
     """
     __slots__ = (
         '_host', '_password', '_port', '_resume_key', 'client', 'players', 'reconnect_attempts', 'region', 'stats',
@@ -75,7 +75,7 @@ class SolarNode(RichAttributeErrorBaseType):
         region : `None`, ``VoiceRegion``
             The respective voice region of the node's players.
         resume_key : `None`, `str`
-            A resume key to resume websocket connection with lavalink.
+            A resume key to resume web socket connection with lavalink.
         reconnect_attempts : `int`
             How much times the gateway should try to reconnect before erroring out.
         
@@ -198,7 +198,7 @@ class SolarNode(RichAttributeErrorBaseType):
     
     async def _send(self, data):
         """
-        Sends the passed data to the node via the websocket connection.
+        Sends the passed data to the node via the web socket connection.
         
         Parameters
         ----------
@@ -250,7 +250,7 @@ class SolarNode(RichAttributeErrorBaseType):
                 await websocket.close(4000)
                 self.websocket = None
             
-            self.websocket = await self.client.http.connect_websocket(
+            self.websocket = await self.client.http.connect_web_socket(
                 f'ws://{self._host}:{self._port}',
                 headers = headers,
             )
@@ -402,7 +402,7 @@ class SolarNode(RichAttributeErrorBaseType):
         Raises
         ------
         ConnectionClosed
-            If the websocket connection closed.
+            If the web socket connection closed.
         """
         websocket = self.websocket
         if websocket is None:

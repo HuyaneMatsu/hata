@@ -18,11 +18,11 @@ def _iter_options__type_error():
 @vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
 def test__validate_button_style(input_value):
     """
-    Tests whether `validate_button_style` works as intended.
+    Tests whether ``validate_button_style`` works as intended.
     
     Parameters
     ----------
-    input_value : `dict<str, object>`
+    input_value : `object`
         Value to validate.
     
     Returns

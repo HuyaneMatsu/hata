@@ -16,6 +16,13 @@ from ..core import (
     APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, AUTO_MODERATION_RULES, CHANNELS, CLIENTS, ENTITLEMENTS, GUILDS,
     KOKORO, MESSAGES, ROLES, SCHEDULED_EVENTS, STAGES, USERS
 )
+from ..embedded_activity.embedded_activity.constants import (
+    EMBEDDED_ACTIVITY_UPDATE_CREATE, EMBEDDED_ACTIVITY_UPDATE_DELETE, EMBEDDED_ACTIVITY_UPDATE_UPDATE,
+    EMBEDDED_ACTIVITY_UPDATE_USER_ADD, EMBEDDED_ACTIVITY_UPDATE_USER_DELETE
+)
+from ..embedded_activity.embedded_activity.utils import (
+    difference_handle_embedded_activity_update_event, handle_embedded_activity_update_event
+)
 from ..emoji import Reaction, ReactionAddEvent, ReactionDeleteEvent
 from ..emoji.reaction_events.fields import (
     parse_emoji as parse_reaction_event_emoji, parse_message as parse_reaction_event_message,
@@ -23,13 +30,6 @@ from ..emoji.reaction_events.fields import (
 )
 from ..guild import (
     Guild, GuildJoinRequest, GuildJoinRequestDeleteEvent, GuildUserChunkEvent, create_partial_guild_from_id
-)
-from ..guild.embedded_activity_state.constants import (
-    EMBEDDED_ACTIVITY_UPDATE_CREATE, EMBEDDED_ACTIVITY_UPDATE_DELETE, EMBEDDED_ACTIVITY_UPDATE_UPDATE,
-    EMBEDDED_ACTIVITY_UPDATE_USER_ADD, EMBEDDED_ACTIVITY_UPDATE_USER_DELETE
-)
-from ..guild.embedded_activity_state.utils import (
-    difference_handle_embedded_activity_update_event, handle_embedded_activity_update_event
 )
 from ..guild.guild.constants import (
     EMOJI_EVENT_CREATE, EMOJI_EVENT_DELETE, EMOJI_EVENT_UPDATE, SOUNDBOARD_SOUND_EVENT_CREATE,
@@ -139,7 +139,8 @@ add_parser(
     READY,
     READY,
     READY,
-    READY)
+    READY,
+)
 del READY
 
 def RESUMED(client, data):
@@ -150,7 +151,8 @@ add_parser(
     RESUMED,
     RESUMED,
     RESUMED,
-    RESUMED)
+    RESUMED,
+)
 del RESUMED
 
 def USER_UPDATE__CAL(client, data):
@@ -168,9 +170,12 @@ add_parser(
     USER_UPDATE__CAL,
     USER_UPDATE__CAL,
     USER_UPDATE__OPT,
-    USER_UPDATE__OPT)
-del USER_UPDATE__CAL, \
-    USER_UPDATE__OPT
+    USER_UPDATE__OPT,
+)
+del (
+    USER_UPDATE__CAL,
+    USER_UPDATE__OPT,
+)
 
 def MESSAGE_CREATE__CAL(client, data):
     channel_id = int(data['channel_id'])
@@ -207,9 +212,12 @@ add_parser(
     MESSAGE_CREATE__CAL,
     MESSAGE_CREATE__CAL,
     MESSAGE_CREATE__OPT,
-    MESSAGE_CREATE__OPT)
-del MESSAGE_CREATE__CAL, \
-    MESSAGE_CREATE__OPT
+    MESSAGE_CREATE__OPT,
+)
+del (
+    MESSAGE_CREATE__CAL,
+    MESSAGE_CREATE__OPT,
+)
 
 
 def MESSAGE_DELETE__CAL_SC(client, data):
@@ -299,11 +307,14 @@ add_parser(
     MESSAGE_DELETE__CAL_SC,
     MESSAGE_DELETE__CAL_MC,
     MESSAGE_DELETE__OPT_SC,
-    MESSAGE_DELETE__OPT_MC)
-del MESSAGE_DELETE__CAL_SC, \
-    MESSAGE_DELETE__CAL_MC, \
-    MESSAGE_DELETE__OPT_SC, \
-    MESSAGE_DELETE__OPT_MC
+    MESSAGE_DELETE__OPT_MC,
+)
+del (
+    MESSAGE_DELETE__CAL_SC,
+    MESSAGE_DELETE__CAL_MC,
+    MESSAGE_DELETE__OPT_SC,
+    MESSAGE_DELETE__OPT_MC,
+)
 
 
 def MESSAGE_DELETE_BULK__CAL_SC(client, data):
@@ -411,11 +422,14 @@ add_parser(
     MESSAGE_DELETE_BULK__CAL_SC,
     MESSAGE_DELETE_BULK__CAL_MC,
     MESSAGE_DELETE_BULK__OPT_SC,
-    MESSAGE_DELETE_BULK__OPT_MC)
-del MESSAGE_DELETE_BULK__CAL_SC, \
-    MESSAGE_DELETE_BULK__CAL_MC, \
-    MESSAGE_DELETE_BULK__OPT_SC, \
-    MESSAGE_DELETE_BULK__OPT_MC
+    MESSAGE_DELETE_BULK__OPT_MC,
+)
+del (
+    MESSAGE_DELETE_BULK__CAL_SC,
+    MESSAGE_DELETE_BULK__CAL_MC,
+    MESSAGE_DELETE_BULK__OPT_SC,
+    MESSAGE_DELETE_BULK__OPT_MC,
+)
 
 
 def MESSAGE_UPDATE__CAL_SC(client, data):
@@ -530,11 +544,14 @@ add_parser(
     MESSAGE_UPDATE__CAL_SC,
     MESSAGE_UPDATE__CAL_MC,
     MESSAGE_UPDATE__OPT_SC,
-    MESSAGE_UPDATE__OPT_MC)
-del MESSAGE_UPDATE__CAL_SC, \
-    MESSAGE_UPDATE__CAL_MC, \
-    MESSAGE_UPDATE__OPT_SC, \
-    MESSAGE_UPDATE__OPT_MC
+    MESSAGE_UPDATE__OPT_MC,
+)
+del (
+    MESSAGE_UPDATE__CAL_SC,
+    MESSAGE_UPDATE__CAL_MC,
+    MESSAGE_UPDATE__OPT_SC,
+    MESSAGE_UPDATE__OPT_MC,
+)
 
 
 def MESSAGE_REACTION_ADD__CAL_SC(client, data):
@@ -601,11 +618,14 @@ add_parser(
     MESSAGE_REACTION_ADD__CAL_SC,
     MESSAGE_REACTION_ADD__CAL_MC,
     MESSAGE_REACTION_ADD__OPT_SC,
-    MESSAGE_REACTION_ADD__OPT_MC)
-del MESSAGE_REACTION_ADD__CAL_SC, \
-    MESSAGE_REACTION_ADD__CAL_MC, \
-    MESSAGE_REACTION_ADD__OPT_SC, \
-    MESSAGE_REACTION_ADD__OPT_MC
+    MESSAGE_REACTION_ADD__OPT_MC,
+)
+del (
+    MESSAGE_REACTION_ADD__CAL_SC,
+    MESSAGE_REACTION_ADD__CAL_MC,
+    MESSAGE_REACTION_ADD__OPT_SC,
+    MESSAGE_REACTION_ADD__OPT_MC,
+)
 
 
 def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client, data):
@@ -699,11 +719,14 @@ add_parser(
     MESSAGE_REACTION_REMOVE_ALL__CAL_SC,
     MESSAGE_REACTION_REMOVE_ALL__CAL_MC,
     MESSAGE_REACTION_REMOVE_ALL__OPT_SC,
-    MESSAGE_REACTION_REMOVE_ALL__OPT_MC)
-del MESSAGE_REACTION_REMOVE_ALL__CAL_SC, \
-    MESSAGE_REACTION_REMOVE_ALL__CAL_MC, \
-    MESSAGE_REACTION_REMOVE_ALL__OPT_SC, \
-    MESSAGE_REACTION_REMOVE_ALL__OPT_MC
+    MESSAGE_REACTION_REMOVE_ALL__OPT_MC,
+)
+del (
+    MESSAGE_REACTION_REMOVE_ALL__CAL_SC,
+    MESSAGE_REACTION_REMOVE_ALL__CAL_MC,
+    MESSAGE_REACTION_REMOVE_ALL__OPT_SC,
+    MESSAGE_REACTION_REMOVE_ALL__OPT_MC,
+)
 
 
 def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
@@ -771,11 +794,14 @@ add_parser(
     MESSAGE_REACTION_REMOVE__CAL_SC,
     MESSAGE_REACTION_REMOVE__CAL_MC,
     MESSAGE_REACTION_REMOVE__OPT_SC,
-    MESSAGE_REACTION_REMOVE__OPT_MC)
-del MESSAGE_REACTION_REMOVE__CAL_SC, \
-    MESSAGE_REACTION_REMOVE__CAL_MC, \
-    MESSAGE_REACTION_REMOVE__OPT_SC, \
-    MESSAGE_REACTION_REMOVE__OPT_MC
+    MESSAGE_REACTION_REMOVE__OPT_MC,
+)
+del (
+    MESSAGE_REACTION_REMOVE__CAL_SC,
+    MESSAGE_REACTION_REMOVE__CAL_MC,
+    MESSAGE_REACTION_REMOVE__OPT_SC,
+    MESSAGE_REACTION_REMOVE__OPT_MC,
+)
 
 
 def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client, data):
@@ -863,11 +889,14 @@ add_parser(
     MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC,
     MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC,
     MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC,
-    MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC)
-del MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC, \
-    MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC, \
-    MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC, \
-    MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC
+    MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC,
+)
+del (
+    MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC,
+    MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC,
+    MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC,
+    MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC,
+)
 
 
 if CACHE_PRESENCE:
@@ -958,10 +987,13 @@ add_parser(
     PRESENCE_UPDATE__CAL_SC,
     PRESENCE_UPDATE__CAL_MC,
     PRESENCE_UPDATE__OPT,
-    PRESENCE_UPDATE__OPT)
-del PRESENCE_UPDATE__CAL_SC, \
-    PRESENCE_UPDATE__CAL_MC, \
-    PRESENCE_UPDATE__OPT
+    PRESENCE_UPDATE__OPT,
+)
+del (
+    PRESENCE_UPDATE__CAL_SC,
+    PRESENCE_UPDATE__CAL_MC,
+    PRESENCE_UPDATE__OPT,
+)
 
 
 if CACHE_USER:
@@ -1078,11 +1110,14 @@ add_parser(
     GUILD_MEMBER_UPDATE__CAL_SC,
     GUILD_MEMBER_UPDATE__CAL_MC,
     GUILD_MEMBER_UPDATE__OPT_SC,
-    GUILD_MEMBER_UPDATE__OPT_MC)
-del GUILD_MEMBER_UPDATE__CAL_SC, \
-    GUILD_MEMBER_UPDATE__CAL_MC, \
-    GUILD_MEMBER_UPDATE__OPT_SC, \
-    GUILD_MEMBER_UPDATE__OPT_MC
+    GUILD_MEMBER_UPDATE__OPT_MC,
+)
+del (
+    GUILD_MEMBER_UPDATE__CAL_SC,
+    GUILD_MEMBER_UPDATE__CAL_MC,
+    GUILD_MEMBER_UPDATE__OPT_SC,
+    GUILD_MEMBER_UPDATE__OPT_MC,
+)
 
 
 def CHANNEL_DELETE__CAL_SC(client, data):
@@ -1137,10 +1172,13 @@ add_parser(
     CHANNEL_DELETE__CAL_SC,
     CHANNEL_DELETE__CAL_MC,
     CHANNEL_DELETE__OPT,
-    CHANNEL_DELETE__OPT)
-del CHANNEL_DELETE__CAL_SC, \
-    CHANNEL_DELETE__CAL_MC, \
-    CHANNEL_DELETE__OPT
+    CHANNEL_DELETE__OPT,
+)
+del (
+    CHANNEL_DELETE__CAL_SC,
+    CHANNEL_DELETE__CAL_MC,
+    CHANNEL_DELETE__OPT,
+)
 
 
 def CHANNEL_UPDATE__CAL_SC(client, data):
@@ -1209,11 +1247,14 @@ add_parser(
     CHANNEL_UPDATE__CAL_SC,
     CHANNEL_UPDATE__CAL_MC,
     CHANNEL_UPDATE__OPT_SC,
-    CHANNEL_UPDATE__OPT_MC)
-del CHANNEL_UPDATE__CAL_SC, \
-    CHANNEL_UPDATE__CAL_MC, \
-    CHANNEL_UPDATE__OPT_SC, \
-    CHANNEL_UPDATE__OPT_MC
+    CHANNEL_UPDATE__OPT_MC,
+)
+del (
+    CHANNEL_UPDATE__CAL_SC,
+    CHANNEL_UPDATE__CAL_MC,
+    CHANNEL_UPDATE__OPT_SC,
+    CHANNEL_UPDATE__OPT_MC,
+)
 
 
 def THREAD_UPDATE__CAL_SC(client, data):
@@ -1327,11 +1368,14 @@ add_parser(
     THREAD_UPDATE__CAL_SC,
     THREAD_UPDATE__CAL_MC,
     THREAD_UPDATE__OPT_SC,
-    THREAD_UPDATE__OPT_MC)
-del THREAD_UPDATE__CAL_SC, \
-    THREAD_UPDATE__CAL_MC, \
-    THREAD_UPDATE__OPT_SC, \
-    THREAD_UPDATE__OPT_MC
+    THREAD_UPDATE__OPT_MC,
+)
+del (
+    THREAD_UPDATE__CAL_SC,
+    THREAD_UPDATE__CAL_MC,
+    THREAD_UPDATE__OPT_SC,
+    THREAD_UPDATE__OPT_MC,
+)
 
 
 def VOICE_CHANNEL_STATUS_UPDATE__CAL_SC(client, data):
@@ -1401,11 +1445,14 @@ add_parser(
     VOICE_CHANNEL_STATUS_UPDATE__CAL_SC,
     VOICE_CHANNEL_STATUS_UPDATE__CAL_MC,
     VOICE_CHANNEL_STATUS_UPDATE__OPT_SC,
-    VOICE_CHANNEL_STATUS_UPDATE__OPT_MC)
-del VOICE_CHANNEL_STATUS_UPDATE__CAL_SC, \
-    VOICE_CHANNEL_STATUS_UPDATE__CAL_MC, \
-    VOICE_CHANNEL_STATUS_UPDATE__OPT_SC, \
-    VOICE_CHANNEL_STATUS_UPDATE__OPT_MC
+    VOICE_CHANNEL_STATUS_UPDATE__OPT_MC,
+)
+del (
+    VOICE_CHANNEL_STATUS_UPDATE__CAL_SC,
+    VOICE_CHANNEL_STATUS_UPDATE__CAL_MC,
+    VOICE_CHANNEL_STATUS_UPDATE__OPT_SC,
+    VOICE_CHANNEL_STATUS_UPDATE__OPT_MC,
+)
 
 
 def CHANNEL_CREATE__CAL(client, data):
@@ -1434,9 +1481,12 @@ add_parser(
     CHANNEL_CREATE__CAL,
     CHANNEL_CREATE__CAL,
     CHANNEL_CREATE__OPT,
-    CHANNEL_CREATE__OPT)
-del CHANNEL_CREATE__CAL, \
-    CHANNEL_CREATE__OPT
+    CHANNEL_CREATE__OPT,
+)
+del (
+    CHANNEL_CREATE__CAL,
+    CHANNEL_CREATE__OPT,
+)
 
 
 def CHANNEL_PINS_UPDATE__CAL(client, data):
@@ -1459,9 +1509,12 @@ add_parser(
     CHANNEL_PINS_UPDATE__CAL,
     CHANNEL_PINS_UPDATE__CAL,
     CHANNEL_PINS_UPDATE__OPT,
-    CHANNEL_PINS_UPDATE__OPT)
-del CHANNEL_PINS_UPDATE__CAL, \
-    CHANNEL_PINS_UPDATE__OPT
+    CHANNEL_PINS_UPDATE__OPT,
+)
+del (
+    CHANNEL_PINS_UPDATE__CAL,
+    CHANNEL_PINS_UPDATE__OPT,
+)
 
 
 def CHANNEL_RECIPIENT_ADD_CAL(client, data):
@@ -1495,9 +1548,12 @@ add_parser(
     CHANNEL_RECIPIENT_ADD_CAL,
     CHANNEL_RECIPIENT_ADD_CAL,
     CHANNEL_RECIPIENT_ADD__OPT,
-    CHANNEL_RECIPIENT_ADD__OPT)
-del CHANNEL_RECIPIENT_ADD_CAL, \
-    CHANNEL_RECIPIENT_ADD__OPT
+    CHANNEL_RECIPIENT_ADD__OPT,
+)
+del (
+    CHANNEL_RECIPIENT_ADD_CAL,
+    CHANNEL_RECIPIENT_ADD__OPT,
+)
 
 
 def CHANNEL_RECIPIENT_REMOVE__CAL_SC(client, data):
@@ -1554,10 +1610,13 @@ add_parser(
     CHANNEL_RECIPIENT_REMOVE__CAL_SC,
     CHANNEL_RECIPIENT_REMOVE__CAL_MC,
     CHANNEL_RECIPIENT_REMOVE__OPT,
-    CHANNEL_RECIPIENT_REMOVE__OPT)
-del CHANNEL_RECIPIENT_REMOVE__CAL_SC, \
-    CHANNEL_RECIPIENT_REMOVE__CAL_MC, \
-    CHANNEL_RECIPIENT_REMOVE__OPT
+    CHANNEL_RECIPIENT_REMOVE__OPT,
+)
+del (
+    CHANNEL_RECIPIENT_REMOVE__CAL_SC,
+    CHANNEL_RECIPIENT_REMOVE__CAL_MC,
+    CHANNEL_RECIPIENT_REMOVE__OPT,
+)
 
 
 def GUILD_EMOJIS_UPDATE__CAL_SC(client, data):
@@ -1669,11 +1728,14 @@ add_parser(
     GUILD_EMOJIS_UPDATE__CAL_SC,
     GUILD_EMOJIS_UPDATE__CAL_MC,
     GUILD_EMOJIS_UPDATE__OPT_SC,
-    GUILD_EMOJIS_UPDATE__OPT_MC)
-del GUILD_EMOJIS_UPDATE__CAL_SC, \
-    GUILD_EMOJIS_UPDATE__CAL_MC, \
-    GUILD_EMOJIS_UPDATE__OPT_SC, \
-    GUILD_EMOJIS_UPDATE__OPT_MC
+    GUILD_EMOJIS_UPDATE__OPT_MC,
+)
+del (
+    GUILD_EMOJIS_UPDATE__CAL_SC,
+    GUILD_EMOJIS_UPDATE__CAL_MC,
+    GUILD_EMOJIS_UPDATE__OPT_SC,
+    GUILD_EMOJIS_UPDATE__OPT_MC,
+)
 
 
 def GUILD_STICKERS_UPDATE__CAL_SC(client, data):
@@ -1782,11 +1844,14 @@ add_parser(
     GUILD_STICKERS_UPDATE__CAL_SC,
     GUILD_STICKERS_UPDATE__CAL_MC,
     GUILD_STICKERS_UPDATE__OPT_SC,
-    GUILD_STICKERS_UPDATE__OPT_MC)
-del GUILD_STICKERS_UPDATE__CAL_SC, \
-    GUILD_STICKERS_UPDATE__CAL_MC, \
-    GUILD_STICKERS_UPDATE__OPT_SC, \
-    GUILD_STICKERS_UPDATE__OPT_MC
+    GUILD_STICKERS_UPDATE__OPT_MC,
+)
+del (
+    GUILD_STICKERS_UPDATE__CAL_SC,
+    GUILD_STICKERS_UPDATE__CAL_MC,
+    GUILD_STICKERS_UPDATE__OPT_SC,
+    GUILD_STICKERS_UPDATE__OPT_MC,
+)
 
 
 def GUILD_MEMBER_ADD__CAL_SC(client, data):
@@ -1880,11 +1945,14 @@ add_parser(
     GUILD_MEMBER_ADD__CAL_SC,
     GUILD_MEMBER_ADD__CAL_MC,
     GUILD_MEMBER_ADD__OPT_SC,
-    GUILD_MEMBER_ADD__OPT_MC)
-del GUILD_MEMBER_ADD__CAL_SC, \
-    GUILD_MEMBER_ADD__CAL_MC, \
-    GUILD_MEMBER_ADD__OPT_SC, \
-    GUILD_MEMBER_ADD__OPT_MC
+    GUILD_MEMBER_ADD__OPT_MC,
+)
+del (
+    GUILD_MEMBER_ADD__CAL_SC,
+    GUILD_MEMBER_ADD__CAL_MC,
+    GUILD_MEMBER_ADD__OPT_SC,
+    GUILD_MEMBER_ADD__OPT_MC,
+)
 
 
 if CACHE_USER:
@@ -2057,11 +2125,14 @@ add_parser(
     GUILD_MEMBER_REMOVE__CAL_SC,
     GUILD_MEMBER_REMOVE__CAL_MC,
     GUILD_MEMBER_REMOVE__OPT_SC,
-    GUILD_MEMBER_REMOVE__OPT_MC)
-del GUILD_MEMBER_REMOVE__CAL_SC, \
-    GUILD_MEMBER_REMOVE__CAL_MC, \
-    GUILD_MEMBER_REMOVE__OPT_SC, \
-    GUILD_MEMBER_REMOVE__OPT_MC
+    GUILD_MEMBER_REMOVE__OPT_MC,
+)
+del (
+    GUILD_MEMBER_REMOVE__CAL_SC,
+    GUILD_MEMBER_REMOVE__CAL_MC,
+    GUILD_MEMBER_REMOVE__OPT_SC,
+    GUILD_MEMBER_REMOVE__OPT_MC,
+)
 
 
 def GUILD_JOIN_REQUEST_CREATE__CAL(client, data):
@@ -2078,9 +2149,12 @@ add_parser(
     GUILD_JOIN_REQUEST_CREATE__CAL,
     GUILD_JOIN_REQUEST_CREATE__CAL,
     GUILD_JOIN_REQUEST_CREATE__OPT,
-    GUILD_JOIN_REQUEST_CREATE__OPT)
-del GUILD_JOIN_REQUEST_CREATE__CAL, \
-    GUILD_JOIN_REQUEST_CREATE__OPT
+    GUILD_JOIN_REQUEST_CREATE__OPT,
+)
+del (
+    GUILD_JOIN_REQUEST_CREATE__CAL,
+    GUILD_JOIN_REQUEST_CREATE__OPT,
+)
 
 # This is a low priority event. Is called after `GUILD_MEMBER_REMOVE`, so we should have everything cached.
 
@@ -2098,9 +2172,12 @@ add_parser(
     GUILD_JOIN_REQUEST_DELETE__CAL,
     GUILD_JOIN_REQUEST_DELETE__CAL,
     GUILD_JOIN_REQUEST_DELETE__OPT,
-    GUILD_JOIN_REQUEST_DELETE__OPT)
-del GUILD_JOIN_REQUEST_DELETE__CAL, \
-    GUILD_JOIN_REQUEST_DELETE__OPT
+    GUILD_JOIN_REQUEST_DELETE__OPT,
+)
+del (
+    GUILD_JOIN_REQUEST_DELETE__CAL,
+    GUILD_JOIN_REQUEST_DELETE__OPT,
+)
 
 
 def GUILD_JOIN_REQUEST_UPDATE__CAL(client, data):
@@ -2117,9 +2194,12 @@ add_parser(
     GUILD_JOIN_REQUEST_UPDATE__CAL,
     GUILD_JOIN_REQUEST_UPDATE__CAL,
     GUILD_JOIN_REQUEST_UPDATE__OPT,
-    GUILD_JOIN_REQUEST_UPDATE__OPT)
-del GUILD_JOIN_REQUEST_UPDATE__CAL, \
-    GUILD_JOIN_REQUEST_UPDATE__OPT
+    GUILD_JOIN_REQUEST_UPDATE__OPT,
+)
+del (
+    GUILD_JOIN_REQUEST_UPDATE__CAL,
+    GUILD_JOIN_REQUEST_UPDATE__OPT,
+)
 
 
 if CACHE_PRESENCE:
@@ -2206,9 +2286,12 @@ add_parser(
     GUILD_CREATE__CAL,
     GUILD_CREATE__CAL,
     GUILD_CREATE__OPT,
-    GUILD_CREATE__OPT)
-del GUILD_CREATE__CAL, \
-    GUILD_CREATE__OPT
+    GUILD_CREATE__OPT,
+)
+del (
+    GUILD_CREATE__CAL,
+    GUILD_CREATE__OPT,
+)
 
 
 def GUILD_UPDATE__CAL_SC(client, data):
@@ -2277,11 +2360,14 @@ add_parser(
     GUILD_UPDATE__CAL_SC,
     GUILD_UPDATE__CAL_MC,
     GUILD_UPDATE__OPT_SC,
-    GUILD_UPDATE__OPT_MC)
-del GUILD_UPDATE__CAL_SC, \
-    GUILD_UPDATE__CAL_MC, \
-    GUILD_UPDATE__OPT_SC, \
-    GUILD_UPDATE__OPT_MC
+    GUILD_UPDATE__OPT_MC,
+)
+del (
+    GUILD_UPDATE__CAL_SC,
+    GUILD_UPDATE__CAL_MC,
+    GUILD_UPDATE__OPT_SC,
+    GUILD_UPDATE__OPT_MC,
+)
 
 
 def GUILD_DELETE__CAL(client, data):
@@ -2331,9 +2417,12 @@ add_parser(
     GUILD_DELETE__CAL,
     GUILD_DELETE__CAL,
     GUILD_DELETE__OPT,
-    GUILD_DELETE__OPT)
-del GUILD_DELETE__CAL, \
-    GUILD_DELETE__OPT
+    GUILD_DELETE__OPT,
+)
+del (
+    GUILD_DELETE__CAL,
+    GUILD_DELETE__OPT,
+)
 
 
 def GUILD_AUDIT_LOG_ENTRY_CREATE__CAL(client, data):
@@ -2350,9 +2439,12 @@ add_parser(
     GUILD_AUDIT_LOG_ENTRY_CREATE__CAL,
     GUILD_AUDIT_LOG_ENTRY_CREATE__CAL,
     GUILD_AUDIT_LOG_ENTRY_CREATE__OPT,
-    GUILD_AUDIT_LOG_ENTRY_CREATE__OPT)
-del GUILD_AUDIT_LOG_ENTRY_CREATE__CAL, \
-    GUILD_AUDIT_LOG_ENTRY_CREATE__OPT
+    GUILD_AUDIT_LOG_ENTRY_CREATE__OPT,
+)
+del (
+    GUILD_AUDIT_LOG_ENTRY_CREATE__CAL,
+    GUILD_AUDIT_LOG_ENTRY_CREATE__OPT,
+)
 
 
 def GUILD_BAN_ADD__CAL(client, data):
@@ -2376,9 +2468,12 @@ add_parser(
     GUILD_BAN_ADD__CAL,
     GUILD_BAN_ADD__CAL,
     GUILD_BAN_ADD__OPT,
-    GUILD_BAN_ADD__OPT)
-del GUILD_BAN_ADD__CAL, \
-    GUILD_BAN_ADD__OPT
+    GUILD_BAN_ADD__OPT,
+)
+del (
+    GUILD_BAN_ADD__CAL,
+    GUILD_BAN_ADD__OPT,
+)
 
 
 def GUILD_BAN_REMOVE__CAL(client, data):
@@ -2401,9 +2496,12 @@ add_parser(
     GUILD_BAN_REMOVE__CAL,
     GUILD_BAN_REMOVE__CAL,
     GUILD_BAN_REMOVE__OPT,
-    GUILD_BAN_REMOVE__OPT)
-del GUILD_BAN_REMOVE__CAL, \
-    GUILD_BAN_REMOVE__OPT
+    GUILD_BAN_REMOVE__OPT,
+)
+del (
+    GUILD_BAN_REMOVE__CAL,
+    GUILD_BAN_REMOVE__OPT,
+)
 
 
 def GUILD_MEMBERS_CHUNK(client, data):
@@ -2442,9 +2540,12 @@ add_parser(
     INTEGRATION_CREATE__CAL,
     INTEGRATION_CREATE__CAL,
     INTEGRATION_CREATE__OPT,
-    INTEGRATION_CREATE__OPT)
-del INTEGRATION_CREATE__CAL, \
-    INTEGRATION_CREATE__OPT
+    INTEGRATION_CREATE__OPT,
+)
+del (
+    INTEGRATION_CREATE__CAL,
+    INTEGRATION_CREATE__OPT,
+)
 
 
 def INTEGRATION_DELETE__CAL(client, data):
@@ -2474,9 +2575,12 @@ add_parser(
     INTEGRATION_DELETE__CAL,
     INTEGRATION_DELETE__CAL,
     INTEGRATION_DELETE__OPT,
-    INTEGRATION_DELETE__OPT)
-del INTEGRATION_DELETE__CAL, \
-    INTEGRATION_DELETE__OPT
+    INTEGRATION_DELETE__OPT,
+)
+del (
+    INTEGRATION_DELETE__CAL,
+    INTEGRATION_DELETE__OPT,
+)
 
 
 def INTEGRATION_UPDATE__CAL(client, data):
@@ -2500,9 +2604,12 @@ add_parser(
     INTEGRATION_UPDATE__CAL,
     INTEGRATION_UPDATE__CAL,
     INTEGRATION_UPDATE__OPT,
-    INTEGRATION_UPDATE__OPT)
-del INTEGRATION_UPDATE__CAL, \
-    INTEGRATION_UPDATE__OPT
+    INTEGRATION_UPDATE__OPT,
+)
+del (
+    INTEGRATION_UPDATE__CAL,
+    INTEGRATION_UPDATE__OPT,
+)
 
 
 def GUILD_INTEGRATIONS_UPDATE__CAL(client, data):
@@ -2524,9 +2631,12 @@ add_parser(
     GUILD_INTEGRATIONS_UPDATE__CAL,
     GUILD_INTEGRATIONS_UPDATE__CAL,
     GUILD_INTEGRATIONS_UPDATE__OPT,
-    GUILD_INTEGRATIONS_UPDATE__OPT)
-del GUILD_INTEGRATIONS_UPDATE__CAL, \
-    GUILD_INTEGRATIONS_UPDATE__OPT
+    GUILD_INTEGRATIONS_UPDATE__OPT,
+)
+del (
+    GUILD_INTEGRATIONS_UPDATE__CAL,
+    GUILD_INTEGRATIONS_UPDATE__OPT,
+)
 
 
 def GUILD_ROLE_CREATE__CAL_SC(client, data):
@@ -2587,11 +2697,14 @@ add_parser(
     GUILD_ROLE_CREATE__CAL_SC,
     GUILD_ROLE_CREATE__CAL_MC,
     GUILD_ROLE_CREATE__OPT_SC,
-    GUILD_ROLE_CREATE__OPT_MC)
-del GUILD_ROLE_CREATE__CAL_SC, \
-    GUILD_ROLE_CREATE__CAL_MC, \
-    GUILD_ROLE_CREATE__OPT_SC, \
-    GUILD_ROLE_CREATE__OPT_MC
+    GUILD_ROLE_CREATE__OPT_MC,
+)
+del (
+    GUILD_ROLE_CREATE__CAL_SC,
+    GUILD_ROLE_CREATE__CAL_MC,
+    GUILD_ROLE_CREATE__OPT_SC,
+    GUILD_ROLE_CREATE__OPT_MC,
+)
 
 
 def GUILD_ROLE_DELETE__CAL_SC(client, data):
@@ -2661,11 +2774,14 @@ add_parser(
     GUILD_ROLE_DELETE__CAL_SC,
     GUILD_ROLE_DELETE__CAL_MC,
     GUILD_ROLE_DELETE__OPT_SC,
-    GUILD_ROLE_DELETE__OPT_MC)
-del GUILD_ROLE_DELETE__CAL_SC, \
-    GUILD_ROLE_DELETE__CAL_MC, \
-    GUILD_ROLE_DELETE__OPT_SC, \
-    GUILD_ROLE_DELETE__OPT_MC
+    GUILD_ROLE_DELETE__OPT_MC,
+)
+del (
+    GUILD_ROLE_DELETE__CAL_SC,
+    GUILD_ROLE_DELETE__CAL_MC,
+    GUILD_ROLE_DELETE__OPT_SC,
+    GUILD_ROLE_DELETE__OPT_MC,
+)
 
 
 def GUILD_ROLE_UPDATE__CAL_SC(client, data):
@@ -2766,11 +2882,14 @@ add_parser(
     GUILD_ROLE_UPDATE__CAL_SC,
     GUILD_ROLE_UPDATE__CAL_MC,
     GUILD_ROLE_UPDATE__OPT_SC,
-    GUILD_ROLE_UPDATE__OPT_MC)
-del GUILD_ROLE_UPDATE__CAL_SC, \
-    GUILD_ROLE_UPDATE__CAL_MC, \
-    GUILD_ROLE_UPDATE__OPT_SC, \
-    GUILD_ROLE_UPDATE__OPT_MC
+    GUILD_ROLE_UPDATE__OPT_MC,
+)
+del (
+    GUILD_ROLE_UPDATE__CAL_SC,
+    GUILD_ROLE_UPDATE__CAL_MC,
+    GUILD_ROLE_UPDATE__OPT_SC,
+    GUILD_ROLE_UPDATE__OPT_MC,
+)
 
 def WEBHOOKS_UPDATE__CAL(client, data):
     event = WebhookUpdateEvent(data)
@@ -2784,9 +2903,12 @@ add_parser(
     WEBHOOKS_UPDATE__CAL,
     WEBHOOKS_UPDATE__CAL,
     WEBHOOKS_UPDATE__OPT,
-    WEBHOOKS_UPDATE__OPT)
-del WEBHOOKS_UPDATE__CAL, \
-    WEBHOOKS_UPDATE__OPT
+    WEBHOOKS_UPDATE__OPT,
+)
+del (
+    WEBHOOKS_UPDATE__CAL,
+    WEBHOOKS_UPDATE__OPT,
+)
 
 def VOICE_STATE_UPDATE__CAL_SC(client, data):
     try:
@@ -3062,11 +3184,14 @@ add_parser(
     VOICE_STATE_UPDATE__CAL_SC,
     VOICE_STATE_UPDATE__CAL_MC,
     VOICE_STATE_UPDATE__OPT_SC,
-    VOICE_STATE_UPDATE__OPT_MC)
-del VOICE_STATE_UPDATE__CAL_SC, \
-    VOICE_STATE_UPDATE__CAL_MC, \
-    VOICE_STATE_UPDATE__OPT_SC, \
-    VOICE_STATE_UPDATE__OPT_MC
+    VOICE_STATE_UPDATE__OPT_MC,
+)
+del (
+    VOICE_STATE_UPDATE__CAL_SC,
+    VOICE_STATE_UPDATE__CAL_MC,
+    VOICE_STATE_UPDATE__OPT_SC,
+    VOICE_STATE_UPDATE__OPT_MC,
+)
 
 
 def VOICE_SERVER_UPDATE_CAL(client, data):
@@ -3082,9 +3207,12 @@ add_parser(
     VOICE_SERVER_UPDATE_CAL,
     VOICE_SERVER_UPDATE_CAL,
     VOICE_SERVER_UPDATE__OPT,
-    VOICE_SERVER_UPDATE__OPT)
-del VOICE_SERVER_UPDATE_CAL, \
-    VOICE_SERVER_UPDATE__OPT
+    VOICE_SERVER_UPDATE__OPT,
+)
+del (
+    VOICE_SERVER_UPDATE_CAL,
+    VOICE_SERVER_UPDATE__OPT,
+)
 
 
 if CACHE_PRESENCE:
@@ -3114,9 +3242,12 @@ add_parser(
     TYPING_START__CAL,
     TYPING_START__CAL,
     TYPING_START__OPT,
-    TYPING_START__OPT)
-del TYPING_START__CAL, \
-    TYPING_START__OPT
+    TYPING_START__OPT,
+)
+del (
+    TYPING_START__CAL,
+    TYPING_START__OPT,
+)
 
 
 def INVITE_CREATE__CAL(client, data):
@@ -3133,9 +3264,12 @@ add_parser(
     INVITE_CREATE__CAL,
     INVITE_CREATE__CAL,
     INVITE_CREATE__OPT,
-    INVITE_CREATE__OPT)
-del INVITE_CREATE__CAL, \
-    INVITE_CREATE__OPT
+    INVITE_CREATE__OPT,
+)
+del (
+    INVITE_CREATE__CAL,
+    INVITE_CREATE__OPT,
+)
 
 
 def INVITE_DELETE__CAL(client, data):
@@ -3151,9 +3285,12 @@ add_parser('INVITE_DELETE',
     INVITE_DELETE__CAL,
     INVITE_DELETE__CAL,
     INVITE_DELETE__OPT,
-    INVITE_DELETE__OPT)
-del INVITE_DELETE__CAL, \
-    INVITE_DELETE__OPT
+    INVITE_DELETE__OPT,
+)
+del (
+    INVITE_DELETE__CAL,
+    INVITE_DELETE__OPT,
+)
 
 
 def RELATIONSHIP_ADD__CAL(client, data):
@@ -3185,9 +3322,12 @@ add_parser(
     RELATIONSHIP_ADD__CAL,
     RELATIONSHIP_ADD__CAL,
     RELATIONSHIP_ADD__OPT,
-    RELATIONSHIP_ADD__OPT)
-del RELATIONSHIP_ADD__CAL, \
-    RELATIONSHIP_ADD__OPT
+    RELATIONSHIP_ADD__OPT,
+)
+del (
+    RELATIONSHIP_ADD__CAL,
+    RELATIONSHIP_ADD__OPT,
+)
 
 def RELATIONSHIP_REMOVE__CAL(client, data):
     user_id = int(data['id'])
@@ -3210,9 +3350,12 @@ add_parser(
     RELATIONSHIP_REMOVE__CAL,
     RELATIONSHIP_REMOVE__CAL,
     RELATIONSHIP_REMOVE__OPT,
-    RELATIONSHIP_REMOVE__OPT)
-del RELATIONSHIP_REMOVE__CAL, \
-    RELATIONSHIP_REMOVE__OPT
+    RELATIONSHIP_REMOVE__OPT,
+)
+del (
+    RELATIONSHIP_REMOVE__CAL,
+    RELATIONSHIP_REMOVE__OPT,
+)
 
 # Empty list.
 def PRESENCES_REPLACE(client, data):
@@ -3257,9 +3400,12 @@ add_parser(
     GIFT_CODE_UPDATE__CAL,
     GIFT_CODE_UPDATE__CAL,
     GIFT_CODE_UPDATE__OPT,
-    GIFT_CODE_UPDATE__OPT)
-del GIFT_CODE_UPDATE__CAL, \
-    GIFT_CODE_UPDATE__OPT
+    GIFT_CODE_UPDATE__OPT,
+)
+del (
+    GIFT_CODE_UPDATE__CAL,
+    GIFT_CODE_UPDATE__OPT,
+)
 
 # Hooman only event.
 def USER_ACHIEVEMENT_UPDATE(client, data):
@@ -3353,9 +3499,12 @@ add_parser(
     INTERACTION_CREATE__CAL,
     INTERACTION_CREATE__CAL,
     INTERACTION_CREATE__OPT,
-    INTERACTION_CREATE__OPT)
-del INTERACTION_CREATE__CAL, \
-    INTERACTION_CREATE__OPT
+    INTERACTION_CREATE__OPT,
+)
+del (
+    INTERACTION_CREATE__CAL,
+    INTERACTION_CREATE__OPT,
+)
 
 
 def APPLICATION_COMMAND_CREATE__CAL(client, data):
@@ -3373,9 +3522,12 @@ add_parser(
     APPLICATION_COMMAND_CREATE__CAL,
     APPLICATION_COMMAND_CREATE__CAL,
     APPLICATION_COMMAND_CREATE__OPT,
-    APPLICATION_COMMAND_CREATE__OPT)
-del APPLICATION_COMMAND_CREATE__CAL, \
-    APPLICATION_COMMAND_CREATE__OPT
+    APPLICATION_COMMAND_CREATE__OPT,
+)
+del (
+    APPLICATION_COMMAND_CREATE__CAL,
+    APPLICATION_COMMAND_CREATE__OPT,
+)
 
 
 def APPLICATION_COMMAND_UPDATE__CAL(client, data):
@@ -3408,9 +3560,12 @@ add_parser(
     APPLICATION_COMMAND_UPDATE__CAL,
     APPLICATION_COMMAND_UPDATE__CAL,
     APPLICATION_COMMAND_UPDATE__OPT,
-    APPLICATION_COMMAND_UPDATE__OPT)
-del APPLICATION_COMMAND_UPDATE__CAL, \
-    APPLICATION_COMMAND_UPDATE__OPT
+    APPLICATION_COMMAND_UPDATE__OPT,
+)
+del (
+    APPLICATION_COMMAND_UPDATE__CAL,
+    APPLICATION_COMMAND_UPDATE__OPT,
+)
 
 
 def APPLICATION_COMMAND_DELETE__CAL(client, data):
@@ -3427,9 +3582,12 @@ add_parser(
     APPLICATION_COMMAND_DELETE__CAL,
     APPLICATION_COMMAND_DELETE__CAL,
     APPLICATION_COMMAND_DELETE__OPT,
-    APPLICATION_COMMAND_DELETE__OPT)
-del APPLICATION_COMMAND_DELETE__CAL, \
-    APPLICATION_COMMAND_DELETE__OPT
+    APPLICATION_COMMAND_DELETE__OPT,
+)
+del (
+    APPLICATION_COMMAND_DELETE__CAL,
+    APPLICATION_COMMAND_DELETE__OPT,
+)
 
 
 def APPLICATION_COMMAND_PERMISSIONS_UPDATE__CAL(client, data):
@@ -3445,9 +3603,12 @@ add_parser(
     APPLICATION_COMMAND_PERMISSIONS_UPDATE__CAL,
     APPLICATION_COMMAND_PERMISSIONS_UPDATE__CAL,
     APPLICATION_COMMAND_PERMISSIONS_UPDATE__OPT,
-    APPLICATION_COMMAND_PERMISSIONS_UPDATE__OPT)
-del APPLICATION_COMMAND_PERMISSIONS_UPDATE__CAL, \
-    APPLICATION_COMMAND_PERMISSIONS_UPDATE__OPT
+    APPLICATION_COMMAND_PERMISSIONS_UPDATE__OPT,
+)
+del (
+    APPLICATION_COMMAND_PERMISSIONS_UPDATE__CAL,
+    APPLICATION_COMMAND_PERMISSIONS_UPDATE__OPT,
+)
 
 
 def STAGE_INSTANCE_CREATE__CAL(client, data):
@@ -3463,9 +3624,12 @@ add_parser(
     STAGE_INSTANCE_CREATE__CAL,
     STAGE_INSTANCE_CREATE__CAL,
     STAGE_INSTANCE_CREATE__OPT,
-    STAGE_INSTANCE_CREATE__OPT)
-del STAGE_INSTANCE_CREATE__CAL, \
-    STAGE_INSTANCE_CREATE__OPT
+    STAGE_INSTANCE_CREATE__OPT,
+)
+del (
+    STAGE_INSTANCE_CREATE__CAL,
+    STAGE_INSTANCE_CREATE__OPT,
+)
 
 
 def STAGE_INSTANCE_UPDATE__CAL_SC(client, data):
@@ -3518,10 +3682,13 @@ add_parser(
     STAGE_INSTANCE_UPDATE__CAL_SC,
     STAGE_INSTANCE_UPDATE__CAL_MC,
     STAGE_INSTANCE_UPDATE__OPT,
-    STAGE_INSTANCE_UPDATE__OPT)
-del STAGE_INSTANCE_UPDATE__CAL_SC, \
-    STAGE_INSTANCE_UPDATE__CAL_MC, \
-    STAGE_INSTANCE_UPDATE__OPT
+    STAGE_INSTANCE_UPDATE__OPT,
+)
+del (
+    STAGE_INSTANCE_UPDATE__CAL_SC,
+    STAGE_INSTANCE_UPDATE__CAL_MC,
+    STAGE_INSTANCE_UPDATE__OPT,
+)
 
 
 def STAGE_INSTANCE_DELETE__CAL_SC(client, data):
@@ -3570,10 +3737,13 @@ add_parser(
     STAGE_INSTANCE_DELETE__CAL_SC,
     STAGE_INSTANCE_DELETE__CAL_MC,
     STAGE_INSTANCE_DELETE__OPT,
-    STAGE_INSTANCE_DELETE__OPT)
-del STAGE_INSTANCE_DELETE__CAL_SC, \
-    STAGE_INSTANCE_DELETE__CAL_MC, \
-    STAGE_INSTANCE_DELETE__OPT
+    STAGE_INSTANCE_DELETE__OPT,
+)
+del (
+    STAGE_INSTANCE_DELETE__CAL_SC,
+    STAGE_INSTANCE_DELETE__CAL_MC,
+    STAGE_INSTANCE_DELETE__OPT,
+)
 
 
 def THREAD_LIST_SYNC(client, data):
@@ -3602,7 +3772,8 @@ add_parser(
     THREAD_LIST_SYNC,
     THREAD_LIST_SYNC,
     THREAD_LIST_SYNC,
-    THREAD_LIST_SYNC)
+    THREAD_LIST_SYNC,
+)
 del THREAD_LIST_SYNC
 
 
@@ -3658,10 +3829,13 @@ add_parser(
     THREAD_MEMBER_UPDATE__CAL_SC,
     THREAD_MEMBER_UPDATE__CAL_MC,
     THREAD_MEMBER_UPDATE__OPT,
-    THREAD_MEMBER_UPDATE__OPT)
-del THREAD_MEMBER_UPDATE__CAL_SC, \
-    THREAD_MEMBER_UPDATE__CAL_MC, \
-    THREAD_MEMBER_UPDATE__OPT
+    THREAD_MEMBER_UPDATE__OPT,
+)
+del (
+    THREAD_MEMBER_UPDATE__CAL_SC,
+    THREAD_MEMBER_UPDATE__CAL_MC,
+    THREAD_MEMBER_UPDATE__OPT,
+)
 
 
 def THREAD_MEMBERS_UPDATE__CAL_SC(client, data):
@@ -3811,11 +3985,14 @@ add_parser(
     THREAD_MEMBERS_UPDATE__CAL_SC,
     THREAD_MEMBERS_UPDATE__CAL_MC,
     THREAD_MEMBERS_UPDATE__OPT_SC,
-    THREAD_MEMBERS_UPDATE__OPT_MC)
-del THREAD_MEMBERS_UPDATE__CAL_SC, \
-    THREAD_MEMBERS_UPDATE__CAL_MC, \
-    THREAD_MEMBERS_UPDATE__OPT_SC, \
-    THREAD_MEMBERS_UPDATE__OPT_MC
+    THREAD_MEMBERS_UPDATE__OPT_MC,
+)
+del (
+    THREAD_MEMBERS_UPDATE__CAL_SC,
+    THREAD_MEMBERS_UPDATE__CAL_MC,
+    THREAD_MEMBERS_UPDATE__OPT_SC,
+    THREAD_MEMBERS_UPDATE__OPT_MC,
+)
 
 
 def GUILD_APPLICATION_COMMAND_COUNTS_UPDATE(client, data):
@@ -3851,10 +4028,13 @@ add_parser(
     GUILD_SCHEDULED_EVENT_CREATE__CAL_SC,
     GUILD_SCHEDULED_EVENT_CREATE__CAL_MC,
     GUILD_SCHEDULED_EVENT_CREATE__OPT,
-    GUILD_SCHEDULED_EVENT_CREATE__OPT)
-del GUILD_SCHEDULED_EVENT_CREATE__CAL_SC, \
-    GUILD_SCHEDULED_EVENT_CREATE__CAL_MC, \
-    GUILD_SCHEDULED_EVENT_CREATE__OPT
+    GUILD_SCHEDULED_EVENT_CREATE__OPT,
+)
+del (
+    GUILD_SCHEDULED_EVENT_CREATE__CAL_SC,
+    GUILD_SCHEDULED_EVENT_CREATE__CAL_MC,
+    GUILD_SCHEDULED_EVENT_CREATE__OPT,
+)
 
 
 def GUILD_SCHEDULED_EVENT_DELETE__CAL_SC(client, data):
@@ -3910,10 +4090,13 @@ add_parser(
     GUILD_SCHEDULED_EVENT_DELETE__CAL_SC,
     GUILD_SCHEDULED_EVENT_DELETE__CAL_MC,
     GUILD_SCHEDULED_EVENT_DELETE__OPT,
-    GUILD_SCHEDULED_EVENT_DELETE__OPT)
-del GUILD_SCHEDULED_EVENT_DELETE__CAL_SC, \
-    GUILD_SCHEDULED_EVENT_DELETE__CAL_MC, \
-    GUILD_SCHEDULED_EVENT_DELETE__OPT
+    GUILD_SCHEDULED_EVENT_DELETE__OPT,
+)
+del (
+    GUILD_SCHEDULED_EVENT_DELETE__CAL_SC,
+    GUILD_SCHEDULED_EVENT_DELETE__CAL_MC,
+    GUILD_SCHEDULED_EVENT_DELETE__OPT,
+)
 
 
 def GUILD_SCHEDULED_EVENT_UPDATE__CAL_SC(client, data):
@@ -3992,11 +4175,14 @@ add_parser(
     GUILD_SCHEDULED_EVENT_UPDATE__CAL_SC,
     GUILD_SCHEDULED_EVENT_UPDATE__CAL_MC,
     GUILD_SCHEDULED_EVENT_UPDATE__OPT_SC,
-    GUILD_SCHEDULED_EVENT_UPDATE__OPT_MC)
-del GUILD_SCHEDULED_EVENT_UPDATE__CAL_SC, \
-    GUILD_SCHEDULED_EVENT_UPDATE__CAL_MC, \
-    GUILD_SCHEDULED_EVENT_UPDATE__OPT_SC, \
-    GUILD_SCHEDULED_EVENT_UPDATE__OPT_MC
+    GUILD_SCHEDULED_EVENT_UPDATE__OPT_MC,
+)
+del (
+    GUILD_SCHEDULED_EVENT_UPDATE__CAL_SC,
+    GUILD_SCHEDULED_EVENT_UPDATE__CAL_MC,
+    GUILD_SCHEDULED_EVENT_UPDATE__OPT_SC,
+    GUILD_SCHEDULED_EVENT_UPDATE__OPT_MC,
+)
 
 
 def GUILD_SCHEDULED_EVENT_USER_ADD__CAL_SC(client, data):
@@ -4021,10 +4207,13 @@ add_parser(
     GUILD_SCHEDULED_EVENT_USER_ADD__CAL_SC,
     GUILD_SCHEDULED_EVENT_USER_ADD__CAL_MC,
     GUILD_SCHEDULED_EVENT_USER_ADD__OPT,
-    GUILD_SCHEDULED_EVENT_USER_ADD__OPT)
-del GUILD_SCHEDULED_EVENT_USER_ADD__CAL_SC, \
-    GUILD_SCHEDULED_EVENT_USER_ADD__CAL_MC, \
-    GUILD_SCHEDULED_EVENT_USER_ADD__OPT
+    GUILD_SCHEDULED_EVENT_USER_ADD__OPT,
+)
+del (
+    GUILD_SCHEDULED_EVENT_USER_ADD__CAL_SC,
+    GUILD_SCHEDULED_EVENT_USER_ADD__CAL_MC,
+    GUILD_SCHEDULED_EVENT_USER_ADD__OPT,
+)
 
 
 def GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_SC(client, data):
@@ -4050,45 +4239,48 @@ add_parser(
     GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_SC,
     GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_MC,
     GUILD_SCHEDULED_EVENT_USER_REMOVE__OPT,
-    GUILD_SCHEDULED_EVENT_USER_REMOVE__OPT)
-del GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_SC, \
-    GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_MC, \
-    GUILD_SCHEDULED_EVENT_USER_REMOVE__OPT
+    GUILD_SCHEDULED_EVENT_USER_REMOVE__OPT,
+)
+del (
+    GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_SC,
+    GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_MC,
+    GUILD_SCHEDULED_EVENT_USER_REMOVE__OPT,
+)
 
 
 def EMBEDDED_ACTIVITY_UPDATE__CAL_SC(client, data):
-    embedded_activity_state, changes = difference_handle_embedded_activity_update_event(data)
+    embedded_activity, changes = difference_handle_embedded_activity_update_event(data)
     
     for action, value in changes:
         
         if action == EMBEDDED_ACTIVITY_UPDATE_CREATE:
             event_handler = client.events.embedded_activity_create
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(KOKORO, event_handler(client, embedded_activity_state))
+                Task(KOKORO, event_handler(client, embedded_activity))
             continue
         
         if action == EMBEDDED_ACTIVITY_UPDATE_DELETE:
             event_handler = client.events.embedded_activity_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(KOKORO, event_handler(client, embedded_activity_state))
+                Task(KOKORO, event_handler(client, embedded_activity))
             continue
         
         if action == EMBEDDED_ACTIVITY_UPDATE_UPDATE:
             event_handler = client.events.embedded_activity_update
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(KOKORO, event_handler(client, embedded_activity_state, value))
+                Task(KOKORO, event_handler(client, embedded_activity, value))
             continue
         
         if action == EMBEDDED_ACTIVITY_UPDATE_USER_ADD:
             event_handler = client.events.embedded_activity_user_add
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(KOKORO, event_handler(client, embedded_activity_state, value))
+                Task(KOKORO, event_handler(client, embedded_activity, value))
             continue
         
         if action == EMBEDDED_ACTIVITY_UPDATE_USER_DELETE:
             event_handler = client.events.embedded_activity_user_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(KOKORO, event_handler(client, embedded_activity_state, value))
+                Task(KOKORO, event_handler(client, embedded_activity, value))
             continue
         
         # no more cases
@@ -4106,7 +4298,7 @@ def EMBEDDED_ACTIVITY_UPDATE__CAL_MC(client, data):
             clients.close()
             return
     
-    embedded_activity_state, changes = difference_handle_embedded_activity_update_event(data)
+    embedded_activity, changes = difference_handle_embedded_activity_update_event(data)
     if not changes:
         if (clients is not None):
             clients.close()
@@ -4118,31 +4310,31 @@ def EMBEDDED_ACTIVITY_UPDATE__CAL_MC(client, data):
             if action == EMBEDDED_ACTIVITY_UPDATE_CREATE:
                 event_handler = client.events.embedded_activity_create
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(KOKORO, event_handler(client, embedded_activity_state))
+                    Task(KOKORO, event_handler(client, embedded_activity))
                 continue
             
             if action == EMBEDDED_ACTIVITY_UPDATE_DELETE:
                 event_handler = client.events.embedded_activity_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(KOKORO, event_handler(client, embedded_activity_state))
+                    Task(KOKORO, event_handler(client, embedded_activity))
                 continue
             
             if action == EMBEDDED_ACTIVITY_UPDATE_UPDATE:
                 event_handler = client.events.embedded_activity_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(KOKORO, event_handler(client, embedded_activity_state, value))
+                    Task(KOKORO, event_handler(client, embedded_activity, value))
                 continue
             
             if action == EMBEDDED_ACTIVITY_UPDATE_USER_ADD:
                 event_handler = client.events.embedded_activity_user_add
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(KOKORO, event_handler(client, embedded_activity_state, value))
+                    Task(KOKORO, event_handler(client, embedded_activity, value))
                 continue
             
             if action == EMBEDDED_ACTIVITY_UPDATE_USER_DELETE:
                 event_handler = client.events.embedded_activity_user_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(KOKORO, event_handler(client, embedded_activity_state, value))
+                    Task(KOKORO, event_handler(client, embedded_activity, value))
                 continue
             
             # no more cases
@@ -4154,31 +4346,31 @@ def EMBEDDED_ACTIVITY_UPDATE__CAL_MC(client, data):
                 if action == EMBEDDED_ACTIVITY_UPDATE_CREATE:
                     event_handler = client_.events.embedded_activity_create
                     if (event_handler is not DEFAULT_EVENT_HANDLER):
-                        Task(KOKORO, event_handler(client_, embedded_activity_state))
+                        Task(KOKORO, event_handler(client_, embedded_activity))
                     continue
                 
                 if action == EMBEDDED_ACTIVITY_UPDATE_DELETE:
                     event_handler = client_.events.embedded_activity_delete
                     if (event_handler is not DEFAULT_EVENT_HANDLER):
-                        Task(KOKORO, event_handler(client_, embedded_activity_state))
+                        Task(KOKORO, event_handler(client_, embedded_activity))
                     continue
                 
                 if action == EMBEDDED_ACTIVITY_UPDATE_UPDATE:
                     event_handler = client_.events.embedded_activity_update
                     if (event_handler is not DEFAULT_EVENT_HANDLER):
-                        Task(KOKORO, event_handler(client_, embedded_activity_state, value))
+                        Task(KOKORO, event_handler(client_, embedded_activity, value))
                     continue
                 
                 if action == EMBEDDED_ACTIVITY_UPDATE_USER_ADD:
                     event_handler = client_.events.embedded_activity_user_add
                     if (event_handler is not DEFAULT_EVENT_HANDLER):
-                        Task(KOKORO, event_handler(client_, embedded_activity_state, value))
+                        Task(KOKORO, event_handler(client_, embedded_activity, value))
                     continue
                 
                 if action == EMBEDDED_ACTIVITY_UPDATE_USER_DELETE:
                     event_handler = client_.events.embedded_activity_user_delete
                     if (event_handler is not DEFAULT_EVENT_HANDLER):
-                        Task(KOKORO, event_handler(client_, embedded_activity_state, value))
+                        Task(KOKORO, event_handler(client_, embedded_activity, value))
                     continue
                 
                 # no more cases
@@ -4206,11 +4398,21 @@ add_parser(
     EMBEDDED_ACTIVITY_UPDATE__CAL_SC,
     EMBEDDED_ACTIVITY_UPDATE__CAL_MC,
     EMBEDDED_ACTIVITY_UPDATE__OPT_SC,
-    EMBEDDED_ACTIVITY_UPDATE__OPT_MC)
-del EMBEDDED_ACTIVITY_UPDATE__CAL_SC, \
-    EMBEDDED_ACTIVITY_UPDATE__CAL_MC, \
-    EMBEDDED_ACTIVITY_UPDATE__OPT_SC, \
-    EMBEDDED_ACTIVITY_UPDATE__OPT_MC
+    EMBEDDED_ACTIVITY_UPDATE__OPT_MC,
+)
+add_parser(
+    'EMBEDDED_ACTIVITY_UPDATE_V2',
+    EMBEDDED_ACTIVITY_UPDATE__CAL_SC,
+    EMBEDDED_ACTIVITY_UPDATE__CAL_MC,
+    EMBEDDED_ACTIVITY_UPDATE__OPT_SC,
+    EMBEDDED_ACTIVITY_UPDATE__OPT_MC,
+)
+del (
+    EMBEDDED_ACTIVITY_UPDATE__CAL_SC,
+    EMBEDDED_ACTIVITY_UPDATE__CAL_MC,
+    EMBEDDED_ACTIVITY_UPDATE__OPT_SC,
+    EMBEDDED_ACTIVITY_UPDATE__OPT_MC,
+)
 
 
 def GUILD_APPLICATION_COMMAND_INDEX_UPDATE__CAL(client, data):
@@ -4227,9 +4429,12 @@ add_parser(
     GUILD_APPLICATION_COMMAND_INDEX_UPDATE__CAL,
     GUILD_APPLICATION_COMMAND_INDEX_UPDATE__CAL,
     GUILD_APPLICATION_COMMAND_INDEX_UPDATE__OPT,
-    GUILD_APPLICATION_COMMAND_INDEX_UPDATE__OPT)
-del GUILD_APPLICATION_COMMAND_INDEX_UPDATE__CAL, \
-    GUILD_APPLICATION_COMMAND_INDEX_UPDATE__OPT
+    GUILD_APPLICATION_COMMAND_INDEX_UPDATE__OPT,
+)
+del (
+    GUILD_APPLICATION_COMMAND_INDEX_UPDATE__CAL,
+    GUILD_APPLICATION_COMMAND_INDEX_UPDATE__OPT,
+)
 
 
 def AUTO_MODERATION_RULE_CREATE__CAL_SC(client, data):
@@ -4254,10 +4459,13 @@ add_parser(
     AUTO_MODERATION_RULE_CREATE__CAL_SC,
     AUTO_MODERATION_RULE_CREATE__CAL_MC,
     AUTO_MODERATION_RULE_CREATE__OPT,
-    AUTO_MODERATION_RULE_CREATE__OPT)
-del AUTO_MODERATION_RULE_CREATE__CAL_SC, \
-    AUTO_MODERATION_RULE_CREATE__CAL_MC, \
-    AUTO_MODERATION_RULE_CREATE__OPT
+    AUTO_MODERATION_RULE_CREATE__OPT,
+)
+del (
+    AUTO_MODERATION_RULE_CREATE__CAL_SC,
+    AUTO_MODERATION_RULE_CREATE__CAL_MC,
+    AUTO_MODERATION_RULE_CREATE__OPT,
+)
 
 
 def AUTO_MODERATION_RULE_UPDATE__CAL_SC(client, data):
@@ -4340,10 +4548,13 @@ add_parser(
     AUTO_MODERATION_RULE_UPDATE__CAL_SC,
     AUTO_MODERATION_RULE_UPDATE__CAL_MC,
     AUTO_MODERATION_RULE_UPDATE__OPT,
-    AUTO_MODERATION_RULE_UPDATE__OPT)
-del AUTO_MODERATION_RULE_UPDATE__CAL_SC, \
-    AUTO_MODERATION_RULE_UPDATE__CAL_MC, \
-    AUTO_MODERATION_RULE_UPDATE__OPT
+    AUTO_MODERATION_RULE_UPDATE__OPT,
+)
+del (
+    AUTO_MODERATION_RULE_UPDATE__CAL_SC,
+    AUTO_MODERATION_RULE_UPDATE__CAL_MC,
+    AUTO_MODERATION_RULE_UPDATE__OPT,
+)
 
 
 def AUTO_MODERATION_RULE_DELETE__CAL_SC(client, data):
@@ -4368,10 +4579,13 @@ add_parser(
     AUTO_MODERATION_RULE_DELETE__CAL_SC,
     AUTO_MODERATION_RULE_DELETE__CAL_MC,
     AUTO_MODERATION_RULE_DELETE__OPT,
-    AUTO_MODERATION_RULE_DELETE__OPT)
-del AUTO_MODERATION_RULE_DELETE__CAL_SC, \
-    AUTO_MODERATION_RULE_DELETE__CAL_MC, \
-    AUTO_MODERATION_RULE_DELETE__OPT
+    AUTO_MODERATION_RULE_DELETE__OPT,
+)
+del (
+    AUTO_MODERATION_RULE_DELETE__CAL_SC,
+    AUTO_MODERATION_RULE_DELETE__CAL_MC,
+    AUTO_MODERATION_RULE_DELETE__OPT,
+)
 
 
 def AUTO_MODERATION_ACTION_EXECUTION__CAL_SC(client, data):
@@ -4396,10 +4610,13 @@ add_parser(
     AUTO_MODERATION_ACTION_EXECUTION__CAL_SC,
     AUTO_MODERATION_ACTION_EXECUTION__CAL_MC,
     AUTO_MODERATION_ACTION_EXECUTION__OPT,
-    AUTO_MODERATION_ACTION_EXECUTION__OPT)
-del AUTO_MODERATION_ACTION_EXECUTION__CAL_SC, \
-    AUTO_MODERATION_ACTION_EXECUTION__CAL_MC, \
-    AUTO_MODERATION_ACTION_EXECUTION__OPT
+    AUTO_MODERATION_ACTION_EXECUTION__OPT,
+)
+del (
+    AUTO_MODERATION_ACTION_EXECUTION__CAL_SC,
+    AUTO_MODERATION_ACTION_EXECUTION__CAL_MC,
+    AUTO_MODERATION_ACTION_EXECUTION__OPT,
+)
 
 
 def VOICE_CHANNEL_EFFECT_SEND__CAL_SC(client, data):
@@ -4423,10 +4640,13 @@ add_parser(
     VOICE_CHANNEL_EFFECT_SEND__CAL_SC,
     VOICE_CHANNEL_EFFECT_SEND__CAL_MC,
     VOICE_CHANNEL_EFFECT_SEND__OPT,
-    VOICE_CHANNEL_EFFECT_SEND__OPT)
-del VOICE_CHANNEL_EFFECT_SEND__CAL_SC, \
-    VOICE_CHANNEL_EFFECT_SEND__CAL_MC, \
-    VOICE_CHANNEL_EFFECT_SEND__OPT
+    VOICE_CHANNEL_EFFECT_SEND__OPT,
+)
+del (
+    VOICE_CHANNEL_EFFECT_SEND__CAL_SC,
+    VOICE_CHANNEL_EFFECT_SEND__CAL_MC,
+    VOICE_CHANNEL_EFFECT_SEND__OPT,
+)
 
 
 def SOUNDBOARD_SOUNDS__CAL(client, data):
@@ -4443,9 +4663,12 @@ add_parser(
     SOUNDBOARD_SOUNDS__CAL,
     SOUNDBOARD_SOUNDS__CAL,
     SOUNDBOARD_SOUNDS__OPT,
-    SOUNDBOARD_SOUNDS__OPT)
-del SOUNDBOARD_SOUNDS__CAL, \
-    SOUNDBOARD_SOUNDS__OPT
+    SOUNDBOARD_SOUNDS__OPT,
+)
+del (
+    SOUNDBOARD_SOUNDS__CAL,
+    SOUNDBOARD_SOUNDS__OPT,
+)
 
 
 def GUILD_SOUNDBOARD_SOUND_CREATE__CAL(client, data):
@@ -4462,9 +4685,12 @@ add_parser(
     GUILD_SOUNDBOARD_SOUND_CREATE__CAL,
     GUILD_SOUNDBOARD_SOUND_CREATE__CAL,
     GUILD_SOUNDBOARD_SOUND_CREATE__OPT,
-    GUILD_SOUNDBOARD_SOUND_CREATE__OPT)
-del GUILD_SOUNDBOARD_SOUND_CREATE__CAL, \
-    GUILD_SOUNDBOARD_SOUND_CREATE__OPT
+    GUILD_SOUNDBOARD_SOUND_CREATE__OPT,
+)
+del (
+    GUILD_SOUNDBOARD_SOUND_CREATE__CAL,
+    GUILD_SOUNDBOARD_SOUND_CREATE__OPT,
+)
 
 
 def GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__SC(client, data):
@@ -4515,10 +4741,13 @@ add_parser(
     GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__SC,
     GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__MC,
     GUILD_SOUNDBOARD_SOUND_UPDATE__OPT,
-    GUILD_SOUNDBOARD_SOUND_UPDATE__OPT)
-del GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__SC, \
-    GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__MC, \
-    GUILD_SOUNDBOARD_SOUND_UPDATE__OPT
+    GUILD_SOUNDBOARD_SOUND_UPDATE__OPT,
+)
+del (
+    GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__SC,
+    GUILD_SOUNDBOARD_SOUND_UPDATE__CAL__MC,
+    GUILD_SOUNDBOARD_SOUND_UPDATE__OPT,
+)
 
 
 def GUILD_SOUNDBOARD_SOUND_DELETE__CAL__SC(client, data):
@@ -4559,10 +4788,13 @@ add_parser(
     GUILD_SOUNDBOARD_SOUND_DELETE__CAL__SC,
     GUILD_SOUNDBOARD_SOUND_DELETE__CAL__MC,
     GUILD_SOUNDBOARD_SOUND_DELETE__OPT,
-    GUILD_SOUNDBOARD_SOUND_DELETE__OPT)
-del GUILD_SOUNDBOARD_SOUND_DELETE__CAL__SC, \
-    GUILD_SOUNDBOARD_SOUND_DELETE__CAL__MC, \
-    GUILD_SOUNDBOARD_SOUND_DELETE__OPT
+    GUILD_SOUNDBOARD_SOUND_DELETE__OPT,
+)
+del (
+    GUILD_SOUNDBOARD_SOUND_DELETE__CAL__SC,
+    GUILD_SOUNDBOARD_SOUND_DELETE__CAL__MC,
+    GUILD_SOUNDBOARD_SOUND_DELETE__OPT,
+)
 
 
 def GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_SC(client, data):
@@ -4674,11 +4906,14 @@ add_parser(
     GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_SC,
     GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_MC,
     GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_SC,
-    GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_MC)
-del GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_SC, \
-    GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_MC, \
-    GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_SC, \
-    GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_MC
+    GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_MC,
+)
+del (
+    GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_SC,
+    GUILD_SOUNDBOARD_SOUNDS_UPDATE__CAL_MC,
+    GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_SC,
+    GUILD_SOUNDBOARD_SOUNDS_UPDATE__OPT_MC,
+)
 
 
 # Entitlements
@@ -4698,9 +4933,12 @@ add_parser(
     ENTITLEMENT_CREATE__CAL,
     ENTITLEMENT_CREATE__CAL,
     ENTITLEMENT_CREATE__OPT,
-    ENTITLEMENT_CREATE__OPT)
-del ENTITLEMENT_CREATE__CAL, \
-    ENTITLEMENT_CREATE__OPT
+    ENTITLEMENT_CREATE__OPT,
+)
+del (
+    ENTITLEMENT_CREATE__CAL,
+    ENTITLEMENT_CREATE__OPT,
+)
 
 
 def ENTITLEMENT_DELETE__CAL(client, data):
@@ -4723,9 +4961,12 @@ add_parser(
     ENTITLEMENT_DELETE__CAL,
     ENTITLEMENT_DELETE__CAL,
     ENTITLEMENT_DELETE__OPT,
-    ENTITLEMENT_DELETE__OPT)
-del ENTITLEMENT_DELETE__CAL, \
-    ENTITLEMENT_DELETE__OPT
+    ENTITLEMENT_DELETE__OPT,
+)
+del (
+    ENTITLEMENT_DELETE__CAL,
+    ENTITLEMENT_DELETE__OPT,
+)
 
 
 def ENTITLEMENT_UPDATE__CAL(client, data):
@@ -4755,9 +4996,12 @@ add_parser(
     ENTITLEMENT_UPDATE__CAL,
     ENTITLEMENT_UPDATE__CAL,
     ENTITLEMENT_UPDATE__OPT,
-    ENTITLEMENT_UPDATE__OPT)
-del ENTITLEMENT_UPDATE__CAL, \
-    ENTITLEMENT_UPDATE__OPT
+    ENTITLEMENT_UPDATE__OPT,
+)
+del (
+    ENTITLEMENT_UPDATE__CAL,
+    ENTITLEMENT_UPDATE__OPT,
+)
 
 
 
@@ -4825,11 +5069,14 @@ add_parser(
     MESSAGE_POLL_VOTE_ADD__CAL_SC,
     MESSAGE_POLL_VOTE_ADD__CAL_MC,
     MESSAGE_POLL_VOTE_ADD__OPT_SC,
-    MESSAGE_POLL_VOTE_ADD__OPT_MC)
-del MESSAGE_POLL_VOTE_ADD__CAL_SC, \
-    MESSAGE_POLL_VOTE_ADD__CAL_MC, \
-    MESSAGE_POLL_VOTE_ADD__OPT_SC, \
-    MESSAGE_POLL_VOTE_ADD__OPT_MC
+    MESSAGE_POLL_VOTE_ADD__OPT_MC,
+)
+del (
+    MESSAGE_POLL_VOTE_ADD__CAL_SC,
+    MESSAGE_POLL_VOTE_ADD__CAL_MC,
+    MESSAGE_POLL_VOTE_ADD__OPT_SC,
+    MESSAGE_POLL_VOTE_ADD__OPT_MC,
+)
 
 
 def MESSAGE_POLL_VOTE_REMOVE__CAL_SC(client, data):
@@ -4897,8 +5144,11 @@ add_parser(
     MESSAGE_POLL_VOTE_REMOVE__CAL_SC,
     MESSAGE_POLL_VOTE_REMOVE__CAL_MC,
     MESSAGE_POLL_VOTE_REMOVE__OPT_SC,
-    MESSAGE_POLL_VOTE_REMOVE__OPT_MC)
-del MESSAGE_POLL_VOTE_REMOVE__CAL_SC, \
-    MESSAGE_POLL_VOTE_REMOVE__CAL_MC, \
-    MESSAGE_POLL_VOTE_REMOVE__OPT_SC, \
-    MESSAGE_POLL_VOTE_REMOVE__OPT_MC
+    MESSAGE_POLL_VOTE_REMOVE__OPT_MC,
+)
+del (
+    MESSAGE_POLL_VOTE_REMOVE__CAL_SC,
+    MESSAGE_POLL_VOTE_REMOVE__CAL_MC,
+    MESSAGE_POLL_VOTE_REMOVE__OPT_SC,
+    MESSAGE_POLL_VOTE_REMOVE__OPT_MC,
+)

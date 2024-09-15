@@ -140,7 +140,7 @@ def _iter_options__eq():
 
 
 @vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
-def test__GuildProfile__eq(keyword_parameters_0, keyword_parameters_1):
+def test__VoiceChannelEffect__eq(keyword_parameters_0, keyword_parameters_1):
     """
     Tests whether ``VoiceChannelEffect.__eq__`` works as intended.
     
@@ -148,7 +148,7 @@ def test__GuildProfile__eq(keyword_parameters_0, keyword_parameters_1):
     ----------
     keyword_parameters_0 : `dict<str, object>`
         Keyword parameters to create instance with.
-    keyword_parameters_1 : `dict<object, object>`
+    keyword_parameters_1 : `dict<str, object>`
         Keyword parameters to create instance with.
     
     Returns

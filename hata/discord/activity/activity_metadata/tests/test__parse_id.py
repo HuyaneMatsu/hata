@@ -25,4 +25,6 @@ def test__parse_id(input_data):
     -------
     output : `int`
     """
-    return parse_id(input_data)
+    output = parse_id(input_data)
+    vampytest.assert_instance(output, int)
+    return output

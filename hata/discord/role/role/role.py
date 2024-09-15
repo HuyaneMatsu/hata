@@ -277,7 +277,7 @@ class Role(DiscordEntity, immortal = True):
         
         Returns
         -------
-        role : ``Role``
+        self : `instance<cls>`
         """
         role_id = parse_id(data)
         
@@ -449,7 +449,7 @@ class Role(DiscordEntity, immortal = True):
         
         Returns
         -------
-        role : ``Role``
+        self : `instance<cls>`
         
         Raises
         ------
@@ -487,7 +487,7 @@ class Role(DiscordEntity, immortal = True):
             if (icon is not None) and (unicode_emoji is not None):
                 raise ValueError(
                     f'`icon` and `unicode_emoji` parameters are mutually exclusive, got '
-                    f'icon = {icon!r}; unicode_emoji={unicode_emoji!r}.'
+                    f'icon = {icon!r}; unicode_emoji = {unicode_emoji!r}.'
                 )
             
             # manager
@@ -791,7 +791,7 @@ class Role(DiscordEntity, immortal = True):
         
         Returns
         -------
-        role : `str`
+        representation : `str`
         
         Examples
         --------
@@ -1083,7 +1083,7 @@ class Role(DiscordEntity, immortal = True):
             return False
         
         # guild_id
-        # SKip it, non partial field
+        # Skip it, non partial field
         
         # id
         # Skip it, non partial field
@@ -1144,7 +1144,7 @@ class Role(DiscordEntity, immortal = True):
         hash_value ^= hash(self.icon)
         
         # guild_id
-        # SKip it, non partial field
+        # Skip it, non partial field
         
         # id
         # Skip it, non partial field

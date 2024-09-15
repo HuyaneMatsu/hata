@@ -55,7 +55,7 @@ async def test__Client__emoji_get_guild__stuffed():
         
         vampytest.assert_instance(output, Emoji)
         vampytest.assert_eq(output.id, emoji_id)
-        vampytest.assert_is(output.guild_id, guild_id)
+        vampytest.assert_eq(output.guild_id, guild_id)
         vampytest.assert_eq(output.name, name)
         vampytest.assert_eq(output.role_ids, tuple(role_ids))
     finally:

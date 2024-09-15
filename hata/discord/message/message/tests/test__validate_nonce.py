@@ -10,62 +10,35 @@ def _iter_options__passing():
     yield 'a', 'a'
 
 
+def _iter_options__type_error():
+    yield 1
+
+
+def _iter_options__value_error():
+    yield 'a' * (NONCE_LENGTH_MAX + 1)
+    
+
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
-def test__validate_nonce__passing(nonce):
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_nonce(input_value):
     """
     Tests whether `validate_nonce` works as intended.
     
-    Case: passing.
-    
     Parameters
     ----------
-    nonce : `None | str`
-        Nonce to validate.
+    input_value : `object`
+        Value to validate.
     
     Returns
     -------
     output : `None | str`
-    """
-    return validate_nonce(nonce)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-def test__validate_nonce__type_error(nonce):
-    """
-    Tests whether `validate_nonce` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    nonce : `None | str`
-        Nonce to validate with.
     
     Raises
     ------
     TypeError
-        The occurred exception.
-    """
-    validate_nonce(nonce)
-
-
-@vampytest.raising(ValueError)
-@vampytest.call_with('a' * (NONCE_LENGTH_MAX + 1))
-def test__validate_nonce__value_error(nonce):
-    """
-    Tests whether `validate_nonce` works as intended.
-    
-    Case: `ValueError`.
-    
-    Parameters
-    ----------
-    nonce : `None | str`
-        Nonce to validate with.
-    
-    Raises
-    ------
     ValueError
-        The occurred exception.
     """
-    validate_nonce(nonce)
+    output = validate_nonce(input_value)
+    vampytest.assert_instance(output, str, nullable = True)
+    return output

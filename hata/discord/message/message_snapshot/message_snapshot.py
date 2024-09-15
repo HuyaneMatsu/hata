@@ -228,6 +228,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         ----------
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether default values should be included as well.
+        
         guild_id : `int` = `0`, Optional (Keyword only)
             The respective guild's identifier.
         

@@ -129,7 +129,7 @@ class CommandChange(RichAttributeErrorBaseType):
     """
     __slots__ = ('added', 'command')
     
-    def __init__(self, added, command):
+    def __new__(cls, added, command):
         """
         Creates a new command change instance.
         
@@ -140,17 +140,33 @@ class CommandChange(RichAttributeErrorBaseType):
         command : ``CommandBaseApplicationCommand``
             The command itself.
         """
+        self = object.__new__(cls)
         self.added = added
         self.command = command
+        return self
+    
     
     def __repr__(self):
         """returns the command change's representation."""
-        return f'{self.__class__.__name__}(added={self.added!r}, command={self.command!r})'
+        repr_parts = ['<', type(self).__name__]
+        
+        # added
+        repr_parts.append(' added = ')
+        repr_parts.append(repr(self.added))
+        
+        # command
+        repr_parts.append(' command = ')
+        repr_parts.append(repr(self.command))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
     
     def __iter__(self):
         """Unpacks the command change."""
         yield self.added
         yield self.command
+    
     
     def __len__(self):
         """Helper for unpacking."""

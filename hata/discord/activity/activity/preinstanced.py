@@ -4,7 +4,9 @@ from scarletio import class_property
 
 from ...bases import Preinstance as P, PreinstancedBase
 
-from ..activity_metadata import ActivityMetadataBase, ActivityMetadataCustom, ActivityMetadataRich
+from ..activity_metadata import (
+    ActivityMetadataBase, ActivityMetadataCustom, ActivityMetadataHanging, ActivityMetadataRich
+)
 
 
 class ActivityType(PreinstancedBase):
@@ -40,7 +42,7 @@ class ActivityType(PreinstancedBase):
     +-----------------------+-----------------------+-----------+---------------------------------------+
     | playing               | playing               | 0         | ``ActivityMetadataRich``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
-    | stream                | block stream          | 1         | ``ActivityMetadataRich``              |
+    | stream                | stream                | 1         | ``ActivityMetadataRich``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
     | spotify               | spotify               | 2         | ``ActivityMetadataRich``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
@@ -49,6 +51,8 @@ class ActivityType(PreinstancedBase):
     | custom                | custom                | 4         | ``ActivityMetadataCustom``            |
     +-----------------------+-----------------------+-----------+---------------------------------------+
     | competing             | competing             | 5         | ``ActivityMetadataRich``              |
+    +-----------------------+-----------------------+-----------+---------------------------------------+
+    | hanging               | hanging               | 6         | ``ActivityMetadataHanging``           |
     +-----------------------+-----------------------+-----------+---------------------------------------+
     """
     __slots__ = ('metadata_type',)
@@ -81,14 +85,14 @@ class ActivityType(PreinstancedBase):
     
     def __init__(self, value, name, metadata_type):
         """
-        Creates an ``ActivityType`` and stores it at the class's `.INSTANCES` class attribute as well.
+        Creates an activity type and stores it at the class's `.INSTANCES` class attribute as well.
         
         Parameters
         ----------
         value : `int`
             The Discord side identifier value of the activity type.
         name : `str`
-            The default name of the activity type.
+            The name of the activity type.
         metadata_type : `None`, `type<ActivityMetadataBase>`
             The activity type's respective metadata type.
         """
@@ -98,6 +102,7 @@ class ActivityType(PreinstancedBase):
         
         self.INSTANCES[value] = self
     
+    
     # predefined
     unknown = P(-1, 'unknown', ActivityMetadataBase)
     playing = P(0, 'playing', ActivityMetadataRich)
@@ -106,7 +111,11 @@ class ActivityType(PreinstancedBase):
     watching = P(3, 'watching', ActivityMetadataRich)
     custom = P(4, 'custom', ActivityMetadataCustom)
     competing = P(5, 'competing', ActivityMetadataRich)
+    hanging = P(6, 'hanging', ActivityMetadataHanging)
     
+    
+    # Leave a date comment here, so we find it when looking for expired deprecations
+    # 2024 january
     
     @class_property
     def game(self):

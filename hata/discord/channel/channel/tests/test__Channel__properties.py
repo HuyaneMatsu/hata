@@ -276,7 +276,7 @@ def test__Channel__mention():
     vampytest.assert_instance(mention, str)
 
 
-def test__Channel__partial__0():
+def test__Channel__partial__created_with_new():
     """
     Tests whether ``Channel.partial`` works as intended.
     
@@ -289,7 +289,7 @@ def test__Channel__partial__0():
     vampytest.assert_true(partial)
 
 
-def test__Channel__partial__1():
+def test__Channel__partial__created_with_precreate():
     """
     Tests whether ``Channel.partial`` works as intended.
     
@@ -304,7 +304,7 @@ def test__Channel__partial__1():
     vampytest.assert_true(partial)
 
 
-def test__Channel__partial__2():
+def test__Channel__partial__non_partial_private():
     """
     Tests whether ``Channel.partial`` works as intended.
     
@@ -329,7 +329,7 @@ def test__Channel__partial__2():
         client = None
 
 
-def test__Channel__partial__3():
+def test__Channel__partial__partial_private():
     """
     Tests whether ``Channel.partial`` works as intended.
     
@@ -345,7 +345,7 @@ def test__Channel__partial__3():
     vampytest.assert_true(partial)
 
 
-def test__Channel__partial__4():
+def test__Channel__partial__non_partial_guild():
     """
     Tests whether ``Channel.partial`` works as intended.
     
@@ -375,7 +375,7 @@ def test__Channel__partial__4():
         client = None
 
 
-def test__Channel__partial__5():
+def test__Channel__partial__partial_guild():
     """
     Tests whether ``Channel.partial`` works as intended.
     

@@ -24,6 +24,12 @@ def test__parse_emoji(input_data):
     Parameters
     ----------
     input_data : `dict<str, object>`
-        Data to parse emoji form.
+        Data to parse from.
+    
+    Returns
+    -------
+    output : `None | Emoji`
     """
-    return parse_emoji(input_data)
+    output = parse_emoji(input_data)
+    vampytest.assert_instance(output, Emoji, nullable = True)
+    return output

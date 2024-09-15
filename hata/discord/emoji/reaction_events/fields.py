@@ -18,8 +18,9 @@ def parse_user(data, guild_id = 0):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Reaction event data.
+    
     guild_id : `int` = `0`, Optional
         The guild's identifier where the event is from.
     
@@ -47,7 +48,7 @@ def put_user_into(user, data, defaults, *, guild_id = 0):
     ----------
     user : ``ClientUserBase``
         The user to serialize.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Reaction event data.
     defaults : `bool`
         Whether fields with their default values should be included as well.
@@ -56,7 +57,7 @@ def put_user_into(user, data, defaults, *, guild_id = 0):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     data['user_id'] = str(user.id)
     

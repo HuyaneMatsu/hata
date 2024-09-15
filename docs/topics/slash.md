@@ -256,7 +256,7 @@ async def cake(
     user: P('user', 'To who?'),
 ):
     """Gifts a cake!"""
-    return Embed(description = f'{event.user:f} just gifted a cookie to {user:f} !').add_image(choice(CAKES))
+    return Embed(description = f'{event.user:f} just gifted a cake to {user:f} !').add_image(choice(CAKES))
 ```
 
 # Optional parameters

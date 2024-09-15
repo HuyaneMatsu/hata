@@ -48,7 +48,9 @@ def test__ActivityMetadataCustom__to_data():
         state = state,
     )
     
-    expected_output = {}
+    expected_output = {
+        'state': state,
+    }
     
     vampytest.assert_eq(
         activity_metadata.to_data(),

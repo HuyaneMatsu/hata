@@ -1,5 +1,7 @@
 import vampytest
 
+from ...activity_metadata import ActivityMetadataCustom, ActivityMetadataRich
+
 from ..activity import Activity
 from ..preinstanced import ActivityType
 
@@ -7,7 +9,8 @@ from .test__Activity__constructor import _assert_fields_set
 
 
 @vampytest.call_from(
-    activity_type for activity_type in ActivityType.INSTANCES.values() if activity_type is not ActivityType.unknown
+    activity_type for activity_type in ActivityType.INSTANCES.values()
+    if activity_type.metadata_type in (ActivityMetadataCustom, ActivityMetadataRich)
 )
 def test__Activity__from_data(activity_type):
     """
@@ -142,14 +145,16 @@ def test__Activity__difference_update_attributes():
     """
     Tests whether ``Activity._difference_update_attributes`` works as expected.
     """
-    old_name = 'ZYTOKINE'
-    new_name = 'Linjin'
     activity_type = ActivityType.playing
+    
+    old_name = 'ZYTOKINE'
     old_url = 'https://www.astil.dev/'
-    new_url = 'https://www.astil.dev/project/hata/'
     old_state = 'Hollow'
-    new_state = 'NEXT'
     old_session_id = 'Ensemble'
+    
+    new_name = 'Linjin'
+    new_url = 'https://www.astil.dev/project/hata/'
+    new_state = 'NEXT'
     new_session_id = 'LIFE'
     
     activity = Activity(

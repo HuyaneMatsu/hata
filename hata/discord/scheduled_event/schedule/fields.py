@@ -1,8 +1,8 @@
 __all__ = ()
 
 from ...field_parsers import (
-    int_parser_factory, nullable_date_time_parser_factory, nullable_entity_array_parser_factory,
-    nullable_sorted_array_parser_factory, preinstanced_array_parser_factory, preinstanced_parser_factory
+    int_parser_factory, nullable_array_parser_factory, nullable_date_time_parser_factory,
+    nullable_entity_array_parser_factory, preinstanced_array_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
     int_optional_putter_factory, int_putter_factory, nullable_date_time_optional_putter_factory,
@@ -22,7 +22,7 @@ from .preinstanced import ScheduleFrequency, ScheduleMonth
 
 # by_month_days
 
-parse_by_month_days = nullable_sorted_array_parser_factory('by_month_day')
+parse_by_month_days = nullable_array_parser_factory('by_month_day')
 put_by_month_days_into = nullable_value_array_optional_putter_factory('by_month_day')
 validate_by_month_days = nullable_sorted_int_array_conditional_validator_factory(
     'by_month_days',
@@ -54,7 +54,7 @@ validate_by_weeks_days = preinstanced_array_validator_factory('by_weeks_days', S
 
 # by_year_days
 
-parse_by_year_days = nullable_sorted_array_parser_factory('by_year_day')
+parse_by_year_days = nullable_array_parser_factory('by_year_day')
 put_by_year_days_into = nullable_value_array_optional_putter_factory('by_year_day')
 validate_by_year_days = nullable_sorted_int_array_conditional_validator_factory(
     'by_year_days',

@@ -435,14 +435,14 @@ class TrackExceptionEvent(EventBase):
 
 class PlayerWebsocketClosedEvent(EventBase):
     """
-    Represents an event when a player's websocket is disconnected from a guild.
+    Represents an event when a player's web socket is disconnected from a guild.
     
     It usually is not a lavalink issue, but an issue with the stream.
     
     Attributes
     ----------
     by_remote : `bool`
-        Whether the websocket was closed remotely.
+        Whether the web socket was closed remotely.
     code : `int`
         Websocket close code.
     player : ``SolarPlayerBase``

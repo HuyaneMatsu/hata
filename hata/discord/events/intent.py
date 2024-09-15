@@ -77,6 +77,7 @@ INTENT_SHIFT_EVENTS = {
         'GUILD_JOIN_REQUEST_DELETE',
         'GUILD_JOIN_REQUEST_UPDATE',
         'EMBEDDED_ACTIVITY_UPDATE',
+        'EMBEDDED_ACTIVITY_UPDATE_V2',
         'CHANNEL_TOPIC_UPDATE',
         'VOICE_CHANNEL_STATUS_UPDATE',
     ),
@@ -270,6 +271,7 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
     |                                               |       |                               | GUILD_JOIN_REQUEST_DELETE,                  |
     |                                               |       |                               | GUILD_JOIN_REQUEST_UPDATE,                  |
     |                                               |       |                               | EMBEDDED_ACTIVITY_UPDATE,                   |
+    |                                               |       |                               | EMBEDDED_ACTIVITY_UPDATE_V2,                |
     |                                               |       |                               | CHANNEL_TOPIC_UPDATE,                       |
     |                                               |       |                               | VOICE_CHANNEL_STATUS_UPDATE                 |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+

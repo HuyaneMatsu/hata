@@ -6,9 +6,10 @@ from ..auto_moderation import AutoModerationRule
 from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token_pair
 from ..channel import Channel, ForumTag, PermissionOverwrite
 from ..core import (
-    APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, EMOJIS, FORUM_TAGS, GUILDS, MESSAGES, ROLES,
-    SCHEDULED_EVENTS, SOUNDBOARD_SOUNDS, STICKERS, STICKER_PACKS, USERS
+    APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, EMBEDDED_ACTIVITIES, EMOJIS, FORUM_TAGS, GUILDS, MESSAGES,
+    ROLES, SCHEDULED_EVENTS, SOUNDBOARD_SOUNDS, STICKERS, STICKER_PACKS, USERS
 )
+from ..embedded_activity import EmbeddedActivity
 from ..emoji import Emoji, Reaction, ReactionType
 from ..guild import Guild
 from ..message import Message
@@ -54,7 +55,7 @@ def validate_message_to_delete(message):
         if snowflake_pair is None:
             raise TypeError(
                 f'`message` can be `{Message.__name__}`, '
-                f'`tuple` of (`int`, `int`), got {message.__class__.__name__}; {message!r}.'
+                f'`tuple` of (`int`, `int`), got {type(message).__name__}; {message!r}.'
             )
         
         channel_id, message_id = snowflake_pair
@@ -1779,3 +1780,36 @@ def get_message_id(message):
             )
     
     return message_id
+
+
+def get_embedded_activity_and_id(embedded_activity):
+    """
+    Gets the embedded activity and its identifier.
+    
+    Parameters
+    ----------
+    embedded_activity : `EmbeddedActivity | int`
+        The embedded activity to get its identifier.
+    
+    Returns
+    -------
+    embedded_activity : `None | EmbeddedActivity`
+    embedded_activity_id : `int`
+    
+    Raises
+    ------
+    TypeError
+        - If `embedded_activity` type is incorrect.
+    """
+    if isinstance(embedded_activity, EmbeddedActivity):
+        return embedded_activity, embedded_activity.id
+    
+    embedded_activity_id = maybe_snowflake(embedded_activity)
+    if embedded_activity_id is None:
+        raise TypeError(
+            f'`embedded_activity` can be `{EmbeddedActivity.__name__}, `int`, '
+            f'got {type(embedded_activity).__name__}; {embedded_activity!r}.'
+        )
+    
+    embedded_activity = EMBEDDED_ACTIVITIES.get(embedded_activity_id, None)
+    return embedded_activity, embedded_activity_id

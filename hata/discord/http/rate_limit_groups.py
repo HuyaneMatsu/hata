@@ -208,6 +208,14 @@ Group Details
     - Limit : `5`
     - Resets after : `5.0`
 
+- embedded_activity_get
+    - Endpoint : `/applications/{application_id}/activity-instances/{embedded_activity_id}`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `500`
+    - Resets after : `1.0`
+
 - application_command_global_get_all
     - Endpoint : `/applications/{application_id}/commands`
     - Method : `GET`
@@ -2237,6 +2245,7 @@ achievement_create = RateLimitGroup()
 achievement_delete = RateLimitGroup()
 achievement_get = RateLimitGroup()
 achievement_edit = RateLimitGroup()
+embedded_activity_get = RateLimitGroup()
 application_command_global_get_all = RateLimitGroup.unlimited()
 application_command_global_delete = RateLimitGroup()
 application_command_global_create = RateLimitGroup()

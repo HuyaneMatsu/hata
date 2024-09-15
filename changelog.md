@@ -1,3 +1,85 @@
+## 1.3.64 *\[2024-09-15\]*
+
+### Improvements
+
+- Add `ConnectionType.amazon_music`.
+- Add `HangType`.
+- Add `ActivityType.hanging`.
+- Add `Activity.hang_type`.
+- Add `ActivityMetadataBase.hang_type`.
+- Add `ActivityMetadataHanging`.
+- `Activity.state` & `.hang_type` fields of an activity are serialized when setting bot presence.
+- Allow setting `Activity` with `.type` set as `ActivityType.custom` as presence.
+- Add `ActivityMetadataBase.buttons`.
+- Add `Activity.buttons`.
+- Add `EmbeddedActivityUserState`.
+- Add `EmbeddedActivityLocationType`.
+- Add `EmbeddedActivity.user_states`.
+- Add `EmbeddedActivity.location`.
+- Add `EmbeddedActivity.instance_id`.
+- Add `EmbeddedActivity.launch_id`.
+- Add `EmbeddedActivity.iter_user_states`.
+- Add `EmbeddedActivity.iter_users`.
+- Add `EmbeddedActivity.partial`.
+- Add `EmbeddedActivity.precreate`.
+- Add `ERROR_CODES.unknown_user_identity_verification`.
+- Add `ERROR_CODES.staff_required`.
+- Add `ERROR_CODES.max_saved_messages`.
+- Handle `EMBEDDED_ACTIVITY_UPDATE_V2` event.
+- Add `RATE_LIMIT_GROUPS.embedded_activity_get`.
+- Add `DiscordApiClient.embedded_activity_get`.
+- Add `Client.embedded_activity_get`.
+- Add `Client.embedded_activity_get`.
+- `VoicePacket.decoded` is now decoded when accessed.
+- Add `VoicePacket.__eq__`.
+- Add `VoicePacket.__hash__`.
+- Add `RTPPacket.payload`.
+- Add `VoiceClient.get_encryption_mode`.
+- Add `RTPPacket.extension_header_start`.
+- Add `RTPPacket.extension_header_start`.
+- Add `RTPPacket.payload_start`.
+- Add `RTPPacket.payload_end`.
+- Add `RTPPacket.padding_count`.
+- Add `RTPPacket.padding`.
+- Add `RTPPacket.from_fields`.
+- Add `RTPPacket.__eq__`.
+- Add `RTPPacket.__hash__`.
+- `VoiceClient` now uses a new encryption adapter system instead of having encryption built in into specific
+    functionalities where they are needed.
+    Note that the newly added encryption modes arent working for unknown reason, so they are disabled.
+- Add `EncryptionAdapterBase`.
+- Add `EncryptionAdapter__aead_aes256_gcm_rtpsize`
+- Add `EncryptionAdapter__aead_xchacha20_poly1305_rtpsize`.
+- Add `EncryptionAdapter__xsalsa20_poly1305`.
+- Add `VoiceClient.set_encryption_mode`.
+- Add `VoiceClient.prefer_encryption_mode_from_options`.
+- Add `GuildFeature.activity_list_disabled`.
+- Add `GuildFeature.activity_list_enabled`.
+
+### Bug fixes
+
+- Fix unexpected `AttributeError` in `AudioReader.run`.
+- `RTPPacket.extensions` was incorrectly handled.
+- `RTPPacket.padding` was not handled.
+- Fix `escape_markdown` ignoring grave character. (Since 1.3.61),
+
+### Renames, Deprecations & Removals
+
+- Rename old `EmbeddedActivityState` to `EmbeddedActivity`.
+- Remove `EmbeddedActivityStateKey`.
+- Rename `EMBEDDED_ACTIVITY_STATES` to `EMBEDDED_ACTIVITIES`
+- Deprecate `EmbeddedActivity.activity`.
+- Deprecate `EmbeddedActivity.user_ids`.
+- Deprecate `EmbeddedActivity.users`.
+- Deprecate `AudioStream`'s `auto_decode` parameter.
+- Rename `RTPPacket.payload` to `.payload_type`.
+- Add `RTPPacket.data` is now the full data and not the data after its payload.
+- Remove `RTPPacket.decrypted`.
+- Rename `RTPPacket.padding` to `.padded`.
+- Rename `RTPPacket.cc` to `.contributing_source_count`.
+- Rename `RTPPacket.csrcs` to `.contributing_sources`.
+- Rename `RTPPacket.extension_values` to `.extensions`.
+
 ## 1.3.63 *\[2024-08-20\]*
 
 ### Improvements

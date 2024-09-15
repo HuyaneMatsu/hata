@@ -4,13 +4,13 @@ from scarletio import copy_docs
 
 from .base import ActivityMetadataBase
 from .fields import (
-    parse_application_id, parse_assets, parse_created_at, parse_details, parse_flags, parse_id, parse_name, parse_party,
-    parse_secrets, parse_session_id, parse_state, parse_sync_id, parse_timestamps, parse_url, put_application_id_into,
-    put_assets_into, put_created_at_into, put_details_into, put_flags_into, put_id_into, put_name_into, put_party_into,
-    put_secrets_into, put_session_id_into, put_state_into, put_sync_id_into, put_timestamps_into, put_url_into,
-    validate_application_id, validate_assets, validate_created_at, validate_details, validate_flags, validate_id,
-    validate_name, validate_party, validate_secrets, validate_session_id, validate_state, validate_sync_id,
-    validate_timestamps, validate_url
+    parse_application_id, parse_assets, parse_buttons, parse_created_at, parse_details, parse_flags, parse_id,
+    parse_name, parse_party, parse_secrets, parse_session_id, parse_state, parse_sync_id, parse_timestamps, parse_url,
+    put_application_id_into, put_assets_into, put_buttons_into, put_created_at_into, put_details_into, put_flags_into,
+    put_id_into, put_name_into, put_party_into, put_secrets_into, put_session_id_into, put_state_into, put_sync_id_into,
+    put_timestamps_into, put_url_into, validate_application_id, validate_assets, validate_buttons, validate_created_at,
+    validate_details, validate_flags, validate_id, validate_name, validate_party, validate_secrets, validate_session_id,
+    validate_state, validate_sync_id, validate_timestamps, validate_url
 )
 from .flags import ActivityFlag
 
@@ -23,36 +23,52 @@ class ActivityMetadataRich(ActivityMetadataBase):
     ----------
     application_id : `int`
         The id of the activity's application. Defaults to `0`.
-    assets : `None`, ``ActivityAssets``
+    
+    assets : `None | ActivityAssets`
         The activity's assets. Defaults to `None`.
-    created_at : `None`, `datetime`
+    
+    buttons : `None | tuple<str>`
+        The labels of the buttons on the activity.
+    
+    created_at : `None | DateTime`
         When the activity was created. Defaults to Discord epoch.
-    details : `None`, `str`
+    
+    details : `None | str`
         What the player is currently doing. Defaults to `None`.
+    
     flags : ``ActivityFlag``
         The flags of the activity. Defaults to `ActivityFlag(0)`
+    
     id : `int`
         The id of the activity. Defaults to `0`.
+    
     name : `str`
         The activity's name.
-    party : `None`, ``ActivityParty``
+    
+    party : `None | ActivityParty`
         The activity's party. Defaults to `None`.
-    secrets : `None`, ``ActivitySecrets``
+    
+    secrets : `None | ActivitySecrets`
         The activity's secrets. Defaults to `None`.
-    session_id : `None`, `str`
+    
+    session_id : `None | str`
         Spotify activity's session's id. Defaults to `None`.
-    state : `None`, `str`
+    
+    state : `None | str`
         The player's current party status. Defaults to `None`.
-    sync_id : `None`, `str`
+    
+    sync_id : `None | str`
         The id of the currently playing track of a spotify activity. Defaults to `None`.
-    timestamps : `None`, ``ActivityTimestamps``
+    
+    timestamps : `None | ActivityTimestamps`
         The activity's timestamps.
-    url : `None`, `str`
+    
+    url : `None | str`
         The url of the stream (Twitch or Youtube only). Defaults to `None`.
     """
     __slots__ = (
-        'application_id', 'assets', 'created_at', 'details', 'flags', 'id', 'name', 'party', 'secrets', 'session_id',
-        'state', 'sync_id', 'timestamps', 'url'
+        'application_id', 'assets', 'buttons', 'created_at', 'details', 'flags', 'id', 'name', 'party', 'secrets',
+        'session_id', 'state', 'sync_id', 'timestamps', 'url'
     )
     
     
@@ -62,6 +78,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
         activity_id = ...,
         application_id = ...,
         assets = ...,
+        buttons = ...,
         created_at = ...,
         details = ...,
         flags = ...,
@@ -79,33 +96,49 @@ class ActivityMetadataRich(ActivityMetadataBase):
         
         Attributes
         ----------
-        activity_id : `int`
+        activity_id : `int`, Optional (Keyword only)
             The id of the activity.
-        application_id : `int`
+        
+        application_id : `int`, Optional (Keyword only)
             The id of the activity's application.
-        assets : `None`, ``ActivityAssets``
+        
+        assets : `None | ActivityAssets`, Optional (Keyword only)
             The activity's assets
-        created_at : `None`, `datetime`
+    
+        buttons : `None | str | iterable<str>`, Optional (Keyword only)
+            The labels of the buttons on the activity.
+        
+        created_at : `None | Datetime`, Optional (Keyword only)
             When the activity was created.
-        details : `None`, `str`
+        
+        details : `None | str`, Optional (Keyword only)
             What the player is currently doing.
-        flags : ``ActivityFlag``, `int`
+        
+        flags : `ActivityFlag | int`, Optional (Keyword only)
             The flags of the activity.
-        name : `str`
+        
+        name : `str`, Optional (Keyword only)
             The activity's name.
-        party : `None`, ``ActivityParty``
+        
+        party : `None | ActivityParty`, Optional (Keyword only)
             The activity's party.
-        secrets : `None`, ``ActivitySecrets``
+        
+        secrets : `None | ActivitySecrets`, Optional (Keyword only)
             The activity's secrets.
-        session_id : `None`, `str`
-            Spotify activity's session's id. 
-        state : `None`, `str`
+        
+        session_id : `None | str`, Optional (Keyword only)
+            Spotify activity's session's id.
+        
+        state : `None | str`, Optional (Keyword only)
             The player's current party status.
-        sync_id : `None`, `str`
+        
+        sync_id : `None | str`, Optional (Keyword only)
             The id of the currently playing track of a spotify activity.
-        timestamps : `None`, ``ActivityTimestamps``
+        
+        timestamps : `None | ActivityTimestamps`, Optional (Keyword only)
             The activity's timestamps.
-        url : `None`, `str`, Optional
+        
+        url : `None | str`, Optional (Keyword only)
             The url of the stream (Twitch or Youtube only).
         
         Raises
@@ -126,6 +159,11 @@ class ActivityMetadataRich(ActivityMetadataBase):
             assets = None
         else:
             assets = validate_assets(assets)
+        
+        if buttons is ...:
+            buttons = None
+        else:
+            buttons = validate_buttons(buttons)
         
         # created_at
         if created_at is ...:
@@ -204,6 +242,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
         self.application_id = application_id
         self.assets = assets
         self.created_at = created_at
+        self.buttons = buttons
         self.details = details
         self.flags = flags
         self.id = activity_id
@@ -225,6 +264,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
             activity_id = keyword_parameters.pop('activity_id', ...),
             application_id = keyword_parameters.pop('application_id', ...),
             assets = keyword_parameters.pop('assets', ...),
+            buttons = keyword_parameters.pop('buttons', ...),
             created_at = keyword_parameters.pop('created_at', ...),
             details = keyword_parameters.pop('details', ...),
             flags = keyword_parameters.pop('flags', ...),
@@ -261,6 +301,13 @@ class ActivityMetadataRich(ActivityMetadataBase):
         assets = self.assets
         if (assets is not None):
             hash_value ^= hash(assets)
+        
+        # buttons
+        buttons = self.buttons
+        if (buttons is not None):
+            hash_value ^= len(buttons) << 2
+            for button in buttons:
+                hash_value ^= hash(button)
         
         # created_at
         created_at = self.created_at
@@ -329,6 +376,10 @@ class ActivityMetadataRich(ActivityMetadataBase):
         if self.assets != other.assets:
             return False
         
+        # buttons
+        if self.buttons != other.buttons:
+            return False
+        
         # created_at
         if self.created_at != other.created_at:
             return False
@@ -395,14 +446,15 @@ class ActivityMetadataRich(ActivityMetadataBase):
         data = {}
         
         put_name_into(self.name, data, defaults)
+        put_state_into(self.state, data, defaults)
         put_url_into(self.url, data, defaults)
         
         if user or include_internals:
             put_assets_into(self.assets, data, defaults)
+            put_buttons_into(self.buttons, data, defaults)
             put_details_into(self.details, data, defaults)
             put_party_into(self.party, data, defaults)
             put_secrets_into(self.secrets, data, defaults)
-            put_state_into(self.state, data, defaults)
             put_timestamps_into(self.timestamps, data, defaults)
         
         if include_internals:
@@ -425,6 +477,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
         
         self.assets = parse_assets(data)
         self.created_at = parse_created_at(data)
+        self.buttons = parse_buttons(data)
         self.details = parse_details(data)
         self.flags = parse_flags(data)
         self.name = parse_name(data)
@@ -448,6 +501,12 @@ class ActivityMetadataRich(ActivityMetadataBase):
         if self.assets != assets:
             old_attributes['assets'] = self.assets
             self.assets = assets
+        
+        # buttons
+        buttons = parse_buttons(data)
+        if self.buttons != buttons:
+            old_attributes['buttons'] = self.buttons
+            self.buttons = buttons
         
         # created_at
         created_at = parse_created_at(data)
@@ -526,6 +585,12 @@ class ActivityMetadataRich(ActivityMetadataBase):
         if (assets is not None):
             assets = assets.copy()
         new.assets = assets
+        
+        buttons = self.buttons
+        if (buttons is not None):
+            buttons = (*buttons,)
+        new.buttons = buttons
+        
         new.created_at = self.created_at
         new.details = self.details
         new.flags = self.flags
@@ -556,6 +621,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
         activity_id = ...,
         application_id = ...,
         assets = ...,
+        buttons = ...,
         created_at = ...,
         details = ...,
         flags = ...,
@@ -573,33 +639,49 @@ class ActivityMetadataRich(ActivityMetadataBase):
         
         Attributes
         ----------
-        activity_id : `int`
+        activity_id : `int`, Optional (Keyword only)
             The id of the activity.
-        application_id : `int`
+        
+        application_id : `int`, Optional (Keyword only)
             The id of the activity's application.
-        assets : `None`, ``ActivityAssets``
+        
+        assets : `None | ActivityAssets`, Optional (Keyword only)
             The activity's assets
-        created_at : `None`, `datetime`
+        
+        buttons : `None | str | iterable<str>`, Optional (Keyword only)
+            The labels of the buttons on the activity.
+        
+        created_at : `None | Datetime`, Optional (Keyword only)
             When the activity was created.
-        details : `None`, `str`
+        
+        details : `None | str`, Optional (Keyword only)
             What the player is currently doing.
-        flags : ``ActivityFlag``, `int`
+        
+        flags : `ActivityFlag | int`, Optional (Keyword only)
             The flags of the activity.
-        name : `str`
+        
+        name : `str`, Optional (Keyword only)
             The activity's name.
-        party : `None`, ``ActivityParty``
+        
+        party : `None | ActivityParty`, Optional (Keyword only)
             The activity's party.
-        secrets : `None`, ``ActivitySecrets``
+        
+        secrets : `None | ActivitySecrets`, Optional (Keyword only)
             The activity's secrets.
-        session_id : `None`, `str`
-            Spotify activity's session's id. 
-        state : `None`, `str`
+        
+        session_id : `None | str`, Optional (Keyword only)
+            Spotify activity's session's id.
+        
+        state : `None | str`, Optional (Keyword only)
             The player's current party status.
-        sync_id : `None`, `str`
+        
+        sync_id : `None | str`, Optional (Keyword only)
             The id of the currently playing track of a spotify activity.
-        timestamps : `None`, ``ActivityTimestamps``
+        
+        timestamps : `None | ActivityTimestamps`, Optional (Keyword only)
             The activity's timestamps.
-        url : `None`, `str`, Optional
+        
+        url : `None | str`, Optional (Keyword only)
             The url of the stream (Twitch or Youtube only).
         
         Returns
@@ -626,6 +708,14 @@ class ActivityMetadataRich(ActivityMetadataBase):
                 assets = assets.copy()
         else:
             assets = validate_assets(assets)
+        
+        # buttons
+        if buttons is ...:
+            buttons = self.buttons
+            if (buttons is not None):
+                buttons = (*buttons,)
+        else:
+            buttons = validate_buttons(buttons)
         
         # created_at
         if created_at is ...:
@@ -709,6 +799,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
         new = object.__new__(type(self))
         new.application_id = application_id
         new.assets = assets
+        new.buttons = buttons
         new.created_at = created_at
         new.details = details
         new.flags = flags
@@ -730,6 +821,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
             activity_id = keyword_parameters.pop('activity_id', ...),
             application_id = keyword_parameters.pop('application_id', ...),
             assets = keyword_parameters.pop('assets', ...),
+            buttons = keyword_parameters.pop('buttons', ...),
             created_at = keyword_parameters.pop('created_at', ...),
             details = keyword_parameters.pop('details', ...),
             flags = keyword_parameters.pop('flags', ...),

@@ -7,7 +7,7 @@ from .constants import LATENCY_DEFAULT
 
 class DiscordGatewayBase(RichAttributeErrorBaseType):
     """
-    Base type for gateways used by ``Client``-s to communicate with Discord with websocket.
+    Base type for gateways used by ``Client``-s to communicate with Discord with web socket.
     """
     __slots__ = ()
     
@@ -61,7 +61,7 @@ class DiscordGatewayBase(RichAttributeErrorBaseType):
     @property
     def latency(self):
         """
-        The latency of the websocket in seconds.
+        The latency of the web socket in seconds.
         If no latency is recorded will return the default latency.
         
         Returns
@@ -73,7 +73,7 @@ class DiscordGatewayBase(RichAttributeErrorBaseType):
     
     async def terminate(self):
         """
-        Terminates the gateway's beating and closes it's websocket with close code of `4000`.
+        Terminates the gateway's beating and closes it's web socket with close code of `4000`.
         
         This method is a coroutine.
         """
@@ -82,7 +82,7 @@ class DiscordGatewayBase(RichAttributeErrorBaseType):
     
     async def close(self):
         """
-        Cancels the gateway's heartbeat and closes it's websocket with close code of `1000`.
+        Cancels the gateway's heartbeat and closes it's web socket with close code of `1000`.
         
         This method is a coroutine.
         """
@@ -98,8 +98,8 @@ class DiscordGatewayBase(RichAttributeErrorBaseType):
     
     async def send_as_json(self, data):
         """
-        Sends the data as json to Discord on the gateway's websocket.
-        If there is no websocket, or the websocket is closed will not raise.
+        Sends the data as json to Discord on the gateway's web socket.
+        If there is no web socket, or the web socket is closed will not raise.
         
         This method is a coroutine.
         

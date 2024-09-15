@@ -671,7 +671,7 @@ def nullable_string_parser_factory(field_key):
     return parser
 
 
-def nullable_sorted_array_parser_factory(field_key):
+def nullable_array_parser_factory(field_key, *, ordered = True):
     """
     Returns a nullable sorted object array parser.
     
@@ -680,34 +680,64 @@ def nullable_sorted_array_parser_factory(field_key):
     field_key : `str`
         The field's key used in payload.
     
+    ordered : `bool` = `True`, Optional (Keyword only)
+        Whether the array should be sorted.
+    
     Returns
     -------
     parser : `FunctionType`
     """
-    def parser(data):
-        """
-        Parses out a nullable sorted object array from the given payload.
-        
-        > This function is generated.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `object`) items
-            Entity data.
-        
-        Returns
-        -------
-        sorted_array : `None`, `tuple` of `object`
-        """
-        nonlocal field_key
-        
-        raw_object_array = data.get(field_key, None)
-        if (raw_object_array is None) or (not raw_object_array):
-            object_array = None
-        else:
-            object_array = tuple(sorted(raw_object_array))
-        
-        return object_array
+    if ordered:
+        def parser(data):
+            """
+            Parses out a nullable sorted object array from the given payload.
+            
+            > This function is generated.
+            
+            Parameters
+            ----------
+            data : `dict<str, object>`
+                Data to parse from.
+            
+            Returns
+            -------
+            sorted_array : `None | tuple<object>`
+            """
+            nonlocal field_key
+            
+            raw_object_array = data.get(field_key, None)
+            if (raw_object_array is None) or (not raw_object_array):
+                object_array = None
+            else:
+                object_array = tuple(sorted(raw_object_array))
+            
+            return object_array
+    
+    else:
+        def parser(data):
+            """
+            Parses out a nullable object array from the given payload.
+            
+            > This function is generated.
+            
+            Parameters
+            ----------
+            data : `dict<str, object>`
+                Data to parse from.
+            
+            Returns
+            -------
+            sorted_array : `None | tuple<object>`
+            """
+            nonlocal field_key
+            
+            raw_object_array = data.get(field_key, None)
+            if (raw_object_array is None) or (not raw_object_array):
+                object_array = None
+            else:
+                object_array = tuple(raw_object_array)
+            
+            return object_array
     
     return parser
 

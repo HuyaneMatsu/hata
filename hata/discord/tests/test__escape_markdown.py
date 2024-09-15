@@ -19,7 +19,7 @@ def iter_options():
     yield ']', '\\]'
     yield '#', '\\#'
     yield '-', '\\-'
-
+    yield '`', '\\`'
 
 
 @vampytest._(vampytest.call_from(iter_options()).returning_last())

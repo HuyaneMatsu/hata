@@ -1596,7 +1596,7 @@ def sanitize_content(content, guild = None):
     return content
 
 
-ESCAPEABLE = frozenset(('\\', '_', '*', '|', '~', '>', ':', '[', ']', '#', '-'))
+ESCAPEABLE = frozenset(('\\', '_', '*', '|', '~', '>', ':', '[', ']', '#', '-', '`'))
 
 
 def escape_markdown(content):

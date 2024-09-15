@@ -1,15 +1,17 @@
+from math import floor
 from re import compile as re_compile
 
 import vampytest
 from scarletio import Future, from_json, skip_ready_cycle, to_json
 from scarletio.web_common import ConnectionClosed
-from scarletio.websocket import WebSocketClient
+from scarletio.web_socket import WebSocketClient
 
 from ...client import Client
 from ...core import KOKORO
 from ...guild import Guild
 from ...user import VoiceState
 from ...voice import VoiceClient
+from ...voice.encryption_adapters import EncryptionAdapter__aead_xchacha20_poly1305_rtpsize, EncryptionAdapterBase
 
 from ..constants import (
     GATEWAY_ACTION_CONNECT, GATEWAY_ACTION_KEEP_GOING, GATEWAY_ACTION_RESUME, GATEWAY_OPERATION_VOICE_CLIENT_CONNECT,
@@ -51,6 +53,7 @@ def _assert_fields_set(gateway):
     vampytest.assert_instance(gateway._should_run, bool)
     vampytest.assert_instance(gateway.kokoro, Kokoro, nullable = True)
     vampytest.assert_instance(gateway.rate_limit_handler, GatewayRateLimiter)
+    vampytest.assert_instance(gateway.sequence, int)
     vampytest.assert_instance(gateway.voice_client, VoiceClient)
     vampytest.assert_instance(gateway.websocket, WebSocketClient, nullable = True)
 
@@ -199,13 +202,11 @@ def test__DiscordGatewayVoice__latency__with_kokoro():
         client = None
 
 
-
-
 async def test__DiscordGatewayVoice__send_json__no_websocket():
     """
     Tests whether ``DiscordGatewayVoice._send_json`` works as intended.
     
-    Case: No websocket.
+    Case: No web socket.
     
     This function is a coroutine.
     """
@@ -272,17 +273,19 @@ async def test__DiscordGatewayVoice__beat():
         client_id = 202401180033,
     )
     
-    sequence = 69.0
+    current_time = 69.1233
+    sequence = 14666
     
     def mock_perf_counter():
-        nonlocal sequence
-        return sequence * 0.001
+        nonlocal current_time
+        return current_time * 0.001
     
     try:
         websocket = await TestWebSocketClient(KOKORO, '')
         voice_client = VoiceClient(client, 202401180034, 202401180035)
         gateway = DiscordGatewayVoice(voice_client)
         gateway.websocket = websocket
+        gateway.sequence = sequence
         
         mocked = vampytest.mock_globals(
             type(gateway).beat,
@@ -299,7 +302,10 @@ async def test__DiscordGatewayVoice__beat():
             from_json(sent_data),
             {
                 'op': GATEWAY_OPERATION_VOICE_HEARTBEAT,
-                'd': sequence,
+                'd': {
+                    't': floor(current_time),
+                    'seq_ack': sequence,
+                },
             }
         )
     finally:
@@ -406,6 +412,7 @@ async def test__DiscordGatewayVoice__identify():
     client_id = client.id
     session_id = 'orin'
     token = 'satori'
+    sequence = 1122
     
     try:
         websocket = await TestWebSocketClient(KOKORO, '')
@@ -414,6 +421,7 @@ async def test__DiscordGatewayVoice__identify():
         voice_client._token = token
         gateway = DiscordGatewayVoice(voice_client)
         gateway.websocket = websocket
+        gateway.sequence = sequence
         
         await gateway._identify()
         
@@ -426,10 +434,11 @@ async def test__DiscordGatewayVoice__identify():
             {
                 'op': GATEWAY_OPERATION_VOICE_IDENTIFY,
                 'd': {
+                    'seq_ack': sequence,
                     'server_id': str(guild_id),
-                    'user_id': str(client_id),
                     'session_id': session_id,
                     'token': token,
+                    'user_id': str(client_id),
                 },
             }
         )
@@ -452,6 +461,7 @@ async def test__DiscordGatewayVoice__resume():
     guild_id = 202401190015
     session_id = 'orin'
     token = 'satori'
+    sequence = 16655
     
     try:
         websocket = await TestWebSocketClient(KOKORO, '')
@@ -460,6 +470,7 @@ async def test__DiscordGatewayVoice__resume():
         voice_client._token = token
         gateway = DiscordGatewayVoice(voice_client)
         gateway.websocket = websocket
+        gateway.sequence = sequence
         
         await gateway._resume()
         
@@ -472,9 +483,10 @@ async def test__DiscordGatewayVoice__resume():
             {
                 'op': GATEWAY_OPERATION_VOICE_RESUME,
                 'd': {
-                    'token': token,
+                    'seq_ack': sequence,
                     'server_id': str(guild_id),
                     'session_id': session_id,
+                    'token': token,
                 },
             }
         )
@@ -494,12 +506,14 @@ async def test__DiscordGatewayVoice__select_protocol():
         client_id = 202401190018,
     )
     
+    encryption_adapter_type = EncryptionAdapter__aead_xchacha20_poly1305_rtpsize
     ip = 'hey'
     port = 'mister'
     
     try:
         websocket = await TestWebSocketClient(KOKORO, '')
         voice_client = VoiceClient(client, 202401190019, 202401190020)
+        voice_client.prefer_encryption_mode_from_options([encryption_adapter_type.name])
         gateway = DiscordGatewayVoice(voice_client)
         gateway.websocket = websocket
         
@@ -518,7 +532,7 @@ async def test__DiscordGatewayVoice__select_protocol():
                     'data': {
                         'address': ip,
                         'port': port,
-                        'mode': 'xsalsa20_poly1305'
+                        'mode': encryption_adapter_type.name,
                     },
                 },
             }
@@ -735,12 +749,14 @@ async def test__DiscordGatewayVoice__connect__unexpected_closes_with_resume():
     endpoint = 'orin'
     token = 'satori'
     guild_id = 202401190047
+    sequence = 1235
     
     try:
         voice_client = VoiceClient(client, guild_id, 202401190048)
         voice_client._endpoint = endpoint
         voice_client._token = token
         gateway = DiscordGatewayVoice(voice_client)
+        gateway.sequence = sequence
         guild = Guild.precreate(guild_id, voice_states = [VoiceState(user_id = client.id, session_id = session_id)])
         
         output = await gateway._connect(True)
@@ -761,6 +777,7 @@ async def test__DiscordGatewayVoice__connect__unexpected_closes_with_resume():
             {
                 'op': GATEWAY_OPERATION_VOICE_RESUME,
                 'd': {
+                    'seq_ack': sequence,
                     'token': token,
                     'server_id': str(guild_id),
                     'session_id': session_id,
@@ -768,6 +785,7 @@ async def test__DiscordGatewayVoice__connect__unexpected_closes_with_resume():
             }
         )
         
+        vampytest.assert_eq(gateway.sequence, -1)
         vampytest.assert_is_not(gateway.kokoro, None)
         vampytest.assert_is(gateway.kokoro.runner, None)
         vampytest.assert_is(gateway.websocket, None)
@@ -789,7 +807,7 @@ async def test__DiscordGatewayVoice__connect__success_default():
         KOKORO,
         '',
     )
-
+    
     http = TestHTTPClient(KOKORO, out_websocket = websocket)
     
     client = Client(
@@ -828,6 +846,7 @@ async def test__DiscordGatewayVoice__connect__success_default():
             {
                 'op': GATEWAY_OPERATION_VOICE_IDENTIFY,
                 'd': {
+                    'seq_ack': -1,
                     'server_id': str(guild_id),
                     'user_id': str(client.id),
                     'session_id': session_id,
@@ -836,6 +855,7 @@ async def test__DiscordGatewayVoice__connect__success_default():
             }
         )
         
+        vampytest.assert_eq(gateway.sequence, -1)
         vampytest.assert_is_not(gateway.kokoro, None)
         vampytest.assert_is_not(gateway.kokoro.runner, None)
         vampytest.assert_is_not(gateway.websocket, None)
@@ -1037,7 +1057,7 @@ async def test__DiscordGatewayVoice__handle_operation_session_description__no_da
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
         
-        vampytest.assert_is(voice_client._secret_box, None)
+        vampytest.assert_instance(voice_client._encryption_adapter, EncryptionAdapterBase, accept_subtypes = False)
         vampytest.assert_eq(voice_client.is_connected(), False)
         
         vampytest.assert_eq(len(websocket.out_operations), 0)
@@ -1054,18 +1074,17 @@ async def test__DiscordGatewayVoice__handle_operation_session_description__with_
     
     This function is a coroutine.
     """
-
     client = Client(
         'token_202401200015',
         client_id = 202401200016,
     )
     
-    mode = 'xsalsa20_poly1305'
+    encryption_adapter_type = EncryptionAdapter__aead_xchacha20_poly1305_rtpsize
     secret_key = b'hey mister' + b'0' * 22
     
     message = {
         'd': {
-            'mode': mode,
+            'mode': EncryptionAdapter__aead_xchacha20_poly1305_rtpsize.name,
             'secret_key': [*secret_key]
         },
     }
@@ -1093,7 +1112,10 @@ async def test__DiscordGatewayVoice__handle_operation_session_description__with_
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
         
-        vampytest.assert_is_not(voice_client._secret_box, None)
+        vampytest.assert_instance(voice_client._encryption_adapter, encryption_adapter_type)
+        vampytest.assert_eq(voice_client._encryption_adapter.key, secret_key)
+        vampytest.assert_is(voice_client._encryption_adapter_type, encryption_adapter_type)
+        
         vampytest.assert_eq(voice_client.is_connected(), True)
         
         vampytest.assert_eq(len(websocket.out_operations), 1)
@@ -1330,12 +1352,14 @@ async def test__DiscordGatewayVoice__handle_operation_ready__with_data():
     
     voice_client_ip = 'hey mister'
     voice_client_port = 432
+    encryption_adapter_type = EncryptionAdapter__aead_xchacha20_poly1305_rtpsize
     
     message = {
         'd': {
             'ssrc': audio_source,
             'port': endpoint_port,
             'ip': endpoint_ip,
+            'modes': [encryption_adapter_type.name],
         },
     }
     
@@ -1411,6 +1435,7 @@ async def test__DiscordGatewayVoice__handle_operation_ready__with_data():
         vampytest.assert_eq(voice_client._endpoint_port, endpoint_port)
         vampytest.assert_eq(voice_client._ip, voice_client_ip)
         vampytest.assert_eq(voice_client._port, voice_client_port)
+        vampytest.assert_is(voice_client._encryption_adapter_type, encryption_adapter_type)
         
         vampytest.assert_eq(len(websocket.out_operations), 2)
         
@@ -1425,7 +1450,7 @@ async def test__DiscordGatewayVoice__handle_operation_ready__with_data():
                     'data': {
                         'address': voice_client_ip,
                         'port': voice_client_port,
-                        'mode': 'xsalsa20_poly1305'
+                        'mode': encryption_adapter_type.name,
                     },
                 },
             }
@@ -1703,12 +1728,14 @@ async def test__DiscordGatewayVoice__handle_received_operation__known_operation(
     )
     
     operation = 999
+    sequence = 123
     
     message = {
         'op': operation,
         'd': {
             'hey': 'mister',
         },
+        'seq': sequence,
     }
     
     gateway = None
@@ -1738,6 +1765,7 @@ async def test__DiscordGatewayVoice__handle_received_operation__known_operation(
         vampytest.assert_eq(output, GATEWAY_ACTION_RESUME)
         
         vampytest.assert_true(mock_operation_handler_called)
+        vampytest.assert_eq(gateway.sequence, sequence)
         
     finally:
         client._delete()
@@ -1982,6 +2010,28 @@ async def test__DiscordGatewayVoice__run__default():
         vampytest.assert_instance(output, bool)
         vampytest.assert_eq(output, True)
     
+    finally:
+        client._delete()
+        client = None
+
+
+def test__DiscordGatewayVoice__clear_session():
+    """
+    Tests whether ``DiscordGatewayVoice._clear_session`` works as intended.
+    """
+    client_id = 202409040070
+    client = Client(
+        'token_' + str(202409040070),
+        client_id = 202409040070,
+    )
+    
+    try:
+        gateway = DiscordGatewayVoice(client)
+        gateway.sequence = 56
+        
+        gateway._clear_session()
+        
+        vampytest.assert_eq(gateway.sequence, -1)
     finally:
         client._delete()
         client = None

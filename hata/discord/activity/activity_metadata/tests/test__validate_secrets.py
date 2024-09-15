@@ -5,30 +5,36 @@ from ...activity_secrets import ActivitySecrets
 from ..fields import validate_secrets
 
 
-def test__validate_secrets__0():
-    """
-    Tests whether `validate_secrets` works as intended.
-    
-    Case: passing.
-    """
+def _iter_options__passing():
     secrets = ActivitySecrets(join = 'hell')
     
-    for input_value, expected_output in (
-        (None, None),
-        (secrets, secrets),
-    ):
-        output = validate_secrets(input_value)
-        vampytest.assert_eq(output, expected_output)
+    yield None, None
+    yield secrets, secrets
 
 
-def test__validate_secrets__1():
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_secrets(input_value):
     """
     Tests whether `validate_secrets` works as intended.
     
-    Case: `TypeError`.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
+    Returns
+    -------
+    output : `None | ActivitySecrets`
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_secrets(input_value)
+    output = validate_secrets(input_value)
+    vampytest.assert_instance(output, ActivitySecrets, nullable = True)
+    return output

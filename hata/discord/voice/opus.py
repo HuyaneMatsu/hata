@@ -182,7 +182,7 @@ def load_opus():
 
 try:
     load_opus()
-except BaseException:
+except Exception:
     pass
 
 

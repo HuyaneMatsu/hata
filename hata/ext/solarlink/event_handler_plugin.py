@@ -56,7 +56,7 @@ async def default_track_end_event_handler(client, event):
 
 async def default_player_websocket_closed_event_handler(client, event):
     """
-    Handles websocket close event.
+    Handles web socket close event.
     
     This method is a coroutine.
     
@@ -65,7 +65,7 @@ async def default_player_websocket_closed_event_handler(client, event):
     client : ``Client``
         The respective client.
     event : ``PlayerWebsocketClosedEvent``
-        The received websocket closed event.
+        The received web socket closed event.
     """
     player = event.player
     if event.should_reconnect():
@@ -99,7 +99,7 @@ class SolarLinkEventManager(EventHandlerPlugin):
         Called when the currently playing track is stuck.
     
     player_websocket_closed(client: ``Client``, event: ``PlayerWebsocketClosedEvent``)
-        Called when a player's websocket is disconnected from a guild.
+        Called when a player's web socket is disconnected from a guild.
     """
     track_end = Event(2, default_handler = default_track_end_event_handler)
     track_exception = Event(2, default_handler = default_track_exception_event_handler)

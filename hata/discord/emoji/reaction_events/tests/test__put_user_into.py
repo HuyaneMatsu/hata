@@ -5,9 +5,9 @@ from ....user import GuildProfile, User
 from ..fields import put_user_into
 
 
-def test__put_user_into__0():
+def test__put_user_into__user():
     """
-    Tests whether ``put_user-into`` works as intended.
+    Tests whether ``put_user_into`` works as intended.
     
     Case: user.
     """
@@ -25,9 +25,9 @@ def test__put_user_into__0():
     )
 
 
-def test__put_user_into__1():
+def test__put_user_into__user_and_guild_id():
     """
-    Tests whether ``put_user-into`` works as intended.
+    Tests whether ``put_user_into`` works as intended.
     
     Case: user & guild_id.
     """
@@ -47,9 +47,9 @@ def test__put_user_into__1():
     )
 
 
-def test__put_user_into__2():
+def test__put_user_into__user_and_guild_id_and_guild_profile():
     """
-    Tests whether ``put_user-into`` works as intended.
+    Tests whether ``put_user_into`` works as intended.
     
     Case: user & guild_id & guild_profile.
     """
@@ -79,9 +79,9 @@ def test__put_user_into__2():
         expected_output,
     )
 
-def test__put_user_into__3():
+def test__put_user_into__user_and_guild_profile():
     """
-    Tests whether ``put_user-into`` works as intended.
+    Tests whether ``put_user_into`` works as intended.
     
     Case: user & guild_profile.
     """

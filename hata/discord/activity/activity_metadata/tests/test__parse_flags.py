@@ -6,6 +6,7 @@ from ..flags import ActivityFlag
 
 def _iter_options():
     yield {}, ActivityFlag(0)
+    yield {'flags': 0}, ActivityFlag(0)
     yield {'flags': 1}, ActivityFlag(1)
 
 

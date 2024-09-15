@@ -100,13 +100,6 @@ class AudioPlayer:
                     self.should_update = True # safety first
                     continue
                 
-                sequence = voice_client._sequence
-                if sequence == 65535:
-                    sequence = 0
-                else:
-                    sequence += 1
-                voice_client._sequence = sequence
-                
                 if source.NEEDS_ENCODE:
                     pref_volume = voice_client._preferred_volume
                     if (pref_volume != 1.0):
@@ -114,22 +107,11 @@ class AudioPlayer:
                     
                     data = voice_client._encoder.encode(data)
                 
-                header = b''.join([
-                    b'\x80x',
-                    voice_client._sequence.to_bytes(2, 'big'),
-                    voice_client._timestamp.to_bytes(4, 'big'),
-                    voice_client._audio_source.to_bytes(4, 'big'),
-                ])
                 
-                nonce = header + b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-                packet = bytearray(header) + voice_client._secret_box.encrypt(bytes(data), nonce).ciphertext
-                
-                voice_client.send_packet(packet)
-                
-                timestamp = voice_client._timestamp + source.AUDIO_SETTINGS.samples_per_frame
-                if timestamp > 4294967295:
-                    timestamp = 0
-                voice_client._timestamp = timestamp
+                voice_client._sequence += 1
+                data = voice_client._encryption_adapter.create_send_packet(voice_client, data)
+                voice_client.send_packet(data)
+                voice_client._timestamp += source.AUDIO_SETTINGS.samples_per_frame
                 
                 delay = (start + source.AUDIO_SETTINGS.frame_length * 0.001 * (loops + 1)) - perf_counter()
                 await sleep(delay, KOKORO)

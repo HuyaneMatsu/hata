@@ -5,6 +5,8 @@ from ..preinstanced import NsfwLevel
 
 
 def _iter_options():
+    yield NsfwLevel.none, False, {'nsfw_level': NsfwLevel.none.value}
+    yield NsfwLevel.none, True, {'nsfw_level': NsfwLevel.none.value}
     yield NsfwLevel.safe, False, {'nsfw_level': NsfwLevel.safe.value}
     yield NsfwLevel.safe, True, {'nsfw_level': NsfwLevel.safe.value}
     

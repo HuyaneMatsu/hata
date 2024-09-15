@@ -13,16 +13,21 @@ from ..bases import maybe_snowflake
 from ..channel import Channel, ChannelType, create_partial_channel_from_id
 from ..core import GUILDS, KOKORO
 from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE
-from ..gateway.voice import DiscordGatewayVoice, SecretBox
+from ..gateway.voice import DiscordGatewayVoice
 from ..gateway.voice_base import DiscordGatewayVoiceBase
 from ..user import User
 from ..utils import datetime_to_timestamp
 
 from .audio_source import AudioSource
+from .encryption_adapters import AVAILABLE_ENCRYPTION_ADAPTERS, EncryptionAdapterBase
 from .opus import OpusEncoder
 from .player import AudioPlayer
 from .reader import AudioReader, AudioStream
 from .utils import try_get_voice_region
+
+
+ENCRYPTION_ADAPTER_DEFAULT = EncryptionAdapterBase(b'\x00' * EncryptionAdapterBase.key_length)
+
 
 
 @export
@@ -44,6 +49,10 @@ class VoiceClient(RichAttributeErrorBaseType):
         Waiter futures waiting for the voice client to be connected again.
     _encoder : ``OpusEncoder``
         Encode not opus encoded audio data.
+    _encryption_adapter : ``EncryptionAdapterBase``
+        Data encoder & decoder of the voice client.
+    _encryption_adapter_type : `type<EncryptionAdapterBase>`
+        Data encoder & decoder type. Set before ``._encryption_adapter`` is actually instantiated.
     _endpoint : `None`, `str`
         The endpoint, where the voice client sends the audio data.
     _endpoint_ip : `None`, `tuple` of `int`
@@ -60,10 +69,6 @@ class VoiceClient(RichAttributeErrorBaseType):
         The preferred volume of the voice client. can be between `0.0` and `2.0`.
     _protocol : `None`, ``DatagramMergerReadProtocol``
         Asynchronous protocol of the voice client to communicate with it's socket.
-    running : `bool`
-        Whether the voice client plans to reconnect and it's reader and player should not be stopped.
-    _secret_box : `None`, `nacl.secret.SecretBox`
-        Data encoder of the voice client.
     _sequence : `int`
         Counter to define the sent data's sequence for Discord.
     _set_speaking_task : `None`, ``Task``
@@ -114,6 +119,8 @@ class VoiceClient(RichAttributeErrorBaseType):
         A lock used meanwhile changing the currently playing audio to not modifying it parallelly.
     player : ``AudioPlayer``
         The actual player of the ``VoiceClient``. If the voice client is not playing nor paused, then set as `None`.
+    running : `bool`
+        Whether the voice client plans to reconnect and it's reader and player should not be stopped.
     queue : `list` of ``AudioSource``
         A list of the scheduled audios.
     reader : `None`, ``AudioReader``
@@ -126,15 +133,15 @@ class VoiceClient(RichAttributeErrorBaseType):
     """
     __slots__ = (
         '_audio_source', '_audio_sources', '_audio_streams', '_connected', '_connected_waiters', '_encoder',
-        '_endpoint', '_endpoint_ip', '_endpoint_port', '_handshake_complete', '_ip', '_port', '_preferred_volume',
-        '_protocol', 'running', '_secret_box', '_sequence', '_set_speaking_task', '_socket', '_timestamp', '_token',
-        '_transport', '_video_source', '_video_sources', 'call_after', 'channel_id', 'client', 'gateway', 'guild_id',
-        'lock', 'player', 'queue', 'reader', 'region', 'speaking'
+        '_encryption_adapter', '_encryption_adapter_type', '_endpoint', '_endpoint_ip', '_endpoint_port',
+        '_handshake_complete', '_ip', '_port', '_preferred_volume', '_protocol', '_sequence', '_set_speaking_task',
+        '_socket', '_timestamp', '_token', '_transport', '_video_source', '_video_sources', 'call_after', 'channel_id',
+        'client', 'gateway', 'guild_id', 'lock', 'player', 'running', 'queue', 'reader', 'region', 'speaking'
     )
     
     def __new__(cls, client, guild_id, channel_id):
         """
-        Creates a ``VoiceClient``. If any of the required libraries are not present, raises `RuntimeError`.
+        Creates a voice client. If any of the required dependencies are not present, raises `RuntimeError`.
         
         If the voice client was successfully created, returns a ``Future``, what is a waiter for it's ``._connect``
         method. If connecting failed, then the future will raise `TimeoutError`.
@@ -155,8 +162,11 @@ class VoiceClient(RichAttributeErrorBaseType):
             If `Opus` is not loaded.
         """
         # raise error at __new__
-        if SecretBox is None:
-            raise RuntimeError('PyNaCl is not loaded.')
+        if not AVAILABLE_ENCRYPTION_ADAPTERS :
+            raise RuntimeError(
+                '`libnacl` either not installed or not available. '
+                'It is a package required for encrypting & decrypting voice packets.'
+            )
         
         if OpusEncoder is None:
             raise RuntimeError('Opus is not loaded.')
@@ -192,7 +202,8 @@ class VoiceClient(RichAttributeErrorBaseType):
         self._endpoint = None
         self._port = None
         self._endpoint_ip = None
-        self._secret_box = None
+        self._encryption_adapter = ENCRYPTION_ADAPTER_DEFAULT
+        self._encryption_adapter_type = EncryptionAdapterBase
         self._endpoint_port = None
         self._ip = None
         self._audio_sources = {}
@@ -1324,7 +1335,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         
         handshake_complete = self._handshake_complete
         if handshake_complete.is_done():
-            # terminate the websocket and handle the reconnect loop if necessary.
+            # terminate the web socket and handle the reconnect loop if necessary.
             self._handshake_complete = Future(KOKORO)
             await self.gateway.terminate()
         else:
@@ -1409,7 +1420,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         """Returns the voice client's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' client = ',
             repr(self.client.full_name),
             ', channel_id = ',
@@ -1419,7 +1430,6 @@ class VoiceClient(RichAttributeErrorBaseType):
         ]
         
         repr_parts.append('>')
-        
         return ''.join(repr_parts)
     
     
@@ -1445,3 +1455,86 @@ class VoiceClient(RichAttributeErrorBaseType):
         guild : `None`, ``Guild``
         """
         return GUILDS.get(self.guild_id, None)
+    
+    
+    def get_encryption_mode(self):
+        """
+        Returns the encryption mode the voice client is currently using. Returns empty string if nothing yet.
+        
+        Returns
+        -------
+        encryption_mode : `str`
+        """
+        return self._encryption_adapter_type.name
+    
+    
+    def set_encryption_mode(self, mode, key):
+        """
+        Sets encryption mode.
+        
+        Parameters
+        ----------
+        mode : `str`
+            Encryption mode to set.
+        
+        key : `bytes`
+            Secret key to initialize the adapter with.
+        
+        Raises
+        ------
+        RuntimeError
+            - Not supported encryption mode given.
+        """
+        for encryption_adapter_type in AVAILABLE_ENCRYPTION_ADAPTERS:
+            if encryption_adapter_type.name == mode:
+                break
+        
+        else:
+            available_nodes = ", ".join(
+                repr(mode) for mode in
+                sorted(encryption_adapter_type.name for encryption_adapter_type in AVAILABLE_ENCRYPTION_ADAPTERS)
+            )
+            
+            raise RuntimeError(
+                f'Failed to set encryption mode.'
+                f'Received: {mode!r}.\n'
+                f'Available: {available_nodes!s}.\n'
+                f'The receive encryption mode is not available.'
+            )
+        
+        self._encryption_adapter_type = encryption_adapter_type
+        self._encryption_adapter = encryption_adapter_type(key)
+    
+    
+    def prefer_encryption_mode_from_options(self, modes):
+        """
+        Prefers an encryption mode out of the given ones.
+        
+        Parameters
+        ----------
+        modes : `str`
+            Encryption modes to prefer from.
+        
+        Raises
+        ------
+        RuntimeError
+            - Not intersection between received and available encryption modes.
+        """
+        for encryption_adapter_type in AVAILABLE_ENCRYPTION_ADAPTERS:
+            if encryption_adapter_type.name in modes:
+                break
+        
+        else:
+            received_nodes = ", ".join(repr(mode) for mode in sorted(modes))
+            available_nodes = ", ".join(
+                repr(mode) for mode in
+                sorted(encryption_adapter_type.name for encryption_adapter_type in AVAILABLE_ENCRYPTION_ADAPTERS)
+            )
+            raise RuntimeError(
+                f'Encryption mode mismatch.\n'
+                f'Received: {received_nodes!s}.\n'
+                f'Available: {available_nodes!s}.\n'
+                f'No intersection.'
+            )
+        
+        self._encryption_adapter_type = encryption_adapter_type

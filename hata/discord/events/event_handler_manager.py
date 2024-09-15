@@ -585,13 +585,13 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         At the case of `EMBED_UPDATE_NONE` the event is of course not called.
     
-    embedded_activity_create(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``)
+    embedded_activity_create(client: ``Client``, embedded_activity: ``EmbeddedActivity``)
         Called when an embedded activity is created.
     
-    embedded_activity_delete(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``)
+    embedded_activity_delete(client: ``Client``, embedded_activity: ``EmbeddedActivity``)
         Called when an embedded activity is deleted (all users left).
     
-    embedded_activity_update(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``,
+    embedded_activity_update(client: ``Client``, embedded_activity: ``EmbeddedActivity``,
             old_attributes: `None | dict`)
         Called when an embedded activity is updated. The passed `old_attributes` parameter contains the old states of
         the respective activity in `attribute-name` - `old-value` relation.
@@ -603,11 +603,15 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +===================+===================================+
         | assets            | `None`, ``ActivityAssets``        |
         +-------------------+-----------------------------------+
+        | buttons           | `None`, `tuple` of `str`          |
+        +-------------------+-----------------------------------+
         | created_at        | `DateTime`                        |
         +-------------------+-----------------------------------+
         | details           | `None`, `str`                     |
         +-------------------+-----------------------------------+
         | flags             | ``ActivityFlag``                  |
+        +-------------------+-----------------------------------+
+        | hang_type         | ``HangType``                      |
         +-------------------+-----------------------------------+
         | name              | `str`                             |
         +-------------------+-----------------------------------+
@@ -628,11 +632,11 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | url               | `None`, `str`                     |
         +-------------------+-----------------------------------+
         
-    embedded_activity_user_add(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``,
+    embedded_activity_user_add(client: ``Client``, embedded_activity: ``EmbeddedActivity``,
             user_id: `int`)
         Called when a user joins an embedded activity. It is not called for the person(s) creating the activity.
     
-    embedded_activity_user_delete(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``,
+    embedded_activity_user_delete(client: ``Client``, embedded_activity: ``EmbeddedActivity``,
             user_id: `int`)
         Called when a user leaves / is removed from an embedded activity.
     

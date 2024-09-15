@@ -22,7 +22,7 @@ def test__Activity__color():
     vampytest.assert_instance(activity.color, Color)
 
 
-def test__Activity__discord_side_id__0():
+def test__Activity__discord_side_id__no_id():
     """
     Tests whether ``Activity.discord_side_id`` works as intended.
     
@@ -32,7 +32,7 @@ def test__Activity__discord_side_id__0():
     vampytest.assert_instance(activity.discord_side_id, str)
 
 
-def test__Activity__discord_side_id__1():
+def test__Activity__discord_side_id__id_given():
     """
     Tests whether ``Activity.discord_side_id`` works as intended.
     
@@ -253,7 +253,7 @@ def test__Activity__copy():
     vampytest.assert_eq(activity, copy)
 
 
-def test__Activity__copy_with__0():
+def test__Activity__copy_with__no_fields_given():
     """
     Tests whether ``Activity.copy_with`` works as intended.
     
@@ -270,8 +270,7 @@ def test__Activity__copy_with__0():
     vampytest.assert_eq(activity, copy)
 
 
-
-def test__Activity__copy_with__1():
+def test__Activity__copy_with__fields_given():
     """
     Tests whether ``Activity.copy_with`` works as intended.
     
@@ -279,6 +278,7 @@ def test__Activity__copy_with__1():
     """
     old_activity_type = ActivityType.playing
     old_name = 'Yuuka'
+    
     new_activity_type = ActivityType.competing
     new_name = 'koishi'
     

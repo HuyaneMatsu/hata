@@ -850,7 +850,7 @@ class TopGGClient:
             async with rate_limit_handler.ctx():
                 try:
                     async with RequestContextManager(
-                        self.http._request(method, url, headers, data, query_parameters)
+                        self.http._request(method, url, headers, data = data, params = query_parameters)
                     ) as response:
                         response_data = await response.text(encoding = 'utf-8')
                 except OSError as err:

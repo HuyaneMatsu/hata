@@ -1,3 +1,9 @@
+## 1.3.65 *\[2024-09-16\]*
+
+### Bug fixes
+
+- Fix `TopGGClient._request` failing. (Since 1.3.64)
+
 ## 1.3.64 *\[2024-09-15\]*
 
 ### Improvements

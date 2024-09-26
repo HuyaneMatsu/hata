@@ -35,4 +35,6 @@ def test__validate_created_at(input_value):
     ------
     TypeError
     """
-    return validate_created_at(input_value)
+    output = validate_created_at(input_value)
+    vampytest.assert_instance(output, DateTime)
+    return output

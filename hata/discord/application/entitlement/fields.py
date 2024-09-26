@@ -16,8 +16,10 @@ from ...user import ClientUserBase
 
 from ..application import Application
 from ..sku import SKU
+from ..subscription import Subscription
 
 from .preinstanced import EntitlementOwnerType, EntitlementType
+
 
 # application_id
 
@@ -156,7 +158,7 @@ validate_starts_at = nullable_date_time_validator_factory('starts_at')
 
 parse_subscription_id = entity_id_parser_factory('subscription_id')
 put_subscription_id_into = entity_id_optional_putter_factory('subscription_id')
-validate_subscription_id = entity_id_validator_factory('subscription_id')
+validate_subscription_id = entity_id_validator_factory('subscription_id', Subscription)
 
 # type
 

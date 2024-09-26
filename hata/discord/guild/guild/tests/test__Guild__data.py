@@ -111,7 +111,10 @@ def test__Guild__from_data__all_fields():
         ScheduledEvent.precreate(202306210050),
     ]
     safety_alerts_channel_id = 202306210051
-    # soundboard_sounds = [SoundboardSound.precreate(202306210052), SoundboardSound.precreate(202306210053),]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202306210052),
+        SoundboardSound.precreate(202306210053),
+    ]
     stages = [
         Stage.precreate(202306210054),
         Stage.precreate(202306210055),
@@ -177,9 +180,11 @@ def test__Guild__from_data__all_fields():
         'roles': [role.to_data(include_internals = True) for role in roles],
         'rules_channel_id': str(rules_channel_id),
         'safety_alerts_channel_id': str(safety_alerts_channel_id),
-        # soundboard_sounds: [soundboard_sound.to_data(include_internals = True) for soundboard_sound in soundboard_sounds],
         'guild_scheduled_events': [
             scheduled_event.to_data(include_internals = True) for scheduled_event in scheduled_events
+        ],
+        'soundboard_sounds': [
+            soundboard_sound.to_data(include_internals = True) for soundboard_sound in soundboard_sounds
         ],
         'stage_instances': [stage.to_data(include_internals = True) for stage in stages],
         'stickers': [sticker.to_data(include_internals = True) for sticker in stickers],
@@ -245,7 +250,7 @@ def test__Guild__from_data__all_fields():
     vampytest.assert_eq(
         guild.scheduled_events, {scheduled_event.id: scheduled_event for scheduled_event in scheduled_events}
     )
-    # vampytest.assert_eq(guild.soundboard_sounds, {soundboard_sound.id: soundboard_sound for soundboard_sound in soundboard_sounds})
+    vampytest.assert_eq(guild.soundboard_sounds, {soundboard_sound.id: soundboard_sound for soundboard_sound in soundboard_sounds})
     vampytest.assert_eq(guild.stages, {stage.id: stage for stage in stages})
     vampytest.assert_eq(guild.stickers, {sticker.id: sticker for sticker in stickers})
     vampytest.assert_eq(guild.system_channel_id, system_channel_id)
@@ -361,12 +366,15 @@ def test__Guild__to_data():
         Role.precreate(202306220009),
     ]
     rules_channel_id = 202306220010
+    safety_alerts_channel_id = 202306220013
     scheduled_events = [
         ScheduledEvent.precreate(202306220011),
         ScheduledEvent.precreate(202306220012),
     ]
-    safety_alerts_channel_id = 202306220013
-    # soundboard_sounds = [SoundboardSound.precreate(202306220014), SoundboardSound.precreate(202306220015),]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202306220014),
+        SoundboardSound.precreate(202306220015),
+    ]
     stages = [
         Stage.precreate(202306220016),
         Stage.precreate(202306220017),
@@ -436,9 +444,12 @@ def test__Guild__to_data():
         'roles': [role.to_data(defaults = True, include_internals = True) for role in roles],
         'rules_channel_id': str(rules_channel_id),
         'safety_alerts_channel_id': str(safety_alerts_channel_id),
-        # soundboard_sounds: [soundboard_sound.to_data(defaults = True, include_internals = True) for soundboard_sound in soundboard_sounds],
         'guild_scheduled_events': [
             scheduled_event.to_data(defaults = True, include_internals = True) for scheduled_event in scheduled_events
+        ],
+        'soundboard_sounds': [
+            soundboard_sound.to_data(defaults = True, include_internals = True)
+            for soundboard_sound in soundboard_sounds
         ],
         'stage_instances': [stage.to_data(defaults = True, include_internals = True) for stage in stages],
         'stickers': [sticker.to_data(defaults = True, include_internals = True) for sticker in stickers],
@@ -501,7 +512,7 @@ def test__Guild__to_data():
         roles = roles,
         rules_channel_id = rules_channel_id,
         safety_alerts_channel_id = safety_alerts_channel_id,
-        # soundboard_sounds = soundboard_sounds,
+        soundboard_sounds = soundboard_sounds,
         scheduled_events = scheduled_events,
         stages = stages,
         stickers = stickers,
@@ -583,7 +594,10 @@ def test__Guild__set_attributes__create():
         ScheduledEvent.precreate(202306220050),
     ]
     safety_alerts_channel_id = 202306220051
-    # soundboard_sounds = [SoundboardSound.precreate(202306220052), SoundboardSound.precreate(202306220053),]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202306220052),
+        SoundboardSound.precreate(202306220053),
+    ]
     stages = [
         Stage.precreate(202306220054),
         Stage.precreate(202306220055),
@@ -649,9 +663,11 @@ def test__Guild__set_attributes__create():
         'roles': [role.to_data(include_internals = True) for role in roles],
         'rules_channel_id': str(rules_channel_id),
         'safety_alerts_channel_id': str(safety_alerts_channel_id),
-        # soundboard_sounds: [soundboard_sound.to_data(include_internals = True) for soundboard_sound in soundboard_sounds],
         'guild_scheduled_events': [
             scheduled_event.to_data(include_internals = True) for scheduled_event in scheduled_events
+        ],
+        'soundboard_sounds': [
+            soundboard_sound.to_data(include_internals = True) for soundboard_sound in soundboard_sounds
         ],
         'stage_instances': [stage.to_data(include_internals = True) for stage in stages],
         'stickers': [sticker.to_data(include_internals = True) for sticker in stickers],
@@ -719,7 +735,7 @@ def test__Guild__set_attributes__create():
     vampytest.assert_eq(
         guild.scheduled_events, {scheduled_event.id: scheduled_event for scheduled_event in scheduled_events}
     )
-    # vampytest.assert_eq(guild.soundboard_sounds, {soundboard_sound.id: soundboard_sound for soundboard_sound in soundboard_sounds})
+    vampytest.assert_eq(guild.soundboard_sounds, {soundboard_sound.id: soundboard_sound for soundboard_sound in soundboard_sounds})
     vampytest.assert_eq(guild.stages, {stage.id: stage for stage in stages})
     vampytest.assert_eq(guild.stickers, {sticker.id: sticker for sticker in stickers})
     vampytest.assert_eq(guild.system_channel_id, system_channel_id)
@@ -794,7 +810,10 @@ def test__Guild__set_attributes__existing():
         ScheduledEvent.precreate(202306220081),
     ]
     safety_alerts_channel_id = 202306220082
-    # soundboard_sounds = [SoundboardSound.precreate(202306220083), SoundboardSound.precreate(202306220084),]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202306220083),
+        SoundboardSound.precreate(202306220084),
+    ]
     stages = [
         Stage.precreate(202306220085),
         Stage.precreate(202306220086),
@@ -860,9 +879,11 @@ def test__Guild__set_attributes__existing():
         'roles': [role.to_data(include_internals = True) for role in roles],
         'rules_channel_id': str(rules_channel_id),
         'safety_alerts_channel_id': str(safety_alerts_channel_id),
-        # soundboard_sounds: [soundboard_sound.to_data(include_internals = True) for soundboard_sound in soundboard_sounds],
         'guild_scheduled_events': [
             scheduled_event.to_data(include_internals = True) for scheduled_event in scheduled_events
+        ],
+        'soundboard_sounds': [
+            soundboard_sound.to_data(include_internals = True) for soundboard_sound in soundboard_sounds
         ],
         'stage_instances': [stage.to_data(include_internals = True) for stage in stages],
         'stickers': [sticker.to_data(include_internals = True) for sticker in stickers],
@@ -929,7 +950,9 @@ def test__Guild__set_attributes__existing():
     vampytest.assert_eq(
         guild.scheduled_events, {scheduled_event.id: scheduled_event for scheduled_event in scheduled_events}
     )
-    # vampytest.assert_eq(guild.soundboard_sounds, {soundboard_sound.id: soundboard_sound for soundboard_sound in soundboard_sounds})
+    vampytest.assert_eq(
+        guild.soundboard_sounds, {soundboard_sound.id: soundboard_sound for soundboard_sound in soundboard_sounds}
+    )
     vampytest.assert_eq(guild.stages, {stage.id: stage for stage in stages})
     vampytest.assert_eq(guild.stickers, {sticker.id: sticker for sticker in stickers})
     vampytest.assert_eq(guild.system_channel_id, system_channel_id)

@@ -64,7 +64,7 @@ GATEWAY_OPERATION_CLIENT_HEARTBEAT_ACKNOWLEDGE : `int` = `11`
     Receive only, used at `._handle_special_operation`.
 GATEWAY_OPERATION_CLIENT_GUILD_SYNC : `int` = `12`
     Send only, not used.
-GATEWAY_OPERATION_CLIENT_REQUEST_SOUNDBOARD_SOUNDS : `int` = `13`
+GATEWAY_OPERATION_CLIENT_REQUEST_SOUNDBOARD_SOUNDS : `int` = `31`
     Send only, used to request the guilds' soundboard sounds.
 """
 

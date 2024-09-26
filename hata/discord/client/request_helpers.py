@@ -1,13 +1,13 @@
 __all__ = ()
 
-from ..application import Entitlement
+from ..application import Entitlement, Subscription
 from ..application_command import ApplicationCommand
 from ..auto_moderation import AutoModerationRule
 from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token_pair
 from ..channel import Channel, ForumTag, PermissionOverwrite
 from ..core import (
     APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, EMBEDDED_ACTIVITIES, EMOJIS, FORUM_TAGS, GUILDS, MESSAGES,
-    ROLES, SCHEDULED_EVENTS, SOUNDBOARD_SOUNDS, STICKERS, STICKER_PACKS, USERS
+    ROLES, SCHEDULED_EVENTS, SOUNDBOARD_SOUNDS, STICKERS, STICKER_PACKS, SUBSCRIPTIONS, USERS
 )
 from ..embedded_activity import EmbeddedActivity
 from ..emoji import Emoji, Reaction, ReactionType
@@ -1565,7 +1565,7 @@ def get_oauth2_access_token_and_user_id(access, user, required_scope = None):
     TypeError
         - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
         - If `user` is not `None`, ``ClientUserBase``.
-        - If `user.id` could nto be determined.
+        - If `user.id` could not be determined.
     ValueError
         - If the given `access` is not providing the required scope.
         - If `user` and `access` refers to a different user.
@@ -1813,3 +1813,40 @@ def get_embedded_activity_and_id(embedded_activity):
     
     embedded_activity = EMBEDDED_ACTIVITIES.get(embedded_activity_id, None)
     return embedded_activity, embedded_activity_id
+
+
+
+def get_subscription_and_sku_id_and_id(subscription):
+    """
+    Gets the subscription and it's sku's identifier from the given subscription.
+    
+    Parameters
+    ----------
+    subscription : ``Subscription``, `(int, int)`
+        The subscription or `sku-id`, `subscription-id` pair.
+    
+    Returns
+    -------
+    subscription_and_sku_id_and_subscription_id : `(None | Subscription, int, int)`
+        The subscription and its sku's and it's own identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `subscription`'s type is incorrect.
+    """
+    if isinstance(subscription, Subscription):
+        sku_id = subscription.sku_id
+        subscription_id = subscription.id
+    
+    else:
+        snowflake_pair = maybe_snowflake_pair(subscription)
+        if snowflake_pair is None:
+            raise TypeError(
+                f'`subscription` can be `{Subscription.__name__}`, `(int, int)`, got {type(subscription).__name__}; {subscription!r}.'
+            )
+        
+        sku_id, subscription_id = snowflake_pair
+        subscription = SUBSCRIPTIONS.get(subscription_id, None)
+    
+    return subscription, sku_id, subscription_id

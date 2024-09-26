@@ -5,32 +5,40 @@ from ....sticker import Sticker, StickerFormat
 from ..fields import parse_stickers
 
 
-def test__parse_stickers__0():
+def _iter_options():
+    yield {}
+    yield {'sticker_items': None}
+    yield {'sticker_items': {}}
+
+
+@vampytest.call_from(_iter_options())
+def test__parse_stickers__no_data(input_data):
     """
     Tests whether ``parse_stickers`` works as intended.
     
-    Case: Nothing.
+    Case: No data.
+    
+    Parameters
+    ----------
+    input_data : `dict<str, object>`
+        Data to parse from.
     """
-    for input_data in (
-        {},
-        {'sticker_items': None},
-        {'sticker_items': []},
-    ):
-        output = parse_stickers(input_data)
-        vampytest.assert_is(output, None)
+    output = parse_stickers(input_data)
+    vampytest.assert_is(output, None)
 
 
-def test__parse_stickers__1():
+def test__parse_stickers__with_data():
     """
     Tests whether ``parse_stickers`` works as intended.
     
-    Case: Nothing.
+    Case: With data.
     """
     sticker_id_0 = 202305010009
-    sticker_id_1 = 202305010008
     sticker_name_0 = 'Orin'
-    sticker_name_1 = 'Okuu'
     sticker_format_0 = StickerFormat.png
+    
+    sticker_id_1 = 202305010008
+    sticker_name_1 = 'Okuu'
     sticker_format_1 = StickerFormat.apng
     
     input_data = {

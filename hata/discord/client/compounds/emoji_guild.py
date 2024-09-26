@@ -67,7 +67,7 @@ class ClientCompoundEmojiGuildEndpoints(Compound):
             emoji._set_attributes(emoji_data, guild_id)
         
         return emoji
-        
+    
     
     async def emoji_get(self, emoji, *, force_update = False):
         """

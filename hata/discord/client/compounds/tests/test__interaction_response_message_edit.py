@@ -7,6 +7,7 @@ from ....interaction import InteractionEvent, InteractionType
 from ....interaction.responding.constants import (
     RESPONSE_FLAG_DEFERRED, RESPONSE_FLAG_RESPONDED, RESPONSE_FLAG_RESPONDING
 )
+from ....poll import Poll, PollAnswer
 from ....message import MessageFlag
 
 from ...client import Client
@@ -43,6 +44,7 @@ async def test__Client__interaction_response_message_edit__stuffed():
     embeds = [Embed('orin')]
     suppress_embeds = True
     attachments = ('mister.txt', b'hey')
+    poll = Poll(answers = [PollAnswer(text = 'sister')], duration = 3600)
     
     expected_message_data = FormData()
     expected_message_data.add_json(
@@ -53,7 +55,8 @@ async def test__Client__interaction_response_message_edit__stuffed():
             'components': [create_row(components).to_data()],
             'allowed_mentions' : {'parse': ['everyone']},
             'flags': MessageFlag().update_by_keys(embeds_suppressed = True),
-                'attachments': [{'id': '0'}],
+            'attachments': [{'id': '0'}],
+            'poll': poll.to_data(),
         },
     )
     expected_message_data.add_field(
@@ -87,6 +90,7 @@ async def test__Client__interaction_response_message_edit__stuffed():
             components = components,
             content = content,
             embeds = embeds,
+            poll = poll,
             suppress_embeds = suppress_embeds,
             attachments = attachments,
         )

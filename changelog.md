@@ -1,3 +1,41 @@
+## 1.3.66 *\[2024-09-26\]*
+
+### Improvements
+
+- Set operation system requirements to Linux, so people do not come with bugs a non-clown can not reproduce.
+- Add `MessageSnapshot.components`.
+- Add `MessageSnapshot.stickers`.
+- Add `MessageSnapshot.iter_components`.
+- Add `MessageSnapshot.iter_stickers`.
+- Add `MessageSnapshot.sticker`.
+- `Client.interaction_response_message_edit` now allows `poll` parameter (its now allowed in the payload).
+- Add `ERROR_CODES.user_must_be_verified`.
+- Add `ERROR_CODES.file_invalid`.
+- Add `ERROR_CODES.file_type_invalid`.
+- Add `ERROR_CODES.file_max_duration`.
+- Add `ERROR_CODES.emoji_invalid`.
+- Add `ERROR_CODES.file_duration_invalid`.
+- Add `ERROR_CODES.missing_permissions_to_use_sticker`.
+- Add `ERROR_CODES.max_soundboard_sounds`.
+- Add `ERROR_CODES.unknown_sound`.
+- Add `ERROR_CODES.unknown_asset`.
+- Add `Guild.soundboard_sounds` is now populated initially (its now included in the guild payload).
+- `Client.interaction_response_message_create` now returns `message` if applicable (its now included in the payload).
+- `Client.interaction_application_command_acknowledge` now returns `message` if applicable (its now included in the payload).
+- Enforce `utf-8` on writing & reading files to avoid unexpected exceptions on clown operation systems.
+- Add `SUBSCRIPTIONS`.
+- Add `Subscription`.
+- Add `SubscriptionStatus`.
+- Add `Client.subscription_get_sku`.
+- Add `Client.subscription_get_all_sku_user`.
+- Add `Client.subscription_get_chunk_sku_user`.
+- Add `DiscordApiClient.subscription_get_chunk_sku_user`.
+- Add `DiscordApiClient.subscription_get_sku`.
+- Add `RATE_LIMIT_GROUPS.subscription_get_chunk_sku_user`.
+- Add `RATE_LIMIT_GROUPS.subscription_get_sku`.
+- Add `ComponentTypeLayoutFlag`.
+- Add `ComponentType.layout_flags`.
+
 ## 1.3.65 *\[2024-09-16\]*
 
 ### Bug fixes

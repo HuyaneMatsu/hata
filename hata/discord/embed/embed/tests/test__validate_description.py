@@ -34,4 +34,6 @@ def test__validate_description(input_value):
     ------
     ValueError
     """
-    return validate_description(input_value)
+    output = validate_description(input_value)
+    vampytest.assert_instance(output, str, nullable = True)
+    return output

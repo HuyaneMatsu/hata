@@ -239,19 +239,25 @@ def validate_stickers(stickers):
     if getattr(type(stickers), '__iter__', None) is None:
         raise TypeError(
             f'`stickers` can be `None` ot `iterable` of `{Sticker.__name__}`, '
-            f'got {stickers.__class__.__name__}; {stickers!r}.'
+            f'got {type(stickers).__name__}; {stickers!r}.'
         )
     
-    for sticker in stickers:
+    if isinstance(stickers, dict):
+        iterator = iter(stickers.values())
+    else:
+        iterator = iter(stickers)
+    
+    for sticker in iterator:
         if not isinstance(sticker, Sticker):
             raise TypeError(
-                f'`sticker` can contain `{Sticker.__name__}` elements, got {sticker.__class__.__name__}; {sticker!r}; '
+                f'`sticker` can contain `{Sticker.__name__}` elements, got {type(sticker).__name__}; {sticker!r}; '
                 f'stickers = {stickers!r}.'
             )
         
         validated_stickers[sticker.id] = sticker
     
     return validated_stickers
+
 
 # name
 

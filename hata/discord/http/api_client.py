@@ -2173,12 +2173,15 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         )
     
     
-    async def interaction_response_message_create(self, interaction_id, interaction_token, data):
+    async def interaction_response_message_create(
+        self, interaction_id, interaction_token, data, query_string_parameters
+    ):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.interaction_response_message_create, NO_SPECIFIC_RATE_LIMITER),
             METHOD_POST,
             f'{API_ENDPOINT}/interactions/{interaction_id}/{interaction_token}/callback',
             data,
+            query_string_parameters,
         )
     
     
@@ -2440,7 +2443,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             reason = reason,
         )
     
-    # sku & entitlements
+    # sku & entitlement & subscription
     
     async def sku_get_all(self, application_id):
         return await self.discord_request(
@@ -2481,4 +2484,20 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             RateLimitHandler(RATE_LIMIT_GROUPS.entitlement_consume, NO_SPECIFIC_RATE_LIMITER),
             METHOD_POST,
             f'{API_ENDPOINT}/applications/{application_id}/entitlements/{entitlement_id}/consume',
+        )
+
+    async def subscription_get_sku(self, sku_id, subscription_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.subscription_get_sku, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/skus/{sku_id}/subscriptions/{subscription_id}',
+        )
+    
+    
+    async def subscription_get_chunk_sku_user(self, sku_id, query_parameters):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.subscription_get_chunk_sku_user, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/skus/{sku_id}/subscriptions',
+            params = query_parameters,
         )

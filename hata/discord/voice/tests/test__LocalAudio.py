@@ -5,7 +5,7 @@ from ..audio_source import DEFAULT_EXECUTABLE, LocalAudio
 
 def test__LocalAudio__create_process_preprocess__file_does_not_exists():
     """
-    Tests whether ``LocalAudio._create_process_preprocess`` raises when the file does nto exists.
+    Tests whether ``LocalAudio._create_process_preprocess`` raises when the file does not exists.
     
     Case: Raise `source` is not a file.
     """
@@ -27,7 +27,7 @@ def test__LocalAudio__create_process_preprocess__file_does_not_exists():
 
 def test__LocalAudio__create_process_preprocess__passing():
     """
-    Tests whether ``LocalAudio._create_process_preprocess`` raises when the file does nto exists.
+    Tests whether ``LocalAudio._create_process_preprocess`` raises when the file does not exists.
     
     Case: passing.
     """

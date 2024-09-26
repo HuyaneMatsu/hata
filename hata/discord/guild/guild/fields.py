@@ -539,8 +539,48 @@ parse_safety_alerts_channel_id = entity_id_parser_factory('safety_alerts_channel
 put_safety_alerts_channel_id_into = entity_id_optional_putter_factory('safety_alerts_channel_id')
 validate_safety_alerts_channel_id = entity_id_validator_factory('safety_alerts_channel_id', Channel)
 
+
 # soundboard_sounds
 
+def parse_soundboard_sounds(data, soundboard_sounds):
+    """
+    Parses the guild's soundboard_sounds from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Guild data.
+    
+    soundboard_sounds : `None | dict<int, SoundboardSound>`
+        The guild's soundboard sounds.
+        
+    Returns
+    -------
+    soundboard_sounds : `None | dict<int, SoundboardSound>`
+        Returns `soundboard sounds` parameter.
+    """
+    if (soundboard_sounds is not None):
+        soundboard_sounds.clear()
+        soundboard_sounds = None
+    
+    soundboard_sound_datas = data.get('soundboard_sounds', None)
+    if (soundboard_sound_datas is not None):
+        for soundboard_sound_data in soundboard_sound_datas:
+            soundboard_sound = SoundboardSound.from_data(soundboard_sound_data, strong_cache = False)
+            if (soundboard_sound is None):
+                continue
+            
+            if soundboard_sounds is None:
+                soundboard_sounds = {}
+            
+            soundboard_sounds[soundboard_sound.id] = soundboard_sound
+    
+    return soundboard_sounds
+
+
+put_soundboard_sounds_into = entity_dictionary_putter_factory(
+    'soundboard_sounds', SoundboardSound, force_include_internals = True
+)
 validate_soundboard_sounds = nullable_entity_dictionary_validator_factory('soundboard_sounds', SoundboardSound)
 
 # scheduled_events
@@ -654,6 +694,7 @@ def parse_stickers(data, stickers):
             stickers[sticker.id] = sticker
     
     return stickers
+
 
 put_stickers_into = entity_dictionary_putter_factory('stickers', Sticker, force_include_internals = True)
 validate_stickers = entity_dictionary_validator_factory('stickers', Sticker)
@@ -842,14 +883,16 @@ validate_verification_level = preinstanced_validator_factory('verification_level
 
 def parse_voice_states(data, voice_states, guild_id = 0):
     """
-    Parses the guild's voice_states from the given data.
+    Parses the guild's voice states from the given data.
     
     Parameters
     ----------
     data : `dict<str, object>`
         Guild data.
+    
     voice_states : `None | dict<int, VoiceState>`
-        The guild's voice_states.
+        The guild's voice states.
+    
     guild_id : `int` = `0`, Optional
         The guild's identifier.
         
@@ -910,13 +953,13 @@ def validate_voice_states(field_value):
         else:
             raise TypeError(
                 f'`voice_states` can be `None`, `dict` of (`int`, `{VoiceState.__name__}`) items, `iterable` of '
-                f'`{VoiceState.__name__}` items, got {field_value.__class__.__name__}; {field_value!r}.'
+                f'`{VoiceState.__name__}` items, got {type(field_value).__name__}; {field_value!r}.'
             )
         
         for voice_state in iterator:
             if not isinstance(voice_state, VoiceState):
                 raise TypeError(
-                    f'`voice_states` elements can be `{VoiceState.__name__}`, got {voice_state.__class__.__name__}; '
+                    f'`voice_states` elements can be `{VoiceState.__name__}`, got {type(voice_state).__name__}; '
                     f'{voice_state!r}; voice_states = {field_value!r}.'
                 )
             
@@ -971,7 +1014,7 @@ def validate_channels_and_channel_datas(channels):
             if not isinstance(element, (Channel, dict)):
                 raise TypeError(
                     f'`channel` elements can be `{Channel.__name__}`, `dict`. '
-                    f'Got {element.__class__.__name__}; {element!r}; channels = {channels!r}'
+                    f'Got {type(element).__name__}; {element!r}; channels = {channels!r}'
                 )
         
             if validated is None:
@@ -1017,7 +1060,7 @@ def validate_roles_and_role_datas(roles):
             if not isinstance(element, (Role, dict)):
                 raise TypeError(
                     f'`role` elements can be `{Role.__name__}`, `dict`. '
-                    f'Got {element.__class__.__name__}; {element!r}; roles = {roles!r}'
+                    f'Got {type(element).__name__}; {element!r}; roles = {roles!r}'
                 )
         
             if validated is None:

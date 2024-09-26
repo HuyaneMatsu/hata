@@ -6,15 +6,16 @@ from scarletio import Task, include
 
 from ...env import CACHE_PRESENCE, CACHE_USER
 
-from ..application import Entitlement
+from ..application import Entitlement, Subscription
 from ..application.entitlement.fields import parse_id as parse_entitlement_id
 from ..application_command import ApplicationCommand, ApplicationCommandPermission
+from ..application.subscription.fields import parse_id as parse_subscription_id
 from ..audit_logs import AuditLogEntry
 from ..auto_moderation import AutoModerationActionExecutionEvent, AutoModerationRule
 from ..channel import Channel, VoiceChannelEffect
 from ..core import (
     APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, AUTO_MODERATION_RULES, CHANNELS, CLIENTS, ENTITLEMENTS, GUILDS,
-    KOKORO, MESSAGES, ROLES, SCHEDULED_EVENTS, STAGES, USERS
+    KOKORO, MESSAGES, ROLES, SCHEDULED_EVENTS, STAGES, SUBSCRIPTIONS, USERS
 )
 from ..embedded_activity.embedded_activity.constants import (
     EMBEDDED_ACTIVITY_UPDATE_CREATE, EMBEDDED_ACTIVITY_UPDATE_DELETE, EMBEDDED_ACTIVITY_UPDATE_UPDATE,
@@ -5151,4 +5152,92 @@ del (
     MESSAGE_POLL_VOTE_REMOVE__CAL_MC,
     MESSAGE_POLL_VOTE_REMOVE__OPT_SC,
     MESSAGE_POLL_VOTE_REMOVE__OPT_MC,
+)
+
+
+# Subscriptions
+
+
+def SUBSCRIPTION_CREATE__CAL(client, data):
+    subscription = Subscription.from_data(data)
+    Task(KOKORO, client.events.subscription_create(client, subscription))
+
+
+def SUBSCRIPTION_CREATE__OPT(client, data):
+    pass
+
+
+add_parser(
+    'SUBSCRIPTION_CREATE',
+    SUBSCRIPTION_CREATE__CAL,
+    SUBSCRIPTION_CREATE__CAL,
+    SUBSCRIPTION_CREATE__OPT,
+    SUBSCRIPTION_CREATE__OPT,
+)
+del (
+    SUBSCRIPTION_CREATE__CAL,
+    SUBSCRIPTION_CREATE__OPT,
+)
+
+
+def SUBSCRIPTION_DELETE__CAL(client, data):
+    subscription = Subscription.from_data(data)
+    Task(KOKORO, client.events.subscription_delete(client, subscription))
+
+
+def SUBSCRIPTION_DELETE__OPT(client, data):
+    subscription_id = parse_subscription_id(data)
+    try:
+        subscription = SUBSCRIPTIONS[subscription_id]
+    except KeyError:
+        return
+    
+    subscription.deleted = True
+
+
+add_parser(
+    'SUBSCRIPTION_DELETE',
+    SUBSCRIPTION_DELETE__CAL,
+    SUBSCRIPTION_DELETE__CAL,
+    SUBSCRIPTION_DELETE__OPT,
+    SUBSCRIPTION_DELETE__OPT,
+)
+del (
+    SUBSCRIPTION_DELETE__CAL,
+    SUBSCRIPTION_DELETE__OPT,
+)
+
+
+def SUBSCRIPTION_UPDATE__CAL(client, data):
+    subscription, is_created = Subscription.from_data_is_created(data)
+    if is_created:
+        old_attributes = None
+    else:
+        old_attributes = subscription._difference_update_attributes(data)
+        if not old_attributes:
+            return
+    
+    Task(KOKORO, client.events.subscription_update(client, subscription, old_attributes))
+
+
+def SUBSCRIPTION_UPDATE__OPT(client, data):
+    subscription_id = parse_subscription_id(data)
+    try:
+        subscription = SUBSCRIPTIONS[subscription_id]
+    except KeyError:
+        pass
+    else:
+        subscription._update_attributes(data)
+
+
+add_parser(
+    'SUBSCRIPTION_UPDATE',
+    SUBSCRIPTION_UPDATE__CAL,
+    SUBSCRIPTION_UPDATE__CAL,
+    SUBSCRIPTION_UPDATE__OPT,
+    SUBSCRIPTION_UPDATE__OPT,
+)
+del (
+    SUBSCRIPTION_UPDATE__CAL,
+    SUBSCRIPTION_UPDATE__OPT,
 )

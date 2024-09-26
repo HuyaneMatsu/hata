@@ -5,9 +5,6 @@ from ....builder.conversion import Conversion
 from ....component import Component, ComponentType, create_row
 
 
-COMPONENT_TYPE_ROW = ComponentType.row
-
-
 def _is_component_listing(value):
     """
     Yields the outcome if the input `value` is a component listing. `value` must be a non-empty list.
@@ -27,7 +24,7 @@ def _is_component_listing(value):
     
     for element in value:
         if isinstance(element, Component):
-            if element.type is not COMPONENT_TYPE_ROW:
+            if not element.type.layout_flags.top_level:
                 element = create_row(element)
         
         elif isinstance(element, list) or isinstance(element, tuple):
@@ -69,7 +66,7 @@ class CONVERSION_COMPONENTS(Conversion):
     
     
     def set_type_processor(value):
-        if value.type is not COMPONENT_TYPE_ROW:
+        if not value.type.layout_flags.top_level:
             value = create_row(value)
         
         return [value]
@@ -87,7 +84,7 @@ class CONVERSION_COMPONENTS(Conversion):
         
         # Component
         if isinstance(value, Component):
-            if value.type is not COMPONENT_TYPE_ROW:
+            if not value.type.layout_flags.top_level:
                 value = create_row(value)
             
             yield [value]

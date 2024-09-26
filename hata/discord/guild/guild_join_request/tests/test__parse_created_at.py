@@ -29,4 +29,7 @@ def test__parse_created_at(input_data):
     -------
     output : `None | DateTime`
     """
-    return parse_created_at(input_data)
+    output = parse_created_at(input_data)
+    vampytest.assert_instance(output, DateTime, nullable = True)
+    return output
+

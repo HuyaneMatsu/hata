@@ -126,6 +126,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
         ----------
         data : `dict<str, object>`
             Sound data.
+        
         strong_cache : `bool` = `True`, Optional (Keyword only)
             Whether the instance should be put into its strong cache.
         

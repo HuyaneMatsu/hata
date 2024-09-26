@@ -316,7 +316,7 @@ class ContentParameterParser(RichAttributeErrorBaseType):
                 for index in range(2):
                     element = processed_separator[index]
                     
-                    element_type = element.__class__
+                    element_type = type(element)
                     if element_type is str:
                         processed_element = element
                     elif issubclass(element_type, str):

@@ -3,8 +3,10 @@ from datetime import datetime as DateTime, timezone as TimeZone
 import vampytest
 
 from ....channel import Channel
+from ....component import Component, ComponentType
 from ....embed import Embed
 from ....role import Role
+from ....sticker import Sticker
 from ....user import User
 
 from ...attachment import Attachment
@@ -23,6 +25,10 @@ def test__MessageSnapshot__copy():
         Attachment.precreate(202405250014, name = 'Koishi'),
         Attachment.precreate(202405250015, name = 'Komeiji'),
     ]
+    components = [
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Rose')]),
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Slayer')]),
+    ]
     content = 'orin'
     created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
@@ -34,9 +40,14 @@ def test__MessageSnapshot__copy():
         User.precreate(202407200053, name = 'Rin'),
     ]
     message_type = MessageType.call
+    stickers = [
+        Sticker.precreate(202409200072, name = 'Make'),
+        Sticker.precreate(202409200073, name = 'Me'),
+    ]
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
+        components = components,
         content = content,
         created_at = created_at,
         edited_at = edited_at,
@@ -44,7 +55,8 @@ def test__MessageSnapshot__copy():
         flags = flags,
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
-        message_type = message_type
+        message_type = message_type,
+        stickers = stickers,
     )
     copy = message_snapshot.copy()
     
@@ -64,6 +76,10 @@ def test__MessageSnapshot__copy_with__no_fields():
         Attachment.precreate(202405250016, name = 'Koishi'),
         Attachment.precreate(202405250017, name = 'Komeiji'),
     ]
+    components = [
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Rose')]),
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Slayer')]),
+    ]
     content = 'orin'
     created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
@@ -75,9 +91,14 @@ def test__MessageSnapshot__copy_with__no_fields():
         User.precreate(202407200055, name = 'Rin'),
     ]
     message_type = MessageType.call
+    stickers = [
+        Sticker.precreate(202409200074, name = 'Make'),
+        Sticker.precreate(202409200075, name = 'Me'),
+    ]
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
+        components = components,
         content = content,
         created_at = created_at,
         edited_at = edited_at,
@@ -86,6 +107,7 @@ def test__MessageSnapshot__copy_with__no_fields():
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
+        stickers = stickers,
     )
     copy = message_snapshot.copy_with()
     
@@ -105,6 +127,10 @@ def test__MessageSnapshot__copy_with__all_fields():
         Attachment.precreate(202405250018, name = 'Koishi'),
         Attachment.precreate(202405250019, name = 'Komeiji'),
     ]
+    old_components = [
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Rose')]),
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Slayer')]),
+    ]
     old_content = 'orin'
     old_created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     old_edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
@@ -116,10 +142,18 @@ def test__MessageSnapshot__copy_with__all_fields():
         User.precreate(202407200057, name = 'Rin'),
     ]
     old_message_type = MessageType.call
+    old_stickers = [
+        Sticker.precreate(202409200076, name = 'Make'),
+        Sticker.precreate(202409200077, name = 'Me'),
+    ]
     
     new_attachments = [
         Attachment.precreate(202405250020, name = 'komeiji'),
         Attachment.precreate(202405250021, name = 'koishi'),
+    ]
+    new_components = [
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Carmilia')]),
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'the')]),
     ]
     new_content = 'miau'
     new_created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
@@ -132,9 +166,14 @@ def test__MessageSnapshot__copy_with__all_fields():
         User.precreate(202407200059, name = 'Rin'),
     ]
     new_message_type = MessageType.user_add
+    new_stickers = [
+        Sticker.precreate(202409200078, name = 'Come'),
+        Sticker.precreate(202409200079, name = 'Alive'),
+    ]
     
     message_snapshot = MessageSnapshot(
         attachments = old_attachments,
+        components = old_components,
         content = old_content,
         created_at = old_created_at,
         edited_at = old_edited_at,
@@ -143,9 +182,11 @@ def test__MessageSnapshot__copy_with__all_fields():
         mentioned_role_ids = old_mentioned_role_ids,
         mentioned_users = old_mentioned_users,
         message_type = old_message_type,
+        stickers = old_stickers,
     )
     copy = message_snapshot.copy_with(
         attachments = new_attachments,
+        components = new_components,
         content = new_content,
         created_at = new_created_at,
         edited_at = new_edited_at,
@@ -154,12 +195,14 @@ def test__MessageSnapshot__copy_with__all_fields():
         mentioned_role_ids = new_mentioned_role_ids,
         mentioned_users = new_mentioned_users,
         message_type = new_message_type,
+        stickers = new_stickers,
     )
     
     _assert_fields_set(copy)
     vampytest.assert_is_not(message_snapshot, copy)
     
     vampytest.assert_eq(copy.attachments, tuple(new_attachments))
+    vampytest.assert_eq(copy.components, tuple(new_components))
     vampytest.assert_eq(copy.content, new_content)
     vampytest.assert_eq(copy.created_at, new_created_at)
     vampytest.assert_eq(copy.edited_at, new_edited_at)
@@ -167,6 +210,7 @@ def test__MessageSnapshot__copy_with__all_fields():
     vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.mentioned_role_ids, tuple(new_mentioned_role_ids))
     vampytest.assert_eq(copy.mentioned_users, tuple(new_mentioned_users))
+    vampytest.assert_eq(copy.stickers, tuple(new_stickers))
     vampytest.assert_is(copy.type, new_message_type)
 
 
@@ -233,6 +277,39 @@ def test__MessageSnapshot__attachment(attachments):
     vampytest.assert_instance(output, Attachment, nullable = True)
     return output
 
+
+def _iter_options__sticker():
+    sticker_0 = Sticker.precreate(202409200080, name = 'orin')
+    sticker_1 = Sticker.precreate(202409200081, name = 'miau')
+    
+    yield None, None
+    yield [sticker_0], sticker_0
+    yield [sticker_0, sticker_1], sticker_0
+
+
+@vampytest._(vampytest.call_from(_iter_options__sticker()).returning_last())
+def test__MessageSnapshot__sticker(stickers):
+    """
+    Tests whether ``MessageSnapshot.sticker`` works as intended.
+    
+    Parameters
+    ----------
+    stickers : `None | list<Sticker>`
+        Stickers to test with.
+    
+    Returns
+    -------
+    sticker : `None | Sticker`
+    """
+    message_snapshot = MessageSnapshot(
+        stickers = stickers,
+    )
+    
+    output = message_snapshot.sticker
+    vampytest.assert_instance(output, Sticker, nullable = True)
+    return output
+
+
 def _iter_options__iter_embeds():
     embed_0 = Embed('orin')
     embed_1 = Embed('miau')
@@ -292,6 +369,35 @@ def test__MessageSnapshot__iter_attachments(attachments):
     
     return [*message_snapshot.iter_attachments()]
 
+
+def _iter_options__iter_components():
+    component_0 = Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Rose')])
+    component_1 = Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Slayer')])
+    
+    yield None, []
+    yield [component_0], [component_0]
+    yield [component_0, component_1], [component_0, component_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_components()).returning_last())
+def test__MessageSnapshot__iter_components(components):
+    """
+    Tests whether ``MessageSnapshot.iter_components`` works as intended.
+    
+    Parameters
+    ----------
+    components : `None | list<Component>`
+        Components to test with.
+    
+    Returns
+    -------
+    component : `None | Component`
+    """
+    message_snapshot = MessageSnapshot(
+        components = components,
+    )
+    
+    return [*message_snapshot.iter_components()]
 
 
 def _iter_options__iter_mentioned_role_ids():
@@ -458,3 +564,33 @@ def test__MessageSnapshot__iter_mentioned_channels(input_value):
     """
     message_snapshot = MessageSnapshot(content = input_value)
     return [*message_snapshot.iter_mentioned_channels()]
+
+
+def _iter_options__iter_stickers():
+    sticker_0 = Sticker.precreate(202409200082, name = 'orin')
+    sticker_1 = Sticker.precreate(202409200083, name = 'miau')
+    
+    yield None, []
+    yield [sticker_0], [sticker_0]
+    yield [sticker_0, sticker_1], [sticker_0, sticker_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_stickers()).returning_last())
+def test__MessageSnapshot__iter_stickers(stickers):
+    """
+    Tests whether ``MessageSnapshot.iter_stickers`` works as intended.
+    
+    Parameters
+    ----------
+    stickers : `None | list<Sticker>`
+        Stickers to test with.
+    
+    Returns
+    -------
+    sticker : `None | Sticker`
+    """
+    message_snapshot = MessageSnapshot(
+        stickers = stickers,
+    )
+    
+    return [*message_snapshot.iter_stickers()]

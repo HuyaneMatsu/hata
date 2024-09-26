@@ -1802,6 +1802,22 @@ Group Details
     - Resets after : `UN`
     - Notes : Untested.
 
+- subscription_get_chunk_sku_user
+    - Endpoint : `/skus/{sku_id}/subscriptions`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `10`
+    - Resets after : `5.0`
+
+- subscription_get_sku
+    - Endpoint : `/skus/{sku_id}/subscriptions/{subscription_id}`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `5`
+    - Resets after : `5.0`
+
 - soundboard_sound_get_all_default
     - Endpoint : `/soundboard-default-sounds`
     - Method: `GET`
@@ -2437,6 +2453,8 @@ invite_delete = RateLimitGroup.unlimited()
 invite_get = RateLimitGroup()
 oauth2_application_get_own = RateLimitGroup(optimistic = True)
 bulk_ack = RateLimitGroup(optimistic = True) # untested
+subscription_get_chunk_sku_user = RateLimitGroup()
+subscription_get_sku = RateLimitGroup()
 soundboard_sound_get_all_default = RateLimitGroup.unlimited()
 stage_get_all = RateLimitGroup.unlimited()
 stage_create = RateLimitGroup()

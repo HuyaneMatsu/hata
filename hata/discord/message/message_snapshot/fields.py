@@ -1,15 +1,17 @@
 __all__ = ()
 
 from ...field_validators import force_date_time_validator_factory
+from ...sticker import create_partial_sticker_data
 from ...utils import DISCORD_EPOCH_START, datetime_to_timestamp, timestamp_to_datetime
 
 from ..message import MessageFlag, MessageType
 from ..message.fields import (
-    parse_attachments as _parse_attachments, parse_content as _parse_content, parse_edited_at as _parse_edited_at,
-    parse_embeds as _parse_embeds, parse_flags as _parse_flags, parse_mentioned_role_ids as _parse_mentioned_role_ids,
-    parse_mentioned_users as _parse_mentioned_users, parse_type as _parse_type, validate_attachments, validate_content,
-    validate_edited_at, validate_embeds, validate_flags, validate_mentioned_role_ids, validate_mentioned_users,
-    validate_type
+    parse_attachments as _parse_attachments, parse_components as _parse_components, parse_content as _parse_content,
+    parse_edited_at as _parse_edited_at, parse_embeds as _parse_embeds, parse_flags as _parse_flags,
+    parse_mentioned_role_ids as _parse_mentioned_role_ids, parse_mentioned_users as _parse_mentioned_users,
+    parse_stickers as _parse_stickers, parse_type as _parse_type, validate_attachments, validate_components,
+    validate_content, validate_edited_at, validate_embeds, validate_flags, validate_mentioned_role_ids,
+    validate_mentioned_users, validate_stickers, validate_type
 )
 
 
@@ -66,6 +68,61 @@ def put_attachments_into(attachments, data, defaults):
             ]
         
         message_data['attachments'] = attachment_datas
+    
+    return data
+
+
+# components
+
+def parse_components(data):
+    """
+    Parses out components value from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    components : `None | tuple<Component>`
+    """
+    message_data = data.get('message', None)
+    if message_data is None:
+        return None
+    
+    return _parse_components(message_data)
+
+
+def put_components_into(components, data, defaults):
+    """
+    Serializes the given components into the given data.
+    
+    Parameters
+    ----------
+    components : `None | tuple<Component>`
+        The components to serialize.
+    data : `dict<str, object>`
+        Reaction event data.
+    defaults : `bool`
+        Whether fields with their default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if (components is not None) or defaults:
+        message_data = data.get('message', None)
+        if message_data is None:
+            message_data = {}
+            data['message'] = message_data
+        
+        if components is None:
+            component_datas = []
+        else:
+            component_datas = [component.to_data(defaults = defaults) for component in components]
+        
+        message_data['components'] = component_datas
     
     return data
 
@@ -460,6 +517,59 @@ def put_mentioned_role_ids_into(mentioned_role_ids, data, defaults):
             role_id_array = [str(role_id) for role_id in mentioned_role_ids]
             
         message_data['mention_roles'] = role_id_array
+    
+    return data
+
+
+def parse_stickers(data):
+    """
+    Parses out stickers value from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    stickers : `None | tuple<Sticker>`
+    """
+    message_data = data.get('message', None)
+    if message_data is None:
+        return None
+    
+    return _parse_stickers(message_data)
+
+
+def put_stickers_into(stickers, data, defaults):
+    """
+    Serializes the given stickers into the given data.
+    
+    Parameters
+    ----------
+    stickers : `None | tuple<Sticker>`
+        The stickers to serialize.
+    data : `dict<str, object>`
+        Reaction event data.
+    defaults : `bool`
+        Whether fields with their default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if (stickers is not None) or defaults:
+        message_data = data.get('message', None)
+        if message_data is None:
+            message_data = {}
+            data['message'] = message_data
+        
+        if stickers is None:
+            sticker_datas = []
+        else:
+            sticker_datas = [create_partial_sticker_data(sticker) for sticker in stickers]
+        
+        message_data['sticker_items'] = sticker_datas
     
     return data
 

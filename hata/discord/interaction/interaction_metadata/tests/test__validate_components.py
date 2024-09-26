@@ -1,35 +1,43 @@
 import vampytest
 
+from ....component import ComponentType
+
 from ...interaction_component import InteractionComponent
 
 from ..fields import validate_components
 
 
-def test__validate_components__0():
+def _iter_options__passing():
+    component_0 = InteractionComponent(custom_id = 'fury')
+    component_1 = InteractionComponent(
+        component_type = ComponentType.row,
+        components = [InteractionComponent(custom_id = 'Rose')],
+    )
+    
+    yield None, None
+    yield [], None
+    yield [component_0], (component_0, )
+    yield [component_1, component_0], (component_1, component_0)
+
+
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_components(input_value):
     """
     Tests whether `validate_components` works as intended.
     
-    Case: passing.
-    """
-    component = InteractionComponent(custom_id = 'fury')
+    Returns
+    -------
+    output : `None | tuple<InteractionComponent>`
     
-    for input_value, expected_output in (
-        (None, None),
-        ([], None),
-        ([component], (component, )),
-    ):
-        output = validate_components(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_components__1():
+    Raises
+    ------
+    TypeError
     """
-    Tests whether `validate_components` works as intended.
-    
-    Case: `TypeError`.
-    """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_components(input_value)
+    output = validate_components(input_value)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    return output

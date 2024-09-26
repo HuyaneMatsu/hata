@@ -5,20 +5,30 @@ from ....sticker import Sticker
 from ..fields import put_stickers_into
 
 
-def test__put_stickers_into():
+def _iter_options():
+    sticker = Sticker.precreate(202301080010, name = 'Koishi')
+    
+    yield {}, False, {'stickers': []}
+    yield {}, True, {'stickers': []}
+    
+    yield {sticker.id: sticker}, False, {'stickers': [sticker.to_data(defaults = False, include_internals = True)]}
+    yield {sticker.id: sticker}, True, {'stickers': [sticker.to_data(defaults = True, include_internals = True)]}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_stickers_into(input_value, defaults):
     """
     Tests whether ``put_stickers_into`` works as intended.
-    """
-    sticker_0 = Sticker.precreate(202301080010, name = 'rose')
     
-    for input_value, expected_output in (
-        (
-            {},
-            {'stickers': []},
-        ), (
-            {sticker_0.id: sticker_0},
-            {'stickers': [sticker_0.to_data(defaults = True, include_internals = True)]},
-        ),
-    ):
-        output = put_stickers_into(input_value, {}, True)
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `dict<int, Sticker>`
+        Input value to serialise.
+    defaults : `bool`
+        Whether fields with their default values should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
+    """
+    return put_stickers_into(input_value, {}, defaults)

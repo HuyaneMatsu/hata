@@ -8,20 +8,22 @@ from ..fields import parse_stickers
 
 
 def _iter_options():
-    sticker_id = 202306140002
-    sticker_name = 'Koishi'
-    
-    
-    sticker = Sticker.precreate(
-        sticker_id,
-        name = sticker_name,
-    )
+    sticker_0 = Sticker.precreate(202306140002, name = 'Koishi')
+    sticker_1 = Sticker.precreate(202409200000, name = 'Satori')
     
     yield {}, {}
     yield {'stickers': []}, {}
     yield (
-        {'stickers': [sticker.to_data(defaults = True, include_internals = True)]},
-        {sticker_id: sticker},
+        {
+            'stickers': [
+                sticker_0.to_data(defaults = True, include_internals = True),
+                sticker_1.to_data(defaults = True, include_internals = True),
+            ],
+        },
+        {
+            sticker_0.id: sticker_0,
+            sticker_1.id: sticker_1,
+        },
     )
 
 

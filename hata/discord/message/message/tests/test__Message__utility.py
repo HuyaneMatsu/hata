@@ -1184,8 +1184,8 @@ def test__Message__iter_attachments(input_value):
 
 
 def _iter_options__iter_components():
-    component_0 = Component(ComponentType.button, label = 'Koishi')
-    component_1 = Component(ComponentType.button, label = 'Satori')
+    component_0 = Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Koishi')])
+    component_1 = Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Satori')])
     
     yield None, []
     yield [component_0], [component_0]

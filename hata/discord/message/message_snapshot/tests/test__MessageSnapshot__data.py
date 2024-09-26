@@ -2,7 +2,9 @@ from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
+from ....component import Component, ComponentType
 from ....embed import Embed
+from ....sticker import Sticker, create_partial_sticker_data
 from ....user import GuildProfile, User
 from ....utils import datetime_to_timestamp
 
@@ -22,6 +24,10 @@ def test__MessageSnapshot__from_data():
         Attachment.precreate(202405250002, name = 'Koishi'),
         Attachment.precreate(202405250003, name = 'Komeiji'),
     ]
+    components = [
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Rose')]),
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Slayer')]),
+    ]
     content = 'orin'
     created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
@@ -33,6 +39,10 @@ def test__MessageSnapshot__from_data():
         User.precreate(202407200043, name = 'Rin'),
     ]
     message_type = MessageType.call
+    stickers = [
+        Sticker.precreate(202409200062, name = 'Make'),
+        Sticker.precreate(202409200063, name = 'Me'),
+    ]
     
     data = {
         'message': {
@@ -40,6 +50,7 @@ def test__MessageSnapshot__from_data():
                 attachment.to_data(include_internals = True)
                 for attachment in attachments
             ],
+            'components': [component.to_data() for component in components],
             'content': content,
             'timestamp': datetime_to_timestamp(created_at),
             'edited_timestamp': datetime_to_timestamp(edited_at),
@@ -47,6 +58,7 @@ def test__MessageSnapshot__from_data():
             'flags': int(flags),
             'mention_roles': [str(role_id) for role_id in mentioned_role_ids],
             'mentions': [user.to_data(include_internals = True) for user in mentioned_users],
+            'sticker_items': [create_partial_sticker_data(sticker) for sticker in stickers],
             'type': message_type.value,
         },
     }
@@ -55,6 +67,7 @@ def test__MessageSnapshot__from_data():
     _assert_fields_set(message_snapshot)
 
     vampytest.assert_eq(message_snapshot.attachments, tuple(attachments))
+    vampytest.assert_eq(message_snapshot.components, tuple(components))
     vampytest.assert_eq(message_snapshot.content, content)
     vampytest.assert_eq(message_snapshot.created_at, created_at)
     vampytest.assert_eq(message_snapshot.edited_at, edited_at)
@@ -62,6 +75,7 @@ def test__MessageSnapshot__from_data():
     vampytest.assert_eq(message_snapshot.flags, flags)
     vampytest.assert_eq(message_snapshot.mentioned_role_ids, tuple(mentioned_role_ids))
     vampytest.assert_eq(message_snapshot.mentioned_users, tuple(mentioned_users))
+    vampytest.assert_eq(message_snapshot.stickers, tuple(stickers))
     vampytest.assert_is(message_snapshot.type, message_type)
 
 
@@ -81,6 +95,10 @@ def test__MessageSnapshot__to_data():
         Attachment.precreate(202405250004, name = 'Koishi'),
         Attachment.precreate(202405250005, name = 'Komeiji'),
     ]
+    components = [
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Rose')]),
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Slayer')]),
+    ]
     content = 'orin'
     created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
@@ -89,9 +107,14 @@ def test__MessageSnapshot__to_data():
     mentioned_role_ids = [202407200016, 202407200017]
     mentioned_users = [user_0, user_1]
     message_type = MessageType.call
+    stickers = [
+        Sticker.precreate(202409200064, name = 'Make'),
+        Sticker.precreate(202409200065, name = 'Me'),
+    ]
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
+        components = components,
         content = content,
         created_at = created_at,
         edited_at = edited_at,
@@ -100,6 +123,7 @@ def test__MessageSnapshot__to_data():
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
+        stickers = stickers,
     )
     
     vampytest.assert_eq(
@@ -110,6 +134,7 @@ def test__MessageSnapshot__to_data():
                     attachment.to_data(defaults = True, include_internals = True)
                     for attachment in attachments
                 ],
+                'components': [component.to_data(defaults = True) for component in components],
                 'content': content,
                 'timestamp': datetime_to_timestamp(created_at),
                 'edited_timestamp': datetime_to_timestamp(edited_at),
@@ -123,6 +148,7 @@ def test__MessageSnapshot__to_data():
                     },
                     user_1.to_data(defaults = True, include_internals = True),
                 ],
+                'sticker_items': [create_partial_sticker_data(sticker) for sticker in stickers],
                 'type': message_type.value,
             },
         }

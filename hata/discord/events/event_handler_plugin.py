@@ -178,7 +178,7 @@ class Event:
     
     def __repr__(self):
         """Returns the custom event's representation."""
-        repr_parts = [self.__class__.__name__, ' parameter_count = ', repr(self.parameter_count)]
+        repr_parts = [type(self).__name__, ' parameter_count = ', repr(self.parameter_count)]
         
         default_handler = self.default_handler
         if (default_handler is not None):

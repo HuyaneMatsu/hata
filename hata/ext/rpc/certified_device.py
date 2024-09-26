@@ -158,7 +158,7 @@ class CertifiedDevice:
             if iterator is None:
                 raise TypeError(
                     f'`related` can be `None`, `str`, `{UUID.__name__}`, `iterable` of '
-                    f'`str`, `{UUID.__name__}`, got {related.__class__.__name__}; {related!r}.'
+                    f'`str`, `{UUID.__name__}`, got {type(related).__name__}; {related!r}.'
                 )
             
             related_device_uuids = set()
@@ -175,7 +175,7 @@ class CertifiedDevice:
                 else:
                     raise TypeError(
                         f'`related` can contain `{UUID.__name__}`, `str` elements, got '
-                        f'{related_element.__class__.__name__}; {related_element!r}; related={related!r}.'
+                        f'{type(related_element).__name__}; {related_element!r}; related = {related!r}.'
                     )
             
                 related_device_uuids.add(related_element)
@@ -188,7 +188,7 @@ class CertifiedDevice:
         if __debug__:
             if not isinstance(echo_cancellation, bool):
                 raise AssertionError(
-                    f'`echo_cancellation` can be `bool`, got {echo_cancellation.__class__.__name__}; '
+                    f'`echo_cancellation` can be `bool`, got {type(echo_cancellation).__name__}; '
                     f'{echo_cancellation!r}.'
                 )
             

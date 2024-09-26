@@ -127,7 +127,6 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
         client,
         interaction_event,
         response_modifier,
-        is_return,
     ):
         yield request_coroutine
     
@@ -169,6 +168,7 @@ async def process_command_coroutine_generator(
     """
     response_message = None
     response_exception = None
+    
     while True:
         if response_exception is None:
             step = coroutine_generator.asend(response_message)
@@ -212,7 +212,7 @@ async def process_command_coroutine_generator(
                 False,
             ):
                 try:
-                    response_message = await request_coroutine
+                    maybe_response_message = await request_coroutine
                 except GeneratorExit:
                     raise
                 
@@ -221,8 +221,12 @@ async def process_command_coroutine_generator(
                     response_message = None
                     response_exception = err
                     break
-    
-    
+                
+                else:
+                    # It can happen that the first request creates the response message and the second one edits it.
+                    if (maybe_response_message is not None):
+                        response_message = maybe_response_message
+                        maybe_response_message = None
     return response
 
 
@@ -405,7 +409,7 @@ class InteractionResponse(
         return self
     
     
-    def get_request_coroutines(self, client, interaction_event, response_modifier, is_return):
+    def get_request_coroutines(self, client, interaction_event, response_modifier):
         """
         Gets request coroutine buildable from the ``InteractionResponse``.
         
@@ -419,8 +423,6 @@ class InteractionResponse(
             The respective event to respond on.
         response_modifier : `None`, ``ResponseModifier``
             Modifies values returned and yielded to command coroutine processor.
-        is_return : `bool`
-            Whether the response is used in a return and we do not require response message.
         
         Yields
         -------
@@ -439,13 +441,13 @@ class InteractionResponse(
             )
         ):
             for message in self._try_pull_field_value(CONVERSION_MESSAGE):
-                # Note: here we cannot put `poll` on the message.
                 if (response_modifier is not None):
                     response_modifier.apply_to_edition(self)
                 
                 if message is None:
                     yield client.interaction_response_message_edit(interaction_event, self)
                 else:
+                    # Note: here we cannot put `poll` on the message.
                     yield client.interaction_followup_message_edit(interaction_event, message, self)
                 return
             
@@ -455,10 +457,8 @@ class InteractionResponse(
                 need_acknowledging = True
             elif self.abort:
                 need_acknowledging = False
-            elif is_return:
-                need_acknowledging = False
             else:
-                need_acknowledging = True
+                need_acknowledging = False
             
             if need_acknowledging:
                 yield client.interaction_application_command_acknowledge(
@@ -470,7 +470,7 @@ class InteractionResponse(
                 response_modifier.apply_to_creation(self)
             
             if need_acknowledging or (not interaction_event.is_unanswered()):
-                yield client.interaction_followup_message_create(interaction_event, self)
+                yield client.interaction_response_message_edit(interaction_event, self)
             
             else:
                 yield client.interaction_response_message_create(interaction_event, self)
@@ -518,7 +518,6 @@ class InteractionResponse(
                 yield client.interaction_component_message_edit(interaction_event, self)
             
             elif interaction_event.is_deferred():
-                # Note: here we cannot put `poll` on the message.
                 yield client.interaction_response_message_edit(interaction_event, self)
             
             elif interaction_event.is_responded():

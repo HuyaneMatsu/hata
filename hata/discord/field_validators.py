@@ -180,7 +180,7 @@ def _entity_id_array_processor_factory(field_name, entity_type, include):
             if (getattr(entity_id_array, '__iter__', None) is None):
                 raise TypeError(
                     f'`{field_name}` can be `None`, `iterable` of `int`, '
-                    f'got {entity_id_array.__class__.__name__}; {entity_id_array!r}.'
+                    f'got {type(entity_id_array).__name__}; {entity_id_array!r}.'
                 )
             
             entity_id_set_processed = None
@@ -189,7 +189,7 @@ def _entity_id_array_processor_factory(field_name, entity_type, include):
                 applied_tag_id_processed = maybe_snowflake(applied_tag_id)
                 if applied_tag_id_processed is None:
                     raise TypeError(
-                        f'`{field_name}` can contain `int` elements, got {applied_tag_id.__class__.__name__}'
+                        f'`{field_name}` can contain `int` elements, got {type(applied_tag_id).__name__}'
                         f'{applied_tag_id!r}; entity_id_array = {entity_id_array!r}.'
                     )
                 
@@ -207,7 +207,7 @@ def _entity_id_array_processor_factory(field_name, entity_type, include):
             if (getattr(entity_id_array, '__iter__', None) is None):
                 raise TypeError(
                     f'`{field_name}` can be `None`, `iterable` of (`int`, `{entity_type.__name__}`), '
-                    f'got {entity_id_array.__class__.__name__}; {entity_id_array!r}.'
+                    f'got {type(entity_id_array).__name__}; {entity_id_array!r}.'
                 )
             
             entity_id_set_processed = None
@@ -221,7 +221,7 @@ def _entity_id_array_processor_factory(field_name, entity_type, include):
                     if applied_tag_id_processed is None:
                         raise TypeError(
                             f'`{field_name}` can contain `int`, `{entity_type.__name__}` elements, got '
-                            f'{applied_tag_id.__class__.__name__}; {applied_tag_id!r}; '
+                            f'{type(applied_tag_id).__name__}; {applied_tag_id!r}; '
                             f'entity_id_array = {entity_id_array!r}.'
                         )
                 
@@ -1952,7 +1952,7 @@ def nullable_object_array_validator_factory(field_name, object_type, *, include 
             if not isinstance(object, object_type):
                 raise TypeError(
                     f'`{field_name}` can contain `{object_type.__name__}` elements, got '
-                    f'{object.__class__.__name__}; {object!r}; object_array = {object_array!r}.'
+                    f'{type(object).__name__}; {object!r}; object_array = {object_array!r}.'
                 )
             
             if (object_array_processed is None):
@@ -2031,7 +2031,7 @@ def entity_dictionary_validator_factory(field_name, entity_type):
             for element in iterator:
                 if not isinstance(element, entity_type):
                     raise TypeError(
-                        f'`{field_name}` elements can be `{entity_type.__name__}`, got {element.__class__.__name__}; '
+                        f'`{field_name}` elements can be `{entity_type.__name__}`, got {type(element).__name__}; '
                         f'{element!r}; {field_name} = {field_value!r}.'
                     )
                 
@@ -2097,7 +2097,7 @@ def nullable_entity_dictionary_validator_factory(field_name, entity_type):
             for element in iterator:
                 if not isinstance(element, entity_type):
                     raise TypeError(
-                        f'`{field_name}` elements can be `{entity_type.__name__}`, got {element.__class__.__name__}; '
+                        f'`{field_name}` elements can be `{entity_type.__name__}`, got {type(element).__name__}; '
                         f'{element!r}; {field_name} = {field_value!r}.'
                     )
                 

@@ -43,6 +43,7 @@ setup(
         'hata.discord.application.entitlement',
         'hata.discord.application.eula',
         'hata.discord.application.sku',
+        'hata.discord.application.subscription',
         'hata.discord.application.team',
         'hata.discord.application.team_member',
         'hata.discord.application.third_party_sku',
@@ -267,7 +268,7 @@ setup(
         
         'Intended Audience :: Developers',
         
-        'Operating System :: OS Independent',
+        'Operating System :: POSIX :: Linux',
         
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.6',
@@ -292,7 +293,7 @@ setup(
     },
     python_requires = '>=3.6',
     install_requires = [
-        'scarletio>=1.0.77',
+        'scarletio>=1.0.78',
         'chardet>=2.0',
     ],
     extras_require = {

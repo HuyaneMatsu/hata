@@ -207,7 +207,62 @@ validate_channel_id = entity_id_validator_factory('channel_id', NotImplemented, 
 
 parse_components = nullable_object_array_parser_factory('components', Component)
 put_components_into = nullable_object_array_optional_putter_factory('components')
-validate_components = nullable_object_array_validator_factory('components', Component)
+
+
+def validate_components(components):
+    """
+    Validates the given components.
+    
+    Parameters
+    ----------
+    components : `None | iterable<Component>`
+        The components to validate.
+    
+    Returns
+    -------
+    components_processed : `None | tuple<Component>`
+    
+    Raises
+    ------
+    TypeError
+        - If `components` is invalid type.
+    ValueError
+        - If `components` contains an invalid value.
+    """
+    if components is None:
+        return None
+    
+    if (getattr(components, '__iter__', None) is None):
+        raise TypeError(
+            f'`components` can be `None`, `iterable` of `{Component.__name__}`, got '
+            f'{type(components).__name__}; {components!r}.'
+        )
+        
+    components_processed = None
+    
+    for component in components:
+        if not isinstance(component, Component):
+            raise TypeError(
+                f'`components` can contain `{Component.__name__}` elements, got '
+                f'{type(component).__name__}; {component!r}; components = {components!r}.'
+            )
+        
+        if not component.type.layout_flags.top_level:
+            raise ValueError(
+                f'Cannot add top level component of type {component.type.name}, '
+                f'got {component!r}; components = {components!r}.'
+            )
+        
+        if (components_processed is None):
+            components_processed = []
+        
+        components_processed.append(component)
+    
+    if (components_processed is not None):
+        components_processed = tuple(components_processed)
+    
+    return components_processed
+
 
 # content
 

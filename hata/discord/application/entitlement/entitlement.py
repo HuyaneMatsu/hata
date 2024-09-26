@@ -1,5 +1,7 @@
 __all__ = ('Entitlement',)
 
+from scarletio import export
+
 from ...bases import DiscordEntity
 from ...core import ENTITLEMENTS
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
@@ -34,6 +36,7 @@ PRECREATE_FIELDS = {
 }
 
 
+@export
 class Entitlement(DiscordEntity):
     """
     Represent that a user or guild has access to a premium offer.
@@ -142,7 +145,7 @@ class Entitlement(DiscordEntity):
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new entitlement.
+        Creates a new entitlement from the given data.
         
         Parameters
         ----------
@@ -181,7 +184,7 @@ class Entitlement(DiscordEntity):
         Returns
         -------
         new : `instance<cls>`
-        is_created : `bool`
+        created : `bool`
         """
         entitlement_id = parse_id(data)
         
@@ -192,12 +195,12 @@ class Entitlement(DiscordEntity):
             self.id = entitlement_id
             self._set_attributes(data)
             ENTITLEMENTS[entitlement_id] = self
-            is_created = True
+            created = True
         else:
             self._set_attributes(data)
-            is_created = False
+            created = False
         
-        return self, is_created
+        return self, created
     
     
     def _set_attributes(self, data):
@@ -246,7 +249,7 @@ class Entitlement(DiscordEntity):
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             The updated attributes.
             
             The returned dictionary might contain the following items:
@@ -306,7 +309,7 @@ class Entitlement(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -452,7 +455,7 @@ class Entitlement(DiscordEntity):
     
     def __repr__(self):
         """Returns the entitlement's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         entitlement_id = self.id
         if entitlement_id:

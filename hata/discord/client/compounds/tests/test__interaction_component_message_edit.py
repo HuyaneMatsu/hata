@@ -54,7 +54,7 @@ async def test__Client__interaction_component_message_edit__stuffed():
     
     
     async def mock_api_interaction_response_message_create(
-        input_interaction_event_id, input_interaction_event_token, input_message_data
+        input_interaction_event_id, input_interaction_event_token, input_message_data, query_string_parameters
     ):
         nonlocal mock_api_interaction_response_message_create_called
         nonlocal interaction_event_id
@@ -115,7 +115,7 @@ async def test__Client__interaction_component_message_edit__empty():
     }
     
     async def mock_api_interaction_response_message_create(
-        input_interaction_event_id, input_interaction_event_token, input_message_data
+        input_interaction_event_id, input_interaction_event_token, input_message_data, query_string_parameters
     ):
         nonlocal mock_api_interaction_response_message_create_called
         nonlocal interaction_event_id

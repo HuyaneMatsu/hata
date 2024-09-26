@@ -11,12 +11,12 @@ from ..message import MessageFlag, MessageType
 from ..message.constants import MESSAGE_STATE_MASK_CACHE_MENTIONED_CHANNELS
 
 from .fields import (
-    parse_attachments, parse_content, parse_created_at, parse_edited_at, parse_embeds, parse_flags,
-    parse_mentioned_role_ids, parse_mentioned_users, parse_type, put_attachments_into, put_content_into,
-    put_created_at_into, put_edited_at_into, put_embeds_into, put_flags_into, put_mentioned_role_ids_into,
-    put_mentioned_users_into, put_type_into, validate_attachments, validate_content, validate_created_at,
-    validate_edited_at, validate_embeds, validate_flags, validate_mentioned_role_ids, validate_mentioned_users,
-    validate_type
+    parse_attachments, parse_components, parse_content, parse_created_at, parse_edited_at, parse_embeds, parse_flags,
+    parse_mentioned_role_ids, parse_mentioned_users, parse_stickers, parse_type, put_attachments_into,
+    put_components_into, put_content_into, put_created_at_into, put_edited_at_into, put_embeds_into, put_flags_into,
+    put_mentioned_role_ids_into, put_mentioned_users_into, put_stickers_into, put_type_into, validate_attachments,
+    validate_components, validate_content, validate_created_at, validate_edited_at, validate_embeds, validate_flags,
+    validate_mentioned_role_ids, validate_mentioned_users, validate_stickers, validate_type
 )
 
 
@@ -37,6 +37,9 @@ class MessageSnapshot(RichAttributeErrorBaseType):
     
     attachments : `None | tuple<Attachment>`
         The snapshotted message's attachments.
+    
+    components : `None | tuple<Component>`
+        The snapshotted message's components.
     
     content : `None | str`
         The snapshotted message's content.
@@ -59,18 +62,22 @@ class MessageSnapshot(RichAttributeErrorBaseType):
     mentioned_users : `None | tuple<ClientUserBase>`
         The mentioned users.
     
+    stickers : `None | tuple<Sticker>`
+        The snapshotted message's stickers.
+    
     type : ``MessageType``
         The snapshotted message's type.
     """
     __slots__ = (
-        '_cache_mentioned_channels', '_state', 'attachments', 'content', 'created_at', 'edited_at', 'embeds', 'flags',
-        'mentioned_role_ids', 'mentioned_users', 'type'
+        '_cache_mentioned_channels', '_state', 'attachments', 'components', 'content', 'created_at', 'edited_at',
+        'embeds', 'flags', 'mentioned_role_ids', 'mentioned_users', 'stickers', 'type'
     )
     
     def __new__(
         cls,
         *,
         attachments = ...,
+        components = ...,
         content = ...,
         created_at = ...,
         edited_at = ...,
@@ -79,6 +86,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         mentioned_role_ids = ...,
         mentioned_users = ...,
         message_type = ...,
+        stickers = ...,
     ):
         """
         Creates a new message snapshot from the given parameters.
@@ -87,6 +95,9 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         ----------
         attachments : `None | iterable<Attachment>`, Optional (Keyword only)
             The snapshotted message's attachments.
+        
+        components : `None | iterable<Component>`, Optional (Keyword only)
+            The snapshotted message's components.
         
         content : `None | str`, Optional (Keyword only)
             The snapshotted message's content.
@@ -112,6 +123,9 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         message_type : `MessageType | int | None`, Optional (Keyword only)
             The snapshotted message's type.
         
+        stickers : `None | iterable<Sticker>`, Optional (Keyword only)
+            The snapshotted message's stickers.
+        
         Raises
         ------
         TypeError
@@ -124,6 +138,12 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             attachments = None
         else:
             attachments = validate_attachments(attachments)
+        
+        # components
+        if components is ...:
+            components = None
+        else:
+            components = validate_components(components)
         
         # content
         if content is ...:
@@ -167,6 +187,12 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         else:
             mentioned_users = validate_mentioned_users(mentioned_users)
         
+        # stickers
+        if stickers is ...:
+            stickers = None
+        else:
+            stickers = validate_stickers(stickers)
+        
         # type
         if message_type is ...:
             message_type = MessageType.default
@@ -178,6 +204,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         self._cache_mentioned_channels = None
         self._state = 0
         self.attachments = attachments
+        self.components = components
         self.content = content
         self.created_at = created_at
         self.edited_at = edited_at
@@ -185,6 +212,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         self.flags = flags
         self.mentioned_role_ids = mentioned_role_ids
         self.mentioned_users = mentioned_users
+        self.stickers = stickers
         self.type = message_type
         return self
     
@@ -209,6 +237,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         self._cache_mentioned_channels = None
         self._state = 0
         self.attachments = parse_attachments(data)
+        self.components = parse_components(data)
         self.content = parse_content(data)
         self.created_at = parse_created_at(data)
         self.edited_at = parse_edited_at(data)
@@ -216,6 +245,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         self.flags = parse_flags(data)
         self.mentioned_role_ids = parse_mentioned_role_ids(data)
         self.mentioned_users = parse_mentioned_users(data, guild_id)
+        self.stickers = parse_stickers(data)
         self.type = parse_type(data)
         return self
     
@@ -238,6 +268,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         """
         data = {}
         put_attachments_into(self.attachments, data, defaults)
+        put_components_into(self.components, data, defaults)
         put_content_into(self.content, data, defaults)
         put_created_at_into(self.created_at, data, defaults)
         put_edited_at_into(self.edited_at, data, defaults)
@@ -245,6 +276,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         put_flags_into(self.flags, data, defaults)
         put_mentioned_role_ids_into(self.mentioned_role_ids, data, defaults)
         put_mentioned_users_into(self.mentioned_users, data, defaults, guild_id = guild_id)
+        put_stickers_into(self.stickers, data, defaults)
         put_type_into(self.type, data, defaults)
         return data
     
@@ -256,6 +288,10 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         
         # attachments
         if self.attachments != other.attachments:
+            return False
+        
+        # components
+        if self.components != other.components:
             return False
         
         # content
@@ -286,6 +322,10 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         if self.mentioned_users != other.mentioned_users:
             return False
         
+        # stickers
+        if self.stickers != other.stickers:
+            return False
+        
         # type
         if self.type is not other.type:
             return False
@@ -309,6 +349,17 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             
             repr_parts.append(' attachments = ')
             repr_parts.append(repr(attachments))
+        
+        # components
+        components = self.components
+        if (components is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' components = ')
+            repr_parts.append(repr(components))
         
         # content
         content = self.content
@@ -387,6 +438,17 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             repr_parts.append(' mentioned_users = ')
             repr_parts.append(repr(mentioned_users))
         
+        # stickers
+        stickers = self.stickers
+        if (stickers is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' stickers = ')
+            repr_parts.append(repr(stickers))
+        
         # type
         message_type = self.type
         if (message_type is not MessageType.default):
@@ -414,6 +476,14 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             hash_value ^= len(attachments)
             
             for attachment in attachments:
+                hash_value ^= hash(attachment)
+        
+        # components
+        components = self.components
+        if (components is not None):
+            hash_value ^= len(components)
+            
+            for attachment in components:
                 hash_value ^= hash(attachment)
         
         # content
@@ -458,6 +528,14 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             for user in mentioned_users:
                 hash_value ^= hash(user)
         
+        # stickers
+        stickers = self.stickers
+        if (stickers is not None):
+            hash_value ^= len(stickers)
+            
+            for attachment in stickers:
+                hash_value ^= hash(attachment)
+        
         # type
         hash_value ^= hash(self.type)
         
@@ -481,6 +559,11 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             attachments = (*attachments,)
         new.attachments = attachments
         
+        components = self.components
+        if (components is not None):
+            components = (*components,)
+        new.components = components
+        
         new.content = self.content
         new.created_at = self.created_at
         new.edited_at = self.edited_at
@@ -502,6 +585,11 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             mentioned_users = (*mentioned_users,)
         new.mentioned_users = mentioned_users
         
+        stickers = self.stickers
+        if (stickers is not None):
+            stickers = (*stickers,)
+        new.stickers = stickers
+        
         new.type = self.type
         
         return new
@@ -511,6 +599,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         self,
         *,
         attachments = ...,
+        components = ...,
         content = ...,
         created_at = ...,
         edited_at = ...,
@@ -519,6 +608,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         mentioned_role_ids = ...,
         mentioned_users = ...,
         message_type = ...,
+        stickers = ...,
     ):
         """
         Copies the message snapshot with the given fields.
@@ -527,22 +617,36 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         ----------
         attachments : `None | iterable<Attachment>`, Optional (Keyword only)
             The snapshotted message's attachments.
+        
+        components : `None | iterable<Component>`, Optional (Keyword only)
+            The snapshotted message's components.
+        
         content : `None | str`, Optional (Keyword only)
             The snapshotted message's content.
+        
         created_at : `DateTime`, Optional (Keyword only)
             When the snapshotted message was created.
+        
         edited_at : `None | Datetime`, Optional (Keyword only)
             When the snapshotted message was edited.
+        
         embeds : `None | iterable<Embed>`, Optional (Keyword only)
             The snapshotted message's embeds.
+        
         flags : `MessageFlag | int | None`, Optional (Keyword only)
             The snapshotted message's flags.
+        
         mentioned_role_ids : `None | iterable<int>` | iterable<Role>`, Optional (Keyword only)
             The mentioned roles' identifiers.
+        
         mentioned_users : `None | iterable<ClientUserBase>`, Optional (Keyword only)
             The mentioned users.
+        
         message_type : `MessageType | int | None`, Optional (Keyword only)
             The snapshotted message's type.
+        
+        stickers : `None | iterable<Sticker>`, Optional (Keyword only)
+            The snapshotted message's stickers.
         
         Returns
         -------
@@ -562,6 +666,14 @@ class MessageSnapshot(RichAttributeErrorBaseType):
                 attachments = (*attachments,)
         else:
             attachments = validate_attachments(attachments)
+        
+        # components
+        if components is ...:
+            components = self.components
+            if (components is not None):
+                components = (*components,)
+        else:
+            components = validate_components(components)
         
         # content
         if content is ...:
@@ -611,6 +723,14 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         else:
             mentioned_users = validate_mentioned_users(mentioned_users)
         
+        # stickers
+        if stickers is ...:
+            stickers = self.stickers
+            if (stickers is not None):
+                stickers = (*stickers,)
+        else:
+            stickers = validate_stickers(stickers)
+        
         # type
         if message_type is ...:
             message_type = self.type
@@ -622,6 +742,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         new._cache_mentioned_channels = None
         new._state = 0
         new.attachments = attachments
+        new.components = components
         new.content = content
         new.created_at = created_at
         new.edited_at = edited_at
@@ -629,6 +750,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         new.flags = flags
         new.mentioned_role_ids = mentioned_role_ids
         new.mentioned_users = mentioned_users
+        new.stickers = stickers
         new.type = message_type
         return new
     
@@ -647,6 +769,21 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         attachments = self.attachments
         if attachments is not None:
             yield from attachments
+    
+    
+    def iter_components(self):
+        """
+        Iterates over the components of the message snapshot.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        attachment : ``Component``
+        """
+        components = self.components
+        if components is not None:
+            yield from components
     
     
     def iter_embeds(self):
@@ -723,6 +860,21 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         mentioned_channels = self.mentioned_channels
         if (mentioned_channels is not None):
             yield from mentioned_channels
+    
+    
+    def iter_stickers(self):
+        """
+        Iterates over the stickers of the message snapshot.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        attachment : ``Sticker``
+        """
+        stickers = self.stickers
+        if stickers is not None:
+            yield from stickers
     
     
     # get many
@@ -826,3 +978,17 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         embeds = self.embeds
         if embeds is not None:
             return embeds[0]
+    
+    
+    @property
+    def sticker(self):
+        """
+        Returns the first sticker in the message snapshot.
+
+        Returns
+        -------
+        Sticker : `None | Sticker`
+        """
+        stickers = self.stickers
+        if stickers is not None:
+            return stickers[0]

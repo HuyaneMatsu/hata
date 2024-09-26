@@ -323,7 +323,7 @@ def test__Entitlement__to_data__partial():
     """
     Tests whether ``Entitlement.to_data`` works as intended.
     
-    Case: do nto include internals.
+    Case: do not include internals.
     """
     guild_id = 202310040023
     sku_id = 202310040024

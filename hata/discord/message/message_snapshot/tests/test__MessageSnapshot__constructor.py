@@ -2,7 +2,9 @@ from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
+from ....component import Component, ComponentType
 from ....embed import Embed
+from ....sticker import Sticker
 from ....user import User
 
 from ...attachment import Attachment
@@ -24,6 +26,7 @@ def _assert_fields_set(message_snapshot):
     vampytest.assert_instance(message_snapshot._cache_mentioned_channels, tuple, nullable = True)
     vampytest.assert_instance(message_snapshot._state, int)
     vampytest.assert_instance(message_snapshot.attachments, tuple, nullable = True)
+    vampytest.assert_instance(message_snapshot.components, tuple, nullable = True)
     vampytest.assert_instance(message_snapshot.content, str, nullable = True)
     vampytest.assert_instance(message_snapshot.created_at, DateTime)
     vampytest.assert_instance(message_snapshot.edited_at, DateTime, nullable = True)
@@ -31,6 +34,7 @@ def _assert_fields_set(message_snapshot):
     vampytest.assert_instance(message_snapshot.flags, MessageFlag)
     vampytest.assert_instance(message_snapshot.mentioned_role_ids, tuple, nullable = True)
     vampytest.assert_instance(message_snapshot.mentioned_users, tuple, nullable = True)
+    vampytest.assert_instance(message_snapshot.stickers, tuple, nullable = True)
     vampytest.assert_instance(message_snapshot.type, MessageType)
 
 
@@ -54,6 +58,10 @@ def test__MessageSnapshot__new__all_fields():
         Attachment.precreate(202405250000, name = 'Koishi'),
         Attachment.precreate(202405250001, name = 'Komeiji'),
     ]
+    components = [
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Rose')]),
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Slayer')]),
+    ]
     content = 'orin'
     created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
@@ -65,9 +73,14 @@ def test__MessageSnapshot__new__all_fields():
         User.precreate(202407200041, name = 'Rin'),
     ]
     message_type = MessageType.call
+    stickers = [
+        Sticker.precreate(202409200060, name = 'Make'),
+        Sticker.precreate(202409200061, name = 'Me'),
+    ]
 
     message_snapshot = MessageSnapshot(
         attachments = attachments,
+        components = components,
         content = content,
         created_at = created_at,
         edited_at = edited_at,
@@ -76,10 +89,12 @@ def test__MessageSnapshot__new__all_fields():
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
+        stickers = stickers,
     )
     _assert_fields_set(message_snapshot)
     
     vampytest.assert_eq(message_snapshot.attachments, tuple(attachments))
+    vampytest.assert_eq(message_snapshot.components, tuple(components))
     vampytest.assert_eq(message_snapshot.content, content)
     vampytest.assert_eq(message_snapshot.created_at, created_at)
     vampytest.assert_eq(message_snapshot.edited_at, edited_at)
@@ -87,4 +102,5 @@ def test__MessageSnapshot__new__all_fields():
     vampytest.assert_eq(message_snapshot.flags, flags)
     vampytest.assert_eq(message_snapshot.mentioned_role_ids, tuple(mentioned_role_ids))
     vampytest.assert_eq(message_snapshot.mentioned_users, tuple(mentioned_users))
+    vampytest.assert_eq(message_snapshot.stickers, tuple(stickers))
     vampytest.assert_is(message_snapshot.type, message_type)

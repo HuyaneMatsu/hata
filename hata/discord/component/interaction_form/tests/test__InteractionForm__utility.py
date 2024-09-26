@@ -74,17 +74,28 @@ def test__InteractionForm__copy_with__1():
     vampytest.assert_eq(copy.custom_id, new_custom_id)
 
 
+def _iter_options__iter_components():
+    component_0 = Component(ComponentType.row, components = [Component(ComponentType.button, label = 'chata')])
+    component_1 = Component(ComponentType.row, components = [Component(ComponentType.button, label = 'izna')])
+    
+    yield None, []
+    yield [component_0], [component_0]
+    yield [component_0, component_1], [component_0, component_1]
 
-def test__InteractionForm__iter_components():
+
+@vampytest._(vampytest.call_from(_iter_options__iter_components()).returning_last())
+def test__InteractionForm__iter_components(input_value):
     """
     Tests whether ``InteractionForm.iter_components`` works as intended.
-    """
-    components = Component(ComponentType.row, components = [Component(ComponentType.button, label = 'chata')])
     
-    for input_value, expected_output in (
-        (None, [],),
-        ([components], [components]),
-    ):
-        interaction_form = InteractionForm(None, input_value)
-        output = [*interaction_form.iter_components()]
-        vampytest.assert_eq(output, expected_output)
+    Parameters
+    ----------
+    input_value : `None | list<Component>`
+        Value to create the form with.
+    
+    Returns
+    -------
+    output : `list<Component>`
+    """
+    interaction_form = InteractionForm(None, input_value)
+    return [*interaction_form.iter_components()]

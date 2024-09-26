@@ -286,6 +286,9 @@ add_event_handler('entitlement_update', 3, 'ENTITLEMENT_UPDATE',)
 add_event_handler('entitlement_delete', 2, 'ENTITLEMENT_DELETE',)
 add_event_handler('poll_vote_add', 2, 'MESSAGE_POLL_VOTE_ADD',)
 add_event_handler('poll_vote_delete', 2, 'MESSAGE_POLL_VOTE_REMOVE',)
+add_event_handler('subscription_create', 2, 'SUBSCRIPTION_CREATE',)
+add_event_handler('subscription_update', 3, 'SUBSCRIPTION_UPDATE',)
+add_event_handler('subscription_delete', 2, 'SUBSCRIPTION_DELETE',)
 
 
 class ParserSettingOption:

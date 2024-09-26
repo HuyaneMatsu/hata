@@ -65,6 +65,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | unknown_session                                                   | 10020     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| unknown_asset                                                     | 10021     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | unknown_approval_form                                             | 10023     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | unknown_ban                                                       | 10026     | -         |
@@ -121,7 +123,9 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | unknown_scheduled_event_user                                      | 10071     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| unknown_tag                                                       | 10071     | -         |
+| unknown_tag                                                       | 10087     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| unknown_sound                                                     | 10097     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | bots_not_allowed                                                  | 20001     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -222,6 +226,8 @@ Error Codes
 | rate_limit_prune                                                  | 30040     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | rate_limit_widget_update                                          | 30042     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| max_soundboard_sounds                                             | 30045     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | rate_limit_edit_to_message_older_than_one_hour                    | 30046     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -435,6 +441,12 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | invalid_json                                                      | 50109     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| file_invalid                                                      | 50110     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| file_type_invalid                                                 | 50123     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| file_max_duration                                                 | 50124     | 5.2 s     |
++-------------------------------------------------------------------+-----------+-----------+
 | failed_to_resize_asset_below_max_size                             | 50138     | 262144    |
 +-------------------------------------------------------------------+-----------+-----------+
 | cannot_mix_subscription_and_non_subscription_roles_for_an_emoji   | 50144     | -         |
@@ -444,6 +456,8 @@ Error Codes
 | upload_file_not_found                                             | 50146     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | activity_launch_afk_channel                                       | 50147     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| emoji_invalid                                                     | 50151     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | feature_not_yet_rolled_out                                        | 50155     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -463,11 +477,17 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | cannot_send_voice_message_to_this_channel                         | 50173     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| user_must_be_verified                                             | 50178     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | invalid_sku_attachment_no_archives                                | 50186     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| file_duration_invalid                                             | 50192     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | invalid_gift_redemption_incorrect_user                            | 50194     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | invalid_activity_launch_incorrect_guild_size                      | 50209     | 25        |
++-------------------------------------------------------------------+-----------+-----------+
+| missing_permissions_to_use_sticker                                | 50600     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | mfa_enabled                                                       | 60001     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -693,6 +713,7 @@ unknown_emoji = 10014
 unknown_webhook = 10015
 unknown_webhook_service = 10016
 unknown_session = 10020
+unknown_asset = 10021
 unknown_approval_form = 10023
 unknown_ban = 10026
 unknown_SKU = 10027
@@ -722,6 +743,7 @@ unknown_guild_welcome_screen = 10069
 unknown_scheduled_event = 10070
 unknown_scheduled_event_user = 10071
 unknown_tag = 10087
+unknown_sound = 10097
 
 bots_not_allowed = 20001
 only_bots_allowed = 20002
@@ -774,6 +796,7 @@ max_scheduled_events = 30038
 max_stickers = 30039
 rate_limit_prune = 30040
 rate_limit_widget_update = 30042
+max_soundboard_sounds = 30045
 rate_limit_edit_to_message_older_than_one_hour = 30046
 max_pinned_threads_in_forum_channel = 30047
 max_forum_channel_tags = 30048
@@ -882,11 +905,15 @@ activity_launch_no_access = 50106
 activity_launch_premium_tier = 50107
 activity_launch_concurrent_activities = 50108
 invalid_json = 50109
+file_invalid = 50110
+file_type_invalid = 50123
+file_max_duration = 50124
 failed_to_resize_asset_below_max_size = 50138
 cannot_mix_subscription_and_non_subscription_roles_for_an_emoji = 50144
 cannot_convert_emoji_between_premium_and_non_premium = 50145
 upload_file_not_found = 50146
 activity_launch_afk_channel = 50148
+emoji_invalid = 50151
 feature_not_yet_rolled_out = 50155
 voice_message_not_supports_additional_content = 50159
 voice_message_must_have_one_audio_attachment = 50160
@@ -896,9 +923,12 @@ cannot_delete_guild_subscription_integration = 50163
 new_owner_ineligible_for_subscription = 50164
 activity_launch_age_gated = 50165
 cannot_send_voice_message_to_this_channel = 50173
+user_must_be_verified = 50178
 invalid_sku_attachment_no_archives = 50186
+file_duration_invalid = 50192
 invalid_gift_redemption_incorrect_user = 50194
 invalid_activity_launch_incorrect_guild_size = 50209
+missing_permissions_to_use_sticker = 50600
 
 mfa_enabled = 60001
 mfa_disabled = 60002

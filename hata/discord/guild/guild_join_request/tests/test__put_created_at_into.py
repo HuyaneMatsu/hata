@@ -23,7 +23,7 @@ def test__put_created_at_into(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None`, `DateTime`
+    input_value : `None | DateTime`
         The input value to serialize.
     defaults : `bool`
         Whether values with their default value should be included in the output data.

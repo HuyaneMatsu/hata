@@ -104,7 +104,7 @@ class InteractionResponseContext:
     
     
     @to_coroutine
-    def ensure(self, coroutine):
+    def ensure(self, coroutine, callback = None):
         """
         Ensures the coroutine within the interaction response context
         
@@ -112,13 +112,17 @@ class InteractionResponseContext:
         
         Parameters
         ----------
-        coroutine : ``CoroutineType``
+        coroutine : `GeneratorType | CoroutineType`
+            Coroutine to run.
+        
+        callback : `None | FunctionType` = `None`, Optional
+            Additional function to execute after the coroutine.
         """
-        self.interaction_event._async_task = Task(KOKORO, self._async(coroutine))
+        self.interaction_event._async_task = Task(KOKORO, self._async(coroutine, callback))
         yield # skip a ready cycle
     
     
-    async def _async(self, coroutine):
+    async def _async(self, coroutine, callback):
         """
         Ensures the coroutine within the interaction response context. Wrapped into a task by ``.ensure``.
         
@@ -126,15 +130,20 @@ class InteractionResponseContext:
         
         Parameters
         ----------
-        coroutine : ``CoroutineType``
+        coroutine : `GeneratorType | CoroutineType`
+            Coroutine to run.
+        
+        callback : `None | FunctionType`
+            Additional function to execute after the coroutine.
         """
         try:
-            
             async with self:
-                await coroutine
-        
+                interaction_response_data = await coroutine
         finally:
             self.interaction_event._async_task = None
+        
+        if (callback is not None):
+            callback(self.interaction_event, interaction_response_data)
     
     
     async def __aenter__(self):

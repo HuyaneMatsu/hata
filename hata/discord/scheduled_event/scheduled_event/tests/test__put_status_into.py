@@ -6,7 +6,7 @@ from ..preinstanced import ScheduledEventStatus
 
 def _iter_options():
     yield ScheduledEventStatus.none, False, {}
-    yield ScheduledEventStatus.none, True, {'status': ScheduledEventStatus.active.none}
+    yield ScheduledEventStatus.none, True, {'status': ScheduledEventStatus.none.value}
     yield ScheduledEventStatus.active, False, {'status': ScheduledEventStatus.active.value}
     yield ScheduledEventStatus.active, True, {'status': ScheduledEventStatus.active.value}
 

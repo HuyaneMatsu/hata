@@ -1141,6 +1141,33 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | tags                  | `None`  or `frozenset` of `str`   |
         +-----------------------+-----------------------------------+
     
+    
+    subscription_create(client : ``Client``, subscription: ``Subscription``):
+        Called when subscription is created.
+    
+    subscription_delete(client: ``Client``, subscription: ``Subscription``)
+        Called when an subscription is deleted.
+    
+    subscription_update(client: ``Client``, subscription: ``Subscription``, old_attributes: `None | dict`)
+        Called when an subscription is updated. The passed `old_attributes` parameter contains the emoji's overwritten
+        attributes in `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +---------------------------+-----------------------------------------------+
+        | Key                       | Value                                         |
+        +===========================+===============================================+
+        | cancelled_at              | `None`, `DateTime`                            |
+        +---------------------------+-----------------------------------------------+
+        | country_code              | `None`, `str`                                 |
+        +---------------------------+-----------------------------------------------+
+        | current_period_end        | `None`, `DateTime`                            |
+        +---------------------------+-----------------------------------------------+
+        | current_period_start      | `None`, `DateTime`                            |
+        +---------------------------+-----------------------------------------------+
+        | status                    | ``SubscriptionStatus``                        |
+        +---------------------------+-----------------------------------------------+
+    
     thread_user_add(client : ``Client``, thread_channel: ``Channel``, user: ``ClientUserBase``):
         Called when a user is added or joined a thread channel.
     

@@ -24,7 +24,7 @@ def create_file(directory_path, file_name, content):
     content : `str`
         The content to write.
     """
-    with open(join_paths(directory_path, file_name), 'w') as file:
+    with open(join_paths(directory_path, file_name), 'w', encoding = 'utf-8') as file:
         file.write(content)
 
 

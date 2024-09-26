@@ -8,7 +8,7 @@ def test__create_row():
     """
     Tests whether ``create_row`` works as intended.
     """
-    sub_component_0 = Component(ComponentType.row)
+    sub_component_0 = Component(ComponentType.button)
     sub_component_1 = Component(ComponentType.string_select)
     
     component = create_row(

@@ -95,7 +95,7 @@ class SolarNode(RichAttributeErrorBaseType):
             host = str(host)
         else:
             raise TypeError(
-                f'`host` can be `str`, got {host.__class__.__name__}; {host!r}.'
+                f'`host` can be `str`, got {type(host).__name__}; {host!r}.'
             )
         
         if type(port) is int:

@@ -64,31 +64,32 @@ from .fields import (
     parse_inventory_settings, parse_large, parse_locale, parse_max_presences, parse_max_stage_channel_video_users,
     parse_max_users, parse_max_voice_channel_video_users, parse_mfa_level, parse_name, parse_nsfw_level, parse_owner_id,
     parse_premium_tier, parse_public_updates_channel_id, parse_roles, parse_rules_channel_id,
-    parse_safety_alerts_channel_id, parse_scheduled_events, parse_stages, parse_stickers, parse_system_channel_flags,
-    parse_system_channel_id, parse_threads, parse_user_count, parse_users, parse_vanity_code, parse_verification_level,
-    parse_voice_states, parse_widget_channel_id, parse_widget_enabled, put_afk_channel_id_into, put_afk_timeout_into,
-    put_approximate_online_count_into, put_approximate_user_count_into, put_available_into, put_boost_count_into,
-    put_boost_progress_bar_enabled_into, put_channels_into, put_default_message_notification_level_into,
-    put_description_into, put_embedded_activities_into, put_emojis_into, put_explicit_content_filter_level_into,
-    put_features_into, put_hub_type_into, put_id_into, put_incidents_into, put_inventory_settings_into, put_large_into,
-    put_locale_into, put_max_presences_into, put_max_stage_channel_video_users_into, put_max_users_into,
-    put_max_voice_channel_video_users_into, put_mfa_level_into, put_name_into, put_nsfw_level_into, put_owner_id_into,
-    put_premium_tier_into, put_public_updates_channel_id_into, put_roles_into, put_rules_channel_id_into,
-    put_safety_alerts_channel_id_into, put_scheduled_events_into, put_stages_into, put_stickers_into,
+    parse_safety_alerts_channel_id, parse_scheduled_events, parse_soundboard_sounds, parse_stages, parse_stickers,
+    parse_system_channel_flags, parse_system_channel_id, parse_threads, parse_user_count, parse_users,
+    parse_vanity_code, parse_verification_level, parse_voice_states, parse_widget_channel_id, parse_widget_enabled,
+    put_afk_channel_id_into, put_afk_timeout_into, put_approximate_online_count_into, put_approximate_user_count_into,
+    put_available_into, put_boost_count_into, put_boost_progress_bar_enabled_into, put_channels_into,
+    put_default_message_notification_level_into, put_description_into, put_embedded_activities_into, put_emojis_into,
+    put_explicit_content_filter_level_into, put_features_into, put_hub_type_into, put_id_into, put_incidents_into,
+    put_inventory_settings_into, put_large_into, put_locale_into, put_max_presences_into,
+    put_max_stage_channel_video_users_into, put_max_users_into, put_max_voice_channel_video_users_into,
+    put_mfa_level_into, put_name_into, put_nsfw_level_into, put_owner_id_into, put_premium_tier_into,
+    put_public_updates_channel_id_into, put_roles_into, put_rules_channel_id_into, put_safety_alerts_channel_id_into,
+    put_scheduled_events_into, put_soundboard_sounds_into, put_stages_into, put_stickers_into,
     put_system_channel_flags_into, put_system_channel_id_into, put_threads_into, put_user_count_into, put_users_into,
     put_vanity_code_into, put_verification_level_into, put_voice_states_into, put_widget_channel_id_into,
     put_widget_enabled_into, validate_afk_channel_id, validate_afk_timeout, validate_approximate_online_count,
     validate_approximate_user_count, validate_available, validate_boost_count, validate_boost_progress_bar_enabled,
-    validate_channels, validate_default_message_notification_level, validate_description,
-    validate_embedded_activities, validate_emojis, validate_explicit_content_filter_level, validate_features,
-    validate_hub_type, validate_id, validate_incidents, validate_inventory_settings, validate_large, validate_locale,
-    validate_max_presences, validate_max_stage_channel_video_users, validate_max_users,
-    validate_max_voice_channel_video_users, validate_mfa_level, validate_name, validate_nsfw_level, validate_owner_id,
-    validate_premium_tier, validate_public_updates_channel_id, validate_roles, validate_rules_channel_id,
-    validate_safety_alerts_channel_id, validate_scheduled_events, validate_soundboard_sounds, validate_stages,
-    validate_stickers, validate_system_channel_flags, validate_system_channel_id, validate_threads, validate_user_count,
-    validate_users, validate_vanity_code, validate_verification_level, validate_voice_states,
-    validate_widget_channel_id, validate_widget_enabled
+    validate_channels, validate_default_message_notification_level, validate_description, validate_embedded_activities,
+    validate_emojis, validate_explicit_content_filter_level, validate_features, validate_hub_type, validate_id,
+    validate_incidents, validate_inventory_settings, validate_large, validate_locale, validate_max_presences,
+    validate_max_stage_channel_video_users, validate_max_users, validate_max_voice_channel_video_users,
+    validate_mfa_level, validate_name, validate_nsfw_level, validate_owner_id, validate_premium_tier,
+    validate_public_updates_channel_id, validate_roles, validate_rules_channel_id, validate_safety_alerts_channel_id,
+    validate_scheduled_events, validate_soundboard_sounds, validate_stages, validate_stickers,
+    validate_system_channel_flags, validate_system_channel_id, validate_threads, validate_user_count, validate_users,
+    validate_vanity_code, validate_verification_level, validate_voice_states, validate_widget_channel_id,
+    validate_widget_enabled
 )
 from .flags import SystemChannelFlag
 from .guild_premium_perks import TIERS as PREMIUM_TIERS, TIER_MAX as PREMIUM_TIER_MAX
@@ -1259,6 +1260,7 @@ class Guild(DiscordEntity, immortal = True):
             put_premium_tier_into(self.premium_tier, data, defaults)
             put_roles_into(self.roles, data, defaults)
             put_scheduled_events_into(self.scheduled_events, data, defaults)
+            put_soundboard_sounds_into(self.soundboard_sounds, data, defaults)
             put_stages_into(self.stages, data, defaults)
             put_stickers_into(self.stickers, data, defaults)
             put_threads_into(self.threads, data, defaults)
@@ -1299,7 +1301,6 @@ class Guild(DiscordEntity, immortal = True):
             self.approximate_online_count = 0
             self.approximate_user_count = 0
             self.clients = []
-            self.soundboard_sounds = None
             
             # Set entity fields
             self.channels = parse_channels(data, {}, guild_id)
@@ -1308,6 +1309,7 @@ class Guild(DiscordEntity, immortal = True):
             self.large = parse_large(data) or (user_count >= LARGE_GUILD_LIMIT)
             self.roles = parse_roles(data, {}, guild_id)
             self.scheduled_events = parse_scheduled_events(data, None)
+            self.soundboard_sounds = parse_soundboard_sounds(data, None)
             self.stages = parse_stages(data, None)
             self.stickers = parse_stickers(data, {})
             self.threads = parse_threads(data, None, guild_id)
@@ -1327,6 +1329,7 @@ class Guild(DiscordEntity, immortal = True):
             self.large = parse_large(data) or (user_count >= LARGE_GUILD_LIMIT)
             self.roles = parse_roles(data, self.roles, guild_id)
             self.scheduled_events = parse_scheduled_events(data, self.scheduled_events)
+            self.soundboard_sounds = parse_soundboard_sounds(data, self.soundboard_sounds)
             self.stages = parse_stages(data, self.stages)
             self.stickers = parse_stickers(data, self.stickers)
             self.threads = parse_threads(data, self.threads, guild_id)
@@ -1716,23 +1719,23 @@ class Guild(DiscordEntity, immortal = True):
             repr_parts.append(' id = ')
             repr_parts.append(str(guild_id))
             
-            fields_added = True
+            field_added = True
         else:
-            fields_added = False
+            field_added = False
         
         if self.partial:
-            if fields_added:
+            if field_added:
                 repr_parts.append(' (partial)')
             else:
                 repr_parts.append(' partial')
-                fields_added = True
+                field_added = True
         
         name = self.name
         if name:
-            if fields_added:
+            if field_added:
                 repr_parts.append(',')
             else:
-                fields_added = True
+                field_added = True
             
             repr_parts.append(' name = ')
             repr_parts.append(repr(name))

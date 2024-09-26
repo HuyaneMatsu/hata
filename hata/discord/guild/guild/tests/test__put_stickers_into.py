@@ -6,16 +6,13 @@ from ..fields import put_stickers_into
 
 
 def _iter_options():
-    sticker_id = 202306140001
-    sticker_name = 'Koishi'
+    sticker = Sticker.precreate(202306140001, name = 'Koishi')
     
-    sticker = Sticker.precreate(
-        sticker_id,
-        name = sticker_name,
-    )
-    
+    yield {}, False, {'stickers': []}
     yield {}, True, {'stickers': []}
-    yield {sticker_id: sticker}, True, {'stickers': [sticker.to_data(defaults = True, include_internals = True)]}
+    
+    yield {sticker.id: sticker}, False, {'stickers': [sticker.to_data(defaults = False, include_internals = True)]}
+    yield {sticker.id: sticker}, True, {'stickers': [sticker.to_data(defaults = True, include_internals = True)]}
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

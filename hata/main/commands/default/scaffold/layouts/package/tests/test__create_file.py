@@ -19,10 +19,10 @@ def test__create_file():
     content_input = 'hey mister'
     
     class open:
-        def __init__(self, input_path, mode):
+        def __init__(self, input_path, mode, *, encoding):
             nonlocal open_called
             nonlocal expected_path
-            
+            vampytest.assert_in(encoding, ('utf-8', 'utf8'))
             open_called = True
             
             vampytest.assert_eq(input_path, expected_path)

@@ -218,7 +218,7 @@ def preconvert_iterable_of_str(value, name, iterable_lower_limit, iterable_upper
             value_element = str(value_element)
         else:
             raise TypeError(
-                f'`{name}` can contain `str` elements, got {value_element.__class__.__name__}; {value_element!r}; '
+                f'`{name}` can contain `str` elements, got {type(value_element).__name__}; {value_element!r}; '
                 f'value = {value!r}.'
             )
         

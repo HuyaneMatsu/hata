@@ -8,7 +8,7 @@ from ....discord.client import Client
 from ....discord.core import KOKORO
 from ....discord.embed import Embed
 from ....discord.exceptions import DiscordException, ERROR_CODES
-from ....discord.component import Component, ComponentType, create_row
+from ....discord.component import Component, create_row
 from ....discord.interaction import  InteractionEvent, InteractionType
 from ....discord.message import Message
 
@@ -24,6 +24,7 @@ GUI_STATE_SWITCHING_CONTEXT = 5
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
+
 
 class ComponentSourceIdentityHasher(RichAttributeErrorBaseType):
     """
@@ -1457,7 +1458,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
                 raw_components = raw_components.__get__(self, type(self))
             
             if isinstance(raw_components, Component):
-                if raw_components.type is ComponentType.row:
+                if raw_components.type.layout_flags.top_level:
                     component = raw_components
                 else:
                     component = create_row(raw_components)
@@ -1474,7 +1475,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
                         raw_sub_component = raw_sub_component.__get__(self, type(self))
                     
                     if isinstance(raw_sub_component, Component):
-                        if raw_sub_component.type is ComponentType.row:
+                        if raw_sub_component.type.layout_flags.top_level:
                             component = raw_sub_component
                         else:
                             component = create_row(raw_sub_component)
@@ -1485,12 +1486,12 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
                             if not isinstance(raw_sub_sub_component, Component):
                                 raise TypeError(
                                     f'Double nested component can only be `{Component.__name__}`, got '
-                                    f'{raw_sub_sub_component.__class__.__name__}; {raw_sub_sub_component!r}.'
+                                    f'{type(raw_sub_sub_component).__name__}; {raw_sub_sub_component!r}.'
                                 )
                             
-                            if raw_sub_sub_component.type is ComponentType.row:
-                                raise TypeError(
-                                    f'Triple nesting components not allowed, got {raw_sub_sub_component!r}.'
+                            if not raw_sub_sub_component.layout.nestable:
+                                raise ValueError(
+                                    f'Nesting components not allowed, got {raw_sub_sub_component!r}.'
                                 )
                             
                             component_line.append(raw_sub_sub_component)
@@ -1500,7 +1501,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
                     else:
                         raise TypeError(
                             f'`components` contains an element of unexpected type, got '
-                            f'{raw_sub_component.__class__.__name__}; {raw_sub_component!r}; components = {raw_components!r}.'
+                            f'{type(raw_sub_component).__name__}; {raw_sub_component!r}; components = {raw_components!r}.'
                         )
                     
                     if components is None:
@@ -1511,7 +1512,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
             else:
                 raise TypeError(
                     f'`components` can be `None`, `{Component.__name__}`, (`list`, `tuple`) of repeat, '
-                    f'no triple nesting, got {raw_components.__class__.__name__}; {raw_components!r}.'
+                    f'no triple nesting, got {type(raw_components).__name__}; {raw_components!r}.'
                 )
             
         if (components is not None):

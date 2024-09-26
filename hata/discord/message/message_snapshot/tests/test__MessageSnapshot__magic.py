@@ -2,7 +2,9 @@ from datetime import datetime as DateTime, timezone as TimeZone
 
 import vampytest
 
+from ....component import Component, ComponentType
 from ....embed import Embed
+from ....sticker import Sticker
 from ....user import User
 
 from ...attachment import Attachment
@@ -19,6 +21,10 @@ def test__MessageSnapshot__repr():
         Attachment.precreate(202405250006, name = 'Koishi'),
         Attachment.precreate(202405250007, name = 'Komeiji'),
     ]
+    components = [
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Rose')]),
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Slayer')]),
+    ]
     content = 'orin'
     created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
@@ -30,9 +36,14 @@ def test__MessageSnapshot__repr():
         User.precreate(202407200047, name = 'Rin'),
     ]
     message_type = MessageType.call
+    stickers = [
+        Sticker.precreate(202409200066, name = 'Make'),
+        Sticker.precreate(202409200067, name = 'Me'),
+    ]
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
+        components = components,
         content = content,
         created_at = created_at,
         edited_at = edited_at,
@@ -41,6 +52,7 @@ def test__MessageSnapshot__repr():
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
+        stickers = stickers,
     )
     
     vampytest.assert_instance(repr(message_snapshot), str)
@@ -54,6 +66,10 @@ def test__MessageSnapshot__hash():
         Attachment.precreate(202405250008, name = 'Koishi'),
         Attachment.precreate(202405250009, name = 'Komeiji'),
     ]
+    components = [
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Rose')]),
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Slayer')]),
+    ]
     content = 'orin'
     created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
     edited_at = DateTime(2017, 5, 14, tzinfo = TimeZone.utc)
@@ -65,9 +81,14 @@ def test__MessageSnapshot__hash():
         User.precreate(202407200049, name = 'Rin'),
     ]
     message_type = MessageType.call
+    stickers = [
+        Sticker.precreate(202409200068, name = 'Make'),
+        Sticker.precreate(202409200069, name = 'Me'),
+    ]
     
     message_snapshot = MessageSnapshot(
         attachments = attachments,
+        components = components,
         content = content,
         created_at = created_at,
         edited_at = edited_at,
@@ -76,6 +97,7 @@ def test__MessageSnapshot__hash():
         mentioned_role_ids = mentioned_role_ids,
         mentioned_users = mentioned_users,
         message_type = message_type,
+        stickers = stickers,
     )
     
     vampytest.assert_instance(hash(message_snapshot), int)
@@ -108,11 +130,14 @@ def test__messageSnapshot__eq__different_type(other):
     return output
 
 
-
 def _iter_options__eq__same_type():
     attachments = [
         Attachment.precreate(202405250012, name = 'Koishi'),
         Attachment.precreate(202405250013, name = 'Komeiji'),
+    ]
+    components = [
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Rose')]),
+        Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Slayer')]),
     ]
     content = 'orin'
     created_at = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
@@ -125,9 +150,14 @@ def _iter_options__eq__same_type():
         User.precreate(202407200051, name = 'Rin'),
     ]
     message_type = MessageType.call
+    stickers = [
+        Sticker.precreate(202409200070, name = 'Make'),
+        Sticker.precreate(202409200071, name = 'Me'),
+    ]
     
     keyword_parameters = {
         'attachments': attachments,
+        'components': components,
         'content': content,
         'created_at': created_at,
         'edited_at': edited_at,
@@ -136,6 +166,7 @@ def _iter_options__eq__same_type():
         'mentioned_role_ids': mentioned_role_ids,
         'mentioned_users': mentioned_users,
         'message_type': message_type,
+        'stickers': stickers,
     }
     
     yield (
@@ -149,6 +180,15 @@ def _iter_options__eq__same_type():
         {
             **keyword_parameters,
             'attachments': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'components': None,
         },
         False,
     )
@@ -221,6 +261,15 @@ def _iter_options__eq__same_type():
         {
             **keyword_parameters,
             'message_type': MessageType.user_add,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'stickers': None,
         },
         False,
     )

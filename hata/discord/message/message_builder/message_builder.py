@@ -214,3 +214,5 @@ class MessageBuilderInteractionResponseEdit(MessageBuilderEdit):
         The fields to create the message with.
     """
     __slots__ = ()
+    
+    poll = CONVERSION_POLL

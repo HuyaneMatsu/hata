@@ -5,41 +5,43 @@ from ....sticker import Sticker
 from ..fields import validate_stickers
 
 
-def test__validate_stickers__0():
+def _iter_options__passing():
+    sticker_0 = Sticker.precreate(202306140000, name = 'Koishi')
+    sticker_1 = Sticker.precreate(202409200050, name = 'Satori')
+    
+    yield None, {}
+    yield [], {}
+    yield {}, {}
+    yield [sticker_0], {sticker_0.id: sticker_0}
+    yield [sticker_0, sticker_1], {sticker_0.id: sticker_0, sticker_1.id: sticker_1}
+    yield {sticker_1.id: sticker_1}, {sticker_1.id: sticker_1}
+
+
+def _iter_options__type_error():
+    yield 12.6
+    yield [12.6]
+    yield {12.6: 12.6}
+    
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_stickers(input_value):
     """
     Tests whether ``validate_stickers`` works as intended.
     
-    Case: passing.
-    """
-    sticker_id = 202306140000
-    sticker_name = 'Koishi'
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    sticker = Sticker.precreate(
-        sticker_id,
-        name = sticker_name,
-    )
+    Returns
+    -------
+    output : `dict<int, Sticker>`
     
-    for input_value, expected_output in (
-        (None, {}),
-        ([], {}),
-        ({}, {}),
-        ([sticker], {sticker_id: sticker}),
-        ({sticker_id: sticker}, {sticker_id: sticker}),
-    ):
-        output = validate_stickers(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_stickers__1():
+    Raises
+    ------
+    TypeError
     """
-    Tests whether ``validate_stickers`` works as intended.
-    
-    Case: raising.
-    """
-    for input_value in (
-        12.6,
-        [12.6],
-        {12.6: 12.6},
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_stickers(input_value)
+    output = validate_stickers(input_value)
+    vampytest.assert_instance(output, dict)
+    return output

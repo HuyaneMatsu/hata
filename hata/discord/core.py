@@ -183,6 +183,7 @@ SOUNDBOARD_SOUNDS = WeakValueDictionary()
 STAGES = WeakValueDictionary()
 STICKERS = WeakValueDictionary()
 STICKER_PACKS = WeakValueDictionary()
+SUBSCRIPTIONS = WeakValueDictionary()
 TEAMS = WeakValueDictionary()
 USERS = WeakValueDictionary()
 

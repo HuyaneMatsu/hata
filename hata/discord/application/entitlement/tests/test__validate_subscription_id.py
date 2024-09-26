@@ -1,5 +1,7 @@
 import vampytest
 
+from ...subscription import Subscription
+
 from ..fields import validate_subscription_id
 
 
@@ -9,66 +11,42 @@ def _iter_options__passing():
     yield 0, 0
     yield subscription_id, subscription_id
     yield str(subscription_id), subscription_id
+    yield None, 0
+    yield Subscription.precreate(subscription_id), subscription_id
+
+
+def _iter_options__type_error():
+    yield 12.6
+
+
+def _iter_options__value_error():
+    yield '-1'
+    yield '1111111111111111111111'
+    yield -1
+    yield 1111111111111111111111
 
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
-def test__validate_subscription_id__passing(input_value):
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_subscription_id(input_value):
     """
     Tests whether `validate_subscription_id` works as intended.
     
     Parameters
     ----------
     input_value : `object`
-        Input value to get `subscription_id` of.
+        Input value to validate.
     
     Returns
     -------
     output : `int`
-    """
-    return validate_subscription_id(input_value)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-@vampytest.call_with(None)
-def test__validate_subscription_id__type_error(input_value):
-    """
-    Tests whether `validate_subscription_id` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Input value to get `subscription_id` of.
     
     Raises
     ------
     TypeError
-        The occurred exception.
-    """
-    validate_subscription_id(input_value)
-
-
-@vampytest.raising(ValueError)
-@vampytest.call_with('-1')
-@vampytest.call_with('1111111111111111111111')
-@vampytest.call_with(-1)
-@vampytest.call_with(1111111111111111111111)
-def test__validate_subscription_id__value_error(input_value):
-    """
-    Tests whether `validate_subscription_id` works as intended.
-    
-    Case: `ValueError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        Input value to get `subscription_id` of.
-    
-    Raises
-    ------
     ValueError
-        The occurred exception.
     """
-    validate_subscription_id(input_value)
+    output = validate_subscription_id(input_value)
+    vampytest.assert_instance(output, int)
+    return output

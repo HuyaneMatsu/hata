@@ -38,10 +38,12 @@ def test__validate_sku_ids(input_value):
     
     Returns
     -------
-    output : `None | list<int>`
+    output : `None | tuple<int>`
     
     Raises
     ------
     TypeError
     """
-    return validate_sku_ids(input_value)
+    output = validate_sku_ids(input_value)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    return output

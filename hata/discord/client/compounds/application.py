@@ -2,18 +2,21 @@ __all__ = ()
 
 from scarletio import Compound
 
-from ...application import Application, Entitlement, SKU
+from ...application import Application, Entitlement, SKU, Subscription
 from ...application.entitlement.fields import (
     validate_exclude_ended as validate_entitlement_exclude_ended, validate_guild_id as validate_entitlement_guild_id,
     validate_sku_ids as validate_entitlement_sku_ids, validate_user_id as validate_entitlement_user_id
 )
 from ...application.entitlement.utils import ENTITLEMENT_FIELD_CONVERTERS
+from ...application.subscription.fields import (
+    validate_sku_id as validate_subscription_sku_id, validate_user_id as validate_subscription_user_id
+)
 from ...embedded_activity import EmbeddedActivity
 from ...http import DiscordApiClient
 from ...payload_building import build_create_payload
 from ...utils import log_time_converter
 
-from ..request_helpers import get_embedded_activity_and_id, get_entitlement_id
+from ..request_helpers import get_embedded_activity_and_id, get_entitlement_id, get_subscription_and_sku_id_and_id
 
 
 def _assert__application_id(application_id):
@@ -147,6 +150,10 @@ class ClientCompoundApplicationEndpoints(Compound):
         user_id : `int`, `None`, ``ClientUserBase``, Optional (Keyword only)
             User identifier to filter for.
         
+        Returns
+        -------
+        entitlements : `list<Entitlement>`
+        
         Raises
         ------
         TypeError
@@ -161,7 +168,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         application_id = self.application.id
         assert _assert__application_id(application_id)
         
-        query_parameters = {
+        query_string_parameters = {
             'limit': 100,
             'after': 0,
         }
@@ -169,27 +176,27 @@ class ClientCompoundApplicationEndpoints(Compound):
         if user_id is not ...:
             user_id = validate_entitlement_user_id(user_id)
             if user_id:
-                query_parameters['user_id'] = user_id
+                query_string_parameters['user_id'] = user_id
         
         if guild_id is not ...:
             guild_id = validate_entitlement_guild_id(guild_id)
             if guild_id:
-                query_parameters['guild_id'] = guild_id
+                query_string_parameters['guild_id'] = guild_id
         
         if exclude_ended is not ...:
             exclude_ended = validate_entitlement_exclude_ended(guild_id)
             if exclude_ended:
-                query_parameters['exclude_ended'] = exclude_ended
+                query_string_parameters['exclude_ended'] = exclude_ended
         
         if sku_ids is not None:
             sku_ids = validate_entitlement_sku_ids(sku_ids)
             if sku_ids is not None:
-                query_parameters['sku_ids'] = ','.join(str(sku_id) for sku_id in sku_ids)
+                query_string_parameters['sku_ids'] = ','.join(str(sku_id) for sku_id in sku_ids)
         
         entitlements = []
         
         while True:
-            entitlement_datas = await self.api.entitlement_get_chunk(application_id, query_parameters)
+            entitlement_datas = await self.api.entitlement_get_chunk(application_id, query_string_parameters)
             for entitlement_data in entitlement_datas:
                 entitlement = Entitlement.from_data(entitlement_data)
                 entitlements.append(entitlement)
@@ -197,7 +204,7 @@ class ClientCompoundApplicationEndpoints(Compound):
             if len(entitlement_datas) < 100:
                 break
             
-            query_parameters['after'] = entitlements[-1].id
+            query_string_parameters['after'] = entitlements[-1].id
             continue
         
         return entitlements
@@ -242,6 +249,10 @@ class ClientCompoundApplicationEndpoints(Compound):
         user_id : `int`, `None`, ``ClientUserBase``, Optional (Keyword only)
             User identifier to filter for.
         
+        Returns
+        -------
+        entitlements : `list<Entitlement>`
+        
         Raises
         ------
         TypeError
@@ -270,38 +281,38 @@ class ClientCompoundApplicationEndpoints(Compound):
                 f'`limit` can be `None`, `int`, got {limit.__class__.__name__}; {limit!r}.'
             )
         
-        query_parameters = {
+        query_string_parameters = {
             'limit': limit,
         }
         
         if (after is not ...):
-            query_parameters['after'] = log_time_converter(after)
+            query_string_parameters['after'] = log_time_converter(after)
         
         if (before is not ...):
-            query_parameters['before'] = log_time_converter(before)
+            query_string_parameters['before'] = log_time_converter(before)
         
         if exclude_ended is not ...:
             exclude_ended = validate_entitlement_exclude_ended(guild_id)
             if exclude_ended:
-                query_parameters['exclude_ended'] = exclude_ended
+                query_string_parameters['exclude_ended'] = exclude_ended
         
         if guild_id is not ...:
             guild_id = validate_entitlement_guild_id(guild_id)
             if guild_id:
-                query_parameters['guild_id'] = guild_id
+                query_string_parameters['guild_id'] = guild_id
         
         
         if sku_ids is not None:
             sku_ids = validate_entitlement_sku_ids(sku_ids)
             if sku_ids is not None:
-                query_parameters['sku_ids'] = ','.join(str(sku_id) for sku_id in sku_ids)
+                query_string_parameters['sku_ids'] = ','.join(str(sku_id) for sku_id in sku_ids)
             
         if user_id is not ...:
             user_id = validate_entitlement_user_id(user_id)
             if user_id:
-                query_parameters['user_id'] = user_id
+                query_string_parameters['user_id'] = user_id
         
-        entitlement_datas = await self.api.entitlement_get_chunk(application_id, query_parameters)
+        entitlement_datas = await self.api.entitlement_get_chunk(application_id, query_string_parameters)
         return [Entitlement.from_data(entitlement_data) for entitlement_data in entitlement_datas]
     
     
@@ -332,6 +343,183 @@ class ClientCompoundApplicationEndpoints(Compound):
         
         entitlement_id = get_entitlement_id(entitlement)
         await self.api.entitlement_consume(application_id, entitlement_id)
+    
+    
+    async def subscription_get_sku(self, subscription, *, force_update = False):
+        """
+        Requests an sku bound subscription.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        subscription : ``Subscription``, `(int, int)`
+            The subscription to request or a tuple of 2 snowflakes (sku_id & subscription_id) representing it.
+        
+        force_update : `bool` = `False`, Optional (Keyword only)
+            Whether the emoji should be requested even if it supposed to be up to date.
+        
+        Returns
+        -------
+        subscription : ``Subscription``
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        subscription, sku_id, subscription_id = get_subscription_and_sku_id_and_id(subscription)
+                
+        if (not force_update) and (subscription is not None) and (not subscription.partial):
+            return subscription
+        
+        subscription_data = await self.api.subscription_get_sku(sku_id, subscription_id)
+        
+        if (subscription is None):
+            subscription = Subscription.from_data(subscription_data)
+        else:
+            subscription._set_attributes(subscription_data)
+        
+        return subscription
+    
+    
+    async def subscription_get_all_sku_user(self, sku, user):
+        """
+        Requests all the sku bound subscriptions of the client's application's for the given user.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        sku : `int`, ``SKU``
+            Stock keeping unit to get subscriptions for.
+        
+        user : `int`, ``ClientUserBase``
+            User to get the subscriptions for.
+        
+        Returns
+        -------
+        subscriptions : `list<Subscription>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        sku_id = validate_subscription_sku_id(sku)
+        user_id = validate_subscription_user_id(user)
+        
+        query_string_parameters = {
+            'limit': 100,
+            'after': 0,
+            'user_id': user_id,
+        }
+        
+        subscriptions = []
+        
+        while True:
+            subscription_datas = await self.api.subscription_get_chunk_sku_user(sku_id, query_string_parameters)
+            for subscription_data in subscription_datas:
+                subscription = Subscription.from_data(subscription_data)
+                subscriptions.append(subscription)
+                
+            if len(subscription_datas) < 100:
+                break
+            
+            query_string_parameters['after'] = subscriptions[-1].id
+            continue
+        
+        return subscriptions
+    
+    
+    async def subscription_get_chunk_sku_user(
+        self,
+        sku,
+        user,
+        *,
+        after = ...,
+        before = ...,
+        limit = ...,
+    ):
+        """
+        Requests a chunk of the sku bound subscriptions of the client's application's for the given user.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        sku : `int`, ``SKU``
+            Stock keeping unit to get subscriptions for.
+        
+        user : `int`, ``ClientUserBase``
+            User to get the subscriptions for.
+        
+        after : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+            The timestamp after the subscriptions were created.
+        
+        before : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+            The timestamp before the subscriptions were created.
+        
+        limit : `int`, Optional (Keyword only)
+            Up to how much subscriptions should be requested. Can be in range `[1, 100]`. Defaults to `100`.
+        
+        Returns
+        -------
+        subscriptions : `list<Subscription>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        sku_id = validate_subscription_sku_id(sku)
+        user_id = validate_subscription_user_id(user)
+        
+        if limit is ...:
+            limit = 100
+        
+        elif isinstance(limit, int):
+            if limit < 1:
+                limit = 1
+            elif limit > 100:
+                limit = 100
+        
+        else:
+            raise TypeError(
+                f'`limit` can be `None`, `int`, got {type(limit).__name__}; {limit!r}.'
+            )
+        
+        query_string_parameters = {
+            'limit': limit,
+            'user_id': user_id,
+        }
+        
+        if (after is not ...):
+            query_string_parameters['after'] = log_time_converter(after)
+        
+        if (before is not ...):
+            query_string_parameters['before'] = log_time_converter(before)
+        
+        subscription_datas = await self.api.subscription_get_chunk_sku_user(sku_id, query_string_parameters)
+        return [Subscription.from_data(subscription_data) for subscription_data in subscription_datas]
     
     
     async def sku_get_all(self):

@@ -1,7 +1,14 @@
-- Fix `scaffold` cli command, the generated `{project_name}.bots.{client_name}` file's style was borked.
-- Fix `scaffold` cli command, the generated `{project_name}.plugins.ping` file's style was borked.
+## 1.3.67 *\[2024-10-05\]*
+
+### Improvements
+
 - In `scaffold` cli command add extra notes about `pyproject` and `env` when pip installing the scaffolded projects.
 - In `scaffold` cli command add package structure and notes to the generated `pyproject` file.
+
+### Bug fixes
+
+- Fix `scaffold` cli command, the generated `{project_name}.bots.{client_name}` file's style was borked.
+- Fix `scaffold` cli command, the generated `{project_name}.plugins.ping` file's style was borked.
 - Fix `find_dot_env_file_in_current_working_directory` not finding the local envfile. 
 - Fix `help` cli command failing to render correct `use` note when executing from dependent project.
 

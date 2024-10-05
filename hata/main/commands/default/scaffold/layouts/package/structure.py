@@ -86,6 +86,7 @@ def create_pyproject_toml_file(directory_path, project_name):
     ----------
     directory_path : `str`
         Path to the file's directory.
+    
     project_name : `str`
         The project's name.
     """
@@ -94,23 +95,56 @@ def create_pyproject_toml_file(directory_path, project_name):
         'pyproject.toml',
         (
             f'[project]\n'
-            f'name = \'{project_name}\'\n'
+            f'name = \"{project_name}\"\n'
             f'\n'
             f'dependencies = [\n'
-            f'    \'{PACKAGE_NAME!s}\',\n'
-            f'    \'{PACKAGE_NAME!s}[all]\',\n'
+            f'    \"{PACKAGE_NAME!s}\",\n'
+            f'    \"{PACKAGE_NAME!s}[all]\",\n'
             f']\n'
-            f'readme = \'README.md\'\n'
-            f'requires-python = \'>=3.6\'\n'
+            f'readme.file = "README.md"\n'
+            f'readme.content-type = "text/markdown"\n'
+            f'requires-python = \">=3.6\"\n'
             f'\n'
-            f'dynamic = [\'version\', \'description\', \'optional-dependencies\']\n'
+            f'dynamic = [\n'
+            f'    \"version\",\n'
+            f'    \"optional-dependencies\",\n'
+            f']\n'
             f'\n'
             f'[build-system]\n'
-            f'build-backend = \'setuptools.build_meta\'\n'
-            f'requires = [\'setuptools\', \'setuptools-scm\']\n'
+            f'build-backend = \"setuptools.build_meta\"\n'
+            f'requires = [\n'
+            f'    \"setuptools\",\n'
+            f'    \"setuptools-scm\"\n'
+            f']\n'
             f'\n'
             f'[project.scripts]\n'
-            f'{project_name} = \'{project_name}.cli:main\'\n'
+            f'# Allows doing: "$ {project_name!s}" from terminal after installed.\n'
+            f'{project_name!s} = \"{project_name!s}.cli:main\"\n'
+            f'\n'
+            f'[tool.setuptools]\n'
+            f'include-package-data = false\n'
+            f'\n'
+            f'# `packages` are the directories with that should be included when installed.\n'
+            f'# Includes all the `.py` files by default and no other files.\n'
+            f'# Should NOT include test directories.\n'
+            f'packages = [\n'
+            f'    \"{project_name!s}\",\n'
+            f'    \"{project_name!s}.bots\",\n'
+            f'    \"{project_name!s}.plugins\",\n'
+            f']\n'
+            f'\n'
+            f'[tool.setuptools.package-data]\n'
+            f'# Additional files that should be included when installing\n'
+            f'# Example: include all `.png` files within `images` plugin\'s assets directory\n'
+            f'# This directory also have to be added to `packages` to work.\n'
+            f'# (this is not an actually created plugin, just an example):\n'
+            f'# "{project_name!s}.plugins.images.assets" = ["*.png"]\n'
+            f'# Example: include all `.txt` files:\n'
+            f'# "*" = ["*.txt"]\n'
+            f'\n'
+            f'# References:\n'
+            f'# - https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html\n'
+            f'# - https://setuptools.pypa.io/en/latest/userguide/datafiles.html\n'
         ),
     )
 
@@ -362,7 +396,7 @@ def create_bot_file(directory_path, bot_name):
             f'\n'
             f'{bot_variable_name} = Client(\n'
             f'    {bot_constant_name}_TOKEN,\n'
-            f'    extensions = [\'slash\'],'
+            f'    extensions = [\'slash\'],\n'
             f')\n'
         ),
     )
@@ -406,7 +440,7 @@ def create_plugins_ping_command_file(directory_path):
             f'from {PACKAGE_NAME!s} import ClientWrapper\n'
             f'\n'
             f'\n'
-            f'\nALL = ClientWrapper()\n'
+            f'ALL = ClientWrapper()\n'
             f'\n'
             f'\n'
             f'@ALL.interactions(is_global = True, wait_for_acknowledgement = True)\n'

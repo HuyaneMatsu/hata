@@ -1,25 +1,11 @@
 # Hata examples
 
-The examples in each directory showcase a use case of the library, or just some recommended usage. They try to explain
-new concepts.
+The preferred way of creating a bot using hata is to use its `scaffold` command to get started.
 
-Examples should be completed in order, as you might miss some notes from previous examples if you skip them.
+This directory contains a generated example using the following command:
 
-```
- 1 => Basic Ping Bot: A bare minimum hata application.
- 2 => Multiple clients: Using multiple clients parallelly. 
- 3 => Utilities: Mentioning top and low level rest interaction.
- 4 => Building message content: Tips to create message content.
- 5 => Commands framework: Demonstrates how to use Hatas command framework with many other utilities.
- 6 => Simple Bot Stucture: An example showing the recommended file structure to use mentioning the `extension_loader`
-      as well.
- 7 => Building embed: Sending an embed with diffent kinds of fields and with an attachmnet.
- 8 => Gateway intents: How to use intents to limit the events the bot will receive.
- 9 => Loops: Using cycling tasks.
-10 => Slash commands: Demonstrates a few usages of Hatas slash extension.
-11 => Basic voice: Basic usage of voice clients.
-12 => Slash exception handling: Example of how to create a slash error handler.
-13 => Basic solarlink bot: A simple voice bot using lavalink.
+```sh
+$ hata scaffold scaffold_example jacket label -project-name dipp
 ```
 
 ## Questions

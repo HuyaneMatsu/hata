@@ -1,0 +1,17 @@
+# Generic
+*.env
+*.venv
+
+# Python
+*.pyc
+__pycache__/
+
+# Editor
+.idea
+
+# Data files
+*.pickle
+*.sqlite3
+
+# Hata
+.profiles/

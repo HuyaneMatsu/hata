@@ -284,7 +284,7 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    include_package_data = True,
+    include_package_data = False,
     package_data = {
         'hata.discord.bin': [
             'libopus-0.x64.dll',

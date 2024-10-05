@@ -252,6 +252,11 @@ def render_readme_section_structure_pyproject(into):
         '### ./pyproject.toml\n'
         '\n'
         'A text file that specifies what build dependencies your package needs.\n'
+        '\n'
+        'It also affects what happens when you try to `pip install .` or `pip install git+<URL>` the package, \n'
+        'so please make sure it is up to date before installing.'
+        '\n'
+        'For reference please read the file itself.\n'
     )
     
     return into
@@ -303,11 +308,16 @@ def render_readme_section_structure_dot_env(into, project_name):
     into.append(
         '/.env\n'
         '\n'
-        'A `.env` file is a text file containing key - value pairs of environment variables. This file is normally\n'
-        'included with a project, but not committed to source.\n'
+        'A `.env` file is a text file containing key - value pairs of environment variables.\n'
+        'This file is normally included with a project, but not committed to source.\n'
         '\n'
         '`.env` files are used to store sensitive credentials. Your discord applications\' tokens are loaded from\n'
         'here too, so make sure it is populated correctly before starting your project.\n'
+        '\n'
+        'Since the `.env` file is not committed to the source it may raise a question:\n'
+        '"If I want to ship my project through git, is it necessary to copy it every time?"\n'
+        'Do not fret, the `.env` file is not read only from the package\'s directory,\n'
+        'but also from the current working directory as well.\n'
     )
     
     return into

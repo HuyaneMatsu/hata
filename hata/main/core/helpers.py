@@ -170,28 +170,33 @@ def render_main_call_into(into, with_parameters = False):
         into.append('sudo ')
     
     system_parameters = sys.argv
-    if len(system_parameters) < 1:
-        into = _render_default_main_call_into(into)
     
-    else:
+    while True:
+        if len(system_parameters) < 1:
+            into = _render_default_main_call_into(into)
+            with_parameters = False
+            break
+        
         executed_file = system_parameters[0]
         if executed_file == PACKAGE_MAIN_FILE:
             into = _render_default_main_call_into(into)
-            if with_parameters:
-                into = _render_parameters_into(into, system_parameters[1:])
+            break
+            
+        if (UPPER_DIRECTORY != WORKING_DIRECTORY):
+            executed_file_name = get_file_name(executed_file)
+            if'.' not in executed_file_name:
+                into.append(executed_file_name)
+                break
         
-        elif (UPPER_DIRECTORY != WORKING_DIRECTORY) and (get_file_name(executed_file) == PACKAGE_NAME):
-            into.append(PACKAGE_NAME)
+        into.append(get_short_executable())
+        into.append(' ')
+        executed_file, library_mode = normalize_executed_file(executed_file)
+        if library_mode:
+            into.append('-m ')
+        into.append(executed_file)
+        break
         
-        else:
-            into.append(get_short_executable())
-            into.append(' ')
-            executed_file, library_mode = normalize_executed_file(executed_file)
-            if library_mode:
-                into.append('-m ')
-            into.append(executed_file)
-        
-        if with_parameters:
-            into = _render_parameters_into(into, system_parameters[1:])
+    if with_parameters:
+        into = _render_parameters_into(into, system_parameters[1:])
     
     return into

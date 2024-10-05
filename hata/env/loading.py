@@ -80,7 +80,10 @@ def find_dot_env_file_in_current_working_directory():
     """
     location = get_current_working_directory()
     if (location is not None):
-        file_path = join_paths(get_directory_name(location), '.env')
+        if is_file(location):
+            location = get_directory_name(location)
+        
+        file_path = join_paths(location, '.env')
         if is_file(file_path):
             return file_path
 

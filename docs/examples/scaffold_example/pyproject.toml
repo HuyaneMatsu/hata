@@ -1,0 +1,49 @@
+[project]
+name = "dipp"
+
+dependencies = [
+    "hata",
+    "hata[all]",
+]
+readme.file = "README.md"
+readme.content-type = "text/markdown"
+requires-python = ">=3.6"
+
+dynamic = [
+    "version",
+    "optional-dependencies",
+]
+
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+    "setuptools",
+    "setuptools-scm"
+]
+
+[project.scripts]
+# Allows doing: "$ dipp" from terminal after installed.
+dipp = "dipp.cli:main"
+
+[tool.setuptools]
+include-package-data = false
+
+# `packages` are the directories with `__init__.py` files that should be included when installed.
+# Should NOT include test directories.
+packages = [
+    "dipp",
+    "dipp.bots",
+    "dipp.plugins",
+]
+
+[tool.setuptools.package-data]
+# Additional files that should be included when installing
+# Example: include all `.png` files within `images` plugin's assets directory
+# (this is not an actually created plugin, just an example):
+# "dipp.plugins.images.assets" = ["*.png"]
+# Example: include all `.txt` files:
+# "*" = ["*.txt"]
+
+# References:
+# - https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+# - https://setuptools.pypa.io/en/latest/userguide/datafiles.html

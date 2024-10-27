@@ -21,25 +21,20 @@ class CommandBaseApplicationCommand(CommandBase):
     ----------
     _exception_handlers : `None`, `list` of `CoroutineFunction`
         Exception handlers added with ``.error`` to the interaction handler.
-        
-        Same as ``Slasher._exception_handlers``.
     
-    _parent_reference : `None`, ``WeakReferer`` to ``Slasher``
+    _parent_reference : `None | WeakReferer<SelfReferenceInterface>`
         Reference to the slasher application command's parent.
     
-    name : `str`
-        Application command name. It's length can be in range [1:32].
-    
-    _permission_overwrites : `None`, `dict` of (`int`, `list` of ``ApplicationCommandPermissionOverwrite``)
+    _permission_overwrites : `None | dict<int, list<ApplicationCommandPermissionOverwrite>>`
         Permission overwrites applied to the slash command.
 
-    _registered_application_command_ids : `None`, `dict` of (`int`, `int`) items
+    _registered_application_command_ids : `None | dict<int, int>`
         The registered application command ids, which are matched by the command's schema.
         
         If empty set as `None`, if not then the keys are the respective guild's id and the values are the application
         command id.
     
-    _schema : `None`, ``ApplicationCommand``
+    _schema : `None | ApplicationCommand`
         Internal slot used by the ``.get_schema`` method.
     
     _unloading_behaviour : `int`
@@ -62,83 +57,177 @@ class CommandBaseApplicationCommand(CommandBase):
         
         Global commands have their``.guild_ids`` set as `None`.
     
-    guild_ids : `None`, `set` of `int`
+    guild_ids : `None | set<int>`
         The ``Guild``'s id to which the command is bound to.
     
     integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
-        The places where the application command shows up. `None` means all.
+        The places where the application command shows up.
     
     integration_types : `None | tuple<ApplicationIntegrationType>`
         The options where the application command can be integrated to.
     
-    nsfw : `None`, `bool`
+    name : `str`
+        Application command name. It's length can be in range [1:32].
+    
+    nsfw : `bool`
         Whether the application command is only allowed in nsfw channels.
     
-    required_permissions : `None`, ``Permission``
+    required_permissions : ``Permission``
         The required permissions to use the application command inside of a guild.
-    
-    Class Attributes
-    ----------------
-    COMMAND_COMMAND_NAME : `str`
-        The command's name defining parameter's name.
-    
-    COMMAND_PARAMETER_NAMES : `tuple` of `str`
-        All parameters names accepted by ``.__new__``
-    
-    COMMAND_NAME_NAME : `str`
-        The command's "command" defining parameter's name.
     """
     __slots__ = (
         '_permission_overwrites', '_registered_application_command_ids', '_schema', '_unloading_behaviour',
-        'default', 'global_', 'guild_ids', 'integration_context_types', 'integration_types', 'nsfw',
-        'required_permissions'
+        'global_', 'guild_ids', 'integration_context_types', 'integration_types', 'nsfw', 'required_permissions'
     )
     
-    COMMAND_PARAMETER_NAMES = (
-        *CommandBase.COMMAND_PARAMETER_NAMES,
-        'delete_on_unload',
-        'guild',
-        'is_global',
-        'nsfw',
-        'required_permissions',
-    )
-    
-    @property
-    def target(self):
-        """
-        Returns command's target type.
+    @copy_docs(CommandBase._put_repr_parts_into)
+    def _put_repr_parts_into(self, repr_parts):
+        repr_parts = CommandBase._put_repr_parts_into(self, repr_parts)
         
-        This property is a placeholder for subclasses which actually implement it.
+        repr_parts.append(', type = ')
+        guild_ids = self.guild_ids
+        if guild_ids is None:
+            if self.global_:
+                type_name = 'global'
+            else:
+                type_name = 'non-global'
+        else:
+            type_name = 'guild bound'
         
-        Returns
-        -------
-        target ``ApplicationCommandTargetType``
-        """
-        return ApplicationCommandTargetType.none
-    
-    
-    @target.setter
-    def target(self, value):
-        pass
-    
-    
-    @property
-    def description(self):
-        """
-        Returns the command's description.
+        repr_parts.append(type_name)
         
-        This property is a placeholder for subclasses which actually implement it.
+        # integration_context_types
+        integration_context_types = self.integration_context_types
+        if (integration_context_types is not None):
+            repr_parts.append(', integration_context_types = ')
+            repr_parts.append(repr(integration_context_types))
         
-        Returns
-        -------
-        description `None`, `str`
-        """
-        return None
+        # integration_types
+        integration_types = self.integration_types
+        if (integration_types is not None):
+            repr_parts.append(', integration_types = ')
+            repr_parts.append(repr(integration_types))
+        
+        nsfw = self.nsfw
+        if (nsfw is not None):
+            repr_parts.append(', nsfw = ')
+            repr_parts.append(repr(nsfw))
+        
+        required_permissions = self.required_permissions
+        if required_permissions:
+            repr_parts.append(', required_permissions = ')
+            repr_parts.append(repr(required_permissions))
+        
+        unloading_behaviour = self._unloading_behaviour
+        if unloading_behaviour != UNLOADING_BEHAVIOUR_INHERIT:
+            repr_parts.append(', unloading_behaviour = ')
+            if unloading_behaviour == UNLOADING_BEHAVIOUR_DELETE:
+                unloading_behaviour_name = 'delete'
+            else:
+                unloading_behaviour_name = 'keep'
+            
+            repr_parts.append(unloading_behaviour_name)
+        
+        if (guild_ids is not None):
+            repr_parts.append(', guild_ids = ')
+            repr_parts.append(repr(guild_ids))
+        
+        return repr_parts
     
     
-    @description.setter
-    def description(self, value):
-        return
+    @copy_docs(CommandBase.__hash__)
+    def __hash__(self):
+        hash_value = CommandBase.__hash__(self)
+        
+        # _permission_overwrites
+        permission_overwrites = self._permission_overwrites
+        if (permission_overwrites is not None):
+            
+            hash_value ^= len(permission_overwrites) << 8
+            
+            for permission_overwrite in permission_overwrites:
+                hash_value ^= hash(permission_overwrite)
+        
+        # _registered_application_command_ids
+        # Internal Field
+        
+        # _unloading_behaviour
+        hash_value ^= (self._unloading_behaviour + 1) << 12
+        
+        # integration_context_types
+        integration_context_types = self.integration_context_types
+        if (integration_context_types is not None):
+            hash_value ^= len(integration_context_types) << 9
+            for integration_context_type in integration_context_types:
+                hash_value ^= integration_context_type.value << 13
+        
+        # integration_types
+        integration_types = self.integration_types
+        if (integration_types is not None):
+            hash_value ^= len(integration_types) << 7
+            for integration_type in integration_types:
+                hash_value ^= integration_type.value << 11
+        
+        # guild_ids
+        guild_ids = self.guild_ids
+        if (guild_ids is not None):
+            hash_value ^= len(guild_ids) << 18
+            
+            for guild_id in guild_ids:
+                hash_value ^= guild_id
+        
+        # nsfw
+        nsfw = self.nsfw
+        if (nsfw is not None):
+            hash_value ^ nsfw << 22
+        
+        # required_permissions
+        hash_value ^= self.required_permissions
+        
+        return hash_value
+    
+    
+    @copy_docs(CommandBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
+        if not CommandBase._is_equal_same_type(self, other):
+            return False
+        
+        # _permission_overwrites
+        if self._permission_overwrites != other._permission_overwrites:
+            return False
+        
+        # _registered_application_command_ids
+        # Internal field
+
+        # _unloading_behaviour
+        if self._unloading_behaviour != other._unloading_behaviour:
+            return False
+        
+        # integration_context_types
+        if self.integration_context_types != other.integration_context_types:
+            return False
+        
+        # integration_types
+        if self.integration_types != other.integration_types:
+            return False
+        
+        # guild_ids
+        if self.guild_ids != other.guild_ids:
+            return False
+        
+        # global
+        if self.global_ != other.global_:
+            return False
+        
+        # nsfw
+        if self.nsfw != other.nsfw:
+            return False
+        
+        # required_permissions
+        if self.required_permissions != other.required_permissions:
+            return False
+        
+        return True
     
     
     @copy_docs(CommandBase.copy)
@@ -162,9 +251,6 @@ class CommandBaseApplicationCommand(CommandBase):
         
         # _unloading_behaviour
         new._unloading_behaviour = self._unloading_behaviour
-        
-        # default
-        new.default = self.default
         
         # integration_context_types
         integration_context_types = self.integration_context_types
@@ -196,171 +282,63 @@ class CommandBaseApplicationCommand(CommandBase):
         return new
     
     
-    @copy_docs(CommandBase.__hash__)
-    def __hash__(self):
-        hash_value = CommandBase.__hash__(self)
+    @property
+    def target(self):
+        """
+        Returns command's target type.
         
-        # _permission_overwrites
-        permission_overwrites = self._permission_overwrites
-        if (permission_overwrites is not None):
-            
-            hash_value ^= len(permission_overwrites) << 8
-            
-            for permission_overwrite in permission_overwrites:
-                hash_value ^= hash(permission_overwrite)
+        This property is a placeholder for subclasses which actually implement it.
         
-        # _registered_application_command_ids
-        # Internal Field
-        
-        # _unloading_behaviour
-        hash_value ^= (self._unloading_behaviour + 1) << 12
-        
-        # default
-        hash_value ^= self.default << 3
-        
-        # integration_context_types
-        integration_context_types = self.integration_context_types
-        if (integration_context_types is not None):
-            hash_value ^= len(integration_context_types) << 9
-            for integration_context_type in integration_context_types:
-                hash_value ^= integration_context_type.value << 13
-        
-        # integration_types
-        integration_types = self.integration_types
-        if (integration_types is not None):
-            hash_value ^= len(integration_types) << 7
-            for integration_type in integration_types:
-                hash_value ^= integration_type.value << 11
-        
-        # guild_ids
-        guild_ids = self.guild_ids
-        if (guild_ids is not None):
-            hash_value ^= len(guild_ids) << 18
-            
-            for guild_id in guild_ids:
-                hash_value ^= guild_id
-        
-        # nsfw
-        nsfw = self.nsfw
-        if (nsfw is not None):
-            hash_value ^ nsfw << 22
-        
-        # required_permissions
-        required_permissions = self.required_permissions
-        if (required_permissions is not None):
-            hash_value ^= required_permissions
-        
-        return hash_value
+        Returns
+        -------
+        target ``ApplicationCommandTargetType``
+        """
+        return ApplicationCommandTargetType.none
     
     
-    @copy_docs(CommandBase._is_equal_same_type)
-    def _is_equal_same_type(self, other):
-        if not CommandBase._is_equal_same_type(self, other):
-            return False
-        
-        # _permission_overwrites
-        if self._permission_overwrites != other._permission_overwrites:
-            return False
-        
-        # _registered_application_command_ids
-        # Internal field
-
-        # _unloading_behaviour
-        if self._unloading_behaviour != other._unloading_behaviour:
-            return False
-        
-        # default
-        if self.default != other.default:
-            return False
-        
-        # integration_context_types
-        if self.integration_context_types != other.integration_context_types:
-            return False
-        
-        # integration_types
-        if self.integration_types != other.integration_types:
-            return False
-        
-        # guild_ids
-        if self.guild_ids != other.guild_ids:
-            return False
-        
-        # global
-        if self.global_ != other.global_:
-            return False
-        
-        # nsfw
-        if self.nsfw != other.nsfw:
-            return False
-        
-        # required_permissions
-        if self.required_permissions != other.required_permissions:
-            return False
-        
-        return True
+    @target.setter
+    def target(self, value):
+        pass
     
     
-    @copy_docs(CommandBase._build_repr_body_into)
-    def _build_repr_body_into(self, repr_parts):
-        CommandBase._build_repr_body_into(self, repr_parts)
+    @property
+    def default(self):
+        """
+        Returns the command's default.
         
-        repr_parts.append(', type = ')
-        guild_ids = self.guild_ids
-        if guild_ids is None:
-            if self.global_:
-                type_name = 'global'
-            else:
-                type_name = 'non-global'
-        else:
-            type_name = 'guild bound'
+        This property is a placeholder for subclasses which actually implement it.
         
-        repr_parts.append(type_name)
+        Returns
+        -------
+        default `bool`
+        """
+        return False
+    
+    
+    @default.setter
+    def default(self, value):
+        return
+    
+    
+    @property
+    def description(self):
+        """
+        Returns the command's description.
         
-        yield repr_parts
+        This property is a placeholder for subclasses which actually implement it.
         
-        # default
-        default = self.default
-        if default:
-            repr_parts.append(', default = ')
-            repr_parts.append(repr(default))
-        
-        # integration_context_types
-        integration_context_types = self.integration_context_types
-        if (integration_context_types is not None):
-            repr_parts.append(', integration_context_types = ')
-            repr_parts.append(repr(integration_context_types))
-        
-        # integration_types
-        integration_types = self.integration_types
-        if (integration_types is not None):
-            repr_parts.append(', integration_types = ')
-            repr_parts.append(repr(integration_types))
-        
-        nsfw = self.nsfw
-        if (nsfw is not None):
-            repr_parts.append(', nsfw = ')
-            repr_parts.append(repr(nsfw))
-        
-        required_permissions = self.required_permissions
-        if (required_permissions is not None):
-            repr_parts.append(', required_permissions = ')
-            repr_parts.append(repr(required_permissions))
-        
-        unloading_behaviour = self._unloading_behaviour
-        if unloading_behaviour != UNLOADING_BEHAVIOUR_INHERIT:
-            repr_parts.append(', unloading_behaviour = ')
-            if unloading_behaviour == UNLOADING_BEHAVIOUR_DELETE:
-                unloading_behaviour_name = 'delete'
-            else:
-                unloading_behaviour_name = 'keep'
-            
-            repr_parts.append(unloading_behaviour_name)
-        
-        if (guild_ids is not None):
-            repr_parts.append(', guild_ids = ')
-            repr_parts.append(repr(guild_ids))
-
-
+        Returns
+        -------
+        description `None | str`
+        """
+        return None
+    
+    
+    @description.setter
+    def description(self, value):
+        return
+    
+    
     async def invoke_auto_completion(self, client, interaction_event, auto_complete_option):
         """
         Calls the auto completion function of the slasher application command.
@@ -371,9 +349,11 @@ class CommandBaseApplicationCommand(CommandBase):
         ----------
         client : ``Client``
             The respective client who received the event.
+        
         interaction_event : ``InteractionEvent``
             The received interaction event.
-        auto_complete_option : ``ApplicationCommandAutocompleteInteraction``
+        
+        auto_complete_option : `InteractionMetadataApplicationCommandAutocomplete | InteractionOption`
             The option to autocomplete.
         """
         pass
@@ -457,7 +437,7 @@ class CommandBaseApplicationCommand(CommandBase):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``Guild | int`
             The guild to mention the application command at.
         
         Returns
@@ -485,7 +465,7 @@ class CommandBaseApplicationCommand(CommandBase):
         application_command_id : `int`
             The respective application command's identifier.
         
-        sub_command_name_stack : `None`, `tuple` of `str`
+        sub_command_name_stack : `None | tuple<str>`
             Additional sub command names to include in the mention.
         
         Returns
@@ -533,10 +513,10 @@ class CommandBaseApplicationCommand(CommandBase):
         Raises
         ------
         RuntimeError
-            The ``CommandBaseApplicationCommand`` is not a category.
+            Self is not a category.
         """
         raise RuntimeError(
-            f'The {self.__class__.__name__} is not a category.'
+            f'The {type(self).__name__} is not a category.'
         )
     
     
@@ -550,12 +530,13 @@ class CommandBaseApplicationCommand(CommandBase):
         ----------
         guild_id : `int`
             The guild's id where the overwrite will be applied.
-        permission_overwrite : ``ApplicationCommandPermissionOverwrite``, `None`
-            The permission overwrite to add
+        
+        permission_overwrite : `None | ApplicationCommandPermissionOverwrite`
+            The permission overwrite to add.
         
         Raises
         ------
-        AssertionError
+        ValueError
             - Each command in each guild can have up to `10` overwrite, which is already reached.
         """
         permission_overwrites = self._permission_overwrites
@@ -564,15 +545,14 @@ class CommandBaseApplicationCommand(CommandBase):
         
         permission_overwrites_for_guild = permission_overwrites.get(guild_id, None)
         
-        if __debug__:
-            if (
-                (permission_overwrites_for_guild is not None) and
-                (len(permission_overwrites_for_guild) >= APPLICATION_COMMAND_PERMISSION_OVERWRITES_MAX)
-            ):
-                raise AssertionError(
-                    f'`Each command in each guild can have up to '
-                    f'{APPLICATION_COMMAND_PERMISSION_OVERWRITES_MAX} permission overwrites which is already reached.'
-                )
+        if (
+            (permission_overwrites_for_guild is not None) and
+            (len(permission_overwrites_for_guild) >= APPLICATION_COMMAND_PERMISSION_OVERWRITES_MAX)
+        ):
+            raise ValueError(
+                f'`Each command in each guild can have up to '
+                f'{APPLICATION_COMMAND_PERMISSION_OVERWRITES_MAX} permission overwrites which is already reached.'
+            )
         
         if (permission_overwrites_for_guild is not None) and (permission_overwrite is not None):
             target_id = permission_overwrite.target_id
@@ -609,7 +589,7 @@ class CommandBaseApplicationCommand(CommandBase):
         
         Returns
         -------
-        permission_overwrites : `None`, `list` of ``ApplicationCommandPermissionOverwrite``
+        permission_overwrites : `None | list<ApplicationCommandPermissionOverwrite>`
             Returns `None` instead of an empty list.
         """
         permission_overwrites = self._permission_overwrites
@@ -624,7 +604,7 @@ class CommandBaseApplicationCommand(CommandBase):
         
         Returns
         -------
-        permission_sync_ids : `set` of `int`
+        permission_sync_ids : `set<int>`
         """
         permission_sync_ids = set()
         guild_ids = self.guild_ids
@@ -638,8 +618,8 @@ class CommandBaseApplicationCommand(CommandBase):
             permission_sync_ids.update(guild_ids)
         
         return permission_sync_ids
-
-
+    
+    
     def _register_guild_and_application_command_id(self, guild_id, application_command_id):
         """
         Registers an application command's identifier to the ``SlashCommand`.
@@ -648,6 +628,7 @@ class CommandBaseApplicationCommand(CommandBase):
         ----------
         application_command_id : `int`
             The application command's identifier.
+        
         guild_id : `int`
             The guild where the application command is in.
         """
@@ -666,6 +647,7 @@ class CommandBaseApplicationCommand(CommandBase):
         ----------
         guild_id : `int`
             The guild's id, where the application command is in.
+        
         application_command_id : `int`
             The application command's identifier.
         """
@@ -683,7 +665,7 @@ class CommandBaseApplicationCommand(CommandBase):
                         self._registered_application_command_ids = None
     
     
-    def _pop_command_id_for(self, guild_id):
+    def _pop_application_command_id_for(self, guild_id):
         """
         Pops the given application command id from the command for the respective guild.
         
@@ -701,7 +683,13 @@ class CommandBaseApplicationCommand(CommandBase):
         if registered_application_command_ids is None:
             application_command_id = 0
         else:
-            application_command_id = registered_application_command_ids.pop(guild_id, 0)
+            try:
+                application_command_id = registered_application_command_ids.pop(guild_id)
+            except KeyError:
+                application_command_id = 0
+            else:
+                if not registered_application_command_ids:
+                    self._registered_application_command_ids = None
         
         return application_command_id
     
@@ -710,7 +698,7 @@ class CommandBaseApplicationCommand(CommandBase):
         """
         Iterates over all the registered application command id-s added to the slash command.
         
-        This method is a generator, what should be used inside of a `for` loop.
+        This method is an iterable generator.
         
         Yields
         ------
@@ -725,19 +713,20 @@ class CommandBaseApplicationCommand(CommandBase):
         """
         Iterates over all the registered application command id-s added to the slash command and removes them.
         
-        This method is a generator, what should be used inside of a `for` loop.
+        This method is an iterable generator.
         
         Yields
         ------
         application_command_id : `int`
         """
         registered_application_command_ids = self._registered_application_command_ids
-        if (registered_application_command_ids is not None):
-            while registered_application_command_ids:
-                guild_id, application_command_id = registered_application_command_ids.popitem()
-                yield application_command_id
+        while (registered_application_command_ids is not None):
+            guild_id, application_command_id = registered_application_command_ids.popitem()
+            if not registered_application_command_ids:
+                registered_application_command_ids = None
+                self._registered_application_command_ids = None
             
-            self._registered_application_command_ids = None
+            yield application_command_id
     
     
     def _iter_sync_ids(self):
@@ -789,12 +778,12 @@ class CommandBaseApplicationCommand(CommandBase):
         """
         schema = self._schema
         if schema is None:
-            schema = self._schema = self.as_schema()
+            schema = self._schema = self._get_schema()
         
         return schema
     
     
-    def as_schema(self):
+    def _get_schema(self):
         """
         Creates a new application command schema representing the slash command.
         
@@ -828,6 +817,6 @@ class CommandBaseApplicationCommand(CommandBase):
         
         Returns
         -------
-        application_command_options : `None`, `list` of ``ApplicationCommandOption``
+        application_command_options : `None | list<ApplicationCommandOption>`
         """
         return None

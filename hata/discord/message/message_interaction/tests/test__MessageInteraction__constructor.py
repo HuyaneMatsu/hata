@@ -24,6 +24,8 @@ def _assert_fields_set(message_interaction):
     vampytest.assert_instance(message_interaction.name, str)
     vampytest.assert_instance(message_interaction.response_message_id, int)
     vampytest.assert_instance(message_interaction.sub_command_name_stack, tuple, nullable = True)
+    vampytest.assert_instance(message_interaction.target_message_id, int)
+    vampytest.assert_instance(message_interaction.target_user, ClientUserBase, nullable = True)
     vampytest.assert_instance(message_interaction.triggering_interaction, MessageInteraction, nullable = True)
     vampytest.assert_instance(message_interaction.type, InteractionType)
     vampytest.assert_instance(message_interaction.user, ClientUserBase)
@@ -51,6 +53,8 @@ def test__MessageInteraction__new__all_fields():
     name = 'Chata'
     response_message_id = 202403250005
     interacted_message_id = 202403250020
+    target_message_id = 202410060006
+    target_user = User.precreate(202410060007)
     triggering_interaction = MessageInteraction.precreate(202403260003, name = 'pain')
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202403270010,
@@ -64,6 +68,8 @@ def test__MessageInteraction__new__all_fields():
         name = name,
         response_message_id = response_message_id,
         sub_command_name_stack = sub_command_name_stack,
+        target_message_id = target_message_id,
+        target_user = target_user,
         triggering_interaction = triggering_interaction,
         user = user,
     )
@@ -75,6 +81,8 @@ def test__MessageInteraction__new__all_fields():
     vampytest.assert_eq(message_interaction.name, name)
     vampytest.assert_eq(message_interaction.response_message_id, response_message_id)
     vampytest.assert_eq(message_interaction.sub_command_name_stack, sub_command_name_stack)
+    vampytest.assert_eq(message_interaction.target_message_id, target_message_id)
+    vampytest.assert_is(message_interaction.target_user, target_user)
     vampytest.assert_eq(message_interaction.triggering_interaction, triggering_interaction)
     vampytest.assert_is(message_interaction.type, interaction_type)
     vampytest.assert_is(message_interaction.user, user)
@@ -120,6 +128,8 @@ def test__MessageInteraction__precreate__all_fields():
     sub_command_name_stack = ('Afraid', 'Darkness')
     response_message_id = 20240325006
     interacted_message_id = 202403250057
+    target_message_id = 202410060008
+    target_user = User.precreate(202410060009)
     triggering_interaction = MessageInteraction.precreate(202403260004, name = 'pain')
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202403270012,
@@ -134,6 +144,8 @@ def test__MessageInteraction__precreate__all_fields():
         interacted_message_id = interacted_message_id,
         name = name,
         sub_command_name_stack = sub_command_name_stack,
+        target_message_id = target_message_id,
+        target_user = target_user,
         triggering_interaction = triggering_interaction,
         user = user,
     )
@@ -145,6 +157,8 @@ def test__MessageInteraction__precreate__all_fields():
     vampytest.assert_eq(message_interaction.name, name)
     vampytest.assert_eq(message_interaction.response_message_id, response_message_id)
     vampytest.assert_eq(message_interaction.sub_command_name_stack, sub_command_name_stack)
+    vampytest.assert_eq(message_interaction.target_message_id, target_message_id)
+    vampytest.assert_is(message_interaction.target_user, target_user)
     vampytest.assert_eq(message_interaction.triggering_interaction, triggering_interaction)
     vampytest.assert_is(message_interaction.type, interaction_type)
     vampytest.assert_is(message_interaction.user, user)

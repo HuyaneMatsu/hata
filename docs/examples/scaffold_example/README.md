@@ -64,7 +64,9 @@ A `.env` file is a text file containing key - value pairs of environment variabl
 This file is normally included with a project, but not committed to source.
 
 `.env` files are used to store sensitive credentials. Your discord applications' tokens are loaded from
-here too, so make sure it is populated correctly before starting your project.
+here too, so make sure it is **populated before starting your project**.
+To test things out & use the project cli it does not need to be populated correctly,
+just should not contain empty values.
 
 Since the `.env` file is not committed to the source it may raise a question:
 "If I want to ship my project through git, is it necessary to copy it every time?"
@@ -147,13 +149,37 @@ An example single-file plugin.
 
 Registers a `/ping` command into every client.
 
-## Install
+## Running
+
+### Running from current directory
+
+If you want to run the project from the current directory, first populate the local `.env` file at
+`./dipp/.env`. Then open terminal (or navigate) to this directory and run:.
 
 ```
-$ python3 -m pip install .
+$ python3 -m dipp help
 ```
 
-## Running CLI
+### Running as a package
+
+Running as a package is recommended when deploying the project.
+M
+
+- From current directory:
+    ```
+    $ python3 -m pip install .
+    ```
+- From git:
+    ```
+    $ python3 -m pip install git+<URL>
+    ```
+
+Note that what exactly is installed is described in [./pyproject.toml](#pyprojecttoml).
+Make sure to take a look at it after creating / removing directories.
+
+The installed package has no `.env` file present.
+You do not need to place a new `.env` file at `site-packages/dipp/`, instead create one at the location from where
+the project will be started up. When its done and populated you are ready to run it:
 
 ```
 $ python3 -m dipp help

@@ -23,11 +23,10 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
     name : `str`
         The represented application command's name.
     
-    options : `None`, `tuple` of ``InteractionOption``
+    options : `None | tuple<InteractionOption>`
         Application command option representations. Like sub-command or parameter.
     """
     __slots__ = ('id', 'name', 'options')
-    
     
     def __new__(
         cls,

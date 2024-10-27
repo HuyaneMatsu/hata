@@ -239,6 +239,22 @@ put_response_message_id_into = entity_id_optional_putter_factory('original_respo
 validate_response_message_id = entity_id_validator_factory('response_message_id', NotImplemented, include = 'Message')
 
 
+# target_message_id
+
+parse_target_message_id = entity_id_parser_factory('target_message_id')
+put_target_message_id_into = entity_id_optional_putter_factory('target_message_id')
+validate_target_message_id = entity_id_validator_factory('target_message_id', NotImplemented, include = 'Message')
+
+
+# target_user
+
+parse_target_user = nullable_entity_parser_factory('target_user', User)
+put_target_user_into = nullable_entity_optional_putter_factory(
+    'target_user', ClientUserBase, force_include_internals = True
+)
+validate_target_user = nullable_entity_validator_factory('target_user', ClientUserBase)
+
+
 # triggering_interaction
 
 parse_triggering_interaction = nullable_entity_parser_factory(
@@ -250,6 +266,7 @@ put_triggering_interaction_into = nullable_entity_optional_putter_factory(
 validate_triggering_interaction = nullable_entity_validator_factory(
     'triggering_interaction', NotImplemented, include = 'MessageInteraction'
 )
+
 
 # type
 

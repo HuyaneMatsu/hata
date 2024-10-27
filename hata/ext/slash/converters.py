@@ -793,51 +793,71 @@ ANNOTATION_AUTO_COMPLETE_AVAILABILITY = frozenset((
 ))
 
 
+def _get_is_group_dict_pattern(regex_pattern):
+    """
+    Returns whether the given pattern is a `group dict` pattern.
+    
+    Parameters
+    ----------
+    regex_pattern : `re.Pattern`
+        Regex pattern to get details of.
+    
+    Raises
+    ------
+    ValueError
+        Regex pattern with mixed dict groups and non-dict groups are disallowed.
+    """
+    group_count = regex_pattern.groups
+    group_dict = regex_pattern.groupindex
+    group_dict_length = len(group_dict)
+    
+    if group_dict_length and (group_dict_length != group_count):
+        raise ValueError(
+            f'Regex patterns with mixed dict groups and non-dict groups are disallowed, got '
+            f'{regex_pattern!r}.'
+        )
+
+    if group_dict_length:
+        group_dict_pattern = True
+    else:
+        group_dict_pattern = False
+    
+    return group_dict_pattern
+
+
 class RegexMatcher(RichAttributeErrorBaseType):
     """
     `custom_id` matcher for component commands.
     
     Attributes
     ----------
-    pattern : `Re.Pattern`
-        The used regex pattern.
-    is_group_dict_pattern : `bool`
+    group_dict_pattern : `bool`
         Whether the regex pattern is group dict based.
+    
+    regex_pattern : `Re.Pattern`
+        The used regex pattern.
     """
-    __slots__ = ('pattern', 'is_group_dict_pattern')
+    __slots__ = ('group_dict_pattern', 'regex_pattern')
     
     def __new__(cls, regex_pattern):
         """
-        Creates a ``RegexMatcher`` from the given parameters.
+        Creates a regex matcher from the given parameters.
         
         Parameters
         ----------
         regex_pattern : `re.Pattern`
-            Regex pattern to get details of.
+            Regex pattern to create matcher for.
         
         Raises
         ------
         ValueError
             Regex pattern with mixed dict groups and non-dict groups are disallowed.
         """
-        group_count = regex_pattern.groups
-        group_dict = regex_pattern.groupindex
-        group_dict_length = len(group_dict)
-        
-        if group_dict_length and (group_dict_length != group_count):
-            raise ValueError(
-                f'Regex patterns with mixed dict groups and non-dict groups are disallowed, got '
-                f'{regex_pattern!r}.'
-            )
-        
-        if group_dict_length:
-            is_group_dict_pattern = True
-        else:
-            is_group_dict_pattern = False
+        group_dict_pattern = _get_is_group_dict_pattern(regex_pattern)
         
         self = object.__new__(cls)
-        self.pattern = regex_pattern
-        self.is_group_dict_pattern = is_group_dict_pattern
+        self.group_dict_pattern = group_dict_pattern
+        self.regex_pattern = regex_pattern
         return self
     
     
@@ -852,30 +872,44 @@ class RegexMatcher(RichAttributeErrorBaseType):
         
         Returns
         -------
-        regex_match : `None`, ``RegexMatch``
+        regex_match : `None | RegexMatch`
             The matched regex if any.
         """
-        matched = self.pattern.fullmatch(string)
+        matched = self.regex_pattern.fullmatch(string)
         if matched is None:
             return None
         
-        is_group_dict_pattern = self.is_group_dict_pattern
-        if is_group_dict_pattern:
+        group_dict_pattern = self.group_dict_pattern
+        if group_dict_pattern:
             groups = matched.groupdict()
         else:
             groups = matched.groups()
         
-        return RegexMatch(groups, is_group_dict_pattern)
+        return RegexMatch(group_dict_pattern, groups)
     
     
     def __repr__(self):
-        """Returns the pattern's representation."""
-        return f'<{self.__class__.__name__} pattern={self.pattern.pattern}>'
+        """Returns the regex matcher's representation."""
+        repr_parts = ['<', type(self).__name__]
+        
+        # pattern
+        regex_pattern = self.regex_pattern
+        repr_parts.append(' pattern = ')
+        repr_parts.append(repr(regex_pattern.pattern))
+        
+        # flags
+        flags = regex_pattern.flags
+        if flags:
+            repr_parts.append(', flags = ')
+            repr_parts.append(repr(flags))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     
     def __hash__(self):
         """Returns the regex matcher's hash value."""
-        return hash(self.pattern)
+        return hash(self.regex_pattern)
     
     
     def __eq__(self, other):
@@ -883,10 +917,30 @@ class RegexMatcher(RichAttributeErrorBaseType):
         if type(self) is not type(other):
             return NotImplemented
         
-        if self.pattern == other.pattern:
+        if self.regex_pattern != other.regex_pattern:
+            return False
+        
+        return True
+    
+    
+    def __gt__(self, other):
+        """Returns whether self >= other"""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        self_regex_pattern = self.regex_pattern
+        other_regex_pattern = other.regex_pattern
+        
+        self_regex_pattern_string = self_regex_pattern.pattern
+        other_regex_pattern_string = other_regex_pattern.pattern
+        
+        if self_regex_pattern_string > other_regex_pattern_string:
             return True
         
-        return False
+        if self_regex_pattern_string < other_regex_pattern_string:
+            return False
+        
+        return self_regex_pattern.flags > other_regex_pattern.flags
 
 
 def check_component_converters_satisfy_string(parameter_converters):
@@ -933,8 +987,8 @@ def check_component_converters_satisfy_regex(parameter_converters, regex_matcher
     ValueError
         If a converter is not satisfied.
     """
-    if regex_matcher.is_group_dict_pattern:
-        required_parameters = set(regex_matcher.pattern.groupindex)
+    if regex_matcher.group_dict_pattern:
+        required_parameters = set(regex_matcher.regex_pattern.groupindex)
         for parameter_converter in parameter_converters:
             if isinstance(parameter_converter, InternalParameterConverter):
                 continue
@@ -954,7 +1008,7 @@ def check_component_converters_satisfy_regex(parameter_converters, regex_matcher
         else:
             unsatisfied = None
     else:
-        parameters_to_satisfy = regex_matcher.pattern.groups
+        parameters_to_satisfy = regex_matcher.regex_pattern.groups
         for parameter_converter in parameter_converters:
             if isinstance(parameter_converter, InternalParameterConverter):
                 continue
@@ -974,7 +1028,7 @@ def check_component_converters_satisfy_regex(parameter_converters, regex_matcher
     if (unsatisfied is not None):
         raise ValueError(
             f'Parameter {unsatisfied.parameter_name!r} is not satisfied by regex pattern: '
-            f'{regex_matcher.pattern.pattern!r}.'
+            f'{regex_matcher.regex_pattern.pattern!r}.'
         )
 
 
@@ -984,32 +1038,69 @@ class RegexMatch(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    is_group_dict : `bool`
+    group_dict : `bool`
         Whether `groups` is a dictionary.
-    groups : `tuple` of `str`, `dict` of (`str`, `str`) items
+    
+    groups : `tuple<None | str> | dict<str, None | str>`
         The matched groups.
     """
-    __slots__ = ('is_group_dict', 'groups')
+    __slots__ = ('group_dict', 'groups')
     
-    def __new__(cls, groups, is_group_dict):
+    def __new__(cls, group_dict, groups):
         """
         Creates a new ``RegexMatcher`` from the given parameters.
     
         Parameters
         ----------
-        is_group_dict : `bool`
+        group_dict : `bool`
             Whether `groups` is a dictionary.
-        groups : `tuple` of `str`, `dict` of (`str`, `str`) items
+        
+        groups : `tuple<None | str> | dict<str, None | str>`
             The matched groups.
         """
         self = object.__new__(cls)
+        self.group_dict = group_dict
         self.groups = groups
-        self.is_group_dict = is_group_dict
         return self
+    
     
     def __repr__(self):
         """Returns the regex match's representation."""
-        return f'<{self.__class__.__name__} groups={self.groups!r}>'
+        repr_parts = ['<', type(self).__name__]
+        
+        # groups
+        repr_parts.append(' groups = ')
+        repr_parts.append(repr(self.groups))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    def __hash__(self):
+        """Returns the regex match's hash value."""
+        hash_value = 0
+        
+        groups = self.groups
+        if self.group_dict:
+            for key, value in groups.items():
+                hash_value ^= hash(key) & (0 if value is None else hash(value))
+        
+        else:
+            for value in groups:
+                hash_value ^= (0 if value is None else hash(value))
+        
+        return hash_value
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two regex matches are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.groups != other.groups:
+            return False
+        
+        return True
 
 
 class SlashParameter(RichAttributeErrorBaseType):
@@ -2333,7 +2424,7 @@ class ParameterConverter(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the parameter converter's representation."""
-        return f'<{self.__class__.__name__}, parameter_name = {self.parameter_name!r}>'
+        return f'<{type(self).__name__}, parameter_name = {self.parameter_name!r}>'
     
     
     def as_option(self):
@@ -2404,7 +2495,7 @@ class RegexParameterConverter(ParameterConverter):
             converted_value = self.default
         else:
             groups = value.groups
-            if value.is_group_dict:
+            if value.group_dict:
                 parameter_name = self.parameter_name
                 try:
                     converted_value = groups[parameter_name]
@@ -2424,7 +2515,7 @@ class RegexParameterConverter(ParameterConverter):
     def __repr__(self):
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' parameter_name = ',
             repr(self.parameter_name),
             ', index = ',
@@ -2509,7 +2600,7 @@ class FormFieldKeywordParameterConverter(ParameterConverter):
     def __repr__(self):
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ' parameter_name = ',
             repr(self.parameter_name),
         ]
@@ -2805,7 +2896,7 @@ class InternalParameterConverter(ParameterConverter):
     def __repr__(self):
         return ''.join([
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             'parameter_name = ',
             repr(self.parameter_name),
             ', type = ',
@@ -2858,7 +2949,7 @@ class SlashCommandParameterConverter(ParameterConverter):
     
     def __new__(
         cls, parameter_name, type_, converter, name, description, default, required, choice_enum_type, choices,
-        channel_types, max_value, min_value, autocomplete, max_length, min_length
+        channel_types, max_value, min_value, auto_complete_function, max_length, min_length
     ):
         """
         Creates a new ``SlashCommandParameterConverter`` from the given parameters.
@@ -2889,7 +2980,7 @@ class SlashCommandParameterConverter(ParameterConverter):
             The maximal accepted value by the converter.
         min_value : `None`, `int`, `float`
             The minimal accepted value by the converter.
-        autocomplete : `None`, ``SlashCommandParameterAutoCompleter``
+        auto_complete_function : `None | async-callable`
             Auto completer if defined.
         max_length : `int`
             The maximum input length allowed for this option.
@@ -2914,9 +3005,9 @@ class SlashCommandParameterConverter(ParameterConverter):
         self.max_length = max_length
         self.min_length = min_length
         
-        if (autocomplete is not None):
+        if (auto_complete_function is not None):
             auto_completer = SlashCommandParameterAutoCompleter(
-                autocomplete, [parameter_name], APPLICATION_COMMAND_FUNCTION_DEEPNESS, None
+                auto_complete_function, [parameter_name], APPLICATION_COMMAND_FUNCTION_DEEPNESS, None
             )
             self.register_auto_completer(auto_completer)
         
@@ -2960,10 +3051,7 @@ class SlashCommandParameterConverter(ParameterConverter):
     
     @copy_docs(ParameterConverter.__repr__)
     def __repr__(self):
-        repr_parts = [
-            '<',
-            self.__class__.__name__,
-        ]
+        repr_parts = ['<', type(self).__name__]
         
         parameter_name = self.parameter_name
         repr_parts.append(' parameter_name = ')
@@ -3292,7 +3380,7 @@ def create_value_parameter_converter(parameter):
 
 
 def check_command_coroutine(
-    func,
+    function,
     allow_coroutine_generator_functions,
     allow_args_parameters,
     allow_keyword_only_parameters,
@@ -3303,7 +3391,7 @@ def check_command_coroutine(
     
     Parameters
     ----------
-    func : `async-callable`
+    function : `async-callable`
         Command coroutine.
     allow_coroutine_generator_functions : `bool`
         Whether coroutine generator functions are allowed.
@@ -3326,12 +3414,12 @@ def check_command_coroutine(
     Raises
     ------
     TypeError
-        - If `func` is not async callable, neither cannot be instanced to async.
-        - If `func` accepts keyword only parameters.
-        - If `func` accepts `*args`.
-        - If `func` accepts `**kwargs`.
+        - If `function` is not async callable, neither cannot be instanced to async.
+        - If `function` accepts keyword only parameters.
+        - If `function` accepts `*positional_parameters`.
+        - If `function` accepts `**keyword_parameters`.
     """
-    analyzer = CallableAnalyzer(func)
+    analyzer = CallableAnalyzer(function)
     if analyzer.is_async() or (allow_coroutine_generator_functions and analyzer.is_async_generator()):
         real_analyzer = analyzer
         should_instance = False
@@ -3340,10 +3428,10 @@ def check_command_coroutine(
         analyzer.can_instance_to_async_callable() or
         (allow_coroutine_generator_functions and analyzer.can_instance_to_async_generator())
     ):
-        real_analyzer = CallableAnalyzer(func.__call__, as_method = True)
+        real_analyzer = CallableAnalyzer(function.__call__, as_method = True)
         if (not real_analyzer.is_async()) and (not real_analyzer.is_async_generator()):
             raise TypeError(
-                f'`func` is not `async-callable` and cannot be instanced to `async` either, got {func!r}.'
+                f'`func` is not `async-callable` and cannot be instanced to `async` either, got {function!r}.'
             )
         
         should_instance = True
@@ -3352,7 +3440,7 @@ def check_command_coroutine(
         raise TypeError(
             f'`func` is not `async-callable` '
             f'{"nor a coroutine generator function " if allow_coroutine_generator_functions else ""}'
-            f'and cannot be instanced to `async` either, got {func!r}.'
+            f'and cannot be instanced to `async` either, got {function!r}.'
         )
     
     
@@ -3378,13 +3466,13 @@ def check_command_coroutine(
     return analyzer, real_analyzer, should_instance
 
 
-def get_slash_command_parameter_converters(func, parameter_configurers):
+def get_slash_command_parameter_converters(function, parameter_configurers):
     """
     Parses the given `func`'s parameters.
     
     Parameters
     ----------
-    func : `async-callable`
+    function : `async-callable`
         The function used by a ``SlashCommand``.
     parameter_configurers : `None`, `dict` of (`str`, ``ApplicationCommandParameterConfigurerWrapper``) items
         Parameter configurers to overwrite annotations.
@@ -3399,11 +3487,11 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
     Raises
     ------
     TypeError
-        - If `func` is not async callable, neither cannot be instanced to async.
-        - If `func` accepts keyword only parameters.
-        - If `func` accepts `*args`.
-        - If `func` accepts `**kwargs`.
-        - If `func` accepts more than `27` parameters.
+        - If `function` is not async callable, neither cannot be instanced to async.
+        - If `function` accepts keyword only parameters.
+        - If `function` accepts `*positional_parameters`.
+        - If `function` accepts `**keyword_parameters`.
+        - If `function` accepts more than `27` parameters.
         - If a parameter's `annotation_value` is `list`, but it's elements do not match the
             `tuple` (`str`, `str`, `int`) pattern.
         - If a parameter's `annotation_value` is `dict`, but it's items do not match the
@@ -3418,7 +3506,7 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
         - If a parameter's `choice` name is duped.
         - If a parameter's `choice` values are mixed types.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False, False, False)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(function, True, False, False, False)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -3448,18 +3536,18 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
     parameter_converters = tuple(parameter_converters)
     
     if should_instance:
-        func = analyzer.instance()
+        function = analyzer.instance()
     
-    return func, parameter_converters
+    return function, parameter_converters
 
 
-def get_component_command_parameter_converters(func):
+def get_component_command_parameter_converters(function):
     """
     Parses the given `func`'s parameters.
     
     Parameters
     ----------
-    func : `async-callable`
+    function : `async-callable`
         The function used by a ``ComponentCommand``.
     
     Returns
@@ -3472,12 +3560,12 @@ def get_component_command_parameter_converters(func):
     Raises
     ------
     TypeError
-        - If `func` is not async callable, neither cannot be instanced to async.
-        - If `func` accepts keyword only parameters.
-        - If `func` accepts `*args`.
-        - If `func` accepts `**kwargs`.
+        - If `function` is not async callable, neither cannot be instanced to async.
+        - If `function` accepts keyword only parameters.
+        - If `function` accepts `*positional_parameters`.
+        - If `function` accepts `**keyword_parameters`.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False, False, False)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(function, True, False, False, False)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -3501,23 +3589,23 @@ def get_component_command_parameter_converters(func):
     parameter_converters = tuple(parameter_converters)
     
     if should_instance:
-        func = analyzer.instance()
+        function = analyzer.instance()
     
-    return func, parameter_converters
+    return function, parameter_converters
 
 
-def get_context_command_parameter_converters(func):
+def get_context_command_parameter_converters(function):
     """
     Parses the given `func`'s parameters.
     
     Parameters
     ----------
-    func : `async-callable`
+    function : `async-callable`
         The function used by a ``SlashCommand``.
     
     Returns
     -------
-    func : `async-callable`
+    function : `async-callable`
         The converted function.
     parameter_converters : `tuple` of ``ParameterConverter``
         Parameter converters for the given `func` in order.
@@ -3525,14 +3613,14 @@ def get_context_command_parameter_converters(func):
     Raises
     ------
     TypeError
-        - If `func` is not async callable, neither cannot be instanced to async.
-        - If `func` accepts keyword only parameters.
-        - If `func` accepts `*args`.
-        - If `func` accepts `**kwargs`.
+        - If `function` is not async callable, neither cannot be instanced to async.
+        - If `function` accepts keyword only parameters.
+        - If `function` accepts `*positional_parameters`.
+        - If `function` accepts `**keyword_parameters`.
     ValueError
         - If any parameter is not internal.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False, False, False)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(function, True, False, False, False)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -3558,18 +3646,18 @@ def get_context_command_parameter_converters(func):
     parameter_converters = tuple(parameter_converters)
     
     if should_instance:
-        func = analyzer.instance()
+        function = analyzer.instance()
     
-    return func, parameter_converters
+    return function, parameter_converters
 
 
-def get_application_command_parameter_auto_completer_converters(func):
+def get_application_command_parameter_auto_completer_converters(function):
     """
     Parses the given `func`'s parameters.
     
     Parameters
     ----------
-    func : `async-callable`
+    function : `async-callable`
         The function used by a ``SlashCommand``.
     
     Returns
@@ -3582,14 +3670,14 @@ def get_application_command_parameter_auto_completer_converters(func):
     Raises
     ------
     TypeError
-        - If `func` is not async callable, neither cannot be instanced to async.
-        - If `func` accepts keyword only parameters.
-        - If `func` accepts `*args`.
-        - If `func` accepts `**kwargs`.
+        - If `function` is not async callable, neither cannot be instanced to async.
+        - If `function` accepts keyword only parameters.
+        - If `function` accepts `*positional_parameters`.
+        - If `function` accepts `**keyword_parameters`.
     ValueError
         - If any parameter is not internal.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False, False, False)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(function, True, False, False, False)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -3615,18 +3703,18 @@ def get_application_command_parameter_auto_completer_converters(func):
     parameter_converters = tuple(parameter_converters)
     
     if should_instance:
-        func = analyzer.instance()
+        function = analyzer.instance()
     
-    return func, parameter_converters
+    return function, parameter_converters
 
 
-def get_form_submit_command_parameter_converters(func):
+def get_form_submit_command_parameter_converters(function):
     """
-    Parses the given `func`'s parameters.
+    Parses the given `function`'s parameters.
     
     Parameters
     ----------
-    func : `async-callable`
+    function : `async-callable`
         The function used by a ``FormSubmitCommand``.
     
     Returns
@@ -3635,19 +3723,19 @@ def get_form_submit_command_parameter_converters(func):
         The converted function.
     positional_parameter_converters : `tuple` of ``ParameterConverter``
         Parameter converters for the given `func` in order.
-    multi_parameter_converter : ``ParameterConverter``
-         Parameter converter for `*args` parameter.
+    multi_parameter_converter : `None | ParameterConverter`
+         Parameter converter for `*positional_parameters` parameter.
     keyword_parameter_converters : `tuple` of ``ParameterConverter``
         Parameter converters for the given `func` for it's keyword parameters.
     
     Raises
     ------
     TypeError
-        - If `func` is not async callable, neither cannot be instanced to async.
-        - If `func` accepts `*args`.
-        - If `func` accepts `**kwargs`.
+        - If `function` is not async callable, neither cannot be instanced to async.
+        - If `function` accepts `*positional_parameters`.
+        - If `function` accepts `**keyword_parameters`.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, True, True, False)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(function, True, True, True, False)
     
     positional_parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -3671,7 +3759,9 @@ def get_form_submit_command_parameter_converters(func):
     positional_parameter_converters = tuple(positional_parameter_converters)
     
     keyword_parameters = real_analyzer.get_non_reserved_keyword_only_parameters()
-    keyword_parameter_converters = tuple(FormFieldKeywordParameterConverter(parameter) for parameter in keyword_parameters)
+    keyword_parameter_converters = tuple(
+        FormFieldKeywordParameterConverter(parameter) for parameter in keyword_parameters
+    )
     
     args_parameter = real_analyzer.args_parameter
     if (args_parameter is None):
@@ -3680,6 +3770,6 @@ def get_form_submit_command_parameter_converters(func):
         multi_parameter_converter = FormFieldMultiParameterConverter(args_parameter)
     
     if should_instance:
-        func = analyzer.instance()
+        function = analyzer.instance()
     
-    return func, positional_parameter_converters, multi_parameter_converter, keyword_parameter_converters
+    return function, positional_parameter_converters, multi_parameter_converter, keyword_parameter_converters

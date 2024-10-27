@@ -1,15 +1,16 @@
 __all__ = ('SlashCommand',)
 
-from itertools import zip_longest
 from warnings import warn
 
 from scarletio import copy_docs, export
 
+from .....discord.application import ApplicationIntegrationType
 from .....discord.application_command import ApplicationCommandTargetType, INTEGRATION_CONTEXT_TYPES_ALL
 from .....discord.application_command.application_command.constants import (
     OPTIONS_MAX as APPLICATION_COMMAND_OPTIONS_MAX
 )
-from .....discord.events.handling_helpers import Router, check_name, route_name, route_value
+from .....discord.events.handling_helpers import check_name
+from .....discord.permission import Permission
 
 from ...constants import (
     APPLICATION_COMMAND_CATEGORY_DEEPNESS_START, APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND,
@@ -22,7 +23,9 @@ from ...interfaces.command import CommandInterface
 from ...interfaces.nestable import NestableInterface
 from ...interfaces.self_reference import SelfReferenceInterface
 from ...response_modifier import ResponseModifier
-from ...utils import _check_maybe_route, raw_name_to_display
+from ...utils import (
+    UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_INHERIT, UNLOADING_BEHAVIOUR_KEEP, raw_name_to_display
+)
 from ...wrappers import CommandWrapper, get_parameter_configurers
 
 from ..command_base_application_command import CommandBaseApplicationCommand
@@ -47,28 +50,39 @@ class SlashCommand(
     
     Attributes
     ----------
-    _exception_handlers : `None`, `list` of `CoroutineFunction`
-        Exception handlers added with ``.error`` to the interaction handler.
-        
-        Same as ``Slasher._exception_handlers``.
+    _auto_completers : `None | list<SlashCommandParameterAutoCompleter>`
+        Auto completer functions.
     
-    _parent_reference : `None`, ``WeakReferer``
+    _command : `None | SlashCommandFunction`
+        The command of the slash command.
+    
+    _exception_handlers : `None | list<CoroutineFunction>`
+        Exception handlers added with ``.error`` to the interaction handler.
+    
+    _parent_reference : `None | WeakReferer<SelfReferenceInterface>`
         Reference to the slasher application command's parent.
     
-    name : `str`
-        Application command name. It's length can be in range [1:32].
-    
-    _permission_overwrites : `None`, `dict` of (`int`, `list` of ``ApplicationCommandPermissionOverwrite``)
+    _permission_overwrites : `None | dict<int, list<ApplicationCommandPermissionOverwrite>>
         Permission overwrites applied to the slash command.
     
-    _registered_application_command_ids : `None`, `dict` of (`int`, `int`) items
+    _registered_application_command_ids : `None | dict<int, int>`
         The registered application command ids, which are matched by the command's schema.
         
         If empty set as `None`, if not then the keys are the respective guild's id and the values are the application
         command id.
     
-    _schema : `None`, ``ApplicationCommand``
+    _schema : `None | ApplicationCommand`
         Internal slot used by the ``.get_schema`` method.
+    
+    _self_reference : `None | WeakReferer<instance>`
+        Back reference to the slasher application command.
+        
+        Used by sub commands to access the parent entity.
+    
+    _sub_commands : `None | dict<str, SlashCommandFunction | SlashCommandCategory>`
+        Sub-commands of the slash command.
+        
+        Mutually exclusive with the ``._command`` parameter.
     
     _unloading_behaviour : `int`
         Behaviour what describes what should happen when the command is removed from the slasher.
@@ -85,91 +99,59 @@ class SlashCommand(
         | UNLOADING_BEHAVIOUR_INHERIT   | 2     |
         +-------------------------------+-------+
     
-    global_ : `bool`
-        Whether the command is a global command.
-        
-        Global commands have their ``.guild_ids`` set as `None`.
-    
-    guild_ids : `None`, `set` of `int`
-        The ``Guild``'s id to which the command is bound to.
-    
-    integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
-        The places where the application command shows up. `None` means all.
-    
-    integration_types : `None | tuple<ApplicationIntegrationType>`
-        The options where the application command can be integrated to.
-    
-    nsfw : `None,` bool`
-        Whether the application command is only allowed in nsfw channels.
-    
-    required_permissions : `None`, ``Permission``
-        The required permissions to use the application command inside of a guild.
-    
-    _auto_completers : `None`, `list` of ``SlashCommandParameterAutoCompleter``
-        Auto completer functions.
-    
-    _command : `None`, ``SlashCommandFunction``
-        The command of the slash command.
-    
-    _self_reference : `None`, ``WeakReferer``
-        Back reference to the slasher application command.
-        
-        Used by sub commands to access the parent entity.
-    
-    _sub_commands : `None`, `dict` of (`str`, (``SlashCommandFunction`` or ``SlashCommandCategory``)) items
-        Sub-commands of the slash command.
-        
-        Mutually exclusive with the ``._command`` parameter.
-    
     default : `bool`
         Whether the command is the default command in it's category.
     
     description : `str`
         Application command description. It's length can be in range [2:100].
     
+    global_ : `bool`
+        Whether the command is a global command.
+        
+        Global commands have their ``.guild_ids`` set as `None`.
     
-    Class Attributes
-    ----------------
-    COMMAND_COMMAND_NAME : `str`
-        The command's name defining parameter's name.
-    COMMAND_PARAMETER_NAMES : `tuple` of `str`
-        All parameters names accepted by ``.__new__``
-    COMMAND_NAME_NAME : `str`
-        The command's "command" defining parameter's name.
+    guild_ids : `None | set<int>`
+        The ``Guild``'s id to which the command is bound to.
+    
+    integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
+        The places where the application command shows up.
+    
+    integration_types : `None | tuple<ApplicationIntegrationType>`
+        The options where the application command can be integrated to.
+    
+    name : `str`
+        Application command name. It's length can be in range [1:32].
+    
+    nsfw : `None | bool`
+        Whether the application command is only allowed in nsfw channels.
+    
+    required_permissions : ``Permission``
+        The required permissions to use the application command inside of a guild.
     
     Notes
     -----
-    ``SlashCommand``-s are weakreferable.
+    Slash commands are weakreferable.
     """
     __slots__ = (
-        '__weakref__', '_auto_completers', '_command', '_self_reference', '_sub_commands', 'description'
+        '__weakref__', '_auto_completers', '_command', '_self_reference', '_sub_commands', 'default', 'description'
     )
-    
-    SLASH_COMMAND_PARAMETER_NAMES = (
-        *CommandBaseApplicationCommand.COMMAND_PARAMETER_NAMES,
-        'description',
-        'is_default',
-    )
-    
-    @CommandBaseApplicationCommand.target.getter
-    def target(self):
-        return ApplicationCommandTargetType.chat
     
     
     def __new__(
         cls,
-        func,
+        function,
         name = None,
-        description = None,
-        is_global = None,
-        guild = None,
-        is_default = None,
-        delete_on_unload = None,
+        *,
         allow_in_dm = ...,
-        required_permissions = None,
-        nsfw = None,
-        integration_context_types = None,
-        integration_types = None,
+        delete_on_unload = ...,
+        description = ...,
+        guild = ...,
+        integration_context_types = ...,
+        integration_types = ...,
+        is_default = ...,
+        is_global = ...,
+        nsfw = ...,
+        required_permissions = ...,
         **keyword_parameters,
     ):
         """
@@ -177,60 +159,56 @@ class SlashCommand(
         
         Parameters
         ----------
-        func : `None`, `async-callable` = `None`, Optional
+        function : `None | async-callable`
             The function used as the command when using the respective slash command.
         
-        name : `None`, `str`, `tuple` of (`str`, `Ellipsis`, `None`) = `None`, Optional
+        name : `None | str` = `None`, Optional
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
             instead.
         
-        description : `None`, `object`, `tuple` of (`None`, `Ellipsis`, `object`) = `None`, Optional
-            Description to use instead of the function's docstring.
-        
-        is_global : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
-            Whether the slash command is global. Defaults to `False`.
-        
-        guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
-                `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)) = `None`
-                , Optional
-            To which guild(s) the command is bound to.
-        
-        is_global : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
-            Whether the slash command is the default command in it's category.
-        
-        delete_on_unload : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
+        delete_on_unload : `bool`, Optional (Keyword only)
             Whether the command should be deleted from Discord when removed.
         
-        required_permissions : `None`, `int`, ``Permission``, `tuple` of (`None`, `int`, ``Permission``,
-                `Ellipsis`) = `None`, Optional
-            The required permissions to use the application command inside of a guild.
+        description : `str | object`, Optional (Keyword only)
+            Description to use instead of the function's docstring.
         
-        nsfw : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
+        guild : `int | Guild | (list | set)<int | Guild>`, Optional (Keyword only)
+            To which guild(s) the command is bound to.
+        
+        integration_context_types : `None | ApplicationCommandIntegrationContextType | int | str | \
+                iterable<ApplicationCommandIntegrationContextType | int | str>`, Optional (Keyword only)
+            The places where the application command shows up.
+        
+        integration_types : `None | ApplicationIntegrationType | int | str | \
+                iterable<ApplicationIntegrationType | int | str>`, Optional
+            The options where the application command can be integrated to.
+        
+        is_default : `bool`, Optional (Keyword only)
+            Whether the context command is the default command in it's category.
+        
+        is_global : `None | bool` = `None`, Optional
+            Whether the slash command is the default command in it's category.
+        
+        nsfw : `None`, Optional (Keyword only)
             Whether the application command is only allowed in nsfw channels.
         
-        integration_context_types : `None`, ``ApplicationCommandIntegrationContextType``, `int`, `str`, \
-                `iterable<ApplicationCommandIntegrationContextType | int | str>`, Optional
-        
-        integration_types : `None`, ``ApplicationIntegrationType``, `int`, `str`, \
-                `iterable<ApplicationIntegrationType | int | str>`, Optional
-            The options where the application command can be integrated to.
+        required_permissions : `int | Permission`, Optional (Keyword only)
+            The required permissions to use the application command inside of a guild.
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters.
         
         Other Parameters
         ----------------
-        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy``, \
-                `list` of (`str`, ``UserBase``, ``Role`` ), Optional (Keyword only)
+        allowed_mentions : `None | str, UserBase | Role | AllowedMentionProxy | list<str | UserBase | Role> \
+                , Optional (Keyword only)
             Which user or role can the response message ping (or everyone).
+        
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the response message should only be shown for the invoking user.
+        
         wait_for_acknowledgement : `bool`, Optional (Keyword only)
             Whether acknowledge tasks should be ensure asynchronously.
-        
-        Returns
-        -------
-        self : ``SlashCommand``, ``Router``
         
         Raises
         ------
@@ -239,13 +217,17 @@ class SlashCommand(
         ValueError
             If a parameter's value is incorrect.
         """
-        if (func is not None) and isinstance(func, CommandWrapper):
-            command, wrappers = func.fetch_function_and_wrappers_back()
+        if (function is not None) and isinstance(function, CommandWrapper):
+            command_function, wrappers = function.fetch_function_and_wrappers_back()
         else:
-            command = func
+            command_function = function
             wrappers = None
         
-        if allow_in_dm is not ...:
+        # Pre validate
+        name = _validate_name(name)
+        
+        # allow_in_dm
+        if (allow_in_dm is not ...):
             warn(
                 (
                     '`allow_in_dm` parameter is deprecated and will be removed in 2024 November. '
@@ -254,303 +236,153 @@ class SlashCommand(
                 FutureWarning,
                 stacklevel = 5,
             )
-        
-        # Check for routing
-        
-        route_to = 0
-        name, route_to = _check_maybe_route('name', name, route_to, _validate_name)
-        description, route_to = _check_maybe_route('description', description, route_to, None)
-        is_global, route_to = _check_maybe_route('is_global', is_global, route_to, _validate_is_global)
-        guild_ids, route_to = _check_maybe_route('guild', guild, route_to, _validate_guild)
-        is_default, route_to = _check_maybe_route('is_default', is_default, route_to, _validate_is_default)
-        unloading_behaviour, route_to = _check_maybe_route(
-            'delete_on_unload', delete_on_unload, route_to, _validate_delete_on_unload
-        )
-        allow_in_dm, route_to = _check_maybe_route(
-            'allow_in_dm',
-            None if allow_in_dm is ... else allow_in_dm,
-            route_to,
-            _validate_allow_in_dm,
-        )
-        nsfw, route_to = _check_maybe_route('nsfw', nsfw, route_to, _validate_nsfw)
-        required_permissions, route_to = _check_maybe_route(
-            'required_permissions', required_permissions, route_to, _validate_required_permissions
-        )
-        integration_context_types, route_to = _check_maybe_route(
-            'integration_context_types', integration_context_types, route_to, _validate_integration_context_types,
-        )
-        integration_types, route_to = _check_maybe_route(
-            'integration_types', integration_types, route_to, _validate_integration_types,
-        )
-        
-        if route_to:
-            name = route_name(name, route_to)
-            name = [raw_name_to_display(check_name(command, sub_name)) for sub_name in name]
             
-            default_description = _generate_description_from(command, None, None)
-            is_global = route_value(is_global, route_to)
-            guild_ids = route_value(guild_ids, route_to)
-            is_default = route_value(is_default, route_to)
-            unloading_behaviour = route_value(unloading_behaviour, route_to)
-            allow_in_dm = route_value(allow_in_dm, route_to)
-            nsfw = route_value(nsfw, route_to)
-            required_permissions = route_value(required_permissions, route_to)
-            integration_context_types = route_value(integration_context_types, route_to)
-            integration_types = route_value(integration_types, route_to)
-            
-            description = [
-                (
-                    _generate_description_from(command, sub_name, description)
-                    if ((description is None) or (description is not default_description)) else
-                    default_description
-                )
-                for sub_name, description in zip_longest(name, () if description is None else description)
-            ]
+            allow_in_dm = _validate_allow_in_dm(allow_in_dm)
         
+        # delete_on_unload
+        if delete_on_unload is ...:
+            unloading_behaviour = UNLOADING_BEHAVIOUR_INHERIT
+        elif _validate_delete_on_unload(delete_on_unload):
+            unloading_behaviour = UNLOADING_BEHAVIOUR_DELETE
         else:
-            name = check_name(command, name)
-            name = raw_name_to_display(name)
-            
-            description = _generate_description_from(command, name, description)
+            unloading_behaviour = UNLOADING_BEHAVIOUR_KEEP
         
+        # description (no pre-validation)
+        if description is ...:
+            description = None
+        
+        # guild
+        if guild is ...:
+            guild_ids = None
+        else:
+            guild_ids = _validate_guild(guild)
+        
+        # integration_context_types
+        if integration_context_types is ...:
+            integration_context_types = INTEGRATION_CONTEXT_TYPES_ALL
+        else:
+            integration_context_types = _validate_integration_context_types(integration_context_types)
+        
+        # integration_types
+        if integration_types is ...:
+            integration_types = (ApplicationIntegrationType.guild_install,)
+        else:
+            integration_types = _validate_integration_types(integration_types)
+        
+        # is_default
+        if is_default is ...:
+            is_default = False
+        else:
+            is_default = _validate_is_default(is_default)
+        
+        # is_global
+        if is_global is ...:
+            is_global = False
+        else:
+            is_global = _validate_is_global(is_global)
+        
+        # nsfw
+        if nsfw is ...:
+            nsfw = False
+        else:
+            nsfw = _validate_nsfw(nsfw)
+        
+        # required_permissions
+        if required_permissions is ...:
+            required_permissions = Permission()
+        else:
+            required_permissions = _validate_required_permissions(required_permissions)
         
         # Check extra parameters
         response_modifier = ResponseModifier(keyword_parameters)
-        
         if keyword_parameters:
             raise TypeError(
                 f'Extra or unused parameters: {keyword_parameters!r}.'
             )
         
+        # Post validate
+        name = check_name(command_function, name)
+        name = raw_name_to_display(name)
         
-        if command is None:
+        description = _generate_description_from(command_function, name, description)
+        
+        if command_function is None:
             parameter_converters = None
         else:
             parameter_configurers = get_parameter_configurers(wrappers)
-            command, parameter_converters = get_slash_command_parameter_converters(command, parameter_configurers)
-    
+            command_function, parameter_converters = get_slash_command_parameter_converters(command_function, parameter_configurers)
         
-        if route_to:
-            router = []
-            
-            for (
-                name, description, is_global, guild_ids, is_default, unloading_behaviour,
-                nsfw, required_permissions, allow_in_dm, integration_context_types, integration_types
-            ) in zip(
-                name, description, is_global, guild_ids, is_default, unloading_behaviour,
-                nsfw, required_permissions, allow_in_dm, integration_context_types, integration_types
-            ):
-                
-                if is_global and (guild_ids is not None):
-                    raise TypeError(
-                        f'`is_global` and `guild` contradict each other, got is_global = {is_global!r}, '
-                        f'guild = {guild!r}.'
-                    )
-                
-                integration_context_types = _maybe_exclude_dm_from_integration_context_types(
-                    allow_in_dm, integration_context_types
-                )
-                
-                if is_global:
-                    if integration_context_types is None:
-                        integration_context_types = INTEGRATION_CONTEXT_TYPES_ALL
-                else:
-                    integration_types = None
-                    integration_context_types = None
-                
-                if (command is None):
-                    command_function = None
-                    sub_commands = {}
-                else:
-                    command_function = SlashCommandFunction(
-                        command, parameter_converters, name, description, response_modifier, is_default
-                    )
-                    sub_commands = None
-                
-                self = object.__new__(cls)
-                self._command = command_function
-                self._sub_commands = sub_commands
-                self.description = description
-                self.guild_ids = guild_ids
-                self.global_ = is_global
-                self.name = name
-                self._schema = None
-                self._registered_application_command_ids = None
-                self.default = is_default
-                self._unloading_behaviour = unloading_behaviour
-                self.nsfw = nsfw
-                self.required_permissions = required_permissions
-                self._permission_overwrites = None
-                self._auto_completers = None
-                self._exception_handlers = None
-                self._parent_reference = None
-                self._self_reference = None
-                self.integration_context_types = integration_context_types
-                self.integration_types = integration_types
-                
-                if (command_function is not None):
-                    command_function._parent_reference = self.get_self_reference()
-                
-                if (wrappers is not None):
-                    for wrapper in wrappers:
-                        wrapper.apply(self)
-                
-                router.append(self)
-            
-            warn(
-                (
-                    f'Routing commands with tuple parameters is deprecated and will be removed in 2024 Jun. '
-                    f'Please use multiple command decorators instead.'
-                ),
-                FutureWarning,
-                stacklevel = 5,
+        if is_global and (guild_ids is not None):
+            raise TypeError(
+                f'`is_global` and `guild` contradict each other, got is_global = {is_global!r}, '
+                f'guild = {guild!r}.'
             )
-            
-            return Router(router)
-        else:
-            if is_global and (guild_ids is not None):
-                raise TypeError(
-                    f'`is_global` and `guild` contradict each other, got is_global = {is_global!r}, '
-                    f'guild = {guild!r}.'
-                )
-            
+        
+        if (allow_in_dm is not ...):
             integration_context_types = _maybe_exclude_dm_from_integration_context_types(
                 allow_in_dm, integration_context_types
             )
-            
-            if is_global:
-                if integration_context_types is None:
-                    integration_context_types = INTEGRATION_CONTEXT_TYPES_ALL
-            else:
-                integration_types = None
-                integration_context_types = None
-            
-            if (command is None):
-                sub_commands = {}
-                command_function = None
-            else:
-                command_function = SlashCommandFunction(
-                    command, parameter_converters, name, description, response_modifier, is_default
-                )
-                sub_commands = None
-            
-            self = object.__new__(cls)
-            self._command = command_function
-            self._sub_commands = sub_commands
-            self.description = description
-            self.guild_ids = guild_ids
-            self.global_ = is_global
-            self.name = name
-            self._schema = None
-            self._registered_application_command_ids = None
-            self.default = is_default
-            self._unloading_behaviour = unloading_behaviour
-            self.nsfw = nsfw
-            self.required_permissions = required_permissions
-            self._permission_overwrites = None
-            self._auto_completers = None
-            self._exception_handlers = None
-            self._parent_reference = None
-            self._self_reference = None
-            self.integration_context_types = integration_context_types
-            self.integration_types = integration_types
-            
-            if (command_function is not None):
-                command_function._parent_reference = self.get_self_reference()
-            
-            if (wrappers is not None):
-                for wrapper in wrappers:
-                    wrapper.apply(self)
-            
-            return self
-    
-    
-    @copy_docs(CommandBaseApplicationCommand._build_repr_body_into)
-    def _build_repr_body_into(self, repr_parts):
-        CommandBaseApplicationCommand._build_repr_body_into(self, repr_parts)
         
+        if not is_global:
+            integration_types = None
+            integration_context_types = None
+        
+        if (command_function is None):
+            slash_command_function = None
+        else:
+            slash_command_function = SlashCommandFunction(
+                command_function, parameter_converters, name, description, response_modifier, is_default
+            )
+        
+        # Construct
+        self = object.__new__(cls)
+        self._command = slash_command_function
+        self._sub_commands = None
+        self.description = description
+        self.guild_ids = guild_ids
+        self.global_ = is_global
+        self.name = name
+        self._schema = None
+        self._registered_application_command_ids = None
+        self.default = is_default
+        self._unloading_behaviour = unloading_behaviour
+        self.nsfw = nsfw
+        self.required_permissions = required_permissions
+        self._permission_overwrites = None
+        self._auto_completers = None
+        self._exception_handlers = None
+        self._parent_reference = None
+        self._self_reference = None
+        self.integration_context_types = integration_context_types
+        self.integration_types = integration_types
+        
+        if (slash_command_function is not None):
+            slash_command_function._parent_reference = self.get_self_reference()
+        
+        if (wrappers is not None):
+            for wrapper in wrappers:
+                wrapper.apply(self)
+        
+        return self
+    
+    
+    @copy_docs(CommandBaseApplicationCommand._put_repr_parts_into)
+    def _put_repr_parts_into(self, repr_parts):
+        repr_parts = CommandBaseApplicationCommand._put_repr_parts_into(self, repr_parts)
+        
+        # default
+        default = self.default
+        if default:
+            repr_parts.append(', default = ')
+            repr_parts.append(repr(default))
+        
+        # description
         description = self.description
         if self.name != description:
              repr_parts.append(', description = ')
              repr_parts.append(repr(description))
-    
-    
-    @copy_docs(CommandBaseApplicationCommand.invoke)
-    async def invoke(self, client, interaction_event):
-        options = interaction_event.interaction.options
         
-        command = self._command
-        if (command is not None):
-            await command.invoke(client, interaction_event, options)
-            return
-        
-        if (options is None) or (len(options) != 1):
-            return
-        
-        option = options[0]
-        
-        try:
-            sub_command = self._sub_commands[option.name]
-        except KeyError:
-            pass
-        else:
-            await sub_command.invoke(client, interaction_event, option.options)
-            return
-        
-        # Do not put this into the `except` branch.
-        await handle_command_exception(
-            self,
-            client,
-            interaction_event,
-            SlashCommandParameterConversionError(
-                None,
-                option.name,
-                'sub-command',
-                [*self._sub_commands.keys()],
-            )
-        )
-        return
-    
-    
-    @copy_docs(CommandBaseApplicationCommand.copy)
-    def copy(self):
-        new = CommandBaseApplicationCommand.copy(self)
-        
-        # _auto_completers
-        auto_completers = self._auto_completers
-        if (auto_completers is not None):
-            auto_completers = auto_completers.copy()
-        new._auto_completers = auto_completers
-        
-        # _command
-        command = self._command
-        if (command is not None):
-            command = command.copy()
-        new._command = command
-        
-        # _self_reference
-        new._self_reference = None
-        
-        # _sub_commands
-        sub_commands = self._sub_commands
-        if (sub_commands is not None):
-            sub_commands = {category_name: category.copy() for category_name, category in sub_commands.items()}
-        new._sub_commands = sub_commands
-        
-        # default
-        new.default = self.default
-        
-        # description
-        new.description = self.description
-        
-        # ---- POST LINKING ----
-        
-        if (sub_commands is not None):
-            for sub_command in sub_commands.values():
-                sub_command._parent_reference = new.get_self_reference()
-        
-        return new
-    
+        return repr_parts
     
     
     @copy_docs(CommandBaseApplicationCommand.__hash__)
@@ -621,6 +453,99 @@ class SlashCommand(
         return True
     
     
+    @copy_docs(CommandBaseApplicationCommand.invoke)
+    async def invoke(self, client, interaction_event):
+        options = interaction_event.interaction.options
+        
+        command = self._command
+        if (command is not None):
+            await command.invoke(client, interaction_event, options)
+            return
+        
+        sub_commands = self._sub_commands
+        if (sub_commands is None):
+            return
+        
+        if (options is None) or (len(options) != 1):
+            return
+        
+        option = options[0]
+        
+        try:
+            sub_command = sub_commands[option.name]
+        except KeyError:
+            pass
+        else:
+            await sub_command.invoke(client, interaction_event, option.options)
+            return
+        
+        # Do not put this into the `except` branch.
+        await handle_command_exception(
+            self,
+            client,
+            interaction_event,
+            SlashCommandParameterConversionError(
+                None,
+                option.name,
+                'sub-command',
+                [*sub_commands.keys()],
+            )
+        )
+        return
+    
+    
+    @copy_docs(CommandBaseApplicationCommand.copy)
+    def copy(self):
+        new = CommandBaseApplicationCommand.copy(self)
+        
+        # _auto_completers
+        auto_completers = self._auto_completers
+        if (auto_completers is not None):
+            auto_completers = auto_completers.copy()
+        new._auto_completers = auto_completers
+        
+        # _command
+        command = self._command
+        if (command is not None):
+            command = command.copy()
+        new._command = command
+        
+        # _self_reference
+        new._self_reference = None
+        
+        # _sub_commands
+        sub_commands = self._sub_commands
+        if (sub_commands is not None):
+            sub_commands = {name: category.copy() for name, category in sub_commands.items()}
+        new._sub_commands = sub_commands
+        
+        # default
+        new.default = self.default
+        
+        # description
+        new.description = self.description
+        
+        # ---- POST LINKING ----
+        
+        if (sub_commands is not None):
+            for sub_command in sub_commands.values():
+                sub_command._parent_reference = new.get_self_reference()
+        
+        return new
+    
+    
+    @CommandBaseApplicationCommand.target.getter
+    def target(self):
+        return ApplicationCommandTargetType.chat
+
+    
+    @copy_docs(CommandInterface.get_command_function)
+    def get_command_function(self):
+        slash_command_function = self._command
+        if (slash_command_function is not None):
+            return slash_command_function.get_command_function()
+    
+    
     async def invoke_auto_completion(self, client, interaction_event, auto_complete_option):
         """
         Calls the respective auto completion function of the command.
@@ -631,10 +556,11 @@ class SlashCommand(
         ----------
         client : ``Client``
             The respective client who received the event.
+        
         interaction_event : ``InteractionEvent``
             The received interaction event.
-        auto_complete_option : ``ApplicationCommandAutocompleteInteraction``, \
-                ``ApplicationCommandAutocompleteInteractionOption``
+        
+        auto_complete_option : `InteractionMetadataApplicationCommandAutocomplete | InteractionOption`
             The option to autocomplete.
         """
         command_function = self._command
@@ -666,23 +592,29 @@ class SlashCommand(
     
     @copy_docs(CommandBaseApplicationCommand._get_schema_options)
     def _get_schema_options(self):
-        command = self._command
-        if command is None:
+        while True:
+            command = self._command
+            if (command is not None):
+                parameter_converters = command._parameter_converters
+                
+                options = None
+                for parameter_converter in parameter_converters:
+                    option = parameter_converter.as_option()
+                    if (option is not None):
+                        if (options is None):
+                            options = []
+                        
+                        options.append(option)
+                break
+            
             sub_commands = self._sub_commands
-            options = [sub_command.as_option() for sub_command in sub_commands.values()]
-        
-        else:
-            parameter_converters = command._parameter_converters
+            if (sub_commands is not None):
+                options = [sub_command.as_option() for name, sub_command in sorted(sub_commands.items())]
+                break
             
             options = None
-            for parameter_converter in parameter_converters:
-                option = parameter_converter.as_option()
-                if (option is not None):
-                    if (options is None):
-                        options = []
-                    
-                    options.append(option)
-    
+            break
+        
         return options
     
     
@@ -697,13 +629,13 @@ class SlashCommand(
         
         Returns
         -------
-        new : ``SlashCommandFunction``, ``SlashCommandCategory``
+        new : `SlashCommandFunction | SlashCommandCategory`
         """
         command = self._command
         if (command is not None):
             return command
         
-        return SlashCommandCategory(self, deepness)
+        return SlashCommandCategory(self.name, self.description, self.default, deepness)
     
     
     @copy_docs(NestableInterface._is_nestable)
@@ -714,11 +646,6 @@ class SlashCommand(
     @copy_docs(NestableInterface._make_command_instance_from_parameters)
     def _make_command_instance_from_parameters(self, function, positional_parameters, keyword_parameters):
         return type(self)(function, *positional_parameters, **keyword_parameters)
-    
-    
-    @copy_docs(NestableInterface._make_command_instance_from_class)
-    def _make_command_instance_from_class(self, klass):
-        return type(self).from_class(klass)
     
     
     @copy_docs(NestableInterface._store_command_instance)
@@ -746,21 +673,29 @@ class SlashCommand(
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
         sub_commands = self._sub_commands
-        if len(sub_commands) == APPLICATION_COMMAND_OPTIONS_MAX and (command.name not in sub_commands):
+        if (
+            (sub_commands is not None) and
+            (len(sub_commands) == APPLICATION_COMMAND_OPTIONS_MAX) and
+            (command.name not in sub_commands)
+        ):
             raise RuntimeError(
                 f'The {self!r} reached the maximal amount of children '
                 f'({APPLICATION_COMMAND_OPTIONS_MAX}).'
             )
         
-        if command.default:
+        if (sub_commands is not None) and command.default:
             for sub_command in sub_commands.values():
-                if sub_command.default:
+                if sub_command.default and (sub_command.name != command.name):
                     raise RuntimeError(
                         f'{self!r} already has a default command.'
                     )
         
         as_sub_command = command.as_sub_command(APPLICATION_COMMAND_CATEGORY_DEEPNESS_START)
         as_sub_command._parent_reference = self.get_self_reference()
+        
+        if sub_commands is None:
+            sub_commands = {}
+            self._sub_commands = sub_commands
         
         sub_commands[as_sub_command.name] = as_sub_command
         _reset_application_command_schema(self)
@@ -775,28 +710,40 @@ class SlashCommand(
     
     @copy_docs(CommandBaseApplicationCommand.get_real_command_count)
     def get_real_command_count(self):
-        if (self._command is None):
-            sub_commands = self._sub_commands
-            real_command_count = 0
+        while True:
+            if (self._command is not None):
+                real_command_count = 1
+                break
             
+            sub_commands = self._sub_commands
             if (sub_commands is not None):
+                real_command_count = 0
+                
                 for sub_command_or_category in sub_commands.values():
                     if isinstance(sub_command_or_category, SlashCommandFunction):
                         real_command_count += 1
-                    else:
-                        # Nesting more is not allowed by Discord.
-                        real_command_count += len(sub_command_or_category._sub_commands)
-        
-        else:
-            real_command_count = 1
+                        continue
+                    
+                    # Nesting more is not allowed by Discord.
+                    sub_commands = sub_command_or_category._sub_commands
+                    if (sub_commands is not None):
+                        real_command_count += len(sub_commands)
+                break
+            
+            real_command_count = 0
+            break
         
         return real_command_count
     
     
     @copy_docs(AutocompleteInterface._register_auto_completer)
     def _register_auto_completer(self, function, parameter_names):
-        slash_command_function = self._command
-        if slash_command_function is None:
+        while True:
+            slash_command_function = self._command
+            if (slash_command_function is not None):
+                auto_completer = slash_command_function._register_auto_completer(function, parameter_names)
+                break
+                
             auto_completer = self._make_auto_completer(function, parameter_names)
             self._store_auto_completer(auto_completer)
             
@@ -804,12 +751,11 @@ class SlashCommand(
             if (sub_commands is not None):
                 for sub_command in sub_commands.values():
                     sub_command._try_resolve_auto_completer(auto_completer)
-        
-        else:
-            auto_completer = slash_command_function._register_auto_completer(function, parameter_names)
+                break
+            
+            break
         
         _reset_application_command_schema(self)
-        
         return auto_completer
     
     
@@ -842,10 +788,3 @@ class SlashCommand(
             _reset_application_command_schema(self)
         
         return resolved
-
-    
-    @copy_docs(CommandInterface.get_command_function)
-    def get_command_function(self):
-        slash_command_function = self._command
-        if (slash_command_function is not None):
-            return slash_command_function.get_command_function()

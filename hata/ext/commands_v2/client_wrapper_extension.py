@@ -5,7 +5,6 @@ from scarletio import KeepType
 from ...discord.client.client_wrapper import ClientWrapper
 from ...discord.events.handling_helpers import _EventHandlerManagerRouter, Router
 
-from .command import Command
 from .command_processor import CommandProcessor
 
 
@@ -35,27 +34,6 @@ def commands_getter(manager_router):
     return handlers
 
 
-def from_class_constructor(klass):
-    """
-    Creates a command from the given class.
-    
-    Parameters
-    ----------
-    klass : `type`
-        The class to create a slash command from.
-    
-    Returns
-    -------
-    self : ``Command``, ``Router``
-    
-    Raises
-    ------
-    BaseException
-        Any exception raised by the respective ``Command`` constructor.
-    """
-    return Command.from_class(klass)
-
-
 @KeepType(ClientWrapper)
 class ClientWrapper:
     
@@ -69,4 +47,4 @@ class ClientWrapper:
         -------
         event_handler_manager_router : ``_EventHandlerManagerRouter``
         """
-        return _EventHandlerManagerRouter(self, commands_getter, from_class_constructor, Router)
+        return _EventHandlerManagerRouter(self, commands_getter, Router)

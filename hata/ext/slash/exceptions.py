@@ -527,7 +527,9 @@ class SlasherSyncError(BaseException):
     entity: ``SlashCommand``
         The entity, who's sync failed.
     """
-    def __init__(self, entity, err):
+    __slots__ = ('entity',)
+    
+    def __new__(cls, entity, err):
         """
         Creates a new slasher sync error exception.
         
@@ -535,9 +537,14 @@ class SlasherSyncError(BaseException):
         ----------
         entity: ``SlashCommand``
             The entity, who's sync failed.
+        
         err : ``BaseException``
             Source exception.
         """
+        self = BaseException.__new__(cls, entity)
         self.entity = entity
-        BaseException.__init__(self, entity)
         self.__cause__ = err
+        return self
+    
+    
+    __init__ = object.__init__

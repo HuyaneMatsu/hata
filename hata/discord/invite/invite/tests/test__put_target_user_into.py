@@ -22,7 +22,7 @@ def test__put_target_user_into(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None`, ``ClientUserBase``
+    input_value : `None | ClientUserBase`
         Input value to serialize.
     defaults : `bool`
         Whether fields with their default values should be included as well.

@@ -54,7 +54,7 @@ class InteractionCommandRouter(AutocompleteInterface, ExceptionHandlerInterface,
         if exceptions is not None:
             raise RuntimeError(
                 'One or more exception occurred while registering autocompleter.'
-            ) from CauseGroup(exceptions)
+            ) from CauseGroup(*exceptions)
         
         
         return type(self)(added_auto_completers)
@@ -95,7 +95,7 @@ class InteractionCommandRouter(AutocompleteInterface, ExceptionHandlerInterface,
         if exceptions is not None:
             raise RuntimeError(
                 'One or more exception occurred while registering exception handler.'
-            ) from CauseGroup(exceptions)
+            ) from CauseGroup(*exceptions)
         
         
         return exception_handler
@@ -145,7 +145,7 @@ class InteractionCommandRouter(AutocompleteInterface, ExceptionHandlerInterface,
         if exceptions is not None:
             raise RuntimeError(
                 'One or more exception occurred while nesting.'
-            ) from CauseGroup(exceptions)
+            ) from CauseGroup(*exceptions)
         
         
         return type(self)(commands)

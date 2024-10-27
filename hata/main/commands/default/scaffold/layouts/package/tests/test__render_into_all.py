@@ -1,8 +1,8 @@
 import vampytest
 
 from ..readme_rendering import (
-    render_readme_section_cli, render_readme_section_install, render_readme_section_project_into,
-    render_readme_section_scaffold, render_readme_section_structure_bot, render_readme_section_structure_bots,
+    render_readme_section_project_into, render_readme_section_running, render_readme_section_scaffold,
+    render_readme_section_structure_bot, render_readme_section_structure_bots,
     render_readme_section_structure_bots_init, render_readme_section_structure_cli,
     render_readme_section_structure_constants, render_readme_section_structure_directory_into,
     render_readme_section_structure_dot_env, render_readme_section_structure_gitignore_into,
@@ -31,8 +31,7 @@ from ..readme_rendering import (
 @vampytest.call_with(render_readme_section_structure_plugins, ('satori', ))
 @vampytest.call_with(render_readme_section_structure_plugins_init, ('satori', ))
 @vampytest.call_with(render_readme_section_structure_plugins_ping, ('satori',))
-@vampytest.call_with(render_readme_section_install, ())
-@vampytest.call_with(render_readme_section_cli, ('satori', ))
+@vampytest.call_with(render_readme_section_running, ('satori', ))
 @vampytest.call_with(render_readme_section_structure_constants, ('satori',))
 def test_renderer(function, parameters):
     """

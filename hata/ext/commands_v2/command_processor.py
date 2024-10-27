@@ -156,7 +156,7 @@ class CommandProcessor(EventWaitforBase):
     _prefix_raw : `str`, `tuple` of `str`, `callable`
         Raw prefix of the command processor.
     
-    _self_reference : `None`, ``WeakReferer`` to ``CommandProcessor``
+    _self_reference : `None | WeakReferer<instance>`
         Reference to the command processor itself.
     
     _unknown_command : `None`, `FunctionType`
@@ -974,28 +974,6 @@ class CommandProcessor(EventWaitforBase):
             
             if isinstance(command, Router):
                 command = command[0]
-        
-        self._add_command(command)
-        return command
-    
-    
-    def create_event_from_class(self, klass):
-        """
-        Breaks down the given class to it's class attributes and tries to add it as a command.
-    
-        Parameters
-        ----------
-        klass : `type`
-            The class, from what's attributes the command will be created.
-        
-        Returns
-        -------
-        command : ``Command``
-            The added command instance.
-        """
-        command = Command.from_class(klass)
-        if isinstance(command, Router):
-            command = command[0]
         
         self._add_command(command)
         return command

@@ -1,6 +1,7 @@
-__all__ = ()
+__all__ = ('HangType',)
 
 from ...bases import Preinstance as P, PreinstancedBase
+
 
 ACTIVITY_NAME_HANGING_DEFAULT = 'Right now, I\'m -'
 

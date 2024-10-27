@@ -13,8 +13,8 @@ FILE_PATH = join(PATH, '__init__.py')
 
 LISTED_ENTRIES = [
     '__init__.py',
-    'koishi.py',
     'satori',
+    'koishi.py',
     'parsee',
     'yuugi.txt',
     'link',
@@ -45,16 +45,16 @@ def is_file_mock(path):
     return path in FILES
 
 
-IMPORTED_PLUGINS = set()
+IMPORTED_PLUGINS = []
 
-EXPECTED_IMPORTED_PLUGINS = {
+EXPECTED_IMPORTED_PLUGINS = [
     f'{NAME}.koishi',
     f'{NAME}.satori',
-}
+]
 
 
 def import_plugin_mock(path):
-    IMPORTED_PLUGINS.add(path)
+    IMPORTED_PLUGINS.append(path)
 
 
 class DummyFrame:

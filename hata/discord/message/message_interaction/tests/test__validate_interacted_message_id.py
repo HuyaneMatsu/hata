@@ -38,4 +38,6 @@ def test__validate_interacted_message_id__passing(input_value):
     ------
     TypeError
     """
-    return validate_interacted_message_id(input_value)
+    output = validate_interacted_message_id(input_value)
+    vampytest.assert_instance(output, int)
+    return output

@@ -92,15 +92,15 @@ def put_integration_context_types_into(integration_context_types, data, defaults
     Parameters
     ----------
     integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
-        The places where the application command shows up. `None` means all.
-    data : `dict` of (`str`, `object`) items
+        The places where the application command shows up.
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if integration_context_types is None:
         raw = None
@@ -129,14 +129,14 @@ def put_integration_types_into(integration_types, data, defaults):
     ----------
     integration_types : `None | tuple<ApplicationIntegrationType>`
         The options where the application command can be integrated to.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if integration_types is None:
         raw = None
@@ -271,14 +271,14 @@ def put_required_permissions_into(required_permissions, data, defaults):
     ----------
     required_permissions : ``Permission``
         The required permissions a user should have to use the command.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if required_permissions:
         required_permissions = format(required_permissions, 'd')

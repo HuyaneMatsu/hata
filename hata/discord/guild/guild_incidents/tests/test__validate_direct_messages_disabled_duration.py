@@ -6,6 +6,7 @@ from ..fields import validate_direct_messages_disabled_duration
 
 
 class DateTimeMock(DateTime):
+    __slots__ = ()
     current_date_time = None
     
     @classmethod

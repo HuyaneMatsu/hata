@@ -105,9 +105,9 @@ class ApplicationCommandIntegrationContextType(PreinstancedBase):
     
     __slots__ = ()
     
-    guild = P(0, 'guild',)
-    bot_private_channel = P(1, 'bot private channel',)
-    any_private_channel = P(2, 'any private channel',)
+    guild = P(0, 'guild')
+    bot_private_channel = P(1, 'bot private channel')
+    any_private_channel = P(2, 'any private channel')
 
 
 INTEGRATION_CONTEXT_TYPES_ALL = tuple(sorted(

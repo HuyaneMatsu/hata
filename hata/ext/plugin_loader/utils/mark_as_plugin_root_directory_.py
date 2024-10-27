@@ -49,7 +49,7 @@ def mark_as_plugin_root_directory():
     source_name = spec.name
     count = 0
     
-    for entry_name in list_directory(source_directory_path):
+    for entry_name in sorted(list_directory(source_directory_path)):
         if entry_name == '__init__.py':
             continue
         

@@ -29,7 +29,7 @@ def _iter_options__type_error():
     # not function
     yield object()
     
-    # not funtion
+    # not function
     yield None
     
     # generic function

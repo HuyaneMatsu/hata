@@ -15,9 +15,10 @@ class ActivityTimestamps(ActivityFieldBase):
     
     Attributes
     ----------
-    end : `None`, `datetime`
+    end : `None | DateTime`
         When the activity ends.
-    start : `None`, `datetime`
+    
+    start : `None | DateTime`
        When the activity starts.
     """
     __slots__ = ('end', 'start',)
@@ -80,7 +81,7 @@ class ActivityTimestamps(ActivityFieldBase):
     def __repr__(self):
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         start = self.start
@@ -97,7 +98,7 @@ class ActivityTimestamps(ActivityFieldBase):
                 repr_parts.append(',')
             
             repr_parts.append(' end = ')
-            repr_parts.append(format(start, DATETIME_FORMAT_CODE))
+            repr_parts.append(format(end, DATETIME_FORMAT_CODE))
         
         repr_parts.append('>')
         

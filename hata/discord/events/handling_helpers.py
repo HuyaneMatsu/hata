@@ -4,8 +4,8 @@ from functools import partial as partial_func
 from types import FunctionType
 
 from scarletio import (
-    CallableAnalyzer, MethodLike, RemovedDescriptor, RichAttributeErrorBaseType, Task, TaskGroup, WeakKeyDictionary,
-    is_coroutine_function
+    AttributeError as RichAttributeError, CallableAnalyzer, MethodLike, RemovedDescriptor, RichAttributeErrorBaseType,
+    Task, TaskGroup, WeakKeyDictionary, is_coroutine_function
 )
 from scarletio.utils.compact import NEEDS_DUMMY_INIT
 
@@ -41,7 +41,7 @@ def _check_name_should_break(name):
         
     if type(name) is not str:
         raise TypeError(
-            f'`name` can be `None`, `str`, got {name.__class__.__name__}; {name!r}.'
+            f'`name` can be `None`, `str`, got {type(name).__name__}; {name!r}.'
         )
         
     if name:
@@ -56,7 +56,7 @@ def check_name(func, name):
     - Passed `name` parameter.
     - `func.__event_name__`.
     - `func.__name__`.
-    - `func.__class__.__name__`.
+    - `type(func).__name__`.
     
     If any of these is set (or passed at the case of `name`) as `None` or as an empty string, then those are ignored.
     
@@ -357,63 +357,6 @@ def _convert_unsafe_event_iterable(iterable, type_ = None):
     return result
 
 
-def create_event_from_class(constructor, klass, parameter_names, name_name, event_name):
-    """
-    Creates an event passing trough a constructor.
-    
-    Parameters
-    ----------
-    klass : `type`
-        The type to work with.
-    parameter_names : `tuple` of `str`
-        The parameters names to pass to the constructor.
-    name_name : `None`, `str`
-        The event's name's name.
-    event_name : `str`
-        The event's name. If event is not found, then defaults to `name_name`'s found value if any.
-    
-    Returns
-    -------
-    instance : `object`
-        The created instance.
-    
-    Raises
-    ------
-    BasesException
-        object occurred exception.
-    """
-    if not isinstance(klass, type):
-        raise TypeError(
-            f'`klass` can be `type`, got {klass.__class__.__name__}; {klass!r}.'
-        )
-    
-    parameters_by_name = {}
-    for parameter_name in parameter_names:
-        try:
-            parameter = getattr(klass, parameter_name)
-        except AttributeError:
-            found = False
-            parameter = None
-        else:
-            found = True
-        
-        parameters_by_name[parameter_name] = (parameter, found)
-    
-    name = klass.__name__
-    if (name_name is not None) and (not parameters_by_name[name_name][1]):
-        parameters_by_name[name_name] = (name, True)
-    
-    if not parameters_by_name[event_name][1]:
-        try:
-            parameter = getattr(klass, name)
-        except AttributeError:
-            pass
-        else:
-            parameters_by_name[event_name] = (parameter, True)
-    
-    return constructor(*(parameters_by_name[parameter_name][0] for parameter_name in parameter_names))
-
-
 class _EventHandlerManager(RichAttributeErrorBaseType):
     """
     Gives a decorator functionality to an event handler, because 'rich' event handlers still can not be used a
@@ -436,8 +379,6 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
         The `parent` event handler should implement the following methods:
         - `.create_event(func, *args, **kwargs)`
         - `.delete_event(func)`
-        And optionally:
-        - `.create_event_from_class(klass)`
         
         Parameters
         ----------
@@ -449,7 +390,7 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the representation of the event handler manager."""
-        return f'<{self.__class__.__name__} of {self.parent!r}>'
+        return f'<{type(self).__name__} of {self.parent!r}>'
     
     
     def __call__(self, function = ..., *args, **kwargs):
@@ -477,35 +418,6 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
         
         function = self.parent.create_event(function, *args, **kwargs)
         return function
-    
-    
-    def from_class(self, klass):
-        """
-        Allows the event handler manager to be able to capture a class and create add it to the parent event handler
-        from it's attributes.
-        
-        Parameters
-        ----------
-        klass : `type`
-            The class to capture.
-        
-        Returns
-        -------
-        func : `callable`
-            The created instance by the respective event handler.
-        
-        Raises
-        ------
-        TypeError
-            If the parent of the event handler manager has no support for `.from_class`.
-        """
-        from_class_constructor = getattr(type(self.parent), 'create_event_from_class', None)
-        if (from_class_constructor is None):
-            raise TypeError(
-                f'`.from_class` is not supported by {self.parent!r}.'
-            )
-        
-        return from_class_constructor(self.parent, klass)
     
     
     def remove(self, func, *args, **kwargs):
@@ -681,35 +593,15 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         | event_handlers                | `object`                          |
         +-------------------------------+-----------------------------------+
     
-    _from_class_constructor : `callable`, `None`
-        Whether the extension supports `.from_class` method and how exactly it does. If set as `None`, means it not
-        supports it.
-        
-        Should always get the following attributes:
-        
-        +-------------------------------+-----------------------------------+
-        | Name                          | Value                             |
-        +===============================+===================================+
-        | klass                         | `klass`                           |
-        +-------------------------------+-----------------------------------+
-        
-        Should returns the following value(s):
-        
-        +-------------------------------+-----------------------------------+
-        | Name                          | Value                             |
-        +===============================+===================================+
-        | commands                      | `list` of `object`                |
-        +-------------------------------+-----------------------------------+
-    
     _router_type : `type<Router>`
         Router type for outputs.
     
     parent : ``ClientWrapper``
         The parent client wrapper.
     """
-    __slots__ = ('_getter', '_from_class_constructor', '_router_type', 'parent')
+    __slots__ = ('_getter', '_router_type', 'parent')
     
-    def __init__(self, parent, getter, from_class_constructor, router_type):
+    def __init__(self, parent, getter, router_type):
         """
         Creates an ``_EventHandlerManagerRouter`` routing to all the clients of a ``ClientWrapper``.
         
@@ -738,36 +630,15 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
             | event_handlers                | `object`                          |
             +-------------------------------+-----------------------------------+
         
-        from_class_constructor : `None`, `callable`
-            Whether the extension supports `.from_class` method and how exactly it does. If given as `None`, then it
-            means it not supports it.
-            
-            Should always get the following attributes:
-            
-            +-------------------------------+-----------------------------------+
-            | Name                          | Value                             |
-            +===============================+===================================+
-            | klass                         | `klass`                           |
-            +-------------------------------+-----------------------------------+
-            
-            Should returns the following value(s):
-            
-            +-------------------------------+-----------------------------------+
-            | Name                          | Value                             |
-            +===============================+===================================+
-            | commands                      | `list` of `object`                |
-            +-------------------------------+-----------------------------------+
-        
         router_type : `instance<type<Router>>`
             Router type for outputs.
         """
         self._getter = getter
-        self._from_class_constructor = from_class_constructor
         self._router_type = router_type
         self.parent = parent
     
     
-    def __call__(self, function = ..., *args, **kwargs):
+    def __call__(self, function = ..., *positional_parameters, **keyword_parameters):
         """
         Adds the given `func` to all of the represented client's respective event handler managers.
         
@@ -775,9 +646,9 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         ----------
         func : `callable`, Optional
             The event to be added to the respective event handler.
-        *args : Positional parameter
+        *positional_parameters : Positional parameter
             Additionally passed positional parameters to be passed with the given `func` to the event handler.
-        **kwargs : Keyword parameters
+        **keyword_parameters : Keyword parameters
             Additionally passed keyword parameters to be passed with the given `func` to the event handler.
         
         Returns
@@ -786,80 +657,18 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
            The added functions.
         """
         if function is ...:
-            return partial_func(self, *args, **kwargs)
+            return partial_func(self, *positional_parameters, **keyword_parameters)
         
         handlers = self._getter(self)
         if not handlers:
             return
         
-        count = len(handlers)
-        
-        routed_args = route_args(args, count)
-        routed_kwargs = route_kwargs(kwargs, count)
-        routed_func = maybe_route_func(function, count)
         routed = []
-        
-        for handler, func_, args, kwargs in zip(handlers, routed_func, routed_args, routed_kwargs):
-            function = handler.create_event(func_, *args, **kwargs)
+        for handler in handlers:
+            function = handler.create_event(function, *positional_parameters, **keyword_parameters)
             routed.append(function)
         
         return self._router_type(routed)
-    
-    
-    def from_class(self, klass):
-        """
-        Allows the event handler manager router to be able to capture a class and create and add it to the represented
-        event handlers from it's attributes.
-        
-        Parameters
-        ----------
-        klass : `type`
-            The class to capture.
-        
-        Returns
-        -------
-        routed : ``Router``
-            The routed created instances.
-        
-        Raises
-        ------
-        TypeError
-            If the parent of the event handler manager has no support for `.from_class`.
-        BaseException
-            object exception raised by any of the event handler.
-        """
-        from_class_constructor = self._from_class_constructor
-        if from_class_constructor is None:
-            raise TypeError(
-                f'`.from_class` is not supported by {self.parent!r}.'
-            )
-        
-        handlers = self._getter(self)
-        count = len(handlers)
-        if not count:
-            return
-        
-        routed_maybe = from_class_constructor(klass)
-        if isinstance(routed_maybe, Router):
-            if len(routed_maybe) != count:
-                raise ValueError(
-                    f'The given class is routed to `{len(routed_maybe)}`, meanwhile expected to be routed '
-                    f'to `{count}` times, got {klass!r}.'
-                )
-            
-            routed = routed_maybe
-        
-        else:
-            copy_method = getattr(type(routed_maybe), 'copy', None)
-            if copy_method is None:
-                routed = [routed_maybe for _ in range(count)]
-            else:
-                routed = [copy_method(routed_maybe) for _ in range(count)]
-            
-        for handler, event in zip(handlers, routed):
-            handler.create_event(event)
-        
-        return routed
     
     
     def remove(self, func, *args, **kwargs):
@@ -950,12 +759,8 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
             args = element.args
             kwargs = element.kwargs
             
-            routed_args = route_args(args, count)
-            routed_func = maybe_route_func(func, count)
-            routed_kwargs = route_kwargs(kwargs, count)
-            
-            for handler, func_, args, kwargs in zip(handlers, routed_func, routed_args, routed_kwargs):
-                handler.create_event(func_, *args, **kwargs)
+            for handler in handlers:
+                handler.create_event(func, *args, **kwargs)
     
     
     def unextend(self, iterable):
@@ -1026,34 +831,20 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
             args = element.args
             kwargs = element.kwargs
             
-            routed_func = maybe_route_func(func, count)
-            
-            if kwargs is None:
-                for handler, func_ in zip(handlers, routed_func):
-                    try:
-                        handler.delete_event(func_)
-                    except ValueError as err:
-                        collected.append(err.args[0])
-                
-            else:
-                routed_kwargs = route_kwargs(kwargs, count)
-                routed_args = route_args(args, count)
-                
-                for handler, func_, args, kwargs in zip(handlers, routed_func, routed_args, routed_kwargs):
-                    try:
-                        handler.delete_event(func_, *args, **kwargs)
-                    except ValueError as err:
-                        collected.append(err.args[0])
+            for handler in handlers:
+                try:
+                    handler.delete_event(func, *args, **kwargs)
+                except ValueError as err:
+                    collected.append(err.args[0])
         
         if collected:
             raise ValueError('\n'.join(collected)) from None
     
     def __repr__(self):
         return (
-            f'<{self.__class__.__name__} '
+            f'<{type(self).__name__} '
             f'parent = {self.parent!r}, '
             f'getter = {self._getter!r}, '
-            f'from_class_constructor={self._from_class_constructor!r}'
             f'>'
         )
 
@@ -1091,7 +882,7 @@ class EventListElement:
     
     def __repr__(self):
         """Returns the representation of the eventlist element."""
-        return f'{self.__class__.__name__}({self.func!r}, args={self.args!r}, kwargs={self.kwargs!r})'
+        return f'{type(self).__name__}({self.func!r}, args = {self.args!r}, kwargs = {self.kwargs!r})'
     
     def __len__(self):
         """Additional information for unpacking if needed."""
@@ -1116,7 +907,7 @@ class Router(tuple):
     
     def __repr__(self):
         """Returns the router's representation."""
-        result = [self.__class__.__name__, '(']
+        result = [type(self).__name__, '(']
         
         limit = len(self)
         if limit:
@@ -1134,263 +925,6 @@ class Router(tuple):
         result.append(')')
         
         return ''.join(result)
-
-
-def route_value(to_route_value, count, default = None):
-    """
-    Routes only a single `name` - `value` pair.
-    
-    Parameters
-    ----------
-    to_route_value : `object`
-        The respective value to route
-    count : `int`
-        The expected amount of copies to generate.
-    default : `None`, `object` = `None`, Optional
-        Optional default variable to use. Defaults to `None`.
-    
-    Returns
-    -------
-    result : `list` of `object`
-        A list of the routed values
-    """
-    result = []
-    if isinstance(to_route_value, tuple):
-        if len(to_route_value) != count:
-            raise ValueError(f'The represented router has `{count}` applicable clients, meanwhile received only '
-                f'`{len(to_route_value)}` routed values, got: {to_route_value!r}.')
-        
-        last = ...
-        for value in to_route_value:
-            if value is None:
-                value = default
-                last = default
-            elif value is ...:
-                if last is ...:
-                    last = default
-                value = last
-            else:
-                last = value
-            
-            result.append(value)
-            continue
-    else:
-        if (to_route_value is None) or (to_route_value is ...):
-            to_route_value = default
-        
-        for _ in range(count):
-            result.append(to_route_value)
-    
-    return result
-
-
-def route_parameter(parameter, count):
-    """
-    Routes a parameter to `count` amount of copies.
-    
-    This function is an iterable generator.
-    
-    Parameters
-    ----------
-    parameter : `object`
-        The parameter to route.
-    count : `int`
-        The expected amount of copies to generate.
-    
-    Yields
-    ------
-    result : `object`
-    
-    Raises
-    ------
-    ValueError
-        A value is a `tuple`, but it's length is different from `count`.
-    """
-    if isinstance(parameter, tuple):
-        if len(parameter) != count:
-            raise ValueError(
-                f'The represented router has `{count}` applicable clients, meanwhile received only '
-                f'`{len(parameter)}` routed values, got: {parameter!r}. '
-                f'When a value is a `tuple` routing is attempted, so perhaps you wanted to use a `list` instead?'
-            )
-        
-        last = None
-        for value in parameter:
-            if value is None:
-                last = None
-            elif value is ...:
-                value = last
-            else:
-                last = value
-            
-            yield value
-            continue
-    else:
-        for _ in range(count):
-            yield parameter
-
-
-def route_kwargs(kwargs, count):
-    """
-    Routes the given `kwargs` to the given `count` amount of copies.
-    
-    If a value of a keyword is given as a `tuple`, then it will be routed by element for each applicable
-    client.
-    
-    Parameters
-    ----------
-    kwargs : `dict` of (`str`, `object`) items
-        Keyword parameter to route.
-    count : `int`
-        The expected amount of copies to generate.
-    
-    Returns
-    -------
-    result : `tuple` of `dict` of (`str`, `object) items
-    
-    Raises
-    ------
-    ValueError
-        A value is a `tuple`, but it's length is different from `count`.
-    """
-    result = tuple({} for _ in range(count))
-    
-    if (kwargs is not None):
-        for parameter_name, parameter_value in kwargs.items():
-            for route_to, parameter in zip(result, route_parameter(parameter_value, count)):
-                route_to[parameter_name] = parameter
-    
-    return result
-
-
-def route_args(args, count):
-    """
-    Routes the given `args` to the given `count` amount of copies.
-    
-    Parameters
-    ----------
-    args : `tuple` of `object`
-        Positional parameter to route.
-    count : `int`
-        The expected amount of copies to generate.
-    
-    Returns
-    -------
-    result : `tuple` of `tuple` of `object`
-    
-    Raises
-    ------
-    ValueError
-        A value is a `tuple`, but it's length is different from `count`.
-    """
-    if (args is None):
-        result = tuple(tuple() for _ in range(count))
-    else:
-        result = tuple([] for _ in range(count))
-        
-        for parameter_value in args:
-            for route_to, parameter in zip(result, route_parameter(parameter_value, count)):
-                route_to.append(parameter)
-    
-        result = tuple(tuple(routed_to) for routed_to in result)
-    
-    return result
-
-
-def route_name(name, count):
-    """
-    Routes the given `name` to the given `count` amount of copies.
-    
-    If `name` is given as `tuple`, then each element of it will be returned for each applicable client.
-    
-    Parameters
-    ----------
-    name : `None`, `Ellipsis`, `str`, `tuple` of (`None`, `Ellipsis`, `str`)
-        The name to use instead of `func`'s real one.
-    count : `int`
-        The expected amount of names.
-    
-    Returns
-    -------
-    result : `list` of (`None`, `str`)
-    
-    Raises
-    ------
-    TypeError
-        - If `name` was not given as `None`, `Ellipsis`, `str`, neither as `tuple` of (`None`, `Ellipsis`, `str`).
-    ValueError
-        If `name` was given as `tuple` but it's length is different from the expected one.
-    """
-    result = []
-    
-    if isinstance(name, tuple):
-        for index, name_value in enumerate(name):
-            if (name_value is not None) and (name_value is not ...) and (not isinstance(name_value, str)):
-                raise TypeError(
-                    f'`name` was given as a `tuple`, but it\'s {index}th element is not `None`, '
-                    f'`Ellipsis`, `str`, got, {name_value.__class__.__name__}: {name_value!r}.'
-                )
-        
-        if len(name) != count:
-            raise ValueError(
-                f'`name` was given as `tuple`, but it\'s length ({len(name)!r}) not matches the expected '
-                f'(`{count}`) one, got {name!r}.'
-            )
-        
-        last = None
-        for name_value in name:
-            if name is None:
-                name_value = None
-                last = None
-            elif name_value is ...:
-                name_value = last
-            else:
-                last = name_value
-            
-            result.append(name_value)
-    else:
-        if name is None:
-            name_value = None
-        elif isinstance(name, str):
-            name_value = str(name)
-        else:
-            raise TypeError(
-                '`name` can be given `None`, `tuple` of (`None, `Ellipsis`, `str`), got '
-                f'{name.__class__.__name__}; {name!r}.'
-            )
-        
-        for _ in range(count):
-            result.append(name_value)
-    
-    return result
-
-
-def maybe_route_func(func, count):
-    """
-    Routes the given `func` `count` times if applicable.
-    
-    Parameters
-    ----------
-    func : `callable`
-        The respective callable to ass
-    count : `int`
-        The expected amount of functions to return.
-    
-    Returns
-    -------
-    result : `list` of `func`
-    """
-    copy_function = getattr(type(func), 'copy', None)
-    result = []
-    if copy_function is None:
-        for _ in range(count):
-            result.append(func)
-    else:
-        for _ in range(count):
-            copied = copy_function(func)
-            result.append(copied)
-    
-    return result
 
 
 class eventlist(list):
@@ -1474,42 +1008,6 @@ class eventlist(list):
         __init__ = object.__init__
     
     
-    def from_class(self, klass):
-        """
-        Allows the ``eventlist`` to be able to capture a class and create an element from it's attributes.
-        
-        Parameters
-        ----------
-        klass : `type`
-            The class to capture.
-        
-        Returns
-        -------
-        element : `callable`
-            The created instance from the event-list's `.type`.
-        
-        Raises
-        ------
-        TypeError
-            If the eventlist has no `.type` set, or if it's `.type` is not supporting this method.
-        """
-        type_ = self.type
-        if type_ is None:
-            raise TypeError(
-                '`.from_class` method cannot be used on `eventlist` without type.'
-            )
-        
-        from_class = getattr(type_, 'from_class', None)
-        if from_class is None:
-            raise TypeError(
-                f'`.from_class`. is not supported by the `eventlist`\'s type: {type_!r}.'
-            )
-        
-        element = from_class(klass)
-        list.append(self, element)
-        return element
-    
-    
     def extend(self, iterable):
         """
         Extends the ``eventlist`` with the given `iterable`.
@@ -1528,7 +1026,7 @@ class eventlist(list):
         if type(iterable) is type(self):
             if self.type is not iterable.type:
                 raise ValueError(
-                    f'Extending {self.__class__.__name__} with an other object of the same type, is not allowed if '
+                    f'Extending {type(self).__name__} with an other object of the same type, is not allowed if '
                     f'their `.type` is different. Own: {self.type!r}; other: {iterable.type!r}.'
                 )
         else:
@@ -1557,7 +1055,7 @@ class eventlist(list):
         else:
             if self.type is not iterable.type:
                 raise ValueError(
-                    f'Extending {self.__class__.__name__} with an other object of the same type, is not allowed if '
+                    f'Extending {type(self).__name__} with an other object of the same type, is not allowed if '
                     f'their `.type` is different. Own: {self.type!r}; other: {iterable.type!r}.'
                 )
         
@@ -1639,7 +1137,7 @@ class eventlist(list):
     def __repr__(self):
         """Returns the representation of the eventlist."""
         repr_parts = [
-            self.__class__.__name__,
+            type(self).__name__,
             '([',
         ]
         
@@ -2450,7 +1948,7 @@ class asynclist(list):
     def __repr__(self):
         """Returns the async-list's representation."""
         repr_parts = [
-            self.__class__.__name__,
+            type(self).__name__,
             '(['
         ]
         
@@ -2477,7 +1975,7 @@ class asynclist(list):
     def __getattribute__(self, name):
         """Gets the given attribute from the elements of the asynclist."""
         if not isinstance(name, str):
-            raise TypeError(f'Attribute name must be string, not `{name.__class__.__name__}`.')
+            raise TypeError(f'Attribute name must be string, not `{type(name).__name__}`.')
         
         try:
             attribute = object.__getattribute__(self, name)
@@ -2489,12 +1987,10 @@ class asynclist(list):
         
         for coroutine_function in list.__iter__(self):
             attribute = getattr(coroutine_function, name, ...)
-            if attribute is ...:
-                continue
-            
-            return attribute
+            if attribute is not ...:
+                return attribute
         
-        raise AttributeError(f'`{self.__class__.__name__}` object has no attribute `{name}`.')
+        raise RichAttributeError(self, name)
     
     append = RemovedDescriptor()
     clear = RemovedDescriptor()

@@ -914,7 +914,7 @@ class Slasher(
     _regex_custom_id_to_form_submit_command : `dict` of (``RegexMatcher``, ``FormSubmitCommand``) items
         A dictionary which contains form submit commands based on regex patterns.
     
-    _self_reference : `None`, ``WeakReferer`` to `instance<cls>`
+    _self_reference : `None | WeakReferer<instance>`
         Reference back to the slasher. Used to reference back from commands.
     
     _string_custom_id_to_component_command : `dict` of (`str`, ``ComponentCommand``) items
@@ -1436,37 +1436,9 @@ class Slasher(
         else:
             target = validate_application_target_type(target)
             if target in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES:
-                instance = ContextCommand(function, *positional_parameters, **keyword_parameters, target = target)
+                instance = ContextCommand(function, *positional_parameters, target = target, **keyword_parameters)
             else:
                 instance = SlashCommand(function, *positional_parameters, **keyword_parameters)
-        
-        return instance
-    
-    
-    @copy_docs(NestableInterface._make_command_instance_from_class)
-    def _make_command_instance_from_class(self, klass):
-        target = getattr(klass, 'target', None)
-        
-        if hasattr(klass, 'custom_id'):
-            if (target is None) or (target in COMMAND_TARGETS_COMPONENT_COMMAND):
-                instance = ComponentCommand.from_class(klass)
-            
-            elif (target in COMMAND_TARGETS_FORM_COMPONENT_COMMAND):
-                instance = FormSubmitCommand.from_class(klass)
-            
-            else:
-                raise ValueError(
-                    f'Unknown command target: {target!r}; If `custom_id` parameter is given, `target` '
-                    f'can be any of: `{COMMAND_TARGETS_COMPONENT_COMMAND | COMMAND_TARGETS_FORM_COMPONENT_COMMAND}`.'
-                )
-        
-        else:
-            target = validate_application_target_type(target)
-            if target in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES:
-                instance = ContextCommand.from_class(klass)
-            
-            else:
-                instance = SlashCommand.from_class(klass)
         
         return instance
     
@@ -1811,7 +1783,7 @@ class Slasher(
             The respective guild's id.
         """
         if (command is not None):
-            command_id = command._pop_command_id_for(guild_id)
+            command_id = command._pop_application_command_id_for(guild_id)
             if command_id:
                 try:
                     del self.command_id_to_command[command_id]
@@ -1858,7 +1830,7 @@ class Slasher(
             The respective guild's id.
         """
         if (command is not None):
-            command_id = command._pop_command_id_for(guild_id)
+            command_id = command._pop_application_command_id_for(guild_id)
             if command_id:
                 try:
                     del self.command_id_to_command[command_id]

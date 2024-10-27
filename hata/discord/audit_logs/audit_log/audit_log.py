@@ -23,7 +23,7 @@ class AuditLog(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    _self_reference : `None` or ``WeakReferer`` to ``AuditLog``
+    _self_reference : `None | WeakReferer<instance>`
         Weak reference to the audit log itself.
     application_commands : `None`, `dict` of (`int`, ``ApplicationCommand``) items
         A dictionary that contains the mentioned application commands by the audit log entries. The keys are the `id`-s

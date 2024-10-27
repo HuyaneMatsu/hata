@@ -22,7 +22,7 @@ class Category:
         Weak reference to the category's command processor.
     _error_handlers : `None`, `list` of `FunctionType`
         Error handlers bind to the category.
-    _self_reference : `None`, ``WeakReferer`` to ``Category``
+    _self_reference : `None | WeakReferer<instance>`
         Reference to the command processor itself.
     command_instances : `set` of ``Command``
         The registered commands to the category.
@@ -351,33 +351,6 @@ class Category:
                 hidden,
                 hidden_if_checks_fail,
             )
-            
-            if isinstance(command, Router):
-                command = command[0]
-        
-        command._category_hint = self.name
-        
-        self._add_command(command)
-        return command
-    
-    
-    def create_event_from_class(self, klass):
-        """
-        Breaks down the given class to it's class attributes and tries to add it as a command.
-    
-        Parameters
-        ----------
-        klass : `type`
-            The class, from what's attributes the command will be created.
-        
-        Returns
-        -------
-        command : ``Command``
-            The added command instance.
-        """
-        command = Command.from_class(klass)
-        if isinstance(command, Router):
-            command = command[0]
         
         command._category_hint = self.name
         

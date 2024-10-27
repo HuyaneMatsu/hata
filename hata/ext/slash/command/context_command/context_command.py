@@ -4,14 +4,19 @@ from warnings import warn
 
 from scarletio import copy_docs
 
-from .....discord.events.handling_helpers import Router, check_name, route_name, route_value
+from .....discord.application import ApplicationIntegrationType
+from .....discord.application_command import INTEGRATION_CONTEXT_TYPES_ALL
+from .....discord.events.handling_helpers import check_name
+from .....discord.permission import Permission
 
 from ...converters import get_context_command_parameter_converters
 from ...exceptions import handle_command_exception
 from ...interfaces.command import CommandInterface
 from ...responding import process_command_coroutine
 from ...response_modifier import ResponseModifier
-from ...utils import _check_maybe_route, raw_name_to_display
+from ...utils import (
+    UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_INHERIT, UNLOADING_BEHAVIOUR_KEEP, raw_name_to_display
+)
 from ...wrappers import CommandWrapper
 
 from ..command_base_application_command import CommandBaseApplicationCommand
@@ -29,27 +34,28 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
     
     Attributes
     ----------
-    _exception_handlers : `None`, `list` of `CoroutineFunction`
-        Exception handlers added with ``.error`` to the interaction handler.
-        
-        Same as ``Slasher._exception_handlers``.
+    _command_function : `async-callable˛
+        The command's function to call.
     
-    _parent_reference : `None`, ``WeakReferer`` to ``Slasher``
+    _exception_handlers : `None | list<CoroutineFunction>`
+        Exception handlers added with ``.error`` to the interaction handler.
+    
+    _parent_reference : `None | WeakReferer<SelfReferenceInterface>`
         Reference to the slasher application command's parent.
     
     name : `str`
         Application command name. It's length can be in range [1:32].
     
-    _permission_overwrites : `None`, `dict` of (`int`, `list` of ``ApplicationCommandPermissionOverwrite``)
+    _permission_overwrites : `None | dict<int, list<ApplicationCommandPermissionOverwrite>>˙
         Permission overwrites applied to the context command.
 
-    _registered_application_command_ids : `None`, `dict` of (`int`, `int`) items
+    _registered_application_command_ids : `None | dict<int, int>`
         The registered application command ids, which are matched by the command's schema.
         
         If empty set as `None`, if not then the keys are the respective guild's id and the values are the application
         command id.
     
-    _schema : `None`, ``ApplicationCommand``
+    _schema : `None | ApplicationCommand`
         Internal slot used by the ``.get_schema`` method.
     
     _unloading_behaviour : `int`
@@ -72,11 +78,11 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         
         Global commands have their ``.guild_ids`` set as `None`.
     
-    guild_ids : `None`, `set` of `int`
+    guild_ids : `None | set<int>`
         The ``Guild``'s id to which the command is bound to.
     
     integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
-        The places where the application command shows up. `None` means all.
+        The places where the application command shows up.
     
     integration_types : `None | tuple<ApplicationIntegrationType>`
         The options where the application command can be integrated to.
@@ -84,114 +90,90 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
     nsfw : `None`, `bool`
         Whether the application command is only allowed in nsfw channels.
     
-    required_permissions : `None`, ``Permission``
+    required_permissions : ``Permission``
         The required permissions to use the application command inside of a guild.
     
-    _command_function : `async-callable˛
-        The command's function to call.
-    
-    _parameter_converters : `tuple` of ``ParameterConverter``
+    _parameter_converters : `tuple<ParameterConverter>`
         Parsers to parse command parameters.
     
-    response_modifier : `None`, ``ResponseModifier``
+    response_modifier : `None | ResponseModifier`
         Modifies values returned and yielded to command coroutine processor.
     
     target : ``ApplicationCommandTargetType``
         The target type of the context command.
-    
-    Class Attributes
-    ----------------
-    COMMAND_COMMAND_NAME : `str`
-        The command's name defining parameter's name.
-    COMMAND_PARAMETER_NAMES : `tuple` of `str`
-        All parameters names accepted by ``.__new__``
-    COMMAND_NAME_NAME : `str`
-        The command's "command" defining parameter's name.
     """
     __slots__ = ('_command_function', '_parameter_converters', 'response_modifier', 'target',)
     
-    COMMAND_PARAMETER_NAMES = (
-        *CommandBaseApplicationCommand.COMMAND_PARAMETER_NAMES,
-        'target',
-    )
-    
-    
     def __new__(
         cls,
-        func,
+        function,
         name = None,
-        is_global = None,
-        guild = None,
-        is_default = None,
-        delete_on_unload = None,
+        *,
         allow_in_dm = ...,
-        required_permissions = None,
-        target = None,
-        nsfw = None,
-        integration_context_types = None,
-        integration_types = None,
+        delete_on_unload = ...,
+        guild = ...,
+        integration_context_types = ...,
+        integration_types = ...,
+        is_global = ...,
+        nsfw = ...,
+        required_permissions = ...,
+        target = ...,
         **keyword_parameters,
     ):
         """
-        Creates a new ``SlashCommand`` with the given parameters.
+        Creates a new context command with the given parameters.
         
         Parameters
         ----------
-        func : `None`, `async-callable` = `None`, Optional
+        function : `async-callable`
             The function used as the command when using the respective context command.
         
-        name : `None`, `str`, `tuple` of (`str`, `Ellipsis`, `None`) = `None`, Optional
+        name : `None | str` = `None`, Optional
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
             instead.
         
-        is_global : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
-            Whether the context command is global. Defaults to `False`.
-        
-        guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
-                `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)) = `None`
-                , Optional
-            To which guild(s) the command is bound to.
-        
-        is_global : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
-            Whether the context command is the default command in it's category.
-        
-        delete_on_unload : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
+        delete_on_unload : `bool`, Optional (Keyword only)
             Whether the command should be deleted from Discord when removed.
         
-        required_permissions : `None`, `int`, ``Permission``, `tuple` of (`None`, `int`, ``Permission``,
-                `Ellipsis`) = `None`, Optional
-            The required permissions to use the application command inside of a guild.
+        guild : `Guild | int | (list | set)<int | Guild>`, Optional (Keyword only)
+            To which guild(s) the command is bound to.
         
-        target : `None`, `int`, `str`, ``ApplicationCommandTargetType`` = `None`, Optional
-            The target type of the command.
+        integration_context_types : `None | ApplicationCommandIntegrationContextType | int | str | \
+                iterable<ApplicationCommandIntegrationContextType | int | str>`, Optional (Keyword only)
+            The places where the application command shows up.
         
-        nsfw : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
+        integration_types : `None | ApplicationIntegrationType | int | str | \
+                iterable<ApplicationIntegrationType | int | str>`, Optional (Keyword only)
+            The options where the application command can be integrated to.
+            
+            The places where the application command shows up.
+        
+        is_global : `bool`, Optional (Keyword only)
+            Whether the context command is the default command in it's category.
+        
+        nsfw : `bool`, Optional (Keyword only)
             Whether the application command is only allowed in nsfw channels.
         
-        integration_context_types : `None`, ``ApplicationCommandIntegrationContextType``, `int`, `str`, \
-                `iterable<ApplicationCommandIntegrationContextType | int | str>`, Optional
+        required_permissions : `int | Permission`, Optional (Keyword only)
+            The required permissions to use the application command inside of a guild.
         
-        integration_types : `None`, ``ApplicationIntegrationType``, `int`, `str`, \
-                `iterable<ApplicationIntegrationType | int | str>`, Optional
-            The options where the application command can be integrated to.
+        target : `None | int | str | ApplicationCommandTargetType`, Optional (Keyword only)
+            The target type of the command.
         
-        The places where the application command shows up. `None` means all.
         **keyword_parameters : Keyword parameters
             Additional keyword parameters.
         
         Other Parameters
         ----------------
-        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy``, \
-                `list` of (`str`, ``UserBase``, ``Role`` ), Optional (Keyword only)
+        allowed_mentions : `None | str, UserBase | Role | AllowedMentionProxy | list<str | UserBase | Role> \
+                , Optional (Keyword only)
             Which user or role can the response message ping (or everyone).
+        
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the response message should only be shown for the invoking user.
+        
         wait_for_acknowledgement : `bool`, Optional (Keyword only)
             Whether acknowledge tasks should be ensure asynchronously.
-        
-        Returns
-        -------
-        self : ``SlashCommand``, ``Router``
         
         Raises
         ------
@@ -200,18 +182,29 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         ValueError
             If a parameter's value is incorrect.
         """
-        if (func is not None) and isinstance(func, CommandWrapper):
-            command, wrappers = func.fetch_function_and_wrappers_back()
+        if (function is not None) and isinstance(function, CommandWrapper):
+            command_function, wrappers = function.fetch_function_and_wrappers_back()
         else:
-            command = func
+            command_function = function
             wrappers = None
         
-        if command is None:
+        if command_function is None:
             raise ValueError(
                 f'For context commands `command` parameter is required (cannot be `None` either).'
             )
         
-        if allow_in_dm is not ...:
+        if target is ...:
+            raise ValueError(
+                f'For context commands `target` parameter is required (cannot be `None` either).'
+            )
+        
+        target = validate_application_target_type(target)
+        
+        # Pre validate
+        name = _validate_name(name)
+        
+        # allow_in_dm
+        if (allow_in_dm is not ...):
             warn(
                 (
                     '`allow_in_dm` parameter is deprecated and will be removed in 2024 November. '
@@ -220,176 +213,169 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
                 FutureWarning,
                 stacklevel = 5,
             )
+            allow_in_dm = _validate_allow_in_dm(allow_in_dm)
         
-        target = validate_application_target_type(target)
-        
-        # Check for routing
-        
-        route_to = 0
-        name, route_to = _check_maybe_route('name', name, route_to, _validate_name)
-        is_global, route_to = _check_maybe_route('is_global', is_global, route_to, _validate_is_global)
-        guild_ids, route_to = _check_maybe_route('guild', guild, route_to, _validate_guild)
-        unloading_behaviour, route_to = _check_maybe_route(
-            'delete_on_unload', delete_on_unload, route_to, _validate_delete_on_unload
-        )
-        allow_in_dm, route_to = _check_maybe_route(
-            'allow_in_dm',
-            None if allow_in_dm is ... else allow_in_dm,
-            route_to,
-            _validate_allow_in_dm,
-        )
-        nsfw, route_to = _check_maybe_route('nsfw', nsfw, route_to, _validate_nsfw)
-        required_permissions, route_to = _check_maybe_route(
-            'required_permissions', required_permissions, route_to, _validate_required_permissions,
-        )
-        integration_context_types, route_to = _check_maybe_route(
-            'integration_context_types', integration_context_types, route_to, _validate_integration_context_types,
-        )
-        integration_types, route_to = _check_maybe_route(
-            'integration_types', integration_types, route_to, _validate_integration_types,
-        )
-        
-        if route_to:
-            name = route_name(name, route_to)
-            name = [raw_name_to_display(check_name(command, sub_name)) for sub_name in name]
-            
-            is_global = route_value(is_global, route_to)
-            guild_ids = route_value(guild_ids, route_to)
-            unloading_behaviour = route_value(unloading_behaviour, route_to)
-            allow_in_dm = route_value(allow_in_dm, route_to)
-            nsfw = route_value(nsfw, route_to)
-            required_permissions = route_value(required_permissions, route_to)
-            target = route_value(target, route_to)
-            integration_context_types = route_value(integration_context_types, route_to)
-            integration_types = route_value(integration_types, route_to)
-        
+        # delete_on_unload
+        if delete_on_unload is ...:
+            unloading_behaviour = UNLOADING_BEHAVIOUR_INHERIT
+        elif _validate_delete_on_unload(delete_on_unload):
+            unloading_behaviour = UNLOADING_BEHAVIOUR_DELETE
         else:
-            name = check_name(command, name)
-            name = raw_name_to_display(name)
-            
+            unloading_behaviour = UNLOADING_BEHAVIOUR_KEEP
+        
+        # guild
+        if guild is ...:
+            guild_ids = None
+        else:
+            guild_ids = _validate_guild(guild)
+        
+        # integration_context_types
+        if integration_context_types is ...:
+            integration_context_types = INTEGRATION_CONTEXT_TYPES_ALL
+        else:
+            integration_context_types = _validate_integration_context_types(integration_context_types)
+        
+        # integration_types
+        if integration_types is ...:
+            integration_types = (ApplicationIntegrationType.guild_install,)
+        else:
+            integration_types = _validate_integration_types(integration_types)
+        
+        # is_global
+        if is_global is ...:
+            is_global = False
+        else:
+            is_global = _validate_is_global(is_global)
+        
+        # nsfw
+        if nsfw is ...:
+            nsfw = False
+        else:
+            nsfw = _validate_nsfw(nsfw)
+        
+        # required_permissions
+        if required_permissions is ...:
+            required_permissions = Permission()
+        else:
+            required_permissions = _validate_required_permissions(required_permissions)
         
         # Check extra parameters
         response_modifier = ResponseModifier(keyword_parameters)
-        
         if keyword_parameters:
             raise TypeError(
                 f'Extra or unused parameters: {keyword_parameters!r}.'
             )
         
+        # Post validate
+        name = check_name(command_function, name)
+        name = raw_name_to_display(name)
         
-        command, parameter_converters = get_context_command_parameter_converters(command)
-        
-        
-        if route_to:
-            router = []
-            
-            for (
-                name, is_global, guild_ids, unloading_behaviour, nsfw, required_permissions, allow_in_dm,
-                integration_context_types, integration_types
-            ) in zip(
-                name, is_global, guild_ids, unloading_behaviour, nsfw, required_permissions, allow_in_dm,
-                integration_context_types, integration_types
-            ):
-                
-                if is_global and (guild_ids is not None):
-                    raise TypeError(
-                        f'`is_global` and `guild` contradict each other, got is_global = {is_global!r}, '
-                        f'guild = {guild!r}.'
-                    )
-                
-                integration_context_types = _maybe_exclude_dm_from_integration_context_types(
-                    allow_in_dm, integration_context_types
-                )
-                
-                if not is_global:
-                    integration_types = None
-                    integration_context_types = None
-                
-                self = object.__new__(cls)
-                self.default = False
-                self.guild_ids = guild_ids
-                self.global_ = is_global
-                self.name = name
-                self._schema = None
-                self._registered_application_command_ids = None
-                self._unloading_behaviour = unloading_behaviour
-                self.nsfw = nsfw
-                self.required_permissions = required_permissions
-                self._permission_overwrites = None
-                self.target = target
-                self._exception_handlers = None
-                self._parent_reference = None
-                self._parameter_converters = parameter_converters
-                self._command_function = command
-                self.response_modifier = response_modifier
-                self.integration_context_types = integration_context_types
-                self.integration_types = integration_types
-                
-                if (wrappers is not None):
-                    for wrapper in wrappers:
-                        wrapper.apply(self)
-                
-                router.append(self)
-            
-            warn(
-                (
-                    f'Routing commands with tuple parameters is deprecated and will be removed in 2024 Jun. '
-                    f'Please use multiple command decorators instead.'
-                ),
-                FutureWarning,
-                stacklevel = 5,
+        if is_global and (guild_ids is not None):
+            raise TypeError(
+                f'`is_global` and `guild` contradict each other, got is_global = {is_global!r}, '
+                f'guild = {guild!r}.'
             )
-            
-            return Router(router)
         
-        else:
-            if is_global and (guild_ids is not None):
-                raise TypeError(
-                    f'`is_global` and `guild` contradict each other, got is_global = {is_global!r}, '
-                    f'guild = {guild!r}.'
-                )
-            
+        if (allow_in_dm is not ...):
             integration_context_types = _maybe_exclude_dm_from_integration_context_types(
                 allow_in_dm, integration_context_types
             )
-            
-            if not is_global:
-                integration_types = None
-                integration_context_types = None
-            
-            self = object.__new__(cls)
-            self.guild_ids = guild_ids
-            self.global_ = is_global
-            self.default = False
-            self.name = name
-            self._schema = None
-            self._registered_application_command_ids = None
-            self._unloading_behaviour = unloading_behaviour
-            self.nsfw = nsfw
-            self.required_permissions = required_permissions
-            self._permission_overwrites = None
-            self.target = target
-            self._exception_handlers = None
-            self._parent_reference = None
-            self._parameter_converters = parameter_converters
-            self._command_function = command
-            self.response_modifier = response_modifier
-            self.integration_context_types = integration_context_types
-            self.integration_types = integration_types
-            
-            if (wrappers is not None):
-                for wrapper in wrappers:
-                    wrapper.apply(self)
-            
-            return self
-    
-    
-    @copy_docs(CommandBaseApplicationCommand._build_repr_body_into)
-    def _build_repr_body_into(self, repr_parts):
-        CommandBaseApplicationCommand._build_repr_body_into(self, repr_parts)
         
+        if not is_global:
+            integration_types = None
+            integration_context_types = None
+        
+        command_function, parameter_converters = get_context_command_parameter_converters(command_function)
+        
+        # Construct
+        self = object.__new__(cls)
+        self._command_function = command_function
+        self._exception_handlers = None
+        self._parameter_converters = parameter_converters
+        self._parent_reference = None
+        self._permission_overwrites = None
+        self._registered_application_command_ids = None
+        self._schema = None
+        self._unloading_behaviour = unloading_behaviour
+        self.global_ = is_global
+        self.guild_ids = guild_ids
+        self.integration_context_types = integration_context_types
+        self.integration_types = integration_types
+        self.name = name
+        self.nsfw = nsfw
+        self.required_permissions = required_permissions
+        self.response_modifier = response_modifier
+        self.target = target
+        
+        if (wrappers is not None):
+            for wrapper in wrappers:
+                wrapper.apply(self)
+        
+        return self
+    
+    
+    @copy_docs(CommandBaseApplicationCommand._put_repr_parts_into)
+    def _put_repr_parts_into(self, repr_parts):
+        repr_parts = CommandBaseApplicationCommand._put_repr_parts_into(self, repr_parts)
+        
+        # target
         repr_parts.append(', target = ')
         repr_parts.append(self.target.name)
+        
+        # response_modifier
+        response_modifier = self.response_modifier
+        if (response_modifier is not None):
+            repr_parts.append(', response_modifier = ')
+            repr_parts.append(repr(response_modifier))
+        
+        return repr_parts
+    
+    
+    @copy_docs(CommandBaseApplicationCommand.__hash__)
+    def __hash__(self):
+        hash_value = CommandBaseApplicationCommand.__hash__(self)
+        
+        # _command_function
+        command_function = self._command_function
+        try:
+            command_function_hash_value = hash(command_function)
+        except TypeError:
+            command_function_hash_value = object.__hash__(command_function)
+        hash_value ^= command_function_hash_value
+        
+        # _parameter_converters
+        # Internal field
+        
+        # response_modifier
+        hash_value ^= hash(self.response_modifier)
+        
+        # target
+        hash_value ^= self.target.value << 20
+        
+        return hash_value
+    
+    
+    @copy_docs(CommandBaseApplicationCommand._is_equal_same_type)
+    def _is_equal_same_type(self, other):
+        if not CommandBaseApplicationCommand._is_equal_same_type(self, other):
+            return False
+        
+        # _command_function
+        if self._command_function != other._command_function:
+            return False
+        
+        # _parameter_converters
+        # Internal field
+        
+        # response_modifier
+        if self.response_modifier != other.response_modifier:
+            return False
+        
+        # target
+        if self.target is not other.target:
+            return False
+        
+        return True
     
     
     @copy_docs(CommandBaseApplicationCommand.invoke)
@@ -462,53 +448,6 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         new.target = self.target
         
         return new
-    
-    
-    @copy_docs(CommandBaseApplicationCommand.__hash__)
-    def __hash__(self):
-        hash_value = CommandBaseApplicationCommand.__hash__(self)
-        
-        # _command_function
-        command_function = self._command_function
-        try:
-            command_function_hash_value = hash(command_function)
-        except TypeError:
-            command_function_hash_value = object.__hash__(command_function)
-        hash_value ^= command_function_hash_value
-        
-        # _parameter_converters
-        # Internal field
-        
-        # response_modifier
-        hash_value ^= hash(self.response_modifier)
-        
-        # target
-        hash_value ^= self.target.value << 20
-        
-        return hash_value
-    
-    
-    @copy_docs(CommandBaseApplicationCommand._is_equal_same_type)
-    def _is_equal_same_type(self, other):
-        if not CommandBaseApplicationCommand._is_equal_same_type(self, other):
-            return False
-        
-        # _command_function
-        if self._command_function != other._command_function:
-            return False
-        
-        # _parameter_converters
-        # Internal field
-        
-        # response_modifier
-        if self.response_modifier != other.response_modifier:
-            return False
-        
-        # target
-        if self.target is not other.target:
-            return False
-        
-        return True
 
     
     @copy_docs(CommandInterface.get_command_function)

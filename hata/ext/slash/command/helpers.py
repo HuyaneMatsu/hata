@@ -22,7 +22,7 @@ def validate_application_target_type(target):
     
     Parameters
     ----------
-    target : `None`, `int`, `str`, ``ApplicationCommandTargetType``
+    target : `int | str | ApplicationCommandTargetType`
         The `target` to validate.
     
     Returns
@@ -35,7 +35,7 @@ def validate_application_target_type(target):
     ValueError
         - If `target` could not be matched by any expected target type name or value.
     TypeError
-        - If `target` is neither `None`, `int`, `str`, nor ``ApplicationCommandTargetType``.
+        - If `target` is given as incorrect type.
     """
     if target is None:
         target = ApplicationCommandTargetType.none
@@ -47,7 +47,7 @@ def validate_application_target_type(target):
         if type(target) is not str:
             target = str(target)
         
-        target = target.lower()
+        target = target.casefold()
         
         try:
             target = APPLICATION_COMMAND_TARGET_TYPES_BY_NAME[target]
@@ -61,7 +61,7 @@ def validate_application_target_type(target):
             target = int(target)
         
         try:
-            target = APPLICATION_COMMAND_TARGET_TYPES_BY_NAME[target]
+            target = APPLICATION_COMMAND_TARGET_TYPES_BY_VALUE[target]
         except KeyError:
             raise ValueError(
                 f'Unknown `target` value: {target!r}.'
@@ -69,8 +69,8 @@ def validate_application_target_type(target):
     
     else:
         raise TypeError(
-            f'`target` can be `None`, `{ApplicationCommandTargetType.__name__}`, `str`,  `int`, got '
-            f'{target.__class__.__name__}; {target!r}.'
+            f'`target` can be `{ApplicationCommandTargetType.__name__}`, `str`, `int`, got '
+            f'{type(target).__name__}; {target!r}.'
         )
     
     if target is ApplicationCommandTargetType.none:

@@ -19,6 +19,8 @@ def test__MessageInteraction__repr():
     name = 'Chata'
     response_message_id = 20240325009
     interacted_message_id = 20240325040
+    target_message_id = 202410060014
+    target_user = User.precreate(202410060015)
     triggering_interaction = MessageInteraction.precreate(202403260008, name = 'pain')
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202403270018,
@@ -33,6 +35,8 @@ def test__MessageInteraction__repr():
         name = name,
         response_message_id = response_message_id,
         sub_command_name_stack = sub_command_name_stack,
+        target_message_id = target_message_id,
+        target_user = target_user,
         triggering_interaction = triggering_interaction,
         user = user,
     )
@@ -52,6 +56,8 @@ def test__MessageInteraction__hash():
     name = 'Chata'
     response_message_id = 20240325010
     interacted_message_id = 20240325041
+    target_message_id = 202410060016
+    target_user = User.precreate(202410060017)
     triggering_interaction = MessageInteraction.precreate(202403260009, name = 'pain')
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202403270020,
@@ -66,6 +72,8 @@ def test__MessageInteraction__hash():
         name = name,
         response_message_id = response_message_id,
         sub_command_name_stack = sub_command_name_stack,
+        target_message_id = target_message_id,
+        target_user = target_user,
         triggering_interaction = triggering_interaction,
         user = user,
     )
@@ -73,19 +81,15 @@ def test__MessageInteraction__hash():
     vampytest.assert_instance(hash(message_interaction), int)
 
 
-def test__MessageInteraction__eq():
-    """
-    Tests whether ``MessageInteraction.__eq__`` works as intended.
-    """
-    message_interaction_id_0 = 202403250025
-    message_interaction_id_1 = 202403250026
-    
+def _iter_options__eq():
     interaction_type = InteractionType.application_command
     user = User.precreate(202403250027)
     sub_command_name_stack = ('Afraid', 'Darkness')
     name = 'Chata'
     response_message_id = 20240325011
     interacted_message_id = 20240325042
+    target_message_id = 202410060018
+    target_user = User.precreate(202410060019)
     triggering_interaction = MessageInteraction.precreate(202403260010, name = 'pain')
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202403270022,
@@ -93,46 +97,161 @@ def test__MessageInteraction__eq():
     }
     
     keyword_parameters = {
-        'message_interaction_id': message_interaction_id_0,
         'authorizer_user_ids': authorizer_user_ids,
         'interacted_message_id': interacted_message_id,
         'interaction_type': interaction_type,
         'name': name,
         'response_message_id': response_message_id,
         'sub_command_name_stack': sub_command_name_stack,
+        'target_message_id': target_message_id,
+        'target_user': target_user,
         'triggering_interaction': triggering_interaction,
         'user': user,
     }
     
-    message_interaction = MessageInteraction.precreate(**keyword_parameters)
-    vampytest.assert_eq(message_interaction, message_interaction)
-    vampytest.assert_ne(message_interaction, object())
+    yield (
+        {},
+        {},
+        True,
+    )
     
-    for field_name, field_value in (
-        ('message_interaction_id', message_interaction_id_1),
-        ('authorizer_user_ids', None),
-        ('interacted_message_id', 0),
-        ('name', 'Slayer'),
-        ('response_message_id', 0),
-        ('interaction_type', InteractionType.form_submit),
-        ('sub_command_name_stack', None),
-        ('triggering_interaction', None),
-        ('user', User.precreate(202403250028)),
-    ):
-        test_message_interaction = MessageInteraction.precreate(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(message_interaction, test_message_interaction)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'authorizer_user_ids': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'interacted_message_id': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'Slayer',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'response_message_id': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'interaction_type': InteractionType.form_submit,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'sub_command_name_stack': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'target_message_id': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'target_user': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'triggering_interaction': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'user': User.precreate(202403250028),
+        },
+        False,
+    )
 
 
-def test__MessageInteraction__eq__partial():
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__MessageInteraction__eq__partial(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``MessageInteraction.__eq__`` works as intended.
+    
+    Case: partial.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    message_interaction_0 = MessageInteraction(**keyword_parameters_0)
+    message_interaction_1 = MessageInteraction(**keyword_parameters_1)
+    
+    output = message_interaction_0 == message_interaction_1
+    vampytest.assert_instance(output, bool)
+    return output
+
+
+def test__MessageInteraction__eq__partial_with_non_partial():
     """
     Tests whether ``MessageInteraction.__eq__`` works as intended.
     
     Case: Partial with non-partial.
     """
     name = 'Afraid'
-    message_interaction_id = 202305040168
+    message_interaction_id_0 = 202403250025
+    message_interaction_id_1 = 202403250026
     
-    message_interaction_0 = MessageInteraction.precreate(message_interaction_id = message_interaction_id, name = name)
-    message_interaction_1 = MessageInteraction(name = name)
+    message_interaction_0 = MessageInteraction.precreate(message_interaction_id = message_interaction_id_0, name = name)
+    message_interaction_1 = MessageInteraction.precreate(message_interaction_id = message_interaction_id_1)
+    message_interaction_2 = MessageInteraction(name = name)
     
-    vampytest.assert_eq(message_interaction_0, message_interaction_1)
+    vampytest.assert_ne(message_interaction_0, message_interaction_1)
+    vampytest.assert_eq(message_interaction_0, message_interaction_2)
+    vampytest.assert_ne(message_interaction_1, message_interaction_2)

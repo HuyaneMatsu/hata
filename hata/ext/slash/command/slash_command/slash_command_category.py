@@ -1,13 +1,12 @@
 __all__ = ('SlashCommandCategory',)
 
-from scarletio import RichAttributeErrorBaseType, WeakReferer, copy_docs, include
+from scarletio import RichAttributeErrorBaseType, copy_docs, include
 
 from .....discord.application_command import ApplicationCommandOption, ApplicationCommandOptionType
 from .....discord.application_command.application_command.constants import (
     OPTIONS_MAX as APPLICATION_COMMAND_OPTIONS_MAX
 )
 from .....discord.client import Client
-from .....discord.events.handling_helpers import create_event_from_class
 from .....discord.interaction import InteractionEvent
 
 from ...constants import (
@@ -42,206 +41,106 @@ class SlashCommandCategory(
     
     Attributes
     ----------
-    _auto_completers : `None`, `list` of ``SlashCommandParameterAutoCompleter``
+    _auto_completers : `None | list<SlashCommandParameterAutoCompleter>`
         Auto completer functions by.
+    
     _deepness : `int`
         How nested the category is.
-    _exception_handlers : `None`, `list` of `CoroutineFunction`
-        Exception handlers added with ``.error`` to the interaction handler.
-        
-        Same as ``Slasher._exception_handlers``.
     
-    _self_reference : ``WeakReferer``
+    _exception_handlers : `None | list<CoroutineFunction>`
+        Exception handlers added with ``.error`` to the interaction handler.
+    
+    _parent_reference : `None | WeakReferer<SelfReferenceInterface>`
+        The parent slash command of the category if any.
+    
+    _self_reference : `None | WeakReferer<instance>`
         Back reference to the slasher application command category.
         
         Used by sub commands to access the parent entity.
     
-    _sub_commands : `dict` of (`str`, ``SlashCommandFunction``) items
+    _sub_commands : `None | dict<str, SlashCommandFunction | SlashCommandCategory>`
         The sub-commands of the category.
-    _parent_reference : `None`, ``WeakReferer`` to ``SlashCommand``
-        The parent slash command of the category if any.
-    description : `str`
-        The slash command's description.
+    
     default : `bool`
         Whether the command is the default command in it's category.
+    
+    description : `str`
+        The slash command's description.
+    
     name : `str`
         The name of the slash sub-category.
     """
     __slots__ = (
-        '__weakref__', '_auto_completers', '_deepness', '_exception_handlers', '_self_reference', '_sub_commands',
-        '_parent_reference', 'description', 'default', 'name'
+        '__weakref__', '_auto_completers', '_deepness', '_exception_handlers', '_parent_reference',  '_self_reference',
+        '_sub_commands', 'default', 'description', 'name'
     )
     
-    def __new__(cls, slasher_application_command, deepness):
+    def __new__(cls, name, description, default, deepness):
         """
-        Creates a new ``SlashCommandCategory`` with the given parameters.
+        Creates a new slash command category.
         
         Parameters
         ----------
-        slasher_application_command : ``SlashCommand``
-            The parent slash command.
+        name : `str`
+            The name of the slash command.
+        
+        description : `str`
+            The slash command's description.
+        
+        default : `bool`
+            Whether the command is the default command in it's category.
+        
+        deepness : `int`
+            How nested the category is.
+        
+        Raises
+        ------
+        RuntimeError
+            Maximum deepness reached.
         """
         if deepness > APPLICATION_COMMAND_CATEGORY_DEEPNESS_MAX:
-            raise RuntimeError('Cannot add anymore sub-category under sub-categories.')
+            raise RuntimeError('Maximum deepness reached. Cannot add anymore sub-category under sub-categories.')
         
         self = object.__new__(cls)
-        self.name = slasher_application_command.name
-        self.description = slasher_application_command.description
-        self._sub_commands = {}
-        self._parent_reference = None
-        self.default = slasher_application_command.default
         self._auto_completers = None
         self._deepness = deepness
         self._exception_handlers = None
+        self._parent_reference = None
         self._self_reference = None
+        self._sub_commands = None
+        self.default = default
+        self.description = description
+        self.name = name
         
         return self
     
     
-    async def invoke(self, client, interaction_event, options):
-        """
-        Calls the slash command category.
+    def __repr__(self):
+        """Returns the slash command category's representation."""
+        repr_parts = ['<', type(self).__name__]
         
-        This method is a coroutine.
+        # name
+        repr_parts.append(' name = ')
+        repr_parts.append(repr(self.name))
         
-        Parameters
-        ----------
-        client : ``Client``
-            The respective client who received the event.
-        interaction_event : ``InteractionEvent``
-            The received interaction event.
-        options : `None`, `list` of ``InteractionEventChoice``
-            Options bound to the category.
-        """
-        if (options is None) or len(options) != 1:
-            return
+        # description
+        repr_parts.append(', description = ')
+        repr_parts.append(repr(self.description))
         
-        option = options[0]
-        
-        try:
-            sub_command = self._sub_commands[option.name]
-        except KeyError:
-            pass
-        else:
-            await sub_command.invoke(client, interaction_event, option.options)
-            return
-        
-        # Do not put this into the `except` branch.
-        await handle_command_exception(
-            self,
-            client,
-            interaction_event,
-            SlashCommandParameterConversionError(
-                None,
-                option.name,
-                'sub-command',
-                [*self._sub_commands.keys()],
-            )
-        )
-        return
-    
-    
-    async def invoke_auto_completion(self, client, interaction_event, auto_complete_option):
-        """
-        Calls the respective auto completion function of the command.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        client : ``Client``
-            The respective client who received the event.
-        interaction_event : ``InteractionEvent``
-            The received interaction event.
-        auto_complete_option : ``ApplicationCommandAutocompleteInteraction``, \
-                ``ApplicationCommandAutocompleteInteractionOption``
-            The option to autocomplete.
-        """
-        auto_complete_option_type = auto_complete_option.type
-        if (
-            (auto_complete_option_type is APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND) or
-            (auto_complete_option_type is APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_CATEGORY)
-        ):
-            options = auto_complete_option.options
-            if (options is not None):
-                option = options[0]
-                sub_commands = self._sub_commands
-                if (sub_commands is not None):
-                    try:
-                        sub_command = sub_commands[option.name]
-                    except KeyError:
-                        pass
-                    else:
-                        await sub_command.invoke_auto_completion(client, interaction_event, option)
-    
-    
-    def as_option(self):
-        """
-        Returns the slash command category as an application command option.
-        
-        Returns
-        -------
-        option : ``ApplicationCommandOption``
-        """
-        sub_commands = self._sub_commands
-        if sub_commands:
-            options = [sub_command.as_option() for sub_command in sub_commands.values()]
-        else:
-            options = None
-        
-        return ApplicationCommandOption(
-            self.name,
-            self.description,
-            ApplicationCommandOptionType.sub_command_group,
-            options = options,
-            default = self.default,
-        )
-    
-    
-    def copy(self):
-        """
-        Copies the slash command category.
-        
-        Returns
-        -------
-        new : ``SlashCommandCategory``
-        """
-        new = object.__new__(type(self))
-        
-        # _auto_completers
-        auto_completers = self._auto_completers
-        if (auto_completers is not None):
-            auto_completers = auto_completers.copy()
-        new._auto_completers = auto_completers
-        
-        # _deepness
-        new._deepness = self._deepness
+        # default
+        default = self.default
+        if default:
+            repr_parts.append(', default = ')
+            repr_parts.append(repr(default))
         
         # _exception_handlers
         exception_handlers = self._exception_handlers
         if (exception_handlers is not None):
-            exception_handlers = exception_handlers.copy()
-        new._exception_handlers = exception_handlers
+            repr_parts.append(', exception_handlers = ')
+            repr_parts.append(repr(exception_handlers))
         
-        # _self_reference
-        new._self_reference = None
-        
-        # _sub_commands
-        new._sub_commands = {category_name: category.copy() for category_name, category in self._sub_commands.items()}
-        
-        # _parent_reference
-        new._parent_reference = None
-        
-        # default
-        new.default = self.default
-        
-        # description
-        new.description = self.description
-        
-        # name
-        new.name = self.name
-        
-        return new
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     
     def __hash__(self):
@@ -299,106 +198,6 @@ class SlashCommandCategory(
         
         return hash_value
     
-
-    def __format__(self, code):
-        """Formats the command in a format string."""
-        if not code:
-            return str(self)
-        
-        if code == 'm':
-            return self.mention
-        
-        raise ValueError(
-            f'Unknown format code {code!r} for {self.__class__.__name__}; {self!r}. '
-            f'Available format codes: {""!r}, {"m"!r}.'
-        )
-    
-    
-    @copy_docs(NestableInterface._make_command_instance_from_parameters)
-    def _make_command_instance_from_parameters(self, function, positional_parameters, keyword_parameters):
-        return SlashCommand(function, *positional_parameters, **keyword_parameters)
-    
-    
-    @copy_docs(NestableInterface._make_command_instance_from_class)
-    def _make_command_instance_from_class(self, klass):
-        return create_event_from_class(
-            SlashCommand, klass, SlashCommand.COMMAND_PARAMETER_NAMES, SlashCommand.COMMAND_NAME_NAME,
-            SlashCommand.COMMAND_COMMAND_NAME
-        )
-    
-    
-    @copy_docs(NestableInterface._store_command_instance)
-    def _store_command_instance(self, command):
-        if isinstance(command, SlashCommand):
-            instance = self._add_application_command(command)
-            return True, instance
-        
-        return False, None
-    
-    
-    def _add_application_command(self, command):
-        """
-        Adds a sub-command or sub-category to the slash command.
-        
-        Parameters
-        ----------
-        command : ``SlashCommand``
-            The slash command to add.
-        
-        Returns
-        -------
-        as_sub_command : ``SlashCommandFunction``, ``SlashCommandCategory``
-            The command as sub-command.
-        
-        Raises
-        ------
-        RuntimeError
-            - The ``SlashCommand`` reached the maximal amount of children.
-            - Cannot add anymore sub-category under sub-categories.
-            - If the command to add is a default sub-command meanwhile the category already has one.
-        """
-        sub_commands = self._sub_commands
-        if len(sub_commands) == APPLICATION_COMMAND_OPTIONS_MAX and (command.name not in sub_commands):
-            raise RuntimeError(
-                f'The {self.__class__.__name__} reached the maximal amount of children '
-                f'({APPLICATION_COMMAND_OPTIONS_MAX}).'
-            )
-        
-        as_sub_command = command.as_sub_command(self._deepness + 1)
-        
-        if command.default:
-            for sub_command in sub_commands.values():
-                if sub_command.default:
-                    raise RuntimeError(
-                        f'{self!r} already has default command.'
-                    )
-        
-        as_sub_command._parent_reference = self.get_self_reference()
-        sub_commands[command.name] = as_sub_command
-        
-        _reset_parent_schema(self)
-        
-        # Resolve auto completers recursively
-        parent = self
-        while True:
-            auto_completers = parent._auto_completers
-            if (auto_completers is not None):
-                for auto_completer in auto_completers:
-                    as_sub_command._try_resolve_auto_completer(auto_completer)
-            
-            if isinstance(parent, Slasher):
-                break
-            
-            parent_reference = parent._parent_reference
-            if (parent_reference is None):
-                break
-            
-            parent = parent_reference()
-            if (parent is None):
-                break
-        
-        return as_sub_command
-    
     
     def __eq__(self, other):
         """Returns whether the two slash commands categories are equal."""
@@ -441,6 +240,238 @@ class SlashCommandCategory(
         return True
     
     
+    def __format__(self, code):
+        """Formats the command in a format string."""
+        if not code:
+            return str(self)
+        
+        if code == 'm':
+            return self.mention
+        
+        raise ValueError(
+            f'Unknown format code {code!r} for {type(self).__name__}; {self!r}. '
+            f'Available format codes: {""!r}, {"m"!r}.'
+        )
+    
+    
+    async def invoke(self, client, interaction_event, options):
+        """
+        Calls the slash command category.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client who received the event.
+        
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
+        
+        options : `None | list<InteractionEventChoice>`
+            Options bound to the category.
+        """
+        sub_commands = self._sub_commands
+        if sub_commands is None:
+            return
+        
+        if (options is None) or len(options) != 1:
+            return
+        
+        option = options[0]
+        
+        try:
+            sub_command = sub_commands[option.name]
+        except KeyError:
+            pass
+        else:
+            await sub_command.invoke(client, interaction_event, option.options)
+            return
+        
+        # Do not put this into the `except` branch.
+        await handle_command_exception(
+            self,
+            client,
+            interaction_event,
+            SlashCommandParameterConversionError(
+                None,
+                option.name,
+                'sub-command',
+                [*sub_commands.keys()],
+            )
+        )
+        return
+    
+    
+    def copy(self):
+        """
+        Copies the slash command category.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        new = object.__new__(type(self))
+        
+        # _auto_completers
+        auto_completers = self._auto_completers
+        if (auto_completers is not None):
+            auto_completers = auto_completers.copy()
+        new._auto_completers = auto_completers
+        
+        # _deepness
+        new._deepness = self._deepness
+        
+        # _exception_handlers
+        exception_handlers = self._exception_handlers
+        if (exception_handlers is not None):
+            exception_handlers = exception_handlers.copy()
+        new._exception_handlers = exception_handlers
+        
+        # _self_reference
+        new._self_reference = None
+        
+        # _sub_commands
+        sub_commands = self._ub_commands
+        if (sub_commands is not None):
+            sub_commands = {name: category.copy() for name, category in sub_commands.items()}
+        new._sub_commands = sub_commands
+        
+        # _parent_reference
+        new._parent_reference = None
+        
+        # default
+        new.default = self.default
+        
+        # description
+        new.description = self.description
+        
+        # name
+        new.name = self.name
+        
+        return new
+    
+    
+    async def invoke_auto_completion(self, client, interaction_event, auto_complete_option):
+        """
+        Calls the respective auto completion function of the command.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client who received the event.
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
+        auto_complete_option : `InteractionMetadataApplicationCommandAutocomplete | InteractionOption`
+            The option to autocomplete.
+        """
+        auto_complete_option_type = auto_complete_option.type
+        if (
+            (auto_complete_option_type is APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND) or
+            (auto_complete_option_type is APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_CATEGORY)
+        ):
+            options = auto_complete_option.options
+            if (options is not None):
+                option = options[0]
+                sub_commands = self._sub_commands
+                if (sub_commands is not None):
+                    try:
+                        sub_command = sub_commands[option.name]
+                    except KeyError:
+                        pass
+                    else:
+                        await sub_command.invoke_auto_completion(client, interaction_event, option)
+    
+    
+    @copy_docs(NestableInterface._make_command_instance_from_parameters)
+    def _make_command_instance_from_parameters(self, function, positional_parameters, keyword_parameters):
+        return SlashCommand(function, *positional_parameters, **keyword_parameters)
+    
+    
+    @copy_docs(NestableInterface._store_command_instance)
+    def _store_command_instance(self, command):
+        if isinstance(command, SlashCommand):
+            instance = self._add_application_command(command)
+            return True, instance
+        
+        return False, None
+    
+    
+    def _add_application_command(self, command):
+        """
+        Adds a sub-command or sub-category to the slash command.
+        
+        Parameters
+        ----------
+        command : ``SlashCommand``
+            The slash command to add.
+        
+        Returns
+        -------
+        as_sub_command : `SlashCommandFunction | SlashCommandCategory`
+            The command as sub-command.
+        
+        Raises
+        ------
+        RuntimeError
+            - The ``SlashCommand`` reached the maximal amount of children.
+            - Cannot add anymore sub-category under sub-categories.
+            - If the command to add is a default sub-command meanwhile the category already has one.
+        """
+        sub_commands = self._sub_commands
+        if (
+            (sub_commands is not None) and
+            (len(sub_commands) == APPLICATION_COMMAND_OPTIONS_MAX) and
+            (command.name not in sub_commands)
+        ):
+            raise RuntimeError(
+                f'The {type(self).__name__} reached the maximal amount of children '
+                f'({APPLICATION_COMMAND_OPTIONS_MAX}).'
+            )
+        
+        as_sub_command = command.as_sub_command(self._deepness + 1)
+        
+        if (sub_commands is not None) and command.default:
+            for sub_command in sub_commands.values():
+                if sub_command.default and (sub_command.name != command.name):
+                    raise RuntimeError(
+                        f'{self!r} already has a default command.'
+                    )
+        
+        as_sub_command._parent_reference = self.get_self_reference()
+        
+        if sub_commands is None:
+            sub_commands = {}
+            self._sub_commands = sub_commands
+        
+        sub_commands[command.name] = as_sub_command
+        
+        _reset_parent_schema(self)
+        
+        # Resolve auto completers recursively
+        parent = self
+        while True:
+            auto_completers = parent._auto_completers
+            if (auto_completers is not None):
+                for auto_completer in auto_completers:
+                    as_sub_command._try_resolve_auto_completer(auto_completer)
+            
+            if isinstance(parent, Slasher):
+                break
+            
+            parent_reference = parent._parent_reference
+            if (parent_reference is None):
+                break
+            
+            parent = parent_reference()
+            if (parent is None):
+                break
+        
+        return as_sub_command
+    
+    
     @copy_docs(AutocompleteInterface._register_auto_completer)
     def _register_auto_completer(self, function, parameter_names):
         auto_completer = self._make_auto_completer(function, parameter_names)
@@ -448,8 +479,9 @@ class SlashCommandCategory(
         
         resolved = 0
         sub_commands = self._sub_commands
-        for sub_command in sub_commands.values():
-            resolved += sub_command._try_resolve_auto_completer(auto_completer)
+        if (sub_commands is not None):
+            for sub_command in sub_commands.values():
+                resolved += sub_command._try_resolve_auto_completer(auto_completer)
         
         if resolved:
             _reset_parent_schema(self)
@@ -473,10 +505,36 @@ class SlashCommandCategory(
             The amount of parameters resolved.
         """
         resolved = 0
-        for sub_command in self._sub_commands.values():
-             resolved += sub_command._try_resolve_auto_completer(auto_completer)
         
-        return resolved
+        sub_commands = self._sub_commands
+        if (sub_commands is not None):
+            for sub_command in sub_commands.values():
+                 resolved += sub_command._try_resolve_auto_completer(auto_completer)
+        
+        return resolved    
+    
+    
+    def as_option(self):
+        """
+        Returns the slash command category as an application command option.
+        
+        Returns
+        -------
+        option : ``ApplicationCommandOption``
+        """
+        sub_commands = self._sub_commands
+        if sub_commands is None:
+            options = None
+        else:
+            options = [sub_command.as_option() for name, sub_command in sorted(sub_commands.items())]
+        
+        return ApplicationCommandOption(
+            self.name,
+            self.description,
+            ApplicationCommandOptionType.sub_command_group,
+            options = options,
+            default = self.default,
+        )
     
     
     # ---- Mention ----
@@ -527,7 +585,7 @@ class SlashCommandCategory(
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : `Guild | int`
             The guild to mention the command at.
         
         *sub_command_names : `str`

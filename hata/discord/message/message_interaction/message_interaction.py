@@ -6,15 +6,17 @@ from scarletio import export, include
 
 from ...bases import DiscordEntity
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
-from ...user import ZEROUSER, User, create_partial_user_from_id
+from ...user import User, ZEROUSER, create_partial_user_from_id
 
 from .fields import (
     parse_authorizer_user_ids, parse_id, parse_interacted_message_id, parse_name_and_sub_command_name_stack,
-    parse_response_message_id, parse_triggering_interaction, parse_type, parse_user, put_authorizer_user_ids_into,
-    put_id_into, put_interacted_message_id_into, put_name_and_sub_command_name_stack_into, put_response_message_id_into,
-    put_triggering_interaction_into, put_type_into, put_user_into, validate_authorizer_user_ids, validate_id,
-    validate_interacted_message_id, validate_name, validate_response_message_id, validate_sub_command_name_stack,
-    validate_triggering_interaction, validate_type, validate_user
+    parse_response_message_id, parse_target_message_id, parse_target_user, parse_triggering_interaction, parse_type,
+    parse_user, put_authorizer_user_ids_into, put_id_into, put_interacted_message_id_into,
+    put_name_and_sub_command_name_stack_into, put_response_message_id_into, put_target_message_id_into,
+    put_target_user_into, put_triggering_interaction_into, put_type_into, put_user_into, validate_authorizer_user_ids,
+    validate_id, validate_interacted_message_id, validate_name, validate_response_message_id,
+    validate_sub_command_name_stack, validate_target_message_id, validate_target_user, validate_triggering_interaction,
+    validate_type, validate_user
 )
 
 
@@ -31,6 +33,9 @@ PRECREATE_FIELDS = {
     'response_message': ('response_message_id', validate_response_message_id),
     'response_message_id': ('response_message_id', validate_response_message_id),
     'sub_command_name_stack': ('sub_command_name_stack', validate_sub_command_name_stack),
+    'target_message': ('target_message_id', validate_target_message_id),
+    'target_message_id': ('target_message_id', validate_target_message_id),
+    'target_user': ('target_user', validate_target_user),
     'triggering_interaction': ('triggering_interaction', validate_triggering_interaction),
     'user': ('user', validate_user),
 }
@@ -45,26 +50,40 @@ class MessageInteraction(DiscordEntity):
     ----------
     authorizer_user_ids : `None | dict<ApplicationIntegrationType, int>`
         The users' identifier who authorized the integration.
+    
     id : `int`
         The interaction's identifier.
+    
     interacted_message_id : `int`
         The interacted message's identifier. Present if the message is created from a component interaction.
+    
     name : `str`
         The invoked interaction's name.
+    
     response_message_id : `int`
         The response message's identifier. Present if the message is a followup one.
-    sub_command_name_stack : `None`, `tuple` of `str`
+    
+    sub_command_name_stack : `None | tuple<str>`
         The sub-command-group and sub-command names.
+    
+    target_message_id : `int`
+        The targeted message's identifier in case of a message context interaction.
+    
+    target_user : `None | ClientUserBase`
+        The targeted message's identifier in case of a user context interaction.
+    
     triggering_interaction : `None | MessageInteraction`
         Represents the source form interaction. Present if the message is created from a form interaction.
+    
     type : ``InteractionType``
         The interaction's type.
+    
     user : ``ClientUserBase``
         The user who invoked the interaction.
     """
     __slots__ = (
         'authorizer_user_ids', 'interacted_message_id', 'name', 'response_message_id', 'sub_command_name_stack',
-        'triggering_interaction', 'type', 'user'
+        'target_message_id', 'target_user', 'triggering_interaction', 'type', 'user'
     )
     
     def __new__(
@@ -76,6 +95,8 @@ class MessageInteraction(DiscordEntity):
         name = ...,
         response_message_id = ...,
         sub_command_name_stack = ...,
+        target_message_id = ...,
+        target_user = ...,
         triggering_interaction = ...,
         user = ...,
         user_id = ...,
@@ -103,6 +124,12 @@ class MessageInteraction(DiscordEntity):
         
         sub_command_name_stack : `None`, `iterable` of `str`, Optional (Keyword only)
             The sub-command-group and sub-command names.
+        
+        target_message_id : `int | Message`, Optional (Keyword only)
+            The targeted message's identifier in case of a message context interaction.
+        
+        target_user : `None | ClientUserBase`, Optional (Keyword only)
+            The targeted message's identifier in case of a user context interaction.
         
         triggering_interaction : `None | MessageInteraction`, Optional (Keyword only)
             Represents the source form interaction. Present if the message is created from a form interaction.
@@ -165,6 +192,19 @@ class MessageInteraction(DiscordEntity):
         else:
             sub_command_name_stack = validate_sub_command_name_stack(sub_command_name_stack)
         
+        # target_message_id
+        if target_message_id is ...:
+            target_message_id = 0
+        else:
+            target_message_id = validate_target_message_id(target_message_id)
+        
+        # target_user
+        if target_user is ...:
+            target_user = None
+        else:
+            target_user = validate_target_user(target_user)
+        
+        # triggering_interaction
         if triggering_interaction is ...:
             triggering_interaction = None
         else:
@@ -184,6 +224,8 @@ class MessageInteraction(DiscordEntity):
         self.name = name
         self.response_message_id = response_message_id
         self.sub_command_name_stack = sub_command_name_stack
+        self.target_message_id = target_message_id
+        self.target_user = target_user
         self.triggering_interaction = triggering_interaction
         self.type = interaction_type
         self.user = user
@@ -232,6 +274,16 @@ class MessageInteraction(DiscordEntity):
         
         response_message_id : `int`, `None`, ``Message``, Optional (Keyword only)
             The response message's identifier. Present if the message is a followup one.
+        
+        target_message : `int | Message`, Optional (Keyword only)
+            Alternative for `target_message_id`.
+        
+        target_message_id : `int | Message`, Optional (Keyword only)
+            The targeted message's identifier in case of a message context interaction.
+        
+        target_user : `None | ClientUserBase`, Optional (Keyword only)
+            The targeted message's identifier in case of a user context interaction.
+        
         
         sub_command_name_stack : `None`, `iterable` of `str`, Optional (Keyword only)
             The sub-command-group and sub-command names.
@@ -291,6 +343,8 @@ class MessageInteraction(DiscordEntity):
         self.name = ''
         self.response_message_id = 0
         self.sub_command_name_stack = None
+        self.target_message_id = 0
+        self.target_user = None
         self.triggering_interaction = None
         self.type = InteractionType.none
         self.user = ZEROUSER
@@ -318,6 +372,8 @@ class MessageInteraction(DiscordEntity):
         self.interacted_message_id = parse_interacted_message_id(data)
         self.name, self.sub_command_name_stack = parse_name_and_sub_command_name_stack(data)
         self.response_message_id = parse_response_message_id(data)
+        self.target_message_id = parse_target_message_id(data)
+        self.target_user = parse_target_user(data)
         self.triggering_interaction = parse_triggering_interaction(data)
         self.type = parse_type(data)
         self.user = parse_user(data)
@@ -346,6 +402,8 @@ class MessageInteraction(DiscordEntity):
         put_interacted_message_id_into(self.interacted_message_id, data, defaults)
         put_name_and_sub_command_name_stack_into((self.name, self.sub_command_name_stack), data, defaults)
         put_response_message_id_into(self.response_message_id, data, defaults)
+        put_target_message_id_into(self.target_message_id, data, defaults)
+        put_target_user_into(self.target_user, data, defaults)
         put_triggering_interaction_into(
             self.triggering_interaction, data, defaults, include_internals = include_internals
         )
@@ -422,6 +480,18 @@ class MessageInteraction(DiscordEntity):
             repr_parts.append(', response_message_id = ')
             repr_parts.append(repr(response_message_id))
         
+        # target_message_id
+        target_message_id = self.target_message_id
+        if target_message_id:
+            repr_parts.append(', target_message_id = ')
+            repr_parts.append(repr(target_message_id))
+        
+        # target_user
+        target_user = self.target_user
+        if target_user:
+            repr_parts.append(', target_user = ')
+            repr_parts.append(repr(target_user))
+        
         # triggering_interaction
         triggering_interaction = self.triggering_interaction
         if (triggering_interaction is not None):
@@ -487,6 +557,14 @@ class MessageInteraction(DiscordEntity):
         if self.sub_command_name_stack != other.sub_command_name_stack:
             return False
         
+        # target_message_id
+        if self.target_message_id != other.target_message_id:
+            return False
+        
+        # target_user
+        if self.target_user is not other.target_user:
+            return False
+        
         # triggering_interaction
         if self.triggering_interaction != other.triggering_interaction:
             return False
@@ -532,6 +610,14 @@ class MessageInteraction(DiscordEntity):
             for sub_command_name in sub_command_name_stack:
                 hash_value ^= hash(sub_command_name)
         
+        # target_message_id
+        hash_value ^= self.target_message_id
+        
+        # target_user
+        target_user = self.target_user
+        if (target_user is not None):
+            hash_value ^= target_user.id
+        
         # triggering_interaction
         triggering_interaction = self.triggering_interaction
         if (triggering_interaction is not None):
@@ -572,6 +658,9 @@ class MessageInteraction(DiscordEntity):
             sub_command_name_stack = (*sub_command_name_stack,)
         new.sub_command_name_stack = sub_command_name_stack
         
+        new.target_message_id = self.target_message_id
+        new.target_user = self.target_user
+        
         triggering_interaction = self.triggering_interaction
         if (triggering_interaction is not None):
             triggering_interaction = triggering_interaction.copy()
@@ -592,6 +681,8 @@ class MessageInteraction(DiscordEntity):
         name = ...,
         response_message_id = ...,
         sub_command_name_stack = ...,
+        target_message_id = ...,
+        target_user = ...,
         triggering_interaction = ...,
         user = ...,
         user_id = ...,
@@ -619,6 +710,12 @@ class MessageInteraction(DiscordEntity):
         
         sub_command_name_stack : `None`, `iterable` of `str`, Optional (Keyword only)
             The sub-command-group and sub-command names.
+        
+        target_message_id : `int | Message`, Optional (Keyword only)
+            The targeted message's identifier in case of a message context interaction.
+        
+        target_user : `None | ClientUserBase`, Optional (Keyword only)
+            The targeted message's identifier in case of a user context interaction.
         
         triggering_interaction : `None | MessageInteraction`, Optional (Keyword only)
             Represents the source form interaction. Present if the message is created from a form interaction.
@@ -689,6 +786,18 @@ class MessageInteraction(DiscordEntity):
         else:
             sub_command_name_stack = validate_sub_command_name_stack(sub_command_name_stack)
         
+        # target_message_id
+        if target_message_id is ...:
+            target_message_id = self.target_message_id
+        else:
+            target_message_id = validate_target_message_id(target_message_id)
+        
+        # target_user
+        if target_user is ...:
+            target_user = self.target_user
+        else:
+            target_user = validate_target_user(target_user)
+        
         # triggering_interaction
         if triggering_interaction is ...:
             triggering_interaction = self.triggering_interaction
@@ -711,6 +820,8 @@ class MessageInteraction(DiscordEntity):
         new.name = name
         new.response_message_id = response_message_id
         new.sub_command_name_stack = sub_command_name_stack
+        new.target_message_id = target_message_id
+        new.target_user = target_user
         new.triggering_interaction = triggering_interaction
         new.type = interaction_type
         new.user = user
@@ -785,3 +896,19 @@ class MessageInteraction(DiscordEntity):
         user_id = self.get_authorizer_user_id(integration_type)
         if user_id:
             return create_partial_user_from_id(user_id)
+
+    
+    @property
+    def target_user_id(self):
+        """
+        Returns the targeted user's identifier.
+        
+        Returns
+        -------
+        target_user_id : `int`
+        """
+        target_user = self.target_user
+        if target_user is None:
+            return 0
+        
+        return target_user.id

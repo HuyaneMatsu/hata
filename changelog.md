@@ -1,3 +1,40 @@
+## 1.3.68 *\[2024-10-27\]*
+
+### Improvements
+
+- Add `MessageInteraction.target_user`.
+- Add `MessageInteraction.target_user_id`.
+- Add `MessageInteraction.target_message_id`.
+- In `scaffold` cli command highlight that `.env` has to be populated in any ways before starting.
+
+#### ext.plugin_loader
+- `mark_as_plugin_root_directory` now loads plugins in incremental order (from unordered).
+
+#### ext.slash
+- All except `func` & `name` parameters passed to `.interactions(...)` is now keyword only.
+- Add missing `SlashCommandCategory.__repr__`.
+
+### Bug fixes
+
+- Fix possible `TypeError` in `ActivityTimestamps.__repr__`.
+
+#### ext.slash
+- Fix `CommandBaseCustomId.__repr__` not showing its fields as intended. (since 1.3.46)
+- Fix `CommandBaseApplicationCommand.__repr__` not showing its fields as intended. (since 1.3.46)
+- Fix `CommandBaseCustomId.__eq__` could return `False` if `custom_id`-s were passed in different order.
+- Fix `.interactions` decorator not recognizing `ApplicationCommandTargetType`-s when given as integer.
+- Fix `CommandBaseApplicationCommand._pop_application_command_id_for` did not set
+    `._registered_application_command_ids` as `None` when emptied.
+- Fix `CommandBaseApplicationCommand._exhaust_application_command_ids` did not set
+    `._registered_application_command_ids` as `None` when `break` was used in the last cycle.
+- Fix `ResponseModifier.__repr__` was built incorrectly.
+- Fix `SlashCommand.get_schema`'s output's `.options` were unordered in case it is a category
+    causing syncing to not match previously created command(s).
+- Fix `SlashCommandCategory.as_option`'s output's `.options` were unordered in case it is a category
+    causing syncing to not match previously created command(s).
+- Fix adding nested command rejected default even if the new had the same name.
+- Fix `InteractionCommandRouter` 
+
 ## 1.3.67 *\[2024-10-05\]*
 
 ### Improvements
@@ -35,7 +72,8 @@
 - Add `ERROR_CODES.unknown_asset`.
 - Add `Guild.soundboard_sounds` is now populated initially (its now included in the guild payload).
 - `Client.interaction_response_message_create` now returns `message` if applicable (its now included in the payload).
-- `Client.interaction_application_command_acknowledge` now returns `message` if applicable (its now included in the payload).
+- `Client.interaction_application_command_acknowledge` now returns `message` if applicable
+    (its now included in the payload).
 - Enforce `utf-8` on writing & reading files to avoid unexpected exceptions on clown operation systems.
 - Add `SUBSCRIPTIONS`.
 - Add `Subscription`.

@@ -24,7 +24,7 @@ class CommandCategory(RichAttributeErrorBaseType):
         Command to call, if sub command could not be detected.
     _parent_reference : `None`, ``WeakReferer``
         Weakreference to the command category's parent.
-    _self_reference : `None`, ``WeakReferer``
+    _self_reference : `None | WeakReferer<instance>`
         Weakreference to the category itself.
     name : `None`, `str`
         The sub command category's name.

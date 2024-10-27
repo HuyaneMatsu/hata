@@ -1,12 +1,8 @@
 __all__ = ('Command', )
 
-from warnings import warn
-
 from scarletio import WeakReferer, export
 
-from ...discord.events.handling_helpers import (
-    Router, _EventHandlerManager, check_name, create_event_from_class, route_name, route_value
-)
+from ...discord.events.handling_helpers import _EventHandlerManager, Router, check_name
 from ...discord.preconverters import preconvert_bool
 
 from .category import Category
@@ -14,90 +10,6 @@ from .command_helpers import test_error_handler, validate_checks, validate_error
 from .content_parser import CommandContentParser
 from .utils import normalize_description, raw_name_to_display
 from .wrappers import CommandCheckWrapper, CommandWrapper
-
-
-COMMAND_PARAMETER_NAMES = (
-    'command', 'name', 'description', 'aliases', 'category', 'checks', 'error_handlers', 'separator', 'assigner',
-    'hidden', 'hidden_if_checks_fail'
-)
-
-COMMAND_NAME_NAME = 'name'
-COMMAND_COMMAND_NAME = 'command'
-
-def _check_maybe_route(variable_name, variable_value, route_to, validator):
-    """
-    Helper class of ``Command`` parameter routing.
-    
-    Parameters
-    ----------
-    variable_name : `str`
-        The name of the respective variable
-    variable_value : `str`
-        The respective value to route maybe.
-    route_to : `int`
-        The value how much times the routing should happen. by default should be given as `0` if no routing was
-        done yet.
-    validator : `callable`, `None`
-        A callable, what validates the given `variable_value`'s value and converts it as well if applicable.
-    
-    Returns
-    -------
-    processed_value : `str`
-        Processed value returned by the `validator`. If routing is happening, then a `tuple` of those values is
-        returned.
-    route_to : `int`
-        The amount of values to route to.
-    
-    Raises
-    ------
-    ValueError
-        Value is routed but to a bad count amount.
-    BaseException
-        Any exception raised by `validator`.
-    """
-    if (variable_value is not None) and isinstance(variable_value, tuple):
-        route_count = len(variable_value)
-        if route_count == 0:
-            processed_value = None
-        elif route_count == 1:
-            variable_value = variable_value[0]
-            if variable_value is ...:
-                variable_value = None
-            
-            if validator is None:
-                processed_value = variable_value
-            else:
-                processed_value = validator(variable_value)
-        else:
-            if route_to == 0:
-                route_to = route_count
-            elif route_to == route_count:
-                pass
-            else:
-                raise ValueError(
-                    f'`{variable_name}` is routed to `{route_count}`, meanwhile something else is '
-                    f'already routed to `{route_to}`.'
-                )
-            
-            if validator is None:
-                processed_value = variable_value
-            else:
-                processed_values = []
-                for value in variable_value:
-                    if (value is not ...):
-                        value = validator(value)
-                    
-                    processed_values.append(value)
-                
-                processed_value = tuple(processed_values)
-    
-    else:
-        if validator is None:
-            processed_value = variable_value
-        else:
-            processed_value = validator(variable_value)
-    
-    return processed_value, route_to
 
 
 def _validate_hidden(hidden):
@@ -732,43 +644,6 @@ class Command:
         return error_handler
     
     
-    @classmethod
-    def from_class(cls, klass, kwargs = None):
-        """
-        The method used, when creating a ``Command`` object from a class.
-        
-        Extra `kwargs` are supported as well for special the use cases.
-        
-        Parameters
-        ----------
-        klass : `type`
-            The class, from what's attributes the command will be created.
-        
-        Returns
-        -------
-        self : ``Command``, ``Router``
-        
-        Raises
-        ------
-        TypeError
-            If any attribute's or value's type is incorrect.
-        ValueError
-            If any attribute's or value's type is correct, but it's type isn't.
-        """
-        warn(
-            (
-                f'Creating commands with the from class constructor is deprecated and will be removed in 2024 Jun. '
-                f'Please use command decorators instead.'
-            ),
-            FutureWarning,
-            stacklevel = 4,
-        )
-        
-        return create_event_from_class(
-            cls, klass, COMMAND_PARAMETER_NAMES, COMMAND_NAME_NAME, COMMAND_COMMAND_NAME
-        )
-    
-    
     def __new__(
         cls, 
         command,
@@ -830,45 +705,22 @@ class Command:
         
         fetched_checks = _fetch_check_from_wrappers(wrappers)
         
-        route_to = 0
-        name, route_to = _check_maybe_route('name', name, route_to, _validate_name)
-        description, route_to = _check_maybe_route('description', description, route_to, None)
-        aliases, route_to = _check_maybe_route('aliases', aliases, route_to, _validate_aliases)
-        category, route_to = _check_maybe_route('category', category, route_to, _validate_category)
-        checks, route_to = _check_maybe_route('checks', checks, route_to, validate_checks)
-        error_handlers, route_to = _check_maybe_route('error_handlers', error_handlers, route_to,
-            validate_error_handlers)
-        hidden, route_to = _check_maybe_route('hidden', hidden, route_to, _validate_hidden)
-        hidden_if_checks_fail, route_to = _check_maybe_route('hidden_if_checks_fail', hidden_if_checks_fail, route_to,
-            _validate_hidden_if_checks_fail)
+        # Pre validate
+        name = _validate_name(name)
+        aliases = _validate_aliases(aliases)
+        category = _validate_category(category)
+        checks = validate_checks(checks)
+        error_handlers = validate_error_handlers(error_handlers)
+        hidden = _validate_hidden(hidden)
+        hidden_if_checks_fail = _validate_hidden_if_checks_fail(hidden_if_checks_fail)
         
+        # Post validate
+        name = check_name(function, name)
+        name = raw_name_to_display(name)
         
-        if route_to:
-            name = route_name(name, route_to)
-            name = [check_name(command, name) for name in name]
-            name = [raw_name_to_display(name) for name in name]
-            default_description = _generate_description_from(command, None)
-            description = route_value(description, route_to, default = default_description)
-            aliases = route_value(aliases, route_to)
-            category = route_value(category, route_to)
-            checks = route_value(checks, route_to)
-            error_handlers = route_value(error_handlers, route_to)
-            hidden = route_value(hidden, route_to)
-            hidden_if_checks_fail = route_value(hidden_if_checks_fail, route_to)
-            
-            category_hint = [_generate_category_hint_from(category) for category in category]
-            
-            description = [
-                _generate_description_from(function, description)
-                    if ((description is None) or (description is not default_description)) else default_description
-                for description in description]
-        else:
-            name = check_name(function, name)
-            name = raw_name_to_display(name)
-            
-            description = _generate_description_from(function, description)
-            category_hint = _generate_category_hint_from(category)
-        
+        description = _generate_description_from(function, description)
+        category_hint = _generate_category_hint_from(category)
+    
         if function is None:
             command_function = None
         else:
@@ -876,95 +728,44 @@ class Command:
             
             command_function = CommandFunction(function, content_parser)
         
-        if route_to:
-            router = []
-            
-            for name, aliases, description, category_hint, checks, error_handlers, hidden, hidden_if_checks_fail \
-                    in zip(name, aliases, description, category_hint, checks, error_handlers, hidden,
-                        hidden_if_checks_fail):
-                
-                if (aliases is not None):
-                    aliases = tuple(aliases)
-                
-                self = object.__new__(cls)
-                self._category_hint = category_hint
-                self._category_reference = None
-                self._checks = _merge_checks(checks, fetched_checks)
-                self._command_function = command_function
-                self._command_processor_reference = None
-                self._error_handlers = error_handlers
-                self._command_categories = None
-                self.aliases = aliases
-                self.description = description
-                self.display_name = name
-                self.hidden = hidden
-                self.hidden_if_checks_fail = hidden_if_checks_fail
-                self.name = name
-                self.command_category_name_to_command_category = None
-                self._wrappers = None
-                self._self_reference = None
-                
-                self_reference = WeakReferer(self)
-                self._self_reference = self_reference
-                
-                if (command_function is not None):
-                    command_function._command_category_reference = self_reference
-                
-                
-                if (wrappers is not None):
-                    for wrapper in wrappers:
-                        wrapper.apply(self)
-                
-                router.append(self)
-            
-            warn(
-                (
-                    f'Routing commands with tuple parameters is deprecated and will be removed in 2024 Jun. '
-                    f'Please use multiple command decorators instead.'
-                ),
-                FutureWarning,
-                stacklevel = 4,
-            )
-            
-            return Router(router)
+        if (aliases is not None):
+            aliases = tuple(aliases)
         
-        else:
-            if (aliases is not None):
-                aliases = tuple(aliases)
-            
-            self = object.__new__(cls)
-            self._category_hint = category_hint
-            self._category_reference = None
-            self._checks = _merge_checks(checks, fetched_checks)
-            self._command_function = command_function
-            self._command_processor_reference = None
-            self._error_handlers = error_handlers
-            self._command_categories = None
-            self.aliases = aliases
-            self.description = description
-            self.display_name = name
-            self.hidden = hidden
-            self.hidden_if_checks_fail = hidden_if_checks_fail
-            self.name = name
-            self.command_category_name_to_command_category = None
-            self._wrappers = None
-            self._self_reference = None
-            
-            self_reference = WeakReferer(self)
-            self._self_reference = self_reference
-            
-            if (command_function is not None):
-                command_function._command_category_reference = self_reference
-            
-            if (wrappers is not None):
-                for wrapper in wrappers:
-                    wrapper.apply(self)
-            
-            return self
+        # Construct
+        self = object.__new__(cls)
+        self._category_hint = category_hint
+        self._category_reference = None
+        self._checks = _merge_checks(checks, fetched_checks)
+        self._command_function = command_function
+        self._command_processor_reference = None
+        self._error_handlers = error_handlers
+        self._command_categories = None
+        self.aliases = aliases
+        self.description = description
+        self.display_name = name
+        self.hidden = hidden
+        self.hidden_if_checks_fail = hidden_if_checks_fail
+        self.name = name
+        self.command_category_name_to_command_category = None
+        self._wrappers = None
+        self._self_reference = None
+        
+        self_reference = WeakReferer(self)
+        self._self_reference = self_reference
+        
+        if (command_function is not None):
+            command_function._command_category_reference = self_reference
+        
+        if (wrappers is not None):
+            for wrapper in wrappers:
+                wrapper.apply(self)
+        
+        return self
+    
     
     def __repr__(self):
         """Returns the command's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' name = ', repr(self.name)]
+        repr_parts = ['<', type(self).__name__, ' name = ', repr(self.name)]
         
         aliases = self.aliases
         if (aliases is not None):
@@ -1205,7 +1006,7 @@ class Command:
         
         Parameters
         ----------
-        command : ``Command``, ``Router``, `None`, `async-callable`
+        command : ``Command``, `None`, `async-callable`
             Async callable to add as a command.
         *args : Positional parameters
             Positional parameters to pass to the command's constructor.
@@ -1224,29 +1025,6 @@ class Command:
             )
         
         command = Command(command, *args, **kwargs)
-        
-        command_category = CommandCategory._from_command(command)
-        self._add_command_category(command_category)
-        return command_category
-    
-    
-    def create_event_from_class(self, klass):
-        """
-        Breaks down the given class to it's class attributes and tries to add it as a sub-command.
-    
-        Parameters
-        ----------
-        klass : `type`
-            The class, from what's attributes the command will be created.
-        
-        Returns
-        -------
-        command : ``Command``
-            The added command instance.
-        """
-        command = Command.from_class(klass)
-        if isinstance(command, Router):
-            command = command[0]
         
         command_category = CommandCategory._from_command(command)
         self._add_command_category(command_category)
@@ -1408,7 +1186,7 @@ class CommandCategory:
         Reference to the command category's parent.
     _command_function : `None`, ``CommandFunction``
         The actual command of the command to maybe call.
-    _self_reference : `None`, ``WeakReferer`` to ``CommandCategory``
+    _self_reference : `None | WeakReferer<instance>`
         Reference to the command category itself.
     _error_handlers : `None`, `list` of `FunctionType`
         Error handlers bind to the command.
@@ -1678,7 +1456,7 @@ class CommandCategory:
     
     def _iter_error_handlers(self):
         """
-        Iterates over all the error handlers applied to the command categories's parent categories..
+        Iterates over all the error handlers applied to the command categories' parent categories.
         
         This method is an iterable generator.
         
@@ -1730,7 +1508,7 @@ class CommandCategory:
         
         Parameters
         ----------
-        command : ``Command``, ``Router``, `None`, `async-callable`
+        command : ``Command``, `None`, `async-callable`
             Async callable to add as a command.
         *args : Positional parameters
             Positional parameters to pass to the command's constructor.
@@ -1752,29 +1530,6 @@ class CommandCategory:
         
         command_category = CommandCategory._from_command(command)
         self._add_command_category(command_category)
-    
-    
-    def create_event_from_class(self, klass):
-        """
-        Breaks down the given class to it's class attributes and tries to add it as a sub-command.
-    
-        Parameters
-        ----------
-        klass : `type`
-            The class, from what's attributes the command will be created.
-        
-        Returns
-        -------
-        command : ``Command``
-            The added command instance.
-        """
-        command = Command.from_class(klass)
-        if isinstance(command, Router):
-            command = command[0]
-        
-        command_category = CommandCategory._from_command(command)
-        self._add_command_category(command_category)
-        return command_category
     
     
     @property

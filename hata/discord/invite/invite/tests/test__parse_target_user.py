@@ -1,6 +1,6 @@
 import vampytest
 
-from ....user import User
+from ....user import ClientUserBase, User
 
 from ..fields import parse_target_user
 
@@ -25,6 +25,8 @@ def test__parse_target_user(input_data):
     
     Returns
     -------
-    target_user : `None`, ``ClientUserBase``
+    output : `None | ClientUserBase`
     """
-    return parse_target_user(input_data)
+    output = parse_target_user(input_data)
+    vampytest.assert_instance(output, ClientUserBase, nullable = True)
+    return output

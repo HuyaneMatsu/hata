@@ -14,18 +14,18 @@ except ImportError:
     from re import _pattern_type as Pattern
 
 
-def _validate_custom_id(custom_id):
+def _validate_string_custom_id(custom_id):
     """
     Validates a `custom_id` value.
     
     Parameters
     ----------
-    custom_id : `str`, `re.Pattern`
+    custom_id : `str`
         The `custom_id` to validate.
     
     Returns
     -------
-    custom_id : `str`, `re.Pattern`
+    custom_id : `str`
         The validated custom_id.
     
     Raises
@@ -33,16 +33,15 @@ def _validate_custom_id(custom_id):
     ValueError
         If `custom_id`'s length is out of the expected range.
     """
-    if isinstance(custom_id, str):
-        if type(custom_id) is not str:
-            custom_id = str(custom_id)
-        
-        custom_id_length = len(custom_id)
-        if (custom_id_length < 1) or (custom_id_length > CUSTOM_ID_LENGTH_MAX):
-            raise ValueError(
-                f'`custom_id` length can be in range [1:{CUSTOM_ID_LENGTH_MAX}], got '
-                f'{custom_id_length}; {custom_id!r}.'
-            )
+    if type(custom_id) is not str:
+        custom_id = str(custom_id)
+    
+    custom_id_length = len(custom_id)
+    if (custom_id_length < 1) or (custom_id_length > CUSTOM_ID_LENGTH_MAX):
+        raise ValueError(
+            f'`custom_id` length can be in range [1:{CUSTOM_ID_LENGTH_MAX}], got '
+            f'{custom_id_length}; {custom_id!r}.'
+        )
     
     return custom_id
 
@@ -53,13 +52,13 @@ def _validate_custom_ids(custom_id):
     
     Parameters
     ----------
-    custom_id : `str`, (`list`, `set`) of `str`.
+    custom_id : `str | re.Pattern | (list | set)<str | re.Pattern>`
         The `custom_id` to validate.
     
     Returns
     -------
-    custom_id : `set` of (`str`, `re.Pattern`)
-        The non-duped custom-ids.
+    custom_id : `set<str | re.Pattern>`
+        The de-duped custom-ids.
     
     Raises
     ------
@@ -69,32 +68,46 @@ def _validate_custom_ids(custom_id):
         If a `custom_id`'s length is out of the expected range.
     """
     custom_ids = set()
-    if isinstance(custom_id, (str, Pattern)):
-        custom_id = _validate_custom_id(custom_id)
+    
+    if isinstance(custom_id, str):
+        custom_id = _validate_string_custom_id(custom_id)
+        custom_ids.add(custom_id)
+    
+    elif isinstance(custom_id, Pattern):
         custom_ids.add(custom_id)
     
     elif isinstance(custom_id, (list, set)):
         
         if not custom_id:
             raise ValueError(
-                f'`custom_id` received as empty {custom_id.__class__.__name__}.'
+                f'`custom_id` received as empty {type(custom_id).__name__}.'
             )
         
         for sub_custom_id in custom_id:
-            if isinstance(sub_custom_id, (str, Pattern)):
-                sub_custom_id = _validate_custom_id(sub_custom_id)
-                custom_ids.add(sub_custom_id)
-                continue
+            if isinstance(sub_custom_id, str):
+                sub_custom_id = _validate_string_custom_id(sub_custom_id)
             
-            raise TypeError(
-                f'`custom_id` contains a non `str` element, got: '
-                f'{sub_custom_id.__class__.__name__}; {sub_custom_id!r}; custom_id = {custom_id!r}.'
-            )
+            elif isinstance(sub_custom_id, Pattern):
+                pass
+            
+            else:
+                raise TypeError(
+                    f'`custom_id` contains a non `str` element, got: '
+                    f'{type(sub_custom_id).__name__}; {sub_custom_id!r}; custom_id = {custom_id!r}.'
+                )
+            
+            custom_ids.add(sub_custom_id)
+            continue
     
     else:
         raise TypeError(
             f'`custom_id` can be `str`, (`list`, `set`) of `str`, got '
-            f'{custom_id.__class__.__name__}; {custom_id!r}.'
+            f'{type(custom_id).__name__}; {custom_id!r}.'
+        )
+    
+    if not custom_ids:
+        raise ValueError(
+            'At least 1 `custom_id` is required.'
         )
     
     return custom_ids
@@ -119,16 +132,21 @@ def _validate_name(name):
     TypeError
         If `name` is not given as `None` neither as `str`.
     """
-    if name is not None:
-        name_type = name.__class__
-        if name_type is str:
-            pass
-        elif issubclass(name_type, str):
-            name = str(name)
-        else:
-            raise TypeError(
-                f'`name` can be `None`, `str`, got {name_type.__name__}; {name!r}.'
-            )
+    if (name is None):
+        return name
+    
+    name_type = type(name)
+    if name_type is str:
+        pass
+    elif issubclass(name_type, str):
+        name = str(name)
+    else:
+        raise TypeError(
+            f'`name` can be `None`, `str`, got {name_type.__name__}; {name!r}.'
+        )
+    
+    if not name:
+        name = None
     
     return name
 
@@ -139,16 +157,17 @@ def split_and_check_satisfaction(custom_ids, parameter_converters):
     
     Parameters
     ----------
-    custom_ids : `set` of (`str`, `re.Pattern`)
+    custom_ids : `set<str, re.Pattern>`
         The custom-ids to split and validate.
-    parameter_converters : `tuple` of ``ParameterConverter``
+    
+    parameter_converters : `tuple<ParameterConverter>`
         The parameter converters generated from a component command.
     
     Returns
     -------
-    string_custom_ids : `None`, `tuple` of `str`
+    string_custom_ids : `None | tuple<str>`
         String custom ids.
-    regex_custom_ids : `None`, `tuple` of ``RegexMatcher``
+    regex_custom_ids : `None | tuple<RegexMatcher>`
         Regex custom ids.
     
     Raises
@@ -173,9 +192,11 @@ def split_and_check_satisfaction(custom_ids, parameter_converters):
     
     # Convert
     if (string_custom_ids is not None):
+        string_custom_ids.sort()
         string_custom_ids = tuple(string_custom_ids)
     
     if (regex_custom_ids is not None):
+        regex_custom_ids.sort()
         regex_custom_ids = tuple(RegexMatcher(regex_custom_id) for regex_custom_id in regex_custom_ids)
     
     # Check

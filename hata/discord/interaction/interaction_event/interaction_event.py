@@ -482,14 +482,14 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         interaction : ``InteractionMetadataBase``, Optional (Keyword only)
             Contain additional details of the interaction.
         
+        interaction_type : ``InteractionType``, `int`, Optional (Keyword only)
+            The interaction's type.
+        
         message : `None`, ``Message``, Optional (Keyword only)
             The message from where the interaction was received.
         
         token : `str`, Optional (Keyword only)
             Interaction's token used when responding on it.
-        
-        type : ``InteractionType``, `int`, Optional (Keyword only)
-            The interaction's type.
         
         user : ``ClientUserBase``, Optional (Keyword only)
             The user who called the interaction.

@@ -79,8 +79,7 @@ def _register_exception_handler(parent, first, exception_handler):
     
     Parameters
     ----------
-    parent : ``Slasher``, ``SlashCommand`, ``SlashCommandCategory``, ``ComponentCommand``,
-            ``SlashCommandFunction``, ``SlashCommandParameterAutoCompleter``
+    parent : ``ExceptionHandlerInterface``
         The slasher to register the exception handler to.
     first : `bool`
         Whether the exception handler should run first.
@@ -111,7 +110,7 @@ class ExceptionHandlerInterface(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        function : `None`, `CoroutineFunctionType`, Optional
+        function : `None | CoroutineFunctionType`, Optional
             Function to register as exception handler.
         first : `bool` = `False`, Optional (Keyword Only)
             Whether the exception handler should run first.

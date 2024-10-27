@@ -58,8 +58,10 @@ class NestableInterface(RichAttributeErrorBaseType):
         ----------
         func : `async-callable`
             The function used as the command when using the respective slash command.
+        
         *positional_parameters : Positional Parameters
             Positional parameters to pass to ``SlashCommand``'s constructor.
+        
         **keyword_parameters : Keyword parameters
             Keyword parameters to pass to the ``SlashCommand``'s constructor.
         
@@ -86,46 +88,12 @@ class NestableInterface(RichAttributeErrorBaseType):
             return instance
         
         command = self._make_command_instance_from_parameters(function, positional_parameters, keyword_parameters)
-        if isinstance(command, Router):
-            command = command[0]
         
         added, instance = self._store_command_instance(command)
         if added:
             return instance
         
         return command
-    
-    
-    def create_event_from_class(self, klass):
-        """
-        Breaks down the given class to it's class attributes and tries to add it as a sub-command or sub-category.
-        
-        Parameters
-        ----------
-        klass : `type`
-            The class, from what's attributes the command will be created.
-        
-        Returns
-        -------
-        instance : `object`
-         
-        Raises
-        ------
-        TypeError
-            - If a parameter's type is incorrect.
-        ValueError
-            - If a parameter's value is incorrect.
-        RuntimeError
-            - If cant register sub-command.
-        """
-        self._check_supports_nesting()
-        
-        instance = self._make_command_instance_from_class(klass)
-        if isinstance(instance, Router):
-            instance = instance[0]
-        
-        self._store_command_instance(instance)
-        return instance
     
     
     def _make_command_instance_from_parameters(self, function, positional_parameters, keyword_parameters):
@@ -157,31 +125,6 @@ class NestableInterface(RichAttributeErrorBaseType):
         return None
     
     
-    def _make_command_instance_from_class(self, klass):
-        """
-        Creates a command instance from the given class.
-        
-        Parameters
-        ----------
-        klass : `type`
-            Captured type.
-        
-        Returns
-        -------
-        instance : `object`
-        
-        Raises
-        ------
-        TypeError
-            - If a parameter's type is incorrect.
-        ValueError
-            - If a parameter's value is incorrect.
-        RuntimeError
-            - If cant register sub-command.
-        """
-        return None
-
-
     def _store_command_instance(self, command):
         """
         Registers a nestable instance.

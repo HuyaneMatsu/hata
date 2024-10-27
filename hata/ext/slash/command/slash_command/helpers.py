@@ -18,25 +18,19 @@ def _validate_is_default(is_default):
     
     Parameters
     ----------
-    is_default : `None`, `bool`
-        The `is_default` value to validate.
+    is_default : `bool`
+        The value to validate.
     
     Returns
     -------
     is_default : `bool`
-        The validated `is_default` value.
     
     Raises
     ------
     TypeError
-        If `is_default` was not given as `None` nor as `bool`.
+        If `is_default` type is incorrect.
     """
-    if is_default is None:
-        is_default = False
-    else:
-        is_default = preconvert_bool(is_default, 'is_default')
-    
-    return is_default
+    return preconvert_bool(is_default, 'is_default')
 
 
 def _generate_description_from(command, name, description):

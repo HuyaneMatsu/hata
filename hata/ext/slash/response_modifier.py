@@ -100,13 +100,13 @@ class ResponseModifier(RichAttributeErrorBaseType):
     """
     __slots__ = ('allowed_mentions', 'wait_for_acknowledgement', 'show_for_invoking_user_only',)
     
-    def __new__(cls, kwargs):
+    def __new__(cls, keyword_parameters):
         """
         Creates a new request modifiers from additionally defined
         
         Parameters
         ----------
-        kwargs : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Additional keyword parameters.
         
         Returns
@@ -121,11 +121,11 @@ class ResponseModifier(RichAttributeErrorBaseType):
         ValueError
             If a parameter's value is incorrect.
         """
-        if kwargs:
+        if keyword_parameters:
             parameters_found = False
             
             try:
-                allowed_mentions = kwargs.pop('allowed_mentions')
+                allowed_mentions = keyword_parameters.pop('allowed_mentions')
             except KeyError:
                 allowed_mentions = None
             else:
@@ -133,7 +133,7 @@ class ResponseModifier(RichAttributeErrorBaseType):
                 parameters_found = True
             
             try:
-                show_for_invoking_user_only = kwargs.pop('show_for_invoking_user_only')
+                show_for_invoking_user_only = keyword_parameters.pop('show_for_invoking_user_only')
             except KeyError:
                 show_for_invoking_user_only = None
             else:
@@ -141,7 +141,7 @@ class ResponseModifier(RichAttributeErrorBaseType):
                 parameters_found = True
             
             try:
-                wait_for_acknowledgement = kwargs.pop('wait_for_acknowledgement')
+                wait_for_acknowledgement = keyword_parameters.pop('wait_for_acknowledgement')
             except KeyError:
                 wait_for_acknowledgement = None
             else:
@@ -219,13 +219,14 @@ class ResponseModifier(RichAttributeErrorBaseType):
         
         
         allowed_mentions = self.allowed_mentions
-        if (allowed_mentions is None):
-            field_added = False
+        if (allowed_mentions is not None):
             repr_parts.append(' allowed_mentions = ')
             repr_parts.append(repr(allowed_mentions))
+            
+            field_added = True
         
         else:
-            field_added = True
+            field_added = False
         
         
         show_for_invoking_user_only = self.show_for_invoking_user_only

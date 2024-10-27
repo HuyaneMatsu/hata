@@ -65,7 +65,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         description : `None`, `str`
             The command's description. It's length can be in range [2:100].
         
-        option_type : `int`, ``ApplicationCommandOptionType``
+        option_type : `ApplicationCommandOptionType | int`
             The application command option's type.
         
         description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,

@@ -466,12 +466,6 @@ class Activity(RichAttributeErrorBaseType):
     
     
     @property
-    @copy_docs(ActivityMetadataBase.created_at)
-    def created_at(self):
-        return self.metadata.created_at
-    
-    
-    @property
     @copy_docs(ActivityMetadataBase.details)
     def details(self):
         return self.metadata.details

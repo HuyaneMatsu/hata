@@ -107,7 +107,7 @@ def _register_auto_completer(parent, parameter_names, function):
     
     Returns
     -------
-    auto_completer : `SlashCommandParameterAutoCompleter | InteractionCommandRouter`
+    auto_completer : `SlashCommandParameterAutoCompleter`
         The registered auto completer
     
     Raises
@@ -136,9 +136,11 @@ class AutocompleteInterface(RichAttributeErrorBaseType):
         ----------
         parameter_name : `str`
             The parameter's name.
+        
         *parameter_names : `str`
             Additional parameter names to autocomplete
-        function : `None`, `callable`, Optional (Keyword only)
+        
+        function : `None | async-callable`, Optional (Keyword only)
             The function to register as auto completer.
         
         Returns
@@ -171,12 +173,13 @@ class AutocompleteInterface(RichAttributeErrorBaseType):
         ----------
         function : `async-callable`
             The function to register as auto completer.
+        
         parameter_names : `list<str>`
             The parameters' names.
         
         Returns
         -------
-        auto_completer : `SlashCommandParameterAutoCompleter | InteractionCommandRouter`
+        auto_completer : `SlashCommandParameterAutoCompleter`
             The registered auto completer
         
         Raises

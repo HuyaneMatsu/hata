@@ -262,7 +262,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         # Apply deprecations
         if not allow_in_dm:
-            integration_types = (ApplicationCommandIntegrationContextType.guild,)
+            integration_context_types = (ApplicationCommandIntegrationContextType.guild,)
         
         # Construct
         self = object.__new__(cls)
@@ -647,7 +647,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
     
     def __repr__(self):
         """Returns the application command's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # if the application command is partial, mention that, else add  `.id` and `.application_id` fields.
         if self.partial:
@@ -679,9 +679,9 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         if (target_type is not ApplicationCommandTargetType.none):
             repr_parts.append(', target_type = ')
             repr_parts.append(target_type.name)
-            repr_parts.append(' (')
+            repr_parts.append(' ~ ')
             repr_parts.append(repr(target_type.value))
-            repr_parts.append(')')
+            repr_parts.append('')
         
         # Extra fields: `.description`, `.options`, `.required_permissions`, `.nsfw`,
         # `.name_localizations`, `.description_localizations`, `.integration_context_types`, `.integration_types`
@@ -1248,10 +1248,10 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             # For non context commands description is required.
             if (description is None):
                 description = validate_description(name)
-    
+        
         # Apply deprecations
         if not allow_in_dm:
-            integration_types = (ApplicationCommandIntegrationContextType.guild,)
+            integration_context_types = (ApplicationCommandIntegrationContextType.guild,)
         
         # Construct
         new = object.__new__(type(self))

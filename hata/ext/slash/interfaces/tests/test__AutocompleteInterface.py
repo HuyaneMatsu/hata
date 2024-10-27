@@ -1,7 +1,5 @@
 import vampytest
 
-from .....discord.events.handling_helpers import Router
-
 from ...command import SlashCommandParameterAutoCompleter
 
 from ..autocomplete import AutocompleteInterface
@@ -28,28 +26,6 @@ def test__AutocompleteInterface__make_auto_completer__default():
     parameter_names = ['koishi', 'satori']
     
     auto_completer = TestAutocompleteInterface()._make_auto_completer(autocomplete_function, parameter_names)
-    
-    vampytest.assert_instance(auto_completer, SlashCommandParameterAutoCompleter)
-    vampytest.assert_is(auto_completer._command_function, autocomplete_function)
-    vampytest.assert_eq(auto_completer.name_pairs, frozenset((('koishi', 'koishi'), ('satori', 'satori'))))
-
-
-def test__AutocompleteInterface__make_auto_completer__router():
-    """
-    Tests whether ``AutocompleteInterface._make_auto_completer`` works as intended.
-    
-    Case: Router.
-    """
-    async def autocomplete_function(value):
-        pass
-    
-    
-    router = Router([autocomplete_function])
-        
-    
-    parameter_names = ['koishi', 'satori']
-    
-    auto_completer = TestAutocompleteInterface()._make_auto_completer(router, parameter_names)
     
     vampytest.assert_instance(auto_completer, SlashCommandParameterAutoCompleter)
     vampytest.assert_is(auto_completer._command_function, autocomplete_function)

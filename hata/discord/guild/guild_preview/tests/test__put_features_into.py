@@ -6,8 +6,20 @@ from ..fields import put_features_into
 
 
 def _iter_options():
-    yield (None, False, {'features': []})
-    yield (None, True, {'features': []})
+    yield (
+        None,
+        False,
+        {
+            'features': [],
+        },
+    )
+    yield (
+        None,
+        True,
+        {
+            'features': [],
+        },
+    )
     yield (
         (
             GuildFeature.animated_banner,

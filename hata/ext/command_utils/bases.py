@@ -177,7 +177,7 @@ class PaginationBase:
             return True
         
         if isinstance(exception, TimeoutError):
-            if self.channel.cached_permissions_for(client).can_manage_messages:
+            if self.channel.cached_permissions_for(client).manage_messages:
                 try:
                     await client.reaction_clear(message)
                 except GeneratorExit:

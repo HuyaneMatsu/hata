@@ -5,8 +5,8 @@ from ..fields import put_privacy_policy_url_into
 
 def _iter_options():
     yield None, False, {}
-    yield None, True, {'privacy_policy_url': None}
     yield 'https://orindance.party/', False, {'privacy_policy_url': 'https://orindance.party/'}
+    yield None, True, {'privacy_policy_url': None}
     yield 'https://orindance.party/', True, {'privacy_policy_url': 'https://orindance.party/'}
 
 
@@ -19,8 +19,9 @@ def test__put_privacy_policy_url_into(input_value, defaults):
     ----------
     input_value : `None | str`
         Value to serialize.
+    
     defaults : `bool`
-        Whether values as their defaults should be included.
+        Whether values with their defaults should be also serialized.
     
     Returns
     -------

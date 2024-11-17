@@ -1,9 +1,9 @@
 __all__ = ('SystemChannelFlag',)
 
-from ...bases import ReverseFlagBase
+from ...bases import FlagBaseReversed, FlagDescriptor as F
 
 
-class SystemChannelFlag(ReverseFlagBase):
+class SystemChannelFlag(FlagBaseReversed):
     """
     The flags of a ``Guild``'s system channel.
     
@@ -38,14 +38,12 @@ class SystemChannelFlag(ReverseFlagBase):
     | ALL                   | ActivityFlag(0b000000)    |
     +-----------------------+----------------------------+
     """
-    __keys__ = {
-        'welcome': 0,
-        'boost': 1,
-        'setup_tips': 2,
-        'join_sticker_replies': 3,
-        'role_subscription_purchase': 4,
-        'role_subscription_purchase_replies': 5,
-    }
+    welcome = F(0)
+    boost = F(1)
+    setup_tips = F(2)
+    join_sticker_replies = F(3)
+    role_subscription_purchase = F(4)
+    role_subscription_purchase_replies = F(5)
     
     @property
     def none(self):
@@ -68,6 +66,7 @@ class SystemChannelFlag(ReverseFlagBase):
         none : `bool`
         """
         return (self == self.ALL)
+    
     
     NONE = NotImplemented
     ALL = NotImplemented

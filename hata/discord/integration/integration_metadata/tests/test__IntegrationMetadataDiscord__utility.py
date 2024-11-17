@@ -27,7 +27,7 @@ def test__IntegrationMetadataDiscord__copy():
     vampytest.assert_eq(copy, integration_metadata)
 
 
-def test__IntegrationMetadataDiscord__copy_with__0():
+def test__IntegrationMetadataDiscord__copy_with__no_fields():
     """
     Tests whether ``IntegrationMetadataDiscord.copy_with`` works as intended.
     
@@ -47,7 +47,7 @@ def test__IntegrationMetadataDiscord__copy_with__0():
     vampytest.assert_eq(copy, integration_metadata)
 
 
-def test__IntegrationMetadataDiscord__copy_with__1():
+def test__IntegrationMetadataDiscord__copy_with__all_fields():
     """
     Tests whether ``IntegrationMetadataDiscord.copy_with`` works as intended.
     
@@ -75,7 +75,7 @@ def test__IntegrationMetadataDiscord__copy_with__1():
     vampytest.assert_eq(copy.application, new_application)
 
 
-def test__IntegrationMetadataDiscord__copy_with_keyword_parameters__0():
+def test__IntegrationMetadataDiscord__copy_with_keyword_parameters__no_fields():
     """
     Tests whether ``IntegrationMetadataDiscord.copy_with_keyword_parameters`` works as intended.
     
@@ -95,7 +95,7 @@ def test__IntegrationMetadataDiscord__copy_with_keyword_parameters__0():
     vampytest.assert_eq(copy, integration_metadata)
 
 
-def test__IntegrationMetadataDiscord__copy_with_keyword_parameters__1():
+def test__IntegrationMetadataDiscord__copy_with_keyword_parameters__all_fields():
     """
     Tests whether ``IntegrationMetadataDiscord.copy_with_keyword_parameters`` works as intended.
     

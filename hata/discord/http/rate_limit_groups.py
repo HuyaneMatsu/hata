@@ -1517,6 +1517,15 @@ Group Details
     - Limit : `OPT`
     - Resets after : `OPT`
 
+- guild_role_get
+    - Endpoint : `/guilds/{guild_id}/roles/{role_id}`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `guild_id`
+    - Limit : `1000`
+    - Resets after : `1.0`
+    - Notes : Assumably global.
+
 - role_edit
     - Endpoint : `/guilds/{guild_id}/roles/{role_id}`
     - Method : `PATCH`
@@ -2420,6 +2429,7 @@ guild_role_get_all = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 role_move = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 role_create = RateLimitGroup(LIMITER_GUILD)
 role_delete = RateLimitGroup(LIMITER_GUILD, optimistic = True)
+role_get = RateLimitGroup(LIMITER_GUILD)
 role_edit = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_get_all_guild = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_create = RateLimitGroup(LIMITER_GUILD)

@@ -1108,7 +1108,7 @@ class ClientCompoundMessageEndpoints(Compound):
             return
         
         for sharder in sharders:
-            if sharder.can_manage_messages:
+            if sharder.manage_messages:
                 break
         else:
             return
@@ -1134,7 +1134,7 @@ class ClientCompoundMessageEndpoints(Compound):
             should_request = False
         else:
             for sharder in sharders:
-                if sharder.can_read_message_history:
+                if sharder.read_message_history:
                     should_request = True
                     break
             else:
@@ -1201,7 +1201,7 @@ class ClientCompoundMessageEndpoints(Compound):
                         get_mass_task_next = 0
                     
                     sharder = sharders[get_mass_task_next]
-                    if sharder.can_read_message_history:
+                    if sharder.read_message_history:
                         break
                     
                     get_mass_task_next += 1
@@ -1216,7 +1216,7 @@ class ClientCompoundMessageEndpoints(Compound):
                 tasks.append(get_mass_task)
             
             for sharder in sharders:
-                if (sharder.can_manage_messages) and (sharder.delete_mass_task is None):
+                if (sharder.manage_messages) and (sharder.delete_mass_task is None):
                     message_limit = len(message_group_new)
                     # If there are more messages, we are waiting for other tasks
                     if message_limit:
@@ -1243,7 +1243,7 @@ class ClientCompoundMessageEndpoints(Compound):
                         elif collected == 1:
                             # Delete the message if we don't delete a new message already
                             for sub_sharder in sharders:
-                                if (sub_sharder.can_manage_messages) and (sharder.delete_new_task is None):
+                                if (sub_sharder.manage_messages) and (sharder.delete_new_task is None):
                                     # We collected 1 message -> We cannot use mass delete on this.
                                     who_s, message_id = message_group_new.popleft()
                                     delete_new_task = Task(KOKORO, sub_sharder.client.api.message_delete(channel_id,
@@ -1329,7 +1329,7 @@ class ClientCompoundMessageEndpoints(Compound):
                 # endpoint for 2 minutes with any chance.
                 if who_s == -1:
                     for sharder in sharders:
-                        if sharder.can_manage_messages:
+                        if sharder.manage_messages:
                             task = Task(KOKORO, sharder.client.api.message_delete_b2wo(channel_id, message_id, reason))
                             tasks.append(task)
                             sharder.delete_old_task = task

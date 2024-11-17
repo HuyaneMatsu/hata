@@ -18,10 +18,10 @@ from ..flags import (
     ApplicationOverlayMethodFlags
 )
 from ..preinstanced import (
-    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationIntegrationType,
-    ApplicationInteractionEventType, ApplicationInteractionVersion, ApplicationInternalGuildRestriction,
-    ApplicationMonetizationState, ApplicationRPCState, ApplicationStoreState, ApplicationType,
-    ApplicationVerificationState
+    ApplicationDiscoverabilityState, ApplicationEventWebhookEventType, ApplicationEventWebhookState,
+    ApplicationExplicitContentFilterLevel, ApplicationIntegrationType, ApplicationInteractionEventType,
+    ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
+    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
 )
 
 from .test__Application__constructor import _assert_fields_set
@@ -46,6 +46,12 @@ def test__Application__copy():
     discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags(9)
     embedded_activity_configuration = EmbeddedActivityConfiguration(position = 6)
     eula_id = 202211290073
+    event_webhook_event_types = [
+        ApplicationEventWebhookEventType.application_authorization,
+        ApplicationEventWebhookEventType.entitlement_create
+    ]
+    event_webhook_state = ApplicationEventWebhookState.enabled
+    event_webhook_url = 'https://orindance.party/event-webhook'
     executables = [ApplicationExecutable(name = 'Okuu')]
     explicit_content_filter_level = ApplicationExplicitContentFilterLevel.filtered
     flags = ApplicationFlag(96)
@@ -110,6 +116,9 @@ def test__Application__copy():
         discovery_eligibility_flags = discovery_eligibility_flags,
         embedded_activity_configuration = embedded_activity_configuration,
         eula_id = eula_id,
+        event_webhook_event_types = event_webhook_event_types,
+        event_webhook_state = event_webhook_state,
+        event_webhook_url = event_webhook_url,
         executables = executables,
         explicit_content_filter_level = explicit_content_filter_level,
         flags = flags,
@@ -178,6 +187,12 @@ def test__Application__copy_with__no_fields():
     discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags(9)
     embedded_activity_configuration = EmbeddedActivityConfiguration(position = 6)
     eula_id = 202211290078
+    event_webhook_event_types = [
+        ApplicationEventWebhookEventType.application_authorization,
+        ApplicationEventWebhookEventType.entitlement_create
+    ]
+    event_webhook_state = ApplicationEventWebhookState.enabled
+    event_webhook_url = 'https://orindance.party/event-webhook'
     executables = [ApplicationExecutable(name = 'Okuu')]
     explicit_content_filter_level = ApplicationExplicitContentFilterLevel.filtered
     flags = ApplicationFlag(96)
@@ -242,6 +257,9 @@ def test__Application__copy_with__no_fields():
         discovery_eligibility_flags = discovery_eligibility_flags,
         embedded_activity_configuration = embedded_activity_configuration,
         eula_id = eula_id,
+        event_webhook_event_types = event_webhook_event_types,
+        event_webhook_state = event_webhook_state,
+        event_webhook_url = event_webhook_url,
         executables = executables,
         explicit_content_filter_level = explicit_content_filter_level,
         flags = flags,
@@ -311,6 +329,12 @@ def test__Application__copy_with__all_fields():
     old_discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags(9)
     old_embedded_activity_configuration = EmbeddedActivityConfiguration(position = 6)
     old_eula_id = 202211290085
+    old_event_webhook_event_types = [
+        ApplicationEventWebhookEventType.application_authorization,
+        ApplicationEventWebhookEventType.entitlement_create
+    ]
+    old_event_webhook_state = ApplicationEventWebhookState.enabled
+    old_event_webhook_url = 'https://orindance.party/event-webhook'
     old_executables = [ApplicationExecutable(name = 'Okuu')]
     old_explicit_content_filter_level = ApplicationExplicitContentFilterLevel.filtered
     old_flags = ApplicationFlag(96)
@@ -374,6 +398,12 @@ def test__Application__copy_with__all_fields():
     new_discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags(10)
     new_embedded_activity_configuration = EmbeddedActivityConfiguration(position = 6)
     new_eula_id = 202211290086
+    new_event_webhook_event_types = [
+        ApplicationEventWebhookEventType.application_authorization,
+        ApplicationEventWebhookEventType.quest_enrollment
+    ]
+    new_event_webhook_state = ApplicationEventWebhookState.disabled
+    new_event_webhook_url = 'https://orindance.party/event-webhook/v2'
     new_executables = [ApplicationExecutable(name = 'Nue')]
     new_explicit_content_filter_level = ApplicationExplicitContentFilterLevel.none
     new_flags = ApplicationFlag(2)
@@ -435,6 +465,9 @@ def test__Application__copy_with__all_fields():
         discovery_eligibility_flags = old_discovery_eligibility_flags,
         embedded_activity_configuration = old_embedded_activity_configuration,
         eula_id = old_eula_id,
+        event_webhook_event_types = old_event_webhook_event_types,
+        event_webhook_state = old_event_webhook_state,
+        event_webhook_url = old_event_webhook_url,
         executables = old_executables,
         explicit_content_filter_level = old_explicit_content_filter_level,
         flags = old_flags,
@@ -493,6 +526,9 @@ def test__Application__copy_with__all_fields():
         discovery_eligibility_flags = new_discovery_eligibility_flags,
         embedded_activity_configuration = new_embedded_activity_configuration,
         eula_id = new_eula_id,
+        event_webhook_event_types = new_event_webhook_event_types,
+        event_webhook_state = new_event_webhook_state,
+        event_webhook_url = new_event_webhook_url,
         executables = new_executables,
         explicit_content_filter_level = new_explicit_content_filter_level,
         flags = new_flags,
@@ -552,6 +588,9 @@ def test__Application__copy_with__all_fields():
     vampytest.assert_eq(copy.discovery_eligibility_flags, new_discovery_eligibility_flags)
     vampytest.assert_eq(copy.embedded_activity_configuration, new_embedded_activity_configuration)
     vampytest.assert_eq(copy.eula_id, new_eula_id)
+    vampytest.assert_eq(copy.event_webhook_event_types, tuple(new_event_webhook_event_types))
+    vampytest.assert_is(copy.event_webhook_state, new_event_webhook_state)
+    vampytest.assert_eq(copy.event_webhook_url, new_event_webhook_url)
     vampytest.assert_eq(copy.executables, tuple(new_executables))
     vampytest.assert_is(copy.explicit_content_filter_level, new_explicit_content_filter_level)
     vampytest.assert_eq(copy.flags, new_flags)
@@ -657,6 +696,36 @@ def test__Application__iter_developers(input_value):
     """
     application = Application(developers = input_value)
     return [*application.iter_developers()]
+
+
+def _iter_options__iter_event_webhook_event_types():
+    event_webhook_event_type_0 = ApplicationEventWebhookEventType.application_authorization
+    event_webhook_event_type_1 = ApplicationEventWebhookEventType.quest_enrollment
+
+    yield None, []
+    yield [event_webhook_event_type_0], [event_webhook_event_type_0]
+    yield (
+        [event_webhook_event_type_0, event_webhook_event_type_1],
+        [event_webhook_event_type_0, event_webhook_event_type_1],
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_event_webhook_event_types()).returning_last())
+def test__Application__iter_event_webhook_event_types(input_value):
+    """
+    Tests whether ``Application.iter_event_webhook_event_types`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<ApplicationEventWebhookEventType>`
+        Developers to create the application with.
+    
+    Returns
+    -------
+    output : `list<ApplicationEventWebhookEventType>`
+    """
+    application = Application(event_webhook_event_types = input_value)
+    return [*application.iter_event_webhook_event_types()]
 
 
 def _iter_options__iter_executables():

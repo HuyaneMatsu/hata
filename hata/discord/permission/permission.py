@@ -1,6 +1,13 @@
 __all__ = ('Permission', )
 
-from ..bases import FlagBase
+from datetime import datetime as DateTime, timezone as TimeZone
+
+from warnings import warn
+
+from ..bases import FlagBase, FlagDescriptor as F
+
+
+DO_CAN_DEPRECATION = DateTime.now(tz = TimeZone.utc) > DateTime(2025, 5, 14, tzinfo = TimeZone.utc)
 
 
 PERMISSION_SHIFT_CREATE_INSTANT_INVITE = 0
@@ -109,7 +116,7 @@ PERMISSION_MASK_SEND_POLLS = 1 << PERMISSION_SHIFT_SEND_POLLS
 PERMISSION_MASK_USE_EXTERNAL_APPLICATION_COMMANDS = 1 << PERMISSION_SHIFT_USE_EXTERNAL_APPLICATION_COMMANDS
 
 
-class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', disable_keyword = 'deny'):
+class Permission(FlagBase):
     """
     Represents a Discord permission.
     
@@ -222,60 +229,1541 @@ class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', dis
     Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
     """
-    __keys__ = {
-        'create_instant_invite': PERMISSION_SHIFT_CREATE_INSTANT_INVITE,
-        'kick_users': PERMISSION_SHIFT_KICK_USERS,
-        'ban_users': PERMISSION_SHIFT_BAN_USERS,
-        'administrator': PERMISSION_SHIFT_ADMINISTRATOR,
-        'manage_channels': PERMISSION_SHIFT_MANAGE_CHANNELS,
-        'manage_guild': PERMISSION_SHIFT_MANAGE_GUILD,
-        'add_reactions': PERMISSION_SHIFT_ADD_REACTION,
-        'view_audit_logs': PERMISSION_SHIFT_VIEW_AUDIT_LOGS,
-        'priority_speaker': PERMISSION_SHIFT_PRIORITY_SPEAKER,
-        'stream': PERMISSION_SHIFT_STREAM,
-        'view_channel': PERMISSION_SHIFT_VIEW_CHANNEL,
-        'send_messages': PERMISSION_SHIFT_SEND_MESSAGES,
-        'send_tts_messages': PERMISSION_SHIFT_SEND_TTS_MESSAGES,
-        'manage_messages': PERMISSION_SHIFT_MANAGE_MESSAGES,
-        'embed_links': PERMISSION_SHIFT_EMBED_LINKS,
-        'attach_files': PERMISSION_SHIFT_ATTACH_FILES,
-        'read_message_history': PERMISSION_SHIFT_READ_MESSAGE_HISTORY,
-        'mention_everyone': PERMISSION_SHIFT_MENTION_EVERYONE,
-        'use_external_emojis': PERMISSION_SHIFT_USE_EXTERNAL_EMOJIS,
-        'view_guild_insights': PERMISSION_SHIFT_VIEW_GUILD_INSIGHTS,
-        'connect': PERMISSION_SHIFT_CONNECT,
-        'speak': PERMISSION_SHIFT_SPEAK,
-        'mute_users': PERMISSION_SHIFT_MUTE_USERS,
-        'deafen_users': PERMISSION_SHIFT_DEAFEN_USERS,
-        'move_users': PERMISSION_SHIFT_MOVE_USERS,
-        'use_voice_activation': PERMISSION_SHIFT_USE_VOICE_ACTIVATION,
-        'change_nickname': PERMISSION_SHIFT_CHANGE_NICKNAME,
-        'manage_nicknames': PERMISSION_SHIFT_MANAGE_NICKNAMES,
-        'manage_roles': PERMISSION_SHIFT_MANAGE_ROLES,
-        'manage_webhooks': PERMISSION_SHIFT_MANAGE_WEBHOOKS,
-        'manage_guild_expressions': PERMISSION_SHIFT_MANAGE_GUILD_EXPRESSIONS,
-        'use_application_commands': PERMISSION_SHIFT_USE_APPLICATION_COMMANDS,
-        'request_to_speak': PERMISSION_SHIFT_REQUEST_TO_SPEAK,
-        'manage_events': PERMISSION_SHIFT_MANAGE_EVENTS,
-        'manage_threads': PERMISSION_SHIFT_MANAGE_THREADS,
-        'create_public_threads': PERMISSION_SHIFT_CREATE_PUBLIC_THREADS,
-        'create_private_threads': PERMISSION_SHIFT_CREATE_PRIVATE_THREADS,
-        'use_external_stickers': PERMISSION_SHIFT_USE_EXTERNAL_STICKERS,
-        'send_messages_in_threads': PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS,
-        'use_embedded_activities': PERMISSION_SHIFT_USE_EMBEDDED_ACTIVITIES,
-        'moderate_users': PERMISSION_SHIFT_MODERATE_USERS,
-        'view_creator_monetization_analytics': PERMISSION_SHIFT_VIEW_CREATOR_MONETIZATION_ANALYTICS,
-        'use_soundboard': PERMISSION_SHIFT_USE_SOUNDBOARD,
-        'create_guild_expressions': PERMISSION_SHIFT_CREATE_GUILD_EXPRESSIONS,
-        'create_events': PERMISSION_SHIFT_CREATE_GUILD_EVENTS,
-        'use_external_sounds': PERMISSION_SHIFT_USE_EXTERNAL_SOUNDS,
-        'send_voice_messages': PERMISSION_SHIFT_SEND_VOICE_MESSAGES,
-        'use_clyde_ai': PERMISSION_SHIFT_USE_CLYDE_AI,
-        'set_voice_channel_status': PERMISSION_SHIFT_SET_VOICE_CHANNEL_STATUS,
-        'send_polls': PERMISSION_SHIFT_SEND_POLLS,
-        'use_external_application_commands': PERMISSION_SHIFT_USE_EXTERNAL_APPLICATION_COMMANDS,
-    }
+    create_instant_invite = F(PERMISSION_SHIFT_CREATE_INSTANT_INVITE)
+    kick_users = F(PERMISSION_SHIFT_KICK_USERS)
+    ban_users = F(PERMISSION_SHIFT_BAN_USERS)
+    administrator = F(PERMISSION_SHIFT_ADMINISTRATOR)
+    manage_channels = F(PERMISSION_SHIFT_MANAGE_CHANNELS)
+    manage_guild = F(PERMISSION_SHIFT_MANAGE_GUILD)
+    add_reactions = F(PERMISSION_SHIFT_ADD_REACTION)
+    view_audit_logs = F(PERMISSION_SHIFT_VIEW_AUDIT_LOGS)
+    priority_speaker = F(PERMISSION_SHIFT_PRIORITY_SPEAKER)
+    stream = F(PERMISSION_SHIFT_STREAM)
+    view_channel = F(PERMISSION_SHIFT_VIEW_CHANNEL)
+    send_messages = F(PERMISSION_SHIFT_SEND_MESSAGES)
+    send_tts_messages = F(PERMISSION_SHIFT_SEND_TTS_MESSAGES)
+    manage_messages = F(PERMISSION_SHIFT_MANAGE_MESSAGES)
+    embed_links = F(PERMISSION_SHIFT_EMBED_LINKS)
+    attach_files = F(PERMISSION_SHIFT_ATTACH_FILES)
+    read_message_history = F(PERMISSION_SHIFT_READ_MESSAGE_HISTORY)
+    mention_everyone = F(PERMISSION_SHIFT_MENTION_EVERYONE)
+    use_external_emojis = F(PERMISSION_SHIFT_USE_EXTERNAL_EMOJIS)
+    view_guild_insights = F(PERMISSION_SHIFT_VIEW_GUILD_INSIGHTS)
+    connect = F(PERMISSION_SHIFT_CONNECT)
+    speak = F(PERMISSION_SHIFT_SPEAK)
+    mute_users = F(PERMISSION_SHIFT_MUTE_USERS)
+    deafen_users = F(PERMISSION_SHIFT_DEAFEN_USERS)
+    move_users = F(PERMISSION_SHIFT_MOVE_USERS)
+    use_voice_activation = F(PERMISSION_SHIFT_USE_VOICE_ACTIVATION)
+    change_nickname = F(PERMISSION_SHIFT_CHANGE_NICKNAME)
+    manage_nicknames = F(PERMISSION_SHIFT_MANAGE_NICKNAMES)
+    manage_roles = F(PERMISSION_SHIFT_MANAGE_ROLES)
+    manage_webhooks = F(PERMISSION_SHIFT_MANAGE_WEBHOOKS)
+    manage_guild_expressions = F(PERMISSION_SHIFT_MANAGE_GUILD_EXPRESSIONS)
+    use_application_commands = F(PERMISSION_SHIFT_USE_APPLICATION_COMMANDS)
+    request_to_speak = F(PERMISSION_SHIFT_REQUEST_TO_SPEAK)
+    manage_events = F(PERMISSION_SHIFT_MANAGE_EVENTS)
+    manage_threads = F(PERMISSION_SHIFT_MANAGE_THREADS)
+    create_public_threads = F(PERMISSION_SHIFT_CREATE_PUBLIC_THREADS)
+    create_private_threads = F(PERMISSION_SHIFT_CREATE_PRIVATE_THREADS)
+    use_external_stickers = F(PERMISSION_SHIFT_USE_EXTERNAL_STICKERS)
+    send_messages_in_threads = F(PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS)
+    use_embedded_activities = F(PERMISSION_SHIFT_USE_EMBEDDED_ACTIVITIES)
+    moderate_users = F(PERMISSION_SHIFT_MODERATE_USERS)
+    view_creator_monetization_analytics = F(PERMISSION_SHIFT_VIEW_CREATOR_MONETIZATION_ANALYTICS)
+    use_soundboard = F(PERMISSION_SHIFT_USE_SOUNDBOARD)
+    create_guild_expressions = F(PERMISSION_SHIFT_CREATE_GUILD_EXPRESSIONS)
+    create_events = F(PERMISSION_SHIFT_CREATE_GUILD_EVENTS)
+    use_external_sounds = F(PERMISSION_SHIFT_USE_EXTERNAL_SOUNDS)
+    send_voice_messages = F(PERMISSION_SHIFT_SEND_VOICE_MESSAGES)
+    use_clyde_ai = F(PERMISSION_SHIFT_USE_CLYDE_AI)
+    set_voice_channel_status = F(PERMISSION_SHIFT_SET_VOICE_CHANNEL_STATUS)
+    send_polls = F(PERMISSION_SHIFT_SEND_POLLS)
+    use_external_application_commands = F(PERMISSION_SHIFT_USE_EXTERNAL_APPLICATION_COMMANDS)
+    
+    
+    @property
+    def can_create_instant_invite(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_create_instant_invite` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.create_instant_invite
 
+    
+    @property
+    def can_kick_users(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_kick_users` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.kick_users
+
+    
+    @property
+    def can_ban_users(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_ban_users` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.ban_users
+
+    
+    @property
+    def can_administrator(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_administrator` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.administrator
+
+    
+    @property
+    def can_manage_channels(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_manage_channels` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.manage_channels
+
+    
+    @property
+    def can_manage_guild(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_manage_guild` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.manage_guild
+
+    
+    @property
+    def can_add_reactions(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_add_reactions` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.add_reactions
+
+    
+    @property
+    def can_view_audit_logs(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_view_audit_logs` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.view_audit_logs
+
+    
+    @property
+    def can_priority_speaker(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_priority_speaker` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.priority_speaker
+
+    
+    @property
+    def can_stream(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_stream` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.stream
+
+    
+    @property
+    def can_view_channel(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_view_channel` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.view_channel
+
+    
+    @property
+    def can_send_messages(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_send_messages` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.send_messages
+
+    
+    @property
+    def can_send_tts_messages(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_send_tts_messages` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.send_tts_messages
+
+    
+    @property
+    def can_manage_messages(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_manage_messages` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.manage_messages
+
+    
+    @property
+    def can_embed_links(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_embed_links` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.embed_links
+
+    
+    @property
+    def can_attach_files(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_attach_files` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.attach_files
+
+    
+    @property
+    def can_read_message_history(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_read_message_history` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.read_message_history
+
+    
+    @property
+    def can_mention_everyone(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_mention_everyone` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.mention_everyone
+
+    
+    @property
+    def can_use_external_emojis(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_use_external_emojis` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.use_external_emojis
+
+    
+    @property
+    def can_view_guild_insights(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_view_guild_insights` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.view_guild_insights
+
+    
+    @property
+    def can_connect(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_connect` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.connect
+
+    
+    @property
+    def can_speak(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_speak` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.speak
+
+    
+    @property
+    def can_mute_users(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_mute_users` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.mute_users
+
+    
+    @property
+    def can_deafen_users(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_deafen_users` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.deafen_users
+
+    
+    @property
+    def can_move_users(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_move_users` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.move_users
+
+    
+    @property
+    def can_use_voice_activation(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_use_voice_activation` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.use_voice_activation
+
+    
+    @property
+    def can_change_nickname(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_change_nickname` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.change_nickname
+
+    
+    @property
+    def can_manage_nicknames(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_manage_nicknames` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.manage_nicknames
+
+    
+    @property
+    def can_manage_roles(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_manage_roles` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.manage_roles
+
+    
+    @property
+    def can_manage_webhooks(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_manage_webhooks` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.manage_webhooks
+
+    
+    @property
+    def can_manage_guild_expressions(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_manage_guild_expressions` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.manage_guild_expressions
+
+    
+    @property
+    def can_use_application_commands(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_use_application_commands` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.use_application_commands
+
+    
+    @property
+    def can_request_to_speak(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_request_to_speak` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.request_to_speak
+
+    
+    @property
+    def can_manage_events(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_manage_events` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.manage_events
+
+    
+    @property
+    def can_manage_threads(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_manage_threads` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.manage_threads
+
+    
+    @property
+    def can_create_public_threads(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_create_public_threads` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.create_public_threads
+
+    
+    @property
+    def can_create_private_threads(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_create_private_threads` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.create_private_threads
+
+    
+    @property
+    def can_use_external_stickers(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_use_external_stickers` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.use_external_stickers
+
+    
+    @property
+    def can_send_messages_in_threads(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_send_messages_in_threads` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.send_messages_in_threads
+
+    
+    @property
+    def can_use_embedded_activities(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_use_embedded_activities` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.use_embedded_activities
+
+    
+    @property
+    def can_moderate_users(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_moderate_users` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.moderate_users
+
+    
+    @property
+    def can_view_creator_monetization_analytics(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_view_creator_monetization_analytics` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.view_creator_monetization_analytics
+
+    
+    @property
+    def can_use_soundboard(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_use_soundboard` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.use_soundboard
+
+    
+    @property
+    def can_create_guild_expressions(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_create_guild_expressions` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.create_guild_expressions
+
+    
+    @property
+    def can_create_events(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_create_events` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.create_events
+
+    
+    @property
+    def can_use_external_sounds(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_use_external_sounds` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.use_external_sounds
+
+    
+    @property
+    def can_send_voice_messages(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_send_voice_messages` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.send_voice_messages
+
+    
+    @property
+    def can_use_clyde_ai(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_use_clyde_ai` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.use_clyde_ai
+
+    
+    @property
+    def can_set_voice_channel_status(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_set_voice_channel_status` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.set_voice_channel_status
+
+    
+    @property
+    def can_send_polls(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_send_polls` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.send_polls
+
+    
+    @property
+    def can_use_external_application_commands(self):
+        if DO_CAN_DEPRECATION:
+            warn(
+                f'`{type(self).__name__}.can_use_external_application_commands` is deprecated and will be removed in 2025 October.',
+                FutureWarning,
+                stacklevel = 2
+            )
+        return self.use_external_application_commands
+
+    
+    def allow_create_instant_invite(self):
+        warn(
+            f'`{type(self).__name__}.allow_create_instant_invite` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.create_instant_invite.mask)
+    
+    
+    def allow_kick_users(self):
+        warn(
+            f'`{type(self).__name__}.allow_kick_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.kick_users.mask)
+    
+    
+    def allow_ban_users(self):
+        warn(
+            f'`{type(self).__name__}.allow_ban_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.ban_users.mask)
+    
+    
+    def allow_administrator(self):
+        warn(
+            f'`{type(self).__name__}.allow_administrator` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.administrator.mask)
+    
+    
+    def allow_manage_channels(self):
+        warn(
+            f'`{type(self).__name__}.allow_manage_channels` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.manage_channels.mask)
+    
+    
+    def allow_manage_guild(self):
+        warn(
+            f'`{type(self).__name__}.allow_manage_guild` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.manage_guild.mask)
+    
+    
+    def allow_add_reactions(self):
+        warn(
+            f'`{type(self).__name__}.allow_add_reactions` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.add_reactions.mask)
+    
+    
+    def allow_view_audit_logs(self):
+        warn(
+            f'`{type(self).__name__}.allow_view_audit_logs` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.view_audit_logs.mask)
+    
+    
+    def allow_priority_speaker(self):
+        warn(
+            f'`{type(self).__name__}.allow_priority_speaker` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.priority_speaker.mask)
+    
+    
+    def allow_stream(self):
+        warn(
+            f'`{type(self).__name__}.allow_stream` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.stream.mask)
+    
+    
+    def allow_view_channel(self):
+        warn(
+            f'`{type(self).__name__}.allow_view_channel` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.view_channel.mask)
+    
+    
+    def allow_send_messages(self):
+        warn(
+            f'`{type(self).__name__}.allow_send_messages` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.send_messages.mask)
+    
+    
+    def allow_send_tts_messages(self):
+        warn(
+            f'`{type(self).__name__}.allow_send_tts_messages` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.send_tts_messages.mask)
+    
+    
+    def allow_manage_messages(self):
+        warn(
+            f'`{type(self).__name__}.allow_manage_messages` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.manage_messages.mask)
+    
+    
+    def allow_embed_links(self):
+        warn(
+            f'`{type(self).__name__}.allow_embed_links` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.embed_links.mask)
+    
+    
+    def allow_attach_files(self):
+        warn(
+            f'`{type(self).__name__}.allow_attach_files` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.attach_files.mask)
+    
+    
+    def allow_read_message_history(self):
+        warn(
+            f'`{type(self).__name__}.allow_read_message_history` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.read_message_history.mask)
+    
+    
+    def allow_mention_everyone(self):
+        warn(
+            f'`{type(self).__name__}.allow_mention_everyone` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.mention_everyone.mask)
+    
+    
+    def allow_use_external_emojis(self):
+        warn(
+            f'`{type(self).__name__}.allow_use_external_emojis` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.use_external_emojis.mask)
+    
+    
+    def allow_view_guild_insights(self):
+        warn(
+            f'`{type(self).__name__}.allow_view_guild_insights` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.view_guild_insights.mask)
+    
+    
+    def allow_connect(self):
+        warn(
+            f'`{type(self).__name__}.allow_connect` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.connect.mask)
+    
+    
+    def allow_speak(self):
+        warn(
+            f'`{type(self).__name__}.allow_speak` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.speak.mask)
+    
+    
+    def allow_mute_users(self):
+        warn(
+            f'`{type(self).__name__}.allow_mute_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.mute_users.mask)
+    
+    
+    def allow_deafen_users(self):
+        warn(
+            f'`{type(self).__name__}.allow_deafen_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.deafen_users.mask)
+    
+    
+    def allow_move_users(self):
+        warn(
+            f'`{type(self).__name__}.allow_move_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.move_users.mask)
+    
+    
+    def allow_use_voice_activation(self):
+        warn(
+            f'`{type(self).__name__}.allow_use_voice_activation` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.use_voice_activation.mask)
+    
+    
+    def allow_change_nickname(self):
+        warn(
+            f'`{type(self).__name__}.allow_change_nickname` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.change_nickname.mask)
+    
+    
+    def allow_manage_nicknames(self):
+        warn(
+            f'`{type(self).__name__}.allow_manage_nicknames` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.manage_nicknames.mask)
+    
+    
+    def allow_manage_roles(self):
+        warn(
+            f'`{type(self).__name__}.allow_manage_roles` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.manage_roles.mask)
+    
+    
+    def allow_manage_webhooks(self):
+        warn(
+            f'`{type(self).__name__}.allow_manage_webhooks` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.manage_webhooks.mask)
+    
+    
+    def allow_manage_guild_expressions(self):
+        warn(
+            f'`{type(self).__name__}.allow_manage_guild_expressions` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.manage_guild_expressions.mask)
+    
+    
+    def allow_use_application_commands(self):
+        warn(
+            f'`{type(self).__name__}.allow_use_application_commands` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.use_application_commands.mask)
+    
+    
+    def allow_request_to_speak(self):
+        warn(
+            f'`{type(self).__name__}.allow_request_to_speak` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.request_to_speak.mask)
+    
+    
+    def allow_manage_events(self):
+        warn(
+            f'`{type(self).__name__}.allow_manage_events` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.manage_events.mask)
+    
+    
+    def allow_manage_threads(self):
+        warn(
+            f'`{type(self).__name__}.allow_manage_threads` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.manage_threads.mask)
+    
+    
+    def allow_create_public_threads(self):
+        warn(
+            f'`{type(self).__name__}.allow_create_public_threads` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.create_public_threads.mask)
+    
+    
+    def allow_create_private_threads(self):
+        warn(
+            f'`{type(self).__name__}.allow_create_private_threads` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.create_private_threads.mask)
+    
+    
+    def allow_use_external_stickers(self):
+        warn(
+            f'`{type(self).__name__}.allow_use_external_stickers` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.use_external_stickers.mask)
+    
+    
+    def allow_send_messages_in_threads(self):
+        warn(
+            f'`{type(self).__name__}.allow_send_messages_in_threads` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.send_messages_in_threads.mask)
+    
+    
+    def allow_use_embedded_activities(self):
+        warn(
+            f'`{type(self).__name__}.allow_use_embedded_activities` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.use_embedded_activities.mask)
+    
+    
+    def allow_moderate_users(self):
+        warn(
+            f'`{type(self).__name__}.allow_moderate_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.moderate_users.mask)
+    
+    
+    def allow_view_creator_monetization_analytics(self):
+        warn(
+            f'`{type(self).__name__}.allow_view_creator_monetization_analytics` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.view_creator_monetization_analytics.mask)
+    
+    
+    def allow_use_soundboard(self):
+        warn(
+            f'`{type(self).__name__}.allow_use_soundboard` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.use_soundboard.mask)
+    
+    
+    def allow_create_guild_expressions(self):
+        warn(
+            f'`{type(self).__name__}.allow_create_guild_expressions` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.create_guild_expressions.mask)
+    
+    
+    def allow_create_events(self):
+        warn(
+            f'`{type(self).__name__}.allow_create_events` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.create_events.mask)
+    
+    
+    def allow_use_external_sounds(self):
+        warn(
+            f'`{type(self).__name__}.allow_use_external_sounds` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.use_external_sounds.mask)
+    
+    
+    def allow_send_voice_messages(self):
+        warn(
+            f'`{type(self).__name__}.allow_send_voice_messages` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.send_voice_messages.mask)
+    
+    
+    def allow_use_clyde_ai(self):
+        warn(
+            f'`{type(self).__name__}.allow_use_clyde_ai` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.use_clyde_ai.mask)
+    
+    
+    def allow_set_voice_channel_status(self):
+        warn(
+            f'`{type(self).__name__}.allow_set_voice_channel_status` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.set_voice_channel_status.mask)
+    
+    
+    def allow_send_polls(self):
+        warn(
+            f'`{type(self).__name__}.allow_send_polls` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.send_polls.mask)
+    
+    
+    def allow_use_external_application_commands(self):
+        warn(
+            f'`{type(self).__name__}.allow_use_external_application_commands` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.use_external_application_commands.mask)
+    
+    
+    def deny_create_instant_invite(self):
+        warn(
+            f'`{type(self).__name__}.deny_create_instant_invite` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.create_instant_invite.mask)
+    
+    
+    def deny_kick_users(self):
+        warn(
+            f'`{type(self).__name__}.deny_kick_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.kick_users.mask)
+    
+    
+    def deny_ban_users(self):
+        warn(
+            f'`{type(self).__name__}.deny_ban_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.ban_users.mask)
+    
+    
+    def deny_administrator(self):
+        warn(
+            f'`{type(self).__name__}.deny_administrator` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.administrator.mask)
+    
+    
+    def deny_manage_channels(self):
+        warn(
+            f'`{type(self).__name__}.deny_manage_channels` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.manage_channels.mask)
+    
+    
+    def deny_manage_guild(self):
+        warn(
+            f'`{type(self).__name__}.deny_manage_guild` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.manage_guild.mask)
+    
+    
+    def deny_add_reactions(self):
+        warn(
+            f'`{type(self).__name__}.deny_add_reactions` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.add_reactions.mask)
+    
+    
+    def deny_view_audit_logs(self):
+        warn(
+            f'`{type(self).__name__}.deny_view_audit_logs` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.view_audit_logs.mask)
+    
+    
+    def deny_priority_speaker(self):
+        warn(
+            f'`{type(self).__name__}.deny_priority_speaker` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.priority_speaker.mask)
+    
+    
+    def deny_stream(self):
+        warn(
+            f'`{type(self).__name__}.deny_stream` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.stream.mask)
+    
+    
+    def deny_view_channel(self):
+        warn(
+            f'`{type(self).__name__}.deny_view_channel` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.view_channel.mask)
+    
+    
+    def deny_send_messages(self):
+        warn(
+            f'`{type(self).__name__}.deny_send_messages` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.send_messages.mask)
+    
+    
+    def deny_send_tts_messages(self):
+        warn(
+            f'`{type(self).__name__}.deny_send_tts_messages` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.send_tts_messages.mask)
+    
+    
+    def deny_manage_messages(self):
+        warn(
+            f'`{type(self).__name__}.deny_manage_messages` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.manage_messages.mask)
+    
+    
+    def deny_embed_links(self):
+        warn(
+            f'`{type(self).__name__}.deny_embed_links` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.embed_links.mask)
+    
+    
+    def deny_attach_files(self):
+        warn(
+            f'`{type(self).__name__}.deny_attach_files` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.attach_files.mask)
+    
+    
+    def deny_read_message_history(self):
+        warn(
+            f'`{type(self).__name__}.deny_read_message_history` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.read_message_history.mask)
+    
+    
+    def deny_mention_everyone(self):
+        warn(
+            f'`{type(self).__name__}.deny_mention_everyone` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.mention_everyone.mask)
+    
+    
+    def deny_use_external_emojis(self):
+        warn(
+            f'`{type(self).__name__}.deny_use_external_emojis` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.use_external_emojis.mask)
+    
+    
+    def deny_view_guild_insights(self):
+        warn(
+            f'`{type(self).__name__}.deny_view_guild_insights` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.view_guild_insights.mask)
+    
+    
+    def deny_connect(self):
+        warn(
+            f'`{type(self).__name__}.deny_connect` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.connect.mask)
+    
+    
+    def deny_speak(self):
+        warn(
+            f'`{type(self).__name__}.deny_speak` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.speak.mask)
+    
+    
+    def deny_mute_users(self):
+        warn(
+            f'`{type(self).__name__}.deny_mute_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.mute_users.mask)
+    
+    
+    def deny_deafen_users(self):
+        warn(
+            f'`{type(self).__name__}.deny_deafen_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.deafen_users.mask)
+    
+    
+    def deny_move_users(self):
+        warn(
+            f'`{type(self).__name__}.deny_move_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.move_users.mask)
+    
+    
+    def deny_use_voice_activation(self):
+        warn(
+            f'`{type(self).__name__}.deny_use_voice_activation` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.use_voice_activation.mask)
+    
+    
+    def deny_change_nickname(self):
+        warn(
+            f'`{type(self).__name__}.deny_change_nickname` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.change_nickname.mask)
+    
+    
+    def deny_manage_nicknames(self):
+        warn(
+            f'`{type(self).__name__}.deny_manage_nicknames` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.manage_nicknames.mask)
+    
+    
+    def deny_manage_roles(self):
+        warn(
+            f'`{type(self).__name__}.deny_manage_roles` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.manage_roles.mask)
+    
+    
+    def deny_manage_webhooks(self):
+        warn(
+            f'`{type(self).__name__}.deny_manage_webhooks` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.manage_webhooks.mask)
+    
+    
+    def deny_manage_guild_expressions(self):
+        warn(
+            f'`{type(self).__name__}.deny_manage_guild_expressions` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.manage_guild_expressions.mask)
+    
+    
+    def deny_use_application_commands(self):
+        warn(
+            f'`{type(self).__name__}.deny_use_application_commands` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.use_application_commands.mask)
+    
+    
+    def deny_request_to_speak(self):
+        warn(
+            f'`{type(self).__name__}.deny_request_to_speak` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.request_to_speak.mask)
+    
+    
+    def deny_manage_events(self):
+        warn(
+            f'`{type(self).__name__}.deny_manage_events` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.manage_events.mask)
+    
+    
+    def deny_manage_threads(self):
+        warn(
+            f'`{type(self).__name__}.deny_manage_threads` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.manage_threads.mask)
+    
+    
+    def deny_create_public_threads(self):
+        warn(
+            f'`{type(self).__name__}.deny_create_public_threads` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.create_public_threads.mask)
+    
+    
+    def deny_create_private_threads(self):
+        warn(
+            f'`{type(self).__name__}.deny_create_private_threads` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.create_private_threads.mask)
+    
+    
+    def deny_use_external_stickers(self):
+        warn(
+            f'`{type(self).__name__}.deny_use_external_stickers` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.use_external_stickers.mask)
+    
+    
+    def deny_send_messages_in_threads(self):
+        warn(
+            f'`{type(self).__name__}.deny_send_messages_in_threads` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.send_messages_in_threads.mask)
+    
+    
+    def deny_use_embedded_activities(self):
+        warn(
+            f'`{type(self).__name__}.deny_use_embedded_activities` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.use_embedded_activities.mask)
+    
+    
+    def deny_moderate_users(self):
+        warn(
+            f'`{type(self).__name__}.deny_moderate_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.moderate_users.mask)
+    
+    
+    def deny_view_creator_monetization_analytics(self):
+        warn(
+            f'`{type(self).__name__}.deny_view_creator_monetization_analytics` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.view_creator_monetization_analytics.mask)
+    
+    
+    def deny_use_soundboard(self):
+        warn(
+            f'`{type(self).__name__}.deny_use_soundboard` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.use_soundboard.mask)
+    
+    
+    def deny_create_guild_expressions(self):
+        warn(
+            f'`{type(self).__name__}.deny_create_guild_expressions` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.create_guild_expressions.mask)
+    
+    
+    def deny_create_events(self):
+        warn(
+            f'`{type(self).__name__}.deny_create_events` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.create_events.mask)
+    
+    
+    def deny_use_external_sounds(self):
+        warn(
+            f'`{type(self).__name__}.deny_use_external_sounds` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.use_external_sounds.mask)
+    
+    
+    def deny_send_voice_messages(self):
+        warn(
+            f'`{type(self).__name__}.deny_send_voice_messages` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.send_voice_messages.mask)
+    
+    
+    def deny_use_clyde_ai(self):
+        warn(
+            f'`{type(self).__name__}.deny_use_clyde_ai` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.use_clyde_ai.mask)
+    
+    
+    def deny_set_voice_channel_status(self):
+        warn(
+            f'`{type(self).__name__}.deny_set_voice_channel_status` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.set_voice_channel_status.mask)
+    
+    
+    def deny_send_polls(self):
+        warn(
+            f'`{type(self).__name__}.deny_send_polls` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.send_polls.mask)
+    
+    
+    def deny_use_external_application_commands(self):
+        warn(
+            f'`{type(self).__name__}.deny_use_external_application_commands` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.use_external_application_commands.mask)
+    
+    
+
+
+    
 
 PERMISSION_ALL = Permission().update_by_keys(
     create_instant_invite = True,

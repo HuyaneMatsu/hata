@@ -1013,12 +1013,13 @@ class ClientCompoundChannelEndpoints(Compound):
         ----------
         channel : ``Channel``, `int`
             The channel or its identifier to get.
+        
         force_update : `bool` = `False`, Optional (Keyword only)
-            Whether the user should be requested even if it supposed to be up to date.
+            Whether the channel should be requested even if it supposed to be up to date.
         
         Returns
         -------
-        user : ``ClientUserBase``
+        channel : ``Channel``
         
         Raises
         ------

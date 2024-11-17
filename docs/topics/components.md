@@ -204,7 +204,7 @@ async def role_claimer(event):
     """Role claimer message. (Owner only)"""
     
     # Double check.
-    if not event.user_permissions.can_administrator:
+    if not event.user_permissions.administrator:
         abort('Admin only')
     
     return InteractionResponse('Claim role by clicking on it', components = ROLE_CLAIMER_COMPONENTS)

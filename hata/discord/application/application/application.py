@@ -22,20 +22,21 @@ from .fields import (
     parse_aliases, parse_approximate_guild_count, parse_approximate_user_install_count, parse_bot_public,
     parse_bot_requires_code_grant, parse_creator_monetization_state, parse_custom_install_url, parse_deeplink_url,
     parse_description, parse_developers, parse_discoverability_state, parse_discovery_eligibility_flags,
-    parse_embedded_activity_configuration, parse_eula_id, parse_executables, parse_explicit_content_filter_level,
-    parse_flags, parse_guild_id, parse_hook, parse_id, parse_install_parameters, parse_integration_public,
-    parse_integration_requires_code_grant, parse_integration_types, parse_integration_types_configuration,
-    parse_interaction_endpoint_url, parse_interaction_event_types, parse_interaction_version,
-    parse_internal_guild_restriction, parse_max_participants, parse_monetization_eligibility_flags,
-    parse_monetization_state, parse_monetized, parse_name, parse_overlay, parse_overlay_compatibility_hook,
-    parse_overlay_method_flags, parse_owner, parse_primary_sku_id, parse_privacy_policy_url, parse_publishers,
-    parse_redirect_urls, parse_role_connection_verification_url, parse_rpc_origins, parse_rpc_state, parse_slug,
-    parse_store_state, parse_tags, parse_terms_of_service_url, parse_third_party_skus, parse_type,
-    parse_verification_state, parse_verify_key, put_aliases_into, put_approximate_guild_count_into,
-    put_approximate_user_install_count_into, put_bot_public_into, put_bot_requires_code_grant_into,
-    put_creator_monetization_state_into, put_custom_install_url_into, put_deeplink_url_into, put_description_into,
-    put_developers_into, put_discoverability_state_into, put_discovery_eligibility_flags_into,
-    put_embedded_activity_configuration_into, put_eula_id_into, put_executables_into,
+    parse_embedded_activity_configuration, parse_eula_id, parse_event_webhook_event_types, parse_event_webhook_state,
+    parse_event_webhook_url, parse_executables, parse_explicit_content_filter_level, parse_flags, parse_guild_id,
+    parse_hook, parse_id, parse_install_parameters, parse_integration_public, parse_integration_requires_code_grant,
+    parse_integration_types, parse_integration_types_configuration, parse_interaction_endpoint_url,
+    parse_interaction_event_types, parse_interaction_version, parse_internal_guild_restriction, parse_max_participants,
+    parse_monetization_eligibility_flags, parse_monetization_state, parse_monetized, parse_name, parse_overlay,
+    parse_overlay_compatibility_hook, parse_overlay_method_flags, parse_owner, parse_primary_sku_id,
+    parse_privacy_policy_url, parse_publishers, parse_redirect_urls, parse_role_connection_verification_url,
+    parse_rpc_origins, parse_rpc_state, parse_slug, parse_store_state, parse_tags, parse_terms_of_service_url,
+    parse_third_party_skus, parse_type, parse_verification_state, parse_verify_key, put_aliases_into,
+    put_approximate_guild_count_into, put_approximate_user_install_count_into, put_bot_public_into,
+    put_bot_requires_code_grant_into, put_creator_monetization_state_into, put_custom_install_url_into,
+    put_deeplink_url_into, put_description_into, put_developers_into, put_discoverability_state_into,
+    put_discovery_eligibility_flags_into, put_embedded_activity_configuration_into, put_eula_id_into,
+    put_event_webhook_event_types_into, put_event_webhook_state_into, put_event_webhook_url_into, put_executables_into,
     put_explicit_content_filter_level_into, put_flags_into, put_guild_id_into, put_hook_into, put_id_into,
     put_install_parameters_into, put_integration_public_into, put_integration_requires_code_grant_into,
     put_integration_types_configuration_into, put_integration_types_into, put_interaction_endpoint_url_into,
@@ -49,7 +50,8 @@ from .fields import (
     validate_approximate_user_install_count, validate_bot_public, validate_bot_requires_code_grant,
     validate_creator_monetization_state, validate_custom_install_url, validate_deeplink_url, validate_description,
     validate_developers, validate_discoverability_state, validate_discovery_eligibility_flags,
-    validate_embedded_activity_configuration, validate_eula_id, validate_executables,
+    validate_embedded_activity_configuration, validate_eula_id, validate_event_webhook_event_types,
+    validate_event_webhook_state, validate_event_webhook_url, validate_executables,
     validate_explicit_content_filter_level, validate_flags, validate_guild_id, validate_hook, validate_id,
     validate_install_parameters, validate_integration_public, validate_integration_requires_code_grant,
     validate_integration_types, validate_integration_types_configuration, validate_interaction_endpoint_url,
@@ -66,9 +68,9 @@ from .flags import (
     ApplicationOverlayMethodFlags
 )
 from .preinstanced import (
-    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationInteractionVersion,
-    ApplicationInternalGuildRestriction, ApplicationMonetizationState, ApplicationRPCState, ApplicationStoreState,
-    ApplicationType, ApplicationVerificationState
+    ApplicationDiscoverabilityState, ApplicationEventWebhookState, ApplicationExplicitContentFilterLevel,
+    ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
+    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
 )
 
 # Invite application fields
@@ -112,6 +114,7 @@ from .preinstanced import (
 # - hook
 # - icon
 # - id
+# - install_params
 # - integration_public
 # - integration_requires_code_grant
 # - integration_types
@@ -137,6 +140,7 @@ from .preinstanced import (
 # - summary (deprecated)
 # - tags
 # - team
+# - terms_of_service_url
 # - type
 # - verification_state
 # - verify_key
@@ -144,9 +148,10 @@ from .preinstanced import (
 # Extra from docs
 #
 # - guild -> this one is documented, but never received
-# - terms_of_service_url
 # - cover_image
-# - install_parameters
+# - event_webhooks_types
+# - event_webhook_state
+# - event_webhook_url
 #
 # Detectable application fields:
 # The ones with `X` were already missing on last update. Omit them on next if they will be still missing.
@@ -219,6 +224,12 @@ from .preinstanced import (
 # | embedded_activity_configuration     | NO        | YES       | NO            |
 # +-------------------------------------+-----------+-----------+---------------+
 # | eula_id                             | NO        | NO        | YES           |
+# +-------------------------------------+-----------+-----------+---------------+
+# | event_webhooks_types                | YES       | NO        | NO            |
+# +-------------------------------------+-----------+-----------+---------------+
+# | event_webhooks_status               | YES       | NO        | NO            |
+# +-------------------------------------+-----------+-----------+---------------+
+# | event_webhooks_url                  | YES       | NO        | NO            |
 # +-------------------------------------+-----------+-----------+---------------+
 # | executables                         | NO        | NO        | YES           |
 # +-------------------------------------+-----------+-----------+---------------+
@@ -349,6 +360,9 @@ COMMON_CONSTRUCT_FIELDS = {
     'discovery_eligibility_flags': ('discovery_eligibility_flags', validate_discovery_eligibility_flags),
     'embedded_activity_configuration': ('embedded_activity_configuration', validate_embedded_activity_configuration),
     'eula_id': ('eula_id', validate_eula_id),
+    'event_webhook_event_types': ('event_webhook_event_types', validate_event_webhook_event_types),
+    'event_webhook_state': ('event_webhook_state', validate_event_webhook_state),
+    'event_webhook_url': ('event_webhook_url', validate_event_webhook_url),
     'executables': ('executables', validate_executables),
     'explicit_content_filter_level': ('explicit_content_filter_level', validate_explicit_content_filter_level),
     'flags': ('flags', validate_flags),
@@ -474,6 +488,15 @@ class Application(DiscordEntity, immortal = True):
     eula_id : `int`
         The end-user license agreement's id of the application.
         Defaults to `0` if not applicable.
+    
+    event_webhook_event_types : `None | tuple<ApplicationEventWebhookEventType>`
+        The type event of eventy received through event webhook.
+    
+    event_webhook_state : ``ApplicationEventWebhookState``
+        The state of the event webhook.
+    
+    event_webhook_url : ˙None | str`
+        The url where the event webhook requests are going.
     
     executables : `None`, `tuple` of ``ApplicationExecutable``
         The application's executables.
@@ -634,8 +657,9 @@ class Application(DiscordEntity, immortal = True):
         '_cache_emojis', 'aliases', 'approximate_guild_count', 'approximate_user_install_count', 'bot_public',
         'bot_requires_code_grant', 'creator_monetization_state', 'custom_install_url', 'deeplink_url', 'description',
         'developers', 'discoverability_state', 'discovery_eligibility_flags',  'embedded_activity_configuration',
-        'eula_id', 'executables', 'explicit_content_filter_level', 'flags', 'guild_id', 'hook', 'install_parameters',
-        'integration_public', 'integration_requires_code_grant', 'integration_types', 'integration_types_configuration',
+        'eula_id', 'event_webhook_event_types', 'event_webhook_state', 'event_webhook_url', 'executables',
+        'explicit_content_filter_level', 'flags', 'guild_id', 'hook', 'install_parameters', 'integration_public',
+        'integration_requires_code_grant', 'integration_types', 'integration_types_configuration',
         'interaction_endpoint_url', 'interaction_event_types', 'interaction_version', 'internal_guild_restriction',
         'max_participants', 'monetization_eligibility_flags', 'monetization_state', 'monetized', 'name', 'overlay',
         'overlay_compatibility_hook', 'overlay_method_flags', 'owner', 'primary_sku_id', 'privacy_policy_url',
@@ -681,6 +705,9 @@ class Application(DiscordEntity, immortal = True):
         self.discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags()
         self.embedded_activity_configuration = None
         self.eula_id = 0
+        self.event_webhook_event_types = None
+        self.event_webhook_state = ApplicationEventWebhookState.none
+        self.event_webhook_url = None
         self.executables = None
         self.explicit_content_filter_level = ApplicationExplicitContentFilterLevel.none
         self.flags = ApplicationFlag()
@@ -944,6 +971,9 @@ class Application(DiscordEntity, immortal = True):
         self.developers = parse_developers(data)
         self.discoverability_state = parse_discoverability_state(data)
         self.discovery_eligibility_flags = parse_discovery_eligibility_flags(data)
+        self.event_webhook_event_types = parse_event_webhook_event_types(data)
+        self.event_webhook_state = parse_event_webhook_state(data)
+        self.event_webhook_url = parse_event_webhook_url(data)
         self.explicit_content_filter_level = parse_explicit_content_filter_level(data)
         self.guild_id = parse_guild_id(data)
         self.install_parameters = parse_install_parameters(data)
@@ -1134,6 +1164,9 @@ class Application(DiscordEntity, immortal = True):
         put_developers_into(self.developers, data, defaults, include_internals = True)
         put_discoverability_state_into(self.discoverability_state, data, defaults)
         put_discovery_eligibility_flags_into(self.discovery_eligibility_flags, data, defaults)
+        put_event_webhook_event_types_into(self.event_webhook_event_types, data, defaults)
+        put_event_webhook_state_into(self.event_webhook_state, data, defaults)
+        put_event_webhook_url_into(self.event_webhook_url, data, defaults)
         put_explicit_content_filter_level_into(self.explicit_content_filter_level, data, defaults)
         put_guild_id_into(self.guild_id, data, defaults)
         put_install_parameters_into(self.install_parameters, data, defaults)
@@ -1374,6 +1407,22 @@ class Application(DiscordEntity, immortal = True):
         
         # eula_id
         hash_value ^= self.eula_id
+        
+        # event_webhook_event_types
+        event_webhook_event_types = self.event_webhook_event_types
+        if (event_webhook_event_types is not None):
+            hash_value ^ len(event_webhook_event_types) << 36
+            
+            for event_webhook_event_type in event_webhook_event_types:
+                hash_value ^= hash(event_webhook_event_type)
+        
+        # event_webhook_state
+        hash_value ^= hash(self.event_webhook_state) << 37
+        
+        # event_webhook_url
+        event_webhook_url = self.event_webhook_url
+        if (event_webhook_url is not None):
+            hash_value ^= hash(event_webhook_url)
         
         # executables
         executables = self.executables
@@ -1617,6 +1666,18 @@ class Application(DiscordEntity, immortal = True):
         if self.eula_id != other.eula_id:
             return False
         
+        # event_webhook_event_types
+        if self.event_webhook_event_types != other.event_webhook_event_types:
+            return False
+        
+        # event_webhook_state
+        if self.event_webhook_state != other.event_webhook_state:
+            return False
+        
+        # event_webhook_url
+        if self.event_webhook_url != other.event_webhook_url:
+            return False
+        
         # executables
         if self.executables != other.executables:
             return False
@@ -1792,7 +1853,7 @@ class Application(DiscordEntity, immortal = True):
         """Returns the application's representation"""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         application_id = self.id
@@ -1868,6 +1929,15 @@ class Application(DiscordEntity, immortal = True):
         
         eula_id : `int`, Optional (Keyword only)
             The end-user license agreement's id of the application.
+        
+        event_webhook_event_types : `None | iterable<ApplicationEventWebhookEventType | str>`, Optional (Keyword only)
+            The type event of eventy received through event webhook.
+        
+        event_webhook_state : ApplicationEventWebhookState | int`, Optional (Keyword only)
+            The state of the event webhook.
+        
+        event_webhook_url : ˙None | str`, Optional (Keyword only)
+            The url where the event webhook requests are going.
         
         executables : `None`, `iterable` of ``ApplicationExecutable``, Optional (Keyword only)
             The application's executables.
@@ -2078,6 +2148,15 @@ class Application(DiscordEntity, immortal = True):
         
         eula_id : `int`, Optional (Keyword only)
             The end-user license agreement's id of the application.
+        
+        event_webhook_event_types : `None | iterable<ApplicationEventWebhookEventType | str>`, Optional (Keyword only)
+            The type event of eventy received through event webhook.
+        
+        event_webhook_state : ApplicationEventWebhookState | int`, Optional (Keyword only)
+            The state of the event webhook.
+        
+        event_webhook_url : ˙None | str`, Optional (Keyword only)
+            The url where the event webhook requests are going.
         
         executables : `None`, `iterable` of ``ApplicationExecutable``, Optional (Keyword only)
             The application's executables.
@@ -2300,6 +2379,15 @@ class Application(DiscordEntity, immortal = True):
         eula_id : `int`, Optional (Keyword only)
             The end-user license agreement's id of the application.
         
+        event_webhook_event_types : `None | iterable<ApplicationEventWebhookEventType | str>`, Optional (Keyword only)
+            The type event of eventy received through event webhook.
+        
+        event_webhook_state : ApplicationEventWebhookState | int`, Optional (Keyword only)
+            The state of the event webhook.
+        
+        event_webhook_url : ˙None | str`, Optional (Keyword only)
+            The url where the event webhook requests are going.
+        
         executables : `None`, `iterable` of ``ApplicationExecutable``, Optional (Keyword only)
             The application's executables.
         
@@ -2478,6 +2566,12 @@ class Application(DiscordEntity, immortal = True):
             embedded_activity_configuration = embedded_activity_configuration.copy()
         new.embedded_activity_configuration = embedded_activity_configuration
         new.eula_id = self.eula_id
+        event_webhook_event_types = self.event_webhook_event_types
+        if (event_webhook_event_types is not None):
+            event_webhook_event_types = (*event_webhook_event_types,)
+        new.event_webhook_event_types = event_webhook_event_types
+        new.event_webhook_state = self.event_webhook_state
+        new.event_webhook_url = self.event_webhook_url
         executables = self.executables
         if (executables is not None):
             executables = (*(executable.copy() for executable in executables),)
@@ -2701,20 +2795,19 @@ class Application(DiscordEntity, immortal = True):
             return GUILDS.get(guild_id, None)
     
     
-    @property
-    def bot_require_code_grant(self):
+    def iter_event_webhook_event_types(self):
         """
-        Deprecated and will be removed in 2024 April. Please use `.bot_requires_code_grant` instead.
+        Iterates over the event webhook event types of the application
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        event_webhook_event_type : ``ApplicationEventWebhookEventType``
         """
-        warn(
-            (
-                f'`{type(self).__name__}.bot_require_code_grant` is deprecated and will be removed in 2024 April. '
-                f'Please use `.bot_requires_code_grant` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.bot_requires_code_grant
+        event_webhook_event_types = self.event_webhook_event_types
+        if (event_webhook_event_types is not None):
+            yield from event_webhook_event_types
     
     
     def iter_interaction_event_types(self):

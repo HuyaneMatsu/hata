@@ -72,6 +72,7 @@ setup(
         'hata.discord.auto_moderation.rule',
         'hata.discord.auto_moderation.trigger_metadata',
         'hata.discord.bases',
+        'hata.discord.bases.flags',
         'hata.discord.bin',
         'hata.discord.builder',
         'hata.discord.builder.conversions',

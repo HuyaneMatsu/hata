@@ -579,7 +579,7 @@ class UserMenuRunner(PaginationBase):
         
         emojis = factory.emojis
         if (emojis is not None):
-            if not target_channel.cached_permissions_for(client).can_add_reactions:
+            if not target_channel.cached_permissions_for(client).add_reactions:
                 await self.cancel(PermissionError())
                 return self
             
@@ -902,7 +902,7 @@ class UserPagination:
             return
         
         if isinstance(exception, TimeoutError):
-            if self.menu.channel.cached_permissions_for(client).can_manage_messages:
+            if self.menu.channel.cached_permissions_for(client).manage_messages:
                 try:
                     await client.reaction_clear(self.menu.message)
                 except GeneratorExit:

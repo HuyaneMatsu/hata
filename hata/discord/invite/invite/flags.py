@@ -1,6 +1,6 @@
 __all__ = ('InviteFlag',)
 
-from ...bases import FlagBase
+from ...bases import FlagBase, FlagDescriptor as F
 
 
 class InviteFlag(FlagBase):
@@ -15,6 +15,4 @@ class InviteFlag(FlagBase):
     | guest                             | 1                 |
     +-----------------------------------+-------------------+
     """
-    __keys__ = {
-        'guest': 1,
-    }
+    guest = F(1)

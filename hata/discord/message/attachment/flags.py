@@ -1,6 +1,6 @@
 __all__ = ('AttachmentFlag',)
 
-from ...bases import FlagBase
+from ...bases import FlagBase, FlagDescriptor as F
 
 
 class AttachmentFlag(FlagBase):
@@ -19,8 +19,6 @@ class AttachmentFlag(FlagBase):
     | remix                                     | 2                 |
     +-------------------------------------------+-------------------+
     """
-    __keys__ = {
-        'clip': 0,
-        'thumbnail': 1,
-        'remix': 2,
-    }
+    clip = F(0)
+    thumbnail = F(1)
+    remix = F(2)

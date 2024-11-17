@@ -18,7 +18,7 @@ from email._parseaddr import _parsedate_tz as parse_date_timezone
 from functools import partial as partial_func
 from math import floor
 from random import random
-from re import I as re_ignore_case, U as re_unicode, compile as re_compile
+from re import U as re_unicode, compile as re_compile
 from time import time as time_now
 
 from scarletio import LOOP_TIME, RichAttributeErrorBaseType, export, include, modulize
@@ -1716,7 +1716,7 @@ URL_RP = re_compile(
     '(?:\\?\\S*)?'
     # fragment
     '(?:#\\S*)?',
-    re_unicode | re_ignore_case
+    re_unicode
 )
 
 def is_url(url):

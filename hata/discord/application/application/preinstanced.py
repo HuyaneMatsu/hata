@@ -1,8 +1,8 @@
 __all__ = (
-    'ApplicationDiscoverabilityState', 'ApplicationExplicitContentFilterLevel', 'ApplicationIntegrationType',
-    'ApplicationInteractionEventType', 'ApplicationInteractionVersion', 'ApplicationInternalGuildRestriction',
-    'ApplicationMonetizationState', 'ApplicationRPCState', 'ApplicationStoreState', 'ApplicationType',
-    'ApplicationVerificationState' 
+    'ApplicationDiscoverabilityState', 'ApplicationEventWebhookEventType', 'ApplicationEventWebhookState',
+    'ApplicationExplicitContentFilterLevel', 'ApplicationIntegrationType', 'ApplicationInteractionEventType',
+    'ApplicationInteractionVersion', 'ApplicationInternalGuildRestriction', 'ApplicationMonetizationState',
+    'ApplicationRPCState', 'ApplicationStoreState', 'ApplicationType', 'ApplicationVerificationState'
 )
 
 from ...bases import Preinstance as P, PreinstancedBase
@@ -59,6 +59,99 @@ class ApplicationDiscoverabilityState(PreinstancedBase):
     discoverable = P(3, 'discoverable')
     featurable = P(4, 'featurable')
     blocked = P(5, 'blocked')
+
+
+class ApplicationEventWebhookEventType(PreinstancedBase):
+    """
+    Represents an application's event webhook event type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the application event webhook event type.
+    
+    value : `str`
+        The Discord side identifier value of the application event webhook event type.
+        
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``ApplicationDiscoverabilityState``) items
+        Stores the created application event webhook event type instances. This container is accessed when translating a
+        Discord application event webhook event type's value to it's representation.
+    VALUE_TYPE : `type` = `int`
+        The application event webhook event types' values' type.
+    DEFAULT_NAME : `str` = `'Undefined'`
+        The default name of the application event webhook event types.
+    
+    Every predefined application event webhook event type can be accessed as class attribute as well:
+    
+    +---------------------------+---------------------------+---------------------------+
+    | Class attribute name      | name                      | value                     |
+    +===========================+===========================+===========================+
+    | application_authorization | application authorization | 'APPLICATION_AUTHORIZED'  |
+    +---------------------------+---------------------------+---------------------------+
+    | entitlement_create        | entitlement create        | 'ENTITLEMENT_CREATE'      |
+    +---------------------------+---------------------------+---------------------------+
+    | quest_enrollment          | quest enrollment          | 'QUEST_USER_ENROLLMENT'   |
+    +---------------------------+---------------------------+---------------------------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = str
+    
+    __slots__ = ()
+    
+    # predefined
+    application_authorization = P('APPLICATION_AUTHORIZED', 'application authorization')
+    entitlement_create = P('ENTITLEMENT_CREATE', 'entitlement create')
+    quest_enrollment = P('QUEST_USER_ENROLLMENT', 'quest enrollment')
+
+
+class ApplicationEventWebhookState(PreinstancedBase):
+    """
+    Represents an application's event webhook state.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the application event webhook state.
+    
+    value : `int`
+        The Discord side identifier value of the application event webhook state.
+        
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``ApplicationDiscoverabilityState``) items
+        Stores the created application event webhook state instances. This container is accessed when translating a
+        Discord application event webhook state's value to it's representation.
+    VALUE_TYPE : `type` = `int`
+        The application event webhook states' values' type.
+    DEFAULT_NAME : `str` = `'Undefined'`
+        The default name of the application event webhook states.
+    
+    Every predefined application event webhook state can be accessed as class attribute as well:
+    
+    +---------------------------+---------------------------+-------+
+    | Class attribute name      | name                      | value |
+    +===========================+===========================+=======+
+    | none                      | none                      | 0     |
+    +---------------------------+---------------------------+-------+
+    | disabled                  | disabled                  | 1     |
+    +---------------------------+---------------------------+-------+
+    | enabled                   | enabled                   | 2     |
+    +---------------------------+---------------------------+-------+
+    | auto_disabled             | auto-disabled             | 3     |
+    +---------------------------+---------------------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    
+    __slots__ = ()
+    
+    # predefined
+    none = P(0, 'none')
+    disabled = P(1, 'disabled')
+    enabled = P(2, 'enabled')
+    auto_disabled = P(3, 'auto-disabled')
 
 
 class ApplicationExplicitContentFilterLevel(PreinstancedBase):

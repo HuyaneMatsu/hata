@@ -41,10 +41,10 @@ from .flags import (
     ApplicationOverlayMethodFlags
 )
 from .preinstanced import (
-    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationIntegrationType,
-    ApplicationInteractionEventType, ApplicationInteractionVersion, ApplicationInternalGuildRestriction,
-    ApplicationMonetizationState, ApplicationRPCState, ApplicationStoreState, ApplicationType,
-    ApplicationVerificationState
+    ApplicationDiscoverabilityState, ApplicationEventWebhookEventType, ApplicationEventWebhookState,
+    ApplicationExplicitContentFilterLevel, ApplicationIntegrationType, ApplicationInteractionEventType,
+    ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
+    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
 )
 
 # aliases
@@ -163,6 +163,36 @@ validate_embedded_activity_configuration = nullable_entity_validator_factory(
 parse_eula_id = entity_id_parser_factory('eula_id')
 put_eula_id_into = entity_id_optional_putter_factory('eula_id')
 validate_eula_id = entity_id_validator_factory('eula_id', EULA)
+
+
+# event_webhook_event_types
+
+parse_event_webhook_event_types = preinstanced_array_parser_factory(
+    'event_webhooks_types', ApplicationEventWebhookEventType
+)
+put_event_webhook_event_types_into = preinstanced_array_putter_factory('event_webhooks_types')
+validate_event_webhook_event_types = preinstanced_array_validator_factory(
+    'event_webhook_event_types', ApplicationEventWebhookEventType
+)
+
+
+# event_webhook_state
+
+parse_event_webhook_state = preinstanced_parser_factory(
+    'event_webhooks_status', ApplicationEventWebhookState, ApplicationEventWebhookState.none
+)
+put_event_webhook_state_into = preinstanced_putter_factory('event_webhooks_status')
+validate_event_webhook_state = preinstanced_validator_factory(
+    'event_webhook_state', ApplicationEventWebhookState
+)
+
+
+# event_webhook_url
+
+parse_event_webhook_url = nullable_string_parser_factory('event_webhooks_url')
+put_event_webhook_url_into = url_optional_putter_factory('event_webhooks_url')
+validate_event_webhook_url = url_optional_validator_factory('event_webhook_url')
+
 
 # executables
 

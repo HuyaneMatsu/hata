@@ -44,7 +44,7 @@ class DiscordApiClient(RichAttributeErrorBaseType):
     """
     __slots__ = ('debug_options', 'http', 'global_rate_limit_expires_at', 'handlers', 'headers')
     
-    def __new__(cls, bot, token, *, debug_options = None, http = None, proxy_url = None, proxy_auth = None):
+    def __new__(cls, bot, token, *, debug_options = None, http = None):
         """
         Creates a new Discord api client.
         
@@ -60,18 +60,12 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         
         http : `None | HTTPClient`` = `None`, Optional (Keyword only)
             The http client to use instead of creating a new one.
-        
-        proxy_auth :  `None | str` = `None`, Optional (Keyword only)
-            Proxy authorization for the session's requests.
-        
-        proxy_url : `None | str` = `None`, Optional (Keyword only)
-            Proxy url for the session's requests.
         """
         connector = get_connector()
         headers = build_headers(bot, token, debug_options)
         
         if http is None:
-            http = HTTPClient(KOKORO, connector = connector, proxy_auth = proxy_auth, proxy_url = proxy_url)
+            http = HTTPClient(KOKORO, connector = connector)
         
         self = object.__new__(cls)
         self.debug_options = debug_options
@@ -1296,6 +1290,14 @@ class DiscordApiClient(RichAttributeErrorBaseType):
     
     
     # role
+    
+    async def role_get(self, guild_id, role_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.role_get, guild_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/guilds/{guild_id}/roles/{role_id}',
+        )
+    
     
     async def role_edit(self, guild_id, role_id, data, reason):
         return await self.discord_request(

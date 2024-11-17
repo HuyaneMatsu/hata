@@ -2,7 +2,7 @@ __all__ = ('ChannelTypeFlag', )
 
 from scarletio import class_property
 
-from ...bases import FlagBase
+from ...bases import FlagBase, FlagDescriptor as F
 
 
 CHANNEL_TYPE_SHIFT_CONNECTABLE = 0
@@ -64,19 +64,17 @@ class ChannelTypeFlag(FlagBase):
     | forum                         | 10                |
     +-------------------------------+-------------------+
     """
-    __keys__ = {
-        'connectable': CHANNEL_TYPE_SHIFT_CONNECTABLE,
-        'guild': CHANNEL_TYPE_SHIFT_GUILD,
-        'guild_sortable': CHANNEL_TYPE_SHIFT_GUILD_SORTABLE,
-        'guild_system': CHANNEL_TYPE_SHIFT_GUILD_SYSTEM,
-        'invitable': CHANNEL_TYPE_SHIFT_INVITABLE,
-        'private': CHANNEL_TYPE_SHIFT_PRIVATE,
-        'readable': CHANNEL_TYPE_SHIFT_READABLE,
-        'textual': CHANNEL_TYPE_SHIFT_TEXTUAL,
-        'thread': CHANNEL_TYPE_SHIFT_THREAD,
-        'threadable': CHANNEL_TYPE_SHIFT_THREADABLE,
-        'forum': CHANNEL_TYPE_SHIFT_FORUM,
-    }
+    connectable = F(CHANNEL_TYPE_SHIFT_CONNECTABLE)
+    guild = F(CHANNEL_TYPE_SHIFT_GUILD)
+    guild_sortable = F(CHANNEL_TYPE_SHIFT_GUILD_SORTABLE)
+    guild_system = F(CHANNEL_TYPE_SHIFT_GUILD_SYSTEM)
+    invitable = F(CHANNEL_TYPE_SHIFT_INVITABLE)
+    private = F(CHANNEL_TYPE_SHIFT_PRIVATE)
+    readable = F(CHANNEL_TYPE_SHIFT_READABLE)
+    textual = F(CHANNEL_TYPE_SHIFT_TEXTUAL)
+    thread = F(CHANNEL_TYPE_SHIFT_THREAD)
+    threadable = F(CHANNEL_TYPE_SHIFT_THREADABLE)
+    forum = F(CHANNEL_TYPE_SHIFT_FORUM)
     
     
     @class_property
@@ -90,7 +88,7 @@ class ChannelTypeFlag(FlagBase):
         """
         value = 0
         
-        for shift in cls.__keys__.values():
+        for shift in cls.__shifts__.values():
             value |= 1 << shift
         
         return cls(value)

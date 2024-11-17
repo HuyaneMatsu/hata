@@ -16,10 +16,10 @@ from ..flags import (
     ApplicationOverlayMethodFlags
 )
 from ..preinstanced import (
-    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationIntegrationType,
-    ApplicationInteractionEventType, ApplicationInteractionVersion, ApplicationInternalGuildRestriction,
-    ApplicationMonetizationState, ApplicationRPCState, ApplicationStoreState, ApplicationType,
-    ApplicationVerificationState
+    ApplicationDiscoverabilityState, ApplicationEventWebhookEventType, ApplicationEventWebhookState,
+    ApplicationExplicitContentFilterLevel, ApplicationIntegrationType, ApplicationInteractionEventType,
+    ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
+    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
 )
 
 def _assert_fields_set(application):
@@ -50,6 +50,9 @@ def _assert_fields_set(application):
         application.embedded_activity_configuration, EmbeddedActivityConfiguration, nullable = True
     )
     vampytest.assert_instance(application.eula_id, int)
+    vampytest.assert_instance(application.event_webhook_event_types, tuple, nullable = True)
+    vampytest.assert_instance(application.event_webhook_state, ApplicationEventWebhookState)
+    vampytest.assert_instance(application.event_webhook_url, str, nullable = True)
     vampytest.assert_instance(application.executables, tuple, nullable = True)
     vampytest.assert_instance(application.explicit_content_filter_level, ApplicationExplicitContentFilterLevel)
     vampytest.assert_instance(application.flags, ApplicationFlag)
@@ -124,6 +127,12 @@ def test__Application__new__all_fields():
     discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags(9)
     embedded_activity_configuration = EmbeddedActivityConfiguration(position = 6)
     eula_id = 202211290001
+    event_webhook_event_types = [
+        ApplicationEventWebhookEventType.application_authorization,
+        ApplicationEventWebhookEventType.entitlement_create
+    ]
+    event_webhook_state = ApplicationEventWebhookState.enabled
+    event_webhook_url = 'https://orindance.party/event-webhook'
     executables = [ApplicationExecutable(name = 'Okuu')]
     explicit_content_filter_level = ApplicationExplicitContentFilterLevel.filtered
     flags = ApplicationFlag(96)
@@ -188,6 +197,9 @@ def test__Application__new__all_fields():
         discovery_eligibility_flags = discovery_eligibility_flags,
         embedded_activity_configuration = embedded_activity_configuration,
         eula_id = eula_id,
+        event_webhook_event_types = event_webhook_event_types,
+        event_webhook_state = event_webhook_state,
+        event_webhook_url = event_webhook_url,
         executables = executables,
         explicit_content_filter_level = explicit_content_filter_level,
         flags = flags,
@@ -246,6 +258,9 @@ def test__Application__new__all_fields():
     vampytest.assert_eq(application.discovery_eligibility_flags, discovery_eligibility_flags)
     vampytest.assert_eq(application.embedded_activity_configuration, embedded_activity_configuration)
     vampytest.assert_eq(application.eula_id, eula_id)
+    vampytest.assert_eq(application.event_webhook_event_types, tuple(event_webhook_event_types))
+    vampytest.assert_is(application.event_webhook_state, event_webhook_state)
+    vampytest.assert_eq(application.event_webhook_url, event_webhook_url)
     vampytest.assert_eq(application.executables, tuple(executables))
     vampytest.assert_is(application.explicit_content_filter_level, explicit_content_filter_level)
     vampytest.assert_eq(application.flags, flags)
@@ -323,6 +338,12 @@ def test__Application__precreate__all_fields():
     discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags(9)
     embedded_activity_configuration = EmbeddedActivityConfiguration(position = 6)
     eula_id = 202211290009
+    event_webhook_event_types = [
+        ApplicationEventWebhookEventType.application_authorization,
+        ApplicationEventWebhookEventType.entitlement_create
+    ]
+    event_webhook_state = ApplicationEventWebhookState.enabled
+    event_webhook_url = 'https://orindance.party/event-webhook'
     executables = [ApplicationExecutable(name = 'Okuu')]
     explicit_content_filter_level = ApplicationExplicitContentFilterLevel.filtered
     flags = ApplicationFlag(96)
@@ -388,6 +409,9 @@ def test__Application__precreate__all_fields():
         discovery_eligibility_flags = discovery_eligibility_flags,
         embedded_activity_configuration = embedded_activity_configuration,
         eula_id = eula_id,
+        event_webhook_event_types = event_webhook_event_types,
+        event_webhook_state = event_webhook_state,
+        event_webhook_url = event_webhook_url,
         executables = executables,
         explicit_content_filter_level = explicit_content_filter_level,
         flags = flags,
@@ -447,6 +471,9 @@ def test__Application__precreate__all_fields():
     vampytest.assert_eq(application.discovery_eligibility_flags, discovery_eligibility_flags)
     vampytest.assert_eq(application.embedded_activity_configuration, embedded_activity_configuration)
     vampytest.assert_eq(application.eula_id, eula_id)
+    vampytest.assert_eq(application.event_webhook_event_types, tuple(event_webhook_event_types))
+    vampytest.assert_is(application.event_webhook_state, event_webhook_state)
+    vampytest.assert_eq(application.event_webhook_url, event_webhook_url)
     vampytest.assert_eq(application.executables, tuple(executables))
     vampytest.assert_is(application.explicit_content_filter_level, explicit_content_filter_level)
     vampytest.assert_eq(application.flags, flags)

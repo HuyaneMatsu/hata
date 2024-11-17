@@ -1,6 +1,6 @@
 __all__ = ('ChannelFlag', )
 
-from ...bases import FlagBase
+from ...bases import FlagBase, FlagDescriptor as F
 
 
 class ChannelFlag(FlagBase):
@@ -45,18 +45,16 @@ class ChannelFlag(FlagBase):
     | hide_media_download_option                    | 15                |
     +-----------------------------------------------+-------------------+
     """
-    __keys__ = {
-        'guild_feed_removed': 0,
-        'pinned': 1,
-        'active_channels_removed': 2,
-        'require_tag': 4,
-        'spam': 5,
-        'guild_resource_channel': 7,
-        'clyde_ai': 8,
-        'scheduled_for_deletion': 9,
-        'media_channel': 10,
-        'summaries_disabled': 11,
-        'role_subscription_template_preview_channel': 13,
-        'broadcasting': 14,
-        'hide_media_download_option': 15,
-    }
+    guild_feed_removed = F(0)
+    pinned = F(1)
+    active_channels_removed = F(2)
+    require_tag = F(4)
+    spam = F(5)
+    guild_resource_channel = F(7)
+    clyde_ai = F(8)
+    scheduled_for_deletion = F(9)
+    media_channel = F(10)
+    summaries_disabled = F(11)
+    role_subscription_template_preview_channel = F(13)
+    broadcasting = F(14)
+    hide_media_download_option = F(15)

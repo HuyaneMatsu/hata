@@ -112,10 +112,10 @@ async def add_role(
 ):
     """Add role to a user."""
     # Check for permissions
-    if not event.user_permissions.can_manage_roles:
+    if not event.user_permissions.manage_roles:
         abort('You need `manage roles` permission to invoke this command.')
     
-    if not event.guild.cached_permissions_for(client).can_manage_roles:
+    if not event.guild.cached_permissions_for(client).manage_roles:
         abort('I need `manage roles` permission to execute this command.')
     
     if not event.user.has_higher_role_than(role):

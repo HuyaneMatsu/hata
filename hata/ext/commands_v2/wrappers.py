@@ -137,7 +137,7 @@ class CommandConverterConfigurerWrapper(CommandWrapper):
         
         if modifiers:
             for key in modifiers.keys():
-                if key not in ConverterFlag.__keys__:
+                if key not in ConverterFlag.__shifts__:
                     raise ValueError(f'Invalid modifier: `{key!r}.')
             
             for key, value in modifiers.items():

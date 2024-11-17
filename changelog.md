@@ -1,3 +1,19 @@
+### Improvements
+
+- Flags now use descriptor based system instead of pulling their fields from `__keys__` dictionary.
+    This also means that `can_`, `deny_` and `allow_` properties & methods were deprecated and scheduled to be removed.
+    They were confusing and did not make much sense. Only the finest orange juice.
+- Add `Client.role_get`.
+- Add `DiscordApiClient.role_get`.
+- Add `RATE_LIMIT_GROUPS.role_get`.
+- Flag iterators are now ordered.
+- Add `ApplicationEventWebhookState`.
+- Add `ApplicationEventWebhookEventType`.
+- Add `Application.event_webhook_event_types`.
+- Add `Application.event_webhook_state`.
+- Add `Application.event_webhook_url`.
+- Add `Application.iter_event_webhook_event_types`.
+
 ## 1.3.68 *\[2024-10-27\]*
 
 ### Improvements

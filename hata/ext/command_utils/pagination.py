@@ -228,7 +228,7 @@ class Pagination(PaginationBase):
             
             raise
         
-        if not target_channel.cached_permissions_for(client).can_add_reactions:
+        if not target_channel.cached_permissions_for(client).add_reactions:
             await self.cancel(PermissionError())
             return self
         

@@ -599,7 +599,7 @@ class Message(DiscordEntity, immortal = True):
                 # If no client can see the message update the whole.
                 # This can happen when we use user installed interactions and request back a message.
                 channel = self.channel
-                if not any(channel.cached_permissions_for(client).can_view_channel for client in channel.clients):
+                if not any(channel.cached_permissions_for(client).view_channel for client in channel.clients):
                     self._set_attributes(data, False)
                     break
                 

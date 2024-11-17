@@ -6,6 +6,17 @@ from ..preinstanced import ApplicationStoreState
 
 def _iter_options():
     yield (
+        ApplicationStoreState.none,
+        False,
+        {'store_application_state': ApplicationStoreState.none.value},
+    )
+    yield (
+        ApplicationStoreState.none,
+        True,
+        {'store_application_state': ApplicationStoreState.none.value},
+    )
+    
+    yield (
         ApplicationStoreState.approved,
         False,
         {'store_application_state': ApplicationStoreState.approved.value},
@@ -26,6 +37,7 @@ def test__put_store_state_into(input_value, defaults):
     ----------
     input_value : ``ApplicationStoreState``
         Input value.
+    
     defaults : `bool`
         Whether fields with their default values should be included as well.
     

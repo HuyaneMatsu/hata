@@ -22,6 +22,58 @@ class ClientCompoundRoleEndpoints(Compound):
     async def guild_sync(self, guild): ...
     
     
+    async def role_get(self, role, *, force_update = False):
+        """
+        Requests the given role and returns it.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        role : `Role | (int, int)`
+            The role or a pair of `guild-id`, `role-id`.
+        
+        force_update : `bool` = `False`, Optional (Keyword only)
+            Whether the role should be requested even if it supposed to be up to date.
+        
+        Returns
+        -------
+        role : ``Role``
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        role, guild_id, role_id = get_role_role_guild_id_and_id(role)
+        
+        # a goto to check whether we should force update the role.
+        while True:
+            if force_update:
+                break
+            
+            if role is None:
+                break
+            
+            if not role.partial:
+                return role
+            
+            break
+        
+        data = await self.api.role_get(guild_id, role_id)
+        
+        if role is None:
+            role = Role.from_data(data, guild_id)
+        else:
+            role._update_attributes(data)
+        
+        return role
+    
+    
     async def guild_role_get_all(self, guild):
         """
         Requests the given guild's roles and if there any de-sync between the wrapper and Discord, applies the

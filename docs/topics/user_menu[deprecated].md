@@ -193,7 +193,7 @@ class CatFeeder:
             content = f'The {self.cat} has been fed by {len(self.reacted)} people.'
             await menu.client.message_edit(menu.message, content)
             
-            if menu.channel.cached_permissions_for(menu.client).can_manage_messages:
+            if menu.channel.cached_permissions_for(menu.client).manage_messages:
                 await menu.client.reaction_clear(menu.message)
 
 

@@ -1,6 +1,6 @@
 __all__ = ('RoleFlag',)
 
-from ...bases import FlagBase
+from ...bases import FlagBase, FlagDescriptor as F
 
 
 class RoleFlag(FlagBase):
@@ -15,6 +15,4 @@ class RoleFlag(FlagBase):
     | in_prompt                                 | 0                 |
     +-------------------------------------------+-------------------+
     """
-    __keys__ = {
-        'in_prompt': 0,
-    }
+    in_prompt = F(0)

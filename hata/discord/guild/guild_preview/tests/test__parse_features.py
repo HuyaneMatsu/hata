@@ -6,14 +6,39 @@ from ..fields import parse_features
 
 
 def _iter_options():
-    yield ({}, None)
-    yield ({'features': None}, None)
-    yield ({'features': []}, None)
+    yield (
+        {},
+        None,
+    )
+    yield (
+        {
+            'features': None,
+        },
+        None,
+    )
+    yield (
+        {
+            'features': [],
+        },
+        None,
+    )
     yield (
         {
             'features': [
                 GuildFeature.animated_banner.value,
                 GuildFeature.animated_icon.value,
+            ],
+        },
+        (
+            GuildFeature.animated_banner,
+            GuildFeature.animated_icon,
+        ),
+    )
+    yield (
+        {
+            'features': [
+                GuildFeature.animated_icon.value,
+                GuildFeature.animated_banner.value,
             ],
         },
         (

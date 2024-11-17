@@ -860,10 +860,10 @@ async def is_banned(client, event,
     user: ('user', 'Who should I check?')
 ):
     """Checks whether the user is banned."""
-    if not event.user_permissions.can_ban_users:
+    if not event.user_permissions.ban_users:
         abort('You need to have `ban users` permissions to do this.')
     
-    if not event.channel.cached_permissions_for(client).can_ban_users:
+    if not event.channel.cached_permissions_for(client).ban_users:
         abort('I need to have `ban users` permissions to do this.')
     
     yield # Acknowledge the event.
@@ -954,7 +954,7 @@ async def enable_ping(
     if guild is None:
         abort('Guild only command.')
     
-    if not event.user_permissions.can_administrator:
+    if not event.user_permissions.administrator:
         abort('You must have administrator permission to use this command.')
     
     application_commands = await client.application_command_guild_get_all(guild)

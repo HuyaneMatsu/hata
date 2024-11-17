@@ -1,6 +1,6 @@
 __all__ = ('ThreadProfileFlag',)
 
-from ...bases import FlagBase
+from ...bases import FlagBase, FlagDescriptor as F
 
 
 class ThreadProfileFlag(FlagBase):
@@ -21,10 +21,7 @@ class ThreadProfileFlag(FlagBase):
     | no_messages                   | 3                 |
     +-------------------------------+-------------------+
     """
-    __keys__ = {
-        'has_interacted': 0,
-        'all_messages': 1,
-        'only_mentions': 2,
-        'no_messages': 3,
-    }
-
+    has_interacted = F(0)
+    all_messages = F(1)
+    only_mentions = F(2)
+    no_messages = F(3)

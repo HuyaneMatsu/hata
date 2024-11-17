@@ -1,6 +1,6 @@
 __all__ = ('ComponentTypeLayoutFlag',)
 
-from ...bases import FlagBase
+from ...bases import FlagBase, FlagDescriptor as F
 
 
 class ComponentTypeLayoutFlag(FlagBase):
@@ -14,7 +14,5 @@ class ComponentTypeLayoutFlag(FlagBase):
     | nestable          | 1                 |
     +-------------------+-------------------+
     """
-    __keys__ = {
-        'top_level': 0,
-        'nestable': 1,
-    }
+    top_level = F(0)
+    nestable = F(1)

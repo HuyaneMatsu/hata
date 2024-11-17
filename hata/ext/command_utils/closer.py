@@ -192,7 +192,7 @@ class Closer(PaginationBase):
             raise
         
         
-        if not target_channel.cached_permissions_for(client).can_add_reactions:
+        if not target_channel.cached_permissions_for(client).add_reactions:
             self.cancel(PermissionError())
             return self
         

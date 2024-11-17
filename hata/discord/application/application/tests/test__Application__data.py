@@ -19,10 +19,10 @@ from ..flags import (
     ApplicationOverlayMethodFlags
 )
 from ..preinstanced import (
-    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationIntegrationType,
-    ApplicationInteractionEventType, ApplicationInteractionVersion, ApplicationInternalGuildRestriction,
-    ApplicationMonetizationState, ApplicationRPCState, ApplicationStoreState, ApplicationType,
-    ApplicationVerificationState
+    ApplicationDiscoverabilityState, ApplicationEventWebhookEventType, ApplicationEventWebhookState,
+    ApplicationExplicitContentFilterLevel, ApplicationIntegrationType, ApplicationInteractionEventType,
+    ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
+    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
 )
 
 from .test__Application__constructor import _assert_fields_set
@@ -176,6 +176,12 @@ def test__Application__from_data_own__attributes():
     developers = [ApplicationEntity.precreate(202312030000, name = 'BrainDead')]
     discoverability_state = ApplicationDiscoverabilityState.blocked
     discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags(9)
+    event_webhook_event_types = [
+        ApplicationEventWebhookEventType.application_authorization,
+        ApplicationEventWebhookEventType.entitlement_create
+    ]
+    event_webhook_state = ApplicationEventWebhookState.enabled
+    event_webhook_url = 'https://orindance.party/event-webhook'
     explicit_content_filter_level = ApplicationExplicitContentFilterLevel.filtered
     guild_id = 202211290020
     install_parameters = ApplicationInstallParameters(permissions = 8)
@@ -232,6 +238,11 @@ def test__Application__from_data_own__attributes():
         'developers': [developer.to_data(defaults = True, include_internals = True) for developer in developers],
         'discoverability_state': discoverability_state.value,
         'discovery_eligibility_flags': int(discovery_eligibility_flags),
+        'event_webhooks_types': [
+            event_webhook_event_type.value for event_webhook_event_type in event_webhook_event_types
+        ], 
+        'event_webhooks_status': event_webhook_state.value,
+        'event_webhooks_url': event_webhook_url,
         'explicit_content_filter': explicit_content_filter_level.value,
         'guild_id': str(guild_id),
         'install_params': install_parameters.to_data(defaults = True),
@@ -279,6 +290,9 @@ def test__Application__from_data_own__attributes():
     vampytest.assert_eq(application.discovery_eligibility_flags, discovery_eligibility_flags)
     vampytest.assert_eq(application.description, description)
     vampytest.assert_eq(application.developers, tuple(developers))
+    vampytest.assert_eq(application.event_webhook_event_types, tuple(event_webhook_event_types))
+    vampytest.assert_is(application.event_webhook_state, event_webhook_state)
+    vampytest.assert_eq(application.event_webhook_url, event_webhook_url)
     vampytest.assert_is(application.explicit_content_filter_level, explicit_content_filter_level)
     vampytest.assert_eq(application.flags, flags)
     vampytest.assert_eq(application.guild_id, guild_id)
@@ -717,6 +731,12 @@ def test__Application__to_data_own():
     developers = [ApplicationEntity.precreate(202312030001, name = 'BrainDead')]
     discoverability_state = ApplicationDiscoverabilityState.blocked
     discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags(9)
+    event_webhook_event_types = [
+        ApplicationEventWebhookEventType.application_authorization,
+        ApplicationEventWebhookEventType.entitlement_create
+    ]
+    event_webhook_state = ApplicationEventWebhookState.enabled
+    event_webhook_url = 'https://orindance.party/event-webhook'
     explicit_content_filter_level = ApplicationExplicitContentFilterLevel.filtered
     guild_id = 202211290042
     install_parameters = ApplicationInstallParameters(permissions = 8)
@@ -761,6 +781,9 @@ def test__Application__to_data_own():
         discovery_eligibility_flags = discovery_eligibility_flags,
         description = description,
         developers = developers,
+        event_webhook_event_types = event_webhook_event_types,
+        event_webhook_state = event_webhook_state,
+        event_webhook_url = event_webhook_url,
         explicit_content_filter_level = explicit_content_filter_level,
         flags = flags,
         guild_id = guild_id,
@@ -822,6 +845,11 @@ def test__Application__to_data_own():
         'developers': [developer.to_data(defaults = True, include_internals = True) for developer in developers],
         'discoverability_state': discoverability_state.value,
         'discovery_eligibility_flags': int(discovery_eligibility_flags),
+        'event_webhooks_types': [
+            event_webhook_event_type.value for event_webhook_event_type in event_webhook_event_types
+        ], 
+        'event_webhooks_status': event_webhook_state.value,
+        'event_webhooks_url': event_webhook_url,
         'explicit_content_filter': explicit_content_filter_level.value,
         'guild_id': str(guild_id),
         'install_params': install_parameters.to_data(defaults = True),

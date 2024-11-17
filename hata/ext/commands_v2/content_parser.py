@@ -6,7 +6,7 @@ from types import FunctionType
 
 from scarletio import CallableAnalyzer, RichAttributeErrorBaseType, cached_property, copy_docs
 
-from ...discord.bases import FlagBase
+from ...discord.bases import FlagBase, FlagDescriptor as F
 from ...discord.channel import Channel
 from ...discord.client import Client
 from ...discord.color import Color, parse_color
@@ -587,14 +587,12 @@ class ConverterFlag(FlagBase):
     
     Some parsers, like `int` / `str` do not have any flags, what means, their behaviour cannot be altered.
     """
-    __keys__ = {
-        'url': 0,
-        'mention': 1,
-        'name': 2,
-        'id': 3,
-        'everywhere': 4,
-        'profile': 5,
-    }
+    url = F(0)
+    mention = F(1)
+    name = F(2)
+    id = F(3)
+    everywhere = F(4)
+    profile = F(5)
     
     user_default = NotImplemented
     user_all = NotImplemented
@@ -635,12 +633,12 @@ ConverterFlag.sticker_default = ConverterFlag().update_by_keys(name = True, id =
 ConverterFlag.sticker_all = ConverterFlag.sticker_default.update_by_keys(everywhere = True)
 
 
-CONVERTER_FLAG_URL = 1 << ConverterFlag.__keys__['url']
-CONVERTER_FLAG_MENTION = 1 << ConverterFlag.__keys__['mention']
-CONVERTER_FLAG_NAME = 1 << ConverterFlag.__keys__['name']
-CONVERTER_FLAG_ID = 1 << ConverterFlag.__keys__['id']
-CONVERTER_FLAG_EVERYWHERE = 1 << ConverterFlag.__keys__['everywhere']
-CONVERTER_FLAG_PROFILE = 1 << ConverterFlag.__keys__['profile']
+CONVERTER_FLAG_URL = ConverterFlag.url.mask
+CONVERTER_FLAG_MENTION = ConverterFlag.mention.mask
+CONVERTER_FLAG_NAME = ConverterFlag.name.mask
+CONVERTER_FLAG_ID = ConverterFlag.id.mask
+CONVERTER_FLAG_EVERYWHERE = ConverterFlag.everywhere.mask
+CONVERTER_FLAG_PROFILE = ConverterFlag.profile.mask
 
 
 
@@ -1742,7 +1740,7 @@ async def _message_converter_m_id(command_context, content_parser_parameter_deta
     
     # Try to get message by id
     client = command_context.client
-    if channel.cached_permissions_for(client).can_read_message_history:
+    if channel.cached_permissions_for(client).read_message_history:
         try:
             message = await client.message_get((channel.id, message_id))
         except BaseException as err:
@@ -1768,6 +1766,7 @@ async def _message_converter_m_id(command_context, content_parser_parameter_deta
         # The message is given by id, but the client request it.
         return None
 
+
 # Gets a message by it's and it's channel's id
 async def _message_converter_cm_id(command_context, content_parser_parameter_detail, channel_id, message_id):
     channel = command_context.message.channel
@@ -1792,7 +1791,7 @@ async def _message_converter_cm_id(command_context, content_parser_parameter_det
     if content_parser_parameter_detail.flags & CONVERTER_FLAG_EVERYWHERE:
         # Lets use that multi client core
         for client in message_channel.clients:
-            if message_channel.cached_permissions_for(client).can_read_message_history:
+            if message_channel.cached_permissions_for(client).read_message_history:
                 try:
                     message = await client.message_get((message_channel.id,  message_id))
                 except BaseException as err:
@@ -1825,7 +1824,7 @@ async def _message_converter_cm_id(command_context, content_parser_parameter_det
     guild = channel.guild
     if (message_channel is channel) if (guild is None) else (message_channel.guild is guild):
         client = command_context.client
-        if channel.cached_permissions_for(client).can_read_message_history:
+        if channel.cached_permissions_for(client).read_message_history:
             try:
                 message = await client.message_get((message_channel.id, message_id))
             except BaseException as err:

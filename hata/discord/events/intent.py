@@ -1,8 +1,10 @@
 __all__ = ('IntentFlag',)
 
+from warnings import warn
+
 from ...env import CACHE_PRESENCE
 
-from ..bases import FlagBase
+from ..bases import FlagBase, FlagDescriptor as F
 
 
 INTENT_SHIFT_GUILDS = 0
@@ -239,7 +241,7 @@ populate_dispatch_event_intents()
 del populate_dispatch_event_intents
 
 
-class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
+class IntentFlag(FlagBase):
     """
     An `int` subclass representing the intents to receive specific events. The wrapper picks these up as well and
     optimizes the dispatch events' events.
@@ -358,29 +360,28 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
     |                                               |       |                               | MESSAGE_POLL_VOTE_REMOVE                    |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
     """
-    __keys__ = {
-        'guilds': INTENT_SHIFT_GUILDS,
-        'guild_users': INTENT_SHIFT_GUILD_USERS,
-        'guild_moderation': INTENT_SHIFT_GUILD_MODERATION,
-        'guild_expressions': INTENT_SHIFT_GUILD_EXPRESSIONS,
-        'guild_integrations': INTENT_SHIFT_GUILD_INTEGRATIONS,
-        'guild_webhooks': INTENT_SHIFT_GUILD_WEBHOOKS,
-        'guild_invites': INTENT_SHIFT_GUILD_INVITES,
-        'guild_voice_states': INTENT_SHIFT_GUILD_VOICE_STATES,
-        'guild_presences': INTENT_SHIFT_GUILD_PRESENCES,
-        'guild_messages': INTENT_SHIFT_GUILD_MESSAGES,
-        'guild_reactions': INTENT_SHIFT_GUILD_REACTIONS,
-        'guild_typings': INTENT_SHIFT_GUILD_TYPINGS,
-        'direct_messages': INTENT_SHIFT_DIRECT_MESSAGES,
-        'direct_reactions': INTENT_SHIFT_DIRECT_REACTIONS,
-        'direct_typings': INTENT_SHIFT_DIRECT_TYPINGS,
-        'message_content': INTENT_SHIFT_MESSAGE_CONTENT,
-        'guild_scheduled_events': INTENT_SHIFT_GUILD_SCHEDULED_EVENTS,
-        'auto_moderation_configuration': INTENT_SHIFT_AUTO_MODERATION_CONFIGURATION,
-        'auto_moderation_execution': INTENT_SHIFT_AUTO_MODERATION_EXECUTION,
-        'guild_polls': INTENT_SHIFT_GUILD_POLLS,
-        'direct_polls': INTENT_SHIFT_DIRECT_POLLS,
-    }
+    guilds = F(INTENT_SHIFT_GUILDS)
+    guild_users = F(INTENT_SHIFT_GUILD_USERS)
+    guild_moderation = F(INTENT_SHIFT_GUILD_MODERATION)
+    guild_expressions = F(INTENT_SHIFT_GUILD_EXPRESSIONS)
+    guild_integrations = F(INTENT_SHIFT_GUILD_INTEGRATIONS)
+    guild_webhooks = F(INTENT_SHIFT_GUILD_WEBHOOKS)
+    guild_invites = F(INTENT_SHIFT_GUILD_INVITES)
+    guild_voice_states = F(INTENT_SHIFT_GUILD_VOICE_STATES)
+    guild_presences = F(INTENT_SHIFT_GUILD_PRESENCES)
+    guild_messages = F(INTENT_SHIFT_GUILD_MESSAGES)
+    guild_reactions = F(INTENT_SHIFT_GUILD_REACTIONS)
+    guild_typings = F(INTENT_SHIFT_GUILD_TYPINGS)
+    direct_messages = F(INTENT_SHIFT_DIRECT_MESSAGES)
+    direct_reactions = F(INTENT_SHIFT_DIRECT_REACTIONS)
+    direct_typings = F(INTENT_SHIFT_DIRECT_TYPINGS)
+    message_content = F(INTENT_SHIFT_MESSAGE_CONTENT)
+    guild_scheduled_events = F(INTENT_SHIFT_GUILD_SCHEDULED_EVENTS)
+    auto_moderation_configuration = F(INTENT_SHIFT_AUTO_MODERATION_CONFIGURATION)
+    auto_moderation_execution = F(INTENT_SHIFT_AUTO_MODERATION_EXECUTION)
+    guild_polls = F(INTENT_SHIFT_GUILD_POLLS)
+    direct_polls = F(INTENT_SHIFT_DIRECT_POLLS)
+    
     
     def __new__(cls, integer = -1):
         """
@@ -394,10 +395,6 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
             The value what will be converted ``IntentFlag``. If not passed or passed as a negative value,
             then returns an ``IntentFlag`` what contains all the enabled flags.
         
-        Returns
-        -------
-        intent_flag : ``IntentFlag``
-        
         Raises
         ------
         TypeError
@@ -410,19 +407,19 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
         """
         if not isinstance(integer, int):
             raise TypeError(
-                f'{cls.__name__} expected `int`, got {integer.__class__.__name__}; {integer!r}.'
+                f'{cls.__name__} expected `int`, got {type(integer).__name__}; {integer!r}.'
             )
         
         intent_flag = 0
         if integer < 0:
-            for value in cls.__keys__.values():
+            for value in cls.__shifts__.values():
                 intent_flag = intent_flag | (1 << value)
             
             # If presence cache is disabled, disable presence updates
             if not CACHE_PRESENCE:
                 intent_flag = intent_flag ^ (1 << INTENT_SHIFT_GUILD_PRESENCES)
         else:
-            for value in cls.__keys__.values():
+            for value in cls.__shifts__.values():
                 if (integer >> value) & 1:
                     intent_flag = intent_flag | (1 << value)
             
@@ -444,8 +441,386 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
         ------
         parser_name : `str`
         """
-        for shift in self.__keys__.values():
+        for shift in self.__shifts__.values():
             if (self >> shift) & 1:
                 yield from INTENT_SHIFT_EVENTS[shift]
         
         yield from GLOBAL_INTENT_SHIFT_EVENTS
+    
+    
+    def allow_guilds(self):
+        warn(
+            f'`{type(self).__name__}.allow_guilds` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guilds.mask)
+    
+    
+    def allow_guild_users(self):
+        warn(
+            f'`{type(self).__name__}.allow_guild_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guild_users.mask)
+    
+    
+    def allow_guild_moderation(self):
+        warn(
+            f'`{type(self).__name__}.allow_guild_moderation` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guild_moderation.mask)
+    
+    
+    def allow_guild_expressions(self):
+        warn(
+            f'`{type(self).__name__}.allow_guild_expressions` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guild_expressions.mask)
+    
+    
+    def allow_guild_integrations(self):
+        warn(
+            f'`{type(self).__name__}.allow_guild_integrations` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guild_integrations.mask)
+    
+    
+    def allow_guild_webhooks(self):
+        warn(
+            f'`{type(self).__name__}.allow_guild_webhooks` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guild_webhooks.mask)
+    
+    
+    def allow_guild_invites(self):
+        warn(
+            f'`{type(self).__name__}.allow_guild_invites` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guild_invites.mask)
+    
+    
+    def allow_guild_voice_states(self):
+        warn(
+            f'`{type(self).__name__}.allow_guild_voice_states` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guild_voice_states.mask)
+    
+    
+    def allow_guild_presences(self):
+        warn(
+            f'`{type(self).__name__}.allow_guild_presences` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guild_presences.mask)
+    
+    
+    def allow_guild_messages(self):
+        warn(
+            f'`{type(self).__name__}.allow_guild_messages` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guild_messages.mask)
+    
+    
+    def allow_guild_reactions(self):
+        warn(
+            f'`{type(self).__name__}.allow_guild_reactions` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guild_reactions.mask)
+    
+    
+    def allow_guild_typings(self):
+        warn(
+            f'`{type(self).__name__}.allow_guild_typings` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guild_typings.mask)
+    
+    
+    def allow_direct_messages(self):
+        warn(
+            f'`{type(self).__name__}.allow_direct_messages` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.direct_messages.mask)
+    
+    
+    def allow_direct_reactions(self):
+        warn(
+            f'`{type(self).__name__}.allow_direct_reactions` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.direct_reactions.mask)
+    
+    
+    def allow_direct_typings(self):
+        warn(
+            f'`{type(self).__name__}.allow_direct_typings` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.direct_typings.mask)
+    
+    
+    def allow_message_content(self):
+        warn(
+            f'`{type(self).__name__}.allow_message_content` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.message_content.mask)
+    
+    
+    def allow_guild_scheduled_events(self):
+        warn(
+            f'`{type(self).__name__}.allow_guild_scheduled_events` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guild_scheduled_events.mask)
+    
+    
+    def allow_auto_moderation_configuration(self):
+        warn(
+            f'`{type(self).__name__}.allow_auto_moderation_configuration` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.auto_moderation_configuration.mask)
+    
+    
+    def allow_auto_moderation_execution(self):
+        warn(
+            f'`{type(self).__name__}.allow_auto_moderation_execution` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.auto_moderation_execution.mask)
+    
+    
+    def allow_guild_polls(self):
+        warn(
+            f'`{type(self).__name__}.allow_guild_polls` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.guild_polls.mask)
+    
+    
+    def allow_direct_polls(self):
+        warn(
+            f'`{type(self).__name__}.allow_direct_polls` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self | self.direct_polls.mask)
+    
+    
+    def deny_guilds(self):
+        warn(
+            f'`{type(self).__name__}.deny_guilds` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guilds.mask)
+    
+    
+    def deny_guild_users(self):
+        warn(
+            f'`{type(self).__name__}.deny_guild_users` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guild_users.mask)
+    
+    
+    def deny_guild_moderation(self):
+        warn(
+            f'`{type(self).__name__}.deny_guild_moderation` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guild_moderation.mask)
+    
+    
+    def deny_guild_expressions(self):
+        warn(
+            f'`{type(self).__name__}.deny_guild_expressions` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guild_expressions.mask)
+    
+    
+    def deny_guild_integrations(self):
+        warn(
+            f'`{type(self).__name__}.deny_guild_integrations` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guild_integrations.mask)
+    
+    
+    def deny_guild_webhooks(self):
+        warn(
+            f'`{type(self).__name__}.deny_guild_webhooks` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guild_webhooks.mask)
+    
+    
+    def deny_guild_invites(self):
+        warn(
+            f'`{type(self).__name__}.deny_guild_invites` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guild_invites.mask)
+    
+    
+    def deny_guild_voice_states(self):
+        warn(
+            f'`{type(self).__name__}.deny_guild_voice_states` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guild_voice_states.mask)
+    
+    
+    def deny_guild_presences(self):
+        warn(
+            f'`{type(self).__name__}.deny_guild_presences` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guild_presences.mask)
+    
+    
+    def deny_guild_messages(self):
+        warn(
+            f'`{type(self).__name__}.deny_guild_messages` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guild_messages.mask)
+    
+    
+    def deny_guild_reactions(self):
+        warn(
+            f'`{type(self).__name__}.deny_guild_reactions` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guild_reactions.mask)
+    
+    
+    def deny_guild_typings(self):
+        warn(
+            f'`{type(self).__name__}.deny_guild_typings` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guild_typings.mask)
+    
+    
+    def deny_direct_messages(self):
+        warn(
+            f'`{type(self).__name__}.deny_direct_messages` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.direct_messages.mask)
+    
+    
+    def deny_direct_reactions(self):
+        warn(
+            f'`{type(self).__name__}.deny_direct_reactions` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.direct_reactions.mask)
+    
+    
+    def deny_direct_typings(self):
+        warn(
+            f'`{type(self).__name__}.deny_direct_typings` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.direct_typings.mask)
+    
+    
+    def deny_message_content(self):
+        warn(
+            f'`{type(self).__name__}.deny_message_content` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.message_content.mask)
+    
+    
+    def deny_guild_scheduled_events(self):
+        warn(
+            f'`{type(self).__name__}.deny_guild_scheduled_events` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guild_scheduled_events.mask)
+    
+    
+    def deny_auto_moderation_configuration(self):
+        warn(
+            f'`{type(self).__name__}.deny_auto_moderation_configuration` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.auto_moderation_configuration.mask)
+    
+    
+    def deny_auto_moderation_execution(self):
+        warn(
+            f'`{type(self).__name__}.deny_auto_moderation_execution` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.auto_moderation_execution.mask)
+    
+    
+    def deny_guild_polls(self):
+        warn(
+            f'`{type(self).__name__}.deny_guild_polls` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.guild_polls.mask)
+    
+    
+    def deny_direct_polls(self):
+        warn(
+            f'`{type(self).__name__}.deny_direct_polls` is deprecated and will be removed in 2025 April.',
+            FutureWarning,
+            stacklevel = 2
+        )
+        return int.__new__(type(self), self & ~self.direct_polls.mask)

@@ -334,7 +334,7 @@ class ChooseMenu(PaginationBase):
             raise
         
             
-        if not target_channel.cached_permissions_for(client).can_add_reactions:
+        if not target_channel.cached_permissions_for(client).add_reactions:
             self.cancel(PermissionError())
             return self
         
@@ -505,7 +505,7 @@ class ChooseMenu(PaginationBase):
                 self.cancel()
                 
                 try:
-                    if self.channel.cached_permissions_for(client).can_manage_messages:
+                    if self.channel.cached_permissions_for(client).manage_messages:
                         await client.reaction_clear(message)
                     
                     else:

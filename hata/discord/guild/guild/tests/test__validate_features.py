@@ -5,12 +5,34 @@ from ..preinstanced import GuildFeature
 
 
 def _iter_options__passing():
-    yield None, None
-    yield [], None
-    yield GuildFeature.animated_banner, (GuildFeature.animated_banner, )
-    yield GuildFeature.animated_banner.value, (GuildFeature.animated_banner, )
-    yield [GuildFeature.animated_banner], (GuildFeature.animated_banner, )
-    yield [GuildFeature.animated_banner.value], (GuildFeature.animated_banner, )
+    yield (
+        None,
+        None,
+    )
+    yield (
+        [],
+        None,
+    )
+    yield (
+        GuildFeature.animated_banner,
+        (GuildFeature.animated_banner, ),
+    )
+    yield (
+        GuildFeature.animated_banner.value,
+        (GuildFeature.animated_banner, ),
+    )
+    yield (
+        [GuildFeature.animated_banner],
+        (GuildFeature.animated_banner, ),
+    )
+    yield (
+        [GuildFeature.animated_banner.value],
+        (GuildFeature.animated_banner, ),
+    )
+    yield (
+        [GuildFeature.animated_icon, GuildFeature.animated_banner],
+        (GuildFeature.animated_banner, GuildFeature.animated_icon,),
+    )
     yield (
         [GuildFeature.animated_banner, GuildFeature.animated_icon],
         (GuildFeature.animated_banner, GuildFeature.animated_icon,),

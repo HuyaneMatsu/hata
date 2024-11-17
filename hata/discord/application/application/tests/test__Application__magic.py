@@ -16,10 +16,10 @@ from ..flags import (
     ApplicationOverlayMethodFlags
 )
 from ..preinstanced import (
-    ApplicationDiscoverabilityState, ApplicationExplicitContentFilterLevel, ApplicationIntegrationType,
-    ApplicationInteractionEventType, ApplicationInteractionVersion, ApplicationInternalGuildRestriction,
-    ApplicationMonetizationState, ApplicationRPCState, ApplicationStoreState, ApplicationType,
-    ApplicationVerificationState
+    ApplicationDiscoverabilityState, ApplicationEventWebhookEventType, ApplicationEventWebhookState,
+    ApplicationExplicitContentFilterLevel, ApplicationIntegrationType, ApplicationInteractionEventType,
+    ApplicationInteractionVersion, ApplicationInternalGuildRestriction, ApplicationMonetizationState,
+    ApplicationRPCState, ApplicationStoreState, ApplicationType, ApplicationVerificationState
 )
 
 
@@ -44,6 +44,12 @@ def test__Application__repr():
     discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags(9)
     embedded_activity_configuration = EmbeddedActivityConfiguration(position = 6)
     eula_id = 202211290052
+    event_webhook_event_types = [
+        ApplicationEventWebhookEventType.application_authorization,
+        ApplicationEventWebhookEventType.entitlement_create
+    ]
+    event_webhook_state = ApplicationEventWebhookState.enabled
+    event_webhook_url = 'https://orindance.party/event-webhook'
     executables = [ApplicationExecutable(name = 'Okuu')]
     explicit_content_filter_level = ApplicationExplicitContentFilterLevel.filtered
     flags = ApplicationFlag(96)
@@ -109,6 +115,9 @@ def test__Application__repr():
         discovery_eligibility_flags = discovery_eligibility_flags,
         embedded_activity_configuration = embedded_activity_configuration,
         eula_id = eula_id,
+        event_webhook_event_types = event_webhook_event_types,
+        event_webhook_state = event_webhook_state,
+        event_webhook_url = event_webhook_url,
         executables = executables,
         explicit_content_filter_level = explicit_content_filter_level,
         flags = flags,
@@ -169,6 +178,9 @@ def test__Application__repr():
         discovery_eligibility_flags = discovery_eligibility_flags,
         embedded_activity_configuration = embedded_activity_configuration,
         eula_id = eula_id,
+        event_webhook_event_types = event_webhook_event_types,
+        event_webhook_state = event_webhook_state,
+        event_webhook_url = event_webhook_url,
         executables = executables,
         explicit_content_filter_level = explicit_content_filter_level,
         flags = flags,
@@ -235,6 +247,13 @@ def test__Application__hash():
     discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags(9)
     embedded_activity_configuration = EmbeddedActivityConfiguration(position = 6)
     eula_id = 202211290059
+    event_webhook_event_types = [
+        ApplicationEventWebhookEventType.application_authorization,
+        ApplicationEventWebhookEventType.entitlement_create
+    ]
+    event_webhook_state = ApplicationEventWebhookState.enabled
+    event_webhook_url = 'https://orindance.party/event-webhook'
+    executables = [ApplicationExecutable(name = 'Okuu')]
     executables = [ApplicationExecutable(name = 'Okuu')]
     explicit_content_filter_level = ApplicationExplicitContentFilterLevel.filtered
     flags = ApplicationFlag(96)
@@ -300,6 +319,9 @@ def test__Application__hash():
         discovery_eligibility_flags = discovery_eligibility_flags,
         embedded_activity_configuration = embedded_activity_configuration,
         eula_id = eula_id,
+        event_webhook_event_types = event_webhook_event_types,
+        event_webhook_state = event_webhook_state,
+        event_webhook_url = event_webhook_url,
         executables = executables,
         explicit_content_filter_level = explicit_content_filter_level,
         flags = flags,
@@ -360,6 +382,9 @@ def test__Application__hash():
         discovery_eligibility_flags = discovery_eligibility_flags,
         embedded_activity_configuration = embedded_activity_configuration,
         eula_id = eula_id,
+        event_webhook_event_types = event_webhook_event_types,
+        event_webhook_state = event_webhook_state,
+        event_webhook_url = event_webhook_url,
         executables = executables,
         explicit_content_filter_level = explicit_content_filter_level,
         flags = flags,
@@ -422,6 +447,12 @@ def _iter_options__eq():
     discovery_eligibility_flags = ApplicationDiscoveryEligibilityFlags(9)
     embedded_activity_configuration = EmbeddedActivityConfiguration(position = 6)
     eula_id = 202211290066
+    event_webhook_event_types = [
+        ApplicationEventWebhookEventType.application_authorization,
+        ApplicationEventWebhookEventType.entitlement_create
+    ]
+    event_webhook_state = ApplicationEventWebhookState.enabled
+    event_webhook_url = 'https://orindance.party/event-webhook'
     executables = [ApplicationExecutable(name = 'Okuu')]
     explicit_content_filter_level = ApplicationExplicitContentFilterLevel.filtered
     flags = ApplicationFlag(96)
@@ -486,6 +517,9 @@ def _iter_options__eq():
         'discovery_eligibility_flags': discovery_eligibility_flags,
         'embedded_activity_configuration': embedded_activity_configuration,
         'eula_id': eula_id,
+        'event_webhook_event_types': event_webhook_event_types,
+        'event_webhook_state': event_webhook_state,
+        'event_webhook_url': event_webhook_url,
         'executables': executables,
         'explicit_content_filter_level': explicit_content_filter_level,
         'flags': flags,
@@ -671,6 +705,33 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'eula_id': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'event_webhook_event_types': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'event_webhook_state': ApplicationEventWebhookState.disabled,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'event_webhook_url': None,
         },
         False,
     )

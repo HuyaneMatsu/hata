@@ -5,8 +5,20 @@ from ..preinstanced import GuildFeature
 
 
 def _iter_options():
-    yield (None, False, {'features': []})
-    yield (None, True, {'features': []})
+    yield (
+        None,
+        False,
+        {
+            'features': [],
+        },
+    )
+    yield (
+        None,
+        True,
+        {
+            'features': [],
+        },
+    )
     yield (
         (
             GuildFeature.animated_banner,

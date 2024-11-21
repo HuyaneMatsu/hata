@@ -1,7 +1,7 @@
 __all__ = ()
 
 from scarletio import Compound, IgnoreCaseMultiValueDictionary
-from scarletio.web_common import BasicAuth
+from scarletio.web_common import BasicAuthorization
 from scarletio.web_common.headers import AUTHORIZATION
 
 from ...application import Application, ApplicationRoleConnection
@@ -174,7 +174,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         put_oauth2_scopes_into(scopes, data, True)
         
         headers = IgnoreCaseMultiValueDictionary()
-        headers[AUTHORIZATION] = BasicAuth(str(self.id), self.secret).encode()
+        headers[AUTHORIZATION] = BasicAuthorization(str(self.id), self.secret).encode()
         data = await self.api.oauth2_token(data, headers)
         return Oauth2Access.from_data(data, '')
     

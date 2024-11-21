@@ -18,7 +18,7 @@ from email._parseaddr import _parsedate_tz as parse_date_timezone
 from functools import partial as partial_func
 from math import floor
 from random import random
-from re import U as re_unicode, compile as re_compile
+from re import I as re_ignore_case, U as re_unicode, compile as re_compile
 from time import time as time_now
 
 from scarletio import LOOP_TIME, RichAttributeErrorBaseType, export, include, modulize
@@ -1716,7 +1716,7 @@ URL_RP = re_compile(
     '(?:\\?\\S*)?'
     # fragment
     '(?:#\\S*)?',
-    re_unicode
+    re_unicode | re_ignore_case
 )
 
 def is_url(url):
@@ -2016,41 +2016,48 @@ def parse_signed_url(signed_url):
     url = URL(signed_url)
     query = url.query
     
-    # url
-    url = str(url.with_query(None))
-    
-    # expired_at
-    expires_at_str = query.get('ex', '')
-    if not expires_at_str:
+    if (query is None):
+        url = signed_url
         expires_at = None
+        signed_at = None
+        signature = None
+    
     else:
-        try:
-            expires_at_int = int(expires_at_str, 16)
-        except ValueError:
+        # url
+        url = str(url.with_query(None))
+        
+        # expired_at
+        expires_at_str = query.get('ex', '')
+        if not expires_at_str:
             expires_at = None
         else:
-            expires_at = unix_time_to_datetime(expires_at_int)
-    
-    # signed_at
-    signed_at_str = query.get('is', '')
-    if not signed_at_str:
-        signed_at = None
-    else:
-        try:
-            signed_at_int = int(signed_at_str, 16)
-        except ValueError:
+            try:
+                expires_at_int = int(expires_at_str, 16)
+            except ValueError:
+                expires_at = None
+            else:
+                expires_at = unix_time_to_datetime(expires_at_int)
+        
+        # signed_at
+        signed_at_str = query.get('is', '')
+        if not signed_at_str:
             signed_at = None
         else:
-            signed_at = unix_time_to_datetime(signed_at_int)
-    
-    # signature
-    signature_str = query.get('hm', '')
-    if not signature_str:
-        signature = None
-    else:
-        try:
-            signature = bytes.fromhex(signature_str)
-        except ValueError:
+            try:
+                signed_at_int = int(signed_at_str, 16)
+            except ValueError:
+                signed_at = None
+            else:
+                signed_at = unix_time_to_datetime(signed_at_int)
+        
+        # signature
+        signature_str = query.get('hm', '')
+        if not signature_str:
             signature = None
+        else:
+            try:
+                signature = bytes.fromhex(signature_str)
+            except ValueError:
+                signature = None
     
     return SignedUrlParseResult(url, signed_at, expires_at, signature)

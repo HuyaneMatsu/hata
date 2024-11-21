@@ -1,3 +1,5 @@
+## 1.3.69 *\[2024-11-21\]*
+
 ### Improvements
 
 - Flags now use descriptor based system instead of pulling their fields from `__keys__` dictionary.
@@ -13,6 +15,11 @@
 - Add `Application.event_webhook_state`.
 - Add `Application.event_webhook_url`.
 - Add `Application.iter_event_webhook_event_types`.
+- Add `MessageFlag.has_snapshot`.
+
+### Renames, Deprecations & Removals
+
+- Rename `MessageFlag.is_crosspost` to `.crosspost`.
 
 ## 1.3.68 *\[2024-10-27\]*
 

@@ -1,6 +1,8 @@
 __all__ = ('MessageFlag',)
 
-from ...bases import FlagBase, FlagDescriptor as F
+from datetime import datetime as DateTime, timezone as TimeZone
+
+from ...bases import FlagBase, FlagDeprecation as FD, FlagDescriptor as F
 
 
 class MessageFlag(FlagBase):
@@ -14,7 +16,7 @@ class MessageFlag(FlagBase):
     +===========================================+===================+
     | crossposted                               | 0                 |
     +-------------------------------------------+-------------------+
-    | is_crosspost                              | 1                 |
+    | crosspost                                 | 1                 |
     +-------------------------------------------+-------------------+
     | embeds_suppressed                         | 2                 |
     +-------------------------------------------+-------------------+
@@ -40,9 +42,11 @@ class MessageFlag(FlagBase):
     +-------------------------------------------+-------------------+
     | voice_message                             | 13                |
     +-------------------------------------------+-------------------+
+    | has_snapshot                              | 14                |
+    +-------------------------------------------+-------------------+
     """
     crossposted = F(0)
-    is_crosspost = F(1)
+    crosspost = F(1)
     embeds_suppressed = F(2)
     source_message_deleted = F(3)
     urgent = F(4)
@@ -55,3 +59,6 @@ class MessageFlag(FlagBase):
     # 11 ???
     silent = F(12)
     voice_message = F(13)
+    has_snapshot = F(14)
+
+    is_crosspost = F(1, deprecation = FD('crosspost', DateTime(2024, 12, 15, tzinfo = TimeZone.utc)))

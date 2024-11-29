@@ -1,5 +1,4 @@
 from math import floor
-from re import compile as re_compile
 
 import vampytest
 from scarletio import Future, from_json, skip_ready_cycle, to_json
@@ -24,7 +23,7 @@ from ..rate_limit import GatewayRateLimiter
 from ..voice import DiscordGatewayVoice
 
 from .helpers_http_client import TestHTTPClient
-from .helpers_websocket_client import TestWebSocketClient
+from .helpers_web_socket_client import TestWebSocketClient
 
 
 try:
@@ -34,9 +33,6 @@ except ImportError:
 else:
     SecretBox = nacl.secret.SecretBox
     del nacl
-
-
-GATEWAY_URL_REGEX = re_compile('wss://(.*?)/\\?v=\d+')
 
 
 def _assert_fields_set(gateway):
@@ -55,7 +51,7 @@ def _assert_fields_set(gateway):
     vampytest.assert_instance(gateway.rate_limit_handler, GatewayRateLimiter)
     vampytest.assert_instance(gateway.sequence, int)
     vampytest.assert_instance(gateway.voice_client, VoiceClient)
-    vampytest.assert_instance(gateway.websocket, WebSocketClient, nullable = True)
+    vampytest.assert_instance(gateway.web_socket, WebSocketClient, nullable = True)
 
 
 def test__DiscordGatewayVoice():
@@ -202,7 +198,7 @@ def test__DiscordGatewayVoice__latency__with_kokoro():
         client = None
 
 
-async def test__DiscordGatewayVoice__send_json__no_websocket():
+async def test__DiscordGatewayVoice__send_json__no_web_socket():
     """
     Tests whether ``DiscordGatewayVoice._send_json`` works as intended.
     
@@ -244,15 +240,15 @@ async def test__DiscordGatewayVoice__send_json__sending():
     data = {'hey': 'mister'}
     
     try:
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         voice_client = VoiceClient(client, 202401180030, 202401180031)
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         
         await gateway.send_as_json(data)
         
         vampytest.assert_eq(
-            websocket.out_operations,
+            web_socket.out_operations,
             [
                 ('send', to_json(data)),
             ],
@@ -281,10 +277,10 @@ async def test__DiscordGatewayVoice__beat():
         return current_time * 0.001
     
     try:
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         voice_client = VoiceClient(client, 202401180034, 202401180035)
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         gateway.sequence = sequence
         
         mocked = vampytest.mock_globals(
@@ -294,9 +290,9 @@ async def test__DiscordGatewayVoice__beat():
         
         await mocked(gateway)
         
-        vampytest.assert_eq(len(websocket.out_operations), 1)
+        vampytest.assert_eq(len(web_socket.out_operations), 1)
         
-        operation, sent_data = websocket.out_operations[0]
+        operation, sent_data = web_socket.out_operations[0]
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(
             from_json(sent_data),
@@ -328,18 +324,18 @@ async def test__DiscordGatewayVoice__voice_client_connect():
     video_source = 13
     
     try:
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         voice_client = VoiceClient(client, 202401190002, 202401190003)
         voice_client._audio_source = audio_source
         voice_client._video_source = video_source
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         
         await gateway._voice_client_connect()
         
-        vampytest.assert_eq(len(websocket.out_operations), 1)
+        vampytest.assert_eq(len(web_socket.out_operations), 1)
         
-        operation, sent_data = websocket.out_operations[0]
+        operation, sent_data = web_socket.out_operations[0]
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(
             from_json(sent_data),
@@ -371,16 +367,16 @@ async def test__DiscordGatewayVoice__set_speaking():
     speaking = True
     
     try:
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         voice_client = VoiceClient(client, 202401190006, 202401190007)
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         
         await gateway.set_speaking(speaking)
         
-        vampytest.assert_eq(len(websocket.out_operations), 1)
+        vampytest.assert_eq(len(web_socket.out_operations), 1)
         
-        operation, sent_data = websocket.out_operations[0]
+        operation, sent_data = web_socket.out_operations[0]
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(
             from_json(sent_data),
@@ -415,19 +411,19 @@ async def test__DiscordGatewayVoice__identify():
     sequence = 1122
     
     try:
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         voice_client = VoiceClient(client, guild_id, 202401190011)
         guild = Guild.precreate(guild_id, voice_states = [VoiceState(user_id = client.id, session_id = session_id)])
         voice_client._token = token
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         gateway.sequence = sequence
         
         await gateway._identify()
         
-        vampytest.assert_eq(len(websocket.out_operations), 1)
+        vampytest.assert_eq(len(web_socket.out_operations), 1)
         
-        operation, sent_data = websocket.out_operations[0]
+        operation, sent_data = web_socket.out_operations[0]
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(
             from_json(sent_data),
@@ -464,19 +460,19 @@ async def test__DiscordGatewayVoice__resume():
     sequence = 16655
     
     try:
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         voice_client = VoiceClient(client, guild_id, 202401190016)
         guild = Guild.precreate(guild_id, voice_states = [VoiceState(user_id = client.id, session_id = session_id)])
         voice_client._token = token
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         gateway.sequence = sequence
         
         await gateway._resume()
         
-        vampytest.assert_eq(len(websocket.out_operations), 1)
+        vampytest.assert_eq(len(web_socket.out_operations), 1)
         
-        operation, sent_data = websocket.out_operations[0]
+        operation, sent_data = web_socket.out_operations[0]
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(
             from_json(sent_data),
@@ -511,17 +507,17 @@ async def test__DiscordGatewayVoice__select_protocol():
     port = 'mister'
     
     try:
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         voice_client = VoiceClient(client, 202401190019, 202401190020)
         voice_client.prefer_encryption_mode_from_options([encryption_adapter_type.name])
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         
         await gateway._select_protocol(ip, port)
         
-        vampytest.assert_eq(len(websocket.out_operations), 1)
+        vampytest.assert_eq(len(web_socket.out_operations), 1)
         
-        operation, sent_data = websocket.out_operations[0]
+        operation, sent_data = web_socket.out_operations[0]
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(
             from_json(sent_data),
@@ -542,11 +538,11 @@ async def test__DiscordGatewayVoice__select_protocol():
         client = None
 
 
-async def test__DiscordGatewayVoice__terminate__no_websocket_no_kokoro():
+async def test__DiscordGatewayVoice__terminate__no_web_socket_no_kokoro():
     """
     Tests whether ``DiscordGatewayVoice.terminate`` works as intended.
     
-    Case: no websocket & no kokoro.
+    Case: no web_socket & no kokoro.
     
     This function is a coroutine.
     """
@@ -565,11 +561,11 @@ async def test__DiscordGatewayVoice__terminate__no_websocket_no_kokoro():
         client = None
 
 
-async def test__DiscordGatewayVoice__terminate__with_websocket_with_kokoro():
+async def test__DiscordGatewayVoice__terminate__with_web_socket_with_kokoro():
     """
     Tests whether ``DiscordGatewayVoice.terminate`` works as intended.
     
-    Case: with websocket & with kokoro.
+    Case: with web_socket & with kokoro.
     
     This function is a coroutine.
     """
@@ -579,10 +575,10 @@ async def test__DiscordGatewayVoice__terminate__with_websocket_with_kokoro():
     )
     
     try:
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         voice_client = VoiceClient(client, 202401190027, 202401190028)
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         gateway._create_kokoro()
         gateway.kokoro.start()
         
@@ -591,7 +587,7 @@ async def test__DiscordGatewayVoice__terminate__with_websocket_with_kokoro():
         vampytest.assert_is(gateway.kokoro.runner, None)
         
         vampytest.assert_eq(
-            websocket.out_operations,
+            web_socket.out_operations,
             [
                 ('close', 4000),
             ],
@@ -601,11 +597,11 @@ async def test__DiscordGatewayVoice__terminate__with_websocket_with_kokoro():
         client = None
 
 
-async def test__DiscordGatewayVoice__close__no_websocket_no_kokoro():
+async def test__DiscordGatewayVoice__close__no_web_socket_no_kokoro():
     """
     Tests whether ``DiscordGatewayVoice.close`` works as intended.
     
-    Case: no websocket & no kokoro.
+    Case: no web_socket & no kokoro.
     
     This function is a coroutine.
     """
@@ -624,11 +620,11 @@ async def test__DiscordGatewayVoice__close__no_websocket_no_kokoro():
         client = None
 
 
-async def test__DiscordGatewayVoice__close__with_websocket_with_kokoro():
+async def test__DiscordGatewayVoice__close__with_web_socket_with_kokoro():
     """
     Tests whether ``DiscordGatewayVoice.close`` works as intended.
     
-    Case: with websocket & with kokoro.
+    Case: with web_socket & with kokoro.
     
     This function is a coroutine.
     """
@@ -638,10 +634,10 @@ async def test__DiscordGatewayVoice__close__with_websocket_with_kokoro():
     )
     
     try:
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         voice_client = VoiceClient(client, 202401190035, 202401190036)
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         gateway._create_kokoro()
         gateway.kokoro.start()
         
@@ -650,7 +646,7 @@ async def test__DiscordGatewayVoice__close__with_websocket_with_kokoro():
         vampytest.assert_is(gateway.kokoro.runner, None)
         
         vampytest.assert_eq(
-            websocket.out_operations,
+            web_socket.out_operations,
             [
                 ('close', 1000),
             ],
@@ -660,11 +656,11 @@ async def test__DiscordGatewayVoice__close__with_websocket_with_kokoro():
         client = None
 
 
-async def test__DiscordGatewayVoice__abort__no_websocket_no_kokoro():
+async def test__DiscordGatewayVoice__abort__no_web_socket_no_kokoro():
     """
     Tests whether ``DiscordGatewayVoice.abort`` works as intended.
     
-    Case: no websocket & no kokoro.
+    Case: no web_socket & no kokoro.
     
     This function is a coroutine.
     """
@@ -685,11 +681,11 @@ async def test__DiscordGatewayVoice__abort__no_websocket_no_kokoro():
         client = None
 
 
-async def test__DiscordGatewayVoice__abort__with_websocket_with_kokoro():
+async def test__DiscordGatewayVoice__abort__with_web_socket_with_kokoro():
     """
     Tests whether ``DiscordGatewayVoice.abort`` works as intended.
     
-    Case: with websocket & with kokoro.
+    Case: with web_socket & with kokoro.
     
     This function is a coroutine.
     """
@@ -699,10 +695,10 @@ async def test__DiscordGatewayVoice__abort__with_websocket_with_kokoro():
     )
     
     try:
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         voice_client = VoiceClient(client, 202401190043, 202401190044)
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         gateway._create_kokoro()
         gateway.kokoro.start()
         
@@ -711,7 +707,7 @@ async def test__DiscordGatewayVoice__abort__with_websocket_with_kokoro():
         vampytest.assert_eq(gateway._should_run, False)
         vampytest.assert_is(gateway.kokoro.runner, None)
         vampytest.assert_eq(
-            websocket.out_operations,
+            web_socket.out_operations,
             [
                 ('close_transport', True),
             ],
@@ -729,7 +725,7 @@ async def test__DiscordGatewayVoice__connect__unexpected_closes_with_resume():
     
     This function is a coroutine.
     """
-    websocket = await TestWebSocketClient(
+    web_socket = await TestWebSocketClient(
         KOKORO,
         '',
         in_operations = [
@@ -737,7 +733,7 @@ async def test__DiscordGatewayVoice__connect__unexpected_closes_with_resume():
         ],
     )
 
-    http = TestHTTPClient(KOKORO, out_websocket = websocket)
+    http = TestHTTPClient(KOKORO, out_web_socket = web_socket)
     
     client = Client(
         'token_202401190045',
@@ -763,13 +759,12 @@ async def test__DiscordGatewayVoice__connect__unexpected_closes_with_resume():
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_CONNECT)
+        vampytest.assert_in('wss', web_socket.url.value_encoded)
+        vampytest.assert_in(endpoint, web_socket.url.value_encoded)
+        vampytest.assert_in('v=', web_socket.url.value_encoded)
         
-        match = GATEWAY_URL_REGEX.fullmatch(websocket.url)
-        vampytest.assert_is_not(match, None)
-        vampytest.assert_eq(match.group(1), endpoint)
-        
-        vampytest.assert_eq(len(websocket.out_operations), 1)
-        operation, data = websocket.out_operations[0]
+        vampytest.assert_eq(len(web_socket.out_operations), 1)
+        operation, data = web_socket.out_operations[0]
         
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(
@@ -788,7 +783,7 @@ async def test__DiscordGatewayVoice__connect__unexpected_closes_with_resume():
         vampytest.assert_eq(gateway.sequence, -1)
         vampytest.assert_is_not(gateway.kokoro, None)
         vampytest.assert_is(gateway.kokoro.runner, None)
-        vampytest.assert_is(gateway.websocket, None)
+        vampytest.assert_is(gateway.web_socket, None)
     
     finally:
         client._delete()
@@ -803,12 +798,12 @@ async def test__DiscordGatewayVoice__connect__success_default():
     
     This function is a coroutine.
     """
-    websocket = await TestWebSocketClient(
+    web_socket = await TestWebSocketClient(
         KOKORO,
         '',
     )
     
-    http = TestHTTPClient(KOKORO, out_websocket = websocket)
+    http = TestHTTPClient(KOKORO, out_web_socket = web_socket)
     
     client = Client(
         'token_202401190049',
@@ -833,12 +828,12 @@ async def test__DiscordGatewayVoice__connect__success_default():
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
         
-        match = GATEWAY_URL_REGEX.fullmatch(websocket.url)
-        vampytest.assert_is_not(match, None)
-        vampytest.assert_eq(match.group(1), 'orin')
+        vampytest.assert_in('wss', web_socket.url.value_encoded)
+        vampytest.assert_in(endpoint, web_socket.url.value_encoded)
+        vampytest.assert_in('v=', web_socket.url.value_encoded)
         
-        vampytest.assert_eq(len(websocket.out_operations), 1)
-        operation, data = websocket.out_operations[0]
+        vampytest.assert_eq(len(web_socket.out_operations), 1)
+        operation, data = web_socket.out_operations[0]
         
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(
@@ -858,7 +853,7 @@ async def test__DiscordGatewayVoice__connect__success_default():
         vampytest.assert_eq(gateway.sequence, -1)
         vampytest.assert_is_not(gateway.kokoro, None)
         vampytest.assert_is_not(gateway.kokoro.runner, None)
-        vampytest.assert_is_not(gateway.websocket, None)
+        vampytest.assert_is_not(gateway.web_socket, None)
     
     finally:
         client._delete()
@@ -1048,9 +1043,9 @@ async def test__DiscordGatewayVoice__handle_operation_session_description__no_da
     try:
         voice_client = VoiceClient(client, 202401200013, 202401200014)
         
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         
         output = await gateway._handle_operation_session_description(message)
         
@@ -1060,7 +1055,7 @@ async def test__DiscordGatewayVoice__handle_operation_session_description__no_da
         vampytest.assert_instance(voice_client._encryption_adapter, EncryptionAdapterBase, accept_subtypes = False)
         vampytest.assert_eq(voice_client.is_connected(), False)
         
-        vampytest.assert_eq(len(websocket.out_operations), 0)
+        vampytest.assert_eq(len(web_socket.out_operations), 0)
     finally:
         client._delete()
         client = None
@@ -1098,9 +1093,9 @@ async def test__DiscordGatewayVoice__handle_operation_session_description__with_
     try:
         voice_client = VoiceClient(client, 202401200017, 202401200018)
         
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         
         mocked = vampytest.mock_globals(
             type(gateway)._handle_operation_session_description,
@@ -1118,8 +1113,8 @@ async def test__DiscordGatewayVoice__handle_operation_session_description__with_
         
         vampytest.assert_eq(voice_client.is_connected(), True)
         
-        vampytest.assert_eq(len(websocket.out_operations), 1)
-        operation, sent_data = websocket.out_operations[0]
+        vampytest.assert_eq(len(web_socket.out_operations), 1)
+        operation, sent_data = web_socket.out_operations[0]
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(
             from_json(sent_data),
@@ -1409,9 +1404,9 @@ async def test__DiscordGatewayVoice__handle_operation_ready__with_data():
                 voice_client_port.to_bytes(2, 'big'),
             ])
         ])
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         gateway._create_kokoro()
         gateway.kokoro.start()
         
@@ -1437,9 +1432,9 @@ async def test__DiscordGatewayVoice__handle_operation_ready__with_data():
         vampytest.assert_eq(voice_client._port, voice_client_port)
         vampytest.assert_is(voice_client._encryption_adapter_type, encryption_adapter_type)
         
-        vampytest.assert_eq(len(websocket.out_operations), 2)
+        vampytest.assert_eq(len(web_socket.out_operations), 2)
         
-        operation, sent_data = websocket.out_operations[0]
+        operation, sent_data = web_socket.out_operations[0]
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(
             from_json(sent_data),
@@ -1456,7 +1451,7 @@ async def test__DiscordGatewayVoice__handle_operation_ready__with_data():
             }
         )
     
-        operation, sent_data = websocket.out_operations[1]
+        operation, sent_data = web_socket.out_operations[1]
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(
             from_json(sent_data),
@@ -1534,18 +1529,18 @@ async def test__DiscordGatewayVoice__handle_operation_hello__no_kokoro():
     try:
         voice_client = VoiceClient(client, 202401210006, 202401210007)
         
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         
         output = await gateway._handle_operation_hello(message)
         
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
         
-        vampytest.assert_eq(len(websocket.out_operations), 1)
+        vampytest.assert_eq(len(web_socket.out_operations), 1)
         
-        operation, data = websocket.out_operations[0]
+        operation, data = web_socket.out_operations[0]
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(from_json(data)['op'], GATEWAY_OPERATION_VOICE_HEARTBEAT)
         
@@ -1577,9 +1572,9 @@ async def test__DiscordGatewayVoice__handle_operation_hello__with_kokoro():
     try:
         voice_client = VoiceClient(client, 202401210010, 202401210011)
         
-        websocket = await TestWebSocketClient(KOKORO, '')
+        web_socket = await TestWebSocketClient(KOKORO, '')
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         gateway._create_kokoro()
         gateway.kokoro.start()
         
@@ -1591,9 +1586,9 @@ async def test__DiscordGatewayVoice__handle_operation_hello__with_kokoro():
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_KEEP_GOING)
         
-        vampytest.assert_eq(len(websocket.out_operations), 1)
+        vampytest.assert_eq(len(web_socket.out_operations), 1)
         
-        operation, data = websocket.out_operations[0]
+        operation, data = web_socket.out_operations[0]
         vampytest.assert_eq(operation, 'send')
         vampytest.assert_eq(from_json(data)['op'], GATEWAY_OPERATION_VOICE_HEARTBEAT)
         
@@ -1826,11 +1821,11 @@ async def test__DiscordGatewayVoice__handle_received_operation__unknown_operatio
         client = None
 
 
-async def test__DiscordGatewayVoice__poll_and_handle_received_operation__no_websocket():
+async def test__DiscordGatewayVoice__poll_and_handle_received_operation__no_web_socket():
     """
     Tests whether ``DiscordGatewayVoice._poll_and_handle_received_operation`` works as intended.
     
-    Case: no websocket.
+    Case: no web_socket.
     
     This function is a coroutine.
     """
@@ -1854,11 +1849,11 @@ async def test__DiscordGatewayVoice__poll_and_handle_received_operation__no_webs
         client = None
 
 
-async def test__DiscordGatewayVoice__poll_and_handle_received_operation__with_websocket():
+async def test__DiscordGatewayVoice__poll_and_handle_received_operation__with_web_socket():
     """
     Tests whether ``DiscordGatewayVoice._poll_and_handle_received_operation`` works as intended.
     
-    Case: with websocket.
+    Case: with web_socket.
     
     This function is a coroutine.
     """
@@ -1894,7 +1889,7 @@ async def test__DiscordGatewayVoice__poll_and_handle_received_operation__with_we
     try:
         voice_client = VoiceClient(client, 202401210042, 202401210043)
         
-        websocket = await TestWebSocketClient(
+        web_socket = await TestWebSocketClient(
             KOKORO,
             '',
             in_operations = [
@@ -1903,7 +1898,7 @@ async def test__DiscordGatewayVoice__poll_and_handle_received_operation__with_we
         )
         gateway = DiscordGatewayVoice(voice_client)
         gateway._operation_handlers[operation] = mock_operation_handler
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         
         output = await gateway._poll_and_handle_received_operation()
         
@@ -1930,7 +1925,7 @@ async def test__DiscordGatewayVoice__keep_polling_and_handling():
     
     data_0 = to_json(message_0)
     data_1 = to_json(message_0)
-    websocket = await TestWebSocketClient(
+    web_socket = await TestWebSocketClient(
         KOKORO,
         '',
         in_operations = [
@@ -1948,7 +1943,7 @@ async def test__DiscordGatewayVoice__keep_polling_and_handling():
     try:
         voice_client = VoiceClient(client, 202401210046, 202401210047)
         gateway = DiscordGatewayVoice(voice_client)
-        gateway.websocket = websocket
+        gateway.web_socket = web_socket
         gateway._create_kokoro()
         gateway.kokoro.start()
         
@@ -1960,10 +1955,10 @@ async def test__DiscordGatewayVoice__keep_polling_and_handling():
         vampytest.assert_instance(output, int)
         vampytest.assert_eq(output, GATEWAY_ACTION_CONNECT)
         
-        vampytest.assert_eq(len(websocket.out_operations), 2)
+        vampytest.assert_eq(len(web_socket.out_operations), 2)
         
         for index in range(2):
-            operation, sent_data = websocket.out_operations[0]
+            operation, sent_data = web_socket.out_operations[0]
             vampytest.assert_eq(operation, 'send')
             vampytest.assert_eq(from_json(sent_data)['op'], GATEWAY_OPERATION_VOICE_HEARTBEAT)
     
@@ -1980,7 +1975,7 @@ async def test__DiscordGatewayVoice__run__default():
     """
     exception = RuntimeError('hiss')
     
-    websocket = await TestWebSocketClient(
+    web_socket = await TestWebSocketClient(
         KOKORO,
         '',
         in_operations = [
@@ -1988,7 +1983,7 @@ async def test__DiscordGatewayVoice__run__default():
         ],
     )
     
-    http = TestHTTPClient(KOKORO, out_websocket = websocket)
+    http = TestHTTPClient(KOKORO, out_web_socket = web_socket)
     
     client = Client(
         'token_202401210048',

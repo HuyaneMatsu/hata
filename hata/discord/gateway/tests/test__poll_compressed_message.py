@@ -5,7 +5,7 @@ from ...core import KOKORO
 
 from ..client_shard import _poll_compressed_message
 
-from .helpers_websocket_client import TestWebSocketClient
+from .helpers_web_socket_client import TestWebSocketClient
 
 
 async def test__poll_compressed_message__chunked():
@@ -16,7 +16,7 @@ async def test__poll_compressed_message__chunked():
     
     This function is a coroutine.
     """
-    websocket = await TestWebSocketClient(
+    web_socket = await TestWebSocketClient(
         KOKORO,
         '',
         in_operations = [
@@ -25,7 +25,7 @@ async def test__poll_compressed_message__chunked():
             ('receive', False, b'ef\x00\x00\xff\xff'),
         ],
     )
-    task = Task(KOKORO, _poll_compressed_message(websocket))
+    task = Task(KOKORO, _poll_compressed_message(web_socket))
     task.apply_timeout(0.01)
     output = await task
     
@@ -41,7 +41,7 @@ async def test__poll_compressed_message__single():
     
     This function is a coroutine.
     """
-    websocket = await TestWebSocketClient(
+    web_socket = await TestWebSocketClient(
         KOKORO,
         '',
         in_operations = [
@@ -49,7 +49,7 @@ async def test__poll_compressed_message__single():
         ],
     )
     
-    task = Task(KOKORO, _poll_compressed_message(websocket))
+    task = Task(KOKORO, _poll_compressed_message(web_socket))
     task.apply_timeout(0.01)
     output = await task
     

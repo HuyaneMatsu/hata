@@ -1,3 +1,16 @@
+## 1.3.70 *\[2024-11-29\]*
+
+### Renames, Deprecations & Removals
+
+- Rename `DiscordGatewayClientShard.websocket` to `.web_socket`.
+- Rename `DiscordGatewayVoice.websocket` to `.web_socket`.
+
+#### hata.ext.solarlink
+
+- Rename `SolarNode.websocket` to `.web_socket`.
+- Rename `SolarLinkEventManager.player_websocket_closed` to `.player_web_socket_closed`.
+- Rename `PlayerWebsocketClosedEvent` to `PlayerWebSocketClosedEvent`.
+
 ## 1.3.69 *\[2024-11-21\]*
 
 ### Improvements

@@ -44,25 +44,25 @@ class TestHTTPClient(HTTPClient):
     `out_operations` is a list of `tuple<str, object>` -> operation name and parameter(s).
     `in_operations` is a list of `tuple<str, bool, object>` -> operation name, raise and value.
     """
-    __slots__ = ('out_websocket',)
+    __slots__ = ('out_web_socket',)
     
-    def __new__(cls, loop, *, out_websocket = None):
+    def __new__(cls, loop, *, out_web_socket = None):
         self = HTTPClient.__new__(cls, loop)
-        self.out_websocket = out_websocket
+        self.out_web_socket = out_web_socket
         return self
         
     
     async def _request(self, method, url, headers, data, params):
         if method == 'GET' and GATEWAY_URL_RP.fullmatch(url) is not None:
-            return TestClientResponse('{"url": "orin"}')
+            return TestClientResponse('{"url": "wss://orin.nyan/"}')
         
         raise RuntimeError('Unexpected request', method, url, headers, data, params)
 
     
     async def connect_web_socket(self, url):
-        out_websocket = self.out_websocket
-        if out_websocket is None:
+        out_web_socket = self.out_web_socket
+        if out_web_socket is None:
             raise RuntimeError('web socket is null.')
         
-        out_websocket.url = url
-        return out_websocket
+        out_web_socket.url = url
+        return out_web_socket

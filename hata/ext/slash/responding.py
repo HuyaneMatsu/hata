@@ -470,8 +470,10 @@ class InteractionResponse(
                 response_modifier.apply_to_creation(self)
             
             if need_acknowledging or (not interaction_event.is_unanswered()):
-                yield client.interaction_response_message_edit(interaction_event, self)
-            
+                if interaction_event.message is None:
+                    yield client.interaction_response_message_edit(interaction_event, self)
+                else:
+                    yield client.interaction_followup_message_create(interaction_event, self)
             else:
                 yield client.interaction_response_message_create(interaction_event, self)
             

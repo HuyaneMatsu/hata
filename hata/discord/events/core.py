@@ -109,7 +109,28 @@ def get_plugin_event_handler_and_parameter_count(event_handler_manager, name):
         except KeyError:
             pass
         else:
-            return event_handler_plugin, event_handler_plugin._plugin_parameter_counts[name]
+            parameter_counts = event_handler_plugin._plugin_parameter_counts
+            if (parameter_counts is None):
+                parameter_count = 0
+            else:
+                parameter_count = parameter_counts.get(name, 0)
+            return event_handler_plugin, parameter_count
+    
+    plugin_events_deprecated = event_handler_manager._plugin_events_deprecated
+    if (plugin_events_deprecated is not None):
+        try:
+            event_handler_plugin, deprecation = plugin_events_deprecated[name]
+        except KeyError:
+            pass
+        else:
+            deprecation.trigger(name, 3)
+            parameter_counts = event_handler_plugin._plugin_parameter_counts
+            if (parameter_counts is None):
+                parameter_count = 0
+            else:
+                parameter_count = parameter_counts.get(deprecation.use_instead, 0)
+            return event_handler_plugin, parameter_count
+            
     
     return None, 0
 
@@ -148,6 +169,17 @@ def get_plugin_event_handler_and_parser_names(event_handler_manager, name):
         else:
             return event_handler_plugin, None
     
+    plugin_events_deprecated = event_handler_manager._plugin_events_deprecated
+    if (plugin_events_deprecated is not None):
+        try:
+            event_handler_plugin, deprecation = plugin_events_deprecated[name]
+        except KeyError:
+            pass
+        else:
+            deprecation.trigger(name, 3)
+            return event_handler_plugin, None
+    
+    
     return None, None
 
 
@@ -177,6 +209,16 @@ def get_plugin_event_handler(event_handler_manager, name):
         except KeyError:
             pass
         else:
+            return event_handler_plugin
+    
+    plugin_events_deprecated = event_handler_manager._plugin_events_deprecated
+    if (plugin_events_deprecated is not None):
+        try:
+            event_handler_plugin, deprecation = plugin_events_deprecated[name]
+        except KeyError:
+            pass
+        else:
+            deprecation.trigger(name, 3)
             return event_handler_plugin
     
     return None

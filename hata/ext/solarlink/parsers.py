@@ -5,11 +5,11 @@ from scarletio import Task
 from ...discord.core import KOKORO
 
 from .constants import (
-    LAVALINK_KEY_EVENT_PLAYER_WEBSOCKET_CLOSED, LAVALINK_KEY_EVENT_TRACK_END, LAVALINK_KEY_EVENT_TRACK_EXCEPTION,
+    LAVALINK_KEY_EVENT_PLAYER_WEB_SOCKET_CLOSED, LAVALINK_KEY_EVENT_TRACK_END, LAVALINK_KEY_EVENT_TRACK_EXCEPTION,
     LAVALINK_KEY_EVENT_TRACK_START, LAVALINK_KEY_EVENT_TRACK_STUCK, LAVALINK_KEY_GUILD_ID
 )
 from .event_types import (
-    PlayerWebsocketClosedEvent, TrackEndEvent, TrackExceptionEvent, TrackStartEvent, TrackStuckEvent
+    PlayerWebSocketClosedEvent, TrackEndEvent, TrackExceptionEvent, TrackStartEvent, TrackStuckEvent
 )
 
 
@@ -64,7 +64,7 @@ def parse_track_stuck(client, data):
     Task(KOKORO, client.solarlink._events.track_stuck(client, event))
 
 
-def parse_player_websocket_closed(client, data):
+def parse_player_web_socket_closed(client, data):
     guild_id = int(data[LAVALINK_KEY_GUILD_ID])
     
     try:
@@ -72,8 +72,8 @@ def parse_player_websocket_closed(client, data):
     except KeyError:
         return
     
-    event = PlayerWebsocketClosedEvent(player, data)
-    Task(KOKORO, client.solarlink._events.player_websocket_closed(client, event))
+    event = PlayerWebSocketClosedEvent(player, data)
+    Task(KOKORO, client.solarlink._events.player_web_socket_closed(client, event))
 
 
 PARSERS = {
@@ -81,11 +81,11 @@ PARSERS = {
     LAVALINK_KEY_EVENT_TRACK_EXCEPTION: parse_track_exception,
     LAVALINK_KEY_EVENT_TRACK_START: parse_track_start,
     LAVALINK_KEY_EVENT_TRACK_STUCK: parse_track_stuck,
-    LAVALINK_KEY_EVENT_PLAYER_WEBSOCKET_CLOSED: parse_player_websocket_closed,
+    LAVALINK_KEY_EVENT_PLAYER_WEB_SOCKET_CLOSED: parse_player_web_socket_closed,
 }
 
 del parse_track_end
 del parse_track_exception
 del parse_track_start
 del parse_track_stuck
-del parse_player_websocket_closed
+del parse_player_web_socket_closed

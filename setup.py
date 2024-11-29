@@ -116,6 +116,7 @@ setup(
         'hata.discord.emoji.reaction_mapping_line',
         'hata.discord.emoji.unicode',
         'hata.discord.events',
+        'hata.discord.events.event_handler_plugin',
         'hata.discord.events.soundboard_sounds_event_handler',
         'hata.discord.exceptions',
         'hata.discord.gateway',
@@ -294,7 +295,7 @@ setup(
     },
     python_requires = '>=3.6',
     install_requires = [
-        'scarletio>=1.0.80',
+        'scarletio>=1.0.82',
         'chardet>=2.0',
     ],
     extras_require = {

@@ -1,9 +1,10 @@
 __all__ = ()
 
 from time import perf_counter
+from warnings import warn
 
 from scarletio import Task, copy_docs, from_json, repeat_timeout, sleep, to_json
-from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
+from scarletio.web_common import ConnectionClosed, InvalidHandshake, URL, WebSocketProtocolError
 
 from ..core import KOKORO
 
@@ -65,11 +66,11 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
     voice_client : ``VoiceClient``
         The owner voice client of the gateway.
     
-    websocket : `None`, ``WebSocketClient``
+    web_socket : `None`, ``WebSocketClient``
         The web socket of the gateway.
     """
     __slots__ = (
-        '_operation_handlers', '_should_run', 'kokoro', 'rate_limit_handler', 'sequence', 'voice_client', 'websocket'
+        '_operation_handlers', '_should_run', 'kokoro', 'rate_limit_handler', 'sequence', 'voice_client', 'web_socket'
     )
     
     def __new__(cls, voice_client):
@@ -108,7 +109,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         self.rate_limit_handler = GatewayRateLimiter()
         self.sequence = -1
         self.voice_client = voice_client
-        self.websocket = None
+        self.web_socket = None
         return self
     
     
@@ -142,15 +143,15 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
     
     @copy_docs(DiscordGatewayVoiceBase.send_as_json)
     async def send_as_json(self, data):
-        websocket = self.websocket
-        if websocket is None:
+        web_socket = self.web_socket
+        if web_socket is None:
             return
         
         if not (await self.rate_limit_handler):
             return
         
         try:
-            await websocket.send(to_json(data))
+            await web_socket.send(to_json(data))
         except ConnectionClosed:
             pass
     
@@ -288,49 +289,49 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         await self.send_as_json(data)
     
     
-    def _cancel_self_and_get_websocket(self):
+    def _cancel_self_and_get_web_socket(self):
         """
         Cancels the gateway except its web socket. Returns the web socket if still running instead.
         
         Returns
         -------
-        websocket : `None | WebSocketClient`
+        web_socket : `None | WebSocketClient`
         """
         kokoro = self.kokoro
         if (kokoro is not None):
             kokoro.stop()
         
-        websocket = self.websocket
-        if websocket is None:
+        web_socket = self.web_socket
+        if web_socket is None:
             return None
         
-        self.websocket = None
+        self.web_socket = None
         
-        if websocket.closed:
+        if web_socket.closed:
             return None
         
-        return websocket
+        return web_socket
     
     
     @copy_docs(DiscordGatewayVoiceBase.terminate)
     async def terminate(self):
-        websocket = self._cancel_self_and_get_websocket()
-        if (websocket is not None):
-            await websocket.close(4000)
+        web_socket = self._cancel_self_and_get_web_socket()
+        if (web_socket is not None):
+            await web_socket.close(4000)
     
     
     @copy_docs(DiscordGatewayVoiceBase.close)
     async def close(self):
-        websocket = self._cancel_self_and_get_websocket()
-        if (websocket is not None):
-            await websocket.close(1000)
+        web_socket = self._cancel_self_and_get_web_socket()
+        if (web_socket is not None):
+            await web_socket.close(1000)
     
     
     @copy_docs(DiscordGatewayVoiceBase.abort)
     def abort(self):
-        websocket = self._cancel_self_and_get_websocket()
-        if (websocket is not None):
-            websocket.close_transport(True)
+        web_socket = self._cancel_self_and_get_web_socket()
+        if (web_socket is not None):
+            web_socket.close_transport(True)
         
         self._should_run = False
     
@@ -361,13 +362,13 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         """
         self._create_kokoro()
         
-        websocket = self.websocket
-        if (websocket is not None) and (not websocket.closed):
-            self.websocket = None
-            await websocket.close(4000)
+        web_socket = self.web_socket
+        if (web_socket is not None) and (not web_socket.closed):
+            self.web_socket = None
+            await web_socket.close(4000)
         
-        gateway_url = f'wss://{self.voice_client._endpoint}/?v=8'
-        self.websocket = await self.voice_client.client.http.connect_web_socket(gateway_url)
+        gateway_url = URL(f'wss://{self.voice_client._endpoint}/?v=8', True)
+        self.web_socket = await self.voice_client.client.http.connect_web_socket(gateway_url)
         self.kokoro.start()
         
         if not resume:
@@ -377,12 +378,12 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         await self._resume()
         
         try:
-            await self.websocket.ensure_open()
+            await self.web_socket.ensure_open()
         except ConnectionClosed:
-            # websocket got closed so let's just do a regular connect.
+            # web_socket got closed so let's just do a regular connect.
             self._clear_session()
             self.kokoro.stop()
-            self.websocket = None
+            self.web_socket = None
             return GATEWAY_ACTION_CONNECT
         
         return GATEWAY_ACTION_KEEP_GOING
@@ -712,13 +713,13 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         Raises
         ------
         ConnectionClosed
-            If the websocket connection closed.
+            If the web_socket connection closed.
         """
-        websocket = self.websocket
-        if websocket is None:
+        web_socket = self.web_socket
+        if web_socket is None:
             return GATEWAY_ACTION_CONNECT
         
-        message = await websocket.receive()
+        message = await web_socket.receive()
         return await self._handle_received_operation(message)
     
     
@@ -735,7 +736,7 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         Raises
         ------
         ConnectionClosed
-            If the websocket connection closed.
+            If the web_socket connection closed.
         """
         try:
             with repeat_timeout(POLL_TIMEOUT) as loop:
@@ -814,3 +815,19 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         Clears current session data, disabling the option of resuming the connection.
         """
         self.sequence = -1
+    
+    
+    @property
+    def websocket(self):
+        """
+        Deprecated and will be removed in 2025 April. Use ``.web_socket`` instead.
+        """
+        warn(
+            (
+                f'`{type(self).__name__}.websocket` is deprecated and will be removed in 2025 April. '
+                'Please use `.web_socket` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.web_socket

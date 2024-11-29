@@ -42,6 +42,7 @@ EVENT_HANDLER_ATTRIBUTES = frozenset((
     '_launch_called',
     'client_reference',
     '_plugin_events',
+    '_plugin_events_deprecated',
     '_plugins',
 ))
 
@@ -256,6 +257,52 @@ def _wrap_maybe_deprecated_event(name, func):
     return func
 
 
+def _check_duplicate_plugin_event_name(plugin, event_name, plugin_events, plugin_deprecated_events):
+    """
+    Checks whether there is a duplicated event name already registered.
+    
+    Parameters
+    ----------
+    plugin : ``EventHandlerPlugin``
+        The plugin we check an event name of.
+    
+    event_name : `str`
+        The event name being checked.
+    
+    plugin_events : `None | dict<str, EventHandlerPlugin>`
+        Already registered plugin events.
+    
+    plugin_deprecated_events : `None | dict<str, (EventHandlerPlugin, PluginDeprecation, str)>`
+        Already registered deprecated plugin events.
+    
+    Raises
+    ------
+    RuntimeError
+    """
+    while True:
+        if (plugin_events is not None):
+            try:
+                other_plugin = plugin_events[event_name]
+            except KeyError:
+                pass
+            else:
+                break
+        
+        if (plugin_deprecated_events is not None):
+            try:
+                other_plugin, deprecation = plugin_deprecated_events[event_name]
+            except KeyError:
+                pass
+            else:
+                break
+        
+        return
+    
+    raise RuntimeError(
+        f'`{event_name!r}` of `{plugin!r}` is already defined by: `{other_plugin!r}`.'
+    )
+
+
 class EventHandlerManager(RichAttributeErrorBaseType):
     """
     After a client gets a dispatch event from Discord, it's parser might ensure an event. These events are stored
@@ -339,11 +386,17 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     ----------
     _launch_called : `bool`
         Whether The respective client's `.events.launch` was called already.
-    _plugin_events : `None`, `dict` of (`str`, ``EventHandlerPlugin``) items
+    
+    _plugin_events : `None | dict<str | EventHandlerPlugin>`
         Event name to plugin relation.
-    _plugins : `None`, `set` of ``EventHandlerPlugin``
+    
+    _plugin_events_deprecated : `None | dict<str, (EventHandlerPlugin, EventDeprecation)>`
+        Event name to plugin relation used for deprecated events.
+    
+    _plugins : `None | set<EventHandlerPlugin>`
         Plugins added to the event handler.
-    client_reference : ``WeakReferer`` to ``Client``
+    
+    client_reference : `WeakReferer<Client>`
         Weak reference to the parent client to avoid reference loops.
     
     Additional Event Attributes
@@ -1394,6 +1447,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         object.__setattr__(self, 'client_reference', client_reference)
         object.__setattr__(self, '_plugins', None)
         object.__setattr__(self, '_plugin_events', None)
+        object.__setattr__(self, '_plugin_events_deprecated', None)
         
         for name in EVENT_HANDLER_NAME_TO_PARSER_NAMES:
             object.__setattr__(self, name, DEFAULT_EVENT_HANDLER)
@@ -1690,6 +1744,16 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             else:
                 return getattr(event_handler_plugin, name)
         
+        plugin_events_deprecated = self._plugin_events_deprecated
+        if (plugin_events_deprecated is not None):
+            try:
+                event_handler_plugin, deprecation = plugin_events_deprecated[name]
+            except KeyError:
+                pass
+            else:
+                deprecation.trigger(name, 2)
+                return getattr(event_handler_plugin, name)
+        
         RichAttributeErrorBaseType.__getattr__(self, name)
     
     
@@ -1701,7 +1765,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             directory = set(directory)
             
             for plugin in plugins:
-                directory.update(plugin._plugin_event_names)
+                plugin_event_names = plugin._plugin_event_names
+                if (plugin_event_names is not None):
+                    directory.update(plugin_event_names)
             
             directory = sorted(directory)
         
@@ -1834,12 +1900,12 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        plugin : ``EventHandlerPlugin``
+        plugin : `EventHandlerPlugin | type<EventHandlerPlugin>`
             The plugin to add.
         
         Returns
         -------
-        plugin : ``EventHandlerPlugin``, `type<EventHandlerPlugin>`
+        plugin : ``EventHandlerPlugin``
             The added plugin.
         
         Raises
@@ -1858,34 +1924,45 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         else:
             raise TypeError(
-                f'`plugin` can be `{EventHandlerPlugin.__name__}`, got {plugin.__class__.__name__}; {plugin!r}.'
+                f'`plugin` can be `{EventHandlerPlugin.__name__}`, got {type(plugin).__name__}; {plugin!r}.'
             )
+        
+        plugin_events = self._plugin_events
+        plugin_events_deprecated = self._plugin_events_deprecated
+        
+        event_names = plugin._plugin_event_names
+        deprecated_events = plugin._plugin_event_deprecations
+        
+        # precheck
+        if (event_names is not None):
+            for event_name in event_names:
+                _check_duplicate_plugin_event_name(plugin, event_name, plugin_events, plugin_events_deprecated)
+        
+        if (deprecated_events is not None):
+            for event_name, deprecation in deprecated_events:
+                _check_duplicate_plugin_event_name(plugin, event_name, plugin_events, plugin_events_deprecated)
+        
+        # assign
+        if (event_names is not None):
+            if (plugin_events is None):
+                plugin_events = {}
+                object.__setattr__(self, '_plugin_events', plugin_events)
+            
+            for event_name in event_names:
+                plugin_events[event_name] = plugin
+        
+        if (deprecated_events is not None):
+            if (plugin_events_deprecated is None):
+                plugin_events_deprecated = {}
+                object.__setattr__(self, '_plugin_events_deprecated', plugin_events_deprecated)
+            
+            for event_name, deprecation in deprecated_events:
+                plugin_events_deprecated[event_name] = (plugin, deprecation)
         
         plugins = self._plugins
         if plugins is None:
             plugins = set()
             object.__setattr__(self, '_plugins', plugins)
-        
-        plugin_events = self._plugin_events
-        event_names = plugin._plugin_event_names
-        
-        if (plugin_events is None):
-            plugin_events = {}
-            object.__setattr__(self, '_plugin_events', plugin_events)
-            
-        else:
-            for event_name in event_names:
-                try:
-                    other_plugin = plugin_events[event_name]
-                except KeyError:
-                    pass
-                else:
-                    raise RuntimeError(
-                        f'`{event_name!r}` of `{plugin!r}` is already defined by: `{other_plugin!r}`.'
-                    )
-        
-        for event_name in event_names:
-            plugin_events[event_name] = plugin
         
         plugins.add(plugin)
         

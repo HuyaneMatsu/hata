@@ -1,4 +1,4 @@
-__all__ = ('TrackEndEvent', 'TrackExceptionEvent', 'TrackStartEvent', 'TrackStuckEvent', 'PlayerWebsocketClosedEvent')
+__all__ = ('TrackEndEvent', 'TrackExceptionEvent', 'TrackStartEvent', 'TrackStuckEvent', 'PlayerWebSocketClosedEvent')
 
 import reprlib
 
@@ -433,7 +433,7 @@ class TrackExceptionEvent(EventBase):
         return hash_value
 
 
-class PlayerWebsocketClosedEvent(EventBase):
+class PlayerWebSocketClosedEvent(EventBase):
     """
     Represents an event when a player's web socket is disconnected from a guild.
     
@@ -454,7 +454,7 @@ class PlayerWebsocketClosedEvent(EventBase):
     
     def __new__(cls, player, data):
         """
-        Creates a new ``PlayerWebsocketClosedEvent`` event from the given parameters.
+        Creates a new ``PlayerWebSocketClosedEvent`` event from the given parameters.
         
         Parameters
         ----------

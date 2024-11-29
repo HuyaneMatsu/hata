@@ -1,6 +1,8 @@
 __all__ = ()
 
-from ...discord import Event, EventHandlerPlugin
+from datetime import datetime as DateTime, timezone as TimeZone
+
+from ...discord import Event, EventDeprecation, EventHandlerPlugin
 
 from . import track_end_reasons as TRACK_END_REASONS
 
@@ -54,7 +56,7 @@ async def default_track_end_event_handler(client, event):
         await event.player.skip(0)
 
 
-async def default_player_websocket_closed_event_handler(client, event):
+async def default_player_web_socket_closed_event_handler(client, event):
     """
     Handles web socket close event.
     
@@ -64,7 +66,7 @@ async def default_player_websocket_closed_event_handler(client, event):
     ----------
     client : ``Client``
         The respective client.
-    event : ``PlayerWebsocketClosedEvent``
+    event : ``PlayerWebSocketClosedEvent``
         The received web socket closed event.
     """
     player = event.player
@@ -98,15 +100,22 @@ class SolarLinkEventManager(EventHandlerPlugin):
     track_stuck(client: ``Client``, event: ``TrackStuckEvent``)
         Called when the currently playing track is stuck.
     
-    player_websocket_closed(client: ``Client``, event: ``PlayerWebsocketClosedEvent``)
+    player_web_socket_closed(client: ``Client``, event: ``PlayerWebSocketClosedEvent``)
         Called when a player's web socket is disconnected from a guild.
     """
     track_end = Event(2, default_handler = default_track_end_event_handler)
     track_exception = Event(2, default_handler = default_track_exception_event_handler)
     track_start = Event(2)
     track_stuck = Event(2, default_handler = default_track_stuck_event_handler)
-    player_websocket_closed = Event(2, default_handler = default_player_websocket_closed_event_handler)
+    player_web_socket_closed = Event(2, default_handler = default_player_web_socket_closed_event_handler)
+    
+    # Deprecations
+    player_websocket_closed = Event(
+        2,
+        deprecation = EventDeprecation('player_web_socket_closed', DateTime(2025, 11, 1, tzinfo = TimeZone.utc)),
+    )
+    
     
     def __repr__(self):
         """Returns the plugin's representation."""
-        return f'<{self.__class__.__name__}>'
+        return f'<{type(self).__name__}>'

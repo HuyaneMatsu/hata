@@ -58,7 +58,7 @@ class FlagDescriptorBase(RichAttributeErrorBaseType):
         return False
     
     
-    def __set__(self, instance):
+    def __set__(self, instance, value):
         """
         Sets the field.
         
@@ -66,6 +66,9 @@ class FlagDescriptorBase(RichAttributeErrorBaseType):
         ----------
         instance : `FlagBase`
             Instance to set the fields to.
+        
+        value : `object`
+            The value to set.
         
         Raises
         ------

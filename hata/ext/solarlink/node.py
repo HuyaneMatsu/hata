@@ -1,5 +1,7 @@
 __all__ = ('SolarNode', )
 
+from warnings import warn
+
 from scarletio import (
     Future, RichAttributeErrorBaseType, Task, from_json, repeat_timeout, sleep, to_json, write_exception_async
 )
@@ -50,12 +52,12 @@ class SolarNode(RichAttributeErrorBaseType):
         The respective voice region of the node's players.
     stats : `None`, ``Stats``
         The statistics of the node.
-    websocket : `None`, ``WebSocketClient``
+    web_socket : `None`, ``WebSocketClient``
         The connected web socket.
     """
     __slots__ = (
         '_host', '_password', '_port', '_resume_key', 'client', 'players', 'reconnect_attempts', 'region', 'stats',
-        'websocket'
+        'web_socket'
     )
     
     def __new__(cls, client, host, port, password, region, resume_key, reconnect_attempts):
@@ -151,7 +153,7 @@ class SolarNode(RichAttributeErrorBaseType):
         self.region = region
         self.stats = None
         self.players = set()
-        self.websocket = None
+        self.web_socket = None
         self._resume_key = resume_key
         self.reconnect_attempts = reconnect_attempts
         return self
@@ -166,11 +168,11 @@ class SolarNode(RichAttributeErrorBaseType):
         -------
         available : `bool`
         """
-        websocket = self.websocket
-        if websocket is None:
+        web_socket = self.web_socket
+        if web_socket is None:
             available = False
         else:
-            available = websocket.open
+            available = web_socket.open
         
         return available
     
@@ -207,9 +209,9 @@ class SolarNode(RichAttributeErrorBaseType):
         """
         data = to_json(data)
         
-        websocket = self.websocket
-        if (websocket is not None):
-            await websocket.send(data)
+        web_socket = self.web_socket
+        if (web_socket is not None):
+            await web_socket.send(data)
     
     
     async def _connect(self):
@@ -245,18 +247,18 @@ class SolarNode(RichAttributeErrorBaseType):
             headers[HEADER_RESUME_KEY] = resume_key
         
         while True:
-            websocket = self.websocket
-            if (websocket is not None) and (not websocket.closed):
-                await websocket.close(4000)
-                self.websocket = None
+            web_socket = self.web_socket
+            if (web_socket is not None) and (not web_socket.closed):
+                await web_socket.close(4000)
+                self.web_socket = None
             
-            self.websocket = await self.client.http.connect_web_socket(
+            self.web_socket = await self.client.http.connect_web_socket(
                 f'ws://{self._host}:{self._port}',
                 headers = headers,
             )
             
             try:
-                await self.websocket.ensure_open()
+                await self.web_socket.ensure_open()
             except ConnectionClosed:
                 continue
             
@@ -404,12 +406,12 @@ class SolarNode(RichAttributeErrorBaseType):
         ConnectionClosed
             If the web socket connection closed.
         """
-        websocket = self.websocket
-        if websocket is None:
+        web_socket = self.web_socket
+        if web_socket is None:
             return True
         
         try:
-            message = await websocket.receive()
+            message = await web_socket.receive()
         except ConnectionClosed:
             raise
         
@@ -502,16 +504,16 @@ class SolarNode(RichAttributeErrorBaseType):
     
     async def close(self):
         """
-        Closes it's ``.websocket`` with close code of `1000`.
+        Closes it's ``.web_socket`` with close code of `1000`.
         
         This method is a coroutine.
         """
-        websocket = self.websocket
-        if websocket is None:
+        web_socket = self.web_socket
+        if web_socket is None:
             return
         
-        self.websocket = None
-        await websocket.close(1000)
+        self.web_socket = None
+        await web_socket.close(1000)
     
     
     def __repr__(self):
@@ -543,6 +545,19 @@ class SolarNode(RichAttributeErrorBaseType):
         repr_parts.append('>')
         
         return ''.join(repr_parts)
-        
-
-
+    
+    
+    @property
+    def websocket(self):
+        """
+        Deprecated and will be removed in 2025 April. Use ``.web_socket`` instead.
+        """
+        warn(
+            (
+                f'`{type(self).__name__}.websocket` is deprecated and will be removed in 2025 April. '
+                'Please use `.web_socket` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.web_socket

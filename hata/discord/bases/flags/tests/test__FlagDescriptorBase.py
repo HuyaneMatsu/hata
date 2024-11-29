@@ -83,7 +83,7 @@ def test__FlagDescriptorBase__set():
     flag_descriptor = InstantiableFlagDescriptorBase()
     
     with vampytest.assert_raises(AttributeError):
-        type(flag_descriptor).__set__(flag_descriptor, instance)
+        type(flag_descriptor).__set__(flag_descriptor, instance, 3)
 
 
 def test__FlagDescriptorBase__delete():

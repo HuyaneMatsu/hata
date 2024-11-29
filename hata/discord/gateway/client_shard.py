@@ -2,9 +2,10 @@ __all__ = ()
 
 from sys import platform as PLATFORM
 from zlib import decompressobj as create_zlib_decompressor, error as ZlibError
+from warnings import warn
 
 from scarletio import Task, copy_docs, from_json, repeat_timeout, skip_ready_cycle, sleep, to_json
-from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
+from scarletio.web_common import ConnectionClosed, InvalidHandshake, URL, WebSocketProtocolError
 
 from ...env import API_VERSION, CACHE_PRESENCE, LIBRARY_NAME
 
@@ -27,7 +28,7 @@ from .heartbeat import Kokoro
 from .rate_limit import GatewayRateLimiter
 
 
-async def _poll_compressed_message(websocket):
+async def _poll_compressed_message(web_socket):
     """
     Polls a compressed message from the given web socket.
     
@@ -35,7 +36,7 @@ async def _poll_compressed_message(websocket):
     
     Parameters
     ----------
-    websocket : ``WebSocketClient``
+    web_socket : ``WebSocketClient``
         The web socket to poll with.
     
     Returns
@@ -50,7 +51,7 @@ async def _poll_compressed_message(websocket):
     buffer = None
     
     while True:
-        data = await websocket.receive()
+        data = await web_socket.receive()
         if data.endswith(b'\x00\x00\xff\xff'):
             if buffer is None:
                 compressed_message = data
@@ -95,12 +96,12 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         Last session id received at `READY` event.
     shard_id : `int`
         The shard id of the gateway. If the respective client is not using sharding, it is set to `0` every time.
-    websocket : `None | WebSocketClient`
+    web_socket : `None | WebSocketClient`
         The web socket client of the gateway.
     """
     __slots__ = (
         '_buffer', '_decompressor', '_operation_handlers', '_should_run', 'client', 'kokoro', 'rate_limit_handler',
-        'resume_gateway_url', 'sequence', 'session_id', 'shard_id', 'websocket',
+        'resume_gateway_url', 'sequence', 'session_id', 'shard_id', 'web_socket',
     )
     
     def __new__(cls, client, shard_id):
@@ -135,7 +136,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         self.sequence = -1
         self.session_id = None
         self.shard_id = shard_id
-        self.websocket = None
+        self.web_socket = None
         return self
     
     
@@ -243,64 +244,64 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         return latency
     
     
-    def _cancel_self_and_get_websocket(self):
+    def _cancel_self_and_get_web_socket(self):
         """
-        Cancels the gateway except its websocket. Returns the websocket if still running instead.
+        Cancels the gateway except its web_socket. Returns the web_socket if still running instead.
         
         Returns
         -------
-        websocket : `None | WebSocketClient`
+        web_socket : `None | WebSocketClient`
         """
         kokoro = self.kokoro
         if (kokoro is not None):
             kokoro.stop()
         
-        websocket = self.websocket
-        if websocket is None:
+        web_socket = self.web_socket
+        if web_socket is None:
             return None
         
-        self.websocket = None
+        self.web_socket = None
         
-        if websocket.closed:
+        if web_socket.closed:
             return None
         
-        return websocket
+        return web_socket
     
     
     @copy_docs(DiscordGatewayClientBase.terminate)
     async def terminate(self):
-        websocket = self._cancel_self_and_get_websocket()
-        if (websocket is not None):
-            await websocket.close(4000)
+        web_socket = self._cancel_self_and_get_web_socket()
+        if (web_socket is not None):
+            await web_socket.close(4000)
     
     
     @copy_docs(DiscordGatewayClientBase.close)
     async def close(self):
-        websocket = self._cancel_self_and_get_websocket()
-        if (websocket is not None):
-            await websocket.close(1000)
+        web_socket = self._cancel_self_and_get_web_socket()
+        if (web_socket is not None):
+            await web_socket.close(1000)
     
     
     @copy_docs(DiscordGatewayClientBase.abort)
     def abort(self):
-        websocket = self._cancel_self_and_get_websocket()
-        if (websocket is not None):
-            websocket.close_transport(True)
+        web_socket = self._cancel_self_and_get_web_socket()
+        if (web_socket is not None):
+            web_socket.close_transport(True)
         
         self._should_run = False
     
     
     @copy_docs(DiscordGatewayClientBase.send_as_json)
     async def send_as_json(self, data):
-        websocket = self.websocket
-        if websocket is None:
+        web_socket = self.web_socket
+        if web_socket is None:
             return
         
         if not (await self.rate_limit_handler):
             return
         
         try:
-            await websocket.send(to_json(data))
+            await web_socket.send(to_json(data))
         except ConnectionClosed:
             pass
     
@@ -370,10 +371,10 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         """
         self._create_kokoro()
         
-        websocket = self.websocket
-        if (websocket is not None) and (not websocket.closed):
-            self.websocket = None
-            await websocket.close(4000)
+        web_socket = self.web_socket
+        if (web_socket is not None) and (not web_socket.closed):
+            self.web_socket = None
+            await web_socket.close(4000)
         
         if resume:
             gateway_url = self.resume_gateway_url
@@ -383,11 +384,11 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         if gateway_url is None:
             gateway_url = await self.client.client_gateway_url()
         
-        gateway_url = f'{gateway_url}?encoding=json&v={API_VERSION}&compress=zlib-stream'
+        gateway_url = URL(f'{gateway_url}?encoding=json&v={API_VERSION}&compress=zlib-stream', True)
         
         self._decompressor = create_zlib_decompressor()
         
-        self.websocket = await self.client.http.connect_web_socket(gateway_url)
+        self.web_socket = await self.client.http.connect_web_socket(gateway_url)
         self.kokoro.start()
         # skip one loop to wait for kokoro to start up.
         await skip_ready_cycle()
@@ -404,12 +405,12 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         await self._resume()
         
         try:
-            await self.websocket.ensure_open()
+            await self.web_socket.ensure_open()
         except ConnectionClosed:
-            # websocket got closed so let's just do a regular connect.
+            # web_socket got closed so let's just do a regular connect.
             self._clear_session()
             self.kokoro.stop()
-            self.websocket = None
+            self.web_socket = None
             return GATEWAY_ACTION_CONNECT
         
         return GATEWAY_ACTION_KEEP_GOING
@@ -428,7 +429,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         Raises
         ------
         ConnectionClosed
-            If the websocket connection closed.
+            If the web_socket connection closed.
         """
         try:
             with repeat_timeout(POLL_TIMEOUT) as loop:
@@ -458,17 +459,17 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         Raises
         ------
         ConnectionClosed
-            If the websocket connection closed.
+            If the web_socket connection closed.
         TimeoutError
             If the gateways' `.kokoro` is not beating, meanwhile it should.
         """
-        websocket = self.websocket
-        if websocket is None:
-            # No websocket? Were the connection closed?
+        web_socket = self.web_socket
+        if web_socket is None:
+            # No web_socket? Were the connection closed?
             return GATEWAY_ACTION_CONNECT
         
         try:
-            raw_message = await _poll_compressed_message(websocket)
+            raw_message = await _poll_compressed_message(web_socket)
         except ConnectionClosed as exception:
             # propagate a few kind of `ConnectionClosed` exceptions while swallow the rest for reconnection.
             if exception.code in (1000, 1006, 4004, 4010, 4011, 4013, 4014):
@@ -771,7 +772,7 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         """
         Internal function to send already converted json data.
         
-        If the given gateway has no websocket, or if it is closed, will not raise.
+        If the given gateway has no web_socket, or if it is closed, will not raise.
         
         This method is a coroutine.
         
@@ -780,15 +781,15 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
         data : `str`
             The data to send.
         """
-        websocket = self.websocket
-        if websocket is None:
+        web_socket = self.web_socket
+        if web_socket is None:
             return
         
         if not (await self.rate_limit_handler):
             return
         
         try:
-            await websocket.send(data)
+            await web_socket.send(data)
         except ConnectionClosed:
             pass
     
@@ -802,3 +803,19 @@ class DiscordGatewayClientShard(DiscordGatewayClientBase):
             self.kokoro = Kokoro(self)
         else:
             kokoro.stop()
+    
+    
+    @property
+    def websocket(self):
+        """
+        Deprecated and will be removed in 2025 April. Use ``.web_socket`` instead.
+        """
+        warn(
+            (
+                f'`{type(self).__name__}.websocket` is deprecated and will be removed in 2025 April. '
+                'Please use `.web_socket` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.web_socket

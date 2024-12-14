@@ -133,11 +133,21 @@ class SlashCommandFunction(
             repr_parts.append(', response_modifier = ')
             repr_parts.append(repr(response_modifier))
         
+        # _auto_completers
+        auto_completers = self._auto_completers
+        if (auto_completers is not None):
+            repr_parts.append(', auto_completers = ')
+            repr_parts.append(repr(auto_completers))
+        
         # _exception_handlers
         exception_handlers = self._exception_handlers
         if (exception_handlers is not None):
             repr_parts.append(', exception_handlers = ')
             repr_parts.append(repr(exception_handlers))
+        
+        # _command_function
+        repr_parts.append(', command_function = ')
+        repr_parts.append(repr(self._command_function))
         
         repr_parts.append('>')
         return ''.join(repr_parts)

@@ -105,6 +105,7 @@ def test__CommandBaseCustomId__repr():
     vampytest.assert_in(f'string_custom_ids = {[custom_id_string]!r}', output)
     vampytest.assert_in(f'regex_custom_ids = {[RegexMatcher(custom_id_regex)]!r}', output)
     vampytest.assert_in(f'response_modifier = {response_modifier!r}', output)
+    vampytest.assert_in(f'command_function = {function!r}', output)
 
 
 def test__CommandBaseCustomId__hash():

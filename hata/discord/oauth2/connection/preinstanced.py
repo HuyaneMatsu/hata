@@ -32,6 +32,8 @@ class ConnectionType(PreinstancedBase):
     +-----------------------+-----------------------+-------------------+
     | battlenet             | Battle.net            | battlenet         |
     +-----------------------+-----------------------+-------------------+
+    | bluesky               | Bluesky               | bluesky           |
+    +-----------------------+-----------------------+-------------------+
     | bungie                | Bungie.net            | bungie            |
     +-----------------------+-----------------------+-------------------+
     | crunchyroll           | Crunchyroll           | crunchyroll       |
@@ -49,6 +51,8 @@ class ConnectionType(PreinstancedBase):
     | instagram             | Instagram             | instagram         |
     +-----------------------+-----------------------+-------------------+
     | league_of_legends     | League of Legends     | leagueoflegends   |
+    +-----------------------+-----------------------+-------------------+
+    | mastodon              | Mastodon              | mastodon          |
     +-----------------------+-----------------------+-------------------+
     | none                  | none                  |                   |
     +-----------------------+-----------------------+-------------------+
@@ -89,6 +93,7 @@ class ConnectionType(PreinstancedBase):
     
     amazon_music = P('amazon-music', 'Amazon Music')
     battlenet = P('battlenet', 'Battle.net')
+    bluesky = P('bluesky', 'Bluesky')
     bungie = P('bungie', 'Bungie.net')
     crunchyroll = P('crunchyroll', 'Crunchyroll')
     domain = P('domain', 'Domain')
@@ -98,6 +103,7 @@ class ConnectionType(PreinstancedBase):
     github = P('github', 'GitHub')
     instagram = P('instagram', 'Instagram')
     league_of_legends = P('leagueoflegends', 'League of Legends')
+    mastodon = P('mastodon', 'Mastodon')
     none = P('', 'none')
     paypal = P('paypal', 'PayPal')
     playstation = P('playstation', 'PlayStation Network')

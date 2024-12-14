@@ -25,7 +25,7 @@ class Unicode(RichAttributeErrorBaseType):
         Whether the emoji is a variation selector 16 emoji.
     unicode_aliases : `None | tuple<str>`
         Alternative unicode strings representing the same unicode.
-        These are required because python parses unicodes badly.
+        These are required because some shitty systems store 32 bit characters as 2 16 bit code point parses.
     """
     __slots__ = ('aliases', 'emoticons', 'name', 'value', 'variation_selector_16', 'unicode_aliases')
     

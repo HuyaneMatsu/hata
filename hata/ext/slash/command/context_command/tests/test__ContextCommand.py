@@ -3,7 +3,8 @@ from scarletio import WeakReferer
 
 from ......discord.application import ApplicationIntegrationType
 from ......discord.application_command import (
-    ApplicationCommand, ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
+    ApplicationCommand, ApplicationCommandIntegrationContextType, ApplicationCommandPermissionOverwrite,
+    ApplicationCommandPermissionOverwriteTargetType, ApplicationCommandTargetType
 )
 from ......discord.client import Client
 from ......discord.client.compounds.tests.helpers import TestDiscordApiClient
@@ -115,6 +116,7 @@ def test__ContextCommand__repr():
     
     name = 'yuuka'
     delete_on_unload = True
+    guild_id = 2024120432
     # guild = None
     integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
@@ -129,6 +131,10 @@ def test__ContextCommand__repr():
     required_permissions = Permission(8)
     target = ApplicationCommandTargetType.user
     show_for_invoking_user_only = True
+    permission_overwrite = ApplicationCommandPermissionOverwrite(
+        (ApplicationCommandPermissionOverwriteTargetType.role, 20241204303),
+        True,
+    )
     
     
     async def exception_handler(client, interaction_event, command, exception):
@@ -148,6 +154,7 @@ def test__ContextCommand__repr():
         show_for_invoking_user_only = show_for_invoking_user_only,
     )
     context_command.error(exception_handler)
+    context_command.add_permission_overwrite(guild_id, permission_overwrite)
     response_modifier = ResponseModifier({'show_for_invoking_user_only': show_for_invoking_user_only})
     
     output = repr(context_command)
@@ -162,6 +169,8 @@ def test__ContextCommand__repr():
     vampytest.assert_in(f'required_permissions = {required_permissions!r}', output)
     vampytest.assert_in(f'target = {target.name!s}', output)
     vampytest.assert_in(f'response_modifier = {response_modifier!r}', output)
+    vampytest.assert_in(f'command_function = {function!r}', output)
+    vampytest.assert_in(f'permission_overwrites = { {guild_id: [permission_overwrite]}!r}', output)
 
 
 def test__ContextCommand__hash():

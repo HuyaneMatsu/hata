@@ -1,7 +1,5 @@
 __all__ = ('ApplicationCommand',)
 
-from warnings import warn
-
 from ...bases import DiscordEntity
 from ...core import APPLICATION_COMMANDS, GUILDS
 from ...localization.helpers import get_localized_length
@@ -19,19 +17,16 @@ from .fields import (
     put_application_id_into, put_description_into, put_description_localizations_into, put_guild_id_into, put_id_into,
     put_integration_context_types_into, put_integration_types_into, put_name_into, put_name_localizations_into,
     put_nsfw_into, put_options_into, put_required_permissions_into, put_target_type_into, put_version_into,
-    validate_allow_in_dm, validate_application_id, validate_description, validate_description_localizations,
-    validate_guild_id, validate_id, validate_integration_context_types, validate_integration_types, validate_name,
-    validate_name_localizations, validate_nsfw, validate_options, validate_required_permissions, validate_target_type,
-    validate_version
+    validate_application_id, validate_description, validate_description_localizations, validate_guild_id, validate_id,
+    validate_integration_context_types, validate_integration_types, validate_name, validate_name_localizations,
+    validate_nsfw, validate_options, validate_required_permissions, validate_target_type, validate_version
 )
 from .preinstanced import (
-    CONTEXT_TARGET_TYPES, ApplicationCommandIntegrationContextType, ApplicationCommandTargetType,
-    INTEGRATION_CONTEXT_TYPES_ALL
+    CONTEXT_TARGET_TYPES, ApplicationCommandTargetType, INTEGRATION_CONTEXT_TYPES_ALL
 )
 
 
 PRECREATE_FIELDS = {
-    'allow_in_dm': ('allow_in_dm', validate_allow_in_dm),
     'application': ('application_id', validate_application_id),
     'application_id': ('application_id', validate_application_id),
     'description': ('description', validate_description),
@@ -120,7 +115,6 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         name,
         description = None,
         *,
-        allow_in_dm = ...,
         description_localizations = ...,
         integration_context_types = ...,
         integration_types = ...,
@@ -179,20 +173,6 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # Deprecations
-        if allow_in_dm is ...:
-            allow_in_dm = True
-        else:
-            warn(
-                (
-                    f'`{cls}.allow_in_dm` is deprecated and will be removed in 2024 November. '
-                    f'Please use `integration_context_types` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            allow_in_dm = validate_allow_in_dm(allow_in_dm)
-        
         # description
         description = validate_description(description)
         
@@ -259,10 +239,6 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             # For non context commands description is required.
             if (description is None):
                 description = validate_description(name)
-        
-        # Apply deprecations
-        if not allow_in_dm:
-            integration_context_types = (ApplicationCommandIntegrationContextType.guild,)
         
         # Construct
         self = object.__new__(cls)
@@ -1092,7 +1068,6 @@ class ApplicationCommand(DiscordEntity, immortal = True):
     def copy_with(
         self,
         *,
-        allow_in_dm = ...,
         description = ...,
         description_localizations = ...,
         integration_context_types = ...,
@@ -1152,20 +1127,6 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # Deprecations
-        if allow_in_dm is ...:
-            allow_in_dm = True
-        else:
-            warn(
-                (
-                    f'`{type(self)}.allow_in_dm` is deprecated and will be removed in 2024 November. '
-                    f'Please use `integration_context_types` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            allow_in_dm = validate_allow_in_dm(allow_in_dm)
-        
         # description
         if description is ...:
             description = self.description
@@ -1248,10 +1209,6 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             # For non context commands description is required.
             if (description is None):
                 description = validate_description(name)
-        
-        # Apply deprecations
-        if not allow_in_dm:
-            integration_context_types = (ApplicationCommandIntegrationContextType.guild,)
         
         # Construct
         new = object.__new__(type(self))
@@ -1524,39 +1481,3 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         integration_context_types = self.integration_context_types
         if (integration_context_types is not None):
             yield from integration_context_types
-    
-    
-    @property
-    def allow_in_dm(self):
-        """
-        Whether the command can be used in private (dm) channels.
-        
-        Deprecated and will be removed in 2024 November.
-        """
-        warn(
-            (
-                f'`{type(self)}.allow_in_dm` is deprecated and will be removed in 2024 November. '
-                f'Please do either: '
-                f'`.has_integration_context_type(ApplicationCommandIntegrationContextType.bot_private_channel)` or '
-                f'`.has_integration_context_type(ApplicationCommandIntegrationContextType.any_private_channel)` or '
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return (
-            self.has_integration_context_type(ApplicationCommandIntegrationContextType.bot_private_channel) or
-            self.has_integration_context_type(ApplicationCommandIntegrationContextType.any_private_channel)
-        )
-    
-    
-    @allow_in_dm.setter
-    def allow_in_dm(self, value):
-        warn(
-            (
-                f'`{type(self)}.allow_in_dm` is deprecated and will be removed in 2024 November. '
-                f'Please use `integration_context_types` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )

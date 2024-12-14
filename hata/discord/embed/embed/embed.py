@@ -85,8 +85,6 @@ class Embed(RichAttributeErrorBaseType):
         cls,
         title = ...,
         description = ...,
-        *extra_positional_parameters, # For deprecations
-        type_ = ..., # Deprecated
         author = ...,
         color = ...,
         embed_type = ...,
@@ -506,7 +504,7 @@ class Embed(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the representation of the embed."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         field_added = False
         

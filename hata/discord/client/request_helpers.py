@@ -6,8 +6,8 @@ from ..auto_moderation import AutoModerationRule
 from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token_pair
 from ..channel import Channel, ForumTag, PermissionOverwrite
 from ..core import (
-    APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, EMBEDDED_ACTIVITIES, EMOJIS, FORUM_TAGS, GUILDS, MESSAGES,
-    ROLES, SCHEDULED_EVENTS, SOUNDBOARD_SOUNDS, STICKERS, STICKER_PACKS, SUBSCRIPTIONS, USERS
+    APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, EMBEDDED_ACTIVITIES, EMOJIS, ENTITLEMENTS, FORUM_TAGS,
+    GUILDS, MESSAGES, ROLES, SCHEDULED_EVENTS, SOUNDBOARD_SOUNDS, STICKERS, STICKER_PACKS, SUBSCRIPTIONS, USERS
 )
 from ..embedded_activity import EmbeddedActivity
 from ..emoji import Emoji, Reaction, ReactionType
@@ -1719,6 +1719,39 @@ def get_entitlement_id(entitlement):
     return entitlement_id
 
 
+def get_entitlement_and_id(entitlement):
+    """
+    Gets the entitlement and its identifier.
+    
+    Parameters
+    ----------
+    entitlement : `Entitlement | int`
+        The entitlement to get its identifier.
+    
+    Returns
+    -------
+    entitlement : `None | Entitlement`
+    entitlement_id : `int`
+    
+    Raises
+    ------
+    TypeError
+        - If `entitlement` type is incorrect.
+    """
+    if isinstance(entitlement, Entitlement):
+        return entitlement, entitlement.id
+    
+    entitlement_id = maybe_snowflake(entitlement)
+    if entitlement_id is None:
+        raise TypeError(
+            f'`entitlement` can be `{Entitlement.__name__}, `int`, '
+            f'got {type(entitlement).__name__}; {entitlement!r}.'
+        )
+    
+    entitlement = ENTITLEMENTS.get(entitlement_id, None)
+    return entitlement, entitlement_id
+
+
 def get_poll_answer_and_id(poll_answer):
     """
     Gets the poll answer and its identifier.
@@ -1813,7 +1846,6 @@ def get_embedded_activity_and_id(embedded_activity):
     
     embedded_activity = EMBEDDED_ACTIVITIES.get(embedded_activity_id, None)
     return embedded_activity, embedded_activity_id
-
 
 
 def get_subscription_and_sku_id_and_id(subscription):

@@ -95,6 +95,14 @@ class SlashCommandParameterAutoCompleter(CommandInterface, ExceptionHandlerInter
             repr_parts.append(', exception_handlers = ')
             repr_parts.append(repr(exception_handlers))
         
+        # _command_function
+        repr_parts.append(', command_function = ')
+        repr_parts.append(repr(self._command_function))
+        
+        # deepness
+        repr_parts.append(', deepness = ')
+        repr_parts.append(repr(self.deepness))
+        
         repr_parts.append('>')
         return ''.join(repr_parts)
     

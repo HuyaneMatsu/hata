@@ -821,7 +821,7 @@ class Client(
         ```
         """
         if self.running:
-            raise RuntimeError(f'`{self.__class__.__name__}._delete` called from a running client: {self!r}')
+            raise RuntimeError(f'`{type(self).__name__}._delete` called from a running client: {self!r}')
         
         client_id = self.id
         if CLIENTS.get(client_id, None) is self:
@@ -1367,29 +1367,16 @@ class Client(
                 if not self.guild_profiles:
                     return
                 
-                to_remove = []
-                for guild_id in self.guild_profiles.keys():
+                for guild_id in [*self.guild_profiles.keys()]:
                     try:
                         guild = GUILDS[guild_id]
                     except KeyError:
                         continue
                     
                     guild._delete(self)
-                    if not guild.partial:
-                        continue
-                    
-                    to_remove.append(guild_id)
-                
-                if to_remove:
-                    for guild_id in to_remove:
-                        try:
-                            del self.guild_profiles[guild_id]
-                        except KeyError:
-                            pass
                 
                 # need to delete the references for cleanup
                 guild = None
-                to_remove = None
                 
                 ready_state = self.ready_state
                 if (ready_state is not None):

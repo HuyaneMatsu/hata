@@ -30,12 +30,12 @@ from ...wrappers import CommandWrapper, get_parameter_configurers
 
 from ..command_base_application_command import CommandBaseApplicationCommand
 from ..command_base_application_command.helpers import (
-    _maybe_exclude_dm_from_integration_context_types, _reset_application_command_schema, _validate_allow_in_dm,
-    _validate_delete_on_unload, _validate_guild, _validate_integration_context_types, _validate_integration_types,
-    _validate_is_global, _validate_name, _validate_nsfw, _validate_required_permissions
+    _reset_application_command_schema, _validate_delete_on_unload, _validate_guild,
+    _validate_integration_context_types, _validate_integration_types, _validate_is_global, _validate_name,
+    _validate_nsfw, _validate_required_permissions
 )
 
-from .helpers import _generate_description_from, _validate_is_default
+from .helpers import _generate_description_from, _validate_default
 from .slash_command_category import SlashCommandCategory
 from .slash_command_function import SlashCommandFunction
 from .slash_command_parameter_auto_completer import SlashCommandParameterAutoCompleter
@@ -142,7 +142,7 @@ class SlashCommand(
         function,
         name = None,
         *,
-        allow_in_dm = ...,
+        default = ...,
         delete_on_unload = ...,
         description = ...,
         guild = ...,
@@ -166,6 +166,9 @@ class SlashCommand(
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
             instead.
         
+        default : `bool`, Optional (Keyword only)
+            Whether the context command is the default command in it's category.
+        
         delete_on_unload : `bool`, Optional (Keyword only)
             Whether the command should be deleted from Discord when removed.
         
@@ -182,9 +185,6 @@ class SlashCommand(
         integration_types : `None | ApplicationIntegrationType | int | str | \
                 iterable<ApplicationIntegrationType | int | str>`, Optional
             The options where the application command can be integrated to.
-        
-        is_default : `bool`, Optional (Keyword only)
-            Whether the context command is the default command in it's category.
         
         is_global : `None | bool` = `None`, Optional
             Whether the slash command is the default command in it's category.
@@ -217,6 +217,18 @@ class SlashCommand(
         ValueError
             If a parameter's value is incorrect.
         """
+        # Deprecation
+        if (is_default is not ...):
+            warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `is_default` parameter is deprecated and will be removed in 2025 June. '
+                    f'Please use `default` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 3,
+            )
+            default = is_default
+        
         if (function is not None) and isinstance(function, CommandWrapper):
             command_function, wrappers = function.fetch_function_and_wrappers_back()
         else:
@@ -225,19 +237,6 @@ class SlashCommand(
         
         # Pre validate
         name = _validate_name(name)
-        
-        # allow_in_dm
-        if (allow_in_dm is not ...):
-            warn(
-                (
-                    '`allow_in_dm` parameter is deprecated and will be removed in 2024 November. '
-                    'Please use `integration_context_types` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 5,
-            )
-            
-            allow_in_dm = _validate_allow_in_dm(allow_in_dm)
         
         # delete_on_unload
         if delete_on_unload is ...:
@@ -269,11 +268,11 @@ class SlashCommand(
         else:
             integration_types = _validate_integration_types(integration_types)
         
-        # is_default
-        if is_default is ...:
-            is_default = False
+        # default
+        if default is ...:
+            default = False
         else:
-            is_default = _validate_is_default(is_default)
+            default = _validate_default(default)
         
         # is_global
         if is_global is ...:
@@ -318,11 +317,6 @@ class SlashCommand(
                 f'guild = {guild!r}.'
             )
         
-        if (allow_in_dm is not ...):
-            integration_context_types = _maybe_exclude_dm_from_integration_context_types(
-                allow_in_dm, integration_context_types
-            )
-        
         if not is_global:
             integration_types = None
             integration_context_types = None
@@ -331,7 +325,7 @@ class SlashCommand(
             slash_command_function = None
         else:
             slash_command_function = SlashCommandFunction(
-                command_function, parameter_converters, name, description, response_modifier, is_default
+                command_function, parameter_converters, name, description, response_modifier, default
             )
         
         # Construct
@@ -344,7 +338,7 @@ class SlashCommand(
         self.name = name
         self._schema = None
         self._registered_application_command_ids = None
-        self.default = is_default
+        self.default = default
         self._unloading_behaviour = unloading_behaviour
         self.nsfw = nsfw
         self.required_permissions = required_permissions
@@ -382,6 +376,18 @@ class SlashCommand(
              repr_parts.append(', description = ')
              repr_parts.append(repr(description))
         
+        # _command
+        command = self._command
+        if (command is not None):
+            repr_parts.append(', command = ')
+            repr_parts.append(repr(command))
+        
+        # _sub_commands
+        sub_commands = self._sub_commands
+        if (sub_commands is not None):
+            repr_parts.append(', sub_commands = ')
+            repr_parts.append(repr(sub_commands))
+        
         return repr_parts
     
     
@@ -409,9 +415,6 @@ class SlashCommand(
             
             for sub_command in sub_commands:
                 hash_value ^= hash(sub_command)
-        
-        # default
-        hash_value ^= self.default << 30
         
         # description
         description = self.description

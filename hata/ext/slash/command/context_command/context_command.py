@@ -1,7 +1,5 @@
 __all__ = ('ContextCommand',)
 
-from warnings import warn
-
 from scarletio import copy_docs
 
 from .....discord.application import ApplicationIntegrationType
@@ -21,9 +19,8 @@ from ...wrappers import CommandWrapper
 
 from ..command_base_application_command import CommandBaseApplicationCommand
 from ..command_base_application_command.helpers import (
-    _maybe_exclude_dm_from_integration_context_types, _validate_allow_in_dm, _validate_delete_on_unload,
-    _validate_guild, _validate_integration_context_types, _validate_integration_types, _validate_is_global,
-    _validate_name, _validate_nsfw, _validate_required_permissions
+    _validate_delete_on_unload, _validate_guild, _validate_integration_context_types, _validate_integration_types,
+    _validate_is_global, _validate_name, _validate_nsfw, _validate_required_permissions
 )
 from ..helpers import validate_application_target_type
 
@@ -109,7 +106,6 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         function,
         name = None,
         *,
-        allow_in_dm = ...,
         delete_on_unload = ...,
         guild = ...,
         integration_context_types = ...,
@@ -203,18 +199,6 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         # Pre validate
         name = _validate_name(name)
         
-        # allow_in_dm
-        if (allow_in_dm is not ...):
-            warn(
-                (
-                    '`allow_in_dm` parameter is deprecated and will be removed in 2024 November. '
-                    'Please use `integration_context_types` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 5,
-            )
-            allow_in_dm = _validate_allow_in_dm(allow_in_dm)
-        
         # delete_on_unload
         if delete_on_unload is ...:
             unloading_behaviour = UNLOADING_BEHAVIOUR_INHERIT
@@ -276,11 +260,6 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
                 f'guild = {guild!r}.'
             )
         
-        if (allow_in_dm is not ...):
-            integration_context_types = _maybe_exclude_dm_from_integration_context_types(
-                allow_in_dm, integration_context_types
-            )
-        
         if not is_global:
             integration_types = None
             integration_context_types = None
@@ -327,6 +306,10 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         if (response_modifier is not None):
             repr_parts.append(', response_modifier = ')
             repr_parts.append(repr(response_modifier))
+        
+        # _command_function
+        repr_parts.append(', command_function = ')
+        repr_parts.append(repr(self._command_function))
         
         return repr_parts
     

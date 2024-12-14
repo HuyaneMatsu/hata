@@ -4,7 +4,8 @@ from scarletio import WeakReferer
 from ......discord.application import ApplicationIntegrationType
 from ......discord.application_command import (
     ApplicationCommand, ApplicationCommandIntegrationContextType, ApplicationCommandOption,
-    ApplicationCommandOptionType, ApplicationCommandTargetType
+    ApplicationCommandOptionType, ApplicationCommandPermissionOverwrite,
+    ApplicationCommandPermissionOverwriteTargetType, ApplicationCommandTargetType
 )
 from ......discord.client import Client
 from ......discord.client.compounds.tests.helpers import TestDiscordApiClient
@@ -84,7 +85,7 @@ def test__SlashCommand__new():
     slash_command = SlashCommand(
         function,
         name,
-        is_default = default,
+        default = default,
         delete_on_unload = delete_on_unload,
         description = description,
         # guild = guild,
@@ -144,6 +145,7 @@ def test__SlashCommand__repr():
     description = 'rember happy day'
     default = True
     delete_on_unload = True
+    guild_id = 2024120434
     # guild = None
     integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
@@ -156,6 +158,10 @@ def test__SlashCommand__repr():
     is_global = True
     nsfw = True
     required_permissions = Permission(8)
+    permission_overwrite = ApplicationCommandPermissionOverwrite(
+        (ApplicationCommandPermissionOverwriteTargetType.role, 20241204305),
+        True,
+    )
     
     async def exception_handler(client, interaction_event, command, exception):
         return
@@ -163,7 +169,7 @@ def test__SlashCommand__repr():
     slash_command = SlashCommand(
         function,
         name,
-        is_default = default,
+        default = default,
         delete_on_unload = delete_on_unload,
         description = description,
         # guild = guild,
@@ -174,6 +180,7 @@ def test__SlashCommand__repr():
         required_permissions = required_permissions,
     )
     slash_command.error(exception_handler)
+    slash_command.add_permission_overwrite(guild_id, permission_overwrite)
     
     output = repr(slash_command)
     vampytest.assert_in(type(slash_command).__name__, output)
@@ -187,6 +194,8 @@ def test__SlashCommand__repr():
     vampytest.assert_in(f'required_permissions = {required_permissions!r}', output)
     vampytest.assert_in(f'default = {default!r}', output)
     vampytest.assert_in(f'description = {description!r}', output)
+    vampytest.assert_in(f'command = {slash_command._command!r}', output)
+    vampytest.assert_in(f'permission_overwrites = { {guild_id: [permission_overwrite]}!r}', output)
 
 
 def test__SlashCommand__hash():
@@ -220,7 +229,7 @@ def test__SlashCommand__hash():
     slash_command = SlashCommand(
         function,
         name,
-        is_default = default,
+        default = default,
         delete_on_unload = delete_on_unload,
         description = description,
         # guild = guild,
@@ -266,7 +275,7 @@ def _iter_options__eq():
     keyword_parameters = {
         'function': function_0,
         'name': name,
-        'is_default': default,
+        'default': default,
         'delete_on_unload': delete_on_unload,
         'description': description,
         # 'guild': guild,
@@ -312,7 +321,7 @@ def _iter_options__eq():
         (),
         {
             **keyword_parameters,
-            'is_default': False,
+            'default': False,
         },
         (),
         False,
@@ -606,7 +615,7 @@ def test__SlashCommand__copy():
     slash_command = SlashCommand(
         function,
         name,
-        is_default = default,
+        default = default,
         delete_on_unload = delete_on_unload,
         description = description,
         # guild = guild,

@@ -1,6 +1,6 @@
 import vampytest
 
-from ..helpers import _validate_is_default
+from ..helpers import _validate_default
 
 
 def _iter_options__passing():
@@ -15,9 +15,9 @@ def _iter_options__type_error():
 
 @vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
 @vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
-def test__validate_is_default(input_value):
+def test__validate_default(input_value):
     """
-    Tests whether `_validate_is_default` works as intended.
+    Tests whether `_validate_default` works as intended.
     
     Parameters
     ----------
@@ -32,6 +32,6 @@ def test__validate_is_default(input_value):
     ------
     TypeError
     """
-    output = _validate_is_default(input_value)
+    output = _validate_default(input_value)
     vampytest.assert_instance(output, bool)
     return output

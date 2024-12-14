@@ -77,27 +77,6 @@ def _validate_nsfw(nsfw):
     return preconvert_bool(nsfw, 'nsfw')
 
 
-def _validate_allow_in_dm(allow_in_dm):
-    """
-    Validates the given `allow_in_dm` value.
-    
-    Parameters
-    ----------
-    allow_in_dm : `bool`
-        The value to validate.
-    
-    Returns
-    -------
-    allow_in_dm : `bool`
-    
-    Raises
-    ------
-    TypeError
-        If `allow_in_dm` type is incorrect.
-    """
-    return preconvert_bool(allow_in_dm, 'allow_in_dm')
-
-
 def _validate_is_global(is_global):
     """
     Validates the given `is_global` value.
@@ -464,20 +443,3 @@ def _validate_integration_types(integration_types):
         integration_types = (ApplicationIntegrationType.guild_install,)
     
     return integration_types
-
-
-def _maybe_exclude_dm_from_integration_context_types(allow_in_dm, integration_context_types):
-    """
-    Excludes private channels from `integration_context_types` if `allow_in_dm` is false.
-    
-    Parameters
-    ----------
-    allow_in_dm : `bool`
-        Whether the command should be allowed in private channels.
-    integration_context_types : `None | tuple<ApplicationCommandIntegrationContextType>`
-        The places where the application command shows up.
-    """
-    if (allow_in_dm is None) or allow_in_dm:
-        return integration_context_types
-    
-    return (ApplicationCommandIntegrationContextType.guild,)

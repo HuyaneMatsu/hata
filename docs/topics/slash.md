@@ -1048,10 +1048,10 @@ async def remilia(client):
 
 You can also set default sub-command, which is used if a sub command is selected.
 
-> Sub-commands and default commands are not yet fully supported by Discord.
+> Default sub-commands are not yet fully supported by Discord.
 
 ```py3
-@SCARLET.interactions(is_default = True)
+@SCARLET.interactions(default = True)
 async def devil(client, event):
     """Flandre & Remilia!"""
     yield

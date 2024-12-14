@@ -74,10 +74,28 @@ def test__SlashCommandFunction__repr():
     """
     Tests whether ``SlashCommandFunction.__repr__`` works as intended.
     """
-    async def function():
+    async def function(pudding : str):
         return None
     
-    parameter_converters = ()
+    parameter_converters = (
+        SlashCommandParameterConverter(
+            'pudding',
+            ANNOTATION_TYPE_STR,
+            converter_str,
+            'value',
+            'value',
+            False,
+            True,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            0,
+            0,
+        ),
+    )
     name = 'yuuka'
     description = 'rember happy day'
     response_modifier = ResponseModifier({'show_for_invoking_user_only': True})
@@ -86,10 +104,14 @@ def test__SlashCommandFunction__repr():
     async def exception_handler(client, interaction_event, command, exception):
         return
     
+    async def auto_complete_function():
+        pass
+    
     slash_command_function = SlashCommandFunction(
         function, parameter_converters, name, description, response_modifier, default
     )
     slash_command_function.error(exception_handler)
+    auto_completer = slash_command_function.autocomplete('pudding', function = auto_complete_function)
     
     output = repr(slash_command_function)
     vampytest.assert_instance(output, str)
@@ -99,6 +121,8 @@ def test__SlashCommandFunction__repr():
     vampytest.assert_in(f'default = {default!r}', output)
     vampytest.assert_in(f'response_modifier = {response_modifier!r}', output)
     vampytest.assert_in(f'exception_handlers = {[exception_handler]!r}', output)
+    vampytest.assert_in(f'auto_completers = {[auto_completer]!r}', output)
+    vampytest.assert_in(f'command_function = {function!r}', output)
 
 
 def test__SlashCommandFunction__hash():

@@ -131,6 +131,10 @@ class CommandBaseCustomId(CommandInterface, CommandBase):
             repr_parts.append(', response_modifier = ')
             repr_parts.append(repr(response_modifier))
         
+        # _command_function
+        repr_parts.append(', command_function = ')
+        repr_parts.append(repr(self._command_function))
+        
         return repr_parts
     
     

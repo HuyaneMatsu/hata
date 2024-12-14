@@ -73,10 +73,18 @@ def test__SlashCommandCategory__repr():
     async def exception_handler(client, interaction_event, command, exception):
         return
     
+    async def auto_complete_function():
+        pass
+    
+    async def sub_command_function():
+        pass
+    
     slash_command_category = SlashCommandCategory(
         name, description, default, deepness
     )
     slash_command_category.error(exception_handler)
+    auto_completer = slash_command_category.autocomplete('pudding', function = auto_complete_function)
+    sub_command = slash_command_category.interactions(sub_command_function, name = 'smile')
     
     output = repr(slash_command_category)
     vampytest.assert_instance(output, str)
@@ -85,6 +93,8 @@ def test__SlashCommandCategory__repr():
     vampytest.assert_in(f'description = {description!r}', output)
     vampytest.assert_in(f'default = {default!r}', output)
     vampytest.assert_in(f'exception_handlers = {[exception_handler]!r}', output)
+    vampytest.assert_in(f'auto_completers = {[auto_completer]!r}', output)
+    vampytest.assert_in(f'sub_commands = { {"smile": sub_command}!r}', output)
 
 
 def test__SlashCommandCategory__hash():

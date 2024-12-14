@@ -2,7 +2,7 @@ __all__ = ('EmbedFooter',)
 
 from scarletio import copy_docs
 
-from ...utils import sanitize_mentions, url_cutter
+from ...utils import sanitize_mentions
 
 from ..embed_field_base import EmbedFieldBase
 
@@ -105,7 +105,7 @@ class EmbedFooter(EmbedFieldBase):
                 repr_parts.append(',')
             
             repr_parts.append(' icon_url = ')
-            repr_parts.append(repr(url_cutter(icon_url)))
+            repr_parts.append(repr(icon_url))
     
     
     @copy_docs(EmbedFieldBase.__hash__)

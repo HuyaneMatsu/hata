@@ -2383,13 +2383,13 @@ def GUILD_DELETE__CAL(client, data):
     
     guild_profile = client.guild_profiles.pop(guild, None)
     
-    guild._delete(client)
-    
     ready_state = client.ready_state
     if (ready_state is not None):
         ready_state.discard_guild(guild)
     
     Task(KOKORO, client.events.guild_delete(client, guild, guild_profile))
+    KOKORO.call_soon(type(guild)._delete, guild, client)
+
 
 def GUILD_DELETE__OPT(client, data):
     guild_id = int(data['id'])
@@ -2405,12 +2405,12 @@ def GUILD_DELETE__OPT(client, data):
         del client.guild_profiles[guild_id]
     except KeyError:
         pass
-    
-    guild._delete(client)
 
     ready_state = client.ready_state
     if (ready_state is not None):
         ready_state.discard_guild(guild)
+    
+    guild._delete(client)
 
 
 add_parser(

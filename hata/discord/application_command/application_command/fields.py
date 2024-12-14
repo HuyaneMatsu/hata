@@ -36,10 +36,6 @@ from .preinstanced import (
     ApplicationCommandTargetType
 )
 
-# allow_in_dm
-
-validate_allow_in_dm = bool_validator_factory('allow_in_dm', True)
-
 # application_id
 
 parse_application_id = entity_id_parser_factory('application_id')

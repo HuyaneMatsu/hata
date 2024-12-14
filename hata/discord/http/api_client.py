@@ -2455,6 +2455,14 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         )
     
     
+    async def entitlement_get(self, application_id, entitlement_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.entitlement_get, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/applications/{application_id}/entitlements/{entitlement_id}',
+        )
+    
+    
     async def entitlement_get_chunk(self, application_id, query_parameters):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.entitlement_get_chunk, NO_SPECIFIC_RATE_LIMITER),

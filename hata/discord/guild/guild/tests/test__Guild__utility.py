@@ -317,7 +317,7 @@ def test__Guild__copy_with__1():
     vampytest.assert_eq(copy.widget_enabled, new_widget_enabled)
 
 
-def test__Guild__delete__0():
+def test__Guild__delete__client_not_in_guild():
     """
     Tests whether ``Guild._delete`` works as intended.
     
@@ -331,7 +331,7 @@ def test__Guild__delete__0():
     user.guild_profiles[guild_id] = GuildProfile()
     
     client = Client(
-        token = 'token_20230623_0000',
+        token = 'token_' + str(client_id),
         client_id = client_id,
     )
     
@@ -348,7 +348,7 @@ def test__Guild__delete__0():
         client = None
 
 
-def test__Guild__delete__1():
+def test__Guild__delete__client_is_last():
     """
     Tests whether ``Guild._delete`` works as intended.
     
@@ -362,7 +362,7 @@ def test__Guild__delete__1():
     user.guild_profiles[guild_id] = GuildProfile()
     
     client = Client(
-        token = 'token_20230623_0001',
+        token = 'token_' + str(client_id),
         client_id = client_id,
     )
     client.guild_profiles[guild_id] = GuildProfile()
@@ -374,8 +374,10 @@ def test__Guild__delete__1():
         guild._delete(client)
         
         vampytest.assert_not_in(guild_id, user.guild_profiles)
-        vampytest.assert_in(guild_id, client.guild_profiles)
         vampytest.assert_eq(guild.clients, [])
+        
+        vampytest.assert_not_in(guild_id, client.guild_profiles)
+        vampytest.assert_is(guild._cache_permission, None)
     
     # Cleanup
     finally:
@@ -383,7 +385,7 @@ def test__Guild__delete__1():
         client = None
 
 
-def test__Guild__delete__2():
+def test__Guild__delete__client_not_last():
     """
     Tests whether ``Guild._delete`` works as intended.
     
@@ -398,13 +400,13 @@ def test__Guild__delete__2():
     user.guild_profiles[guild_id] = GuildProfile()
     
     client_0 = Client(
-        token = 'token_20230623_0001',
+        token = 'token_' + str(client_id_0),
         client_id = client_id_0,
     )
     client_0.guild_profiles[guild_id] = GuildProfile()
     
     client_1 = Client(
-        token = 'token_20230623_0002',
+        token = 'token_' + str(client_id_1),
         client_id = client_id_1,
     )
     client_1.guild_profiles[guild_id] = GuildProfile()
@@ -412,15 +414,18 @@ def test__Guild__delete__2():
     guild = Guild.precreate(guild_id, users = [client_0, client_1, user])
     guild.clients.append(client_0)
     guild.clients.append(client_1)
-    
+    guild.cached_permissions_for(client_0)
+    guild.cached_permissions_for(client_1)
     
     try:
         guild._delete(client_0)
         
         vampytest.assert_in(guild_id, user.guild_profiles)
-        vampytest.assert_in(guild_id, client_0.guild_profiles)
-        vampytest.assert_in(guild_id, client_1.guild_profiles)
         vampytest.assert_eq(guild.clients, [client_1])
+        
+        vampytest.assert_not_in(guild_id, client_0.guild_profiles)
+        vampytest.assert_in(guild_id, client_1.guild_profiles)
+        vampytest.assert_is(guild._cache_permission, None)
         
     # Cleanup
     finally:

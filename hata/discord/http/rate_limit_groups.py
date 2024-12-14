@@ -336,6 +336,14 @@ Group Details
     - Limit : `6`
     - Resets after : `5.0`
 
+- entitlement_get
+    - Endpoint : `/applications/{application_id}/entitlements/{entitlement_id}`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `UN`
+    - Resets after : `UN`
+
 - entitlement_consume
     - Endpoint : `/applications/{application_id}/entitlements/{entitlement_id}/consume`
     - Method : `POST`
@@ -2286,6 +2294,7 @@ emoji_edit_application = RateLimitGroup()
 entitlement_get_chunk = RateLimitGroup.unlimited()
 entitlement_create = GROUP_ENTITLEMENT_ACTION
 entitlement_delete = GROUP_ENTITLEMENT_ACTION
+entitlement_get = RateLimitGroup.unlimited()
 entitlement_consume = GROUP_ENTITLEMENT_ACTION
 application_command_guild_get_all = RateLimitGroup.unlimited()
 application_command_guild_update_multiple = RateLimitGroup(LIMITER_GUILD)

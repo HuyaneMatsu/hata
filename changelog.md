@@ -1,4 +1,42 @@
+## 1.3.71 *\[2024-12-14\]*
+
+### Improvements
+
+- Stop url cutting in embed fields. Its a nice idea to shorten output, but it makes finding the mismatch in tests
+    really annoying.
+- Add `exclude_deleted` parameter to `Client.entitlement_get_all` & `Client.entitlement_get_chunk`.
+- Add `Client.entitlement_get`.
+- Add `DiscordApiClient.entitlement_get`.
+- Add `RATE_LIMIT_GROUPS.entitlement_get`.
+- Add `ConnectionType.bluesky`.
+- Add `ConnectionType.mastodon`.
+- Add new unicode emojis. (Version `15.1`~)
+
+#### hata.ext.slash
+- `SlashCommandCategory.__repr__`, `SlashCommandFunction.__repr__`, `SlashCommandParameterAutoCompleter.__repr__`,
+   `SlashCommand.__repr__`, `ContextCommand.__repr__`, `CommandBaseCustomId.__repr__`,
+   `CommandBaseApplicationCommand.__repr__` now shows each field in it that affects `.__eq__` & `.__hash__`.
+
+### Bug fixes
+
+- Fix `Client.events.guild_delete` did not clean the guild up correctly (cached permissions & client guild profiles).
+    Now after the event handler started a handle runs to do the cleaning, so the event handler can observer the guild's
+    last known state as before.
+- Fix `Client.entitlement_get_all`, `Client.entitlement_get_chunk` passed wrong value as `.exclude_ended`.
+- Fix `Client.entitlement_get_all`, `Client.entitlement_get_chunk` treated default of `sku_ids` incorrectly.
+
+### Renames, Deprecations & Removals
+
+#### hata.ext.slash
+- Deprecate `SlashCommand.__new__`'s `.is_default` parameter. Use `default` instead.
+
+
 ## 1.3.70 *\[2024-11-29\]*
+
+### Bug fixes
+
+#### hata.ext.slash
+- Fix `yield`-ing multiple times on an application command did not result in multiple messages.
 
 ### Renames, Deprecations & Removals
 
@@ -6,10 +44,10 @@
 - Rename `DiscordGatewayVoice.websocket` to `.web_socket`.
 
 #### hata.ext.solarlink
-
 - Rename `SolarNode.websocket` to `.web_socket`.
 - Rename `SolarLinkEventManager.player_websocket_closed` to `.player_web_socket_closed`.
 - Rename `PlayerWebsocketClosedEvent` to `PlayerWebSocketClosedEvent`.
+
 
 ## 1.3.69 *\[2024-11-21\]*
 

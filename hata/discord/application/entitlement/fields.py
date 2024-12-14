@@ -45,9 +45,13 @@ parse_ends_at = nullable_date_time_parser_factory('ends_at')
 put_ends_at_into = nullable_date_time_optional_putter_factory('ends_at')
 validate_ends_at = nullable_date_time_validator_factory('ends_at')
 
+# exclude_deleted
+
+validate_exclude_deleted = bool_validator_factory('exclude_deleted', False)
+
 # exclude_ended
 
-validate_exclude_ended = bool_validator_factory('deleted', False)
+validate_exclude_ended = bool_validator_factory('exclude_ended', False)
 
 # guild_id
 

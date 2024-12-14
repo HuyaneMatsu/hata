@@ -2,8 +2,6 @@ __all__ = ('EmbedThumbnail',)
 
 from scarletio import copy_docs
 
-from ...utils import url_cutter
-
 from ..embed_field_base import EmbedFieldBase
 
 from .fields import (
@@ -75,7 +73,7 @@ class EmbedThumbnail(EmbedFieldBase):
         if url is None:
             repr_parts.append('null')
         else:
-            repr_parts.append(repr(url_cutter(url)))
+            repr_parts.append(repr(url))
         
         width = self.width
         height = self.height

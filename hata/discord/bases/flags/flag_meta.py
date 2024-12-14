@@ -443,7 +443,7 @@ class FlagMeta(type):
         
         Returns
         -------
-        type : ``FlagMeta``
+        type : `instance<cls>`
         
         Raises
         ------

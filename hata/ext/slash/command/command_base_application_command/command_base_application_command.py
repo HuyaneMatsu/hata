@@ -108,16 +108,19 @@ class CommandBaseApplicationCommand(CommandBase):
             repr_parts.append(', integration_types = ')
             repr_parts.append(repr(integration_types))
         
+        # nsfw
         nsfw = self.nsfw
         if (nsfw is not None):
             repr_parts.append(', nsfw = ')
             repr_parts.append(repr(nsfw))
         
+        # required_permissions
         required_permissions = self.required_permissions
         if required_permissions:
             repr_parts.append(', required_permissions = ')
             repr_parts.append(repr(required_permissions))
         
+        # _unloading_behaviour
         unloading_behaviour = self._unloading_behaviour
         if unloading_behaviour != UNLOADING_BEHAVIOUR_INHERIT:
             repr_parts.append(', unloading_behaviour = ')
@@ -128,9 +131,16 @@ class CommandBaseApplicationCommand(CommandBase):
             
             repr_parts.append(unloading_behaviour_name)
         
+        # guild_ids
         if (guild_ids is not None):
             repr_parts.append(', guild_ids = ')
             repr_parts.append(repr(guild_ids))
+        
+        # _permission_overwrites
+        permission_overwrites = self._permission_overwrites
+        if (permission_overwrites is not None):
+            repr_parts.append(', permission_overwrites = ')
+            repr_parts.append(repr(permission_overwrites))
         
         return repr_parts
     

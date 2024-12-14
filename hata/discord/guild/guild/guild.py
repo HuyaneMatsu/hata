@@ -2550,13 +2550,20 @@ class Guild(DiscordEntity, immortal = True):
         except ValueError:
             return
         
-        if clients:
-            return
+        self._invalidate_cache_permission()
         
-        # Clean up guild profiles
         guild_id = self.id
-        for user in self.users.values():
-            if not isinstance(user, Client):
+        
+        if clients:
+            # Clean up client guild profile.
+            try:
+                del client.guild_profiles[guild_id]
+            except KeyError:
+                pass
+        
+        else:
+            # Clean up all guild profile.
+            for user in self.users.values():
                 try:
                     del user.guild_profiles[guild_id]
                 except KeyError:

@@ -12,25 +12,25 @@ from ..command_base import CommandBase
 from ..command_base_application_command.helpers import _reset_application_command_schema
 
 
-def _validate_is_default(is_default):
+def _validate_default(default):
     """
-    Validates the given `is_default` value.
+    Validates the given `default` value.
     
     Parameters
     ----------
-    is_default : `bool`
+    default : `bool`
         The value to validate.
     
     Returns
     -------
-    is_default : `bool`
+    default : `bool`
     
     Raises
     ------
     TypeError
-        If `is_default` type is incorrect.
+        If `default` type is incorrect.
     """
-    return preconvert_bool(is_default, 'is_default')
+    return preconvert_bool(default, 'default')
 
 
 def _generate_description_from(command, name, description):

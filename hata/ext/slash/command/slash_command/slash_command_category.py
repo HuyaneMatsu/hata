@@ -133,11 +133,23 @@ class SlashCommandCategory(
             repr_parts.append(', default = ')
             repr_parts.append(repr(default))
         
+        # _auto_completers
+        auto_completers = self._auto_completers
+        if (auto_completers is not None):
+            repr_parts.append(', auto_completers = ')
+            repr_parts.append(repr(auto_completers))
+        
         # _exception_handlers
         exception_handlers = self._exception_handlers
         if (exception_handlers is not None):
             repr_parts.append(', exception_handlers = ')
             repr_parts.append(repr(exception_handlers))
+        
+        # _sub_commands
+        sub_commands = self._sub_commands
+        if (sub_commands is not None):
+            repr_parts.append(', sub_commands = ')
+            repr_parts.append(repr(sub_commands))
         
         repr_parts.append('>')
         return ''.join(repr_parts)

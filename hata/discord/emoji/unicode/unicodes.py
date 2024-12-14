@@ -1302,7 +1302,7 @@ UNICODES = (
         ),
         None,
         (
-            '⛹\ud83c\udffb',
+            '\u26f9\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -1315,7 +1315,7 @@ UNICODES = (
         ),
         None,
         (
-            '⛹\ud83c\udffc',
+            '\u26f9\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -1328,7 +1328,7 @@ UNICODES = (
         ),
         None,
         (
-            '⛹\ud83c\udffd',
+            '\u26f9\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -1341,7 +1341,7 @@ UNICODES = (
         ),
         None,
         (
-            '⛹\ud83c\udffe',
+            '\u26f9\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -1354,7 +1354,7 @@ UNICODES = (
         ),
         None,
         (
-            '⛹\ud83c\udfff',
+            '\u26f9\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -3616,7 +3616,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udc68\u200d❤️\u200d\ud83d\udc68',
+            '\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc68',
         ),
     ),
     Unicode(
@@ -3638,7 +3638,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udc69\u200d❤️\u200d\ud83d\udc69',
+            '\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc69',
         ),
     ),
     Unicode(
@@ -3663,7 +3663,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udc68\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68',
+            '\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68',
         ),
     ),
     Unicode(
@@ -3678,7 +3678,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udc69\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69',
+            '\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69',
         ),
     ),
     Unicode(
@@ -5368,7 +5368,7 @@ UNICODES = (
         None,
         None,
         (
-            '✊\ud83c\udffb',
+            '\u270a\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -5378,7 +5378,7 @@ UNICODES = (
         None,
         None,
         (
-            '✊\ud83c\udffc',
+            '\u270a\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -5388,7 +5388,7 @@ UNICODES = (
         None,
         None,
         (
-            '✊\ud83c\udffd',
+            '\u270a\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -5398,7 +5398,7 @@ UNICODES = (
         None,
         None,
         (
-            '✊\ud83c\udffe',
+            '\u270a\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -5408,7 +5408,7 @@ UNICODES = (
         None,
         None,
         (
-            '✊\ud83c\udfff',
+            '\u270a\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -8272,7 +8272,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udff3️\u200d\ud83c\udf08',
+            '\ud83c\udff3\ufe0f\u200d\ud83c\udf08',
         ),
     ),
     Unicode(
@@ -13559,7 +13559,7 @@ UNICODES = (
         None,
         None,
         (
-            '☝\ud83c\udffb',
+            '\u261d\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -13569,7 +13569,7 @@ UNICODES = (
         None,
         None,
         (
-            '☝\ud83c\udffc',
+            '\u261d\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -13579,7 +13579,7 @@ UNICODES = (
         None,
         None,
         (
-            '☝\ud83c\udffd',
+            '\u261d\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -13589,7 +13589,7 @@ UNICODES = (
         None,
         None,
         (
-            '☝\ud83c\udffe',
+            '\u261d\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -13599,7 +13599,7 @@ UNICODES = (
         None,
         None,
         (
-            '☝\ud83c\udfff',
+            '\u261d\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -14207,7 +14207,7 @@ UNICODES = (
         None,
         None,
         (
-            '✋\ud83c\udffb',
+            '\u270b\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -14217,7 +14217,7 @@ UNICODES = (
         None,
         None,
         (
-            '✋\ud83c\udffc',
+            '\u270b\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -14227,7 +14227,7 @@ UNICODES = (
         None,
         None,
         (
-            '✋\ud83c\udffd',
+            '\u270b\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -14237,7 +14237,7 @@ UNICODES = (
         None,
         None,
         (
-            '✋\ud83c\udffe',
+            '\u270b\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -14247,7 +14247,7 @@ UNICODES = (
         None,
         None,
         (
-            '✋\ud83c\udfff',
+            '\u270b\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -17674,7 +17674,7 @@ UNICODES = (
         None,
         None,
         (
-            '✌\ud83c\udffb',
+            '\u270c\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -17684,7 +17684,7 @@ UNICODES = (
         None,
         None,
         (
-            '✌\ud83c\udffc',
+            '\u270c\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -17694,7 +17694,7 @@ UNICODES = (
         None,
         None,
         (
-            '✌\ud83c\udffd',
+            '\u270c\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -17704,7 +17704,7 @@ UNICODES = (
         None,
         None,
         (
-            '✌\ud83c\udffe',
+            '\u270c\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -17714,7 +17714,7 @@ UNICODES = (
         None,
         None,
         (
-            '✌\ud83c\udfff',
+            '\u270c\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -18467,7 +18467,7 @@ UNICODES = (
         None,
         None,
         (
-            '✍\ud83c\udffb',
+            '\u270d\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -18477,7 +18477,7 @@ UNICODES = (
         None,
         None,
         (
-            '✍\ud83c\udffc',
+            '\u270d\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -18487,7 +18487,7 @@ UNICODES = (
         None,
         None,
         (
-            '✍\ud83c\udffd',
+            '\u270d\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -18497,7 +18497,7 @@ UNICODES = (
         None,
         None,
         (
-            '✍\ud83c\udffe',
+            '\u270d\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -18507,7 +18507,7 @@ UNICODES = (
         None,
         None,
         (
-            '✍\ud83c\udfff',
+            '\u270d\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -18605,7 +18605,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udd70️',
+            '\ud83c\udd70\ufe0f',
         ),
     ),
     Unicode(
@@ -18637,7 +18637,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udf9f️',
+            '\ud83c\udf9f\ufe0f',
         ),
     ),
     Unicode(
@@ -18717,7 +18717,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udee9️',
+            '\ud83d\udee9\ufe0f',
         ),
     ),
     Unicode(
@@ -18737,7 +18737,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\uddef️',
+            '\ud83d\uddef\ufe0f',
         ),
     ),
     Unicode(
@@ -18911,7 +18911,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udd71️',
+            '\ud83c\udd71\ufe0f',
         ),
     ),
     Unicode(
@@ -18953,7 +18953,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\uddf3️',
+            '\ud83d\uddf3\ufe0f',
         ),
     ),
     Unicode(
@@ -19012,7 +19012,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udfd6️',
+            '\ud83c\udfd6\ufe0f',
         ),
     ),
     Unicode(
@@ -19092,7 +19092,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udecf️',
+            '\ud83d\udecf\ufe0f',
         ),
     ),
     Unicode(
@@ -19104,7 +19104,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udece️',
+            '\ud83d\udece\ufe0f',
         ),
     ),
     Unicode(
@@ -19168,7 +19168,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc71\u200d♂️',
+            '\ud83d\udc71\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -19178,7 +19178,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc71\ud83c\udffb\u200d♂️',
+            '\ud83d\udc71\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -19188,7 +19188,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc71\ud83c\udffc\u200d♂️',
+            '\ud83d\udc71\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -19198,7 +19198,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc71\ud83c\udffd\u200d♂️',
+            '\ud83d\udc71\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -19208,7 +19208,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc71\ud83c\udffe\u200d♂️',
+            '\ud83d\udc71\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -19218,7 +19218,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc71\ud83c\udfff\u200d♂️',
+            '\ud83d\udc71\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -19228,7 +19228,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc71\u200d♀️',
+            '\ud83d\udc71\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -19238,7 +19238,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc71\ud83c\udffb\u200d♀️',
+            '\ud83d\udc71\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -19248,7 +19248,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc71\ud83c\udffc\u200d♀️',
+            '\ud83d\udc71\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -19258,7 +19258,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc71\ud83c\udffd\u200d♀️',
+            '\ud83d\udc71\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -19268,7 +19268,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc71\ud83c\udffe\u200d♀️',
+            '\ud83d\udc71\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -19278,7 +19278,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc71\ud83c\udfff\u200d♀️',
+            '\ud83d\udc71\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -19460,7 +19460,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udfd7️',
+            '\ud83c\udfd7\ufe0f',
         ),
     ),
     Unicode(
@@ -19482,7 +19482,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\uddd3️',
+            '\ud83d\uddd3\ufe0f',
         ),
     ),
     Unicode(
@@ -19492,7 +19492,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfd5️',
+            '\ud83c\udfd5\ufe0f',
         ),
     ),
     Unicode(
@@ -19502,7 +19502,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd6f️',
+            '\ud83d\udd6f\ufe0f',
         ),
     ),
     Unicode(
@@ -19524,7 +19524,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\uddc3️',
+            '\ud83d\uddc3\ufe0f',
         ),
     ),
     Unicode(
@@ -19536,7 +19536,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\uddc2️',
+            '\ud83d\uddc2\ufe0f',
         ),
     ),
     Unicode(
@@ -19632,7 +19632,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc3f️',
+            '\ud83d\udc3f\ufe0f',
         ),
     ),
     Unicode(
@@ -19652,7 +19652,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfd9️',
+            '\ud83c\udfd9\ufe0f',
         ),
     ),
     Unicode(
@@ -19662,7 +19662,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfdb️',
+            '\ud83c\udfdb\ufe0f',
         ),
     ),
     Unicode(
@@ -19674,7 +19674,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udd70️',
+            '\ud83d\udd70\ufe0f',
         ),
     ),
     Unicode(
@@ -19694,7 +19694,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udf29️',
+            '\ud83c\udf29\ufe0f',
         ),
     ),
     Unicode(
@@ -19706,7 +19706,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udf27️',
+            '\ud83c\udf27\ufe0f',
         ),
     ),
     Unicode(
@@ -19718,7 +19718,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udf28️',
+            '\ud83c\udf28\ufe0f',
         ),
     ),
     Unicode(
@@ -19730,7 +19730,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udf2a️',
+            '\ud83c\udf2a\ufe0f',
         ),
     ),
     Unicode(
@@ -19806,7 +19806,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udddc️',
+            '\ud83d\udddc\ufe0f',
         ),
     ),
     Unicode(
@@ -19824,7 +19824,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udf9b️',
+            '\ud83c\udf9b\ufe0f',
         ),
     ),
     Unicode(
@@ -19844,7 +19844,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udecb️',
+            '\ud83d\udecb\ufe0f',
         ),
     ),
     Unicode(
@@ -19854,7 +19854,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\u200d❤️\u200d\ud83d\udc68',
+            '\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc68',
         ),
     ),
     Unicode(
@@ -19866,7 +19866,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udd8d️',
+            '\ud83d\udd8d\ufe0f',
         ),
     ),
     Unicode(
@@ -19906,7 +19906,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udef3️',
+            '\ud83d\udef3\ufe0f',
         ),
     ),
     Unicode(
@@ -19958,7 +19958,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udde1️',
+            '\ud83d\udde1\ufe0f',
         ),
     ),
     Unicode(
@@ -19968,7 +19968,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd76️',
+            '\ud83d\udd76\ufe0f',
         ),
     ),
     Unicode(
@@ -19978,7 +19978,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcf\u200d♂️',
+            '\ud83e\uddcf\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -19988,7 +19988,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcf\ud83c\udffb\u200d♂️',
+            '\ud83e\uddcf\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -19998,7 +19998,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcf\ud83c\udffc\u200d♂️',
+            '\ud83e\uddcf\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -20008,7 +20008,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcf\ud83c\udffd\u200d♂️',
+            '\ud83e\uddcf\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -20018,7 +20018,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcf\ud83c\udffe\u200d♂️',
+            '\ud83e\uddcf\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -20028,7 +20028,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcf\ud83c\udfff\u200d♂️',
+            '\ud83e\uddcf\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -20098,7 +20098,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcf\u200d♀️',
+            '\ud83e\uddcf\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -20108,7 +20108,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcf\ud83c\udffb\u200d♀️',
+            '\ud83e\uddcf\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -20118,7 +20118,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcf\ud83c\udffc\u200d♀️',
+            '\ud83e\uddcf\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -20128,7 +20128,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcf\ud83c\udffd\u200d♀️',
+            '\ud83e\uddcf\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -20138,7 +20138,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcf\ud83c\udffe\u200d♀️',
+            '\ud83e\uddcf\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -20148,7 +20148,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcf\ud83c\udfff\u200d♀️',
+            '\ud83e\uddcf\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -20160,7 +20160,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udfda️',
+            '\ud83c\udfda\ufe0f',
         ),
     ),
     Unicode(
@@ -20170,7 +20170,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfdc️',
+            '\ud83c\udfdc\ufe0f',
         ),
     ),
     Unicode(
@@ -20182,7 +20182,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udfdd️',
+            '\ud83c\udfdd\ufe0f',
         ),
     ),
     Unicode(
@@ -20194,7 +20194,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udda5️',
+            '\ud83d\udda5\ufe0f',
         ),
     ),
     Unicode(
@@ -20207,7 +20207,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udd75️',
+            '\ud83d\udd75\ufe0f',
         ),
     ),
     Unicode(
@@ -20269,7 +20269,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udd4a️',
+            '\ud83d\udd4a\ufe0f',
         ),
     ),
     Unicode(
@@ -20356,7 +20356,9 @@ UNICODES = (
         'eight',
         b'8\xef\xb8\x8f\xe2\x83\xa3'.decode('utf8'),
         False,
-        None,
+        (
+            'number_8',
+        ),
         None,
         None,
     ),
@@ -20484,7 +20486,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc41️',
+            '\ud83d\udc41\ufe0f',
         ),
     ),
     Unicode(
@@ -20740,7 +20742,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\uddc4️',
+            '\ud83d\uddc4\ufe0f',
         ),
     ),
     Unicode(
@@ -20750,7 +20752,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udf9e️',
+            '\ud83c\udf9e\ufe0f',
         ),
     ),
     Unicode(
@@ -20762,7 +20764,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udcfd️',
+            '\ud83d\udcfd\ufe0f',
         ),
     ),
     Unicode(
@@ -20789,7 +20791,9 @@ UNICODES = (
         'five',
         b'5\xef\xb8\x8f\xe2\x83\xa3'.decode('utf8'),
         False,
-        None,
+        (
+            'number_5',
+        ),
         None,
         None,
     ),
@@ -20800,7 +20804,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udff3️',
+            '\ud83c\udff3\ufe0f',
         ),
     ),
     Unicode(
@@ -20848,7 +20852,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udf2b️',
+            '\ud83c\udf2b\ufe0f',
         ),
     ),
     Unicode(
@@ -20920,7 +20924,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udf7d️',
+            '\ud83c\udf7d\ufe0f',
         ),
     ),
     Unicode(
@@ -20937,7 +20941,9 @@ UNICODES = (
         'four',
         b'4\xef\xb8\x8f\xe2\x83\xa3'.decode('utf8'),
         False,
-        None,
+        (
+            'number_4',
+        ),
         None,
         None,
     ),
@@ -20950,7 +20956,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\uddbc️',
+            '\ud83d\uddbc\ufe0f',
         ),
     ),
     Unicode(
@@ -21041,7 +21047,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udfcc️',
+            '\ud83c\udfcc\ufe0f',
         ),
     ),
     Unicode(
@@ -21093,7 +21099,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udee0️',
+            '\ud83d\udee0\ufe0f',
         ),
     ),
     Unicode(
@@ -21105,7 +21111,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udd90️',
+            '\ud83d\udd90\ufe0f',
         ),
     ),
     Unicode(
@@ -21221,7 +21227,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd73️',
+            '\ud83d\udd73\ufe0f',
         ),
     ),
     Unicode(
@@ -21233,7 +21239,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udfd8️',
+            '\ud83c\udfd8\ufe0f',
         ),
     ),
     Unicode(
@@ -21253,7 +21259,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udf36️',
+            '\ud83c\udf36\ufe0f',
         ),
     ),
     Unicode(
@@ -21327,7 +21333,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd79️',
+            '\ud83d\udd79\ufe0f',
         ),
     ),
     Unicode(
@@ -21349,7 +21355,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udddd️',
+            '\ud83d\udddd\ufe0f',
         ),
     ),
     Unicode(
@@ -21370,7 +21376,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68',
+            '\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68',
         ),
     ),
     Unicode(
@@ -21400,7 +21406,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udff7️',
+            '\ud83c\udff7\ufe0f',
         ),
     ),
     Unicode(
@@ -21440,7 +21446,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udde8️',
+            '\ud83d\udde8\ufe0f',
         ),
     ),
     Unicode(
@@ -21518,7 +21524,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udf9a️',
+            '\ud83c\udf9a\ufe0f',
         ),
     ),
     Unicode(
@@ -21530,7 +21536,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udd74️',
+            '\ud83d\udd74\ufe0f',
         ),
     ),
     Unicode(
@@ -21543,7 +21549,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udfcb️',
+            '\ud83c\udfcb\ufe0f',
         ),
     ),
     Unicode(
@@ -21555,7 +21561,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udd87️',
+            '\ud83d\udd87\ufe0f',
         ),
     ),
     Unicode(
@@ -21647,7 +21653,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udd8a️',
+            '\ud83d\udd8a\ufe0f',
         ),
     ),
     Unicode(
@@ -21659,7 +21665,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udd8b️',
+            '\ud83d\udd8b\ufe0f',
         ),
     ),
     Unicode(
@@ -21671,7 +21677,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udd8c️',
+            '\ud83d\udd8c\ufe0f',
         ),
     ),
     Unicode(
@@ -21959,7 +21965,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb4\u200d♂️',
+            '\ud83d\udeb4\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -21969,7 +21975,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb4\ud83c\udffb\u200d♂️',
+            '\ud83d\udeb4\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -21979,7 +21985,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb4\ud83c\udffc\u200d♂️',
+            '\ud83d\udeb4\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -21989,7 +21995,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb4\ud83c\udffd\u200d♂️',
+            '\ud83d\udeb4\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -21999,7 +22005,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb4\ud83c\udffe\u200d♂️',
+            '\ud83d\udeb4\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22009,7 +22015,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb4\ud83c\udfff\u200d♂️',
+            '\ud83d\udeb4\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22027,7 +22033,7 @@ UNICODES = (
         None,
         None,
         (
-            '⛹\ud83c\udffb\u200d♂️',
+            '\u26f9\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22037,7 +22043,7 @@ UNICODES = (
         None,
         None,
         (
-            '⛹\ud83c\udffc\u200d♂️',
+            '\u26f9\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22047,7 +22053,7 @@ UNICODES = (
         None,
         None,
         (
-            '⛹\ud83c\udffd\u200d♂️',
+            '\u26f9\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22057,7 +22063,7 @@ UNICODES = (
         None,
         None,
         (
-            '⛹\ud83c\udffe\u200d♂️',
+            '\u26f9\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22067,7 +22073,7 @@ UNICODES = (
         None,
         None,
         (
-            '⛹\ud83c\udfff\u200d♂️',
+            '\u26f9\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22077,7 +22083,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude47\u200d♂️',
+            '\ud83d\ude47\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22087,7 +22093,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude47\ud83c\udffb\u200d♂️',
+            '\ud83d\ude47\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22097,7 +22103,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude47\ud83c\udffc\u200d♂️',
+            '\ud83d\ude47\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22107,7 +22113,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude47\ud83c\udffd\u200d♂️',
+            '\ud83d\ude47\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22117,7 +22123,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude47\ud83c\udffe\u200d♂️',
+            '\ud83d\ude47\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22127,7 +22133,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude47\ud83c\udfff\u200d♂️',
+            '\ud83d\ude47\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22137,7 +22143,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd38\u200d♂️',
+            '\ud83e\udd38\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22147,7 +22153,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd38\ud83c\udffb\u200d♂️',
+            '\ud83e\udd38\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22157,7 +22163,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd38\ud83c\udffc\u200d♂️',
+            '\ud83e\udd38\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22167,7 +22173,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd38\ud83c\udffd\u200d♂️',
+            '\ud83e\udd38\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22177,7 +22183,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd38\ud83c\udffe\u200d♂️',
+            '\ud83e\udd38\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22187,7 +22193,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd38\ud83c\udfff\u200d♂️',
+            '\ud83e\udd38\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22197,7 +22203,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd7\u200d♂️',
+            '\ud83e\uddd7\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22207,7 +22213,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd7\ud83c\udffb\u200d♂️',
+            '\ud83e\uddd7\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22217,7 +22223,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd7\ud83c\udffc\u200d♂️',
+            '\ud83e\uddd7\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22227,7 +22233,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd7\ud83c\udffd\u200d♂️',
+            '\ud83e\uddd7\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22237,7 +22243,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd7\ud83c\udffe\u200d♂️',
+            '\ud83e\uddd7\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22247,7 +22253,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd7\ud83c\udfff\u200d♂️',
+            '\ud83e\uddd7\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22257,7 +22263,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc77\u200d♂️',
+            '\ud83d\udc77\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22267,7 +22273,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc77\ud83c\udffb\u200d♂️',
+            '\ud83d\udc77\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22277,7 +22283,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc77\ud83c\udffc\u200d♂️',
+            '\ud83d\udc77\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22287,7 +22293,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc77\ud83c\udffd\u200d♂️',
+            '\ud83d\udc77\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22297,7 +22303,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc77\ud83c\udffe\u200d♂️',
+            '\ud83d\udc77\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22307,7 +22313,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc77\ud83c\udfff\u200d♂️',
+            '\ud83d\udc77\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22437,7 +22443,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd75️\u200d♂️',
+            '\ud83d\udd75\ufe0f\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22447,7 +22453,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd75\ud83c\udffb\u200d♂️',
+            '\ud83d\udd75\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22457,7 +22463,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd75\ud83c\udffc\u200d♂️',
+            '\ud83d\udd75\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22467,7 +22473,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd75\ud83c\udffd\u200d♂️',
+            '\ud83d\udd75\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22477,7 +22483,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd75\ud83c\udffe\u200d♂️',
+            '\ud83d\udd75\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22487,7 +22493,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd75\ud83c\udfff\u200d♂️',
+            '\ud83d\udd75\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22497,7 +22503,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddd\u200d♂️',
+            '\ud83e\udddd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22507,7 +22513,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddd\ud83c\udffb\u200d♂️',
+            '\ud83e\udddd\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22517,7 +22523,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddd\ud83c\udffc\u200d♂️',
+            '\ud83e\udddd\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22527,7 +22533,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddd\ud83c\udffd\u200d♂️',
+            '\ud83e\udddd\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22537,7 +22543,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddd\ud83c\udffe\u200d♂️',
+            '\ud83e\udddd\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22547,7 +22553,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddd\ud83c\udfff\u200d♂️',
+            '\ud83e\udddd\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22557,7 +22563,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd26\u200d♂️',
+            '\ud83e\udd26\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22567,7 +22573,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd26\ud83c\udffb\u200d♂️',
+            '\ud83e\udd26\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22577,7 +22583,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd26\ud83c\udffc\u200d♂️',
+            '\ud83e\udd26\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22587,7 +22593,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd26\ud83c\udffd\u200d♂️',
+            '\ud83e\udd26\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22597,7 +22603,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd26\ud83c\udffe\u200d♂️',
+            '\ud83e\udd26\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22607,7 +22613,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd26\ud83c\udfff\u200d♂️',
+            '\ud83e\udd26\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22677,7 +22683,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddda\u200d♂️',
+            '\ud83e\uddda\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22687,7 +22693,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddda\ud83c\udffb\u200d♂️',
+            '\ud83e\uddda\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22697,7 +22703,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddda\ud83c\udffc\u200d♂️',
+            '\ud83e\uddda\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22707,7 +22713,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddda\ud83c\udffd\u200d♂️',
+            '\ud83e\uddda\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22717,7 +22723,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddda\ud83c\udffe\u200d♂️',
+            '\ud83e\uddda\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22727,7 +22733,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddda\ud83c\udfff\u200d♂️',
+            '\ud83e\uddda\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22857,7 +22863,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4d\u200d♂️',
+            '\ud83d\ude4d\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22867,7 +22873,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4d\ud83c\udffb\u200d♂️',
+            '\ud83d\ude4d\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22877,7 +22883,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4d\ud83c\udffc\u200d♂️',
+            '\ud83d\ude4d\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22887,7 +22893,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4d\ud83c\udffd\u200d♂️',
+            '\ud83d\ude4d\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22897,7 +22903,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4d\ud83c\udffe\u200d♂️',
+            '\ud83d\ude4d\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22907,7 +22913,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4d\ud83c\udfff\u200d♂️',
+            '\ud83d\ude4d\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22917,7 +22923,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddde\u200d♂️',
+            '\ud83e\uddde\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22927,7 +22933,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude45\u200d♂️',
+            '\ud83d\ude45\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22937,7 +22943,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude45\ud83c\udffb\u200d♂️',
+            '\ud83d\ude45\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22947,7 +22953,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude45\ud83c\udffc\u200d♂️',
+            '\ud83d\ude45\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22957,7 +22963,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude45\ud83c\udffd\u200d♂️',
+            '\ud83d\ude45\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22967,7 +22973,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude45\ud83c\udffe\u200d♂️',
+            '\ud83d\ude45\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22977,7 +22983,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude45\ud83c\udfff\u200d♂️',
+            '\ud83d\ude45\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22987,7 +22993,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude46\u200d♂️',
+            '\ud83d\ude46\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -22997,7 +23003,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude46\ud83c\udffb\u200d♂️',
+            '\ud83d\ude46\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23007,7 +23013,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude46\ud83c\udffc\u200d♂️',
+            '\ud83d\ude46\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23017,7 +23023,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude46\ud83c\udffd\u200d♂️',
+            '\ud83d\ude46\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23027,7 +23033,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude46\ud83c\udffe\u200d♂️',
+            '\ud83d\ude46\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23037,7 +23043,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude46\ud83c\udfff\u200d♂️',
+            '\ud83d\ude46\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23047,7 +23053,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc86\u200d♂️',
+            '\ud83d\udc86\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23057,7 +23063,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc86\ud83c\udffb\u200d♂️',
+            '\ud83d\udc86\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23067,7 +23073,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc86\ud83c\udffc\u200d♂️',
+            '\ud83d\udc86\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23077,7 +23083,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc86\ud83c\udffd\u200d♂️',
+            '\ud83d\udc86\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23087,7 +23093,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc86\ud83c\udffe\u200d♂️',
+            '\ud83d\udc86\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23097,7 +23103,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc86\ud83c\udfff\u200d♂️',
+            '\ud83d\udc86\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23107,7 +23113,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc87\u200d♂️',
+            '\ud83d\udc87\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23117,7 +23123,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc87\ud83c\udffb\u200d♂️',
+            '\ud83d\udc87\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23127,7 +23133,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc87\ud83c\udffc\u200d♂️',
+            '\ud83d\udc87\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23137,7 +23143,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc87\ud83c\udffd\u200d♂️',
+            '\ud83d\udc87\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23147,7 +23153,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc87\ud83c\udffe\u200d♂️',
+            '\ud83d\udc87\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23157,7 +23163,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc87\ud83c\udfff\u200d♂️',
+            '\ud83d\udc87\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23167,7 +23173,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcc️\u200d♂️',
+            '\ud83c\udfcc\ufe0f\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23177,7 +23183,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcc\ud83c\udffb\u200d♂️',
+            '\ud83c\udfcc\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23187,7 +23193,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcc\ud83c\udffc\u200d♂️',
+            '\ud83c\udfcc\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23197,7 +23203,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcc\ud83c\udffd\u200d♂️',
+            '\ud83c\udfcc\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23207,7 +23213,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcc\ud83c\udffe\u200d♂️',
+            '\ud83c\udfcc\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23217,7 +23223,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcc\ud83c\udfff\u200d♂️',
+            '\ud83c\udfcc\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23227,7 +23233,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc82\u200d♂️',
+            '\ud83d\udc82\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23237,7 +23243,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc82\ud83c\udffb\u200d♂️',
+            '\ud83d\udc82\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23247,7 +23253,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc82\ud83c\udffc\u200d♂️',
+            '\ud83d\udc82\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23257,7 +23263,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc82\ud83c\udffd\u200d♂️',
+            '\ud83d\udc82\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23267,7 +23273,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc82\ud83c\udffe\u200d♂️',
+            '\ud83d\udc82\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23277,7 +23283,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc82\ud83c\udfff\u200d♂️',
+            '\ud83d\udc82\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23287,7 +23293,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\u200d⚕️',
+            '\ud83d\udc68\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -23297,7 +23303,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffb\u200d⚕️',
+            '\ud83d\udc68\ud83c\udffb\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -23307,7 +23313,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffc\u200d⚕️',
+            '\ud83d\udc68\ud83c\udffc\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -23317,7 +23323,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffd\u200d⚕️',
+            '\ud83d\udc68\ud83c\udffd\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -23327,7 +23333,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffe\u200d⚕️',
+            '\ud83d\udc68\ud83c\udffe\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -23337,7 +23343,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udfff\u200d⚕️',
+            '\ud83d\udc68\ud83c\udfff\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -23347,7 +23353,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd8\u200d♂️',
+            '\ud83e\uddd8\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23357,7 +23363,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd8\ud83c\udffb\u200d♂️',
+            '\ud83e\uddd8\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23367,7 +23373,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd8\ud83c\udffc\u200d♂️',
+            '\ud83e\uddd8\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23377,7 +23383,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd8\ud83c\udffd\u200d♂️',
+            '\ud83e\uddd8\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23387,7 +23393,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd8\ud83c\udffe\u200d♂️',
+            '\ud83e\uddd8\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23397,7 +23403,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd8\ud83c\udfff\u200d♂️',
+            '\ud83e\uddd8\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23527,7 +23533,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd6\u200d♂️',
+            '\ud83e\uddd6\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23537,7 +23543,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd6\ud83c\udffb\u200d♂️',
+            '\ud83e\uddd6\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23547,7 +23553,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd6\ud83c\udffc\u200d♂️',
+            '\ud83e\uddd6\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23557,7 +23563,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd6\ud83c\udffd\u200d♂️',
+            '\ud83e\uddd6\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23567,7 +23573,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd6\ud83c\udffe\u200d♂️',
+            '\ud83e\uddd6\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23577,7 +23583,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd6\ud83c\udfff\u200d♂️',
+            '\ud83e\uddd6\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23587,7 +23593,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\u200d⚖️',
+            '\ud83d\udc68\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -23597,7 +23603,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffb\u200d⚖️',
+            '\ud83d\udc68\ud83c\udffb\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -23607,7 +23613,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffc\u200d⚖️',
+            '\ud83d\udc68\ud83c\udffc\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -23617,7 +23623,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffd\u200d⚖️',
+            '\ud83d\udc68\ud83c\udffd\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -23627,7 +23633,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffe\u200d⚖️',
+            '\ud83d\udc68\ud83c\udffe\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -23637,7 +23643,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udfff\u200d⚖️',
+            '\ud83d\udc68\ud83c\udfff\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -23647,7 +23653,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd39\u200d♂️',
+            '\ud83e\udd39\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23657,7 +23663,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd39\ud83c\udffb\u200d♂️',
+            '\ud83e\udd39\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23667,7 +23673,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd39\ud83c\udffc\u200d♂️',
+            '\ud83e\udd39\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23677,7 +23683,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd39\ud83c\udffd\u200d♂️',
+            '\ud83e\udd39\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23687,7 +23693,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd39\ud83c\udffe\u200d♂️',
+            '\ud83e\udd39\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23697,7 +23703,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd39\ud83c\udfff\u200d♂️',
+            '\ud83e\udd39\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23707,7 +23713,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddce\u200d♂️',
+            '\ud83e\uddce\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23717,7 +23723,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddce\ud83c\udffb\u200d♂️',
+            '\ud83e\uddce\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23727,7 +23733,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddce\ud83c\udffc\u200d♂️',
+            '\ud83e\uddce\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23737,7 +23743,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddce\ud83c\udffd\u200d♂️',
+            '\ud83e\uddce\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23747,7 +23753,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddce\ud83c\udffe\u200d♂️',
+            '\ud83e\uddce\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23757,7 +23763,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddce\ud83c\udfff\u200d♂️',
+            '\ud83e\uddce\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23767,7 +23773,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcb️\u200d♂️',
+            '\ud83c\udfcb\ufe0f\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23777,7 +23783,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcb\ud83c\udffb\u200d♂️',
+            '\ud83c\udfcb\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23787,7 +23793,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcb\ud83c\udffc\u200d♂️',
+            '\ud83c\udfcb\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23797,7 +23803,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcb\ud83c\udffd\u200d♂️',
+            '\ud83c\udfcb\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23807,7 +23813,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcb\ud83c\udffe\u200d♂️',
+            '\ud83c\udfcb\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23817,7 +23823,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcb\ud83c\udfff\u200d♂️',
+            '\ud83c\udfcb\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23827,7 +23833,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd9\u200d♂️',
+            '\ud83e\uddd9\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23837,7 +23843,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd9\ud83c\udffb\u200d♂️',
+            '\ud83e\uddd9\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23847,7 +23853,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd9\ud83c\udffc\u200d♂️',
+            '\ud83e\uddd9\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23857,7 +23863,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd9\ud83c\udffd\u200d♂️',
+            '\ud83e\uddd9\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23867,7 +23873,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd9\ud83c\udffe\u200d♂️',
+            '\ud83e\uddd9\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23877,7 +23883,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd9\ud83c\udfff\u200d♂️',
+            '\ud83e\uddd9\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23947,7 +23953,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb5\u200d♂️',
+            '\ud83d\udeb5\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23957,7 +23963,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb5\ud83c\udffb\u200d♂️',
+            '\ud83d\udeb5\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23967,7 +23973,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb5\ud83c\udffc\u200d♂️',
+            '\ud83d\udeb5\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23977,7 +23983,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb5\ud83c\udffd\u200d♂️',
+            '\ud83d\udeb5\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23987,7 +23993,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb5\ud83c\udffe\u200d♂️',
+            '\ud83d\udeb5\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -23997,7 +24003,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb5\ud83c\udfff\u200d♂️',
+            '\ud83d\udeb5\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24067,7 +24073,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\u200d✈️',
+            '\ud83d\udc68\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -24077,7 +24083,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffb\u200d✈️',
+            '\ud83d\udc68\ud83c\udffb\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -24087,7 +24093,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffc\u200d✈️',
+            '\ud83d\udc68\ud83c\udffc\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -24097,7 +24103,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffd\u200d✈️',
+            '\ud83d\udc68\ud83c\udffd\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -24107,7 +24113,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffe\u200d✈️',
+            '\ud83d\udc68\ud83c\udffe\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -24117,7 +24123,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udfff\u200d✈️',
+            '\ud83d\udc68\ud83c\udfff\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -24127,7 +24133,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3e\u200d♂️',
+            '\ud83e\udd3e\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24137,7 +24143,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3e\ud83c\udffb\u200d♂️',
+            '\ud83e\udd3e\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24147,7 +24153,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3e\ud83c\udffc\u200d♂️',
+            '\ud83e\udd3e\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24157,7 +24163,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3e\ud83c\udffd\u200d♂️',
+            '\ud83e\udd3e\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24167,7 +24173,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3e\ud83c\udffe\u200d♂️',
+            '\ud83e\udd3e\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24177,7 +24183,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3e\ud83c\udfff\u200d♂️',
+            '\ud83e\udd3e\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24187,7 +24193,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3d\u200d♂️',
+            '\ud83e\udd3d\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24197,7 +24203,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3d\ud83c\udffb\u200d♂️',
+            '\ud83e\udd3d\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24207,7 +24213,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3d\ud83c\udffc\u200d♂️',
+            '\ud83e\udd3d\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24217,7 +24223,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3d\ud83c\udffd\u200d♂️',
+            '\ud83e\udd3d\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24227,7 +24233,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3d\ud83c\udffe\u200d♂️',
+            '\ud83e\udd3d\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24237,7 +24243,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3d\ud83c\udfff\u200d♂️',
+            '\ud83e\udd3d\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24247,7 +24253,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6e\u200d♂️',
+            '\ud83d\udc6e\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24257,7 +24263,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6e\ud83c\udffb\u200d♂️',
+            '\ud83d\udc6e\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24267,7 +24273,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6e\ud83c\udffc\u200d♂️',
+            '\ud83d\udc6e\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24277,7 +24283,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6e\ud83c\udffd\u200d♂️',
+            '\ud83d\udc6e\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24287,7 +24293,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6e\ud83c\udffe\u200d♂️',
+            '\ud83d\udc6e\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24297,7 +24303,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6e\ud83c\udfff\u200d♂️',
+            '\ud83d\udc6e\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24307,7 +24313,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4e\u200d♂️',
+            '\ud83d\ude4e\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24317,7 +24323,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4e\ud83c\udffb\u200d♂️',
+            '\ud83d\ude4e\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24327,7 +24333,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4e\ud83c\udffc\u200d♂️',
+            '\ud83d\ude4e\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24337,7 +24343,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4e\ud83c\udffd\u200d♂️',
+            '\ud83d\ude4e\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24347,7 +24353,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4e\ud83c\udffe\u200d♂️',
+            '\ud83d\ude4e\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24357,7 +24363,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4e\ud83c\udfff\u200d♂️',
+            '\ud83d\ude4e\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24367,7 +24373,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4b\u200d♂️',
+            '\ud83d\ude4b\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24377,7 +24383,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4b\ud83c\udffb\u200d♂️',
+            '\ud83d\ude4b\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24387,7 +24393,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4b\ud83c\udffc\u200d♂️',
+            '\ud83d\ude4b\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24397,7 +24403,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4b\ud83c\udffd\u200d♂️',
+            '\ud83d\ude4b\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24407,7 +24413,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4b\ud83c\udffe\u200d♂️',
+            '\ud83d\ude4b\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24417,7 +24423,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4b\ud83c\udfff\u200d♂️',
+            '\ud83d\ude4b\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24487,7 +24493,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udea3\u200d♂️',
+            '\ud83d\udea3\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24497,7 +24503,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udea3\ud83c\udffb\u200d♂️',
+            '\ud83d\udea3\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24507,7 +24513,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udea3\ud83c\udffc\u200d♂️',
+            '\ud83d\udea3\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24517,7 +24523,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udea3\ud83c\udffd\u200d♂️',
+            '\ud83d\udea3\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24527,7 +24533,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udea3\ud83c\udffe\u200d♂️',
+            '\ud83d\udea3\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24537,7 +24543,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udea3\ud83c\udfff\u200d♂️',
+            '\ud83d\udea3\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24547,7 +24553,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc3\u200d♂️',
+            '\ud83c\udfc3\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24557,7 +24563,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc3\ud83c\udffb\u200d♂️',
+            '\ud83c\udfc3\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24567,7 +24573,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc3\ud83c\udffc\u200d♂️',
+            '\ud83c\udfc3\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24577,7 +24583,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc3\ud83c\udffd\u200d♂️',
+            '\ud83c\udfc3\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24587,7 +24593,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc3\ud83c\udffe\u200d♂️',
+            '\ud83c\udfc3\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24597,7 +24603,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc3\ud83c\udfff\u200d♂️',
+            '\ud83c\udfc3\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24667,7 +24673,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd37\u200d♂️',
+            '\ud83e\udd37\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24677,7 +24683,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd37\ud83c\udffb\u200d♂️',
+            '\ud83e\udd37\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24687,7 +24693,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd37\ud83c\udffc\u200d♂️',
+            '\ud83e\udd37\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24697,7 +24703,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd37\ud83c\udffd\u200d♂️',
+            '\ud83e\udd37\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24707,7 +24713,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd37\ud83c\udffe\u200d♂️',
+            '\ud83e\udd37\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24717,7 +24723,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd37\ud83c\udfff\u200d♂️',
+            '\ud83e\udd37\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24787,7 +24793,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcd\u200d♂️',
+            '\ud83e\uddcd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24797,7 +24803,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcd\ud83c\udffb\u200d♂️',
+            '\ud83e\uddcd\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24807,7 +24813,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcd\ud83c\udffc\u200d♂️',
+            '\ud83e\uddcd\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24817,7 +24823,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcd\ud83c\udffd\u200d♂️',
+            '\ud83e\uddcd\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24827,7 +24833,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcd\ud83c\udffe\u200d♂️',
+            '\ud83e\uddcd\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24837,7 +24843,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcd\ud83c\udfff\u200d♂️',
+            '\ud83e\uddcd\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24907,7 +24913,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb8\u200d♂️',
+            '\ud83e\uddb8\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24917,7 +24923,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb8\ud83c\udffb\u200d♂️',
+            '\ud83e\uddb8\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24927,7 +24933,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb8\ud83c\udffc\u200d♂️',
+            '\ud83e\uddb8\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24937,7 +24943,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb8\ud83c\udffd\u200d♂️',
+            '\ud83e\uddb8\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24947,7 +24953,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb8\ud83c\udffe\u200d♂️',
+            '\ud83e\uddb8\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24957,7 +24963,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb8\ud83c\udfff\u200d♂️',
+            '\ud83e\uddb8\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24967,7 +24973,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb9\u200d♂️',
+            '\ud83e\uddb9\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24977,7 +24983,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb9\ud83c\udffb\u200d♂️',
+            '\ud83e\uddb9\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24987,7 +24993,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb9\ud83c\udffc\u200d♂️',
+            '\ud83e\uddb9\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -24997,7 +25003,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb9\ud83c\udffd\u200d♂️',
+            '\ud83e\uddb9\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25007,7 +25013,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb9\ud83c\udffe\u200d♂️',
+            '\ud83e\uddb9\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25017,7 +25023,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb9\ud83c\udfff\u200d♂️',
+            '\ud83e\uddb9\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25027,7 +25033,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc4\u200d♂️',
+            '\ud83c\udfc4\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25037,7 +25043,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc4\ud83c\udffb\u200d♂️',
+            '\ud83c\udfc4\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25047,7 +25053,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc4\ud83c\udffc\u200d♂️',
+            '\ud83c\udfc4\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25057,7 +25063,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc4\ud83c\udffd\u200d♂️',
+            '\ud83c\udfc4\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25067,7 +25073,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc4\ud83c\udffe\u200d♂️',
+            '\ud83c\udfc4\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25077,7 +25083,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc4\ud83c\udfff\u200d♂️',
+            '\ud83c\udfc4\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25087,7 +25093,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfca\u200d♂️',
+            '\ud83c\udfca\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25097,7 +25103,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfca\ud83c\udffb\u200d♂️',
+            '\ud83c\udfca\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25107,7 +25113,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfca\ud83c\udffc\u200d♂️',
+            '\ud83c\udfca\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25117,7 +25123,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfca\ud83c\udffd\u200d♂️',
+            '\ud83c\udfca\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25127,7 +25133,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfca\ud83c\udffe\u200d♂️',
+            '\ud83c\udfca\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25137,7 +25143,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfca\ud83c\udfff\u200d♂️',
+            '\ud83c\udfca\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25267,7 +25273,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc81\u200d♂️',
+            '\ud83d\udc81\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25277,7 +25283,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc81\ud83c\udffb\u200d♂️',
+            '\ud83d\udc81\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25287,7 +25293,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc81\ud83c\udffc\u200d♂️',
+            '\ud83d\udc81\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25297,7 +25303,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc81\ud83c\udffd\u200d♂️',
+            '\ud83d\udc81\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25307,7 +25313,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc81\ud83c\udffe\u200d♂️',
+            '\ud83d\udc81\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25317,7 +25323,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc81\ud83c\udfff\u200d♂️',
+            '\ud83d\udc81\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25327,7 +25333,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddb\u200d♂️',
+            '\ud83e\udddb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25337,7 +25343,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddb\ud83c\udffb\u200d♂️',
+            '\ud83e\udddb\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25347,7 +25353,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddb\ud83c\udffc\u200d♂️',
+            '\ud83e\udddb\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25357,7 +25363,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddb\ud83c\udffd\u200d♂️',
+            '\ud83e\udddb\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25367,7 +25373,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddb\ud83c\udffe\u200d♂️',
+            '\ud83e\udddb\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25377,7 +25383,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddb\ud83c\udfff\u200d♂️',
+            '\ud83e\udddb\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25387,7 +25393,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb6\u200d♂️',
+            '\ud83d\udeb6\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25397,7 +25403,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb6\ud83c\udffb\u200d♂️',
+            '\ud83d\udeb6\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25407,7 +25413,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb6\ud83c\udffc\u200d♂️',
+            '\ud83d\udeb6\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25417,7 +25423,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb6\ud83c\udffd\u200d♂️',
+            '\ud83d\udeb6\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25427,7 +25433,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb6\ud83c\udffe\u200d♂️',
+            '\ud83d\udeb6\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25437,7 +25443,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb6\ud83c\udfff\u200d♂️',
+            '\ud83d\udeb6\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25447,7 +25453,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc73\u200d♂️',
+            '\ud83d\udc73\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25457,7 +25463,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc73\ud83c\udffb\u200d♂️',
+            '\ud83d\udc73\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25467,7 +25473,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc73\ud83c\udffc\u200d♂️',
+            '\ud83d\udc73\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25477,7 +25483,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc73\ud83c\udffd\u200d♂️',
+            '\ud83d\udc73\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25487,7 +25493,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc73\ud83c\udffe\u200d♂️',
+            '\ud83d\udc73\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25497,7 +25503,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc73\ud83c\udfff\u200d♂️',
+            '\ud83d\udc73\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25627,7 +25633,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddf\u200d♂️',
+            '\ud83e\udddf\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25659,7 +25665,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\uddfa️',
+            '\ud83d\uddfa\ufe0f',
         ),
     ),
     Unicode(
@@ -25707,7 +25713,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6f\u200d♂️',
+            '\ud83d\udc6f\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25717,7 +25723,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3c\u200d♂️',
+            '\ud83e\udd3c\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25727,7 +25733,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddc\u200d♀️',
+            '\ud83e\udddc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -25737,7 +25743,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddc\ud83c\udffb\u200d♀️',
+            '\ud83e\udddc\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -25747,7 +25753,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddc\ud83c\udffc\u200d♀️',
+            '\ud83e\udddc\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -25757,7 +25763,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddc\ud83c\udffd\u200d♀️',
+            '\ud83e\udddc\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -25767,7 +25773,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddc\ud83c\udffe\u200d♀️',
+            '\ud83e\udddc\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -25777,7 +25783,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddc\ud83c\udfff\u200d♀️',
+            '\ud83e\udddc\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -25787,7 +25793,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddc\u200d♂️',
+            '\ud83e\udddc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25797,7 +25803,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddc\ud83c\udffb\u200d♂️',
+            '\ud83e\udddc\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25807,7 +25813,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddc\ud83c\udffc\u200d♂️',
+            '\ud83e\udddc\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25817,7 +25823,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddc\ud83c\udffd\u200d♂️',
+            '\ud83e\udddc\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25827,7 +25833,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddc\ud83c\udffe\u200d♂️',
+            '\ud83e\udddc\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25837,7 +25843,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddc\ud83c\udfff\u200d♂️',
+            '\ud83e\udddc\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -25919,7 +25925,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udf99️',
+            '\ud83c\udf99\ufe0f',
         ),
     ),
     Unicode(
@@ -25929,7 +25935,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udf96️',
+            '\ud83c\udf96\ufe0f',
         ),
     ),
     Unicode(
@@ -25959,7 +25965,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udee5️',
+            '\ud83d\udee5\ufe0f',
         ),
     ),
     Unicode(
@@ -25971,7 +25977,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udfcd️',
+            '\ud83c\udfcd\ufe0f',
         ),
     ),
     Unicode(
@@ -25991,7 +25997,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udee3️',
+            '\ud83d\udee3\ufe0f',
         ),
     ),
     Unicode(
@@ -26011,7 +26017,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udfd4️',
+            '\ud83c\udfd4\ufe0f',
         ),
     ),
     Unicode(
@@ -26023,7 +26029,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\uddb1️',
+            '\ud83d\uddb1\ufe0f',
         ),
     ),
     Unicode(
@@ -26035,7 +26041,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udfde️',
+            '\ud83c\udfde\ufe0f',
         ),
     ),
     Unicode(
@@ -26057,7 +26063,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\uddde️',
+            '\ud83d\uddde\ufe0f',
         ),
     ),
     Unicode(
@@ -26074,7 +26080,9 @@ UNICODES = (
         'nine',
         b'9\xef\xb8\x8f\xe2\x83\xa3'.decode('utf8'),
         False,
-        None,
+        (
+            'number_9',
+        ),
         None,
         None,
     ),
@@ -26087,7 +26095,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\uddd2️',
+            '\ud83d\uddd2\ufe0f',
         ),
     ),
     Unicode(
@@ -26097,7 +26105,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udd7e️',
+            '\ud83c\udd7e\ufe0f',
         ),
     ),
     Unicode(
@@ -26109,7 +26117,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udee2️',
+            '\ud83d\udee2\ufe0f',
         ),
     ),
     Unicode(
@@ -26179,14 +26187,16 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd49️',
+            '\ud83d\udd49\ufe0f',
         ),
     ),
     Unicode(
         'one',
         b'1\xef\xb8\x8f\xe2\x83\xa3'.decode('utf8'),
         False,
-        None,
+        (
+            'number_1',
+        ),
         None,
         None,
     ),
@@ -26355,7 +26365,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udd7f️',
+            '\ud83c\udd7f\ufe0f',
         ),
     ),
     Unicode(
@@ -26819,7 +26829,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udff4\u200d☠️',
+            '\ud83c\udff4\u200d\u2620\ufe0f',
         ),
     ),
     Unicode(
@@ -26875,7 +26885,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udda8️',
+            '\ud83d\udda8\ufe0f',
         ),
     ),
     Unicode(
@@ -26927,7 +26937,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udfce️',
+            '\ud83c\udfce\ufe0f',
         ),
     ),
     Unicode(
@@ -26949,7 +26959,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udee4️',
+            '\ud83d\udee4\ufe0f',
         ),
     ),
     Unicode(
@@ -27033,7 +27043,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udf97️',
+            '\ud83c\udf97\ufe0f',
         ),
     ),
     Unicode(
@@ -27063,7 +27073,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udff5️',
+            '\ud83c\udff5\ufe0f',
         ),
     ),
     Unicode(
@@ -27073,7 +27083,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\ude02️',
+            '\ud83c\ude02\ufe0f',
         ),
     ),
     Unicode(
@@ -27133,7 +27143,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udef0️',
+            '\ud83d\udef0\ufe0f',
         ),
     ),
     Unicode(
@@ -27209,7 +27219,9 @@ UNICODES = (
         'seven',
         b'7\xef\xb8\x8f\xe2\x83\xa3'.decode('utf8'),
         False,
-        None,
+        (
+            'number_7',
+        ),
         None,
         None,
     ),
@@ -27228,7 +27240,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udee1️',
+            '\ud83d\udee1\ufe0f',
         ),
     ),
     Unicode(
@@ -27246,7 +27258,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udecd️',
+            '\ud83d\udecd\ufe0f',
         ),
     ),
     Unicode(
@@ -27273,7 +27285,9 @@ UNICODES = (
         'six',
         b'6\xef\xb8\x8f\xe2\x83\xa3'.decode('utf8'),
         False,
-        None,
+        (
+            'number_6',
+        ),
         None,
         None,
     ),
@@ -27418,7 +27432,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udde3️',
+            '\ud83d\udde3\ufe0f',
         ),
     ),
     Unicode(
@@ -27428,7 +27442,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd77️',
+            '\ud83d\udd77\ufe0f',
         ),
     ),
     Unicode(
@@ -27438,7 +27452,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd78️',
+            '\ud83d\udd78\ufe0f',
         ),
     ),
     Unicode(
@@ -27468,7 +27482,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfdf️',
+            '\ud83c\udfdf\ufe0f',
         ),
     ),
     Unicode(
@@ -27718,7 +27732,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udf21️',
+            '\ud83c\udf21\ufe0f',
         ),
     ),
     Unicode(
@@ -27735,7 +27749,9 @@ UNICODES = (
         'three',
         b'3\xef\xb8\x8f\xe2\x83\xa3'.decode('utf8'),
         False,
-        None,
+        (
+            'number_3',
+        ),
         None,
         None,
     ),
@@ -27796,14 +27812,16 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\uddb2️',
+            '\ud83d\uddb2\ufe0f',
         ),
     ),
     Unicode(
         'two',
         b'2\xef\xb8\x8f\xe2\x83\xa3'.decode('utf8'),
         False,
-        None,
+        (
+            'number_2',
+        ),
         None,
         None,
     ),
@@ -27814,7 +27832,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\ude37️',
+            '\ud83c\ude37\ufe0f',
         ),
     ),
     Unicode(
@@ -27943,7 +27961,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\uddd1️',
+            '\ud83d\uddd1\ufe0f',
         ),
     ),
     Unicode(
@@ -27997,7 +28015,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udf25️',
+            '\ud83c\udf25\ufe0f',
         ),
     ),
     Unicode(
@@ -28009,7 +28027,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udf26️',
+            '\ud83c\udf26\ufe0f',
         ),
     ),
     Unicode(
@@ -28021,7 +28039,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83c\udf24️',
+            '\ud83c\udf24\ufe0f',
         ),
     ),
     Unicode(
@@ -28031,7 +28049,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udf2c️',
+            '\ud83c\udf2c\ufe0f',
         ),
     ),
     Unicode(
@@ -28221,7 +28239,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb4\u200d♀️',
+            '\ud83d\udeb4\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28231,7 +28249,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb4\ud83c\udffb\u200d♀️',
+            '\ud83d\udeb4\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28241,7 +28259,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb4\ud83c\udffc\u200d♀️',
+            '\ud83d\udeb4\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28251,7 +28269,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb4\ud83c\udffd\u200d♀️',
+            '\ud83d\udeb4\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28261,7 +28279,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb4\ud83c\udffe\u200d♀️',
+            '\ud83d\udeb4\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28271,7 +28289,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb4\ud83c\udfff\u200d♀️',
+            '\ud83d\udeb4\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28289,7 +28307,7 @@ UNICODES = (
         None,
         None,
         (
-            '⛹\ud83c\udffb\u200d♀️',
+            '\u26f9\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28299,7 +28317,7 @@ UNICODES = (
         None,
         None,
         (
-            '⛹\ud83c\udffc\u200d♀️',
+            '\u26f9\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28309,7 +28327,7 @@ UNICODES = (
         None,
         None,
         (
-            '⛹\ud83c\udffd\u200d♀️',
+            '\u26f9\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28319,7 +28337,7 @@ UNICODES = (
         None,
         None,
         (
-            '⛹\ud83c\udffe\u200d♀️',
+            '\u26f9\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28329,7 +28347,7 @@ UNICODES = (
         None,
         None,
         (
-            '⛹\ud83c\udfff\u200d♀️',
+            '\u26f9\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28339,7 +28357,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude47\u200d♀️',
+            '\ud83d\ude47\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28349,7 +28367,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude47\ud83c\udffb\u200d♀️',
+            '\ud83d\ude47\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28359,7 +28377,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude47\ud83c\udffc\u200d♀️',
+            '\ud83d\ude47\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28369,7 +28387,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude47\ud83c\udffd\u200d♀️',
+            '\ud83d\ude47\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28379,7 +28397,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude47\ud83c\udffe\u200d♀️',
+            '\ud83d\ude47\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28389,7 +28407,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude47\ud83c\udfff\u200d♀️',
+            '\ud83d\ude47\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28399,7 +28417,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd38\u200d♀️',
+            '\ud83e\udd38\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28409,7 +28427,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd38\ud83c\udffb\u200d♀️',
+            '\ud83e\udd38\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28419,7 +28437,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd38\ud83c\udffc\u200d♀️',
+            '\ud83e\udd38\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28429,7 +28447,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd38\ud83c\udffd\u200d♀️',
+            '\ud83e\udd38\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28439,7 +28457,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd38\ud83c\udffe\u200d♀️',
+            '\ud83e\udd38\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28449,7 +28467,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd38\ud83c\udfff\u200d♀️',
+            '\ud83e\udd38\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28459,7 +28477,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd7\u200d♀️',
+            '\ud83e\uddd7\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28469,7 +28487,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd7\ud83c\udffb\u200d♀️',
+            '\ud83e\uddd7\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28479,7 +28497,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd7\ud83c\udffc\u200d♀️',
+            '\ud83e\uddd7\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28489,7 +28507,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd7\ud83c\udffd\u200d♀️',
+            '\ud83e\uddd7\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28499,7 +28517,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd7\ud83c\udffe\u200d♀️',
+            '\ud83e\uddd7\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28509,7 +28527,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd7\ud83c\udfff\u200d♀️',
+            '\ud83e\uddd7\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28519,7 +28537,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc77\u200d♀️',
+            '\ud83d\udc77\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28529,7 +28547,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc77\ud83c\udffb\u200d♀️',
+            '\ud83d\udc77\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28539,7 +28557,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc77\ud83c\udffc\u200d♀️',
+            '\ud83d\udc77\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28549,7 +28567,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc77\ud83c\udffd\u200d♀️',
+            '\ud83d\udc77\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28559,7 +28577,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc77\ud83c\udffe\u200d♀️',
+            '\ud83d\udc77\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28569,7 +28587,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc77\ud83c\udfff\u200d♀️',
+            '\ud83d\udc77\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28699,7 +28717,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd75️\u200d♀️',
+            '\ud83d\udd75\ufe0f\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28709,7 +28727,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd75\ud83c\udffb\u200d♀️',
+            '\ud83d\udd75\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28719,7 +28737,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd75\ud83c\udffc\u200d♀️',
+            '\ud83d\udd75\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28729,7 +28747,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd75\ud83c\udffd\u200d♀️',
+            '\ud83d\udd75\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28739,7 +28757,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd75\ud83c\udffe\u200d♀️',
+            '\ud83d\udd75\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28749,7 +28767,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udd75\ud83c\udfff\u200d♀️',
+            '\ud83d\udd75\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28759,7 +28777,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddd\u200d♀️',
+            '\ud83e\udddd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28769,7 +28787,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddd\ud83c\udffb\u200d♀️',
+            '\ud83e\udddd\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28779,7 +28797,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddd\ud83c\udffc\u200d♀️',
+            '\ud83e\udddd\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28789,7 +28807,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddd\ud83c\udffd\u200d♀️',
+            '\ud83e\udddd\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28799,7 +28817,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddd\ud83c\udffe\u200d♀️',
+            '\ud83e\udddd\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28809,7 +28827,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddd\ud83c\udfff\u200d♀️',
+            '\ud83e\udddd\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28819,7 +28837,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd26\u200d♀️',
+            '\ud83e\udd26\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28829,7 +28847,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd26\ud83c\udffb\u200d♀️',
+            '\ud83e\udd26\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28839,7 +28857,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd26\ud83c\udffc\u200d♀️',
+            '\ud83e\udd26\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28849,7 +28867,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd26\ud83c\udffd\u200d♀️',
+            '\ud83e\udd26\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28859,7 +28877,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd26\ud83c\udffe\u200d♀️',
+            '\ud83e\udd26\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28869,7 +28887,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd26\ud83c\udfff\u200d♀️',
+            '\ud83e\udd26\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28939,7 +28957,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddda\u200d♀️',
+            '\ud83e\uddda\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28949,7 +28967,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddda\ud83c\udffb\u200d♀️',
+            '\ud83e\uddda\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28959,7 +28977,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddda\ud83c\udffc\u200d♀️',
+            '\ud83e\uddda\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28969,7 +28987,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddda\ud83c\udffd\u200d♀️',
+            '\ud83e\uddda\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28979,7 +28997,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddda\ud83c\udffe\u200d♀️',
+            '\ud83e\uddda\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -28989,7 +29007,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddda\ud83c\udfff\u200d♀️',
+            '\ud83e\uddda\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29119,7 +29137,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4d\u200d♀️',
+            '\ud83d\ude4d\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29129,7 +29147,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4d\ud83c\udffb\u200d♀️',
+            '\ud83d\ude4d\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29139,7 +29157,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4d\ud83c\udffc\u200d♀️',
+            '\ud83d\ude4d\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29149,7 +29167,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4d\ud83c\udffd\u200d♀️',
+            '\ud83d\ude4d\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29159,7 +29177,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4d\ud83c\udffe\u200d♀️',
+            '\ud83d\ude4d\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29169,7 +29187,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4d\ud83c\udfff\u200d♀️',
+            '\ud83d\ude4d\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29179,7 +29197,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddde\u200d♀️',
+            '\ud83e\uddde\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29189,7 +29207,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude45\u200d♀️',
+            '\ud83d\ude45\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29199,7 +29217,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude45\ud83c\udffb\u200d♀️',
+            '\ud83d\ude45\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29209,7 +29227,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude45\ud83c\udffc\u200d♀️',
+            '\ud83d\ude45\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29219,7 +29237,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude45\ud83c\udffd\u200d♀️',
+            '\ud83d\ude45\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29229,7 +29247,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude45\ud83c\udffe\u200d♀️',
+            '\ud83d\ude45\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29239,7 +29257,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude45\ud83c\udfff\u200d♀️',
+            '\ud83d\ude45\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29249,7 +29267,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude46\u200d♀️',
+            '\ud83d\ude46\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29259,7 +29277,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude46\ud83c\udffb\u200d♀️',
+            '\ud83d\ude46\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29269,7 +29287,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude46\ud83c\udffc\u200d♀️',
+            '\ud83d\ude46\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29279,7 +29297,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude46\ud83c\udffd\u200d♀️',
+            '\ud83d\ude46\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29289,7 +29307,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude46\ud83c\udffe\u200d♀️',
+            '\ud83d\ude46\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29299,7 +29317,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude46\ud83c\udfff\u200d♀️',
+            '\ud83d\ude46\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29309,7 +29327,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc86\u200d♀️',
+            '\ud83d\udc86\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29319,7 +29337,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc86\ud83c\udffb\u200d♀️',
+            '\ud83d\udc86\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29329,7 +29347,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc86\ud83c\udffc\u200d♀️',
+            '\ud83d\udc86\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29339,7 +29357,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc86\ud83c\udffd\u200d♀️',
+            '\ud83d\udc86\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29349,7 +29367,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc86\ud83c\udffe\u200d♀️',
+            '\ud83d\udc86\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29359,7 +29377,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc86\ud83c\udfff\u200d♀️',
+            '\ud83d\udc86\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29369,7 +29387,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc87\u200d♀️',
+            '\ud83d\udc87\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29379,7 +29397,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc87\ud83c\udffb\u200d♀️',
+            '\ud83d\udc87\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29389,7 +29407,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc87\ud83c\udffc\u200d♀️',
+            '\ud83d\udc87\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29399,7 +29417,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc87\ud83c\udffd\u200d♀️',
+            '\ud83d\udc87\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29409,7 +29427,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc87\ud83c\udffe\u200d♀️',
+            '\ud83d\udc87\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29419,7 +29437,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc87\ud83c\udfff\u200d♀️',
+            '\ud83d\udc87\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29429,7 +29447,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcc️\u200d♀️',
+            '\ud83c\udfcc\ufe0f\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29439,7 +29457,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcc\ud83c\udffb\u200d♀️',
+            '\ud83c\udfcc\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29449,7 +29467,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcc\ud83c\udffc\u200d♀️',
+            '\ud83c\udfcc\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29459,7 +29477,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcc\ud83c\udffd\u200d♀️',
+            '\ud83c\udfcc\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29469,7 +29487,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcc\ud83c\udffe\u200d♀️',
+            '\ud83c\udfcc\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29479,7 +29497,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcc\ud83c\udfff\u200d♀️',
+            '\ud83c\udfcc\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29489,7 +29507,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc82\u200d♀️',
+            '\ud83d\udc82\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29499,7 +29517,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc82\ud83c\udffb\u200d♀️',
+            '\ud83d\udc82\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29509,7 +29527,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc82\ud83c\udffc\u200d♀️',
+            '\ud83d\udc82\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29519,7 +29537,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc82\ud83c\udffd\u200d♀️',
+            '\ud83d\udc82\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29529,7 +29547,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc82\ud83c\udffe\u200d♀️',
+            '\ud83d\udc82\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29539,7 +29557,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc82\ud83c\udfff\u200d♀️',
+            '\ud83d\udc82\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29549,7 +29567,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\u200d⚕️',
+            '\ud83d\udc69\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -29559,7 +29577,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d⚕️',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -29569,7 +29587,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d⚕️',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -29579,7 +29597,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d⚕️',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -29589,7 +29607,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d⚕️',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -29599,7 +29617,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d⚕️',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -29609,7 +29627,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd8\u200d♀️',
+            '\ud83e\uddd8\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29619,7 +29637,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd8\ud83c\udffb\u200d♀️',
+            '\ud83e\uddd8\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29629,7 +29647,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd8\ud83c\udffc\u200d♀️',
+            '\ud83e\uddd8\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29639,7 +29657,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd8\ud83c\udffd\u200d♀️',
+            '\ud83e\uddd8\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29649,7 +29667,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd8\ud83c\udffe\u200d♀️',
+            '\ud83e\uddd8\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29659,7 +29677,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd8\ud83c\udfff\u200d♀️',
+            '\ud83e\uddd8\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29789,7 +29807,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd6\u200d♀️',
+            '\ud83e\uddd6\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29799,7 +29817,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd6\ud83c\udffb\u200d♀️',
+            '\ud83e\uddd6\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29809,7 +29827,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd6\ud83c\udffc\u200d♀️',
+            '\ud83e\uddd6\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29819,7 +29837,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd6\ud83c\udffd\u200d♀️',
+            '\ud83e\uddd6\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29829,7 +29847,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd6\ud83c\udffe\u200d♀️',
+            '\ud83e\uddd6\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29839,7 +29857,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd6\ud83c\udfff\u200d♀️',
+            '\ud83e\uddd6\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29849,7 +29867,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\u200d⚖️',
+            '\ud83d\udc69\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -29859,7 +29877,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d⚖️',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -29869,7 +29887,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d⚖️',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -29879,7 +29897,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d⚖️',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -29889,7 +29907,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d⚖️',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -29899,7 +29917,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d⚖️',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -29909,7 +29927,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd39\u200d♀️',
+            '\ud83e\udd39\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29919,7 +29937,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd39\ud83c\udffb\u200d♀️',
+            '\ud83e\udd39\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29929,7 +29947,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd39\ud83c\udffc\u200d♀️',
+            '\ud83e\udd39\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29939,7 +29957,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd39\ud83c\udffd\u200d♀️',
+            '\ud83e\udd39\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29949,7 +29967,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd39\ud83c\udffe\u200d♀️',
+            '\ud83e\udd39\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29959,7 +29977,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd39\ud83c\udfff\u200d♀️',
+            '\ud83e\udd39\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29969,7 +29987,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddce\u200d♀️',
+            '\ud83e\uddce\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29979,7 +29997,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddce\ud83c\udffb\u200d♀️',
+            '\ud83e\uddce\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29989,7 +30007,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddce\ud83c\udffc\u200d♀️',
+            '\ud83e\uddce\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -29999,7 +30017,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddce\ud83c\udffd\u200d♀️',
+            '\ud83e\uddce\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30009,7 +30027,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddce\ud83c\udffe\u200d♀️',
+            '\ud83e\uddce\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30019,7 +30037,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddce\ud83c\udfff\u200d♀️',
+            '\ud83e\uddce\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30029,7 +30047,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcb️\u200d♀️',
+            '\ud83c\udfcb\ufe0f\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30039,7 +30057,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcb\ud83c\udffb\u200d♀️',
+            '\ud83c\udfcb\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30049,7 +30067,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcb\ud83c\udffc\u200d♀️',
+            '\ud83c\udfcb\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30059,7 +30077,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcb\ud83c\udffd\u200d♀️',
+            '\ud83c\udfcb\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30069,7 +30087,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcb\ud83c\udffe\u200d♀️',
+            '\ud83c\udfcb\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30079,7 +30097,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfcb\ud83c\udfff\u200d♀️',
+            '\ud83c\udfcb\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30089,7 +30107,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd9\u200d♀️',
+            '\ud83e\uddd9\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30099,7 +30117,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd9\ud83c\udffb\u200d♀️',
+            '\ud83e\uddd9\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30109,7 +30127,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd9\ud83c\udffc\u200d♀️',
+            '\ud83e\uddd9\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30119,7 +30137,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd9\ud83c\udffd\u200d♀️',
+            '\ud83e\uddd9\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30129,7 +30147,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd9\ud83c\udffe\u200d♀️',
+            '\ud83e\uddd9\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30139,7 +30157,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd9\ud83c\udfff\u200d♀️',
+            '\ud83e\uddd9\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30209,7 +30227,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb5\u200d♀️',
+            '\ud83d\udeb5\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30219,7 +30237,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb5\ud83c\udffb\u200d♀️',
+            '\ud83d\udeb5\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30229,7 +30247,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb5\ud83c\udffc\u200d♀️',
+            '\ud83d\udeb5\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30239,7 +30257,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb5\ud83c\udffd\u200d♀️',
+            '\ud83d\udeb5\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30249,7 +30267,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb5\ud83c\udffe\u200d♀️',
+            '\ud83d\udeb5\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30259,7 +30277,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb5\ud83c\udfff\u200d♀️',
+            '\ud83d\udeb5\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30329,7 +30347,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\u200d✈️',
+            '\ud83d\udc69\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -30339,7 +30357,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d✈️',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -30349,7 +30367,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d✈️',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -30359,7 +30377,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d✈️',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -30369,7 +30387,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d✈️',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -30379,7 +30397,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d✈️',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -30389,7 +30407,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3e\u200d♀️',
+            '\ud83e\udd3e\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30399,7 +30417,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3e\ud83c\udffb\u200d♀️',
+            '\ud83e\udd3e\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30409,7 +30427,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3e\ud83c\udffc\u200d♀️',
+            '\ud83e\udd3e\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30419,7 +30437,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3e\ud83c\udffd\u200d♀️',
+            '\ud83e\udd3e\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30429,7 +30447,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3e\ud83c\udffe\u200d♀️',
+            '\ud83e\udd3e\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30439,7 +30457,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3e\ud83c\udfff\u200d♀️',
+            '\ud83e\udd3e\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30449,7 +30467,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3d\u200d♀️',
+            '\ud83e\udd3d\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30459,7 +30477,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3d\ud83c\udffb\u200d♀️',
+            '\ud83e\udd3d\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30469,7 +30487,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3d\ud83c\udffc\u200d♀️',
+            '\ud83e\udd3d\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30479,7 +30497,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3d\ud83c\udffd\u200d♀️',
+            '\ud83e\udd3d\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30489,7 +30507,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3d\ud83c\udffe\u200d♀️',
+            '\ud83e\udd3d\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30499,7 +30517,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3d\ud83c\udfff\u200d♀️',
+            '\ud83e\udd3d\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30509,7 +30527,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6e\u200d♀️',
+            '\ud83d\udc6e\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30519,7 +30537,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6e\ud83c\udffb\u200d♀️',
+            '\ud83d\udc6e\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30529,7 +30547,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6e\ud83c\udffc\u200d♀️',
+            '\ud83d\udc6e\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30539,7 +30557,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6e\ud83c\udffd\u200d♀️',
+            '\ud83d\udc6e\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30549,7 +30567,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6e\ud83c\udffe\u200d♀️',
+            '\ud83d\udc6e\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30559,7 +30577,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6e\ud83c\udfff\u200d♀️',
+            '\ud83d\udc6e\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30569,7 +30587,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4e\u200d♀️',
+            '\ud83d\ude4e\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30579,7 +30597,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4e\ud83c\udffb\u200d♀️',
+            '\ud83d\ude4e\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30589,7 +30607,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4e\ud83c\udffc\u200d♀️',
+            '\ud83d\ude4e\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30599,7 +30617,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4e\ud83c\udffd\u200d♀️',
+            '\ud83d\ude4e\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30609,7 +30627,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4e\ud83c\udffe\u200d♀️',
+            '\ud83d\ude4e\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30619,7 +30637,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4e\ud83c\udfff\u200d♀️',
+            '\ud83d\ude4e\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30629,7 +30647,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4b\u200d♀️',
+            '\ud83d\ude4b\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30639,7 +30657,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4b\ud83c\udffb\u200d♀️',
+            '\ud83d\ude4b\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30649,7 +30667,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4b\ud83c\udffc\u200d♀️',
+            '\ud83d\ude4b\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30659,7 +30677,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4b\ud83c\udffd\u200d♀️',
+            '\ud83d\ude4b\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30669,7 +30687,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4b\ud83c\udffe\u200d♀️',
+            '\ud83d\ude4b\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30679,7 +30697,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude4b\ud83c\udfff\u200d♀️',
+            '\ud83d\ude4b\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30749,7 +30767,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udea3\u200d♀️',
+            '\ud83d\udea3\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30759,7 +30777,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udea3\ud83c\udffb\u200d♀️',
+            '\ud83d\udea3\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30769,7 +30787,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udea3\ud83c\udffc\u200d♀️',
+            '\ud83d\udea3\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30779,7 +30797,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udea3\ud83c\udffd\u200d♀️',
+            '\ud83d\udea3\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30789,7 +30807,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udea3\ud83c\udffe\u200d♀️',
+            '\ud83d\udea3\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30799,7 +30817,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udea3\ud83c\udfff\u200d♀️',
+            '\ud83d\udea3\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30809,7 +30827,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc3\u200d♀️',
+            '\ud83c\udfc3\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30819,7 +30837,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc3\ud83c\udffb\u200d♀️',
+            '\ud83c\udfc3\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30829,7 +30847,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc3\ud83c\udffc\u200d♀️',
+            '\ud83c\udfc3\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30839,7 +30857,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc3\ud83c\udffd\u200d♀️',
+            '\ud83c\udfc3\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30849,7 +30867,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc3\ud83c\udffe\u200d♀️',
+            '\ud83c\udfc3\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30859,7 +30877,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc3\ud83c\udfff\u200d♀️',
+            '\ud83c\udfc3\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30929,7 +30947,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd37\u200d♀️',
+            '\ud83e\udd37\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30939,7 +30957,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd37\ud83c\udffb\u200d♀️',
+            '\ud83e\udd37\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30949,7 +30967,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd37\ud83c\udffc\u200d♀️',
+            '\ud83e\udd37\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30959,7 +30977,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd37\ud83c\udffd\u200d♀️',
+            '\ud83e\udd37\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30969,7 +30987,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd37\ud83c\udffe\u200d♀️',
+            '\ud83e\udd37\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -30979,7 +30997,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd37\ud83c\udfff\u200d♀️',
+            '\ud83e\udd37\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31049,7 +31067,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcd\u200d♀️',
+            '\ud83e\uddcd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31059,7 +31077,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcd\ud83c\udffb\u200d♀️',
+            '\ud83e\uddcd\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31069,7 +31087,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcd\ud83c\udffc\u200d♀️',
+            '\ud83e\uddcd\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31079,7 +31097,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcd\ud83c\udffd\u200d♀️',
+            '\ud83e\uddcd\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31089,7 +31107,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcd\ud83c\udffe\u200d♀️',
+            '\ud83e\uddcd\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31099,7 +31117,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddcd\ud83c\udfff\u200d♀️',
+            '\ud83e\uddcd\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31169,7 +31187,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb8\u200d♀️',
+            '\ud83e\uddb8\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31179,7 +31197,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb8\ud83c\udffb\u200d♀️',
+            '\ud83e\uddb8\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31189,7 +31207,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb8\ud83c\udffc\u200d♀️',
+            '\ud83e\uddb8\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31199,7 +31217,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb8\ud83c\udffd\u200d♀️',
+            '\ud83e\uddb8\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31209,7 +31227,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb8\ud83c\udffe\u200d♀️',
+            '\ud83e\uddb8\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31219,7 +31237,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb8\ud83c\udfff\u200d♀️',
+            '\ud83e\uddb8\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31229,7 +31247,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb9\u200d♀️',
+            '\ud83e\uddb9\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31239,7 +31257,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb9\ud83c\udffb\u200d♀️',
+            '\ud83e\uddb9\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31249,7 +31267,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb9\ud83c\udffc\u200d♀️',
+            '\ud83e\uddb9\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31259,7 +31277,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb9\ud83c\udffd\u200d♀️',
+            '\ud83e\uddb9\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31269,7 +31287,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb9\ud83c\udffe\u200d♀️',
+            '\ud83e\uddb9\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31279,7 +31297,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddb9\ud83c\udfff\u200d♀️',
+            '\ud83e\uddb9\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31289,7 +31307,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc4\u200d♀️',
+            '\ud83c\udfc4\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31299,7 +31317,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc4\ud83c\udffb\u200d♀️',
+            '\ud83c\udfc4\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31309,7 +31327,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc4\ud83c\udffc\u200d♀️',
+            '\ud83c\udfc4\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31319,7 +31337,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc4\ud83c\udffd\u200d♀️',
+            '\ud83c\udfc4\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31329,7 +31347,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc4\ud83c\udffe\u200d♀️',
+            '\ud83c\udfc4\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31339,7 +31357,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfc4\ud83c\udfff\u200d♀️',
+            '\ud83c\udfc4\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31349,7 +31367,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfca\u200d♀️',
+            '\ud83c\udfca\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31359,7 +31377,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfca\ud83c\udffb\u200d♀️',
+            '\ud83c\udfca\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31369,7 +31387,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfca\ud83c\udffc\u200d♀️',
+            '\ud83c\udfca\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31379,7 +31397,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfca\ud83c\udffd\u200d♀️',
+            '\ud83c\udfca\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31389,7 +31407,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfca\ud83c\udffe\u200d♀️',
+            '\ud83c\udfca\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31399,7 +31417,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udfca\ud83c\udfff\u200d♀️',
+            '\ud83c\udfca\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31529,7 +31547,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc81\u200d♀️',
+            '\ud83d\udc81\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31539,7 +31557,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc81\ud83c\udffb\u200d♀️',
+            '\ud83d\udc81\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31549,7 +31567,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc81\ud83c\udffc\u200d♀️',
+            '\ud83d\udc81\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31559,7 +31577,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc81\ud83c\udffd\u200d♀️',
+            '\ud83d\udc81\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31569,7 +31587,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc81\ud83c\udffe\u200d♀️',
+            '\ud83d\udc81\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31579,7 +31597,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc81\ud83c\udfff\u200d♀️',
+            '\ud83d\udc81\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31589,7 +31607,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddb\u200d♀️',
+            '\ud83e\udddb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31599,7 +31617,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddb\ud83c\udffb\u200d♀️',
+            '\ud83e\udddb\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31609,7 +31627,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddb\ud83c\udffc\u200d♀️',
+            '\ud83e\udddb\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31619,7 +31637,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddb\ud83c\udffd\u200d♀️',
+            '\ud83e\udddb\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31629,7 +31647,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddb\ud83c\udffe\u200d♀️',
+            '\ud83e\udddb\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31639,7 +31657,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddb\ud83c\udfff\u200d♀️',
+            '\ud83e\udddb\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31649,7 +31667,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb6\u200d♀️',
+            '\ud83d\udeb6\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31659,7 +31677,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb6\ud83c\udffb\u200d♀️',
+            '\ud83d\udeb6\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31669,7 +31687,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb6\ud83c\udffc\u200d♀️',
+            '\ud83d\udeb6\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31679,7 +31697,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb6\ud83c\udffd\u200d♀️',
+            '\ud83d\udeb6\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31689,7 +31707,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb6\ud83c\udffe\u200d♀️',
+            '\ud83d\udeb6\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31699,7 +31717,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udeb6\ud83c\udfff\u200d♀️',
+            '\ud83d\udeb6\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31709,7 +31727,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc73\u200d♀️',
+            '\ud83d\udc73\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31719,7 +31737,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc73\ud83c\udffb\u200d♀️',
+            '\ud83d\udc73\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31729,7 +31747,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc73\ud83c\udffc\u200d♀️',
+            '\ud83d\udc73\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31739,7 +31757,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc73\ud83c\udffd\u200d♀️',
+            '\ud83d\udc73\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31749,7 +31767,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc73\ud83c\udffe\u200d♀️',
+            '\ud83d\udc73\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31759,7 +31777,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc73\ud83c\udfff\u200d♀️',
+            '\ud83d\udc73\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31949,7 +31967,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udddf\u200d♀️',
+            '\ud83e\udddf\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31969,7 +31987,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc6f\u200d♀️',
+            '\ud83d\udc6f\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -31979,7 +31997,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd3c\u200d♀️',
+            '\ud83e\udd3c\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -32082,7 +32100,9 @@ UNICODES = (
         'zero',
         b'0\xef\xb8\x8f\xe2\x83\xa3'.decode('utf8'),
         False,
-        None,
+        (
+            'number_0',
+        ),
         None,
         None,
     ),
@@ -32823,7 +32843,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc70\ud83c\udffe\u200d♂️',
+            '\ud83d\udc70\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -32833,7 +32853,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc70\ud83c\udfff\u200d♂️',
+            '\ud83d\udc70\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -32843,7 +32863,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffd\u200d⚕️',
+            '\ud83e\uddd1\ud83c\udffd\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -32853,7 +32873,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udfff\u200d⚕️',
+            '\ud83e\uddd1\ud83c\udfff\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -32863,7 +32883,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc70\u200d♂️',
+            '\ud83d\udc70\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -32873,7 +32893,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc70\ud83c\udffb\u200d♂️',
+            '\ud83d\udc70\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -32883,7 +32903,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc70\ud83c\udffc\u200d♂️',
+            '\ud83d\udc70\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -32893,7 +32913,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc70\ud83c\udffd\u200d♂️',
+            '\ud83d\udc70\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -32903,7 +32923,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\u200d⚕️',
+            '\ud83e\uddd1\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -32913,7 +32933,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffb\u200d⚕️',
+            '\ud83e\uddd1\ud83c\udffb\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -32923,7 +32943,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffc\u200d⚕️',
+            '\ud83e\uddd1\ud83c\udffc\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -32933,7 +32953,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffe\u200d⚕️',
+            '\ud83e\uddd1\ud83c\udffe\u200d\u2695\ufe0f',
         ),
     ),
     Unicode(
@@ -32963,7 +32983,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd35\ud83c\udffe\u200d♀️',
+            '\ud83e\udd35\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -32983,7 +33003,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd35\ud83c\udfff\u200d♀️',
+            '\ud83e\udd35\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -33023,7 +33043,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffe\u200d⚖️',
+            '\ud83e\uddd1\ud83c\udffe\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -33045,7 +33065,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udfff\u200d⚖️',
+            '\ud83e\uddd1\ud83c\udfff\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -33067,7 +33087,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd35\ud83c\udffd\u200d♀️',
+            '\ud83e\udd35\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -33077,7 +33097,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffd\u200d⚖️',
+            '\ud83e\uddd1\ud83c\udffd\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -33287,7 +33307,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc08\u200d⬛',
+            '\ud83d\udc08\u200d\u2b1b',
         ),
     ),
     Unicode(
@@ -33387,7 +33407,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\u200d⚖️',
+            '\ud83e\uddd1\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -33397,7 +33417,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd35\u200d♀️',
+            '\ud83e\udd35\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -33407,7 +33427,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd35\ud83c\udffb\u200d♀️',
+            '\ud83e\udd35\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -33439,7 +33459,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffb\u200d⚖️',
+            '\ud83e\uddd1\ud83c\udffb\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -33471,7 +33491,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffc\u200d⚖️',
+            '\ud83e\uddd1\ud83c\udffc\u200d\u2696\ufe0f',
         ),
     ),
     Unicode(
@@ -33481,7 +33501,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd35\ud83c\udffc\u200d♀️',
+            '\ud83e\udd35\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -33513,7 +33533,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd35\ud83c\udffd\u200d♂️',
+            '\ud83e\udd35\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -33533,7 +33553,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd35\ud83c\udfff\u200d♂️',
+            '\ud83e\udd35\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -33703,7 +33723,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd35\u200d♂️',
+            '\ud83e\udd35\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -33723,7 +33743,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd35\ud83c\udffb\u200d♂️',
+            '\ud83e\udd35\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -33733,7 +33753,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd35\ud83c\udffc\u200d♂️',
+            '\ud83e\udd35\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -33743,7 +33763,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\udd35\ud83c\udffe\u200d♂️',
+            '\ud83e\udd35\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -34012,7 +34032,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83c\udff3️\u200d⚧️',
+            '\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f',
         ),
     ),
     Unicode(
@@ -34022,7 +34042,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffd\u200d✈️',
+            '\ud83e\uddd1\ud83c\udffd\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -34055,7 +34075,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udfff\u200d✈️',
+            '\ud83e\uddd1\ud83c\udfff\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -34245,7 +34265,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\u200d✈️',
+            '\ud83e\uddd1\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -34278,7 +34298,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffb\u200d✈️',
+            '\ud83e\uddd1\ud83c\udffb\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -34301,7 +34321,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffc\u200d✈️',
+            '\ud83e\uddd1\ud83c\udffc\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -34311,7 +34331,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffe\u200d✈️',
+            '\ud83e\uddd1\ud83c\udffe\u200d\u2708\ufe0f',
         ),
     ),
     Unicode(
@@ -34623,7 +34643,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc70\ud83c\udffd\u200d♀️',
+            '\ud83d\udc70\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -34633,7 +34653,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc70\ud83c\udfff\u200d♀️',
+            '\ud83d\udc70\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -34765,7 +34785,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83d\udc70\u200d♀️',
+            '\ud83d\udc70\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -34785,7 +34805,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc70\ud83c\udffb\u200d♀️',
+            '\ud83d\udc70\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -34808,7 +34828,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc70\ud83c\udffc\u200d♀️',
+            '\ud83d\udc70\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -34831,7 +34851,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc70\ud83c\udffe\u200d♀️',
+            '\ud83d\udc70\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -35112,7 +35132,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc3b\u200d❄️',
+            '\ud83d\udc3b\u200d\u2744\ufe0f',
         ),
     ),
     Unicode(
@@ -35950,7 +35970,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83e\uddd4\ud83c\udffe\u200d♂️',
+            '\ud83e\uddd4\ud83c\udffe\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -35962,7 +35982,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83e\uddd4\ud83c\udfff\u200d♂️',
+            '\ud83e\uddd4\ud83c\udfff\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -35975,7 +35995,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -35988,7 +36008,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc69\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36001,7 +36021,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe',
+            '\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36024,7 +36044,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc69\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -36047,7 +36067,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36060,7 +36080,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffb\u200d❤️\u200d\ud83e\uddd1\ud83c\udffc',
+            '\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -36073,7 +36093,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -36086,7 +36106,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc',
+            '\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -36099,7 +36119,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -36112,7 +36132,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffb\u200d❤️\u200d\ud83e\uddd1\ud83c\udffd',
+            '\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -36125,7 +36145,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -36138,7 +36158,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc69\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -36151,7 +36171,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -36164,7 +36184,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36177,7 +36197,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc69\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36190,7 +36210,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd',
+            '\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -36203,7 +36223,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffb\u200d❤️\u200d\ud83e\uddd1\ud83c\udffe',
+            '\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36216,7 +36236,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc69\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -36229,7 +36249,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe',
+            '\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36242,7 +36262,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36255,7 +36275,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffb\u200d❤️\u200d\ud83e\uddd1\ud83c\udfff',
+            '\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -36268,7 +36288,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -36281,7 +36301,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc69\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36294,7 +36314,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff',
+            '\ud83e\uddd1\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -36307,7 +36327,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffc\u200d❤️\u200d\ud83e\uddd1\ud83c\udffb',
+            '\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36320,7 +36340,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36333,7 +36353,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -36346,7 +36366,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36359,7 +36379,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -36372,7 +36392,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc69\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -36385,7 +36405,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb',
+            '\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36395,7 +36415,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd4\u200d♂️',
+            '\ud83e\uddd4\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -36418,7 +36438,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -36431,7 +36451,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc69\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -36444,7 +36464,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffc\u200d❤️\u200d\ud83e\uddd1\ud83c\udffd',
+            '\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -36457,7 +36477,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc69\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36480,7 +36500,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd',
+            '\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -36492,7 +36512,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83e\uddd4\ud83c\udffb\u200d♂️',
+            '\ud83e\uddd4\ud83c\udffb\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -36505,7 +36525,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffc\u200d❤️\u200d\ud83e\uddd1\ud83c\udffe',
+            '\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36518,7 +36538,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36531,7 +36551,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe',
+            '\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36543,7 +36563,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83e\uddd4\ud83c\udffc\u200d♂️',
+            '\ud83e\uddd4\ud83c\udffc\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -36556,7 +36576,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffc\u200d❤️\u200d\ud83e\uddd1\ud83c\udfff',
+            '\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -36569,7 +36589,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -36582,7 +36602,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc69\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -36594,7 +36614,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83e\uddd4\ud83c\udffd\u200d♂️',
+            '\ud83e\uddd4\ud83c\udffd\u200d\u2642\ufe0f',
         ),
     ),
     Unicode(
@@ -36607,7 +36627,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36620,7 +36640,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc69\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36633,7 +36653,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff',
+            '\ud83e\uddd1\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -36646,7 +36666,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffd\u200d❤️\u200d\ud83e\uddd1\ud83c\udffb',
+            '\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36659,7 +36679,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc69\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -36672,7 +36692,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb',
+            '\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36685,7 +36705,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36698,7 +36718,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffd\u200d❤️\u200d\ud83e\uddd1\ud83c\udffc',
+            '\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -36711,7 +36731,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -36724,7 +36744,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc69\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -36737,7 +36757,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc',
+            '\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -36760,7 +36780,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -36783,7 +36803,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -36795,7 +36815,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83e\uddd4\ud83c\udffd\u200d♀️',
+            '\ud83e\uddd4\ud83c\udffd\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -36808,7 +36828,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36821,7 +36841,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc69\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36834,7 +36854,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -36846,7 +36866,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83e\uddd4\ud83c\udfff\u200d♀️',
+            '\ud83e\uddd4\ud83c\udfff\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -36859,7 +36879,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffd\u200d❤️\u200d\ud83e\uddd1\ud83c\udffe',
+            '\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36872,7 +36892,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -36885,7 +36905,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc69\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -36898,7 +36918,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffd\u200d❤️\u200d\ud83e\uddd1\ud83c\udfff',
+            '\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -36911,7 +36931,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc69\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36924,7 +36944,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe',
+            '\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -36937,7 +36957,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff',
+            '\ud83e\uddd1\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -36950,7 +36970,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffe\u200d❤️\u200d\ud83e\uddd1\ud83c\udffb',
+            '\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36963,7 +36983,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -36976,7 +36996,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc69\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -36989,7 +37009,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb',
+            '\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -37002,7 +37022,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffe\u200d❤️\u200d\ud83e\uddd1\ud83c\udffc',
+            '\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37015,7 +37035,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37028,7 +37048,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc',
+            '\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37041,7 +37061,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -37054,7 +37074,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37067,7 +37087,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc69\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37080,7 +37100,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37093,7 +37113,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37106,7 +37126,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffe\u200d❤️\u200d\ud83e\uddd1\ud83c\udffd',
+            '\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37119,7 +37139,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37132,7 +37152,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc69\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37145,7 +37165,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd',
+            '\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37168,7 +37188,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc69\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -37191,7 +37211,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37204,7 +37224,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffe\u200d❤️\u200d\ud83e\uddd1\ud83c\udfff',
+            '\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -37217,7 +37237,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -37230,7 +37250,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc69\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -37243,7 +37263,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff',
+            '\ud83e\uddd1\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -37256,7 +37276,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udfff\u200d❤️\u200d\ud83e\uddd1\ud83c\udffb',
+            '\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -37269,7 +37289,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -37282,7 +37302,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -37295,7 +37315,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -37308,7 +37328,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37321,7 +37341,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc69\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37334,7 +37354,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb',
+            '\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -37347,7 +37367,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37360,7 +37380,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udfff\u200d❤️\u200d\ud83e\uddd1\ud83c\udffc',
+            '\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37373,7 +37393,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc69\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37386,7 +37406,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc',
+            '\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37399,7 +37419,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udfff\u200d❤️\u200d\ud83e\uddd1\ud83c\udffd',
+            '\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37412,7 +37432,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc69\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37425,7 +37445,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd',
+            '\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83e\uddd1\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37438,7 +37458,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37451,7 +37471,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd1\ud83c\udfff\u200d❤️\u200d\ud83e\uddd1\ud83c\udffe',
+            '\ud83e\uddd1\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83e\uddd1\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37464,7 +37484,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37487,7 +37507,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37510,7 +37530,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -37523,7 +37543,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc69\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc69\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -37536,7 +37556,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37549,7 +37569,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -37562,7 +37582,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37572,7 +37592,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83e\uddd4\u200d♀️',
+            '\ud83e\uddd4\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -37585,7 +37605,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37597,7 +37617,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83e\uddd4\ud83c\udffb\u200d♀️',
+            '\ud83e\uddd4\ud83c\udffb\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -37609,7 +37629,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83e\uddd4\ud83c\udffc\u200d♀️',
+            '\ud83e\uddd4\ud83c\udffc\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -37621,7 +37641,7 @@ UNICODES = (
         ),
         None,
         (
-            '\ud83e\uddd4\ud83c\udffe\u200d♀️',
+            '\ud83e\uddd4\ud83c\udffe\u200d\u2640\ufe0f',
         ),
     ),
     Unicode(
@@ -37634,7 +37654,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -37647,7 +37667,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -37660,7 +37680,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffb\u200d❤️\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -37673,7 +37693,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -37686,7 +37706,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37699,7 +37719,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffb\u200d❤️\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37712,7 +37732,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37725,7 +37745,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37738,7 +37758,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffb\u200d❤️\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37751,7 +37771,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffb\u200d❤️\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37764,7 +37784,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37777,7 +37797,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37790,7 +37810,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37803,7 +37823,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -37816,7 +37836,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37829,7 +37849,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffb\u200d❤️\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc68\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -37842,7 +37862,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffb\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffb\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -37855,7 +37875,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -37868,7 +37888,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffc\u200d❤️\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -37881,7 +37901,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffc\u200d❤️\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37894,7 +37914,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -37907,7 +37927,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37920,7 +37940,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -37933,7 +37953,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37946,7 +37966,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffc\u200d❤️\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37959,7 +37979,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -37972,7 +37992,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37985,7 +38005,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffc\u200d❤️\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -37998,7 +38018,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -38011,7 +38031,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -38024,7 +38044,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffc\u200d❤️\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc68\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -38034,7 +38054,7 @@ UNICODES = (
         None,
         None,
         (
-            '❤️\u200d\ud83e\ude79',
+            '\u2764\ufe0f\u200d\ud83e\ude79',
         ),
     ),
     Unicode(
@@ -38047,7 +38067,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffd\u200d❤️\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -38060,7 +38080,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffc\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffc\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -38073,7 +38093,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -38086,7 +38106,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -38099,7 +38119,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -38112,7 +38132,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffd\u200d❤️\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -38125,7 +38145,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -38138,7 +38158,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -38151,7 +38171,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -38164,7 +38184,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffd\u200d❤️\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -38177,7 +38197,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -38190,7 +38210,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -38203,7 +38223,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffd\u200d❤️\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -38213,7 +38233,7 @@ UNICODES = (
         None,
         None,
         (
-            '❤️\u200d\ud83d\udd25',
+            '\u2764\ufe0f\u200d\ud83d\udd25',
         ),
     ),
     Unicode(
@@ -38226,7 +38246,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffd\u200d❤️\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -38239,7 +38259,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -38252,7 +38272,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc68\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -38265,7 +38285,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffd\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffd\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -38278,7 +38298,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -38291,7 +38311,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffe\u200d❤️\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -38304,7 +38324,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -38317,7 +38337,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -38340,7 +38360,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffe\u200d❤️\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -38353,7 +38373,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -38366,7 +38386,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -38379,7 +38399,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffe\u200d❤️\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -38392,7 +38412,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffe\u200d❤️\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -38405,7 +38425,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -38418,7 +38438,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -38431,7 +38451,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -38444,7 +38464,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -38457,7 +38477,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udffe\u200d❤️\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc68\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -38470,7 +38490,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udffe\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udffe\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -38483,7 +38503,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -38496,7 +38516,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udfff\u200d❤️\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -38509,7 +38529,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffb',
         ),
     ),
     Unicode(
@@ -38519,7 +38539,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\ude36\u200d\ud83c\udf2b️',
+            '\ud83d\ude36\u200d\ud83c\udf2b\ufe0f',
         ),
     ),
     Unicode(
@@ -38532,7 +38552,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udfff\u200d❤️\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -38545,7 +38565,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -38558,7 +38578,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -38571,7 +38591,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udfff\u200d❤️\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -38584,7 +38604,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -38597,7 +38617,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -38610,7 +38630,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udfff\u200d❤️\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -38623,7 +38643,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffd',
         ),
     ),
     Unicode(
@@ -38636,7 +38656,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -38649,7 +38669,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc68\ud83c\udfff\u200d❤️\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc68\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -38662,7 +38682,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udffe',
         ),
     ),
     Unicode(
@@ -38675,7 +38695,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68\ud83c\udfff',
         ),
     ),
     Unicode(
@@ -38698,7 +38718,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc69\ud83c\udfff\u200d❤️\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc',
+            '\ud83d\udc69\ud83c\udfff\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc69\ud83c\udffc',
         ),
     ),
     Unicode(
@@ -39976,7 +39996,7 @@ UNICODES = (
         None,
         None,
         (
-            '\ud83d\udc26\u200d⬛',
+            '\ud83d\udc26\u200d\u2b1b',
         ),
     ),
     Unicode(
@@ -40137,6 +40157,1279 @@ UNICODES = (
         None,
         (
             '\ud83d\udedc',
+        ),
+    ),
+    Unicode(
+        'head_shaking_horizontally',
+        b'\xf0\x9f\x99\x82\xe2\x80\x8d\xe2\x86\x94\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\ude42\u200d\u2194\ufe0f',
+        ),
+    ),
+    Unicode(
+        'head_shaking_vertically',
+        b'\xf0\x9f\x99\x82\xe2\x80\x8d\xe2\x86\x95\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\ude42\u200d\u2195\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_in_manual_wheelchair_facing_right',
+        b'\xf0\x9f\xa7\x91\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_in_manual_wheelchair_facing_right_tone1',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbb\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_in_manual_wheelchair_facing_right_tone2',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbc\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_in_manual_wheelchair_facing_right_tone3',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbd\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_in_manual_wheelchair_facing_right_tone4',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbe\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_in_manual_wheelchair_facing_right_tone5',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbf\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_in_manual_wheelchair_facing_right',
+        b'\xf0\x9f\x91\xa8\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_in_manual_wheelchair_facing_right_tone2',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbc\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_in_manual_wheelchair_facing_right_tone1',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbb\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_in_manual_wheelchair_facing_right_tone3',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbd\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_in_manual_wheelchair_facing_right_tone4',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbe\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_in_manual_wheelchair_facing_right_tone5',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbf\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_in_manual_wheelchair_facing_right',
+        b'\xf0\x9f\x91\xa9\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_in_manual_wheelchair_facing_right_tone1',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbb\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_in_manual_wheelchair_facing_right_tone2',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbc\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_in_manual_wheelchair_facing_right_tone3',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbd\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_in_manual_wheelchair_facing_right_tone4',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbe\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_in_manual_wheelchair_facing_right_tone5',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbf\xe2\x80\x8d\xf0\x9f\xa6\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddbd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_in_motorized_wheelchair_facing_right',
+        b'\xf0\x9f\xa7\x91\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_in_motorized_wheelchair_facing_right_tone1',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbb\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_in_motorized_wheelchair_facing_right_tone2',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbc\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_in_motorized_wheelchair_facing_right_tone3',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbd\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_in_motorized_wheelchair_facing_right_tone4',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbe\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_in_motorized_wheelchair_facing_right_tone5',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbf\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_in_motorized_wheelchair_facing_right',
+        b'\xf0\x9f\x91\xa8\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_in_motorized_wheelchair_facing_right_tone1',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbb\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_in_motorized_wheelchair_facing_right_tone2',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbc\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_in_motorized_wheelchair_facing_right_tone3',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbd\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_in_motorized_wheelchair_facing_right_tone4',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbe\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_in_motorized_wheelchair_facing_right_tone5',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbf\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_in_motorized_wheelchair_facing_right',
+        b'\xf0\x9f\x91\xa9\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_in_motorized_wheelchair_facing_right_tone1',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbb\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_in_motorized_wheelchair_facing_right_tone2',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbc\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_in_motorized_wheelchair_facing_right_tone3',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbd\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_in_motorized_wheelchair_facing_right_tone4',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbe\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_in_motorized_wheelchair_facing_right_tone5',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbf\xe2\x80\x8d\xf0\x9f\xa6\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddbc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_walking_facing_right',
+        b'\xf0\x9f\x9a\xb6\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_walking_facing_right_tone1',
+        b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbb\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udffb\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_walking_facing_right_tone2',
+        b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udffc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_walking_facing_right_tone3',
+        b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udffd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_walking_facing_right_tone4',
+        b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbe\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udffe\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_walking_facing_right_tone5',
+        b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udfff\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_walking_facing_right',
+        b'\xf0\x9f\x9a\xb6\xe2\x80\x8d\xe2\x99\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_walking_facing_right_tone1',
+        (
+            b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbb\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udffb\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_walking_facing_right_tone2',
+        (
+            b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbc\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udffc\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_walking_facing_right_tone3',
+        (
+            b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbd\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udffd\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_walking_facing_right_tone4',
+        (
+            b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbe\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udffe\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_walking_facing_right_tone5',
+        (
+            b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbf\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udfff\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_walking_facing_right',
+        b'\xf0\x9f\x9a\xb6\xe2\x80\x8d\xe2\x99\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_walking_facing_right_tone1',
+        (
+            b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbb\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udffb\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_walking_facing_right_tone2',
+        (
+            b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbc\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udffc\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_walking_facing_right_tone3',
+        (
+            b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbd\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udffd\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_walking_facing_right_tone4',
+        (
+            b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbe\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udffe\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_walking_facing_right_tone5',
+        (
+            b'\xf0\x9f\x9a\xb6\xf0\x9f\x8f\xbf\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udeb6\ud83c\udfff\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_with_white_cane_facing_right',
+        b'\xf0\x9f\xa7\x91\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_with_white_cane_facing_right_tone1',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbb\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udffb\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_with_white_cane_facing_right_tone2',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbc\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udffc\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_with_white_cane_facing_right_tone3',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbd\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udffd\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_with_white_cane_facing_right_tone4',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbe\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udffe\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_with_white_cane_facing_right_tone5',
+        b'\xf0\x9f\xa7\x91\xf0\x9f\x8f\xbf\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\ud83c\udfff\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_with_white_cane_facing_right',
+        b'\xf0\x9f\x91\xa8\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_with_white_cane_facing_right_tone1',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbb\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udffb\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_with_white_cane_facing_right_tone2',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbc\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udffc\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_with_white_cane_facing_right_tone3',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbd\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udffd\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_with_white_cane_facing_right_tone4',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbe\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udffe\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_with_white_cane_facing_right_tone5',
+        b'\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbf\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc68\ud83c\udfff\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_with_white_cane_facing_right',
+        b'\xf0\x9f\x91\xa9\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_with_white_cane_facing_right_tone1',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbb\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udffb\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_with_white_cane_facing_right_tone2',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbc\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udffc\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_with_white_cane_facing_right_tone3',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbd\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udffd\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_with_white_cane_facing_right_tone4',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbe\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udffe\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_with_white_cane_facing_right_tone5',
+        b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbf\xe2\x80\x8d\xf0\x9f\xa6\xaf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc69\ud83c\udfff\u200d\ud83e\uddaf\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_kneeling_facing_right',
+        b'\xf0\x9f\xa7\x8e\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_kneeling_facing_right_tone1',
+        b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbb\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udffb\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_kneeling_facing_right_tone2',
+        b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udffc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_kneeling_facing_right_tone3',
+        b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udffd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_kneeling_facing_right_tone4',
+        b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbe\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udffe\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_kneeling_facing_right_tone5',
+        b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udfff\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_kneeling_facing_right',
+        b'\xf0\x9f\xa7\x8e\xe2\x80\x8d\xe2\x99\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_kneeling_facing_right_tone1',
+        (
+            b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbb\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udffb\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_kneeling_facing_right_tone2',
+        (
+            b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbc\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udffc\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_kneeling_facing_right_tone3',
+        (
+            b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbd\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udffd\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_kneeling_facing_right_tone4',
+        (
+            b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbe\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udffe\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_kneeling_facing_right_tone5',
+        (
+            b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbf\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udfff\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_kneeling_facing_right',
+        b'\xf0\x9f\xa7\x8e\xe2\x80\x8d\xe2\x99\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_kneeling_facing_right_tone1',
+        (
+            b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbb\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udffb\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_kneeling_facing_right_tone2',
+        (
+            b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbc\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udffc\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_kneeling_facing_right_tone3',
+        (
+            b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbd\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udffd\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_kneeling_facing_right_tone4',
+        (
+            b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbe\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udffe\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_kneeling_facing_right_tone5',
+        (
+            b'\xf0\x9f\xa7\x8e\xf0\x9f\x8f\xbf\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddce\ud83c\udfff\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_running_facing_right',
+        b'\xf0\x9f\x8f\x83\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_running_facing_right_tone1',
+        b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbb\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udffb\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_running_facing_right_tone2',
+        b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbc\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udffc\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_running_facing_right_tone3',
+        b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbd\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udffd\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_running_facing_right_tone4',
+        b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbe\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udffe\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'person_running_facing_right_tone5',
+        b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbf\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udfff\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_running_facing_right',
+        b'\xf0\x9f\x8f\x83\xe2\x80\x8d\xe2\x99\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_running_facing_right_tone1',
+        (
+            b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbb\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udffb\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_running_facing_right_tone2',
+        (
+            b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbc\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udffc\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_running_facing_right_tone3',
+        (
+            b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbd\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udffd\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_running_facing_right_tone4',
+        (
+            b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbe\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udffe\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'woman_running_facing_right_tone5',
+        (
+            b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbf\xe2\x80\x8d\xe2\x99'
+            b'\x80\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udfff\u200d\u2640\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_running_facing_right',
+        b'\xf0\x9f\x8f\x83\xe2\x80\x8d\xe2\x99\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_running_facing_right_tone1',
+        (
+            b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbb\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udffb\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_running_facing_right_tone2',
+        (
+            b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbc\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udffc\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_running_facing_right_tone3',
+        (
+            b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbd\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udffd\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_running_facing_right_tone4',
+        (
+            b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbe\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udffe\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'man_running_facing_right_tone5',
+        (
+            b'\xf0\x9f\x8f\x83\xf0\x9f\x8f\xbf\xe2\x80\x8d\xe2\x99'
+            b'\x82\xef\xb8\x8f\xe2\x80\x8d\xe2\x9e\xa1\xef\xb8\x8f'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udfc3\ud83c\udfff\u200d\u2642\ufe0f\u200d\u27a1\ufe0f',
+        ),
+    ),
+    Unicode(
+        'family_adult_adult_child_child',
+        (
+            b'\xf0\x9f\xa7\x91\xe2\x80\x8d\xf0\x9f\xa7\x91\xe2\x80'
+            b'\x8d\xf0\x9f\xa7\x92\xe2\x80\x8d\xf0\x9f\xa7\x92'
+        ).decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\u200d\ud83e\uddd1\u200d\ud83e\uddd2\u200d\ud83e\uddd2',
+        ),
+    ),
+    Unicode(
+        'family_adult_adult_child',
+        b'\xf0\x9f\xa7\x91\xe2\x80\x8d\xf0\x9f\xa7\x91\xe2\x80\x8d\xf0\x9f\xa7\x92'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\u200d\ud83e\uddd1\u200d\ud83e\uddd2',
+        ),
+    ),
+    Unicode(
+        'family_adult_child_child',
+        b'\xf0\x9f\xa7\x91\xe2\x80\x8d\xf0\x9f\xa7\x92\xe2\x80\x8d\xf0\x9f\xa7\x92'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\u200d\ud83e\uddd2\u200d\ud83e\uddd2',
+        ),
+    ),
+    Unicode(
+        'family_adult_child',
+        b'\xf0\x9f\xa7\x91\xe2\x80\x8d\xf0\x9f\xa7\x92'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83e\uddd1\u200d\ud83e\uddd2',
+        ),
+    ),
+    Unicode(
+        'phoenix',
+        b'\xf0\x9f\x90\xa6\xe2\x80\x8d\xf0\x9f\x94\xa5'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83d\udc26\u200d\ud83d\udd25',
+        ),
+    ),
+    Unicode(
+        'brown_mushroom',
+        b'\xf0\x9f\x8d\x84\xe2\x80\x8d\xf0\x9f\x9f\xab'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udf44\u200d\ud83d\udfeb',
+        ),
+    ),
+    Unicode(
+        'lime',
+        b'\xf0\x9f\x8d\x8b\xe2\x80\x8d\xf0\x9f\x9f\xa9'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\ud83c\udf4b\u200d\ud83d\udfe9',
+        ),
+    ),
+    Unicode(
+        'broken_chain',
+        b'\xe2\x9b\x93\xef\xb8\x8f\xe2\x80\x8d\xf0\x9f\x92\xa5'.decode('utf8'),
+        False,
+        None,
+        None,
+        (
+            '\u26d3\ufe0f\u200d\ud83d\udca5',
         ),
     ),
 )

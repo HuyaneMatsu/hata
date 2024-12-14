@@ -74,6 +74,8 @@ def test__SlashCommandParameterAutoCompleter__repr():
     vampytest.assert_in(type(slash_command_parameter_auto_completer).__name__, output)
     vampytest.assert_in(f'name_pairs = {slash_command_parameter_auto_completer.name_pairs!r}', output)
     vampytest.assert_in(f'exception_handlers = {[exception_handler]!r}', output)
+    vampytest.assert_in(f'command_function = {function!r}', output)
+    vampytest.assert_in(f'deepness = {deepness!r}', output)
 
 
 def test__SlashCommandParameterAutoCompleter__hash():

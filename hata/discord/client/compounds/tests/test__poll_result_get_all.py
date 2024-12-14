@@ -156,7 +156,7 @@ async def test__poll_result_get_all(
     client_id, message, extra_request_parameters, expected_requests, request_returns, global_mocks, cache,
 ):
     """
-    Tests whether ``Client.poll_result_user_get_all`` works as intended.
+    Tests whether ``Client.poll_result_get_all`` works as intended.
     
     This function is a coroutine.
     

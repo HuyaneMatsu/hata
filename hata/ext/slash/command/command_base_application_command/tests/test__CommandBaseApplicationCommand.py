@@ -164,6 +164,7 @@ def test__CommandBaseApplicationCommand__repr():
     
     name = 'yuuka'
     delete_on_unload = True
+    guild_id = 2024120430
     # guild = None
     integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
@@ -176,6 +177,10 @@ def test__CommandBaseApplicationCommand__repr():
     is_global = True
     nsfw = True
     required_permissions = Permission(8)
+    permission_overwrite = ApplicationCommandPermissionOverwrite(
+        (ApplicationCommandPermissionOverwriteTargetType.role, 20241204301),
+        True,
+    )
     
     
     async def exception_handler(client, interaction_event, command, exception):
@@ -193,6 +198,7 @@ def test__CommandBaseApplicationCommand__repr():
         required_permissions = required_permissions,
     )
     command_base_application_command.error(exception_handler)
+    command_base_application_command.add_permission_overwrite(guild_id, permission_overwrite)
     
     output = repr(command_base_application_command)
     vampytest.assert_in(type(command_base_application_command).__name__, output)
@@ -204,6 +210,7 @@ def test__CommandBaseApplicationCommand__repr():
     vampytest.assert_in(f'integration_types = {tuple(integration_types)!r}', output)
     vampytest.assert_in(f'nsfw = {nsfw!r}', output)
     vampytest.assert_in(f'required_permissions = {required_permissions!r}', output)
+    vampytest.assert_in(f'permission_overwrites = { {guild_id: [permission_overwrite]}!r}', output)
 
 
 def test__CommandBaseApplicationCommand__hash():

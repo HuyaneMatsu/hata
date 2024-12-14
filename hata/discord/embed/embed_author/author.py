@@ -2,7 +2,7 @@ __all__ = ('EmbedAuthor',)
 
 from scarletio import copy_docs
 
-from ...utils import sanitize_mentions, url_cutter
+from ...utils import sanitize_mentions
 
 from ..embed_field_base import EmbedFieldBase
 
@@ -122,7 +122,7 @@ class EmbedAuthor(EmbedFieldBase):
                 field_added = True
             
             repr_parts.append(' icon_url = ')
-            repr_parts.append(repr(url_cutter(icon_url)))
+            repr_parts.append(repr(icon_url))
         
         url = self.url
         if url is not None:
@@ -130,7 +130,7 @@ class EmbedAuthor(EmbedFieldBase):
                 repr_parts.append(',')
             
             repr_parts.append(' url = ')
-            repr_parts.append(repr(url_cutter(url)))
+            repr_parts.append(repr(url))
     
     
     @copy_docs(EmbedFieldBase.__hash__)

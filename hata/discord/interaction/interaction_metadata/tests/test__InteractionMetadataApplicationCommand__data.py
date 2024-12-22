@@ -1,5 +1,6 @@
 import vampytest
 
+from ....application_command import ApplicationCommandTargetType
 from ....message import Attachment
 
 from ...interaction_option import InteractionOption
@@ -20,6 +21,7 @@ def test__InteractionMetadataApplicationCommand__from_data():
     options = [InteractionOption(name = 'Rem')]
     resolved = Resolved(attachments = [Attachment.precreate(202211060017)])
     target_id = 202211060018
+    target_type = ApplicationCommandTargetType.user
     
     data = {
         'id': str(application_command_id),
@@ -27,6 +29,7 @@ def test__InteractionMetadataApplicationCommand__from_data():
         'options': [option.to_data(defaults = True) for option in options],
         'resolved': resolved.to_data(defaults = True, guild_id = guild_id),
         'target_id': str(target_id),
+        'type': target_type.value,
     }
     
     interaction_metadata = InteractionMetadataApplicationCommand.from_data(data, guild_id)
@@ -37,6 +40,7 @@ def test__InteractionMetadataApplicationCommand__from_data():
     vampytest.assert_eq(interaction_metadata.options, tuple(options))
     vampytest.assert_eq(interaction_metadata.resolved, resolved)
     vampytest.assert_eq(interaction_metadata.target_id, target_id)
+    vampytest.assert_is(interaction_metadata.target_type, target_type)
 
 
 def test__InteractionMetadataApplicationCommand__to_data():
@@ -50,6 +54,7 @@ def test__InteractionMetadataApplicationCommand__to_data():
     options = [InteractionOption(name = 'Rem')]
     resolved = Resolved(attachments = [Attachment.precreate(202211060020)])
     target_id = 202211060021
+    target_type = ApplicationCommandTargetType.user
     
     interaction_metadata = InteractionMetadataApplicationCommand(
         application_command_id = application_command_id,
@@ -57,6 +62,7 @@ def test__InteractionMetadataApplicationCommand__to_data():
         options = options,
         resolved = resolved,
         target_id = target_id,
+        target_type = target_type,
     )
     
     vampytest.assert_eq(
@@ -70,5 +76,6 @@ def test__InteractionMetadataApplicationCommand__to_data():
             'options': [option.to_data(defaults = True) for option in options],
             'resolved': resolved.to_data(defaults = True, guild_id = guild_id),
             'target_id': str(target_id),
+            'type': target_type.value,
         },
     )

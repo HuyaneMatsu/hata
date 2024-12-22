@@ -7,7 +7,9 @@ from ....permission import Permission
 from ...application_command_option import ApplicationCommandOption, ApplicationCommandOptionType
 
 from ..application_command import ApplicationCommand
-from ..preinstanced import ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
+from ..preinstanced import (
+    ApplicationCommandHandlerType, ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
+)
 
 
 def test__ApplicationCommand__len__no_description():
@@ -23,7 +25,8 @@ def test__ApplicationCommand__len__no_description():
         target_type = ApplicationCommandTargetType.user,
     )
     
-    return len(application_command)
+    output = len(application_command)
+    vampytest.assert_instance(output, int)
 
 
 def test__ApplicationCommand__len__all_fields():
@@ -31,36 +34,50 @@ def test__ApplicationCommand__len__all_fields():
     Tests whether ``ApplicationCommand.__len__`` works as intended if the maximal amount of fields are given at
     creation.
     """
-    application_command = ApplicationCommand(
-        'owo',
-        'description',
-        description_localizations = {
-            Locale.thai: 'ayy',
-            Locale.czech: 'yay',
-        },
-        integration_context_types = [
-            ApplicationCommandIntegrationContextType.guild,
-            ApplicationCommandIntegrationContextType.any_private_channel,
-        ],
-        integration_types = [ApplicationIntegrationType.user_install],
-        name_localizations = {
-            Locale.thai: 'nay',
-            Locale.czech: 'lay',
-        },
-        nsfw = True,
-        options = [
-            ApplicationCommandOption(
-                'option',
-                'optional',
-                ApplicationCommandOptionType.string,
+    name = 'owo'
+    description = 'description'
+    description_localizations = {
+        Locale.thai: 'ayy',
+        Locale.czech: 'yay',
+    }
+    handler_type = ApplicationCommandHandlerType.discord_embedded_activity_launcher
+    integration_context_types = [
+        ApplicationCommandIntegrationContextType.guild,
+        ApplicationCommandIntegrationContextType.any_private_channel,
+    ]
+    integration_types = [ApplicationIntegrationType.user_install]
+    name_localizations = {
+        Locale.thai: 'nay',
+        Locale.czech: 'lay',
+    }
+    nsfw = True
+    options = [
+        ApplicationCommandOption(
+            'option',
+            'optional',
+            ApplicationCommandOptionType.string,
 
-            )
-        ],
-        required_permissions = Permission().update_by_keys(administrator = True),
-        target_type = ApplicationCommandTargetType.chat,
+        )
+    ]
+    required_permissions = Permission().update_by_keys(administrator = True)
+    target_type = ApplicationCommandTargetType.chat
+    
+    application_command = ApplicationCommand(
+        name,
+        description,
+        description_localizations = description_localizations,
+        handler_type = handler_type,
+        integration_context_types = integration_context_types,
+        integration_types = integration_types,
+        name_localizations = name_localizations,
+        nsfw = nsfw,
+        options = options,
+        required_permissions = required_permissions,
+        target_type = target_type,
     )
     
-    return len(application_command)
+    output = len(application_command)
+    vampytest.assert_instance(output, int)
 
 
 
@@ -178,59 +195,24 @@ def test__ApplicationCommand__repr():
     """
     Tests whether ``ApplicationCommand.__repr__`` works as intended.
     """
-    application_command = ApplicationCommand(
-        'owo',
-        'description',
-        description_localizations = {
-            Locale.thai: 'ayy',
-            Locale.czech: 'yay',
-        },
-        name_localizations = {
-            Locale.thai: 'nay',
-            Locale.czech: 'lay',
-        },
-        integration_context_types = [
-            ApplicationCommandIntegrationContextType.guild,
-            ApplicationCommandIntegrationContextType.any_private_channel,
-        ],
-        integration_types = [ApplicationIntegrationType.user_install],
-        nsfw = True,
-        options = [
-            ApplicationCommandOption(
-                'option',
-                'optional',
-                ApplicationCommandOptionType.string,
-
-            )
-        ],
-        required_permissions = Permission().update_by_keys(administrator = True),
-        target_type = ApplicationCommandTargetType.chat,
-    )
-    
-    vampytest.assert_instance(repr(application_command), str)
-
-
-def test__ApplicationCommand__eq():
-    """
-    Tests whether ``ApplicationCommand.__eq__`` works as intended.
-    """
-    old_description = 'description'
-    old_description_localizations = {
+    name = 'owo'
+    description = 'description'
+    description_localizations = {
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
-    old_integration_context_types = [
+    handler_type = ApplicationCommandHandlerType.discord_embedded_activity_launcher
+    integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
         ApplicationCommandIntegrationContextType.any_private_channel,
     ]
-    old_integration_types = [ApplicationIntegrationType.user_install]
-    old_name = 'hey'
-    old_name_localizations = {
+    integration_types = [ApplicationIntegrationType.user_install]
+    name_localizations = {
         Locale.thai: 'nay',
         Locale.czech: 'lay',
     }
-    old_nsfw = True
-    old_options = [
+    nsfw = True
+    options = [
         ApplicationCommandOption(
             'option',
             'optional',
@@ -238,107 +220,259 @@ def test__ApplicationCommand__eq():
 
         )
     ]
-    old_required_permissions = Permission().update_by_keys(administrator = True)
-    old_target_type = ApplicationCommandTargetType.chat
+    required_permissions = Permission().update_by_keys(administrator = True)
+    target_type = ApplicationCommandTargetType.chat
     
-    new_description = 'mars'
-    new_description_localizations = {
-        Locale.dutch: 'aya',
-        Locale.greek: 'yya',
+    application_command = ApplicationCommand(
+        name,
+        description,
+        description_localizations = description_localizations,
+        handler_type = handler_type,
+        integration_context_types = integration_context_types,
+        integration_types = integration_types,
+        name_localizations = name_localizations,
+        nsfw = nsfw,
+        options = options,
+        required_permissions = required_permissions,
+        target_type = target_type,
+    )
+    
+    output = repr(application_command)
+    vampytest.assert_instance(output, str)
+
+
+def _iter_options__eq():
+    description = 'description'
+    description_localizations = {
+        Locale.thai: 'ayy',
+        Locale.czech: 'yay',
     }
-    new_integration_context_types = [
+    handler_type = ApplicationCommandHandlerType.discord_embedded_activity_launcher
+    integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
-        ApplicationCommandIntegrationContextType.bot_private_channel,
+        ApplicationCommandIntegrationContextType.any_private_channel,
     ]
-    new_integration_types = [ApplicationIntegrationType.guild_install, ApplicationIntegrationType.user_install]
-    new_name = 'mister'
-    new_name_localizations = {
-        Locale.dutch: 'aya',
-        Locale.greek: 'yya',
+    integration_types = [ApplicationIntegrationType.user_install]
+    name = 'hey'
+    name_localizations = {
+        Locale.thai: 'nay',
+        Locale.czech: 'lay',
     }
-    new_nsfw = False
-    new_options = [
+    nsfw = True
+    options = [
         ApplicationCommandOption(
-            'hello',
-            'hell',
-            ApplicationCommandOptionType.float,
+            'option',
+            'optional',
+            ApplicationCommandOptionType.string,
 
         )
     ]
-    new_required_permissions = Permission().update_by_keys(kick_users = True)
-    new_target_type = ApplicationCommandTargetType.message
+    required_permissions = Permission().update_by_keys(administrator = True)
+    target_type = ApplicationCommandTargetType.chat
     
-    old_fields = {
-        'description': old_description,
-        'description_localizations': old_description_localizations,
-        'integration_context_types': old_integration_context_types,
-        'integration_types': old_integration_types,
-        'name': old_name,
-        'name_localizations': old_name_localizations,
-        'nsfw': old_nsfw,
-        'options': old_options,
-        'required_permissions': old_required_permissions,
-        'target_type': old_target_type,
+    keyword_parameters = {
+        'description': description,
+        'description_localizations': description_localizations,
+        'handler_type': handler_type,
+        'integration_context_types': integration_context_types,
+        'integration_types': integration_types,
+        'name': name,
+        'name_localizations': name_localizations,
+        'nsfw': nsfw,
+        'options': options,
+        'required_permissions': required_permissions,
+        'target_type': target_type,
     }
     
-    vampytest.assert_eq(
-        ApplicationCommand(**old_fields),
-        ApplicationCommand(**old_fields),
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
     )
     
-    for field_name, field_value in (
-        ('description', new_description),
-        ('description_localizations', new_description_localizations),
-        ('integration_context_types', new_integration_context_types),
-        ('integration_types', new_integration_types),
-        ('name', new_name),
-        ('name_localizations', new_name_localizations),
-        ('nsfw', new_nsfw),
-        ('options', new_options),
-        ('required_permissions', new_required_permissions),
-        ('target_type', new_target_type),
-    ):
-        vampytest.assert_eq(
-            ApplicationCommand(**old_fields),
-            ApplicationCommand(**{**old_fields, field_name: field_value}),
-            reverse = True
-        )
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'description': 'mars',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'description_localizations': {
+                Locale.dutch: 'aya',
+                Locale.greek: 'yya',
+            },
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'integration_context_types': [
+                ApplicationCommandIntegrationContextType.guild,
+                ApplicationCommandIntegrationContextType.bot_private_channel,
+            ],
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'integration_types': [
+                ApplicationIntegrationType.guild_install,
+                ApplicationIntegrationType.user_install,
+            ],
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'mister',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name_localizations': {
+                Locale.dutch: 'aya',
+                Locale.greek: 'yya',
+            },
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'nsfw': False,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'options': [
+                ApplicationCommandOption(
+                    'hello',
+                    'hell',
+                    ApplicationCommandOptionType.float,
+                ),
+            ],
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'required_permissions': Permission().update_by_keys(kick_users = True),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'target_type': ApplicationCommandTargetType.message,
+        },
+        False,
+    )
+    
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__ApplicationCommand__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``ApplicationCommand.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    application_command_0 = ApplicationCommand(**keyword_parameters_0)
+    application_command_1 = ApplicationCommand(**keyword_parameters_1)
+    
+    output = application_command_0 == application_command_1
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def test__ApplicationCommand__hash():
     """
     Tests whether ``ApplicationCommand.__hash__`` works as intended.
     """
-    application_command = ApplicationCommand(
-        'owo',
-        'description',
-        description_localizations = {
-            Locale.thai: 'ayy',
-            Locale.czech: 'yay',
-        },
-        integration_context_types = [
-            ApplicationCommandIntegrationContextType.guild,
-            ApplicationCommandIntegrationContextType.any_private_channel,
-        ],
-        integration_types = [ApplicationIntegrationType.user_install],
-        name_localizations = {
-            Locale.thai: 'nay',
-            Locale.czech: 'lay',
-        },
-        nsfw = True,
-        options = [
-            ApplicationCommandOption(
-                'option',
-                'optional',
-                ApplicationCommandOptionType.string,
+    name = 'owo'
+    description = 'description'
+    description_localizations = {
+        Locale.thai: 'ayy',
+        Locale.czech: 'yay',
+    }
+    handler_type = ApplicationCommandHandlerType.discord_embedded_activity_launcher
+    integration_context_types = [
+        ApplicationCommandIntegrationContextType.guild,
+        ApplicationCommandIntegrationContextType.any_private_channel,
+    ]
+    integration_types = [ApplicationIntegrationType.user_install]
+    name_localizations = {
+        Locale.thai: 'nay',
+        Locale.czech: 'lay',
+    }
+    nsfw = True
+    options = [
+        ApplicationCommandOption(
+            'option',
+            'optional',
+            ApplicationCommandOptionType.string,
 
-            )
-        ],
-        required_permissions = Permission().update_by_keys(administrator = True),
-        target_type = ApplicationCommandTargetType.chat,
+        )
+    ]
+    required_permissions = Permission().update_by_keys(administrator = True)
+    target_type = ApplicationCommandTargetType.chat
+    
+    application_command = ApplicationCommand(
+        name,
+        description,
+        description_localizations = description_localizations,
+        handler_type = handler_type,
+        integration_context_types = integration_context_types,
+        integration_types = integration_types,
+        name_localizations = name_localizations,
+        nsfw = nsfw,
+        options = options,
+        required_permissions = required_permissions,
+        target_type = target_type,
     )
     
-    vampytest.assert_instance(hash(application_command), int)
+    output = hash(application_command)
+    vampytest.assert_instance(output, int)
 
 
 def test__ApplicationCommand__format():
@@ -350,6 +484,7 @@ def test__ApplicationCommand__format():
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
+    handler_type = ApplicationCommandHandlerType.discord_embedded_activity_launcher
     integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
         ApplicationCommandIntegrationContextType.any_private_channel,
@@ -375,6 +510,7 @@ def test__ApplicationCommand__format():
     application_command = ApplicationCommand(
         description = description,
         description_localizations = description_localizations,
+        handler_type = handler_type,
         integration_context_types = integration_context_types,
         integration_types = integration_types,
         name = name,

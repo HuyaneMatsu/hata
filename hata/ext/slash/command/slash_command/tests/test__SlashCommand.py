@@ -631,16 +631,16 @@ def test__SlashCommand__copy():
     vampytest.assert_eq(copy, slash_command)
 
 
-def test__SlashCommand__target():
+def test__SlashCommand__target_type():
     """
-    Tests whether ``SlashCommand.target`` works as intended.
+    Tests whether ``SlashCommand.target_type`` works as intended.
     """
     function = None
     name = 'yuuka'
     
     slash_command = SlashCommand(function, name)
     
-    output = slash_command.target
+    output = slash_command.target_type
     vampytest.assert_instance(output, ApplicationCommandTargetType)
     vampytest.assert_is(output, ApplicationCommandTargetType.chat)
 

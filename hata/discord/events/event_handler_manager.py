@@ -431,6 +431,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------+-------------------------------------------------------------------+
         | description_localizations | `None`, `dict` of (``Locale``, `str`) items                       |
         +---------------------------+-------------------------------------------------------------------+
+        | handler_type              | ``ApplicationCommandHandlerType``                                 |
+        +---------------------------+-------------------------------------------------------------------+
         | integration_context_types | `None`, `tuple` of ``ApplicationCommandIntegrationContextType``   |
         +---------------------------+-------------------------------------------------------------------+
         | integration_types         | `None`, `tuple` of ``ApplicationIntegrationType``                 |
@@ -1217,6 +1219,10 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | current_period_end        | `None`, `DateTime`                            |
         +---------------------------+-----------------------------------------------+
         | current_period_start      | `None`, `DateTime`                            |
+        +---------------------------+-----------------------------------------------+
+        | renewal_sku_ids           | `None`, `tuple` of `int`                      |
+        +---------------------------+-----------------------------------------------+
+        | sku_ids                   | `None`, `tuple` of `int`                      |
         +---------------------------+-----------------------------------------------+
         | status                    | ``SubscriptionStatus``                        |
         +---------------------------+-----------------------------------------------+

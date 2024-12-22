@@ -18,6 +18,7 @@ def test__Subscription__repr():
     current_period_end = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     current_period_start = DateTime(2016, 5, 16, tzinfo = TimeZone.utc)
     entitlement_ids = [202409220060, 202409220061]
+    renewal_sku_ids = [202412210031, 202412210032]
     sku_ids = [202409220062, 202409220063]
     status = SubscriptionStatus.ending
     user_id = 202409220064
@@ -29,6 +30,7 @@ def test__Subscription__repr():
         current_period_end = current_period_end,
         current_period_start = current_period_start,
         entitlement_ids = entitlement_ids,
+        renewal_sku_ids = renewal_sku_ids,
         sku_ids = sku_ids,
         status = status,
         user_id = user_id,
@@ -49,12 +51,14 @@ def test__Subscription__hash():
     current_period_end = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     current_period_start = DateTime(2016, 5, 16, tzinfo = TimeZone.utc)
     entitlement_ids = [202409220066, 202409220067]
+    renewal_sku_ids = [202412210033, 202412210034]
     sku_ids = [202409220068, 202409220069]
     status = SubscriptionStatus.ending
     user_id = 202409220070
     
     keyword_parameters = {
         'entitlement_ids': entitlement_ids,
+        'renewal_sku_ids': renewal_sku_ids,
         'sku_ids': sku_ids,
         'user_id': user_id,
     }
@@ -79,11 +83,13 @@ def test__Subscription__hash():
 
 def _iter_options__eq__partial():
     entitlement_ids = [202409230000, 202409220001]
+    renewal_sku_ids = [202412210035, 202412210036]
     sku_ids = [202409220002, 202409220003]
     user_id = 202409220004
     
     keyword_parameters = {
         'entitlement_ids': entitlement_ids,
+        'renewal_sku_ids': renewal_sku_ids,
         'sku_ids': sku_ids,
         'user_id': user_id,
     }
@@ -105,6 +111,15 @@ def _iter_options__eq__partial():
         {
             **keyword_parameters,
             'entitlement_ids': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'renewal_sku_ids': None,
         },
         False,
     )

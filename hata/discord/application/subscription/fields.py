@@ -62,7 +62,14 @@ put_id_into = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('subscription_id')
 
 
-# sku_id
+# renewal_sku_ids
+
+parse_renewal_sku_ids = entity_id_array_parser_factory('renewal_sku_ids')
+put_renewal_sku_ids_into = optional_entity_id_array_optional_putter_factory('renewal_sku_ids')
+validate_renewal_sku_ids = entity_id_array_validator_factory('renewal_sku_ids', SKU)
+
+
+# sku_idpa
 
 validate_sku_id = entity_id_validator_factory('sku_id', SKU)
 

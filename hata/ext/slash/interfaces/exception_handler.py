@@ -23,7 +23,7 @@ def validate_exception_handler(function):
         +-------------------+-------------------------------------------------------------------------------+
         | interaction_event | ``InteractionEvent``                                                          |
         +-------------------+-------------------------------------------------------------------------------+
-        | command           | ``ComponentCommand``, ``SlashCommand``,                                       |
+        | command           | ``ComponentCommand``, ``EmbeddedActivityLaunchCommand``, ``SlashCommand``,    |
         |                   | ``SlashCommandFunction``, ``SlashCommandCategory``,                           |
         |                   | ``SlashCommandParameterAutoCompleter``                                        |
         +-------------------+-------------------------------------------------------------------------------+

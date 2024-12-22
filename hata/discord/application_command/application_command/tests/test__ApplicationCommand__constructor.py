@@ -7,7 +7,9 @@ from ....permission import Permission
 from ...application_command_option import ApplicationCommandOption, ApplicationCommandOptionType
 
 from ..application_command import ApplicationCommand
-from ..preinstanced import ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
+from ..preinstanced import (
+    ApplicationCommandHandlerType, ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
+)
 
 
 def _assert_fields_set(application_command):
@@ -24,6 +26,7 @@ def _assert_fields_set(application_command):
     vampytest.assert_instance(application_command.description, str, nullable = True)
     vampytest.assert_instance(application_command.description_localizations, dict, nullable = True)
     vampytest.assert_instance(application_command.guild_id, int)
+    vampytest.assert_instance(application_command.handler_type, ApplicationCommandHandlerType)
     vampytest.assert_instance(application_command.id, int)
     vampytest.assert_instance(application_command.integration_context_types, tuple, nullable = True)
     vampytest.assert_instance(application_command.integration_types, tuple, nullable = True)
@@ -62,6 +65,7 @@ def test__ApplicationCommand__new__all_fields():
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
+    handler_type = ApplicationCommandHandlerType.discord_embedded_activity_launcher
     integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
         ApplicationCommandIntegrationContextType.any_private_channel,
@@ -87,6 +91,7 @@ def test__ApplicationCommand__new__all_fields():
         name,
         description,
         description_localizations = description_localizations,
+        handler_type = handler_type,
         integration_context_types = integration_context_types,
         integration_types = integration_types,
         name_localizations = name_localizations,
@@ -100,6 +105,7 @@ def test__ApplicationCommand__new__all_fields():
     vampytest.assert_eq(application_command.name, name)
     vampytest.assert_eq(application_command.description, description)
     vampytest.assert_eq(application_command.description_localizations, description_localizations)
+    vampytest.assert_is(application_command.handler_type, handler_type)
     vampytest.assert_eq(application_command.integration_context_types, tuple(integration_context_types))
     vampytest.assert_eq(application_command.integration_types, tuple(integration_types))
     vampytest.assert_eq(application_command.name_localizations, name_localizations)
@@ -163,6 +169,7 @@ def test__ApplicationCommand__precreate__all_fields():
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
+    handler_type = ApplicationCommandHandlerType.discord_embedded_activity_launcher
     integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
         ApplicationCommandIntegrationContextType.any_private_channel,
@@ -192,6 +199,7 @@ def test__ApplicationCommand__precreate__all_fields():
         name = name,
         description = description,
         description_localizations = description_localizations,
+        handler_type = handler_type,
         integration_context_types = integration_context_types,
         integration_types = integration_types,
         name_localizations = name_localizations,

@@ -1,7 +1,8 @@
 import vampytest
 
+from ....application_command import ApplicationCommandTargetType
+
 from ..fields import validate_target_type
-from ..preinstanced import ApplicationCommandTargetType
 
 
 def _iter_options__passing():

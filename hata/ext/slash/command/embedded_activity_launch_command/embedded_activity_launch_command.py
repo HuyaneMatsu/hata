@@ -1,13 +1,15 @@
-__all__ = ('ContextCommand',)
+__all__ = ('EmbeddedActivityLaunchCommand',)
 
 from scarletio import copy_docs
 
 from .....discord.application import ApplicationIntegrationType
-from .....discord.application_command import INTEGRATION_CONTEXT_TYPES_ALL
+from .....discord.application_command import (
+    ApplicationCommandHandlerType, ApplicationCommandTargetType, INTEGRATION_CONTEXT_TYPES_ALL
+)
 from .....discord.events.handling_helpers import check_name
 from .....discord.permission import Permission
 
-from ...converters import get_context_command_parameter_converters
+from ...converters import get_embedded_activity_launch_command_parameter_converters
 from ...exceptions import handle_command_exception
 from ...interfaces.command import CommandInterface
 from ...responding import process_command_coroutine
@@ -22,26 +24,25 @@ from ..command_base_application_command.helpers import (
     _validate_delete_on_unload, _validate_guild, _validate_integration_context_types, _validate_integration_types,
     _validate_is_global, _validate_name, _validate_nsfw, _validate_required_permissions
 )
-from ..helpers import validate_application_target_type
 
 
-class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
+class EmbeddedActivityLaunchCommand(CommandInterface, CommandBaseApplicationCommand):
     """
-    Represents a context command.
+    Represents an embedded activity launch command.
     
     Attributes
     ----------
-    _command_function : `async-callable˛
+    _command_function : `None | async-callable˛
         The command's function to call.
     
     _exception_handlers : `None | list<CoroutineFunction>`
         Exception handlers added with ``.error`` to the interaction handler.
     
+    _parameter_converters : `tuple<ParameterConverter>`
+        Parsers to parse command parameters.
+    
     _parent_reference : `None | WeakReferer<SelfReferenceInterface>`
         Reference to the slasher application command's parent.
-    
-    name : `str`
-        Application command name. It's length can be in range [1:32].
     
     _permission_overwrites : `None | dict<int, list<ApplicationCommandPermissionOverwrite>>˙
         Permission overwrites applied to the context command.
@@ -84,22 +85,19 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
     integration_types : `None | tuple<ApplicationIntegrationType>`
         The options where the application command can be integrated to.
     
+    name : `str`
+        Application command name. It's length can be in range [1:32].
+    
     nsfw : `None`, `bool`
         Whether the application command is only allowed in nsfw channels.
     
     required_permissions : ``Permission``
         The required permissions to use the application command inside of a guild.
     
-    _parameter_converters : `tuple<ParameterConverter>`
-        Parsers to parse command parameters.
-    
     response_modifier : `None | ResponseModifier`
         Modifies values returned and yielded to command coroutine processor.
-    
-    target_type : ``ApplicationCommandTargetType``
-        The target type of the context command.
     """
-    __slots__ = ('_command_function', '_parameter_converters', 'response_modifier', 'target_type',)
+    __slots__ = ('_command_function', '_parameter_converters', 'response_modifier',)
     
     def __new__(
         cls,
@@ -113,7 +111,6 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         is_global = ...,
         nsfw = ...,
         required_permissions = ...,
-        target_type = ...,
         **keyword_parameters,
     ):
         """
@@ -121,8 +118,8 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         
         Parameters
         ----------
-        function : `async-callable`
-            The function used as the command when using the respective context command.
+        function : `None | async-callable`
+            The function used as the command when using the respective context command. Can be given as `None`.
         
         name : `None | str` = `None`, Optional
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
@@ -153,9 +150,6 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         required_permissions : `int | Permission`, Optional (Keyword only)
             The required permissions to use the application command inside of a guild.
         
-        target_type : `None | int | str | ApplicationCommandTargetType`, Optional (Keyword only)
-            The target type of the command.
-        
         **keyword_parameters : Keyword parameters
             Additional keyword parameters.
         
@@ -183,18 +177,6 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         else:
             command_function = function
             wrappers = None
-        
-        if command_function is None:
-            raise ValueError(
-                f'For context commands `command` parameter is required (cannot be `None` either).'
-            )
-        
-        if target_type is ...:
-            raise ValueError(
-                f'For context commands `target_type` parameter is required (cannot be `None` either).'
-            )
-        
-        target_type = validate_application_target_type(target_type)
         
         # Pre validate
         name = _validate_name(name)
@@ -227,7 +209,7 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         
         # is_global
         if is_global is ...:
-            is_global = False
+            is_global = True
         else:
             is_global = _validate_is_global(is_global)
         
@@ -254,17 +236,19 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         name = check_name(command_function, name)
         name = raw_name_to_display(name)
         
-        if is_global and (guild_ids is not None):
+        if (not is_global) or (guild_ids is not None):
             raise TypeError(
-                f'`is_global` and `guild` contradict each other, got is_global = {is_global!r}, '
+                f'Embedded activity launch commands can be only global, got  is_global = {is_global!r}, '
                 f'guild = {guild!r}.'
             )
         
-        if not is_global:
-            integration_types = None
-            integration_context_types = None
+        if (command_function is None):
+            parameter_converters = ()
         
-        command_function, parameter_converters = get_context_command_parameter_converters(command_function)
+        else:
+            command_function, parameter_converters = get_embedded_activity_launch_command_parameter_converters(
+                command_function
+            )
         
         # Construct
         self = object.__new__(cls)
@@ -284,7 +268,6 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         self.nsfw = nsfw
         self.required_permissions = required_permissions
         self.response_modifier = response_modifier
-        self.target_type = target_type
         
         if (wrappers is not None):
             for wrapper in wrappers:
@@ -297,10 +280,6 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
     def _put_repr_parts_into(self, repr_parts):
         repr_parts = CommandBaseApplicationCommand._put_repr_parts_into(self, repr_parts)
         
-        # target_type
-        repr_parts.append(', target_type = ')
-        repr_parts.append(self.target_type.name)
-        
         # response_modifier
         response_modifier = self.response_modifier
         if (response_modifier is not None):
@@ -308,8 +287,10 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
             repr_parts.append(repr(response_modifier))
         
         # _command_function
-        repr_parts.append(', command_function = ')
-        repr_parts.append(repr(self._command_function))
+        command_function = self._command_function
+        if (command_function is not None):
+            repr_parts.append(' command_function = ')
+            repr_parts.append(repr(self._command_function))
         
         return repr_parts
     
@@ -320,20 +301,18 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         
         # _command_function
         command_function = self._command_function
-        try:
-            command_function_hash_value = hash(command_function)
-        except TypeError:
-            command_function_hash_value = object.__hash__(command_function)
-        hash_value ^= command_function_hash_value
+        if (command_function is not None):
+            try:
+                command_function_hash_value = hash(command_function)
+            except TypeError:
+                command_function_hash_value = object.__hash__(command_function)
+            hash_value ^= command_function_hash_value
         
         # _parameter_converters
         # Internal field
         
         # response_modifier
         hash_value ^= hash(self.response_modifier)
-        
-        # target_type
-        hash_value ^= self.target_type.value << 20
         
         return hash_value
     
@@ -354,15 +333,15 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         if self.response_modifier != other.response_modifier:
             return False
         
-        # target_type
-        if self.target_type is not other.target_type:
-            return False
-        
         return True
     
     
     @copy_docs(CommandBaseApplicationCommand.invoke)
     async def invoke(self, client, interaction_event):
+        command_function = self._command_function
+        if (command_function is None):
+            return
+        
         parameters = []
         
         for parameter_converter in self._parameter_converters:
@@ -385,9 +364,8 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
                 exception,
             )
             return
-            
         
-        command_coroutine = self._command_function(*parameters)
+        command_coroutine = command_function(*parameters)
         
         try:
             await process_command_coroutine(
@@ -427,11 +405,21 @@ class ContextCommand(CommandInterface, CommandBaseApplicationCommand):
         # response_modifier
         new.response_modifier = self.response_modifier
         
-        # target_type
-        new.target_type = self.target_type
-        
         return new
-
+    
+    
+    @CommandBaseApplicationCommand.target_type.getter
+    def target_type(self):
+        return ApplicationCommandTargetType.embedded_activity_launch
+    
+    
+    @CommandBaseApplicationCommand.handler_type.getter
+    def handler_type(self):
+        if self._command_function is None:
+            return ApplicationCommandHandlerType.discord_embedded_activity_launcher
+        
+        return ApplicationCommandHandlerType.application
+    
     
     @copy_docs(CommandInterface.get_command_function)
     def get_command_function(self):

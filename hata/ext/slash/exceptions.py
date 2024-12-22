@@ -456,8 +456,8 @@ async def handle_command_exception(entity, client, interaction_event, exception)
 
     Parameters
     ----------
-    entity : ``ComponentCommand``, ``Slasher``, ``SlashCommand``, ``SlashCommandCategory``,
-            ``SlashCommandFunction``, ``SlashCommandParameterAutoCompleter``
+    entity : ``ComponentCommand``, ``Slasher``, ``EmbeddedActivityLaunchCommand``, ``SlashCommand``,
+            ``SlashCommandCategory``, ``SlashCommandFunction``, ``SlashCommandParameterAutoCompleter``
         The entity to iterate it's exception handlers.
     client : ``Client``
         The respective client.
@@ -491,8 +491,8 @@ def _iter_exception_handlers(entity):
     
     Parameters
     ----------
-    entity : ``ComponentCommand``, ``Slasher``, ``SlashCommand``, ``SlashCommandCategory``,
-            ``SlashCommandFunction``, ``SlashCommandParameterAutoCompleter``
+    entity : ``ComponentCommand``, ``Slasher``, ``EmbeddedActivityLaunchCommand``, ``SlashCommand``,
+            ``SlashCommandCategory``, ``SlashCommandFunction``, ``SlashCommandParameterAutoCompleter``
         The entity to iterate it's exception handlers.
     
     Yields

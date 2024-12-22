@@ -1,5 +1,6 @@
 import vampytest
 
+from ....application_command import ApplicationCommandTargetType
 from ....message import Attachment
 
 from ...interaction_option import InteractionOption
@@ -23,9 +24,10 @@ def _check_is_all_field_set(interaction_metadata):
     vampytest.assert_instance(interaction_metadata.options, tuple, nullable = True)
     vampytest.assert_instance(interaction_metadata.resolved, Resolved, nullable = True)
     vampytest.assert_instance(interaction_metadata.target_id, int)
+    vampytest.assert_instance(interaction_metadata.target_type, ApplicationCommandTargetType)
 
 
-def test__InteractionMetadataApplicationCommand__new__0():
+def test__InteractionMetadataApplicationCommand__new__no_fields():
     """
     Tests whether ``InteractionMetadataApplicationCommand.__new__`` works as intended.
     
@@ -35,7 +37,7 @@ def test__InteractionMetadataApplicationCommand__new__0():
     _check_is_all_field_set(interaction_metadata)
 
 
-def test__InteractionMetadataApplicationCommand__new__1():
+def test__InteractionMetadataApplicationCommand__new__all_fields():
     """
     Tests whether ``InteractionMetadataApplicationCommand.__new__`` works as intended.
     
@@ -46,6 +48,7 @@ def test__InteractionMetadataApplicationCommand__new__1():
     options = [InteractionOption(name = 'Rem')]
     resolved = Resolved(attachments = [Attachment.precreate(202211060014)])
     target_id = 202211060015
+    target_type = ApplicationCommandTargetType.user
     
     interaction_metadata = InteractionMetadataApplicationCommand(
         application_command_id = application_command_id,
@@ -53,6 +56,7 @@ def test__InteractionMetadataApplicationCommand__new__1():
         options = options,
         resolved = resolved,
         target_id = target_id,
+        target_type = target_type,
     )
     _check_is_all_field_set(interaction_metadata)
     
@@ -61,6 +65,7 @@ def test__InteractionMetadataApplicationCommand__new__1():
     vampytest.assert_eq(interaction_metadata.options, tuple(options))
     vampytest.assert_eq(interaction_metadata.resolved, resolved)
     vampytest.assert_eq(interaction_metadata.target_id, target_id)
+    vampytest.assert_eq(interaction_metadata.target_type, target_type)
     
 
 def test__InteractionMetadataApplicationCommand__create_empty():

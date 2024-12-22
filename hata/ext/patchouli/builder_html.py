@@ -525,6 +525,7 @@ def section_serializer(section, object_):
     ----------
     section : `tuple` ((`None`, `str`), `list` of `object`)
         The title to serialize.
+    
     object_ : ``UnitBase``
         The respective unit.
     
@@ -535,6 +536,30 @@ def section_serializer(section, object_):
     section_name, section_parts = section
     yield from section_title_serializer(section_name)
     yield from sub_section_serializer(section_parts, object_, object_.path, create_relative_link)
+
+
+def string_converter(string, object_, path, linker):
+    """
+    Serialises the given string section.
+    
+    This function is a generator.
+    
+    Parameters
+    ----------
+    string : `str`
+        The element to serialize.
+    object_ : ``UnitBase``
+        The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
+    linker : `func`
+        Function, which creates relative link between two units.
+    
+    Yields
+    ------
+    html_part : `str`
+    """
+    yield html_escape(string)
 
 
 def sub_section_serializer(sub_section, object_, path, linker):
@@ -571,6 +596,7 @@ def sub_section_serializer(sub_section, object_, path, linker):
 
 CONVERTER_TABLE = {
     list: sub_section_serializer,
+    str: string_converter,
     GravedListing: listing_serializer,
     GravedDescription: description_serializer,
     GravedTable: table_serializer,

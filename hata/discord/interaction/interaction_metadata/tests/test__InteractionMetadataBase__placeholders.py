@@ -1,5 +1,6 @@
 import vampytest
 
+from ....application_command import ApplicationCommandTargetType
 from ....component import ComponentType
 
 from ...resolved import Resolved
@@ -21,5 +22,6 @@ def test__InteractionMetadataBase__placeholders():
     vampytest.assert_instance(interaction_metadata.options, tuple, nullable = True)
     vampytest.assert_instance(interaction_metadata.options, Resolved, nullable = True)
     vampytest.assert_instance(interaction_metadata.target_id, int)
+    vampytest.assert_instance(interaction_metadata.target_type, ApplicationCommandTargetType)
     vampytest.assert_instance(interaction_metadata.components, tuple, nullable = True)
     vampytest.assert_instance(interaction_metadata.values, tuple, nullable = True)

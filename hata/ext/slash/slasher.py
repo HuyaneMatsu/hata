@@ -19,8 +19,8 @@ from ...discord.guild import Guild
 from ...discord.interaction import InteractionEvent, InteractionType
 
 from .command import (
-    CommandBase, CommandBaseApplicationCommand, ComponentCommand, ContextCommand, FormSubmitCommand, SlashCommand,
-    validate_application_target_type
+    CommandBase, CommandBaseApplicationCommand, ComponentCommand, ContextCommand, EmbeddedActivityLaunchCommand,
+    FormSubmitCommand, SlashCommand, validate_application_target_type
 )
 from .command.component_command.constants import COMMAND_TARGETS_COMPONENT_COMMAND
 from .command.form_submit_command.constants import COMMAND_TARGETS_FORM_COMPONENT_COMMAND
@@ -86,7 +86,7 @@ def match_application_commands_to_commands(application_commands, commands, match
                 if command.name != application_command_name:
                     continue
                 
-                if command.target is not application_command_target_type:
+                if command.target_type is not application_command_target_type:
                     continue
                 
                 if match_schema:
@@ -269,14 +269,14 @@ class CommandState(RichAttributeErrorBaseType):
         if (changes is not None):
             for added, command in changes:
                 command_name = command.name
-                command_target_type = command.target
+                command_target_type = command.target_type
                 
                 for index in range(len(commands)):
                     iter_command = commands[index]
                     if iter_command.name != command_name:
                         continue
                     
-                    if iter_command.target is not command_target_type:
+                    if iter_command.target_type is not command_target_type:
                         continue
                     
                     if added:
@@ -309,14 +309,14 @@ class CommandState(RichAttributeErrorBaseType):
         if (changes is not None):
             for command_change_state in changes:
                 command_name = command_change_state.command.name
-                command_target_type = command_change_state.command.target
+                command_target_type = command_change_state.command.target_type
                 
                 for index in range(len(commands)):
                     iter_command = commands[index]
                     if iter_command.name != command_name:
                         continue
                     
-                    if iter_command.target is not command_target_type:
+                    if iter_command.target_type is not command_target_type:
                         continue
                     
                     del commands[index]
@@ -338,14 +338,14 @@ class CommandState(RichAttributeErrorBaseType):
         if (changes is not None):
             for added, command in changes:
                 command_name = command.name
-                command_target_type = command.target
+                command_target_type = command.target_type
                 
                 for index in range(len(commands)):
                     iter_command = commands[index]
                     if iter_command.name != command_name:
                         continue
                     
-                    if iter_command.target is not command_target_type:
+                    if iter_command.target_type is not command_target_type:
                         continue
                     
                     if added:
@@ -418,7 +418,7 @@ class CommandState(RichAttributeErrorBaseType):
                 if command.name != name:
                     continue
                 
-                if command.target is not target_type:
+                if command.target_type is not target_type:
                     continue
                 
                 del changes[index]
@@ -475,7 +475,7 @@ class CommandState(RichAttributeErrorBaseType):
         if (active is not None):
             for index in range(len(active)):
                 command = active[index]
-                if (command.name == name) and (command.target is target_type):
+                if (command.name == name) and (command.target_type is target_type):
                     del active[index]
                     if not active:
                         self._active = None
@@ -486,7 +486,7 @@ class CommandState(RichAttributeErrorBaseType):
         if (kept is not None):
             for index in range(len(kept)):
                 command = kept[index]
-                if (command.name == name) and (command.target is target_type):
+                if (command.name == name) and (command.target_type is target_type):
                     del kept[index]
                     if not kept:
                         self._kept = None
@@ -508,7 +508,7 @@ class CommandState(RichAttributeErrorBaseType):
         if self._is_non_global:
             return
         
-        self._try_purge(command.name, command.target)
+        self._try_purge(command.name, command.target_type)
         active = self._active
         if active is None:
             self._active = active = []
@@ -528,7 +528,7 @@ class CommandState(RichAttributeErrorBaseType):
         if self._is_non_global:
             return
         
-        self._try_purge(command.name, command.target)
+        self._try_purge(command.name, command.target_type)
         kept = self._kept
         if kept is None:
             self._kept = kept = []
@@ -548,7 +548,7 @@ class CommandState(RichAttributeErrorBaseType):
         if self._is_non_global:
             return
         
-        self._try_purge(command.name, command.target)
+        self._try_purge(command.name, command.target_type)
     
     
     def add(self, command):
@@ -583,7 +583,7 @@ class CommandState(RichAttributeErrorBaseType):
             +---------------------------------------+-------+
         """
         if self._is_non_global:
-            existing_command, purge_identifier = self._try_purge(command.name, command.target)
+            existing_command, purge_identifier = self._try_purge(command.name, command.target_type)
             active = self._active
             if active is None:
                 self._active = active = []
@@ -594,14 +594,14 @@ class CommandState(RichAttributeErrorBaseType):
         kept = self._kept
         if (kept is not None):
             command_name = command.name
-            command_target_type = command.target
+            command_target_type = command.target_type
             
             for index in range(len(kept)):
                 kept_command = kept[index]
                 if kept_command.name != command_name:
                     continue
                 
-                if kept_command.target is not command_target_type:
+                if kept_command.target_type is not command_target_type:
                     continue
                 
                 if kept_command != command:
@@ -618,14 +618,14 @@ class CommandState(RichAttributeErrorBaseType):
         active = self._active
         if (active is not None):
             command_name = command.name
-            command_target_type = command.target
+            command_target_type = command.target_type
             
             for index in range(len(active)):
                 active_command = active[index]
                 if active_command.name != command_name:
                     continue
                 
-                if active_command.target is not command_target_type:
+                if active_command.target_type is not command_target_type:
                     continue
                 
                 if active_command != command:
@@ -645,6 +645,7 @@ class CommandState(RichAttributeErrorBaseType):
         change = CommandChange(True, command)
         changes.append(change)
         return command, COMMAND_STATE_IDENTIFIER_ADDED
+    
     
     def remove(self, command, slasher_unloading_behaviour):
         """
@@ -700,7 +701,7 @@ class CommandState(RichAttributeErrorBaseType):
                 should_keep = True
         
         if self._is_non_global:
-            existing_command, purge_identifier = self._try_purge(command.name, command.target)
+            existing_command, purge_identifier = self._try_purge(command.name, command.target_type)
             if should_keep:
                 kept = self._kept
                 if kept is None:
@@ -711,19 +712,19 @@ class CommandState(RichAttributeErrorBaseType):
             return existing_command, COMMAND_STATE_IDENTIFIER_NON_GLOBAL
         
         if should_keep:
-            self._try_purge_from_changes(command.name, command.target)
+            self._try_purge_from_changes(command.name, command.target_type)
             
             kept = self._kept
             if (kept is not None):
                 command_name = command.name
-                command_target_type = command.target
+                command_target_type = command.target_type
                 
                 for index in range(len(kept)):
                     kept_command = kept[index]
                     if kept_command.name != command_name:
                         continue
                     
-                    if kept_command.target is not command_target_type:
+                    if kept_command.target_type is not command_target_type:
                         continue
                     
                     if kept_command != command:
@@ -734,14 +735,14 @@ class CommandState(RichAttributeErrorBaseType):
             active = self._active
             if (active is not None):
                 command_name = command.name
-                command_target_type = command.target
+                command_target_type = command.target_type
                 
                 for index in range(len(active)):
                     active_command = active[index]
                     if active_command.name != command_name:
                         continue
                     
-                    if active_command.target is not command_target_type:
+                    if active_command.target_type is not command_target_type:
                         continue
                     
                     if active_command != command:
@@ -769,14 +770,14 @@ class CommandState(RichAttributeErrorBaseType):
         kept = self._kept
         if (kept is not None):
             command_name = command.name
-            command_target_type = command.target
+            command_target_type = command.target_type
             
             for index in range(len(kept)):
                 kept_command = kept[index]
                 if kept_command.name != command_name:
                     continue
                 
-                if kept_command.target is not command_target_type:
+                if kept_command.target_type is not command_target_type:
                     continue
                 
                 if kept_command != command:
@@ -890,8 +891,8 @@ class Slasher(
         +-------------------+-------------------------------------------------------------------------------+
         | interaction_event | ``InteractionEvent``                                                          |
         +-------------------+-------------------------------------------------------------------------------+
-        | command           | ``ComponentCommand``, ``ContextCommand``, ``SlashCommand``,                   |
-        |                   | ``SlashCommandFunction``, ``SlashCommandCategory``                            |
+        | command           | ``ComponentCommand``, ``ContextCommand``, ``EmbeddedActivityLaunchCommand``,  |
+        |                   | ``SlashCommand``, ``SlashCommandFunction``, ``SlashCommandCategory``,         |
         |                   | ``SlashCommandParameterAutoCompleter``, ``FormSubmitCommand``                 |
         +-------------------+-------------------------------------------------------------------------------+
         | exception         | `BaseException`                                                               |
@@ -962,7 +963,8 @@ class Slasher(
     __event_name__ : `str` = 'interaction_create'
         Tells for the ``EventHandlerManager`` that ``Slasher`` is a `interaction_create` event handler.
     
-    SUPPORTED_TYPES : `tuple` (``SlashCommand``, ``ComponentCommand``, ``FormSubmitCommand``)
+    SUPPORTED_TYPES : `tuple` (``EmbeddedActivityLaunchCommand``, ``ComponentCommand``, ``ContextCommand``,
+            ``FormSubmitCommand``, ``SlashCommand``)
         Tells to ``eventlist`` what exact types the ``Slasher`` accepts.
     
     Notes
@@ -982,7 +984,7 @@ class Slasher(
     
     __event_name__ = 'interaction_create'
     
-    SUPPORTED_TYPES = (SlashCommand, ContextCommand, ComponentCommand, FormSubmitCommand)
+    SUPPORTED_TYPES = (EmbeddedActivityLaunchCommand, ComponentCommand, ContextCommand, FormSubmitCommand, SlashCommand)
     
     def __new__(
         cls,
@@ -1037,7 +1039,7 @@ class Slasher(
         # client
         if not isinstance(client, Client):
             raise TypeError(
-                f'`client` can be `{Client.__name__}`, got {client.__class__.__name__}; {client!r}.'
+                f'`client` can be `{Client.__name__}`, got {type(client).__name__}; {client!r}.'
             )
         
         client_reference = WeakReferer(client)
@@ -1062,7 +1064,8 @@ class Slasher(
                 iterator = getattr(type(assert_application_command_permission_missmatch_at), '__iter__', None)
                 if iterator is None:
                     raise TypeError(
-                        f'`assert_application_command_permission_missmatch_at` can be `iterable`, got {assert_application_command_permission_missmatch_at.__class__.__name__}; '
+                        f'`assert_application_command_permission_missmatch_at` can be `iterable`, got '
+                        f'{type(assert_application_command_permission_missmatch_at).__name__}; '
                         f'{assert_application_command_permission_missmatch_at!r}.'
                     )
                 
@@ -1075,8 +1078,9 @@ class Slasher(
                         additional_owner = additional_owner.id
                     else:
                         raise TypeError(
-                            f'`assert_application_command_permission_missmatch_at` contains a non `int`, `{Guild.__name__}` , got '
-                            f'{additional_owner.__class__.__name__}; {additional_owner!r}.'
+                            f'`assert_application_command_permission_missmatch_at` contains a non '
+                            f'`int`, `{Guild.__name__}` , got '
+                            f'{type(additional_owner).__name__}; {additional_owner!r}.'
                         )
                     
                     asserted_guild_ids.add(additional_owner)
@@ -1092,7 +1096,7 @@ class Slasher(
         else:
             raise TypeError(
                 f'`delete_commands_on_unload` can be `bool`, got '
-                f'{delete_commands_on_unload.__class__.__name__}; {delete_commands_on_unload!r}.'
+                f'{type(delete_commands_on_unload).__name__}; {delete_commands_on_unload!r}.'
             )
         
         if delete_commands_on_unload:
@@ -1108,7 +1112,7 @@ class Slasher(
         else:
             raise TypeError(
                 f'`enforce_application_command_permissions` can be `bool`, got '
-                f'{enforce_application_command_permissions.__class__.__name__};'
+                f'{type(enforce_application_command_permissions).__name__};'
                 f'{enforce_application_command_permissions!r}.'
             )
         
@@ -1129,7 +1133,7 @@ class Slasher(
         else:
             raise TypeError(
                 f'`use_default_exception_handler` can be `bool`, got '
-                f'{use_default_exception_handler.__class__.__name__}; {use_default_exception_handler!r}.'
+                f'{type(use_default_exception_handler).__name__}; {use_default_exception_handler!r}.'
             )
         
         if use_default_exception_handler:
@@ -1434,9 +1438,15 @@ class Slasher(
                 )
         
         else:
-            target = validate_application_target_type(target)
-            if target in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES:
-                instance = ContextCommand(function, *positional_parameters, target = target, **keyword_parameters)
+            target_type = validate_application_target_type(target)
+            if target_type in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES:
+                instance = ContextCommand(
+                    function, *positional_parameters, target_type = target_type, **keyword_parameters
+                )
+            
+            elif target_type is ApplicationCommandTargetType.embedded_activity_launch:
+                instance = EmbeddedActivityLaunchCommand(function, *positional_parameters, **keyword_parameters)
+                
             else:
                 instance = SlashCommand(function, *positional_parameters, **keyword_parameters)
         

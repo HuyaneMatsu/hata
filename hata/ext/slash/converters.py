@@ -3618,7 +3618,7 @@ def get_context_command_parameter_converters(function):
         - If `function` accepts `*positional_parameters`.
         - If `function` accepts `**keyword_parameters`.
     ValueError
-        - If any parameter is not internal.
+        - If over 1 parameter is not internal.
     """
     analyzer, real_analyzer, should_instance = check_command_coroutine(function, True, False, False, False)
     
@@ -3634,11 +3634,65 @@ def get_context_command_parameter_converters(function):
             if target_converter_detected:
                 raise TypeError(
                     f'`{real_analyzer.real_function!r}`\'s `{parameter.name}` do not refers to any of the '
-                    f'expected internal parameters. Context commands do not accept any additional parameters.'
+                    f'expected internal parameters. '
+                    f'Context commands may have 1 additional parameter for `target` which is already fulfilled.'
                 )
             else:
                 parameter_converter = create_target_parameter_converter(parameter)
                 target_converter_detected = True
+        
+        parameter_converters.append(parameter_converter)
+    
+    
+    parameter_converters = tuple(parameter_converters)
+    
+    if should_instance:
+        function = analyzer.instance()
+    
+    return function, parameter_converters
+
+
+def get_embedded_activity_launch_command_parameter_converters(function):
+    """
+    Parses the given `func`'s parameters.
+    
+    Parameters
+    ----------
+    function : `async-callable`
+        The function used by a ``SlashCommand``.
+    
+    Returns
+    -------
+    function : `async-callable`
+        The converted function.
+    parameter_converters : `tuple` of ``ParameterConverter``
+        Parameter converters for the given `func` in order.
+    
+    Raises
+    ------
+    TypeError
+        - If `function` is not async callable, neither cannot be instanced to async.
+        - If `function` accepts keyword only parameters.
+        - If `function` accepts `*positional_parameters`.
+        - If `function` accepts `**keyword_parameters`.
+    ValueError
+        - If any parameter is not internal.
+    """
+    analyzer, real_analyzer, should_instance = check_command_coroutine(function, True, False, False, False)
+    
+    parameters = real_analyzer.get_non_reserved_positional_parameters()
+    
+    parameter_converters = []
+    
+    for parameter in parameters:
+        parameter_converter = create_internal_parameter_converter(parameter)
+        
+        if (parameter_converter is None):
+            raise TypeError(
+                f'`{real_analyzer.real_function!r}`\'s `{parameter.name}` do not refers to any of the '
+                f'expected internal parameters. '
+                f'Embedded activity launch commands may not have any additional parameters.'
+            )
         
         parameter_converters.append(parameter_converter)
     

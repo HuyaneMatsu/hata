@@ -2,6 +2,7 @@ __all__ = ('InteractionMetadataBase',)
 
 from scarletio import RichAttributeErrorBaseType, copy_docs
 
+from ...application_command import ApplicationCommandTargetType
 from ...bases import PlaceHolder
 from ...component import ComponentType
 
@@ -269,6 +270,18 @@ class InteractionMetadataBase(RichAttributeErrorBaseType):
         Returns
         -------
         target_id : `int`
+        """,
+    )
+    
+    
+    target_type = PlaceHolder(
+        ApplicationCommandTargetType.none,
+        """
+        The invoked application command's target type.
+        
+        Returns
+        -------
+        target_type : ``ApplicationCommandTargetType``
         """,
     )
     

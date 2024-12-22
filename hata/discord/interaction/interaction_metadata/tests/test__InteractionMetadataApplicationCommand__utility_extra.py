@@ -9,11 +9,7 @@ from ...resolved import Resolved
 
 from ..application_command import InteractionMetadataApplicationCommand
 
-
-def test__InteractionMetadataApplicationCommand__target():
-    """
-    Tests whether ``InteractionMetadataApplicationCommand.target`` works as intended.
-    """
+def _iter_options():
     extra_target_id = 202211080017
     
     attachment = Attachment.precreate(202211080012)
@@ -30,34 +26,64 @@ def test__InteractionMetadataApplicationCommand__target():
         users = [user]
     )
     
-    for interaction_metadata, expected_output in (
-        (
-            InteractionMetadataApplicationCommand(),
-            None,
-        ), (
-            InteractionMetadataApplicationCommand(target_id = extra_target_id),
-            None,
-        ), (
-            InteractionMetadataApplicationCommand(resolved = resolved),
-            None,
-        ), (
-            InteractionMetadataApplicationCommand(resolved = resolved, target_id = extra_target_id),
-            None,
-        ), (
-            InteractionMetadataApplicationCommand(resolved = resolved, target_id = attachment.id),
-            attachment,
-        ), (
-            InteractionMetadataApplicationCommand(resolved = resolved, target_id = channel.id),
-            channel,
-        ), (
-            InteractionMetadataApplicationCommand(resolved = resolved, target_id = message.id),
-            message,
-        ), (
-            InteractionMetadataApplicationCommand(resolved = resolved, target_id = role.id),
-            role,
-        ), (
-            InteractionMetadataApplicationCommand(resolved = resolved, target_id = user.id),
-            user,
-        ),
-    ):
-        vampytest.assert_is(interaction_metadata.target, expected_output)
+    yield (
+        {},
+        None,
+    )
+        
+    yield(
+        {'target_id': extra_target_id},
+        None,
+    )
+    
+    yield (
+        {'resolved': resolved},
+        None,
+    )
+    
+    yield (
+        {'resolved': resolved, 'target_id': extra_target_id},
+        None,
+    )
+    
+    yield (
+        {'resolved': resolved, 'target_id': attachment.id},
+        attachment,
+    )
+    
+    yield (
+        {'resolved': resolved, 'target_id': channel.id},
+        channel,
+    )
+    yield (
+        {'resolved': resolved, 'target_id': message.id},
+        message,
+    )
+    
+    yield (
+        {'resolved': resolved, 'target_id': role.id},
+        role,
+    )
+    
+    yield (
+        {'resolved': resolved, 'target_id': user.id},
+        user,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__InteractionMetadataApplicationCommand__target(keyword_parameters):
+    """
+    Tests whether ``InteractionMetadataApplicationCommand.target`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        keyword parameters to construct the metadata from.
+    
+    Returns
+    -------
+    output : `object`
+    """
+    interaction_metadata = InteractionMetadataApplicationCommand(**keyword_parameters)
+    return interaction_metadata.target

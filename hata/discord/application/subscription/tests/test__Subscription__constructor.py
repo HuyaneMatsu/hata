@@ -22,6 +22,7 @@ def _assert_fields_set(subscription):
     vampytest.assert_instance(subscription.current_period_start, DateTime, nullable = True)
     vampytest.assert_instance(subscription.entitlement_ids, tuple, nullable = True)
     vampytest.assert_instance(subscription.id, int)
+    vampytest.assert_instance(subscription.renewal_sku_ids, tuple, nullable = True)
     vampytest.assert_instance(subscription.sku_ids, tuple, nullable = True)
     vampytest.assert_instance(subscription.status, SubscriptionStatus)
     vampytest.assert_instance(subscription.user_id, int)
@@ -44,17 +45,20 @@ def test__Subscription__new__all_fields():
     Case: All parameters given.
     """
     entitlement_ids = [202409220020, 202409220021]
+    renewal_sku_ids = [202412210010, 202412210011]
     sku_ids = [202409220022, 202409220023]
     user_id = 202409220024
     
     subscription = Subscription(
         entitlement_ids = entitlement_ids,
+        renewal_sku_ids = renewal_sku_ids,
         sku_ids = sku_ids,
         user_id = user_id,
     )
     _assert_fields_set(subscription)
     
     vampytest.assert_eq(subscription.entitlement_ids, tuple(entitlement_ids))
+    vampytest.assert_eq(subscription.renewal_sku_ids, tuple(renewal_sku_ids))
     vampytest.assert_eq(subscription.sku_ids, tuple(sku_ids))
     vampytest.assert_eq(subscription.user_id, user_id)
 
@@ -95,6 +99,7 @@ def test__Subscription__precreate__all_fields():
     current_period_end = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     current_period_start = DateTime(2016, 5, 16, tzinfo = TimeZone.utc)
     entitlement_ids = [202409220028, 202409220029]
+    renewal_sku_ids = [202412210012, 202412210013]
     sku_ids = [202409220030, 202409220031]
     status = SubscriptionStatus.ending
     user_id = 202409220032
@@ -106,6 +111,7 @@ def test__Subscription__precreate__all_fields():
         current_period_end = current_period_end,
         current_period_start = current_period_start,
         entitlement_ids = entitlement_ids,
+        renewal_sku_ids = renewal_sku_ids,
         sku_ids = sku_ids,
         status = status,
         user_id = user_id,
@@ -118,6 +124,7 @@ def test__Subscription__precreate__all_fields():
     vampytest.assert_eq(subscription.current_period_end, current_period_end)
     vampytest.assert_eq(subscription.current_period_start, current_period_start)
     vampytest.assert_eq(subscription.entitlement_ids, tuple(entitlement_ids))
+    vampytest.assert_eq(subscription.renewal_sku_ids, tuple(renewal_sku_ids))
     vampytest.assert_eq(subscription.sku_ids, tuple(sku_ids))
     vampytest.assert_is(subscription.status, status)
     vampytest.assert_eq(subscription.user_id, user_id)

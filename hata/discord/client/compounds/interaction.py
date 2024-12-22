@@ -642,6 +642,74 @@ class ClientCompoundInteractionEndpoints(Compound):
         # No need to handle.
     
     
+    async def interaction_embedded_activity_launch(self, interaction_event, wait = True):
+        """
+        Acknowledges the interaction by launching an embedded activity. Omits the option for response message, but
+        allowed followup messages as normal.
+        
+        Can be used if: `interaction_event.target_type is ApplicationCommandTargetType.embedded_activity_launch`.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction_event : ``InteractionEvent``
+            Interaction to launch its embedded activity of.
+        
+        wait : `bool` = `True`, Optional
+            Whether the interaction should be ensured asynchronously.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        
+        Notes
+        -----
+        If the interaction is already timed or out or was used, you will get:
+        
+        ```
+        DiscordException Not Found (404), code = 10062: Unknown interaction
+        ```
+        """
+        assert _assert__interaction_event_type(interaction_event)
+        
+        data = {
+            'type': InteractionResponseType.embedded_activity_launch.value,
+        }
+        
+        context = InteractionResponseContext(interaction_event, False, False)
+        coroutine = self.api.interaction_response_message_create(
+            interaction_event.id, interaction_event.token, data, None
+        )
+        
+        if wait:
+            async with context:
+                await coroutine
+        else:
+            await context.ensure(coroutine)
+        
+        # Example output:
+        # {
+        #     'interaction': {
+        #         'id': '...',
+        #         'type': 2,
+        #         'activity_instance_id': 'i-...-gc-...-...',
+        #         'channel_id': '...',
+        #         'guild_id': '...',
+        #     },
+        #     'resource': {
+        #         'type': 12,
+        #         'activity_instance': {
+        #             'id': 'i-...-gc-...-...',
+        #          },
+        #      },
+        #  }
+        # No need to handle.
+    
+    
     async def interaction_response_message_edit(
         self, interaction_event, *positional_parameters, **keyword_parameters,
     ):
@@ -810,13 +878,13 @@ class ClientCompoundInteractionEndpoints(Compound):
         # Example output:
         # {
         #     'interaction': {
-        #         'id': '1287060293226336436',
+        #         'id': '...',
         #         'type': 3,
-        #         'response_message_id': '1287059561995309096',
+        #         'response_message_id': '...',
         #         'response_message_loading': False,
         #         'response_message_ephemeral': False,
-        #         'channel_id': '1226776881496461312',
-        #         'guild_id': '388267636661682178'
+        #         'channel_id': '...',
+        #         'guild_id': '...'
         #     },
         #     'resource': {
         #         'type': 7,
@@ -1085,7 +1153,7 @@ class ClientCompoundInteractionEndpoints(Compound):
             if (message_id is None):
                 raise TypeError(
                     f'`message` can be `{Message.__name__}`, `int`, got '
-                    f'{message.__class__.__name__}, {message!r}.'
+                    f'{type(message).__name__}, {message!r}.'
                 )
         
         message_data = MESSAGE_SERIALIZER_INTERACTION_FOLLOWUP_EDIT(positional_parameters, keyword_parameters)

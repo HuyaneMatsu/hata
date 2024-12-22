@@ -11,7 +11,7 @@ from ...field_parsers import (
 from ...field_putters import (
     bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
     force_string_putter_factory, nullable_entity_array_optional_putter_factory,
-    nullable_functional_optional_putter_factory, nullable_string_putter_factory, preinstanced_array_putter_factory,
+    nullable_functional_optional_putter_factory, nullable_string_putter_factory, preinstanced_optional_putter_factory,
     preinstanced_putter_factory
 )
 from ...field_validators import (
@@ -27,14 +27,11 @@ from ...utils import is_valid_application_command_name
 
 from ..application_command_option import ApplicationCommandOption
 
-from .constants import (
-    DESCRIPTION_LENGTH_MAX, DESCRIPTION_LENGTH_MIN,
-    NAME_LENGTH_MAX, NAME_LENGTH_MIN, OPTIONS_MAX
-)
+from .constants import DESCRIPTION_LENGTH_MAX, DESCRIPTION_LENGTH_MIN, NAME_LENGTH_MAX, NAME_LENGTH_MIN, OPTIONS_MAX
 from .preinstanced import (
-    INTEGRATION_CONTEXT_TYPES_ALL, ApplicationCommandIntegrationContextType,
-    ApplicationCommandTargetType
+    ApplicationCommandHandlerType, ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
 )
+
 
 # application_id
 
@@ -67,6 +64,16 @@ validate_description_localizations = partial_func(
 parse_guild_id = entity_id_parser_factory('guild_id')
 put_guild_id_into = entity_id_optional_putter_factory('guild_id')
 validate_guild_id = entity_id_validator_factory('guild_id', Guild)
+
+
+# handler_type
+
+parse_handler_type = preinstanced_parser_factory(
+    'handler', ApplicationCommandHandlerType, ApplicationCommandHandlerType.none
+)
+put_handler_type_into = preinstanced_optional_putter_factory('handler', ApplicationCommandHandlerType.none)
+validate_handler_type = preinstanced_validator_factory('handler_type', ApplicationCommandHandlerType)
+
 
 # id
 

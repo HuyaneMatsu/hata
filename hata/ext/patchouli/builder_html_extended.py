@@ -1191,8 +1191,9 @@ class ParameterSubSection:
             
             description = self.description
             if (description is not None):
-                yield from sub_section_serializer(description, parent.object, get_parent_path_of(parent.path),
-                    create_relative_sectioned_link)
+                yield from sub_section_serializer(
+                    description, parent.object, get_parent_path_of(parent.path), create_relative_sectioned_link
+                )
             
             yield '</td>'
         

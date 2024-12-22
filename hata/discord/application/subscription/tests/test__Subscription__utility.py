@@ -12,11 +12,13 @@ def test__Subscription__copy():
     Tests whether ``Subscription.copy`` works as intended.
     """
     entitlement_ids = [202409220090, 202409220091]
+    renewal_sku_ids = [202412210037, 202412210038]
     sku_ids = [202409220092, 202409220093]
     user_id = 202409220094
     
     subscription = Subscription(
         entitlement_ids = entitlement_ids,
+        renewal_sku_ids = renewal_sku_ids,
         sku_ids = sku_ids,
         user_id = user_id,
     )
@@ -34,11 +36,13 @@ def test__Subscription__copy_with__no_fields():
     Case: No parameters given.
     """
     entitlement_ids = [202409220095, 202409220096]
+    renewal_sku_ids = [202412210039, 202412210040]
     sku_ids = [202409220097, 202409220098]
     user_id = 202409220099
     
     subscription = Subscription(
         entitlement_ids = entitlement_ids,
+        renewal_sku_ids = renewal_sku_ids,
         sku_ids = sku_ids,
         user_id = user_id,
     )
@@ -55,32 +59,37 @@ def test__Subscription__copy_with__all_fields():
     
     Case: Stuffed.
     """
-    entitlement_ids = [202409220100, 202409220101]
-    sku_ids = [202409220102, 202409220103]
-    user_id = 202409220104
+    old_entitlement_ids = [202409220100, 202409220101]
+    old_renewal_sku_ids = [202412210041, 202412210042]
+    old_sku_ids = [202409220102, 202409220103]
+    old_user_id = 202409220104
     
-    entitlement_ids = [202409220105, 202409220106]
-    sku_ids = [202409220107, 202409220108]
-    user_id = 202409220109
+    new_entitlement_ids = [202409220105, 202409220106]
+    new_renewal_sku_ids = [202412210043, 202412210044]
+    new_sku_ids = [202409220107, 202409220108]
+    new_user_id = 202409220109
     
     
     subscription = Subscription(
-        entitlement_ids = entitlement_ids,
-        sku_ids = sku_ids,
-        user_id = user_id,
+        entitlement_ids = old_entitlement_ids,
+        renewal_sku_ids = old_renewal_sku_ids,
+        sku_ids = old_sku_ids,
+        user_id = old_user_id,
     )
     
     copy = subscription.copy_with(
-        entitlement_ids = entitlement_ids,
-        sku_ids = sku_ids,
-        user_id = user_id,
+        entitlement_ids = new_entitlement_ids,
+        renewal_sku_ids = new_renewal_sku_ids,
+        sku_ids = new_sku_ids,
+        user_id = new_user_id,
     )
     _assert_fields_set(copy)
     vampytest.assert_not_is(copy, subscription)
 
-    vampytest.assert_eq(copy.entitlement_ids, tuple(entitlement_ids))
-    vampytest.assert_eq(copy.sku_ids, tuple(sku_ids))
-    vampytest.assert_eq(copy.user_id, user_id)
+    vampytest.assert_eq(copy.entitlement_ids, tuple(new_entitlement_ids))
+    vampytest.assert_eq(copy.renewal_sku_ids, tuple(new_renewal_sku_ids))
+    vampytest.assert_eq(copy.sku_ids, tuple(new_sku_ids))
+    vampytest.assert_eq(copy.user_id, new_user_id)
 
 
 def test__Subscription__partial__true():
@@ -134,6 +143,33 @@ def test__Subscription__iter_entitlement_ids(input_value):
     """
     subscription = Subscription(entitlement_ids = input_value)
     return [*subscription.iter_entitlement_ids()]
+
+
+def _iter_options__iter_renewal_sku_ids():
+    renewal_sku_id_0 = 202412210045
+    renewal_sku_id_1 = 202412210046
+    
+    yield None, []
+    yield [renewal_sku_id_0], [renewal_sku_id_0]
+    yield [renewal_sku_id_0, renewal_sku_id_1], [renewal_sku_id_0, renewal_sku_id_1]
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_renewal_sku_ids()).returning_last())
+def test__Subscription__iter_renewal_sku_ids(input_value):
+    """
+    Tests whether ``Subscription.iter_renewal_sku_ids`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | list<int>`
+        Input value to create the instance with.
+    
+    Returns
+    -------
+    output : `list<int>`
+    """
+    subscription = Subscription(renewal_sku_ids = input_value)
+    return [*subscription.iter_renewal_sku_ids()]
 
 
 def _iter_options__iter_sku_ids():

@@ -22,6 +22,7 @@ def test__Subscription__from_data():
     current_period_end = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     current_period_start = DateTime(2016, 5, 16, tzinfo = TimeZone.utc)
     entitlement_ids = [202409220034, 202409220035]
+    renewal_sku_ids = [202412210013, 202412210014]
     sku_ids = [202409220036, 202409220037]
     status = SubscriptionStatus.ending
     user_id = 202409220038
@@ -33,6 +34,7 @@ def test__Subscription__from_data():
         'current_period_end': datetime_to_timestamp(current_period_end),
         'current_period_start': datetime_to_timestamp(current_period_start),
         'entitlement_ids': [str(entitlement_id) for entitlement_id in entitlement_ids],
+        'renewal_sku_ids': [str(renewal_sku_id) for renewal_sku_id in renewal_sku_ids],
         'sku_ids': [str(sku_id) for sku_id in sku_ids],
         'status': status.value,
         'user_id': str(user_id),
@@ -47,6 +49,7 @@ def test__Subscription__from_data():
     vampytest.assert_eq(subscription.current_period_end, current_period_end)
     vampytest.assert_eq(subscription.current_period_start, current_period_start)
     vampytest.assert_eq(subscription.entitlement_ids, tuple(entitlement_ids))
+    vampytest.assert_eq(subscription.renewal_sku_ids, tuple(renewal_sku_ids))
     vampytest.assert_eq(subscription.sku_ids, tuple(sku_ids))
     vampytest.assert_is(subscription.status, status)
     vampytest.assert_eq(subscription.user_id, user_id)
@@ -81,6 +84,7 @@ def test__Subscription__from_data_is_created():
     current_period_end = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     current_period_start = DateTime(2016, 5, 16, tzinfo = TimeZone.utc)
     entitlement_ids = [202409220041, 202409220042]
+    renewal_sku_ids = [202412210015, 202412210016]
     sku_ids = [202409220043, 202409220044]
     status = SubscriptionStatus.ending
     user_id = 202409220045
@@ -92,6 +96,7 @@ def test__Subscription__from_data_is_created():
         'current_period_end': datetime_to_timestamp(current_period_end),
         'current_period_start': datetime_to_timestamp(current_period_start),
         'entitlement_ids': [str(entitlement_id) for entitlement_id in entitlement_ids],
+        'renewal_sku_ids': [str(renewal_sku_id) for renewal_sku_id in renewal_sku_ids],
         'sku_ids': [str(sku_id) for sku_id in sku_ids],
         'status': status.value,
         'user_id': str(user_id),
@@ -148,6 +153,7 @@ def test__Subscription__set_attributes():
     current_period_end = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     current_period_start = DateTime(2016, 5, 16, tzinfo = TimeZone.utc)
     entitlement_ids = [202409220047, 202409220048]
+    renewal_sku_ids = [202412210016, 202412210017]
     sku_ids = [202409220048, 202409220049]
     status = SubscriptionStatus.ending
     user_id = 202409220050
@@ -158,6 +164,7 @@ def test__Subscription__set_attributes():
         'current_period_end': datetime_to_timestamp(current_period_end),
         'current_period_start': datetime_to_timestamp(current_period_start),
         'entitlement_ids': [str(entitlement_id) for entitlement_id in entitlement_ids],
+        'renewal_sku_ids': [str(renewal_sku_id) for renewal_sku_id in renewal_sku_ids],
         'sku_ids': [str(sku_id) for sku_id in sku_ids],
         'status': status.value,
         'user_id': str(user_id),
@@ -171,6 +178,7 @@ def test__Subscription__set_attributes():
     vampytest.assert_eq(subscription.current_period_end, current_period_end)
     vampytest.assert_eq(subscription.current_period_start, current_period_start)
     vampytest.assert_eq(subscription.entitlement_ids, tuple(entitlement_ids))
+    vampytest.assert_eq(subscription.renewal_sku_ids, tuple(renewal_sku_ids))
     vampytest.assert_eq(subscription.sku_ids, tuple(sku_ids))
     vampytest.assert_is(subscription.status, status)
     vampytest.assert_eq(subscription.user_id, user_id)
@@ -185,6 +193,8 @@ def test__Subscription__update_attributes():
     country_code = 'AB'
     current_period_end = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     current_period_start = DateTime(2016, 5, 16, tzinfo = TimeZone.utc)
+    renewal_sku_ids = [202412210018, 202412210019]
+    sku_ids = [202409220020, 202409220021]
     status = SubscriptionStatus.ending
     
     data = {
@@ -192,6 +202,8 @@ def test__Subscription__update_attributes():
         'country': country_code,
         'current_period_end': datetime_to_timestamp(current_period_end),
         'current_period_start': datetime_to_timestamp(current_period_start),
+        'renewal_sku_ids': [str(renewal_sku_id) for renewal_sku_id in renewal_sku_ids],
+        'sku_ids': [str(sku_id) for sku_id in sku_ids],
         'status': status.value,
     }
     
@@ -202,6 +214,8 @@ def test__Subscription__update_attributes():
     vampytest.assert_eq(subscription.country_code, country_code)
     vampytest.assert_eq(subscription.current_period_end, current_period_end)
     vampytest.assert_eq(subscription.current_period_start, current_period_start)
+    vampytest.assert_eq(subscription.renewal_sku_ids, tuple(renewal_sku_ids))
+    vampytest.assert_eq(subscription.sku_ids, tuple(sku_ids))
     vampytest.assert_is(subscription.status, status)
 
 
@@ -215,12 +229,16 @@ def test__Subscription__difference_update_attributes():
     old_country_code = 'AB'
     old_current_period_end = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     old_current_period_start = DateTime(2016, 5, 16, tzinfo = TimeZone.utc)
+    old_renewal_sku_ids = [202412210022, 202412210023]
+    old_sku_ids = [202409220024, 202409220025]
     old_status = SubscriptionStatus.ending
     
     new_cancelled_at = DateTime(2016, 6, 14, tzinfo = TimeZone.utc)
     new_country_code = 'AC'
     new_current_period_end = DateTime(2016, 6, 15, tzinfo = TimeZone.utc)
     new_current_period_start = DateTime(2016, 6, 16, tzinfo = TimeZone.utc)
+    new_renewal_sku_ids = [202412210026, 202412210027]
+    new_sku_ids = [202409220028, 202409220029]
     new_status = SubscriptionStatus.inactive
     
     data = {
@@ -228,6 +246,8 @@ def test__Subscription__difference_update_attributes():
         'country': new_country_code,
         'current_period_end': datetime_to_timestamp(new_current_period_end),
         'current_period_start': datetime_to_timestamp(new_current_period_start),
+        'renewal_sku_ids': [str(renewal_sku_id) for renewal_sku_id in new_renewal_sku_ids],
+        'sku_ids': [str(sku_id) for sku_id in new_sku_ids],
         'status': new_status.value,
     }
     
@@ -237,6 +257,8 @@ def test__Subscription__difference_update_attributes():
         country_code = old_country_code,
         current_period_end = old_current_period_end,
         current_period_start = old_current_period_start,
+        renewal_sku_ids = old_renewal_sku_ids,
+        sku_ids = old_sku_ids,
         status = old_status,
     )
     
@@ -246,6 +268,8 @@ def test__Subscription__difference_update_attributes():
     vampytest.assert_eq(subscription.country_code, new_country_code)
     vampytest.assert_eq(subscription.current_period_end, new_current_period_end)
     vampytest.assert_eq(subscription.current_period_start, new_current_period_start)
+    vampytest.assert_eq(subscription.renewal_sku_ids, tuple(new_renewal_sku_ids))
+    vampytest.assert_eq(subscription.sku_ids, tuple(new_sku_ids))
     vampytest.assert_is(subscription.status, new_status)
     
     vampytest.assert_eq(
@@ -256,6 +280,8 @@ def test__Subscription__difference_update_attributes():
             'current_period_end': old_current_period_end,
             'current_period_start': old_current_period_start,
             'status': old_status,
+            'renewal_sku_ids': tuple(old_renewal_sku_ids),
+            'sku_ids': tuple(old_sku_ids),
         },
     )
 
@@ -272,6 +298,7 @@ def test__Subscription__to_data__full():
     current_period_end = DateTime(2016, 5, 15, tzinfo = TimeZone.utc)
     current_period_start = DateTime(2016, 5, 16, tzinfo = TimeZone.utc)
     entitlement_ids = [202409220054, 202409220055]
+    renewal_sku_ids = [202412210030, 202412210031]
     sku_ids = [202409220056, 202409220057]
     status = SubscriptionStatus.ending
     user_id = 202409220058
@@ -284,6 +311,7 @@ def test__Subscription__to_data__full():
         'current_period_end': datetime_to_timestamp(current_period_end),
         'current_period_start': datetime_to_timestamp(current_period_start),
         'entitlement_ids': [str(entitlement_id) for entitlement_id in entitlement_ids],
+        'renewal_sku_ids': [str(renewal_sku_id) for renewal_sku_id in renewal_sku_ids],
         'sku_ids': [str(sku_id) for sku_id in sku_ids],
         'status': status.value,
         'user_id': str(user_id),
@@ -296,6 +324,7 @@ def test__Subscription__to_data__full():
         current_period_end = current_period_end,
         current_period_start = current_period_start,
         entitlement_ids = entitlement_ids,
+        renewal_sku_ids = renewal_sku_ids,
         sku_ids = sku_ids,
         status = status,
         user_id = user_id,

@@ -81,7 +81,7 @@ def check_name(func, name):
     """
     if None is func is name:
         raise TypeError(
-            f'Both `func` and `name` parameters are `None`'
+            f'Both `func` and `name` parameters are `None`.'
         )
     
     while True:

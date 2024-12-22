@@ -29,9 +29,9 @@ def test__CommandBaseApplicationCommand__new():
     Tests whether ``CommandBaseApplicationCommand.__new__`` works as intended.
     """
     added = True
-    target = ApplicationCommandTargetType.channel
+    target_type = ApplicationCommandTargetType.channel
     
-    command = ContextCommand(command_function, is_global = True, target = target)
+    command = ContextCommand(command_function, is_global = True, target_type = target_type)
     
     command_change = CommandChange(added, command)
     _assert_fields_set(command_change)
@@ -45,9 +45,9 @@ def test__CommandBaseApplicationCommand__repr():
     Tests whether ``CommandBaseApplicationCommand.__repr__`` works as intended.
     """
     added = True
-    target = ApplicationCommandTargetType.channel
+    target_type = ApplicationCommandTargetType.channel
     
-    command = ContextCommand(command_function, is_global = True, target = target)
+    command = ContextCommand(command_function, is_global = True, target_type = target_type)
     
     command_change = CommandChange(added, command)
     
@@ -60,9 +60,9 @@ def test__CommandBaseApplicationCommand__unpack():
     Tests whether ``CommandBaseApplicationCommand`` unpacking works as intended.
     """
     added = True
-    target = ApplicationCommandTargetType.channel
+    target_type = ApplicationCommandTargetType.channel
     
-    command = ContextCommand(command_function, is_global = True, target = target)
+    command = ContextCommand(command_function, is_global = True, target_type = target_type)
     
     command_change = CommandChange(added, command)
     

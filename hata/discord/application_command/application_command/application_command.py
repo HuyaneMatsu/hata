@@ -11,18 +11,19 @@ from ...utils import DATETIME_FORMAT_CODE, id_to_datetime
 from ..helpers import with_translation
 
 from .fields import (
-    parse_application_id, parse_description, parse_description_localizations, parse_guild_id,
+    parse_application_id, parse_description, parse_description_localizations, parse_guild_id, parse_handler_type,
     parse_id, parse_integration_context_types, parse_integration_types, parse_name, parse_name_localizations,
-    parse_nsfw, parse_options, parse_required_permissions, parse_target_type, parse_version,
-    put_application_id_into, put_description_into, put_description_localizations_into, put_guild_id_into, put_id_into,
+    parse_nsfw, parse_options, parse_required_permissions, parse_target_type, parse_version, put_application_id_into,
+    put_description_into, put_description_localizations_into, put_guild_id_into, put_handler_type_into, put_id_into,
     put_integration_context_types_into, put_integration_types_into, put_name_into, put_name_localizations_into,
     put_nsfw_into, put_options_into, put_required_permissions_into, put_target_type_into, put_version_into,
-    validate_application_id, validate_description, validate_description_localizations, validate_guild_id, validate_id,
-    validate_integration_context_types, validate_integration_types, validate_name, validate_name_localizations,
-    validate_nsfw, validate_options, validate_required_permissions, validate_target_type, validate_version
+    validate_application_id, validate_description, validate_description_localizations, validate_guild_id,
+    validate_handler_type, validate_id, validate_integration_context_types, validate_integration_types, validate_name,
+    validate_name_localizations, validate_nsfw, validate_options, validate_required_permissions, validate_target_type,
+    validate_version
 )
 from .preinstanced import (
-    CONTEXT_TARGET_TYPES, ApplicationCommandTargetType, INTEGRATION_CONTEXT_TYPES_ALL
+    ApplicationCommandHandlerType, ApplicationCommandTargetType, CONTEXT_TARGET_TYPES, INTEGRATION_CONTEXT_TYPES_ALL
 )
 
 
@@ -33,6 +34,7 @@ PRECREATE_FIELDS = {
     'description_localizations': ('description_localizations', validate_description_localizations),
     'guild': ('guild_id', validate_guild_id),
     'guild_id': ('guild_id', validate_guild_id),
+    'handler_type': ('handler_type', validate_handler_type),
     'integration_context_types': ('integration_context_types', validate_integration_context_types),
     'integration_types': ('integration_types', validate_integration_types),
     'name': ('name', validate_name),
@@ -68,6 +70,9 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         The guild's identifier to which the command is bound to.
         
         Set as `0` if the command is global.
+    
+    handler_type : ``ApplicationCommandHandlerType``
+        Represents what handles an application command.
     
     id : `int`
         The application command's id.
@@ -105,7 +110,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
     Application command instances are weakreferable.
     """
     __slots__ = (
-        'application_id', 'description', 'description_localizations', 'guild_id',
+        'application_id', 'description', 'description_localizations', 'guild_id', 'handler_type',
         'integration_context_types', 'integration_types', 'name', 'name_localizations', 'nsfw', 'options',
         'required_permissions', 'target_type', 'version'
     )
@@ -116,6 +121,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         description = None,
         *,
         description_localizations = ...,
+        handler_type = ...,
         integration_context_types = ...,
         integration_types = ...,
         name_localizations = ...,
@@ -140,6 +146,9 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
                 (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
             Localized descriptions of the application command.
+        
+        handler_type : `ApplicationCommandHandlerType | None | int`, Optional (Keyword only)
+            Represents what handles an application command.
         
         integration_context_types : `None | iterable<ApplicationCommandIntegrationContextType | int>` \
                 , Optional (Keyword only)
@@ -181,6 +190,12 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             description_localizations = None
         else:
             description_localizations = validate_description_localizations(description_localizations)
+        
+        # handler_type
+        if handler_type is ...:
+            handler_type = ApplicationCommandHandlerType.none
+        else:
+            handler_type = validate_handler_type(handler_type)
         
         # integration_context_types
         if integration_context_types is ...:
@@ -245,10 +260,11 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         self.application_id = 0
         self.description = description
         self.description_localizations = description_localizations
+        self.guild_id = 0
+        self.handler_type = handler_type
         self.id = 0
         self.integration_context_types = integration_context_types
         self.integration_types = integration_types
-        self.guild_id = 0
         self.name = name
         self.name_localizations = name_localizations
         self.nsfw = nsfw
@@ -292,6 +308,9 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild's identifier to which the command is bound to.
+        
+        handler_type : `ApplicationCommandHandlerType | None | int`, Optional (Keyword only)
+            Represents what handles an application command.
         
         integration_context_types : `None | iterable<ApplicationCommandIntegrationContextType | int>` \
                 , Optional (Keyword only)
@@ -370,11 +389,12 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         self : `instance<cls>`
         """
         self = object.__new__(cls)
-        self.id = application_command_id
         self.application_id = application_id
         self.description = None
         self.description_localizations = None
         self.guild_id = 0
+        self.handler_type = ApplicationCommandHandlerType.none
+        self.id = application_command_id
         self.integration_context_types = None
         self.integration_types = None
         self.name = ''
@@ -467,6 +487,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         put_description_into(self.description, data, defaults)
         put_description_localizations_into(self.description_localizations, data, defaults)
+        put_handler_type_into(self.handler_type, data, defaults)
         put_integration_context_types_into(self.integration_context_types, data, defaults)
         put_integration_types_into(self.integration_types, data, defaults)
         put_name_into(self.name, data, defaults)
@@ -496,6 +517,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         """
         self.description = parse_description(data)
         self.description_localizations = parse_description_localizations(data)
+        self.handler_type = parse_handler_type(data)
         self.integration_context_types = parse_integration_context_types(data)
         self.integration_types = parse_integration_types(data)
         self.name = parse_name(data)
@@ -531,6 +553,8 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             +---------------------------+-------------------------------------------------------------------+
             | description_localizations | `None`, `dict` of (``Locale``, `str`) items                       |
             +---------------------------+-------------------------------------------------------------------+
+            | handler_type              | ``ApplicationCommandHandlerType``                                 |
+            +---------------------------+-------------------------------------------------------------------+
             | integration_context_types | `None`, `tuple` of ``ApplicationCommandIntegrationContextType``   |
             +---------------------------+-------------------------------------------------------------------+
             | integration_types         | `None`, `tuple` of ``ApplicationIntegrationType``                 |
@@ -563,6 +587,12 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         if self.description_localizations != description_localizations:
             old_attributes['description_localizations'] = self.description_localizations
             self.description_localizations = description_localizations
+        
+        # handler_type
+        handler_type = parse_handler_type(data)
+        if self.handler_type != handler_type:
+            old_attributes['handler_type'] = self.handler_type
+            self.handler_type = handler_type
         
         # integration_context_types
         integration_context_types = parse_integration_context_types(data)
@@ -657,16 +687,24 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             repr_parts.append(target_type.name)
             repr_parts.append(' ~ ')
             repr_parts.append(repr(target_type.value))
-            repr_parts.append('')
         
         # Extra fields: `.description`, `.options`, `.required_permissions`, `.nsfw`,
-        # `.name_localizations`, `.description_localizations`, `.integration_context_types`, `.integration_types`
+        # `.name_localizations`, `.description_localizations`, `.integration_context_types`, `.integration_types`,
+        # `.handler_type`
         
         # description
         description = self.description
         if (description is not None):
             repr_parts.append(', description = ')
             repr_parts.append(repr(self.description))
+        
+        # handler_type
+        handler_type = self.handler_type
+        if (handler_type is not ApplicationCommandHandlerType.none):
+            repr_parts.append(', handler_type = ')
+            repr_parts.append(handler_type.name)
+            repr_parts.append(' ~ ')
+            repr_parts.append(repr(handler_type.value))
         
         # integration_context_types
         integration_context_types = self.integration_context_types
@@ -770,6 +808,9 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         # guild_id
         # non-partial field
         
+        # handler_type
+        hash_value ^= hash(self.handler_type) << 15
+        
         # integration_context_types
         integration_context_types = self.integration_context_types
         if (integration_context_types is not None):
@@ -863,6 +904,10 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         # description_localizations
         if self.description_localizations != other.description_localizations:
+            return False
+        
+        # handler_type
+        if self.handler_type != other.handler_type:
             return False
         
         # integration_context_types
@@ -1020,6 +1065,9 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         # guild_id
         new.guild_id = 0
         
+        # handler_type
+        new.handler_type = self.handler_type
+        
         # id
         new.id = 0
         
@@ -1070,6 +1118,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         *,
         description = ...,
         description_localizations = ...,
+        handler_type = ...,
         integration_context_types = ...,
         integration_types = ...,
         name = ...,
@@ -1083,12 +1132,16 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         Copies the application command with the given fields.
         
         Parameters
+        ----------
         description : `None`, `str` = `None`, Optional
             The command's description. It's length can be in range [2:100].
         
         description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
                 (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`), Optional (Keyword only)
             Localized descriptions of the application command.
+        
+        handler_type : `ApplicationCommandHandlerType | None | int`, Optional (Keyword only)
+            Represents what handles an application command.
         
         integration_context_types : `None | iterable<ApplicationCommandIntegrationContextType | int>` \
                 , Optional (Keyword only)
@@ -1140,6 +1193,12 @@ class ApplicationCommand(DiscordEntity, immortal = True):
                 description_localizations = description_localizations.copy()
         else:
             description_localizations = validate_description_localizations(description_localizations)
+        
+        # handler_type
+        if handler_type is ...:
+            handler_type = self.handler_type
+        else:
+            handler_type = validate_handler_type(handler_type)
         
         # integration_context_types
         if integration_context_types is ...:
@@ -1219,6 +1278,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         new.description = description
         new.description_localizations = description_localizations
         new.guild_id = 0
+        new.handler_type = handler_type
         new.id = 0
         new.integration_context_types = integration_context_types
         new.integration_types = integration_types

@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...application_command import ApplicationCommand
+from ...application_command import ApplicationCommand, ApplicationCommandTargetType
 from ...application_command.application_command.constants import (
     NAME_LENGTH_MAX as APPLICATION_COMMAND_NAME_LENGTH_MAX, NAME_LENGTH_MIN as APPLICATION_COMMAND_NAME_LENGTH_MIN
 )
@@ -129,11 +129,21 @@ def put_resolved_into(resolved, data, defaults, *, guild_id = 0):
 
 validate_resolved = nullable_entity_validator_factory('resolved', Resolved)
 
+
 # target_id
 
 parse_target_id = entity_id_parser_factory('target_id')
 put_target_id_into = entity_id_optional_putter_factory('target_id')
 validate_target_id = entity_id_validator_factory('target_id', DiscordEntity)
+
+
+# target_type
+
+parse_target_type = preinstanced_parser_factory(
+    'type', ApplicationCommandTargetType, ApplicationCommandTargetType.none
+)
+put_target_type_into = preinstanced_putter_factory('type')
+validate_target_type = preinstanced_validator_factory('target_type', ApplicationCommandTargetType)
 
 # values
 

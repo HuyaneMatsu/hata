@@ -1,6 +1,6 @@
 import vampytest
 
-from ....application_command import ApplicationCommandOptionType
+from ....application_command import ApplicationCommandOptionType, ApplicationCommandTargetType
 from ....channel import Channel
 from ....component import ComponentType
 from ....message import Attachment
@@ -36,6 +36,7 @@ def test__InteractionEvent__proxies():
     vampytest.assert_instance(interaction_event.options, tuple, nullable = True)
     vampytest.assert_instance(interaction_event.resolved, Resolved, nullable = True)
     vampytest.assert_instance(interaction_event.target_id, int)
+    vampytest.assert_instance(interaction_event.target_type, ApplicationCommandTargetType)
     vampytest.assert_instance(interaction_event.values, tuple, nullable = True)
 
 
@@ -50,6 +51,7 @@ def test__InteractionEvent__proxies_application_command():
     options = [InteractionOption(name = 'Rem')]
     resolved = Resolved(attachments = [Attachment.precreate(202211100015)])
     target_id = 202211100016
+    target_type = ApplicationCommandTargetType.user
     
     interaction_event = InteractionEvent(
         interaction_type = InteractionType.application_command,
@@ -59,6 +61,7 @@ def test__InteractionEvent__proxies_application_command():
             options = options,
             resolved = resolved,
             target_id = target_id,
+            target_type = target_type,
         ),
     )
     
@@ -67,6 +70,7 @@ def test__InteractionEvent__proxies_application_command():
     vampytest.assert_eq(interaction_event.options, tuple(options))
     vampytest.assert_eq(interaction_event.resolved, resolved)
     vampytest.assert_eq(interaction_event.target_id, target_id)
+    vampytest.assert_is(interaction_event.target_type, target_type)
 
 
 def test__InteractionEvent__proxies_application_command_autocomplete():

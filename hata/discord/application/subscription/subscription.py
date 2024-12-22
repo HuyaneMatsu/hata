@@ -7,11 +7,11 @@ from ...user import create_partial_user_from_id
 
 from .fields import (
     parse_cancelled_at, parse_country_code, parse_current_period_end, parse_current_period_start, parse_entitlement_ids,
-    parse_id, parse_sku_ids, parse_status, parse_user_id, put_cancelled_at_into, put_country_code_into,
-    put_current_period_end_into, put_current_period_start_into, put_entitlement_ids_into, put_id_into, put_sku_ids_into,
-    put_status_into, put_user_id_into, validate_cancelled_at, validate_country_code, validate_current_period_end,
-    validate_current_period_start, validate_entitlement_ids, validate_id, validate_sku_ids, validate_status,
-    validate_user_id
+    parse_id, parse_renewal_sku_ids, parse_sku_ids, parse_status, parse_user_id, put_cancelled_at_into,
+    put_country_code_into, put_current_period_end_into, put_current_period_start_into, put_entitlement_ids_into,
+    put_id_into, put_renewal_sku_ids_into, put_sku_ids_into, put_status_into, put_user_id_into, validate_cancelled_at,
+    validate_country_code, validate_current_period_end, validate_current_period_start, validate_entitlement_ids,
+    validate_id, validate_renewal_sku_ids, validate_sku_ids, validate_status, validate_user_id
 )
 from .preinstanced import SubscriptionStatus
 
@@ -23,6 +23,7 @@ PRECREATE_FIELDS = {
     'current_period_start': ('current_period_start', validate_current_period_start),
     'entitlement_ids': ('entitlement_ids', validate_entitlement_ids),
     'sku_ids': ('sku_ids', validate_sku_ids),
+    'renewal_sku_ids': ('renewal_sku_ids', validate_renewal_sku_ids),
     'status': ('status', validate_status),
     'user': ('user_id', validate_user_id),
     'user_id': ('user_id', validate_user_id),
@@ -53,6 +54,9 @@ class Subscription(DiscordEntity):
     id : `int`
         The subscription's identifier.
     
+    renewal_sku_ids : `None | tuple<int>`
+        The third party stock keeping unit the subscription will be linked to after renewal.
+    
     sku_ids : `None | tuple<int>`
         The third party stock keeping unit the subscription is linked to.
     
@@ -64,11 +68,11 @@ class Subscription(DiscordEntity):
     """
     __slots__ = (
         '__weakref__', 'cancelled_at', 'country_code', 'current_period_end', 'current_period_start', 'entitlement_ids',
-        'sku_ids', 'status', 'user_id'
+        'renewal_sku_ids', 'sku_ids', 'status', 'user_id'
      )
     
     
-    def __new__(cls, *, entitlement_ids = ..., sku_ids = ..., user_id = ...):
+    def __new__(cls, *, entitlement_ids = ..., renewal_sku_ids = ..., sku_ids = ..., user_id = ...):
         """
         Creates a new partial subscription.
         
@@ -76,6 +80,9 @@ class Subscription(DiscordEntity):
         ----------
         entitlement_ids : `None | iterable<int> | iterable<Entitlement>`, Optional (Keyword only)
             The entitlements granted with this subscription.
+        
+        renewal_sku_ids : `None | iterable<int> | iterable<SKU>`, Optional (Keyword only)
+            The third party stock keeping unit the subscription will be linked to after renewal.
         
         sku_ids : `None | iterable<int> | iterable<SKU>`, Optional (Keyword only)
             The third party stock keeping unit the subscription is linked to.
@@ -95,6 +102,12 @@ class Subscription(DiscordEntity):
             entitlement_ids = None
         else:
             entitlement_ids = validate_entitlement_ids(entitlement_ids)
+        
+        # renewal_sku_ids
+        if renewal_sku_ids is ...:
+            renewal_sku_ids = None
+        else:
+            renewal_sku_ids = validate_renewal_sku_ids(renewal_sku_ids)
         
         # sku_ids
         if sku_ids is ...:
@@ -116,6 +129,7 @@ class Subscription(DiscordEntity):
         self.current_period_start = None
         self.entitlement_ids = entitlement_ids
         self.id = 0
+        self.renewal_sku_ids = renewal_sku_ids
         self.sku_ids = sku_ids
         self.status = SubscriptionStatus.active
         self.user_id = user_id
@@ -194,7 +208,6 @@ class Subscription(DiscordEntity):
             Subscription data.
         """
         self.entitlement_ids = parse_entitlement_ids(data)
-        self.sku_ids = parse_sku_ids(data)
         self.user_id = parse_user_id(data)
         
         self._update_attributes(data)
@@ -214,6 +227,8 @@ class Subscription(DiscordEntity):
         self.country_code = parse_country_code(data)
         self.current_period_end = parse_current_period_end(data)
         self.current_period_start = parse_current_period_start(data)
+        self.renewal_sku_ids = parse_renewal_sku_ids(data)
+        self.sku_ids = parse_sku_ids(data)
         self.status = parse_status(data)
     
     
@@ -245,18 +260,20 @@ class Subscription(DiscordEntity):
             +---------------------------+-----------------------------------------------+
             | current_period_start      | `None`, `DateTime`                            |
             +---------------------------+-----------------------------------------------+
+            | renewal_sku_ids           | `None`, `tuple` of `int`                      |
+            +---------------------------+-----------------------------------------------+
+            | sku_ids                   | `None`, `tuple` of `int`                      |
+            +---------------------------+-----------------------------------------------+
             | status                    | ``SubscriptionStatus``                        |
             +---------------------------+-----------------------------------------------+
         """
         old_attributes = {}
-        
         
         # cancelled_at
         cancelled_at = parse_cancelled_at(data)
         if self.cancelled_at != cancelled_at:
             old_attributes['cancelled_at'] = self.cancelled_at
             self.cancelled_at = cancelled_at
-    
         
         # country_code
         country_code = parse_country_code(data)
@@ -275,6 +292,18 @@ class Subscription(DiscordEntity):
         if self.current_period_start != current_period_start:
             old_attributes['current_period_start'] = self.current_period_start
             self.current_period_start = current_period_start
+        
+        # renewal_sku_ids
+        renewal_sku_ids = parse_renewal_sku_ids(data)
+        if self.renewal_sku_ids != renewal_sku_ids:
+            old_attributes['renewal_sku_ids'] = self.renewal_sku_ids
+            self.renewal_sku_ids = renewal_sku_ids
+        
+        # sku_ids
+        sku_ids = parse_sku_ids(data)
+        if self.sku_ids != sku_ids:
+            old_attributes['sku_ids'] = self.sku_ids
+            self.sku_ids = sku_ids
         
         # status
         status = parse_status(data)
@@ -309,6 +338,7 @@ class Subscription(DiscordEntity):
         put_current_period_start_into(self.current_period_start, data, defaults)
         put_entitlement_ids_into(self.entitlement_ids, data, defaults)
         put_id_into(self.id, data, defaults)
+        put_renewal_sku_ids_into(self.renewal_sku_ids, data, defaults)
         put_sku_ids_into(self.sku_ids, data, defaults)
         put_status_into(self.status, data, defaults)
         put_user_id_into(self.user_id, data, defaults)
@@ -337,6 +367,7 @@ class Subscription(DiscordEntity):
         self.current_period_start = None
         self.entitlement_ids = None
         self.id = subscription_id
+        self.renewal_sku_ids = None
         self.sku_ids = None
         self.status = SubscriptionStatus.active
         self.user_id = 0
@@ -372,6 +403,9 @@ class Subscription(DiscordEntity):
         
         entitlement_ids : `None | iterable<int> | iterable<Entitlement>`, Optional (Keyword only)
             The entitlements granted with this subscription.
+        
+        renewal_sku_ids : `None | iterable<int> | iterable<SKU>`, Optional (Keyword only)
+            The third party stock keeping unit the subscription will be linked to after renewal.
         
         sku_ids : `None | iterable<int> | iterable<SKU>`, Optional (Keyword only)
             The third party stock keeping unit the subscription is linked to.
@@ -477,6 +511,10 @@ class Subscription(DiscordEntity):
         if self.entitlement_ids != other.entitlement_ids:
             return False
         
+        # renewal_sku_ids
+        if self.renewal_sku_ids != other.renewal_sku_ids:
+            return False
+        
         # sku_ids
         if self.sku_ids != other.sku_ids:
             return False
@@ -522,17 +560,25 @@ class Subscription(DiscordEntity):
             hash_value ^= len(entitlement_ids) << 4
             
             for entitlement_id in entitlement_ids:
-                hash_value ^= hash(entitlement_id)
+                hash_value ^= entitlement_id
         
         # id -> ignore, internal
+        
+        # renewal_sku_ids
+        renewal_sku_ids = self.renewal_sku_ids
+        if (renewal_sku_ids is not None):
+            hash_value ^= len(renewal_sku_ids)
+            
+            for renewal_sku_id in renewal_sku_ids:
+                hash_value ^= renewal_sku_id
         
         # sku_ids
         sku_ids = self.sku_ids
         if (sku_ids is not None):
-            hash_value ^= len(sku_ids) << 4
+            hash_value ^= len(sku_ids) << 8
             
             for sku_id in sku_ids:
-                hash_value ^= hash(sku_id)
+                hash_value ^= sku_id
         
         # status -> ignore, internal
         
@@ -563,6 +609,11 @@ class Subscription(DiscordEntity):
           
         new.id = 0
         
+        renewal_sku_ids = self.renewal_sku_ids
+        if (renewal_sku_ids is not None):
+            renewal_sku_ids = (*renewal_sku_ids,)
+        new.renewal_sku_ids = renewal_sku_ids
+        
         sku_ids = self.sku_ids
         if (sku_ids is not None):
             sku_ids = (*sku_ids,)
@@ -574,7 +625,7 @@ class Subscription(DiscordEntity):
         return new
     
     
-    def copy_with(self, *, entitlement_ids = ..., sku_ids = ..., user_id = ...):
+    def copy_with(self, *, entitlement_ids = ..., renewal_sku_ids = ..., sku_ids = ..., user_id = ...):
         """
         Copies the subscription with the given fields.
         
@@ -582,6 +633,9 @@ class Subscription(DiscordEntity):
         ----------
         entitlement_ids : `None | iterable<int> | iterable<Entitlement>`, Optional (Keyword only)
             The entitlements granted with this subscription.
+        
+        renewal_sku_ids : `None | iterable<int> | iterable<SKU>`, Optional (Keyword only)
+            The third party stock keeping unit the subscription will be linked to after renewal.
         
         sku_ids : `None | iterable<int> | iterable<SKU>`, Optional (Keyword only)
             The third party stock keeping unit the subscription is linked to.
@@ -608,6 +662,14 @@ class Subscription(DiscordEntity):
         else:
             entitlement_ids = validate_entitlement_ids(entitlement_ids)
         
+        # renewal_sku_ids
+        if renewal_sku_ids is ...:
+            renewal_sku_ids = self.renewal_sku_ids
+            if (renewal_sku_ids is not None):
+                renewal_sku_ids = (*renewal_sku_ids,)
+        else:
+            renewal_sku_ids = validate_renewal_sku_ids(renewal_sku_ids)
+        
         # sku_ids
         if sku_ids is ...:
             sku_ids = self.sku_ids
@@ -630,6 +692,7 @@ class Subscription(DiscordEntity):
         new.current_period_start = None
         new.entitlement_ids = entitlement_ids
         new.id = 0
+        new.renewal_sku_ids = renewal_sku_ids
         new.sku_ids = sku_ids
         new.status = SubscriptionStatus.active
         new.user_id = user_id
@@ -675,9 +738,24 @@ class Subscription(DiscordEntity):
             yield from entitlement_ids
     
     
+    def iter_renewal_sku_ids(self):
+        """
+        Iterates over the stock keeping unit identifiers of the subscription that it will be linked to after renewal.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        renewal_sku_id : `int`
+        """
+        renewal_sku_ids = self.renewal_sku_ids
+        if (renewal_sku_ids is not None):
+            yield from renewal_sku_ids
+    
+    
     def iter_sku_ids(self):
         """
-        Iterates over the stick keeping unit identifiers of the subscription.
+        Iterates over the stock keeping unit identifiers of the subscription.
         
         This method is an iterable generator.
         

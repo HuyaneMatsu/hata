@@ -487,6 +487,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | invalid_activity_launch_incorrect_guild_size                      | 50209     | 25        |
 +-------------------------------------------------------------------+-----------+-----------+
+| handler_valid_only_for_primary_entry_points                       | 50227     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | missing_permissions_to_use_sticker                                | 50600     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | mfa_enabled                                                       | 60001     | -         |
@@ -928,6 +930,7 @@ invalid_sku_attachment_no_archives = 50186
 file_duration_invalid = 50192
 invalid_gift_redemption_incorrect_user = 50194
 invalid_activity_launch_incorrect_guild_size = 50209
+handler_valid_only_for_primary_entry_points = 50227
 missing_permissions_to_use_sticker = 50600
 
 mfa_enabled = 60001

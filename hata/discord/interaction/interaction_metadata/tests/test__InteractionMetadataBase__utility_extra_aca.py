@@ -12,7 +12,7 @@ def test__InteractionMetadataBase__iter_options():
     vampytest.assert_eq([*interaction_metadata.iter_options()], [])
 
 
-def test__InteractionMetadataBase__focused_option__0():
+def test__InteractionMetadataBase__focused_option__no_focused_option():
     """
     Tests whether ``InteractionMetadataBase.focused_option`` works as intended.
     
@@ -41,7 +41,7 @@ def test__InteractionMetadataBase__get_value_of():
     vampytest.assert_eq(interaction_metadata.get_value_of(), None)
 
 
-def test__InteractionMetadataBase__value__0():
+def test__InteractionMetadataBase__value__no_value():
     """
     Tests whether ``InteractionMetadataBase.value`` works as intended.
     

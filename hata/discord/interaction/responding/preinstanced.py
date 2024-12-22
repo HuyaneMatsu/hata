@@ -54,6 +54,8 @@ class InteractionResponseType(PreinstancedBase):
     +-------------------------------------------+-------------------------------------------+-------+-------------------------------+
     | require_subscription                      | require subscription                      | 10    | Monetization must be enabled. |
     +-------------------------------------------+-------------------------------------------+-------+-------------------------------+
+    | embedded_activity_launch                  | embedded activity launch                  | 12    |                               |
+    +-------------------------------------------+-------------------------------------------+-------+-------------------------------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -72,3 +74,4 @@ class InteractionResponseType(PreinstancedBase):
     application_command_autocomplete_result = P(8, 'application command autocomplete result')
     form = P(9, 'form')
     require_subscription = P(10, 'require subscription')
+    embedded_activity_launch = P(12, 'embedded activity launch')

@@ -1404,6 +1404,12 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     
     
     @property
+    @copy_docs(InteractionMetadataBase.target_type)
+    def target_type(self):
+        return self.interaction.target_type
+    
+    
+    @property
     @copy_docs(InteractionMetadataBase.values)
     def values(self):
         return self.interaction.values

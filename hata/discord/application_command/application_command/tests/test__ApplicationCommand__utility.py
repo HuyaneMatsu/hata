@@ -7,7 +7,9 @@ from ....permission import Permission
 from ...application_command_option import ApplicationCommandOption, ApplicationCommandOptionType
 
 from ..application_command import ApplicationCommand
-from ..preinstanced import ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
+from ..preinstanced import (
+    ApplicationCommandHandlerType, ApplicationCommandIntegrationContextType, ApplicationCommandTargetType
+)
 
 from .test__ApplicationCommand__constructor import _assert_fields_set
 
@@ -21,6 +23,7 @@ def test__ApplicationCommand__copy():
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
+    handler_type = ApplicationCommandHandlerType.discord_embedded_activity_launcher
     integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
         ApplicationCommandIntegrationContextType.any_private_channel,
@@ -47,6 +50,7 @@ def test__ApplicationCommand__copy():
         name,
         description,
         description_localizations = description_localizations,
+        handler_type = handler_type,
         integration_context_types = integration_context_types,
         integration_types = integration_types,
         name_localizations = name_localizations,
@@ -74,6 +78,7 @@ def test__ApplicationCommand__copy_with__no_fields():
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
+    handler_type = ApplicationCommandHandlerType.discord_embedded_activity_launcher
     integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
         ApplicationCommandIntegrationContextType.any_private_channel,
@@ -100,6 +105,7 @@ def test__ApplicationCommand__copy_with__no_fields():
         name,
         description,
         description_localizations = description_localizations,
+        handler_type = handler_type,
         integration_context_types = integration_context_types,
         integration_types = integration_types,
         name_localizations = name_localizations,
@@ -128,6 +134,7 @@ def test__ApplicationCommand__copy_with__all_fields():
         Locale.thai: 'ayy',
         Locale.czech: 'yay',
     }
+    old_handler_type = ApplicationCommandHandlerType.discord_embedded_activity_launcher
     old_integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
         ApplicationCommandIntegrationContextType.any_private_channel,
@@ -155,6 +162,7 @@ def test__ApplicationCommand__copy_with__all_fields():
         Locale.dutch: 'aya',
         Locale.greek: 'yya',
     }
+    new_handler_type = ApplicationCommandHandlerType.application
     new_integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
         ApplicationCommandIntegrationContextType.bot_private_channel,
@@ -181,6 +189,7 @@ def test__ApplicationCommand__copy_with__all_fields():
         old_name,
         old_description,
         description_localizations = old_description_localizations,
+        handler_type = old_handler_type,
         integration_context_types = old_integration_context_types,
         integration_types = old_integration_types,
         name_localizations = old_name_localizations,
@@ -193,6 +202,7 @@ def test__ApplicationCommand__copy_with__all_fields():
     copy = application_command.copy_with(
         description = new_description,
         description_localizations = new_description_localizations,
+        handler_type = new_handler_type,
         integration_context_types = new_integration_context_types,
         integration_types = new_integration_types,
         name = new_name,
@@ -206,6 +216,7 @@ def test__ApplicationCommand__copy_with__all_fields():
     vampytest.assert_eq(copy.name, new_name)
     vampytest.assert_eq(copy.description, new_description)
     vampytest.assert_eq(copy.description_localizations, new_description_localizations)
+    vampytest.assert_eq(copy.handler_type, new_handler_type)
     vampytest.assert_eq(copy.integration_context_types, tuple(new_integration_context_types))
     vampytest.assert_eq(copy.integration_types, tuple(new_integration_types))
     vampytest.assert_eq(copy.name_localizations, new_name_localizations)

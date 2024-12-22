@@ -9,59 +9,55 @@ from ......discord.application_command import (
 from ......discord.client import Client
 from ......discord.client.compounds.tests.helpers import TestDiscordApiClient
 from ......discord.interaction import (
-    InteractionEvent, InteractionMetadataApplicationCommand, InteractionType, Resolved
+    InteractionEvent, InteractionMetadataApplicationCommand, InteractionType
 )
 from ......discord.permission import Permission
-from ......discord.user import ClientUserBase, User
 
 from ....response_modifier import ResponseModifier
 from ....utils import UNLOADING_BEHAVIOUR_DELETE
 
-from ..context_command import ContextCommand
+from ..embedded_activity_launch_command import ApplicationCommandHandlerType, EmbeddedActivityLaunchCommand
 
 
-def _assert_fields_set(context_command):
+def _assert_fields_set(embedded_activity_launch_command):
     """
     Asserts whether the given instance has all of its fields set.
     
     Parameters
     ----------
-    context_command : ``ContextCommand``
+    embedded_activity_launch_command : ``EmbeddedActivityLaunchCommand``
         The command to checkout.
     """
-    vampytest.assert_instance(context_command, ContextCommand)
-    vampytest.assert_instance(context_command._exception_handlers, list, nullable = True)
-    vampytest.assert_instance(context_command._parent_reference, WeakReferer, nullable = True)
-    vampytest.assert_instance(context_command.name, str)
-    vampytest.assert_instance(context_command._permission_overwrites, dict, nullable = True)
+    vampytest.assert_instance(embedded_activity_launch_command, EmbeddedActivityLaunchCommand)
+    vampytest.assert_instance(embedded_activity_launch_command._exception_handlers, list, nullable = True)
+    vampytest.assert_instance(embedded_activity_launch_command._parent_reference, WeakReferer, nullable = True)
+    vampytest.assert_instance(embedded_activity_launch_command.name, str)
+    vampytest.assert_instance(embedded_activity_launch_command._permission_overwrites, dict, nullable = True)
     vampytest.assert_instance(
-        context_command._registered_application_command_ids, dict, nullable = True,
+        embedded_activity_launch_command._registered_application_command_ids, dict, nullable = True,
     )
-    vampytest.assert_instance(context_command._schema, ApplicationCommand, nullable = True)
-    vampytest.assert_instance(context_command._unloading_behaviour, int)
+    vampytest.assert_instance(embedded_activity_launch_command._schema, ApplicationCommand, nullable = True)
+    vampytest.assert_instance(embedded_activity_launch_command._unloading_behaviour, int)
     
-    vampytest.assert_instance(context_command._command_function, object)
-    vampytest.assert_instance(context_command.global_, bool)
-    vampytest.assert_instance(context_command.guild_ids, set, nullable = True)
-    vampytest.assert_instance(context_command.integration_context_types, tuple, nullable = True)
-    vampytest.assert_instance(context_command.integration_types, tuple, nullable = True)
-    vampytest.assert_instance(context_command.nsfw, bool)
-    vampytest.assert_instance(context_command.required_permissions, Permission)
-    vampytest.assert_instance(context_command.response_modifier, ResponseModifier, nullable = True)
-    vampytest.assert_instance(context_command.target_type, ApplicationCommandTargetType)
+    vampytest.assert_instance(embedded_activity_launch_command._command_function, object)
+    vampytest.assert_instance(embedded_activity_launch_command.global_, bool)
+    vampytest.assert_instance(embedded_activity_launch_command.guild_ids, set, nullable = True)
+    vampytest.assert_instance(embedded_activity_launch_command.integration_context_types, tuple, nullable = True)
+    vampytest.assert_instance(embedded_activity_launch_command.integration_types, tuple, nullable = True)
+    vampytest.assert_instance(embedded_activity_launch_command.nsfw, bool)
+    vampytest.assert_instance(embedded_activity_launch_command.required_permissions, Permission)
+    vampytest.assert_instance(embedded_activity_launch_command.response_modifier, ResponseModifier, nullable = True)
 
 
-def test__ContextCommand__new():
+def test__EmbeddedActivityLaunchCommand__new():
     """
-    Tests whether ``ContextCommand.__new__`` works as intended.
+    Tests whether ``EmbeddedActivityLaunchCommand.__new__`` works as intended.
     """
-    # Note: guild cannot be `None` and is mutually exclusive is `is_global`.
     async def function():
         pass
     
     name = 'yuuka'
     delete_on_unload = True
-    # guild = None
     integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
         ApplicationCommandIntegrationContextType.bot_private_channel,
@@ -73,43 +69,78 @@ def test__ContextCommand__new():
     is_global = True
     nsfw = True
     required_permissions = Permission(8)
-    target_type = ApplicationCommandTargetType.user
     show_for_invoking_user_only = True
     
-    context_command = ContextCommand(
+    embedded_activity_launch_command = EmbeddedActivityLaunchCommand(
         function,
         name,
         delete_on_unload = delete_on_unload,
-        # guild = guild,
         integration_context_types = integration_context_types,
         integration_types = integration_types,
         is_global = is_global,
         nsfw = nsfw,
         required_permissions = required_permissions,
-        target_type = target_type,
         show_for_invoking_user_only = show_for_invoking_user_only,
     )
-    _assert_fields_set(context_command)
+    _assert_fields_set(embedded_activity_launch_command)
     
-    vampytest.assert_is(context_command._command_function, function)
-    vampytest.assert_eq(context_command._unloading_behaviour, UNLOADING_BEHAVIOUR_DELETE)
-    vampytest.assert_eq(context_command.global_, True)
-    vampytest.assert_is(context_command.guild_ids, None)
-    vampytest.assert_eq(context_command.integration_context_types, tuple(integration_context_types))
-    vampytest.assert_eq(context_command.integration_types, tuple(integration_types))
-    vampytest.assert_eq(context_command.name, name)
-    vampytest.assert_eq(context_command.nsfw, nsfw)
-    vampytest.assert_eq(context_command.required_permissions, required_permissions)
+    vampytest.assert_is(embedded_activity_launch_command._command_function, function)
+    vampytest.assert_eq(embedded_activity_launch_command._unloading_behaviour, UNLOADING_BEHAVIOUR_DELETE)
+    vampytest.assert_eq(embedded_activity_launch_command.global_, True)
+    vampytest.assert_is(embedded_activity_launch_command.guild_ids, None)
+    vampytest.assert_eq(embedded_activity_launch_command.integration_context_types, tuple(integration_context_types))
+    vampytest.assert_eq(embedded_activity_launch_command.integration_types, tuple(integration_types))
+    vampytest.assert_eq(embedded_activity_launch_command.name, name)
+    vampytest.assert_eq(embedded_activity_launch_command.nsfw, nsfw)
+    vampytest.assert_eq(embedded_activity_launch_command.required_permissions, required_permissions)
     vampytest.assert_eq(
-        context_command.response_modifier,
+        embedded_activity_launch_command.response_modifier,
         ResponseModifier({'show_for_invoking_user_only': show_for_invoking_user_only}),
     )
-    vampytest.assert_is(context_command.target_type, target_type)
 
 
-def test__ContextCommand__repr():
+def _iter_options__new__only_global_check():
+    yield {}, False
+    yield {'is_global': False}, True
+    yield {'is_global': True}, False
+    yield {'guild': [202412210050]}, True
+
+
+@vampytest._(vampytest.call_from(_iter_options__new__only_global_check()).returning_last())
+def test__new__only_global_check(keyword_parameters):
     """
-    Tests whether ``ContextCommand.__repr__`` works as intended.
+    Tests whether ``EmbeddedActivityLaunchCommand.__new__`` works as intended.
+    
+    Case: only global commands are allowed.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to call ``EmbeddedActivityLaunchCommand`` with.
+    
+    Returns
+    -------
+    raised : `bool`
+    """
+    function = None
+    name = 'yuuka'
+    
+    try:
+        embedded_activity_launch_command = EmbeddedActivityLaunchCommand(
+            function,
+            name,
+            **keyword_parameters,
+        )
+    except TypeError:
+        return True
+    
+    vampytest.assert_eq(embedded_activity_launch_command.global_, True)
+    return False
+
+
+def test__EmbeddedActivityLaunchCommand__repr():
+    """
+    Tests whether ``EmbeddedActivityLaunchCommand.__repr__`` works as intended.
     """
     # Note: guild cannot be `None` and is mutually exclusive is `is_global`.
     async def function():
@@ -118,7 +149,6 @@ def test__ContextCommand__repr():
     name = 'yuuka'
     delete_on_unload = True
     guild_id = 2024120432
-    # guild = None
     integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
         ApplicationCommandIntegrationContextType.bot_private_channel,
@@ -130,7 +160,6 @@ def test__ContextCommand__repr():
     is_global = True
     nsfw = True
     required_permissions = Permission(8)
-    target_type = ApplicationCommandTargetType.user
     show_for_invoking_user_only = True
     permission_overwrite = ApplicationCommandPermissionOverwrite(
         (ApplicationCommandPermissionOverwriteTargetType.role, 20241204303),
@@ -141,25 +170,23 @@ def test__ContextCommand__repr():
     async def exception_handler(client, interaction_event, command, exception):
         return
     
-    context_command = ContextCommand(
+    embedded_activity_launch_command = EmbeddedActivityLaunchCommand(
         function,
         name,
         delete_on_unload = delete_on_unload,
-        # guild = guild,
         integration_context_types = integration_context_types,
         integration_types = integration_types,
         is_global = is_global,
         nsfw = nsfw,
         required_permissions = required_permissions,
-        target_type = target_type,
         show_for_invoking_user_only = show_for_invoking_user_only,
     )
-    context_command.error(exception_handler)
-    context_command.add_permission_overwrite(guild_id, permission_overwrite)
+    embedded_activity_launch_command.error(exception_handler)
+    embedded_activity_launch_command.add_permission_overwrite(guild_id, permission_overwrite)
     response_modifier = ResponseModifier({'show_for_invoking_user_only': show_for_invoking_user_only})
     
-    output = repr(context_command)
-    vampytest.assert_in(type(context_command).__name__, output)
+    output = repr(embedded_activity_launch_command)
+    vampytest.assert_in(type(embedded_activity_launch_command).__name__, output)
     vampytest.assert_in(f'name = {name!r}', output)
     vampytest.assert_in(f'exception_handlers = {[exception_handler]!r}', output)
     vampytest.assert_in(f'type = global', output)
@@ -168,15 +195,14 @@ def test__ContextCommand__repr():
     vampytest.assert_in(f'integration_types = {tuple(integration_types)!r}', output)
     vampytest.assert_in(f'nsfw = {nsfw!r}', output)
     vampytest.assert_in(f'required_permissions = {required_permissions!r}', output)
-    vampytest.assert_in(f'target_type = {target_type.name!s}', output)
     vampytest.assert_in(f'response_modifier = {response_modifier!r}', output)
     vampytest.assert_in(f'command_function = {function!r}', output)
     vampytest.assert_in(f'permission_overwrites = { {guild_id: [permission_overwrite]}!r}', output)
 
 
-def test__ContextCommand__hash():
+def test__EmbeddedActivityLaunchCommand__hash():
     """
-    Tests whether ``ContextCommand.__hash__`` works as intended.
+    Tests whether ``EmbeddedActivityLaunchCommand.__hash__`` works as intended.
     """
     # Note: guild cannot be `None` and is mutually exclusive is `is_global`.
     async def function():
@@ -184,7 +210,6 @@ def test__ContextCommand__hash():
     
     name = 'yuuka'
     delete_on_unload = True
-    # guild = None
     integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
         ApplicationCommandIntegrationContextType.bot_private_channel,
@@ -196,29 +221,26 @@ def test__ContextCommand__hash():
     is_global = True
     nsfw = True
     required_permissions = Permission(8)
-    target_type = ApplicationCommandTargetType.user
     show_for_invoking_user_only = True
     
     
     async def exception_handler(client, interaction_event, command, exception):
         return
     
-    context_command = ContextCommand(
+    embedded_activity_launch_command = EmbeddedActivityLaunchCommand(
         function,
         name,
         delete_on_unload = delete_on_unload,
-        # guild = guild,
         integration_context_types = integration_context_types,
         integration_types = integration_types,
         is_global = is_global,
         nsfw = nsfw,
         required_permissions = required_permissions,
-        target_type = target_type,
         show_for_invoking_user_only = show_for_invoking_user_only,
     )
-    context_command.error(exception_handler)
+    embedded_activity_launch_command.error(exception_handler)
     
-    output = hash(context_command)
+    output = hash(embedded_activity_launch_command)
     vampytest.assert_instance(output, int)
 
 
@@ -231,7 +253,6 @@ def _iter_options__eq():
     
     name = 'yuuka'
     delete_on_unload = True
-    guild = [202410240003, 202410240004]
     integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
         ApplicationCommandIntegrationContextType.bot_private_channel,
@@ -240,10 +261,8 @@ def _iter_options__eq():
         ApplicationIntegrationType.guild_install,
         ApplicationIntegrationType.user_install,
     ]
-    is_global = True
     nsfw = True
     required_permissions = Permission(8)
-    target_type = ApplicationCommandTargetType.user
     show_for_invoking_user_only = True
     
     async def exception_handler(client, interaction_event, command, exception):
@@ -253,13 +272,10 @@ def _iter_options__eq():
         'function': function_0,
         'name': name,
         'delete_on_unload': delete_on_unload,
-        # 'guild': guild,
         'integration_context_types': integration_context_types,
         'integration_types': integration_types,
-        'is_global': is_global,
         'nsfw': nsfw,
         'required_permissions': required_permissions,
-        'target_type': target_type,
         'show_for_invoking_user_only': show_for_invoking_user_only,
     }
     
@@ -326,32 +342,6 @@ def _iter_options__eq():
         False,
     )
     
-    yield (
-        keyword_parameters,
-        (),
-        {
-            **keyword_parameters,
-            'is_global': False,
-        },
-        (),
-        False,
-    )
-    
-    yield (
-        {
-            **keyword_parameters,
-            'is_global': ...,
-            'guild': guild,
-        },
-        (),
-        {
-            **keyword_parameters,
-            'is_global': ...,
-            'guild': [202410240005, 202410240006],
-        },
-        (),
-        False,
-    )
     
     yield (
         keyword_parameters,
@@ -380,17 +370,6 @@ def _iter_options__eq():
         (),
         {
             **keyword_parameters,
-            'target_type': ApplicationCommandTargetType.message,
-        },
-        (),
-        False,
-    )
-    
-    yield (
-        keyword_parameters,
-        (),
-        {
-            **keyword_parameters,
             'show_for_invoking_user_only': False,
         },
         (),
@@ -407,9 +386,9 @@ def _iter_options__eq():
 
 
 @vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
-def test__ContextCommand__eq(keyword_parameters_0, exception_handlers_0, keyword_parameters_1, exception_handlers_1):
+def test__EmbeddedActivityLaunchCommand__eq(keyword_parameters_0, exception_handlers_0, keyword_parameters_1, exception_handlers_1):
     """
-    Tests whether ``ContextCommand.__eq__`` works as intended.
+    Tests whether ``EmbeddedActivityLaunchCommand.__eq__`` works as intended.
     
     Parameters
     ----------
@@ -429,22 +408,22 @@ def test__ContextCommand__eq(keyword_parameters_0, exception_handlers_0, keyword
     -------
     output : `bool`
     """
-    context_command_0 = ContextCommand(**keyword_parameters_0)
+    embedded_activity_launch_command_0 = EmbeddedActivityLaunchCommand(**keyword_parameters_0)
     for exception_handler in exception_handlers_0:
-        context_command_0.error(exception_handler)
+        embedded_activity_launch_command_0.error(exception_handler)
     
-    context_command_1 = ContextCommand(**keyword_parameters_1)
+    embedded_activity_launch_command_1 = EmbeddedActivityLaunchCommand(**keyword_parameters_1)
     for exception_handler in exception_handlers_1:
-        context_command_1.error(exception_handler)
+        embedded_activity_launch_command_1.error(exception_handler)
     
-    output = context_command_0 == context_command_1
+    output = embedded_activity_launch_command_0 == embedded_activity_launch_command_1
     vampytest.assert_instance(output, bool)
     return output
 
 
-async def test__ContextCommand__invoke():
+async def test__EmbeddedActivityLaunchCommand__invoke():
     """
-    Tests whether ``ContextCommand.invoke`` works as intended.
+    Tests whether ``EmbeddedActivityLaunchCommand.invoke`` works as intended.
     
     This function is a coroutine.
     """
@@ -452,10 +431,9 @@ async def test__ContextCommand__invoke():
     interaction_event = None
     function_called = 0
     
-    async def function(input_client : Client, input_interaction_event : InteractionEvent, target : ClientUserBase):
+    async def function(input_client : Client, input_interaction_event : InteractionEvent):
         nonlocal client
         nonlocal interaction_event
-        nonlocal user
         nonlocal function_called
         
         vampytest.assert_is_not(input_client, None)
@@ -463,19 +441,16 @@ async def test__ContextCommand__invoke():
         
         vampytest.assert_is(input_client, client)
         vampytest.assert_is(input_interaction_event, interaction_event)
-        vampytest.assert_is(target, user)
         
         function_called += 1
     
     
     name = 'yuuka'
-    target_type = ApplicationCommandTargetType.user
     
-    context_command = ContextCommand(function, name, target_type = target_type)
+    embedded_activity_launch_command = EmbeddedActivityLaunchCommand(function, name)
     
     client_id = 202410240000
     interaction_event_id = 202410240001
-    user_id = 202410240002
     token = 'token_' + str(client_id)
     api = TestDiscordApiClient(False, token)
     
@@ -484,18 +459,14 @@ async def test__ContextCommand__invoke():
         api = api,
         client_id = client_id,
     )
-    user = User.precreate(user_id)
     interaction_event = InteractionEvent.precreate(
         interaction_event_id,
         interaction_type = InteractionType.application_command,
-        interaction = InteractionMetadataApplicationCommand(
-            target_id = user_id,
-            resolved = Resolved(users = {user_id: user}),
-        ),
+        interaction = InteractionMetadataApplicationCommand(),
     )
     
     try:
-        await context_command.invoke(client, interaction_event)
+        await embedded_activity_launch_command.invoke(client, interaction_event)
         
         vampytest.assert_eq(function_called, 1)
     finally:
@@ -503,16 +474,15 @@ async def test__ContextCommand__invoke():
         client = None
 
 
-def test__ContextCommand__copy():
+def test__EmbeddedActivityLaunchCommand__copy():
     """
-    Tests whether ``ContextCommand.copy`` works as intended.
+    Tests whether ``EmbeddedActivityLaunchCommand.copy`` works as intended.
     """
     async def function():
         pass
     
     name = 'yuuka'
     delete_on_unload = True
-    # guild = None
     integration_context_types = [
         ApplicationCommandIntegrationContextType.guild,
         ApplicationCommandIntegrationContextType.bot_private_channel,
@@ -524,44 +494,91 @@ def test__ContextCommand__copy():
     is_global = True
     nsfw = True
     required_permissions = Permission(8)
-    target_type = ApplicationCommandTargetType.user
     show_for_invoking_user_only = True
     
     
     async def exception_handler(client, interaction_event, command, exception):
         return
     
-    context_command = ContextCommand(
+    embedded_activity_launch_command = EmbeddedActivityLaunchCommand(
         function,
         name,
         delete_on_unload = delete_on_unload,
-        # guild = guild,
         integration_context_types = integration_context_types,
         integration_types = integration_types,
         is_global = is_global,
         nsfw = nsfw,
         required_permissions = required_permissions,
-        target_type = target_type,
         show_for_invoking_user_only = show_for_invoking_user_only,
     )
-    context_command.error(exception_handler)
-    copy = context_command.copy()
+    embedded_activity_launch_command.error(exception_handler)
+    copy = embedded_activity_launch_command.copy()
     _assert_fields_set(copy)
-    vampytest.assert_eq(copy, context_command)
+    vampytest.assert_eq(copy, embedded_activity_launch_command)
 
 
-def test__ContextCommand__get_command_function():
+def test__EmbeddedActivityLaunchCommand__target_type():
     """
-    Tests whether ``ContextCommand.get_command_function`` works as intended.
+    Tests whether ``EmbeddedActivityLaunchCommand.target_type`` works as intended.
     """
     async def function():
         pass
     
     name = 'yuuka'
-    target_type = ApplicationCommandTargetType.user
     
-    context_command = ContextCommand(function, name, target_type = target_type)
+    embedded_activity_launch_command = EmbeddedActivityLaunchCommand(function, name)
     
-    output = context_command.get_command_function()
+    output = embedded_activity_launch_command.target_type
+    vampytest.assert_instance(output, ApplicationCommandTargetType)
+    vampytest.assert_is(output, ApplicationCommandTargetType.embedded_activity_launch)
+
+
+def test__EmbeddedActivityLaunchCommand__handler_type__with_function():
+    """
+    Tests whether ``EmbeddedActivityLaunchCommand.handler_type`` works as intended.
+    
+    Case: with function.
+    """
+    async def function():
+        pass
+    
+    name = 'yuuka'
+    
+    embedded_activity_launch_command = EmbeddedActivityLaunchCommand(function, name)
+    
+    output = embedded_activity_launch_command.handler_type
+    vampytest.assert_instance(output, ApplicationCommandHandlerType)
+    vampytest.assert_is(output, ApplicationCommandHandlerType.application)
+
+
+def test__EmbeddedActivityLaunchCommand__handler_type__without_function():
+    """
+    Tests whether ``EmbeddedActivityLaunchCommand.handler_type`` works as intended.
+    
+    Case: out function.
+    """
+    function = None
+    
+    name = 'yuuka'
+    
+    embedded_activity_launch_command = EmbeddedActivityLaunchCommand(function, name)
+    
+    output = embedded_activity_launch_command.handler_type
+    vampytest.assert_instance(output, ApplicationCommandHandlerType)
+    vampytest.assert_is(output, ApplicationCommandHandlerType.discord_embedded_activity_launcher)
+
+
+def test__EmbeddedActivityLaunchCommand__get_command_function():
+    """
+    Tests whether ``EmbeddedActivityLaunchCommand.get_command_function`` works as intended.
+    """
+    async def function():
+        pass
+    
+    name = 'yuuka'
+    
+    embedded_activity_launch_command = EmbeddedActivityLaunchCommand(function, name)
+    
+    output = embedded_activity_launch_command.get_command_function()
     vampytest.assert_instance(output, object)
     vampytest.assert_is(output, function)

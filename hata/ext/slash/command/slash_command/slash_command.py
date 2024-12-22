@@ -537,8 +537,8 @@ class SlashCommand(
         return new
     
     
-    @CommandBaseApplicationCommand.target.getter
-    def target(self):
+    @CommandBaseApplicationCommand.target_type.getter
+    def target_type(self):
         return ApplicationCommandTargetType.chat
 
     

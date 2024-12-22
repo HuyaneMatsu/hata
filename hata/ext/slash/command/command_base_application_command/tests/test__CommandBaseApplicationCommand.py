@@ -3,8 +3,9 @@ from scarletio import WeakReferer
 
 from ......discord.application import ApplicationIntegrationType
 from ......discord.application_command import (
-    ApplicationCommand, ApplicationCommandIntegrationContextType, ApplicationCommandPermissionOverwrite,
-    ApplicationCommandPermissionOverwriteTargetType, ApplicationCommandTargetType, INTEGRATION_CONTEXT_TYPES_ALL
+    ApplicationCommand, ApplicationCommandHandlerType, ApplicationCommandIntegrationContextType,
+    ApplicationCommandPermissionOverwrite, ApplicationCommandPermissionOverwriteTargetType,
+    ApplicationCommandTargetType, INTEGRATION_CONTEXT_TYPES_ALL
 )
 from ......discord.client import Client
 from ......discord.client.compounds.tests.helpers import TestDiscordApiClient
@@ -475,18 +476,32 @@ def test__CommandBaseApplicationCommand__copy():
     vampytest.assert_eq(copy, command_base_application_command)
 
 
-def test__CommandBaseApplicationCommand__target():
+def test__CommandBaseApplicationCommand__target_type():
     """
-    Tests whether ``CommandBaseApplicationCommand.target`` works as intended.
+    Tests whether ``CommandBaseApplicationCommand.target_type`` works as intended.
     """
     function = None
     name = 'yuuka'
     
     command_base_application_command = InstantiableCommandBaseApplicationCommand(function, name)
     
-    output = command_base_application_command.target
+    output = command_base_application_command.target_type
     vampytest.assert_instance(output, ApplicationCommandTargetType)
     vampytest.assert_is(output, ApplicationCommandTargetType.none)
+
+
+def test__CommandBaseApplicationCommand__handler_type():
+    """
+    Tests whether ``CommandBaseApplicationCommand.handler_type`` works as intended.
+    """
+    function = None
+    name = 'yuuka'
+    
+    command_base_application_command = InstantiableCommandBaseApplicationCommand(function, name)
+    
+    output = command_base_application_command.handler_type
+    vampytest.assert_instance(output, ApplicationCommandHandlerType)
+    vampytest.assert_is(output, ApplicationCommandHandlerType.none)
 
 
 def test__CommandBaseApplicationCommand__default():

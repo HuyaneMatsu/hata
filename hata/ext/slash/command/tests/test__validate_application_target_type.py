@@ -16,6 +16,16 @@ def _iter_options__passing():
     yield ApplicationCommandTargetType.message, ApplicationCommandTargetType.message
     yield ApplicationCommandTargetType.message.name, ApplicationCommandTargetType.message
     yield ApplicationCommandTargetType.message.value, ApplicationCommandTargetType.message
+    
+    yield ApplicationCommandTargetType.embedded_activity_launch, ApplicationCommandTargetType.embedded_activity_launch
+    yield (
+        ApplicationCommandTargetType.embedded_activity_launch.name,
+        ApplicationCommandTargetType.embedded_activity_launch,
+    )
+    yield (
+        ApplicationCommandTargetType.embedded_activity_launch.value,
+        ApplicationCommandTargetType.embedded_activity_launch,
+    )
 
 
 def _iter_options__type_error():

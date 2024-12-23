@@ -241,6 +241,7 @@ setup(
         'hata.ext.slash.command.command_base_custom_id',
         'hata.ext.slash.command.component_command',
         'hata.ext.slash.command.context_command',
+        'hata.ext.slash.command.embedded_activity_launch_command',
         'hata.ext.slash.command.form_submit_command',
         'hata.ext.slash.command.slash_command',
         'hata.ext.slash.conversions',

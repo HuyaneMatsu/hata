@@ -1,7 +1,7 @@
 # Introduction
 
 When it comes to interactions, slash commands and components are a great first step, but for longer inputs they are
-not intuitive enough. This is when multi-field forms / model interactions come into the picture.
+not intuitive enough. This is when multi-field forms / modal interactions come into the picture.
 
 ## Building Forms
 
@@ -490,5 +490,5 @@ async def rate_cake_form_submit(
 </p>
 
 <p align="right">
-    <a href="./typing_interactions.md">Next up: Typing interactions</a>
+    <a href="./embedded_activity_launch.md">Next up: Embedded activity launching</a>
 </p>

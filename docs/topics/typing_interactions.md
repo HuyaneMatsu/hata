@@ -113,5 +113,5 @@ async def set_difficulty(
 ----
 
 <p align="left">
-    <a href="./forms.md">Previously: Forms</a>
+    <a href="./embedded_activity_launch.md">Previously: Launching embedded activities</a>
 </p>

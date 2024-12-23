@@ -23,6 +23,7 @@ Hata has tutorials in guides.
     - [auto-completion](auto_completion.md): Auto-completing slash command parameters.
     - [components](components.md): Using components and interacting with them.
     - [forms](forms.md): Building forms and receiving them.
+    - [embedded activity launching](embedded_activity_launch.md): Defining a command to launch embedded activity.
     - [typing](typing_interactions.md): Typing interactions on the [pep 484](https://peps.python.org/pep-0484/) way.
 
 - [plugins](plugins.md): Organizing code parts into pluggable modules

@@ -1,3 +1,32 @@
+## 1.3.72 *\[2024-12-23\]*
+
+### Improvements
+
+- Add `Subscription.renewal_sku_ids`.
+- Add `Subscription.iter_renewal_sku_ids`.
+- Add `ApplicationCommandHandlerType`.
+- Add `ApplicationCommand.handler_type`.
+- Add `ERROR_CODES.handler_valid_only_for_primary_entry_points`.
+- Add `InteractionMetadataBase.target_type`.
+- Add `InteractionMetadataApplicationCommand.target_type`.
+- Add `InteractionEvent.target_type`.
+- Add `InteractionResponseType.embedded_activity_launch`.
+- Add `Client.interaction_embedded_activity_launch`.
+
+#### ext.slash
+
+- Add `CommandBaseApplicationCommand.handler_type`.
+- Add `EmbeddedActivityLaunchCommand`.
+- Commands now respond correctly to if
+    `InteractionEvent.target_type is ApplicationCommandTargetType.embedded_activity_launch`.
+
+### Renames, Deprecations & Removals
+
+- Deprecated & rename `ApplicationCommandTargetType.activity_start` to `.embedded_activity_launch`.
+
+#### ext.slash
+- Deprecate & rename `CommandBaseApplicationCommand.target` to `.target_type` to match `ApplicationCommand.target_type`.
+
 ## 1.3.71 *\[2024-12-14\]*
 
 ### Improvements
@@ -12,7 +41,7 @@
 - Add `ConnectionType.mastodon`.
 - Add new unicode emojis. (Version `15.1`~)
 
-#### hata.ext.slash
+#### ext.slash
 - `SlashCommandCategory.__repr__`, `SlashCommandFunction.__repr__`, `SlashCommandParameterAutoCompleter.__repr__`,
    `SlashCommand.__repr__`, `ContextCommand.__repr__`, `CommandBaseCustomId.__repr__`,
    `CommandBaseApplicationCommand.__repr__` now shows each field in it that affects `.__eq__` & `.__hash__`.
@@ -27,7 +56,7 @@
 
 ### Renames, Deprecations & Removals
 
-#### hata.ext.slash
+#### ext.slash
 - Deprecate `SlashCommand.__new__`'s `.is_default` parameter. Use `default` instead.
 
 
@@ -35,7 +64,7 @@
 
 ### Bug fixes
 
-#### hata.ext.slash
+#### ext.slash
 - Fix `yield`-ing multiple times on an application command did not result in multiple messages.
 
 ### Renames, Deprecations & Removals
@@ -43,7 +72,7 @@
 - Rename `DiscordGatewayClientShard.websocket` to `.web_socket`.
 - Rename `DiscordGatewayVoice.websocket` to `.web_socket`.
 
-#### hata.ext.solarlink
+#### ext.solarlink
 - Rename `SolarNode.websocket` to `.web_socket`.
 - Rename `SolarLinkEventManager.player_websocket_closed` to `.player_web_socket_closed`.
 - Rename `PlayerWebsocketClosedEvent` to `PlayerWebSocketClosedEvent`.
@@ -3645,7 +3674,7 @@ A change like this was requested for a while...
 
 - Deprecate `ApplicationCommand.allow_by_default`.
 
-##### hata.ext.slash
+##### ext.slash
 
 - Add `allow_in_dm` is now accepted by `SlasherApplicationCommand`.
 
@@ -3663,7 +3692,7 @@ A change like this was requested for a while...
 - Add `UserBase.has_name_like_at`.
 ` Improve `.get_user_like` and `.get_users_like` methods.
 
-##### hata.ext.extension_loader
+##### ext.extension_loader
 
 - Add `blocking` parameter to `ExtensionLoader.load`.
 - Add `blocking` parameter to `ExtensionLoader.unload`.
@@ -3682,7 +3711,7 @@ A change like this was requested for a while...
 - Enable calling `hata` without `python3 -m`. (WizzyGeek#2356)
 - `run_console_till_interruption` will now indeed stop at interruption and not only at system exit. (Gilgamesh#8939)
 
-##### hata.ext.commands_v2
+##### ext.commands_v2
 
 - Add `alternative_checked_types` to `ConverterSetting`.
 - Channel parameter annotations are now picked up familiarly to slash commands in favor of deprecating the type usage.
@@ -3701,7 +3730,7 @@ A change like this was requested for a while...
 - Fix a `TypeError` in `Channel.is_guild_voice`. (koish#5800)
 - Fix a `TypeError` in `Channel.is_...` non-group methods.
 
-##### hata.ext.commands_v2
+##### ext.commands_v2
 
 - Fix a `TypeError` in `guild_converter`. (Gilgamesh#8939)
 - Fix a `TypeError` in `invite_converter`.
@@ -3710,7 +3739,7 @@ A change like this was requested for a while...
 
 ### Summary
 
-- Add `hata.ext.solarlink`.
+- Add `ext.solarlink`.
 
 ### Improvements
 
@@ -5292,7 +5321,7 @@ Stop creating functions runtime, but now we remove lambdas.
 - Add `CommandState.get_active_command_count_with_sub_commands`
 - Add `SlasherApplicationCommand.get_real_command_count`.
 
-##### hata.ext.asyncio
+##### ext.asyncio
 
 - Add `LifoQueue.get_nowait`.
 - Add `Queue.get_nowait`.

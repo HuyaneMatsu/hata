@@ -1,8 +1,7 @@
 # Introduction
 
-Even tho hata does not cover embedded activity development tools, launching embedded activities is actually done
-through application commands. If you are not planning to use embedded activities in your application,
-you probably don't need to continue reading this topic.
+Launching embedded activities is done through application commands. If you are not planning to use embedded activities
+in your application, you probably don't need to continue reading this topic.
 
 If you are still here you already may have enabled embedded activities in your application in the Discord developer
 portal or are just curious about the secrets this feature contains.
@@ -11,14 +10,14 @@ portal or are just curious about the secrets this feature contains.
 
 ## Default entry point
 
-By enabling embedded activities in the developer portal Discord creates an application command for you to launch it.
-The default entry point is completely handled by Discord, so normally you would not need to anything at this point,
-but since hata syncs your registered application commands with Discord, it sees that an extra unused command popped
-up and gets rid of it.
+By enabling embedded activities in the developer portal, Discord creates an application command for you to launch.
+The default entry point is completely handled by Discord, so normally you would not need to do anything at this point,
+but since Hata syncs your registered application commands with Discord, it sees that as an extra unused command that
+showed up and gets rid of it.
 
-Do not fret, the solution is simple, we just have to make an equivalent command on out side.
-Familiarly to context commands, we use the `target` parameter to tell where it should show up.
-At this particular case we pass it as: `'embedded activity launch'` (there are other non-string versions of it as well).
+Do not fret, the solution is simple, we just have to make an equivalent command on our side.
+Similar to context commands, we use the `target` parameter to tell where it should show up.
+In this particular case we pass it as: `'embedded activity launch'` (there are other non-string versions of it as well).
 
 ```py
 launch = Sakuya.interactions(
@@ -38,12 +37,12 @@ By doing this we delegate the responsibility back to Discord to handle the inter
 
 ## Custom entry point
 
-In case you do not want to send any message, send custom message(s), decide to not start the activity or just execute
-some code, this is what you are looking for!
+In case you don't want to send any message, send custom message(s), don't want to start the activity or just want to
+execute some code, this is what you are looking for!
 
 ### No message
 
-To just launch an embedded activity without sending any message, registering a command with a bare `return` is enough.
+To just launch an embedded activity without sending any message, register a command with a bare `return`.
 
 ```py
 @Sakuya.interactions(target_type = 'embedded activity launch')
@@ -53,7 +52,7 @@ async def launch():
 
 ### Sending single message
 
-To send a single message just return what you want to send. Embeds, attachments and polls, say no more; its supported.
+To send a single message just return what you want to send. Embeds, attachments and polls, say no more; it's supported.
 
 ```py
 @Sakuya.interactions(target_type = 'embedded activity launch')
@@ -71,7 +70,7 @@ async def launch(client, event):
 
 ### Launching and then responding
 
-To launch up an embedded activity familiarly to `return`, using a `yield` also works.
+To launch an embedded activity similar to `return`, using a `yield` also works.
 
 ```py
 @Sakuya.interactions(target_type = 'embedded activity launch')
@@ -105,7 +104,7 @@ async def launch(client, event):
 
 ### Manual responding
 
-At some cases code becomes complex and using either `return` / `yield` / `abort` is just ain't doing it anymore.
+In some cases the code can become complex and using either `return` / `yield` / `abort` is just not enough.
 For these cases use the client methods directly.
 
 **Example: launch activity with message**
@@ -170,8 +169,8 @@ async def launch(client, event):
 ```
 
 If you do not wish to launch the embedded activity you can decide to use the `interaction_response_message_create`
-method instead.
-Or `interaction_application_command_acknowledge` chained into a `interaction_response_message_edit` call accordingly.
+method instead. Or you can use `interaction_application_command_acknowledge` chained into a
+`interaction_response_message_edit` call accordingly.
 
 ----
 

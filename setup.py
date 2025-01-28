@@ -30,6 +30,7 @@ setup(
         'hata.discord.activity.activity_secrets',
         'hata.discord.activity.activity_timestamps',
         'hata.discord.allowed_mentions',
+        'hata.discord.ansi_format',
         'hata.discord.application',
         'hata.discord.application.application',
         'hata.discord.application.application_entity',
@@ -73,6 +74,8 @@ setup(
         'hata.discord.auto_moderation.trigger_metadata',
         'hata.discord.bases',
         'hata.discord.bases.flags',
+        'hata.discord.bases.place_holder',
+        'hata.discord.bases.preinstanced',
         'hata.discord.bin',
         'hata.discord.builder',
         'hata.discord.builder.conversions',
@@ -296,7 +299,7 @@ setup(
     },
     python_requires = '>=3.6',
     install_requires = [
-        'scarletio>=1.0.82',
+        'scarletio>=1.0.84',
         'chardet>=2.0',
     ],
     extras_require = {

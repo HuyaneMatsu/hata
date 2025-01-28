@@ -3,7 +3,7 @@ __all__ = ('EntitlementOwnerType', 'EntitlementType',)
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class EntitlementType(PreinstancedBase):
+class EntitlementType(PreinstancedBase, value_type = int):
     """
     Represents an entitlement's type.
     
@@ -11,22 +11,16 @@ class EntitlementType(PreinstancedBase):
     ----------
     name : `str`
         The name of the type.
+    
     value : `int`
         The Discord side identifier value of the entitlement type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``EntitlementType``) items
-        Stores the created entitlement type instances. This container is accessed when translating a Discord
-        entitlement type's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The entitlement types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the entitlement types.
+    Type Attributes
+    ---------------
+    Every predefined entitlement type can be accessed as type attribute as well:
     
-    Every predefined entitlement type can be accessed as class attribute as well:
     +---------------------------+---------------------------+-------+
-    | Class attribute name      | Name                      | Value |
+    | Type attribute name       | Name                      | Value |
     +===========================+===========================+=======+
     | none                      | none                      | 0     |
     +---------------------------+---------------------------+-------+
@@ -47,9 +41,6 @@ class EntitlementType(PreinstancedBase):
     | application_subscription  | application subscription  | 8     |
     +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined
@@ -64,7 +55,7 @@ class EntitlementType(PreinstancedBase):
     application_subscription = P(8, 'application subscription')
 
 
-class EntitlementOwnerType(PreinstancedBase):
+class EntitlementOwnerType(PreinstancedBase, value_type = int):
     """
     Represents an entitlement's owner's type.
     
@@ -72,22 +63,16 @@ class EntitlementOwnerType(PreinstancedBase):
     ----------
     name : `str`
         The name of the type.
+    
     value : `int`
         The Discord side identifier value of the entitlement's owner's type.
         
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``EntitlementOwnerType``) items
-        Stores the created entitlement owner type instances. This container is accessed when translating a Discord
-        entitlement owner type's value to it's representation.
-    VALUE_TYPE : `type` = `int`
-        The entitlement owner types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the entitlement owner types.
+    Type Attributes
+    ---------------
+    Every predefined entitlement owner type can be accessed as type attribute as well:
     
-    Every predefined entitlement owner type can be accessed as class attribute as well:
     +---------------------------+---------------------------+-------+
-    | Class attribute name      | Name                      | Value |
+    | Type attribute name       | Name                      | Value |
     +===========================+===========================+=======+
     | none                      | none                      | 0     |
     +---------------------------+---------------------------+-------+
@@ -96,9 +81,6 @@ class EntitlementOwnerType(PreinstancedBase):
     | user                      | user                      | 2     |
     +---------------------------+---------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ()
     
     # predefined

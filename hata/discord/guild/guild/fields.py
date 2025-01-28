@@ -446,12 +446,12 @@ def parse_locale(data):
     # When receiving interaction
     locale = data.get('locale', None)
     if (locale is not None):
-        return Locale.get(locale)
+        return Locale(locale)
     
     # When receiving guild itself
     locale = data.get('preferred_locale', None)
     if (locale is not None):
-        return Locale.get(locale)
+        return Locale(locale)
     
     return LOCALE_DEFAULT
 

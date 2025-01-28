@@ -25,7 +25,7 @@ def _check_is_every_field_set(discovery):
     vampytest.assert_instance(discovery.sub_categories, tuple, nullable = True)
 
 
-def test__DiscoveryCategory__new__0():
+def test__GuildDiscovery__new__no_fields():
     """
     Tests whether ``GuildDiscovery.__new__`` works as intended.
     
@@ -35,7 +35,7 @@ def test__DiscoveryCategory__new__0():
     _check_is_every_field_set(discovery)
 
 
-def test__DiscoveryCategory__new__1():
+def test__GuildDiscovery__new__all_fields():
     """
     Tests whether ``GuildDiscovery.__new__`` works as intended.
     

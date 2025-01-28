@@ -1,5 +1,7 @@
 __all__ = ('DiscoveryCategory',)
 
+from scarletio import copy_docs
+
 from ...bases import Preinstance as P, PreinstancedBase
 
 from .fields import (
@@ -8,36 +10,30 @@ from .fields import (
 )
 
 
-class DiscoveryCategory(PreinstancedBase):
+class DiscoveryCategory(PreinstancedBase, value_type = int):
     """
     Represents a category of a ``GuildDiscovery``.
     
     Attributes
     ----------
-    value : `int`
-        The Discord side identifier value of the discovery category.
     name : `str`
         The default name of the discovery category.
-    name_localizations : `None`, `dict` of (``Locale``, `str`) items
+    
+    name_localizations : `None | dict<Locale, str>`
         The category's name in other languages.
+    
     primary : `bool`
         Whether this category can be set as a guild's primary category.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``DiscoveryCategory``) items
-        Stores the predefined discovery categories. This container is accessed when translating a Discord side
-        identifier of a discovery category. The identifier value is used as a key to get it's wrapper side
-        representation.
-    VALUE_TYPE : `type` = `str`
-        The discovery categories' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the discovery categories.
+    value : `int`
+        The Discord side identifier value of the discovery category.
     
-    Every predefined discovery category is also stored as a class attribute:
+    Type Attributes
+    ---------------
+    Every predefined discovery category is also stored as a type attribute:
     
     +-------------------------------+-------+-------------------------------+-----------+
-    | Class attribute name          | id    | name                          | primary   |
+    | Type attribute name           | id    | name                          | primary   |
     +===============================+=======+===============================+===========+
     | general                       | `0`   | `'General'`                   | `True`    |
     +-------------------------------+-------+-------------------------------+-----------+
@@ -136,35 +132,7 @@ class DiscoveryCategory(PreinstancedBase):
     """
     __slots__ = ('name_localizations', 'primary')
     
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
-    
-    @classmethod
-    def _from_value(cls, value):
-        """
-        Creates a new discovery category with the given value.
-        
-        Parameters
-        ----------
-        value : `int`
-            The discovery category's identifier value.
-        
-        Returns
-        -------
-        self : `instance<cls>`
-            The created instance.
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.value = value
-        self.name_localizations = None
-        self.primary = True
-        
-        return self
-    
-    
-    def __init__(self, value, name, primary):
+    def __new__(cls, value, name = None, primary = True):
         """
         Creates a new discovery category from the given parameters.
         
@@ -172,17 +140,17 @@ class DiscoveryCategory(PreinstancedBase):
         ----------
         value : `int`
             The unique identifier number of the discovery category.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The category's name.
-        primary : `bool`
+        
+        primary : `bool` = `True`, Optional
             Whether this category can be set as a guild's primary category.
         """
-        self.value = value
-        self.name = name
+        self = PreinstancedBase.__new__(cls, value, name)
         self.name_localizations = None
         self.primary = primary
-        
-        self.INSTANCES[value] = self
+        return self
     
     
     @classmethod
@@ -193,7 +161,7 @@ class DiscoveryCategory(PreinstancedBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Discovery category data.
         
         Returns
@@ -202,7 +170,7 @@ class DiscoveryCategory(PreinstancedBase):
         """
         # Note that even tho id is received as integer, but integers over 32 bits are still received as string.
         category_id = parse_value(data)
-        self = cls.get(category_id)
+        self = cls(category_id)
         self.primary = parse_primary(data)
         self.name = parse_name(data)
         # Only set `name_localizations` if it is non-`None`
@@ -220,12 +188,13 @@ class DiscoveryCategory(PreinstancedBase):
         ----------
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether default values should be included as well.
+        
         include_internals : `bool` = `False`, Optional (Keyword only)
             Whether internal fields should be included as well.
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_primary_into(self.primary, data, defaults)
@@ -237,22 +206,13 @@ class DiscoveryCategory(PreinstancedBase):
         return data
     
     
-    def __repr__(self):
-        """Returns the discovery category's representation."""
-        repr_parts = [
-            '<',
-            self.__class__.__name__,
-            ' name = ',
-            repr(self.name),
-            ' value = ',
-            repr(self.value),
-        ]
-        
-        if self.primary:
-            repr_parts.append(' (primary)')
-        
-        repr_parts.append('>')
-        return ''.join(repr_parts)
+    @copy_docs(PreinstancedBase._put_repr_parts_into)
+    def _put_repr_parts_into(self, repr_parts):
+        # primary
+        primary = self.primary
+        if primary:
+            repr_parts.append(', primary = ')
+            repr_parts.append(repr(primary))
     
     
     general = P(0, 'General', True)

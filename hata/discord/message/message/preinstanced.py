@@ -1,6 +1,6 @@
 __all__ = ('MessageType', )
 
-from scarletio import include
+from scarletio import copy_docs, include
 
 from ...activity import ActivityType
 from ...bases import Preinstance as P, PreinstancedBase
@@ -466,35 +466,31 @@ def convert_poll_result(self):
         return ''.join(content_parts)
 
 
-class MessageType(PreinstancedBase):
+class MessageType(PreinstancedBase, value_type = int):
     """
     Represents a ``Message``'s type.
     
     Attributes
     ----------
-    name : `str`
-        The default name of the message type.
-    value : `int`
-        The Discord side identifier value of the message type.
     converter : `FunctionType`
         The converter function of the message type, what tries to convert the message's content to it's Discord side
         representation.
+    
     deletable : `bool`
         Whether the message with this type can be deleted.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``MessageType``) items
-        Stores the predefined ``MessageType``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The message types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the message types.
+    name : `str`
+        The default name of the message type.
     
-    Every predefined message type can be accessed as class attribute as well:
+    value : `int`
+        The Discord side identifier value of the message type.
+    
+    Type Attributes
+    ---------------
+    Every predefined message type can be accessed as type attribute as well:
     
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | Class attribute name                      | Name                                      | Value | Converter                                         | Deletable |
+    | Type attribute name                       | Name                                      | Value | Converter                                         | Deletable |
     +===========================================+===========================================+=======+===================================================+===========+
     | default                                   | default                                   | 0     | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
@@ -591,76 +587,44 @@ class MessageType(PreinstancedBase):
     | poll_result                               | poll result                               | 46    | convert_poll_result                               | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     __slots__ = ('converter', 'deletable',)
     
-    @classmethod
-    def _from_value(cls, value):
+    def __new__(cls, value, name = None, converter = None, deletable = True):
         """
-        Creates a new message type with the given value.
-        
-        Parameters
-        ----------
-        value : `int`
-            The message type's identifier value.
-        
-        Returns
-        -------
-        self : ``MessageType``
-            The created instance.
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.value = value
-        self.converter = MESSAGE_DEFAULT_CONVERTER
-        self.deletable = True
-        
-        return self
-    
-    
-    def __init__(self, value, name, converter, deletable):
-        """
-        Creates an ``MessageType`` and stores it at the class's `.INSTANCES` class attribute as well.
+        Creates a new message type.
         
         Parameters
         ----------
         value : `int`
             The Discord side identifier value of the message type.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The default name of the message type.
-        converter : `FunctionType`
+        
+        converter : `None | FunctionType` = `None`, Optional
             The converter function of the message type.
-        deletable : `bool`
+        
+        deletable : `bool` = `True`, Optional
             Whether the message with this type can be deleted.
         """
-        self.value = value
-        self.name = name
+        if converter is None:
+            converter = MESSAGE_DEFAULT_CONVERTER
+        
+        self = PreinstancedBase.__new__(cls, value, name)
         self.converter = converter
         self.deletable = deletable
-        
-        self.INSTANCES[value] = self
+        return self
     
     
-    def __repr__(self):
-        """Returns the representation of the message type."""
-        repr_parts = ['<', self.__class__.__name__]
-        
-        repr_parts.append(' name = ')
-        repr_parts.append(repr(self.name))
-        
-        repr_parts.append(', value = ')
-        repr_parts.append(repr(self.value))
-        
+    @copy_docs(PreinstancedBase._put_repr_parts_into)
+    def _put_repr_parts_into(self, repr_parts):
+        # converter
         repr_parts.append(', converter = ')
         repr_parts.append(repr(self.converter))
         
+        # deletable
         repr_parts.append(', deletable = ')
         repr_parts.append(repr(self.deletable))
-        
-        repr_parts.append('>')
-        return ''.join(repr_parts)
     
     
     # predefined

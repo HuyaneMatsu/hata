@@ -206,7 +206,7 @@ class CommandState(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the command state's representation."""
-        result = ['<', self.__class__.__name__]
+        result = ['<', type(self).__name__]
         if self._is_non_global:
             result.append(' (non global)')
         
@@ -2846,7 +2846,7 @@ class Slasher(
     
     def __repr__(self):
         """Returns the slasher's representation."""
-        return f'<{self.__class__.__name__} sync_should = {len(self._sync_should)}, sync_done = {len(self._sync_done)}>'
+        return f'<{type(self).__name__} sync_should = {len(self._sync_should)}, sync_done = {len(self._sync_done)}>'
     
     
     @property

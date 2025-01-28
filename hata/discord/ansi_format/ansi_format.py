@@ -1,31 +1,24 @@
 __all__ = ('AnsiBackgroundColor', 'AnsiForegroundColor', 'AnsiTextDecoration', 'create_ansi_format_code')
 
-from scarletio import copy_docs
 from .bases import Preinstance as P, PreinstancedBase
 from .color import Color
 
 
-class AnsiTextDecoration(PreinstancedBase):
+class AnsiTextDecoration(PreinstancedBase, value_type = int):
     """
     Represents an ansi text decoration.
     
     Attributes
     ----------
+    name : `str`
+        The name of the text decoration.
+    
     value : `int`
         The unique identifier of the text decoration.
-    name : `str`
-        The default name of the text decoration.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``AnsiTextDecoration``) items
-        The predefined text decorations stored in `.value` - `object` relation.
-    VALUE_TYPE : `type` = `int`
-        Text decoration code's type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name to use as the preinstanced objects'.
-    
-    Each text decoration is stored as a class attribute:
+    Type Attributes
+    ---------------
+    Each text decoration is stored as a type attribute:
     
     +-----------------------+-----------+-----------------------+
     | Class Attribute name  | value     | name                  |
@@ -39,51 +32,34 @@ class AnsiTextDecoration(PreinstancedBase):
     """
     __slots__ = ()
     
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     none = P(0, 'none')
     bold = P(1, 'bold')
     underline = P(4, 'underline')
 
 
-class AnsiFormatColor(PreinstancedBase):
+class AnsiFormatColor(PreinstancedBase, base_type = True, value_type = int):
     """
     Represents an ansi color format code.
     
     Attributes
     ----------
-    value : `int`
-        The unique identifier of the format color.
-    name : `str`
-        The default name of the format color.
     color : ``Color``
         The real color value.
+    
     color_name : `str`
         A more accurate name of the color.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `NoneType` = `NotImplemented`
-        The instances of the preinstanced type. Subclasses should overwrite it as `dict`.
-    VALUE_TYPE : `type` = `int`
-        Format color code's type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name to use as the preinstanced objects'.
+    name : `str`
+        The default name of the format color.
+    
+    value : `int`
+        The unique identifier of the format color.
     """
     __slots__ = ('color', 'color_name')
     
-    VALUE_TYPE = int
-    
-    @classmethod
-    @copy_docs(PreinstancedBase._from_value)
-    def _from_value(cls, value):
-        raise NotImplementedError
-    
-    
-    def __init__(self, value, name, color, color_name):
+    def __new__(cls, value, name = None, color = None, color_name = None):
         """
-        Creates a new format color with the given parameters and stores it at the class's `.INSTANCES`.
+        Creates a new format color.
         
         Parameters
         ----------
@@ -94,12 +70,19 @@ class AnsiFormatColor(PreinstancedBase):
         color : ``Color``
             The real color value.
         """
-        self.name = name
-        self.value = value
+        if color is None:
+            color = Color()
+        
+        if name is None:
+            name = cls.NAME_DEFAULT
+        
+        if color_name is None:
+            color_name = name
+        
+        self = PreinstancedBase.__new__(cls, value, name)
         self.color = color
         self.color_name = color_name
-        self.INSTANCES[value] = self
-
+        return self
 
 
 class AnsiBackgroundColor(AnsiFormatColor):
@@ -108,25 +91,21 @@ class AnsiBackgroundColor(AnsiFormatColor):
     
     Attributes
     ----------
-    value : `int`
-        The unique identifier of the format color.
-    name : `str`
-        The default name of the format color.
     color : ``Color``
         The real color value.
+    
     color_name : `str`
         A more accurate name of the color.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``AnsiBackgroundColor``) items
-        The predefined background colors stored in `.value` - `object` relation.
-    VALUE_TYPE : `type` = `int`
-        Format color code's type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name to use as the preinstanced objects'.
+    name : `str`
+        The default name of the format color.
     
-    Each background color is stored as a class attribute:
+    value : `int`
+        The unique identifier of the format color.
+    
+    Type Attributes
+    ---------------
+    Each background color is stored as a type attribute:
     
     +-----------------------+-----------+-----------------------+-----------+-------------------+-------------------------------+
     | Class Attribute name  | value     | name                  | color     | color name        | Additional notes              |
@@ -168,25 +147,21 @@ class AnsiForegroundColor(AnsiFormatColor):
     
     Attributes
     ----------
-    value : `int`
-        The unique identifier of the format color.
-    name : `str`
-        The default name of the format color.
     color : ``Color``
         The real color value.
+    
     color_name : `str`
         A more accurate name of the color.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``AnsiForegroundColor``) items
-        The predefined foreground colors stored in `.value` - `object` relation.
-    VALUE_TYPE : `type` = `int`
-        Format color code's type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name to use as the preinstanced objects'.
-        
-    Each foreground color is stored as a class attribute:
+    name : `str`
+        The default name of the format color.
+    
+    value : `int`
+        The unique identifier of the format color.
+    
+    Type Attributes
+    ---------------
+    Each foreground color is stored as a type attribute:
     
     +-----------------------+-----------+-----------------------+-----------+-------------------+-------------------------------+
     | Class Attribute name  | value     | name                  | color     | color name        | Additional notes              |

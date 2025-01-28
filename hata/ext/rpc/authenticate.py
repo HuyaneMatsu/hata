@@ -43,7 +43,7 @@ class AuthenticateResponse:
         raw_scopes = data['raw_scopes']
         scopes = set()
         for scope in raw_scopes:
-            scope = Oauth2Scope.get(scope)
+            scope = Oauth2Scope(scope)
             scopes.add(scope)
         
         expires = timestamp_to_datetime(data['date'])

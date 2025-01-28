@@ -101,7 +101,7 @@ ENTITY_TYPE_CONVERSION = AuditLogEntryChangeConversion(
 
 @ENTITY_TYPE_CONVERSION.set_value_deserializer
 def entity_type_value_deserializer(value):
-    return ScheduledEventEntityType.get(value)
+    return ScheduledEventEntityType(value)
 
 
 @ENTITY_TYPE_CONVERSION.set_value_serializer
@@ -152,7 +152,7 @@ PRIVACY_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
 
 @PRIVACY_LEVEL_CONVERSION.set_value_deserializer
 def privacy_level_value_deserializer(value):
-    return PrivacyLevel.get(value)
+    return PrivacyLevel(value)
 
 
 @PRIVACY_LEVEL_CONVERSION.set_value_serializer
@@ -216,7 +216,7 @@ STATUS_CONVERSION = AuditLogEntryChangeConversion(
 
 @STATUS_CONVERSION.set_value_deserializer
 def status_value_deserializer(value):
-    return ScheduledEventStatus.get(value)
+    return ScheduledEventStatus(value)
 
 
 @STATUS_CONVERSION.set_value_serializer

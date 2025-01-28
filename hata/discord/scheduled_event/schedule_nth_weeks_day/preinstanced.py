@@ -3,27 +3,21 @@ __all__ = ('ScheduleWeeksDay',)
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class ScheduleWeeksDay(PreinstancedBase):
+class ScheduleWeeksDay(PreinstancedBase, value_type = int):
     """
     Represents a day of a week.
     
     Attributes
     ----------
-    value : `int`
-        The unique identifier of the text decoration.
     name : `str`
-        The default name of the text decoration.
+        The name of the schedule week's day.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``ScheduleWeeksDay``) items
-        The predefined schedule week days stored in `.value` - `object` relation.
-    VALUE_TYPE : `type` = `int`
-        Schedule week days' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name to use as the preinstanced objects'.
+    value : `int`
+        The unique identifier of the schedule week's day.
     
-    Each schedule week day is stored as a class attribute:
+    Type Attributes
+    ---------------
+    Each schedule week day is stored as a type attribute:
     
     +-----------------------+-----------+-----------------------+
     | Class Attribute name  | value     | name                  |
@@ -44,9 +38,6 @@ class ScheduleWeeksDay(PreinstancedBase):
     +-----------------------+-----------+-----------------------+
     """
     __slots__ = ()
-    
-    INSTANCES = {}
-    VALUE_TYPE = int
     
     monday = P(0, 'monday')
     tuesday = P(1, 'tuesday')

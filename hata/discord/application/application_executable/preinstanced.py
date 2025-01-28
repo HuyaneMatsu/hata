@@ -3,7 +3,7 @@ __all__ = ('OperationSystem',)
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class OperationSystem(PreinstancedBase):
+class OperationSystem(PreinstancedBase, value_type = str):
     """
     Represents a ``ApplicationExecutable``'s operation system.
     
@@ -11,22 +11,15 @@ class OperationSystem(PreinstancedBase):
     ----------
     name : `str`
         The name of the operation system.
+    
     value : `str`
         The Discord side identifier value of the os.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``Os``) items
-        Stores the created os instances. This container is accessed when translating a Discord
-        os' value to it's representation.
-    VALUE_TYPE : `type` = `str`
-        The os' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the oss.
-    
-    Every predefined os can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined os can be accessed as type attribute as well:
     +-----------------------+-----------+---------------+
-    | Class attribute name  | name      | value         |
+    | Type attribute name   | name      | value         |
     +=======================+===========+===============+
     | none                  | none      | `''`          |
     +-----------------------+-----------+---------------+
@@ -37,9 +30,6 @@ class OperationSystem(PreinstancedBase):
     | windows               | windows   | `'win32'`     |
     +-----------------------+-----------+---------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = str
-    
     __slots__ = ()
     
     # predefined

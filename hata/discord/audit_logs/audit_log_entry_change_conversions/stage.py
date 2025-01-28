@@ -18,7 +18,7 @@ PRIVACY_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
 
 @PRIVACY_LEVEL_CONVERSION.set_value_deserializer
 def privacy_level_value_deserializer(value):
-    return PrivacyLevel.get(value)
+    return PrivacyLevel(value)
 
 
 @PRIVACY_LEVEL_CONVERSION.set_value_serializer

@@ -1208,7 +1208,7 @@ class Client(
             
             before = [
                 'Exception occurred at calling ',
-                self.__class__.__name__,
+                type(self).__name__,
                 '.connect\n',
             ]
             

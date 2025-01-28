@@ -21,7 +21,7 @@ def build_locale_dictionary(dictionary):
     transformed : `dict` of (``Locale``, `object`) items
     """
     if (dictionary is not None) and dictionary:
-        return {Locale.get(key): value for key, value in dictionary.items()}
+        return {Locale(key): value for key, value in dictionary.items()}
 
 
 def destroy_locale_dictionary(dictionary):

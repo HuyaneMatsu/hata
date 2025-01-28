@@ -290,7 +290,7 @@ def parse_integration_types_configuration(data):
     
     integration_types_configuration = {}
     for key, value in configurations_data.items():
-        integration_type = ApplicationIntegrationType.get(ApplicationIntegrationType.VALUE_TYPE(key))
+        integration_type = ApplicationIntegrationType(ApplicationIntegrationType.VALUE_TYPE(key))
         integration_type_configuration = ApplicationIntegrationTypeConfiguration.from_data(value)
         integration_types_configuration[integration_type] = integration_type_configuration
     
@@ -366,7 +366,7 @@ def validate_integration_types_configuration(integration_types_configuration):
             integration_type = key
         
         elif isinstance(key, ApplicationIntegrationType.VALUE_TYPE):
-            integration_type = ApplicationIntegrationType.get(key)
+            integration_type = ApplicationIntegrationType(key)
         
         else:
             raise TypeError(

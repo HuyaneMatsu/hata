@@ -43,7 +43,7 @@ def parse_client_platform_configurations(data):
         return None
     
     return {
-        PlatformType.get(platform_value): ClientPlatformConfiguration.from_data(configuration_data)
+        PlatformType(platform_value): ClientPlatformConfiguration.from_data(configuration_data)
         for platform_value, configuration_data in configuration_datas.items()
     }
         
@@ -117,7 +117,7 @@ def validate_client_platform_configurations(client_platform_configurations):
         if isinstance(key, PlatformType):
             pass
         elif isinstance(key, PlatformType.VALUE_TYPE):
-            key = PlatformType.get(key)
+            key = PlatformType(key)
         else:
             raise TypeError(
                 f'`client_platform_configurations` keys can be `{PlatformType.__name__} | '

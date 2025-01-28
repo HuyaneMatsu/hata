@@ -126,7 +126,7 @@ def parse_target_type(data):
     -------
     target_type : ``PermissionOverwriteTargetType``
     """
-    return PermissionOverwriteTargetType.get(get_permission_overwrite_key_value(data))
+    return PermissionOverwriteTargetType(get_permission_overwrite_key_value(data))
 
 
 put_target_type_into = preinstanced_putter_factory('type')

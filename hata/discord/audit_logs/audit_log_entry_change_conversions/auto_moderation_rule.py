@@ -104,7 +104,7 @@ EVENT_TYPE_CONVERSION = AuditLogEntryChangeConversion(
 
 @EVENT_TYPE_CONVERSION.set_value_deserializer
 def event_type_value_deserializer(value):
-    return AutoModerationEventType.get(value)
+    return AutoModerationEventType(value)
 
 
 @EVENT_TYPE_CONVERSION.set_value_serializer
@@ -252,7 +252,7 @@ TRIGGER_TYPE_CONVERSION = AuditLogEntryChangeConversion(
 
 @TRIGGER_TYPE_CONVERSION.set_value_deserializer
 def trigger_type_value_deserializer(value):
-    return AutoModerationRuleTriggerType.get(value)
+    return AutoModerationRuleTriggerType(value)
 
 
 @TRIGGER_TYPE_CONVERSION.set_value_serializer

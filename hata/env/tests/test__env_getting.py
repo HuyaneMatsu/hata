@@ -183,7 +183,7 @@ def test__get_env(
     return [*mocked(name, default, accepted_type_name, accepted_processor, raise_if_missing_or_empty, warn_if_empty)]
 
 
-def test___handle_get_env_generator__return():
+def test__handle_get_env_generator__return():
     """
     Tests whether ``_handle_get_env_generator`` works as intended.
     
@@ -200,7 +200,7 @@ def test___handle_get_env_generator__return():
     vampytest.assert_eq(output, expected_output)
 
 
-def test___handle_get_env_generator__error():
+def test__handle_get_env_generator__error():
     """
     Tests whether ``_handle_get_env_generator`` works as intended.
     
@@ -216,7 +216,7 @@ def test___handle_get_env_generator__error():
         _handle_get_env_generator(generator_function())
 
 
-def test___handle_get_env_generator__warning():
+def test__handle_get_env_generator__warning():
     """
     Tests whether ``_handle_get_env_generator`` works as intended.
     

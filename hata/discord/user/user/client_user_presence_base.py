@@ -506,6 +506,6 @@ class ClientUserPBase(ClientUserBase):
             except KeyError:
                 pass
             else:
-                return Status.get(status_value)
+                return Status(status_value)
         
         return Status.offline

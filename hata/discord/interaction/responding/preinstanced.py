@@ -6,7 +6,7 @@ from ...bases import Preinstance as P, PreinstancedBase
 
 
 @export
-class InteractionResponseType(PreinstancedBase):
+class InteractionResponseType(PreinstancedBase, value_type = int):
     """
     The type of an interaction.
     
@@ -14,23 +14,16 @@ class InteractionResponseType(PreinstancedBase):
     ----------
     name : `str`
         The name of the interaction response type.
+    
     value : `int`
         The identifier value the interaction response type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``InteractionResponseType``) items
-        Stores the predefined ``InteractionResponseType``-s. These can be accessed with their `value` as
-        key.
-    VALUE_TYPE : `type` = `int`
-        The application command option types' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the interaction response types.
-    
-    Every predefined interaction response type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined interaction response type can be accessed as type attribute as well:
     
     +-------------------------------------------+-------------------------------------------+-------+-------------------------------+
-    | Class attribute name                      | Name                                      | Value | Notes                         |
+    | Type attribute name                       | Name                                      | Value | Notes                         |
     +===========================================+===========================================+=======+===============================+
     | none                                      | none                                      | 0     | -                             |
     +-------------------------------------------+-------------------------------------------+-------+-------------------------------+
@@ -57,10 +50,6 @@ class InteractionResponseType(PreinstancedBase):
     | embedded_activity_launch                  | embedded activity launch                  | 12    |                               |
     +-------------------------------------------+-------------------------------------------+-------+-------------------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ()
     
     none = P(0, 'none')

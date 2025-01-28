@@ -49,7 +49,7 @@ validate_location = nullable_entity_validator_factory('location', EmbeddedActivi
 
 def parse_user_states(data, user_states, guild_id = 0):
     """
-    Parses the embedded activity user states from teh given data.
+    Parses the embedded activity user states from the given data.
     
     
     Parameters
@@ -81,7 +81,7 @@ def parse_user_states(data, user_states, guild_id = 0):
 
 def put_user_states_into(user_states, data, defaults, *, guild_id = 0):
     """
-    Parses the embedded activity user states from teh given data.
+    Parses the embedded activity user states from the given data.
     
     
     Parameters

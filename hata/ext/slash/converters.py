@@ -1303,7 +1303,7 @@ def preprocess_channel_types(channel_types):
         if (getattr(type(channel_types), '__iter__', None) is None):
             raise TypeError(
                 f'`channel_types` can be `None`, `iterable`, got '
-                f'{channel_types.__class__.__anme__}; {channel_types!r}.'
+                f'{type(channel_types).__anme__}; {channel_types!r}.'
             )
         
         for channel_type in channel_types:
@@ -1311,14 +1311,14 @@ def preprocess_channel_types(channel_types):
                 pass
             
             elif isinstance(channel_type, int):
-                channel_type = ChannelType.get(channel_type)
+                channel_type = ChannelType(channel_type)
             
                 pass
             
             else:
                 raise TypeError(
                     f'`channel_types` can contain `int`, `{ChannelType.__name__}` elements, got '
-                    f'{channel_type.__class__.__name__}; {channel_type!r}; channel_types = {channel_types!r}.'
+                    f'{type(channel_type).__name__}; {channel_type!r}; channel_types = {channel_types!r}.'
                 )
             
             if processed_channel_types is None:
@@ -1423,7 +1423,7 @@ def process_max_and_min_value(type_, value, value_name):
         else:
             raise TypeError(
                 f'`{value_name}` is accepted as {expected_type.__name__} instance if type is specified '
-                f'as `{ANNOTATION_TYPE_TO_REPRESENTATION[type_]}`, got {value.__class__.__name__}; {value!r}.'
+                f'as `{ANNOTATION_TYPE_TO_REPRESENTATION[type_]}`, got {type(value).__name__}; {value!r}.'
             )
     
     return type_, value

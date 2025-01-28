@@ -235,7 +235,7 @@ class IconDetailsCustom(IconDetailsBase):
         return ''.join(repr_parts)
 
 
-class IconType(PreinstancedBase):
+class IconType(PreinstancedBase, value_type = int):
     """
     Represents a Discord icon's type.
     
@@ -243,24 +243,19 @@ class IconType(PreinstancedBase):
     ----------
     name : `str`
         The name of the icon type.
+    
     value : `int`
         The identifier value the icon type.
+    
     details : ``IconDetailsBase``
         Additional details describing the icon type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``IconType``) items
-        Stores the predefined ``IconType``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The icon types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the icon types.
-    
-    Every predefined icon type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined icon type can be accessed as type attribute as well:
     
     +-----------------------+-------------------+-------+-----------+-------------------+---------------------------------------+
-    | Class attribute name  | Name              | Value | Prefix    | Default postfix   | Allowed Postfixes                     |
+    | Type attribute name   | Name              | Value | Prefix    | Default postfix   | Allowed Postfixes                     |
     +=======================+===================+=======+===========+===================+=======================================+
     | none                  | none              | 0     | `''`      | `''`              | `None`                                |
     +-----------------------+-------------------+-------+-----------+-------------------+---------------------------------------+
@@ -271,48 +266,41 @@ class IconType(PreinstancedBase):
     | animated_apng         | animated apng     | 3     | `'a_'`    | `'png'`           | `'png'`                               |
     +-----------------------+-------------------+-------+-----------+-------------------+---------------------------------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
     _alternative_id_counter = 100
     
     __slots__ = ('details',)
     
     
-    @classmethod
-    @copy_docs(PreinstancedBase._from_value)
-    def _from_value(cls, value):
-        raise NotImplementedError
-    
-    
-    def __init__(self, value, name, prefix, default_postfix, allowed_postfixes):
+    def __new__(cls, value, name = None, prefix = '', default_postfix = '', allowed_postfixes = None):
         """
-        Creates a new icon type with the given parameters and stores it at the type's `.INSTANCES`.
+        Creates a new icon type.
         
         Parameters
         ----------
-        value : `str`
+        value : `int`
             The unique identifier of the icon type.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The icon type's name
-        prefix : `str`
+        
+        prefix : `str` = '''`, Optional
             Prefix used when building an url with the icon.
-        default_postfix : `str`
+        
+        default_postfix : `str` = `''`, Optional
             Default postfix used when building an url with the icon.
-        allowed_postfixes : `None`, `frozenset` of `str`
+        
+        allowed_postfixes : `None | frozenset<str>` = `None`, Optional
             The allowed postfixes.
         """
         if value < 0:
-            value = type(self)._alternative_id_counter
-            type(self)._alternative_id_counter = value + 1
+            value = cls._alternative_id_counter
+            cls._alternative_id_counter = value + 1
         
         details = IconDetailsPreinstanced(allowed_postfixes, default_postfix, prefix)
         
+        self = PreinstancedBase.__new__(cls, value, name)
         self.details = details
-        self.name = name
-        self.value = value
-        
-        self.INSTANCES[value] = self
+        return self
     
     
     @classmethod
@@ -342,23 +330,20 @@ class IconType(PreinstancedBase):
         else:
             if not isinstance(data, (bytes, bytearray, memoryview)):
                 raise TypeError(
-                    f'`{name}` can be `None`, `bytes-like`, got {data.__class__.__name__}; {short_repr(data)}'
+                    f'`{name}` can be `None`, `bytes-like`, got {type(data).__name__}; {short_repr(data)}'
                 )
             
             media_type = get_image_media_type(data)
         
         details = IconDetailsCustom(data, media_type)
         
-        
-        self = PreinstancedBase.__new__(cls)
+        self = PreinstancedBase.__new__(cls, -2, name)
         self.details = details
-        self.name = name
-        self.value = -2
         return self
     
     
     def __bool__(self):
-        """Returns whether the icon's type is set."""
+        """Returns bool(self)."""
         if (self.value > 0) or (self.data is not None):
             boolean = True
         else:
@@ -367,21 +352,10 @@ class IconType(PreinstancedBase):
         return boolean
     
     
-    def __repr__(self):
-        """Returns the icon detail's representation."""
-        repr_parts = ['<', self.__class__.__name__]
-        
-        repr_parts.append(' value = ')
-        repr_parts.append(repr(self.value))
-        
-        repr_parts.append(', name = ')
-        repr_parts.append(repr(self.name))
-        
+    @copy_docs(PreinstancedBase._put_repr_parts_into)
+    def _put_repr_parts_into(self, repr_parts):
         repr_parts.append(', details = ')
         repr_parts.append(repr(self.details))
-        
-        repr_parts.append('>')
-        return ''.join(repr_parts)
     
     
     @property

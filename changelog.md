@@ -1,3 +1,24 @@
+## 1.3.73 *\[2024-01-28\]*
+
+### Improvements
+
+- Add missing `Preinstance.__hash__` and `.__eq__`.
+- Add keyword parameter support to `Preinstance`.
+- `PreinstancedMeta.__call__` now decides whether to pull an object from cache or to create a new one.
+- `Preinstance` now supports keyword parameters.
+- Add missing `PlaceHolderBase.__repr__` and `.__hash__` and `.__eq__`.
+
+### Bug fixes
+
+- Fix `elapsed_time` could return invalid value. (Probably an error in the dependency.)
+
+### Renames, Deprecations & Removals
+
+- Rename `Preinstance.args` to `.positional_parameters`.
+- Rename `DiscordApiClient`'s `params` parameters to `query`.
+- Deprecate `PreinstancedBase.get`.
+- Deprecate `ActivityType.game` as scheduled. Use `.playing` instead.
+
 ## 1.3.72 *\[2024-12-23\]*
 
 ### Improvements

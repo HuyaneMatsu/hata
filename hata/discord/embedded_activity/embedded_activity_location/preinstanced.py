@@ -1,9 +1,11 @@
 __all__ = ('EmbeddedActivityLocationType', )
 
+from scarletio import copy_docs
+
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class EmbeddedActivityLocationType(PreinstancedBase):
+class EmbeddedActivityLocationType(PreinstancedBase, value_type = str):
     """
     Represents an embedded activity location's type.
     
@@ -15,22 +17,12 @@ class EmbeddedActivityLocationType(PreinstancedBase):
     value : `str`
         The Discord side identifier value of the embedded activity location type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``EmbeddedActivityLocationType``) items
-        Stores the predefined ``EmbeddedActivityLocationType``-s.
-    
-    VALUE_TYPE : `type` = `str`
-        The embedded activity location types' values' type.
-    
-    DEFAULT_NAME : `str` = `''`
-        The default name of the embedded activity location types. Guild features have the same value as name, so at their case it is not
-        applicable.
-    
-    Every predefined embedded activity location type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined embedded activity location type can be accessed as type attribute as well:
     
     +-----------------------+-------------------+---------------+
-    | Class attribute names | name              | value         |
+    | Type attribute name   | name              | value         |
     +=======================+===================+===============+
     | none                  | none              |               |
     +-----------------------+-------------------+---------------+
@@ -39,31 +31,14 @@ class EmbeddedActivityLocationType(PreinstancedBase):
     | private_channel       | private channel   | pc            |
     +-----------------------+-------------------+---------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = str
-    DEFAULT_NAME = ''
-    
     __slots__ = ()
     
-    @classmethod
-    def _from_value(cls, value):
-        """
-        Creates a new embedded activity location type.
+    @copy_docs(PreinstancedBase.__new__)
+    def __new__(cls, value, name = None):
+        if name is None:
+            name = value.casefold().replace('-', ' ')
         
-        Parameters
-        ----------
-        value : `str`
-            The embedded activity location type's identifier value.
-        
-        Returns
-        -------
-        self : `instance<cls>`
-        """
-        self = object.__new__(cls)
-        self.value = value
-        self.name = value.casefold().replace('-', ' ')
-        self.INSTANCES[value] = self
-        return self
+        return PreinstancedBase.__new__(cls, value, name)
     
     
     # predefined

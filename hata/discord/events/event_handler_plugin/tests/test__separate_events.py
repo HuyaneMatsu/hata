@@ -78,7 +78,7 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test___separate_events(type_attributes):
+def test__separate_events(type_attributes):
     """
     Tests whether ``_separate_events`` works as intended.
     

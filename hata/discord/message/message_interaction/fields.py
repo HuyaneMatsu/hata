@@ -39,7 +39,7 @@ def parse_authorizer_user_ids(data):
     authorizer_user_ids = {}
     
     for key, value in authorizer_user_ids_data.items():
-        integration_type = ApplicationIntegrationType.get(ApplicationIntegrationType.VALUE_TYPE(key))
+        integration_type = ApplicationIntegrationType(ApplicationIntegrationType.VALUE_TYPE(key))
         user_id = int(value)
         authorizer_user_ids[integration_type] = user_id
     
@@ -114,7 +114,7 @@ def validate_authorizer_user_ids(authorizer_user_ids):
             integration_type = key
         
         elif isinstance(key, ApplicationIntegrationType.VALUE_TYPE):
-            integration_type = ApplicationIntegrationType.get(key)
+            integration_type = ApplicationIntegrationType(key)
         
         else:
             raise TypeError(

@@ -57,7 +57,7 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test___finalize_slots(events, slots):
+def test__finalize_slots(events, slots):
     """
     Tests whether ``_finalize_slots`` works as intended.
     

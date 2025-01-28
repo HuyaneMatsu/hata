@@ -3,6 +3,21 @@ import vampytest
 from ..preinstanced import Status
 
 
+def _assert_fields_set(status):
+    """
+    Asserts whether every field are set of the given status.
+    
+    Parameters
+    ----------
+    status : ``Status``
+        The instance to test.
+    """
+    vampytest.assert_instance(status, Status)
+    vampytest.assert_instance(status.name, str)
+    vampytest.assert_instance(status.value, Status.VALUE_TYPE)
+    vampytest.assert_instance(status.position, int)
+
+
 @vampytest.call_from(Status.INSTANCES.values())
 def test__Status__instances(instance):
     """
@@ -13,23 +28,31 @@ def test__Status__instances(instance):
     instance : ``Status``
         The instance to test.
     """
-    vampytest.assert_instance(instance, Status)
-    vampytest.assert_instance(instance.name, str)
-    vampytest.assert_instance(instance.value, Status.VALUE_TYPE)
-    vampytest.assert_instance(instance.position, int)
+    _assert_fields_set(instance)
 
 
-@vampytest.call_from(Status.INSTANCES.values())
-def test__Status__repr(instance):
+def test__Status__new__min_fields():
     """
-    Tests whether ``Status.__repr__`` works as intended.
+    Tests whether ``Status.__new__`` works as intended.
     
-    Parameters
-    ----------
-    instance : ``Status``
-        The instance to test.
+    Case: minimal amount of fields given.
     """
-    vampytest.assert_instance(repr(instance), str)
+    value = 'potato'
+    
+    try:
+        output = Status(value)
+        _assert_fields_set(output)
+        
+        vampytest.assert_eq(output.value, value)
+        vampytest.assert_eq(output.name, value)
+        vampytest.assert_eq(output.position, 4)
+        vampytest.assert_is(Status.INSTANCES.get(value, None), output)
+    
+    finally:
+        try:
+            del Status.INSTANCES[value]
+        except KeyError:
+            pass
 
 
 def test__Status__sort():

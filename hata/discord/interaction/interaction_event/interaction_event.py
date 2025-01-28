@@ -816,7 +816,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     
     def __repr__(self):
         """Returns the representation of the event."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         response_state_names = None
         response_state = self._response_flags

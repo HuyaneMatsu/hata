@@ -1050,12 +1050,19 @@ else:
             If `delta` was not passed as `DateTime`, `RelativeDelta`.
         """
         if isinstance(delta, DateTime):
-            delta = RelativeDelta(DateTime.now(TimeZone.utc), delta)
+            # apparently it matters in which order you do this or perhaps it is a bug
+            now = DateTime.now(TimeZone.utc)
+            if delta > now:
+                delta = RelativeDelta(delta, now)
+            else:
+                delta = RelativeDelta(now, delta)
+        
         elif isinstance(delta, RelativeDelta):
             pass
+        
         else:
             raise TypeError(
-                f'Expected, `RelativeDelta`, `DateTime`, got {delta.__class__.__name__}; {delta!r}.'
+                f'Expected, `RelativeDelta`, `DateTime`, got {type(delta).__name__}; {delta!r}.'
             )
         
         return _relative_delta_to_elapsed_time(delta, limit, names)
@@ -1117,7 +1124,7 @@ class Relationship:
             The relationship's target user's id.
         """
         self.user = create_partial_user_from_id(user_id)
-        self.type = RelationshipType.get(data['type'])
+        self.type = RelationshipType.decode(data['type'])
         client.relationships[user_id] = self
     
     def __repr__(self):

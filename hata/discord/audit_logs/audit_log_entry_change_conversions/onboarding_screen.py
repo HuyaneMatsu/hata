@@ -57,7 +57,7 @@ MODE_CONVERSION = AuditLogEntryChangeConversion(
 
 @MODE_CONVERSION.set_value_deserializer
 def mode_value_deserializer(value):
-    return OnboardingMode.get(value)
+    return OnboardingMode(value)
 
 
 @MODE_CONVERSION.set_value_serializer

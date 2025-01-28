@@ -84,7 +84,7 @@ def validate_application_command_permission_overwrite_target(target):
                 target_type = target_type_maybe
             
             elif isinstance(target_type_maybe, ApplicationCommandPermissionOverwriteTargetType.VALUE_TYPE):
-                target_type = ApplicationCommandPermissionOverwriteTargetType.get(target_type_maybe)
+                target_type = ApplicationCommandPermissionOverwriteTargetType(target_type_maybe)
             
             else:
                 target_lookup_failed = True

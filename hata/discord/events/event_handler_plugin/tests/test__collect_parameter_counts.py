@@ -48,7 +48,7 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test___collect_parameter_counts(events, parent_parameter_counts):
+def test__collect_parameter_counts(events, parent_parameter_counts):
     """
     Tests whether ``_collect_parameter_counts`` works as intended.
     

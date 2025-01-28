@@ -3,7 +3,7 @@ __all__ = ('ButtonStyle', 'SeparatorSpacingSize', 'TextInputStyle')
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class ButtonStyle(PreinstancedBase):
+class ButtonStyle(PreinstancedBase, value_type = int):
     """
     Represents a button component's style.
     
@@ -11,22 +11,16 @@ class ButtonStyle(PreinstancedBase):
     ----------
     name : `str`
         The name of the button style.
+    
     value : `int`
         The identifier value the button style.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ButtonStyle``) items
-        Stores the predefined ``ButtonStyle``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The button style's type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the button styles.
-    
-    Every predefined button style can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined button style can be accessed as type attribute as well:
     
     +-----------------------+---------------+-------+
-    | Class attribute name  | Name          | Value |
+    | Type attribute name   | Name          | Value |
     +=======================+===============+=======+
     | none                  | none          | 0     |
     +-----------------------+---------------+-------+
@@ -43,10 +37,6 @@ class ButtonStyle(PreinstancedBase):
     | subscription          | subscription  | 6     |
     +-----------------------+---------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ()
     
     none = P(0, 'none')
@@ -58,7 +48,7 @@ class ButtonStyle(PreinstancedBase):
     subscription = P(6, 'subscription')
 
 
-class TextInputStyle(PreinstancedBase):
+class TextInputStyle(PreinstancedBase, value_type = int):
     """
     Represents a text input component's style.
     
@@ -66,22 +56,16 @@ class TextInputStyle(PreinstancedBase):
     ----------
     name : `str`
         The name of the text input style.
+    
     value : `int`
         The identifier value the text input style.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``TextInputStyle``) items
-        Stores the predefined ``TextInputStyle``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The text input style's type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the text input styles.
-    
-    Every predefined text input style can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined text input style can be accessed as type attribute as well:
     
     +-----------------------+---------------+-------+
-    | Class attribute name  | Name          | Value |
+    | Type attribute name   | Name          | Value |
     +=======================+===============+=======+
     | none                  | none          | 0     |
     +-----------------------+---------------+-------+
@@ -90,10 +74,6 @@ class TextInputStyle(PreinstancedBase):
     | large                 | large         | 2     |
     +-----------------------+---------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ()
     
     none = P(0, 'none')
@@ -101,7 +81,7 @@ class TextInputStyle(PreinstancedBase):
     paragraph = P(2, 'paragraph')
 
 
-class SeparatorSpacingSize(PreinstancedBase):
+class SeparatorSpacingSize(PreinstancedBase, value_type = int):
     """
     Represents a separator component's spacing's size.
     
@@ -109,22 +89,16 @@ class SeparatorSpacingSize(PreinstancedBase):
     ----------
     name : `str`
         The name of the separator spacing's size.
+    
     value : `int`
         The identifier value the separator spacing's size.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``SeparatorSpacingSize``) items
-        Stores the predefined ``SeparatorSpacingSize``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The separator spacing's size's type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the separator spacing's sizes.
-    
-    Every predefined separator spacing's size can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined separator spacing's size can be accessed as type attribute as well:
     
     +-----------------------+---------------+-------+
-    | Class attribute name  | Name          | Value |
+    | Type attribute name   | Name          | Value |
     +=======================+===============+=======+
     | none                  | none          | 0     |
     +-----------------------+---------------+-------+
@@ -133,10 +107,6 @@ class SeparatorSpacingSize(PreinstancedBase):
     | large                 | large         | 2     |
     +-----------------------+---------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ()
     
     none = P(0, 'none')

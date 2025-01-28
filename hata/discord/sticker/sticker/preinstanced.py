@@ -6,34 +6,27 @@ from ...bases import Preinstance as P, PreinstancedBase
 
 
 @export
-class StickerFormat(PreinstancedBase):
+class StickerFormat(PreinstancedBase, value_type = int):
     """
     Represents a message sticker's format's type.
     
     Attributes
     ----------
-    name : `str`
-        The name of the message sticker format type.
-    value : `int`
-        The Discord side identifier value of the message sticker format type.
     extension : `str`
         The extension of the sticker format type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``StickerFormat``) items
-        Stores the predefined ``StickerFormat``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The message sticker format type' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the sticker format types.
-    DEFAULT_EXTENSION : `str` = `'png'`
-        The default extension of the sticker format type.
+    name : `str`
+        The name of the message sticker format type.
     
-    Every predefined sticker format type can be accessed as class attribute as well:
+    value : `int`
+        The Discord side identifier value of the message sticker format type.
+    
+    Type Attributes
+    ---------------
+    Every predefined sticker format type can be accessed as type attribute as well:
     
     +-----------------------+-----------+-------+---------------+
-    | Class attribute name  | name      | value | extension     |
+    | Type attribute name   | name      | value | extension     |
     +=======================+===========+=======+===============+
     | none                  | none      | 0     | png           |
     +-----------------------+-----------+-------+---------------+
@@ -46,53 +39,27 @@ class StickerFormat(PreinstancedBase):
     | gif                   | gif       | 4     | gif           |
     +-----------------------+-----------+-------+---------------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    DEFAULT_EXTENSION = 'png'
-    
     __slots__ = ('extension', )
     
-    @classmethod
-    def _from_value(cls, value):
+    def __new__(cls, value, name = None, extension = 'png'):
         """
-        Creates a sticker format type from the given id and stores it at class's `.INSTANCES`.
-        
-        Called by `.get` when no sticker format type was found with the given id.
-        
-        Parameters
-        ----------
-        id_ : `int`
-            The identifier of the sticker format type.
-        
-        Returns
-        -------
-        sticker_format : ``StickerFormat``
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.value = value
-        self.extension = cls.DEFAULT_EXTENSION
-        self.INSTANCES[value] = self
-        return self
-    
-    def __init__(self, value, name, extension):
-        """
-        Creates a new sticker format type with the given parameters and stores it at the class's `.INSTANCES`.
+        Creates a new sticker format type.
         
         Parameters
         ----------
         value : `int`
             The Discord side identifier value of the message sticker format type.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The name of the message sticker format type.
-        extension : `str`
+        
+        extension : `str` = `'png'`, Optional
             The extension of the sticker format type.
         """
-        self.name = name
-        self.value = value
+        self = PreinstancedBase.__new__(cls, value, name)
         self.extension = extension
-        self.INSTANCES[value] = self
+        return self
+    
     
     # predefined
     none = P(0, 'none', 'png')
@@ -102,30 +69,24 @@ class StickerFormat(PreinstancedBase):
     gif = P(4, 'gif', 'gif')
 
 
-class StickerType(PreinstancedBase):
+class StickerType(PreinstancedBase, value_type = int):
     """
     Represents a message sticker's type.
     
     Attributes
     ----------
-    name : `str`
-        The name of the message sticker type.
     value : `int`
         The Discord side identifier value of the message sticker type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``StickerType``) items
-        Stores the predefined ``StickerType``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The message sticker types' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the sticker types.
+    name : `str`
+        The name of the message sticker type.
     
-    Every predefined sticker type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined sticker type can be accessed as type attribute as well:
     
     +-----------------------+-----------+-------+
-    | Class attribute name  | name      | value |
+    | Type attribute name   | name      | value |
     +=======================+===========+=======+
     | none                  | none      | 0     |
     +-----------------------+-----------+-------+
@@ -134,10 +95,6 @@ class StickerType(PreinstancedBase):
     | guild                 | guild     | 2     |
     +-----------------------+-----------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ()
     
     # predefined

@@ -15,7 +15,7 @@ from .flags import ComponentTypeLayoutFlag
 COMPONENT_TYPE_LAYOUT_FLAGS_ALL = ComponentTypeLayoutFlag().update_by_keys(top_level = True, nestable = True)
 
 
-class ComponentType(PreinstancedBase):
+class ComponentType(PreinstancedBase, value_type = int):
     """
     Represents a component's type.
     
@@ -33,21 +33,12 @@ class ComponentType(PreinstancedBase):
     value : `int`
         The identifier value the component type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ComponentType``) items
-        Stores the predefined ``ComponentType``-s. These can be accessed with their `value` as key.
-    
-    VALUE_TYPE : `type` = `int`
-        The component type's type.
-    
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the component types.
-    
-    Every predefined component type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined component type can be accessed as type attribute as well:
     
     +-----------------------+-------------------------------+-------+
-    | Class attribute name  | Name                          | Value |
+    | Type attribute name   | Name                          | Value |
     +=======================+===============================+=======+
     | none                  | none                          | 0     |
     +-----------------------+-------------------------------+-------+
@@ -84,61 +75,37 @@ class ComponentType(PreinstancedBase):
     | ???                   | activity content inventory    | 16    |
     +-----------------------+-------------------------------+-------+
     """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    DEFAULT_NAME = 'UNDEFINED'
-    
     __slots__ = ('layout_flags', 'metadata_type', )
     
-
-    @classmethod
-    def _from_value(cls, value):
-        """
-        Creates a new component type with the given value.
-        
-        Parameters
-        ----------
-        value : `int`
-            The channel type's identifier value.
-        
-        Returns
-        -------
-        self : ``ChannelType``
-            The created instance.
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.value = value
-        self.layout_flags = COMPONENT_TYPE_LAYOUT_FLAGS_ALL
-        self.metadata_type = ComponentMetadataBase
-        
-        return self
     
-    
-    def __init__(self, value, name, metadata_type, layout_flags):
+    def __new__(cls, value, name= None, metadata_type = None, layout_flags = ...):
         """
-        Creates a new component type and stores it at the class's `.INSTANCES` class attribute as well.
+        Creates a new component type.
         
         Parameters
         ----------
         value : `int`
             The Discord side identifier value of the channel type.
         
-        name : `str`
+        name : `None | str` = `None`, Optional
             The default name of the channel type.
         
-        metadata_type : `type<ComponentMetadataBase>`
+        metadata_type : `None | type<ComponentMetadataBase>` = `None`, Optional
             The component type's respective metadata type.
         
-        layout_flags : ``ComponentTypeLayoutFlag``
+        layout_flags : ``ComponentTypeLayoutFlag``, Optional
             Flags about the component's layout information.
         """
-        self.value = value
-        self.name = name
+        if metadata_type is None:
+            metadata_type = ComponentMetadataBase
+        
+        if layout_flags is ...:
+            layout_flags = COMPONENT_TYPE_LAYOUT_FLAGS_ALL
+        
+        self = PreinstancedBase.__new__(cls, value, name)
         self.layout_flags = layout_flags
         self.metadata_type = metadata_type
-        
-        self.INSTANCES[value] = self
+        return self
     
     
     none = P(

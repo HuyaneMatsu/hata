@@ -110,7 +110,7 @@ TYPE_CONVERSION = AuditLogEntryChangeConversion(
 
 @TYPE_CONVERSION.set_value_deserializer
 def type_value_deserializer(value):
-    return OnboardingPromptType.get(value)
+    return OnboardingPromptType(value)
 
 
 @TYPE_CONVERSION.set_value_serializer

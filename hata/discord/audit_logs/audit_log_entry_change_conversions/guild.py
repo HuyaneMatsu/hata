@@ -114,7 +114,7 @@ EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
 
 @EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION.set_value_deserializer
 def content_filter_value_deserializer(value):
-    return ExplicitContentFilterLevel.get(value)
+    return ExplicitContentFilterLevel(value)
 
 
 @EXPLICIT_CONTENT_FILTER_LEVEL_CONVERSION.set_value_serializer
@@ -133,7 +133,7 @@ HUB_TYPE_CONVERSION = AuditLogEntryChangeConversion(
 
 @HUB_TYPE_CONVERSION.set_value_deserializer
 def hub_type_value_deserializer(value):
-    return HubType.get(value)
+    return HubType(value)
 
 
 @HUB_TYPE_CONVERSION.set_value_serializer
@@ -174,7 +174,7 @@ LOCALE_CONVERSION = AuditLogEntryChangeConversion(
 
 @LOCALE_CONVERSION.set_value_deserializer
 def locale_value_deserializer(value):
-    return Locale.get(value)
+    return Locale(value)
 
 
 @LOCALE_CONVERSION.set_value_serializer
@@ -225,7 +225,7 @@ MFA_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
 
 @MFA_LEVEL_CONVERSION.set_value_deserializer
 def mfa_level_value_deserializer(value):
-    return MfaLevel.get(value)
+    return MfaLevel(value)
 
 
 @MFA_LEVEL_CONVERSION.set_value_serializer
@@ -244,7 +244,7 @@ DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
 
 @DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION.set_value_deserializer
 def message_notification_value_deserializer(value):
-    return MessageNotificationLevel.get(value)
+    return MessageNotificationLevel(value)
 
 
 @DEFAULT_MESSAGE_NOTIFICATION_LEVEL_CONVERSION.set_value_serializer
@@ -274,7 +274,7 @@ NSFW_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
 
 @NSFW_LEVEL_CONVERSION.set_value_deserializer
 def nsfw_level_value_deserializer(value):
-    return NsfwLevel.get(value)
+    return NsfwLevel(value)
 
 
 @NSFW_LEVEL_CONVERSION.set_value_serializer
@@ -383,7 +383,7 @@ VERIFICATION_LEVEL_CONVERSION = AuditLogEntryChangeConversion(
 
 @VERIFICATION_LEVEL_CONVERSION.set_value_deserializer
 def verification_level_value_deserializer(value):
-    return VerificationLevel.get(value)
+    return VerificationLevel(value)
 
 
 @VERIFICATION_LEVEL_CONVERSION.set_value_serializer

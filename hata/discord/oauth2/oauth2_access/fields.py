@@ -65,7 +65,7 @@ def parse_scopes(data):
     
     split_scopes.sort()
     
-    return tuple(Oauth2Scope.get(scope) for scope in split_scopes)
+    return tuple(Oauth2Scope(scope) for scope in split_scopes)
 
 
 def put_scopes_into(scopes, data, defaults):

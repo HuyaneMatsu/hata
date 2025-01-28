@@ -297,7 +297,7 @@ class ApplicationCommandCountUpdate(EventBase):
         raw_counts = data['application_command_counts']
         
         counts = {
-            ApplicationCommandTargetType.get(int(application_command_target_type_string)): count
+            ApplicationCommandTargetType(int(application_command_target_type_string)): count
             for application_command_target_type_string, count in raw_counts.items()
         }
         

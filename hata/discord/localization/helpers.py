@@ -90,28 +90,28 @@ def localized_dictionary_item_validator(item, parameter_name):
     elif isinstance(key, str):
         if not key:
             raise ValueError(
-                f'`{parameter_name}` keys cannot be empty strings, got item={item!r}.'
+                f'`{parameter_name}` keys cannot be empty strings, got item = {item!r}.'
             )
         
-        validated_key = Locale.get(key)
+        validated_key = Locale(key)
     
     else:
         raise TypeError(
-            f'`{parameter_name}` keys can be `{Locale.__name__}`, `str`, got {value.__class__.__name__}; {value!r}; '
-            f'item={item!r}.'
+            f'`{parameter_name}` keys can be `{Locale.__name__}`, `str`, got {type(value).__name__}; {value!r}; '
+            f'item = {item!r}.'
         )
     
     if isinstance(value, str):
         if not value:
             raise ValueError(
-                f'`{parameter_name}` values cannot be empty strings, got item={item!r}.'
+                f'`{parameter_name}` values cannot be empty strings, got item = {item!r}.'
             )
         
         validated_value = value
     
     else:
         raise TypeError(
-            f'`{parameter_name}` values can be `str`, got {value.__class__.__name__}; {value!r}; item={item!r}.'
+            f'`{parameter_name}` values can be `str`, got {type(value).__name__}; {value!r}; item = {item!r}.'
         )
     
     

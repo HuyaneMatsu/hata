@@ -516,7 +516,7 @@ class TopGGClient:
         query_sort_by_value = get_bots_query_sort_by_value(sort_by)
         query_search_value = create_bots_query_search_value(search)
         
-        query_parameters = {
+        query = {
             QUERY_KEY_GET_BOTS_LIMIT: limit,
             QUERY_KEY_GET_BOTS_OFFSET: offset,
             QUERY_KEY_GET_BOTS_SORT_BY: query_sort_by_value,
@@ -524,7 +524,7 @@ class TopGGClient:
             # QUERY_KEY_GET_BOTS_FIELDS: BOTS_QUERY_FIELDS_VALUE, # Defaults to all fields, so we just skip it
         }
         
-        data = await self._get_bots(query_parameters)
+        data = await self._get_bots(query)
         return BotsQueryResult.from_data(data)
     
     
@@ -705,7 +705,7 @@ class TopGGClient:
         )
     
     
-    async def _get_bots(self, query_parameters):
+    async def _get_bots(self, query):
         """
         Gets information about multiple bots.
         
@@ -713,7 +713,7 @@ class TopGGClient:
         
         Parameters
         ----------
-        query_parameters : `dict` of (`str`, `object`) items
+        query : `dict` of (`str`, `object`) items
             Query parameters.
             
         Returns
@@ -734,7 +734,7 @@ class TopGGClient:
             METHOD_GET,
             f'{TOP_GG_ENDPOINT}/bots',
             StackedRateLimitHandler(self._rate_limit_handler_bots, self._rate_limit_handler_global),
-            query_parameters = query_parameters,
+            query = query,
         )
     
     
@@ -769,7 +769,7 @@ class TopGGClient:
             RateLimitHandler(self._rate_limit_handler_global),
         )
 
-    async def _get_user_vote(self, query_parameters):
+    async def _get_user_vote(self, query):
         """
         Returns whether the user voted in the last 12 hours.
         
@@ -777,7 +777,7 @@ class TopGGClient:
         
         Parameters
         ----------
-        query_parameters : `dict` of (`str`, `object`) items
+        query : `dict` of (`str`, `object`) items
             Query parameters.
         
         Returns
@@ -798,10 +798,10 @@ class TopGGClient:
             METHOD_GET,
             f'{TOP_GG_ENDPOINT}/bots/{self.client_id}/check',
             RateLimitHandler(self._rate_limit_handler_global),
-            query_parameters = query_parameters,
+            query = query,
         )
     
-    async def _request(self, method, url, rate_limit_handler, data = None, query_parameters = None):
+    async def _request(self, method, url, rate_limit_handler, data = None, query = None):
         """
         Does a request towards top.gg API.
         
@@ -817,7 +817,7 @@ class TopGGClient:
             Rate limit handle to handle rate limit as.
         data : `None`, `object` = `None`, Optional
             Json serializable data.
-        query_parameters : `None`, `object` = `None`, Optional
+        query : `None`, `object` = `None`, Optional
             Query parameters.
         
         Raises
@@ -850,7 +850,7 @@ class TopGGClient:
             async with rate_limit_handler.ctx():
                 try:
                     async with RequestContextManager(
-                        self.http._request(method, url, headers, data = data, params = query_parameters)
+                        self.http._request(method, url, headers, data = data, query = query)
                     ) as response:
                         response_data = await response.text(encoding = 'utf-8')
                 except OSError as err:

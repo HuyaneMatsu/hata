@@ -31,7 +31,7 @@ class SystemChannelFlag(FlagBaseReversed):
     There are also predefined ``SystemChannelFlag``-s:
     
     +-----------------------+---------------------------+
-    | Class attribute name  | value                     |
+    | Type attribute name   | value                     |
     +=======================+===========================+
     | NONE                  | ActivityFlag(0b111111)    |
     +-----------------------+---------------------------+

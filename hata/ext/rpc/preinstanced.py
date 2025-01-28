@@ -24,10 +24,10 @@ class DeviceType(PreinstancedBase):
     DEFAULT_NAME : `str` = `'UNDEFINED'`
         The default name of the device types.
     
-    Every predefined device type can be accessed as class attribute as well:
+    Every predefined device type can be accessed as type attribute as well:
     
     +-----------------------+-------------------+-------------------+
-    | Class attribute name  | Name              | Value             |
+    | Type attribute name   | Name              | Value             |
     +=======================+===================+===================+
     | audio_input           | audio_input       | `'audioinput'`    |
     +-----------------------+-------------------+-------------------+
@@ -68,10 +68,10 @@ class ShortcutKeyType(PreinstancedBase):
     DEFAULT_NAME : `str` = `'UNDEFINED'`
         The default name of the key types.
     
-    Every predefined key type can be accessed as class attribute as well:
+    Every predefined key type can be accessed as type attribute as well:
     
     +-----------------------+-----------------------+-------+
-    | Class attribute name  | Name                  | Value |
+    | Type attribute name   | Name                  | Value |
     +=======================+=======================+=======+
     | keyboard_key          | keyboard_key          | `0`   |
     +-----------------------+-----------------------+-------+
@@ -116,10 +116,10 @@ class VoiceSettingsModeType(PreinstancedBase):
     DEFAULT_NAME : `str` = `'UNDEFINED'`
         The default name of the voice setting mode types.
     
-    Every predefined voice setting mode type can be accessed as class attribute as well:
+    Every predefined voice setting mode type can be accessed as type attribute as well:
     
     +-----------------------+-------------------+-----------------------+
-    | Class attribute name  | Name              | Value                 |
+    | Type attribute name   | Name              | Value                 |
     +=======================+===================+=======================+
     | push_to_talk          | push_to_talk      | `'PUSH_TO_TALK'`      |
     +-----------------------+-------------------+-----------------------+
@@ -157,10 +157,10 @@ class VoiceConnectionState(PreinstancedBase):
     DEFAULT_NAME : `str` = `'UNDEFINED'`
         The default name of the voice connection states.
     
-    Every predefined voice connection state can be accessed as class attribute as well:
+    Every predefined voice connection state can be accessed as type attribute as well:
     
     +-----------------------+-----------------------+---------------------------+
-    | Class attribute name  | Name                  | Value                     |
+    | Type attribute name   | Name                  | Value                     |
     +=======================+=======================+===========================+
     | disconnected          | disconnected          | `'DISCONNECTED'`          |
     +-----------------------+-----------------------+---------------------------+

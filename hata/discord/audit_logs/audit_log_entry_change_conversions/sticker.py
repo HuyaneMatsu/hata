@@ -60,7 +60,7 @@ FORMAT_CONVERSION = AuditLogEntryChangeConversion(
 
 @FORMAT_CONVERSION.set_value_deserializer
 def format_value_deserializer(value):
-    return StickerFormat.get(value)
+    return StickerFormat(value)
 
 
 @FORMAT_CONVERSION.set_value_serializer
@@ -159,7 +159,7 @@ TYPE_CONVERSION = AuditLogEntryChangeConversion(
 
 @TYPE_CONVERSION.set_value_deserializer
 def type_value_deserializer(value):
-    return StickerType.get(value)
+    return StickerType(value)
 
 
 @TYPE_CONVERSION.set_value_serializer

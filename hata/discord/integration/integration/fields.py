@@ -64,7 +64,7 @@ def parse_type(data):
     except KeyError:
         preinstanced = IntegrationType.none
     else:
-        preinstanced = IntegrationType.get(value)
+        preinstanced = IntegrationType(value)
     
     return preinstanced
 

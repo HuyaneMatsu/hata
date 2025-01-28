@@ -16,34 +16,30 @@ from .flags import ChannelTypeFlag
 
 
 @export
-class ChannelType(PreinstancedBase):
+class ChannelType(PreinstancedBase, value_type = int):
     """
     Represents a channel's type.
     
     Attributes
     ----------
-    name : `str`
-        The channel type's name.
-    value : `int`
-        The identifier of the channel type.
     flags : ``ChannelTypeFlag``
         The flags of the channel type defining the channel type's specifications.
+    
+    name : `str`
+        The channel type's name.
+    
     metadata_type : `type<ChannelMetadataBase>`
         The respective metadata type of the channel.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``ChannelType``) items
-        Stores the predefined ``ChannelType``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The channel type' values' type.
-    DEFAULT_NAME : `str` = `'UNDEFINED'`
-        The default name of the channel type modes.
+    value : `int`
+        The identifier of the channel type.
     
-    Every predefined channel type can be accessed as class attribute as well:
+    Type Attributes
+    ---------------
+    Every predefined channel type can be accessed as type attribute as well:
     
     +-------------------------------+-------------------------------+-------+-----------------------------------------------+
-    | Class attribute name          | Name                          | Value | Metadata type                                 |
+    | Type attribute name           | Name                          | Value | Metadata type                                 |
     +===============================+===============================+=======+===============================================+
     | unknown                       | unknown                       | -1    | ``ChannelMetadataBase``                       |
     +-------------------------------+-------------------------------+-------+-----------------------------------------------+
@@ -80,54 +76,31 @@ class ChannelType(PreinstancedBase):
     """
     __slots__ = ('flags', 'metadata_type',)
     
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
-    @classmethod
-    def _from_value(cls, value):
+    def __new__(cls, value, name = None, metadata_type = None, flags = ChannelTypeFlag.all):
         """
-        Creates a new channel type with the given value.
-        
-        Parameters
-        ----------
-        value : `int`
-            The channel type's identifier value.
-        
-        Returns
-        -------
-        self : ``ChannelType``
-            The created instance.
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.value = value
-        self.flags = ChannelTypeFlag.all
-        self.metadata_type = ChannelMetadataBase
-        
-        return self
-    
-    
-    def __init__(self, value, name, metadata_type, flags):
-        """
-        Creates an ``ChannelType`` and stores it at the class's `.INSTANCES` class attribute as well.
+        Creates a new channel type.
         
         Parameters
         ----------
         value : `int`
             The Discord side identifier value of the channel type.
-        name : `str`
+        
+        name : `None | str` = `None`, Optional
             The default name of the channel type.
-        metadata_type : `None`, `type<ChannelMetadataBase>`
+        
+        metadata_type : `None | type<ChannelMetadataBase>` = `None`, Optional
             The channel type's respective metadata type.
-        flags : ``ChannelTypeFlags``
+        
+        flags : ``ChannelTypeFlags`` = `ChannelTypeFlag.all`, Optional
             The flags of the channel type defining the channel type's specifications.
         """
-        self.value = value
-        self.name = name
+        if metadata_type is None:
+            metadata_type = ChannelMetadataBase
+        
+        self = PreinstancedBase.__new__(cls, value, name)
         self.metadata_type = metadata_type
         self.flags = flags
-        
-        self.INSTANCES[value] = self
+        return self
     
     
     unknown = P(

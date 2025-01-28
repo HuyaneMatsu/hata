@@ -509,7 +509,7 @@ def preinstanced_array_validator_factory(field_name, preinstanced_type, *, inclu
             return (preinstanced_array, )
         
         if isinstance(preinstanced_array, preinstanced_type.VALUE_TYPE):
-            return (preinstanced_type.get(preinstanced_array), )
+            return (preinstanced_type(preinstanced_array), )
         
         if getattr(preinstanced_array, '__iter__', None) is None:
             raise TypeError(
@@ -525,7 +525,7 @@ def preinstanced_array_validator_factory(field_name, preinstanced_type, *, inclu
                 pass
             
             elif isinstance(preinstanced, preinstanced_type.VALUE_TYPE):
-                preinstanced = preinstanced_type.get(preinstanced)
+                preinstanced = preinstanced_type(preinstanced)
             
             else:
                 raise TypeError(

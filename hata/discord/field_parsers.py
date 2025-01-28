@@ -26,7 +26,7 @@ def entity_id_parser_factory(field_key):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -67,7 +67,7 @@ def entity_id_array_parser_factory(field_key):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -124,7 +124,7 @@ def preinstanced_parser_factory(
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -140,7 +140,7 @@ def preinstanced_parser_factory(
         except KeyError:
             preinstanced = default_value
         else:
-            preinstanced = preinstanced_type.get(value)
+            preinstanced = preinstanced_type(value)
         
         return preinstanced
     
@@ -187,7 +187,7 @@ def preinstanced_array_parser_factory(field_key, preinstanced_type, *, include =
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -201,7 +201,7 @@ def preinstanced_array_parser_factory(field_key, preinstanced_type, *, include =
         if (value_array is None) or (not value_array):
             preinstanced_array = None
         else:
-            preinstanced_array = tuple(sorted(preinstanced_type.get(value) for value in value_array))
+            preinstanced_array = tuple(sorted(preinstanced_type(value) for value in value_array))
         
         return preinstanced_array
     
@@ -294,7 +294,7 @@ def int_postprocess_parser_factory(field_key, default_value, postprocessor):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -344,7 +344,7 @@ def flag_parser_factory(field_key, flag_type, *, default_value = ...):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -389,7 +389,7 @@ def nullable_flag_parser_factory(field_key, flag_type):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -432,7 +432,7 @@ def negated_bool_parser_factory(field_key, default_value):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -492,7 +492,7 @@ def default_date_time_parser_factory(field_key, default):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -532,7 +532,7 @@ def force_string_parser_factory(field_key):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -571,7 +571,7 @@ def field_parser_factory(field_key):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -612,7 +612,7 @@ def _field_parser_factory(field_key, default_value):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -653,7 +653,7 @@ def nullable_string_parser_factory(field_key):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -765,7 +765,7 @@ def nullable_sorted_array_postprocess_parser_factory(field_key, postprocessor):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -811,7 +811,7 @@ def nullable_entity_array_parser_factory(field_key, entity_type, *, include = No
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -944,7 +944,7 @@ def default_entity_parser_factory(field_key, entity_type, *, default = ..., defa
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -983,7 +983,7 @@ def functional_parser_factory(field_key, function, *, include = None):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -1033,7 +1033,7 @@ def nullable_functional_parser_factory(field_key, function, *, include = None):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -1121,7 +1121,7 @@ def nullable_functional_array_parser_factory(field_key, function, *, do_sort = F
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -1167,7 +1167,7 @@ def nullable_object_array_parser_factory(field_key, object_type, *, include = No
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns
@@ -1217,7 +1217,7 @@ def nullable_int_parser_factory(field_key):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Entity data.
         
         Returns

@@ -72,7 +72,7 @@ def target_type_value_deserializer(value):
     if (value is not None) and (PermissionOverwriteTargetType.VALUE_TYPE is int):
         value = int(value)
     
-    return PermissionOverwriteTargetType.get(value)
+    return PermissionOverwriteTargetType(value)
 
 
 @TARGET_TYPE_CONVERSION.set_value_serializer

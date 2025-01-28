@@ -79,7 +79,7 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test___collect_default_handlers(events, parent_default_handlers):
+def test__collect_default_handlers(events, parent_default_handlers):
     """
     Tests whether ``_collect_default_handlers`` works as intended.
     

@@ -430,11 +430,11 @@ class Oauth2Access(RichAttributeErrorBaseType):
             pass
         
         elif isinstance(scope, str):
-            scope = Oauth2Scope.get(scope)
+            scope = Oauth2Scope(scope)
         
         else:
             raise TypeError(
-                f'`scope` can be `str`, `{Oauth2Scope.__name__}`, got {scope.__class__.__name__}; {scope!r}.'
+                f'`scope` can be `str`, `{Oauth2Scope.__name__}`, got {type(scope).__name__}; {scope!r}.'
             )
         
         scopes = self.scopes

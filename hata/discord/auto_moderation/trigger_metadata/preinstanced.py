@@ -3,32 +3,24 @@ __all__ = ('AutoModerationKeywordPresetType', )
 from ...bases import Preinstance as P, PreinstancedBase
 
 
-class AutoModerationKeywordPresetType(PreinstancedBase):
+class AutoModerationKeywordPresetType(PreinstancedBase, value_type = int):
     """
     Represents an auto moderation keyword preset type.
     
     Attributes
     ----------
-    value : `int`
-        The Discord side identifier value of the auto moderation keyword preset type.
     name : `str`
         The default name of the auto moderation keyword preset type.
     
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`str`, ``AutoModerationKeywordPresetType``) items
-        Stores the predefined auto moderation keyword preset types. This container is accessed when translating a
-        Discord side identifier of a auto moderation keyword preset type. The identifier value is used as a key to
-        get it's wrapper side representation.
-    VALUE_TYPE : `type` = `str`
-        The auto moderation keyword preset types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the auto moderation keyword preset types.
+    value : `int`
+        The Discord side identifier value of the auto moderation keyword preset type.
     
-    Every predefined auto moderation keyword preset type is also stored as a class attribute:
+    Type Attributes
+    ---------------
+    Every predefined auto moderation keyword preset type is also stored as a type attribute:
     
     +-----------------------+-----------------------+-----------+-------------------------------------------+
-    | Class attribute name  | Name                  | Value     | Description                               |
+    | Type attribute name   | Name                  | Value     | Description                               |
     +=======================+=======================+===========+===========================================+
     | none                  | none                  | 0         | N/A                                       |
     +-----------------------+-----------------------+-----------+-------------------------------------------+
@@ -40,9 +32,6 @@ class AutoModerationKeywordPresetType(PreinstancedBase):
     +-----------------------+-----------------------+-----------+-------------------------------------------+
     """
     __slots__ = ()
-    
-    INSTANCES = {}
-    VALUE_TYPE = int
     
     # predefined
     none = P(0, 'none')

@@ -10,8 +10,8 @@ def test__EmbedProvider__repr():
     name = 'orin'
     url = 'https://orindance.party/'
     
-    field = EmbedProvider(name = name, url = url)
-    vampytest.assert_instance(repr(field), str)
+    embed_provider = EmbedProvider(name = name, url = url)
+    vampytest.assert_instance(repr(embed_provider), str)
 
 
 def test__EmbedProvider__hash():
@@ -21,14 +21,12 @@ def test__EmbedProvider__hash():
     name = 'orin'
     url = 'https://orindance.party/'
     
-    field = EmbedProvider(name = name, url = url)
-    vampytest.assert_instance(hash(field), int)
+    embed_provider = EmbedProvider(name = name, url = url)
+    vampytest.assert_instance(hash(embed_provider), int)
 
 
-def test__EmbedProvider__eq():
-    """
-    Tests whether ``EmbedProvider.__eq__`` works as intended.
-    """
+
+def _iter_options__eq():
     name = 'orin'
     url = 'https://orindance.party/'
     
@@ -37,18 +35,54 @@ def test__EmbedProvider__eq():
         'url': url,
     }
     
-    field = EmbedProvider(**keyword_parameters)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    vampytest.assert_eq(field, field)
-    vampytest.assert_ne(field, object())
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'rin',
+        },
+        False,
+    )
     
-    for field_name, field_value in (
-        ('name', 'rin'),
-        ('url', 'https://www.astil.dev/'),
-    ):
-        test_field = EmbedProvider(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(field, test_field)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'url': 'https://www.astil.dev/',
+        },
+        False,
+    )
 
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__EmbedProvider__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``EmbedProvider.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    embed_provider_0 = EmbedProvider(**keyword_parameters_0)
+    embed_provider_1 = EmbedProvider(**keyword_parameters_1)
+    
+    output = embed_provider_0 == embed_provider_1
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def _iter_options__bool():
@@ -75,8 +109,8 @@ def test__EmbedProvider__bool(keyword_parameters):
     -------
     output : `bool`
     """
-    field = EmbedProvider(**keyword_parameters)
-    output = bool(field)
+    embed_provider = EmbedProvider(**keyword_parameters)
+    output = bool(embed_provider)
     vampytest.assert_instance(output, bool)
     return output
 
@@ -105,7 +139,7 @@ def test__EmbedProvider__len(keyword_parameters):
     -------
     output : `int`
     """
-    field = EmbedProvider(**keyword_parameters)
-    output = len(field)
+    embed_provider = EmbedProvider(**keyword_parameters)
+    output = len(embed_provider)
     vampytest.assert_instance(output, int)
     return output

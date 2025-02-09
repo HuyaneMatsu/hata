@@ -17,10 +17,10 @@ def test__EmbedAuthor__clean_copy():
     name = user.mention
     url = 'https://orindance.party/'
     
-    field = EmbedAuthor(name = name, icon_url = icon_url, url = url)
-    copy = field.clean_copy()
+    embed_author = EmbedAuthor(name = name, icon_url = icon_url, url = url)
+    copy = embed_author.clean_copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_author, copy)
     
     vampytest.assert_eq(copy.icon_url, icon_url)
     vampytest.assert_eq(copy.name, f'@{user.name}')
@@ -35,12 +35,12 @@ def test__EmbedAuthor__copy():
     name = 'orin'
     url = 'https://orindance.party/'
     
-    field = EmbedAuthor(name = name, icon_url = icon_url, url = url)
-    copy = field.copy()
+    embed_author = EmbedAuthor(name = name, icon_url = icon_url, url = url)
+    copy = embed_author.copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_author, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(embed_author, copy)
 
 
 def test__EmbedAuthor__copy_with__no_fields():
@@ -53,12 +53,12 @@ def test__EmbedAuthor__copy_with__no_fields():
     name = 'orin'
     url = 'https://orindance.party/'
     
-    field = EmbedAuthor(name = name, icon_url = icon_url, url = url)
-    copy = field.copy_with()
+    embed_author = EmbedAuthor(name = name, icon_url = icon_url, url = url)
+    copy = embed_author.copy_with()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_author, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(embed_author, copy)
 
 
 def test__EmbedAuthor__copy_with__all_fields():
@@ -75,14 +75,14 @@ def test__EmbedAuthor__copy_with__all_fields():
     new_name = 'rin'
     new_url = 'https://www.astil.dev/'
     
-    field = EmbedAuthor(name = old_name, icon_url = old_icon_url, url = old_url)
-    copy = field.copy_with(
+    embed_author = EmbedAuthor(name = old_name, icon_url = old_icon_url, url = old_url)
+    copy = embed_author.copy_with(
         icon_url = new_icon_url,
         name = new_name,
         url = new_url,
     )
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_author, copy)
     
     vampytest.assert_eq(copy.icon_url, new_icon_url)
     vampytest.assert_eq(copy.name, new_name)
@@ -118,8 +118,8 @@ def test__EmbedAuthor__contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedAuthor(**keyword_parameters)
-    output = field.contents
+    embed_author = EmbedAuthor(**keyword_parameters)
+    output = embed_author.contents
     vampytest.assert_instance(output, list)
     return {*output}
 
@@ -153,5 +153,5 @@ def test__EmbedAuthor__iter_contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedAuthor(**keyword_parameters)
-    return {*field.iter_contents()}
+    embed_author = EmbedAuthor(**keyword_parameters)
+    return {*embed_author.iter_contents()}

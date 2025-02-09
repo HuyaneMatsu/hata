@@ -2,17 +2,17 @@ __all__ = ()
 
 from ...color import Color
 from ...field_parsers import (
-    nullable_date_time_parser_factory, nullable_entity_parser_factory, nullable_flag_parser_factory,
-    nullable_string_parser_factory, preinstanced_parser_factory
+    flag_parser_factory, nullable_date_time_parser_factory, nullable_entity_parser_factory,
+    nullable_flag_parser_factory, nullable_string_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
-    nullable_date_time_optional_putter_factory, nullable_entity_optional_putter_factory,
+    flag_optional_putter_factory, nullable_date_time_optional_putter_factory, nullable_entity_optional_putter_factory,
     nullable_flag_optional_putter_factory, nullable_string_optional_putter_factory, preinstanced_putter_factory,
     url_optional_putter_factory
 )
 from ...field_validators import (
-    nullable_date_time_validator_factory, nullable_entity_validator_factory, nullable_flag_validator_factory,
-    preinstanced_validator_factory, url_optional_validator_factory
+    flag_validator_factory, nullable_date_time_validator_factory, nullable_entity_validator_factory,
+    nullable_flag_validator_factory, preinstanced_validator_factory, url_optional_validator_factory
 )
 
 from ..embed_author import EmbedAuthor
@@ -24,6 +24,7 @@ from ..embed_thumbnail import EmbedThumbnail
 from ..embed_video import EmbedVideo
 
 from .constants import DESCRIPTION_LENGTH_MAX, TITLE_LENGTH_MAX, URL_LENGTH_MAX
+from .flags import EmbedFlag
 from .preinstanced import EmbedType
 
 # author
@@ -157,7 +158,7 @@ def validate_fields(fields):
     if getattr(fields, '__iter__', None) is None:
         raise TypeError(
             f'`fields` can be `None`, `iterable` of `{EmbedField.__name__}`, got '
-            f'{fields.__class__.__name__}; {fields!r}.'
+            f'{type(fields).__name__}; {fields!r}.'
         )
     
     fields_validated = None
@@ -166,7 +167,7 @@ def validate_fields(fields):
         if not isinstance(field, EmbedField):
             raise TypeError(
                 f'`fields` elements can be `{EmbedField.__name__}`, got '
-                f'{field.__class__.__name__}; {field!r}; fields = {fields!r}'
+                f'{type(field).__name__}; {field!r}; fields = {fields!r}'
             )
         
         if fields_validated is None:
@@ -175,6 +176,13 @@ def validate_fields(fields):
         fields_validated.append(field)
     
     return fields_validated
+
+
+# flags
+
+parse_flags = flag_parser_factory('flags', EmbedFlag)
+put_flags_into = flag_optional_putter_factory('flags', EmbedFlag())
+validate_flags = flag_validator_factory('flags', EmbedFlag)
 
 
 # footer

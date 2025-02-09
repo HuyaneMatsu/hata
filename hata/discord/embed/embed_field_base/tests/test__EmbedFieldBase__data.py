@@ -12,8 +12,8 @@ def test__EmbedFieldBase__from_data():
     """
     data = {}
     
-    field = EmbedFieldBase.from_data(data)
-    _assert_fields_set(field)
+    field_base = EmbedFieldBase.from_data(data)
+    _assert_fields_set(field_base)
 
 
 def test__EmbedFieldBase__to_data():
@@ -22,11 +22,11 @@ def test__EmbedFieldBase__to_data():
     
     Case: Include defaults & internals.
     """
-    field = EmbedFieldBase()
+    field_base = EmbedFieldBase()
     
     expected_output = {}
     
     vampytest.assert_eq(
-        field.to_data(defaults = True, include_internals = True),
+        field_base.to_data(defaults = True, include_internals = True),
         expected_output,
     )

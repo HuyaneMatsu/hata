@@ -1,3 +1,30 @@
+## 1.3.74 *\[2024-00-08\]*
+
+- Add `Message.soundboard_sounds`.
+- Add `Message.soundboard_sound`.
+- Add `Message.iter_soundboard_sounds`.
+- Add `Message.has_soundboard_sound`.
+- Add `MessageSnapshot.soundboard_sounds`.
+- Add `MessageSnapshot.soundboard_sound`.
+- Add `MessageSnapshot.iter_soundboard_sounds`.
+- Add `MessageSnapshot.has_soundboard_sound`.
+- Add `SoundboardSound.mention`.
+- Use `with_components` query parameter for non application owned webhook requests.
+    It is actually not working but documented, so I added it.
+- `MessageType.poll.converter` now returns the correct value if noone voted.
+- Add `AttachmentFlag.spoiler`.
+- Add `AttachmentFlag.explicit`.
+- Add `AttachmentFlag.animated`.
+- Add `Attachment.application`.
+- Add `Attachment.clip_created_at`.
+- Add `Attachment.clip_users`.
+- Add `Attachment.iter_clip_users`.
+- Add `EmbedFlag`.
+- Add `Embed.flags`.
+- Add `EmbedMediaFlag`.
+- Add `EmbedImage.flags`.
+- Add `EmbedThumbnail.flags`.
+
 ## 1.3.73 *\[2024-01-28\]*
 
 ### Improvements

@@ -11,8 +11,8 @@ def test__EmbedAuthor__repr():
     name = 'orin'
     url = 'https://orindance.party/'
     
-    field = EmbedAuthor(name = name, icon_url = icon_url, url = url)
-    vampytest.assert_instance(repr(field), str)
+    embed_author = EmbedAuthor(name = name, icon_url = icon_url, url = url)
+    vampytest.assert_instance(repr(embed_author), str)
 
 
 def test__EmbedAuthor__hash():
@@ -23,14 +23,11 @@ def test__EmbedAuthor__hash():
     name = 'orin'
     url = 'https://orindance.party/'
     
-    field = EmbedAuthor(name = name, icon_url = icon_url, url = url)
-    vampytest.assert_instance(hash(field), int)
+    embed_author = EmbedAuthor(name = name, icon_url = icon_url, url = url)
+    vampytest.assert_instance(hash(embed_author), int)
 
 
-def test__EmbedAuthor__eq():
-    """
-    Tests whether ``EmbedAuthor.__eq__`` works as intended.
-    """
+def _iter_options__eq():
     icon_url = 'attachment://orin.png'
     name = 'orin'
     url = 'https://orindance.party/'
@@ -41,18 +38,63 @@ def test__EmbedAuthor__eq():
         'url': url,
     }
     
-    field = EmbedAuthor(**keyword_parameters)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    vampytest.assert_eq(field, field)
-    vampytest.assert_ne(field, object())
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'icon_url': 'attachment://rin.png',
+        },
+        False,
+    )
     
-    for field_name, field_value in (
-        ('icon_url', 'attachment://rin.png'),
-        ('name', 'rin'),
-        ('url', 'https://www.astil.dev/'),
-    ):
-        test_field = EmbedAuthor(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(field, test_field)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'rin',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'url': 'https://www.astil.dev/',
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__EmbedAuthor__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``EmbedAuthor.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    embed_author_0 = EmbedAuthor(**keyword_parameters_0)
+    embed_author_1 = EmbedAuthor(**keyword_parameters_1)
+    
+    output = embed_author_0 == embed_author_1
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def _iter_options__bool():
@@ -84,8 +126,8 @@ def test__EmbedAuthor__bool(keyword_parameters):
     -------
     output : `bool`
     """
-    field = EmbedAuthor(**keyword_parameters)
-    output = bool(field)
+    embed_author = EmbedAuthor(**keyword_parameters)
+    output = bool(embed_author)
     vampytest.assert_instance(output, bool)
     return output
 
@@ -119,7 +161,7 @@ def test__EmbedAuthor__len(keyword_parameters):
     -------
     output : `int`
     """
-    field = EmbedAuthor(**keyword_parameters)
-    output = len(field)
+    embed_author = EmbedAuthor(**keyword_parameters)
+    output = len(embed_author)
     vampytest.assert_instance(output, int)
     return output

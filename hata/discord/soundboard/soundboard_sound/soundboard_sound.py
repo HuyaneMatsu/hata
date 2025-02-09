@@ -336,7 +336,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
     
     def __repr__(self):
         """Returns the soundboard sound's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' id = ')
         repr_parts.append(repr(self.id))
@@ -483,6 +483,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
         ----------
         sound_id : `int`
             The soundboard sound's identifier.
+        
         **keyword_parameters : Keyword parameters
             Additional keyword parameters.
         
@@ -741,3 +742,15 @@ class SoundboardSound(DiscordEntity, immortal = True):
         """
         sound_id = self.id
         return sound_id != 0 and sound_id < DEFAULT_SOUNDBOARD_SOUND_LIMIT
+    
+    
+    @property
+    def mention(self):
+        """
+        Returns the mention of teh soundboard sound.
+        
+        Returns
+        -------
+        mention : `str`
+        """
+        return f'<sound:{self.guild_id!s}:{self.id!s}>'

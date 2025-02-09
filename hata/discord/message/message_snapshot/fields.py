@@ -9,9 +9,10 @@ from ..message.fields import (
     parse_attachments as _parse_attachments, parse_components as _parse_components, parse_content as _parse_content,
     parse_edited_at as _parse_edited_at, parse_embeds as _parse_embeds, parse_flags as _parse_flags,
     parse_mentioned_role_ids as _parse_mentioned_role_ids, parse_mentioned_users as _parse_mentioned_users,
-    parse_stickers as _parse_stickers, parse_type as _parse_type, validate_attachments, validate_components,
+    parse_soundboard_sounds as _parse_soundboard_sounds, parse_stickers as _parse_stickers, parse_type as _parse_type,
+    put_soundboard_sounds_into as _put_soundboard_sounds_into, validate_attachments, validate_components,
     validate_content, validate_edited_at, validate_embeds, validate_flags, validate_mentioned_role_ids,
-    validate_mentioned_users, validate_stickers, validate_type
+    validate_mentioned_users, validate_soundboard_sounds, validate_stickers, validate_type
 )
 
 
@@ -520,6 +521,60 @@ def put_mentioned_role_ids_into(mentioned_role_ids, data, defaults):
     
     return data
 
+
+# soundboard_sounds
+
+def parse_soundboard_sounds(data):
+    """
+    Parses out soundboard_sounds value from the given data.
+    
+    Parameters
+    ----------
+    data : `dict<str, object>`
+        Data to parse from.
+    
+    Returns
+    -------
+    soundboard_sounds : `None | tuple<SoundboardSound>`
+    """
+    message_data = data.get('message', None)
+    if message_data is None:
+        return None
+    
+    return _parse_soundboard_sounds(message_data)
+
+
+def put_soundboard_sounds_into(soundboard_sounds, data, defaults):
+    """
+    Serializes the given soundboard_sounds into the given data.
+    
+    Parameters
+    ----------
+    soundboard_sounds : `None | tuple<SoundboardSound>`
+        The soundboard_sounds to serialize.
+    
+    data : `dict<str, object>`
+        Reaction event data.
+    
+    defaults : `bool`
+        Whether fields with their default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if (soundboard_sounds is not None) or defaults:
+        message_data = data.get('message', None)
+        if message_data is None:
+            message_data = {}
+            data['message'] = message_data
+        
+        _put_soundboard_sounds_into(soundboard_sounds, message_data, defaults)
+    
+    return data
+
+
+# stickers
 
 def parse_stickers(data):
     """

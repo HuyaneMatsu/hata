@@ -19,12 +19,12 @@ def test__EmbedField__from_data():
         'value': value,
     }
     
-    field = EmbedField.from_data(data)
-    _assert_fields_set(field)
+    embed_field = EmbedField.from_data(data)
+    _assert_fields_set(embed_field)
     
-    vampytest.assert_eq(field.inline, inline)
-    vampytest.assert_eq(field.name, name)
-    vampytest.assert_eq(field.value, value)
+    vampytest.assert_eq(embed_field.inline, inline)
+    vampytest.assert_eq(embed_field.name, name)
+    vampytest.assert_eq(embed_field.value, value)
 
 
 def test__EmbedField__to_data():
@@ -37,7 +37,7 @@ def test__EmbedField__to_data():
     name = 'orin'
     value = 'okuu'
     
-    field = EmbedField(name = name, value = value, inline = inline)
+    embed_field = EmbedField(name = name, value = value, inline = inline)
     
     expected_output = {
         'inline': inline,
@@ -46,6 +46,6 @@ def test__EmbedField__to_data():
     }
     
     vampytest.assert_eq(
-        field.to_data(defaults = True, include_internals = True),
+        embed_field.to_data(defaults = True, include_internals = True),
         expected_output,
     )

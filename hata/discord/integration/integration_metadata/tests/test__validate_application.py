@@ -5,31 +5,37 @@ from ...integration_application import IntegrationApplication
 from ..fields import validate_application
 
 
-def test__validate_application__0():
+def _iter_options__passing():
+    application_id = 202210140020
+    application = IntegrationApplication.precreate(application_id, name = 'hell')
+    
+    yield None, None
+    yield application, application
+
+
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_application(input_value):
     """
     Tests whether ``validate_application`` works as intended.
     
-    Case: Passing.
-    """
-    integration_application_id = 202210140020
-    application = IntegrationApplication.precreate(integration_application_id, name = 'hell')
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    for input_value, expected_output in (
-        (None, None),
-        (application, application),
-    ):
-        output = validate_application(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_application__1():
-    """
-    Tests whether ``validate_application`` works as intended.
+    Returns
+    -------
+    output : `None | IntegrationApplication`
     
-    Case: `TypeError`
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_application(input_value)
+    output = validate_application(input_value)
+    vampytest.assert_instance(output, IntegrationApplication, nullable = True)
+    return output

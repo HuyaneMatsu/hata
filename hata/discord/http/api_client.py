@@ -1567,18 +1567,20 @@ class DiscordApiClient(RichAttributeErrorBaseType):
             RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_create, webhook_id),
             METHOD_POST,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}',
-            data, headers = IgnoreCaseMultiValueDictionary(),
-            query = query,
+            data,
+            query,
+            IgnoreCaseMultiValueDictionary(),
         )
     
     
-    async def webhook_message_edit(self, webhook_id, webhook_token, message_id, data):
+    async def webhook_message_edit(self, webhook_id, webhook_token, message_id, data, query):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_edit, webhook_id),
             METHOD_PATCH,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
             data,
-            headers = IgnoreCaseMultiValueDictionary(),
+            query,
+            IgnoreCaseMultiValueDictionary(),
         )
     
     

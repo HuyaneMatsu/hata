@@ -63,8 +63,9 @@ def test__put_target_application_into(application, defaults):
     
     Parameters
     ----------
-    application : `None`, ``Application``
+    application : `None | Application`
         The application to serialise.
+    
     defaults : `bool`
         Whether default values should be included as well.
     

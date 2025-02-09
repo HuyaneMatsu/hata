@@ -104,7 +104,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         if __debug__:
             if not isinstance(name, str):
                 raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+                    f'`name` can be `str`, got {type(name).__name__}; {name!r}.'
                 )
             
             name_length = len(name)
@@ -431,7 +431,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
-                        f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+                        f'`name` can be `str`, got {type(name).__name__}; {name!r}.'
                     )
                 
                 name_length = len(name)
@@ -448,7 +448,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             else:
                 if not isinstance(avatar, (bytes, bytearray, memoryview)):
                     raise TypeError(
-                        f'`avatar` can be `None`, `bytes-like`, got {avatar.__class__.__name__}; '
+                        f'`avatar` can be `None`, `bytes-like`, got {type(avatar).__name__}; '
                         f'{reprlib.repr(avatar)}.'
                     )
                 
@@ -476,7 +476,7 @@ class ClientCompoundWebhookEndpoints(Compound):
                         break
                 
                 raise TypeError(
-                    f'`channel` can be gild text channel, `int`, got {channel.__class__.__name__}; '
+                    f'`channel` can be gild text channel, `int`, got {type(channel).__name__}; '
                     f'{channel!r}.'
                 )
             
@@ -536,7 +536,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
-                        f'`name` can be `None`, `str`, got {name.__class__.__name__}; {name!r}.'
+                        f'`name` can be `None`, `str`, got {type(name).__name__}; {name!r}.'
                     )
                 
                 name_length = len(name)
@@ -553,7 +553,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             else:
                 if not isinstance(avatar, (bytes, bytearray, memoryview)):
                     raise TypeError(
-                        f'`avatar` can be `None`, `bytes-like`, got {avatar.__class__.__name__}; '
+                        f'`avatar` can be `None`, `bytes-like`, got {type(avatar).__name__}; '
                         f'{reprlib.repr(avatar)}.'
                     )
                 
@@ -718,20 +718,26 @@ class ClientCompoundWebhookEndpoints(Compound):
         if not message_data:
             return
         
-        query_parameters = None
+        query = None
         if wait:
-            if query_parameters is None:
-                query_parameters = {}
+            if query is None:
+                query = {}
             
-            query_parameters['wait'] = wait
+            query['wait'] = wait
         
         if thread_id:
-            if query_parameters is None:
-                query_parameters = {}
+            if query is None:
+                query = {}
             
-            query_parameters['thread_id'] = str(thread_id)
+            query['thread_id'] = str(thread_id)
         
-        data = await self.api.webhook_message_create(webhook_id, webhook_token, message_data, query_parameters)
+        if (webhook is None) or (not webhook.application_id):
+            if query is None:
+                query = {}
+            
+            query['with_components'] = True
+        
+        data = await self.api.webhook_message_create(webhook_id, webhook_token, message_data, query)
         
         if not wait:
             return
@@ -881,7 +887,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             elif message is None:
                 raise TypeError(
                     f'`message` was given as `None`. Make sure to use '
-                    f'`{self.__class__.__name__}.webhook_message_create` with giving content and by passing '
+                    f'`{type(self).__name__}.webhook_message_create` with giving content and by passing '
                     f'`wait` parameter as `True` as well.'
                 )
             
@@ -895,8 +901,15 @@ class ClientCompoundWebhookEndpoints(Compound):
         if not message_data:
             return
         
+        query = None
+        if (webhook is None) or (not webhook.application_id):
+            if query is None:
+                query = {}
+            
+            query['with_components'] = True
+        
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
-        await self.api.webhook_message_edit(webhook_id, webhook_token, message_id, message_data)
+        await self.api.webhook_message_edit(webhook_id, webhook_token, message_id, message_data, query)
     
     
     async def webhook_message_delete(self, webhook, message):
@@ -956,14 +969,14 @@ class ClientCompoundWebhookEndpoints(Compound):
             elif message is None:
                 raise TypeError(
                     f'`message` was given as `None`. Make sure to use '
-                    f'`{self.__class__.__name__}.webhook_message_create` with giving content and by passing '
+                    f'`{type(self).__name__}.webhook_message_create` with giving content and by passing '
                     f'`wait` parameter as `True` as well.'
                 )
             
             else:
                 raise TypeError(
                     f'`message` can be `{Message.__name__}`, `int`, got '
-                    f'{message.__class__.__name__}; {message!r}.'
+                    f'{type(message).__name__}; {message!r}.'
                 )
         
         await self.api.webhook_message_delete(webhook_id, webhook_token, message_id)
@@ -1008,7 +1021,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         message_id_value = maybe_snowflake(message_id)
         if message_id_value is None:
             raise TypeError(
-                f'`message_id` can be `int`, got {message_id.__class__.__name__}; {message_id!r}.'
+                f'`message_id` can be `int`, got {type(message_id).__name__}; {message_id!r}.'
             )
         
         message_data = await self.api.webhook_message_get(webhook_id, webhook_token, message_id_value)

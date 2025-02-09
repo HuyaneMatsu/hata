@@ -21,11 +21,13 @@ def test__parse_target_application(input_data):
     
     Parameters
     ----------
-    input_data : `str`
+    input_data : `dict<str, object>``
         Data to parse from.
     
     Returns
     -------
-    output : `None`, ``Application``
+    output : `None | Application`
     """
-    return parse_target_application(input_data)
+    output = parse_target_application(input_data)
+    vampytest.assert_instance(output, Application, nullable = True)
+    return output

@@ -1,22 +1,82 @@
 __all__ = ()
 
+from ...application import Application
 from ...field_parsers import (
     bool_parser_factory, entity_id_parser_factory, flag_parser_factory, float_parser_factory,
-    force_string_parser_factory, int_parser_factory, nullable_string_parser_factory
+    force_string_parser_factory, int_parser_factory, nullable_date_time_parser_factory,
+    nullable_entity_array_parser_factory, nullable_functional_parser_factory, nullable_string_parser_factory
 )
 from ...field_putters import (
     bool_optional_putter_factory, entity_id_putter_factory, flag_optional_putter_factory, float_optional_putter_factory,
-    force_string_putter_factory, int_putter_factory, nullable_string_optional_putter_factory,
+    force_string_putter_factory, int_putter_factory, nullable_date_time_optional_putter_factory,
+    nullable_entity_array_optional_putter_factory, nullable_string_optional_putter_factory,
     nullable_string_putter_factory, url_optional_putter_factory
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, flag_validator_factory, float_conditional_validator_factory,
-    force_string_validator_factory, int_conditional_validator_factory, nullable_string_validator_factory,
+    force_string_validator_factory, int_conditional_validator_factory, nullable_date_time_validator_factory,
+    nullable_entity_array_validator_factory, nullable_entity_validator_factory, nullable_string_validator_factory,
     url_optional_validator_factory, url_required_validator_factory
 )
+from ...user import User
 
 from .constants import DESCRIPTION_LENGTH_MAX, DURATION_DEFAULT
 from .flags import AttachmentFlag
+
+
+# application
+
+parse_application = nullable_functional_parser_factory('application', Application.from_data_invite)
+
+
+def put_application_into(application, data, defaults):
+    """
+    Puts the invite's application into the given data.
+    
+    Parameters
+    ----------
+    application : `None | Application`
+        The application to serialize.
+    
+    data : `dict<str, object>` items
+        Json serializable dictionary.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    if defaults or (application is not None):
+        if application is None:
+            application_data = None
+        else:
+            application_data = application.to_data_invite(defaults = defaults, include_internals = True)
+        
+        data['application'] = application_data
+    
+    return data
+
+
+validate_application = nullable_entity_validator_factory('application', Application)
+
+
+# clip_created_at
+
+parse_clip_created_at = nullable_date_time_parser_factory('clip_created_at')
+put_clip_created_at_into = nullable_date_time_optional_putter_factory('clip_created_at')
+validate_clip_created_at = nullable_date_time_validator_factory('clip_created_at')
+
+
+# clip_users
+
+parse_clip_users = nullable_entity_array_parser_factory('clip_participants', User)
+put_clip_users_into = nullable_entity_array_optional_putter_factory(
+    'clip_participants', User,force_include_internals = True
+)
+validate_clip_users = nullable_entity_array_validator_factory('clip_users', User)
+
 
 # content_type
 

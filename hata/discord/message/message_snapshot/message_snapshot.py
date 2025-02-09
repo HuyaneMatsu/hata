@@ -12,11 +12,12 @@ from ..message.constants import MESSAGE_STATE_MASK_CACHE_MENTIONED_CHANNELS
 
 from .fields import (
     parse_attachments, parse_components, parse_content, parse_created_at, parse_edited_at, parse_embeds, parse_flags,
-    parse_mentioned_role_ids, parse_mentioned_users, parse_stickers, parse_type, put_attachments_into,
-    put_components_into, put_content_into, put_created_at_into, put_edited_at_into, put_embeds_into, put_flags_into,
-    put_mentioned_role_ids_into, put_mentioned_users_into, put_stickers_into, put_type_into, validate_attachments,
-    validate_components, validate_content, validate_created_at, validate_edited_at, validate_embeds, validate_flags,
-    validate_mentioned_role_ids, validate_mentioned_users, validate_stickers, validate_type
+    parse_mentioned_role_ids, parse_mentioned_users, parse_soundboard_sounds, parse_stickers, parse_type,
+    put_attachments_into, put_components_into, put_content_into, put_created_at_into, put_edited_at_into,
+    put_embeds_into, put_flags_into, put_mentioned_role_ids_into, put_mentioned_users_into, put_soundboard_sounds_into,
+    put_stickers_into, put_type_into, validate_attachments, validate_components, validate_content, validate_created_at,
+    validate_edited_at, validate_embeds, validate_flags, validate_mentioned_role_ids, validate_mentioned_users,
+    validate_soundboard_sounds, validate_stickers, validate_type
 )
 
 
@@ -62,6 +63,9 @@ class MessageSnapshot(RichAttributeErrorBaseType):
     mentioned_users : `None | tuple<ClientUserBase>`
         The mentioned users.
     
+    soundboard_sounds : `None | tuple<SoundboardSound>`
+        The soundboard sounds attached to the message. 
+    
     stickers : `None | tuple<Sticker>`
         The snapshotted message's stickers.
     
@@ -70,7 +74,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
     """
     __slots__ = (
         '_cache_mentioned_channels', '_state', 'attachments', 'components', 'content', 'created_at', 'edited_at',
-        'embeds', 'flags', 'mentioned_role_ids', 'mentioned_users', 'stickers', 'type'
+        'embeds', 'flags', 'mentioned_role_ids', 'mentioned_users', 'soundboard_sounds', 'stickers', 'type'
     )
     
     def __new__(
@@ -86,6 +90,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         mentioned_role_ids = ...,
         mentioned_users = ...,
         message_type = ...,
+        soundboard_sounds = ...,
         stickers = ...,
     ):
         """
@@ -122,6 +127,9 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         
         message_type : `MessageType | int | None`, Optional (Keyword only)
             The snapshotted message's type.
+        
+        soundboard_sounds : `None | iterable<SoundboardSound>`, Optional (Keyword only)
+            Soundboard sounds attached to the message.
         
         stickers : `None | iterable<Sticker>`, Optional (Keyword only)
             The snapshotted message's stickers.
@@ -187,6 +195,12 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         else:
             mentioned_users = validate_mentioned_users(mentioned_users)
         
+        # soundboard_sounds
+        if soundboard_sounds is ...:
+            soundboard_sounds = None
+        else:
+            soundboard_sounds = validate_soundboard_sounds(soundboard_sounds)
+        
         # stickers
         if stickers is ...:
             stickers = None
@@ -212,6 +226,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         self.flags = flags
         self.mentioned_role_ids = mentioned_role_ids
         self.mentioned_users = mentioned_users
+        self.soundboard_sounds = soundboard_sounds
         self.stickers = stickers
         self.type = message_type
         return self
@@ -245,6 +260,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         self.flags = parse_flags(data)
         self.mentioned_role_ids = parse_mentioned_role_ids(data)
         self.mentioned_users = parse_mentioned_users(data, guild_id)
+        self.soundboard_sounds = parse_soundboard_sounds(data)
         self.stickers = parse_stickers(data)
         self.type = parse_type(data)
         return self
@@ -276,6 +292,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         put_flags_into(self.flags, data, defaults)
         put_mentioned_role_ids_into(self.mentioned_role_ids, data, defaults)
         put_mentioned_users_into(self.mentioned_users, data, defaults, guild_id = guild_id)
+        put_soundboard_sounds_into(self.soundboard_sounds, data, defaults)
         put_stickers_into(self.stickers, data, defaults)
         put_type_into(self.type, data, defaults)
         return data
@@ -320,6 +337,10 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         
         # mentioned_users
         if self.mentioned_users != other.mentioned_users:
+            return False
+        
+        # soundboard_sounds
+        if self.soundboard_sounds != other.soundboard_sounds:
             return False
         
         # stickers
@@ -438,6 +459,17 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             repr_parts.append(' mentioned_users = ')
             repr_parts.append(repr(mentioned_users))
         
+        # soundboard_sounds
+        soundboard_sounds = self.soundboard_sounds
+        if (soundboard_sounds is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' soundboard_sounds = ')
+            repr_parts.append(repr(soundboard_sounds))
+        
         # stickers
         stickers = self.stickers
         if (stickers is not None):
@@ -528,6 +560,14 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             for user in mentioned_users:
                 hash_value ^= hash(user)
         
+        # soundboard_sounds
+        soundboard_sounds = self.soundboard_sounds
+        if (soundboard_sounds is not None):
+            hash_value ^= len(soundboard_sounds) << 27
+            
+            for soundboard_sound in soundboard_sounds:
+                hash_value ^= hash(soundboard_sound)
+        
         # stickers
         stickers = self.stickers
         if (stickers is not None):
@@ -585,6 +625,11 @@ class MessageSnapshot(RichAttributeErrorBaseType):
             mentioned_users = (*mentioned_users,)
         new.mentioned_users = mentioned_users
         
+        soundboard_sounds = self.soundboard_sounds
+        if (soundboard_sounds is not None):
+            soundboard_sounds = (*soundboard_sounds,)
+        new.soundboard_sounds = soundboard_sounds
+        
         stickers = self.stickers
         if (stickers is not None):
             stickers = (*stickers,)
@@ -608,6 +653,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         mentioned_role_ids = ...,
         mentioned_users = ...,
         message_type = ...,
+        soundboard_sounds = ...,
         stickers = ...,
     ):
         """
@@ -644,6 +690,9 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         
         message_type : `MessageType | int | None`, Optional (Keyword only)
             The snapshotted message's type.
+        
+        soundboard_sounds : `None | iterable<SoundboardSound>`, Optional (Keyword only)
+            Soundboard sounds attached to the message.
         
         stickers : `None | iterable<Sticker>`, Optional (Keyword only)
             The snapshotted message's stickers.
@@ -723,6 +772,14 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         else:
             mentioned_users = validate_mentioned_users(mentioned_users)
         
+        # soundboard_sounds
+        if soundboard_sounds is ...:
+            soundboard_sounds = self.soundboard_sounds
+            if (soundboard_sounds is not None):
+                soundboard_sounds = (*soundboard_sounds,)
+        else:
+            soundboard_sounds = validate_soundboard_sounds(soundboard_sounds)
+        
         # stickers
         if stickers is ...:
             stickers = self.stickers
@@ -750,6 +807,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         new.flags = flags
         new.mentioned_role_ids = mentioned_role_ids
         new.mentioned_users = mentioned_users
+        new.soundboard_sounds = soundboard_sounds
         new.stickers = stickers
         new.type = message_type
         return new
@@ -860,6 +918,21 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         mentioned_channels = self.mentioned_channels
         if (mentioned_channels is not None):
             yield from mentioned_channels
+    
+    
+    def iter_soundboard_sounds(self):
+        """
+        Iterates over the soundboard sounds of the message.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        soundboard_sounds : ``SoundboardSound``
+        """
+        soundboard_sounds = self.soundboard_sounds
+        if (soundboard_sounds is not None):
+            yield from soundboard_sounds
     
     
     def iter_stickers(self):
@@ -978,6 +1051,20 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         embeds = self.embeds
         if embeds is not None:
             return embeds[0]
+    
+    
+    @property
+    def soundboard_sound(self):
+        """
+        Returns the message's first soundboard sound.
+        
+        Returns
+        -------
+        soundboard_sound : `None | SoundboardSound`
+        """
+        soundboard_sounds = self.soundboard_sounds
+        if (soundboard_sounds is not None):
+            return soundboard_sounds[0]
     
     
     @property

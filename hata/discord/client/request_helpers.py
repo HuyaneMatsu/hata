@@ -506,7 +506,7 @@ def get_achievement_id(achievement):
         if achievement_id is None:
             raise TypeError(
                 f'`achievement` can be `{Achievement.__name__}`, `int`, got '
-                f'{achievement.__class__.__name__}; {achievement!r}.'
+                f'{type(achievement).__name__}; {achievement!r}.'
             )
     
     return achievement_id

@@ -17,11 +17,11 @@ def test__EmbedProvider__from_data():
         'url': url,
     }
     
-    field = EmbedProvider.from_data(data)
-    _assert_fields_set(field)
+    embed_provider = EmbedProvider.from_data(data)
+    _assert_fields_set(embed_provider)
     
-    vampytest.assert_eq(field.name, name)
-    vampytest.assert_eq(field.url, url)
+    vampytest.assert_eq(embed_provider.name, name)
+    vampytest.assert_eq(embed_provider.url, url)
 
 
 def test__EmbedProvider__to_data():
@@ -33,7 +33,7 @@ def test__EmbedProvider__to_data():
     name = 'orin'
     url = 'https://orindance.party/'
     
-    field = EmbedProvider(name = name, url = url)
+    embed_provider = EmbedProvider(name = name, url = url)
     
     expected_output = {
         'name': name,
@@ -41,6 +41,6 @@ def test__EmbedProvider__to_data():
     }
     
     vampytest.assert_eq(
-        field.to_data(defaults = True, include_internals = True),
+        embed_provider.to_data(defaults = True, include_internals = True),
         expected_output,
     )

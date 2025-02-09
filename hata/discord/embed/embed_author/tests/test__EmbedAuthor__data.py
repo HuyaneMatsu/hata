@@ -21,13 +21,13 @@ def test__EmbedAuthor__from_data():
         'url': url,
     }
     
-    field = EmbedAuthor.from_data(data)
-    _assert_fields_set(field)
+    embed_author = EmbedAuthor.from_data(data)
+    _assert_fields_set(embed_author)
     
-    vampytest.assert_eq(field.icon_url, icon_url)
-    vampytest.assert_eq(field.icon_proxy_url, icon_proxy_url)
-    vampytest.assert_eq(field.name, name)
-    vampytest.assert_eq(field.url, url)
+    vampytest.assert_eq(embed_author.icon_url, icon_url)
+    vampytest.assert_eq(embed_author.icon_proxy_url, icon_proxy_url)
+    vampytest.assert_eq(embed_author.name, name)
+    vampytest.assert_eq(embed_author.url, url)
 
 
 def test__EmbedAuthor__to_data():
@@ -48,11 +48,11 @@ def test__EmbedAuthor__to_data():
         'url': url,
     }
     
-    field = EmbedAuthor.from_data(data)
+    embed_author = EmbedAuthor.from_data(data)
     
     expected_output = data
     
     vampytest.assert_eq(
-        field.to_data(defaults = True, include_internals = True),
+        embed_author.to_data(defaults = True, include_internals = True),
         expected_output,
     )

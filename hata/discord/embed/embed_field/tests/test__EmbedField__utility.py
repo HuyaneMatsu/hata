@@ -18,10 +18,10 @@ def test__EmbedField__clean_copy():
     name = user_0.mention
     value = user_1.mention
     
-    field = EmbedField(name = name, value = value, inline = inline)
-    copy = field.clean_copy()
+    embed_field = EmbedField(name = name, value = value, inline = inline)
+    copy = embed_field.clean_copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_field, copy)
     
     vampytest.assert_eq(copy.inline, inline)
     vampytest.assert_eq(copy.name, f'@{user_0.name}')
@@ -36,12 +36,12 @@ def test__EmbedField__copy():
     name = 'orin'
     value = 'okuu'
     
-    field = EmbedField(name = name, value = value, inline = inline)
-    copy = field.copy()
+    embed_field = EmbedField(name = name, value = value, inline = inline)
+    copy = embed_field.copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_field, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(embed_field, copy)
 
 
 def test__EmbedField__copy_with__no_fields():
@@ -54,12 +54,12 @@ def test__EmbedField__copy_with__no_fields():
     name = 'orin'
     value = 'okuu'
     
-    field = EmbedField(name = name, value = value, inline = inline)
-    copy = field.copy_with()
+    embed_field = EmbedField(name = name, value = value, inline = inline)
+    copy = embed_field.copy_with()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_field, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(embed_field, copy)
 
 
 def test__EmbedField__copy_with__all_fields():
@@ -76,14 +76,14 @@ def test__EmbedField__copy_with__all_fields():
     new_name = 'koishi'
     new_value = 'satori'
     
-    field = EmbedField(name = old_name, value = old_value, inline = old_inline)
-    copy = field.copy_with(
+    embed_field = EmbedField(name = old_name, value = old_value, inline = old_inline)
+    copy = embed_field.copy_with(
         inline = new_inline,
         name = new_name,
         value = new_value,
     )
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_field, copy)
     
     vampytest.assert_eq(copy.inline, new_inline)
     vampytest.assert_eq(copy.name, new_name)
@@ -119,8 +119,8 @@ def test__EmbedField__contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedField(**keyword_parameters)
-    output = field.contents
+    embed_field = EmbedField(**keyword_parameters)
+    output = embed_field.contents
     vampytest.assert_instance(output, list)
     return {*output}
 
@@ -154,5 +154,5 @@ def test__EmbedField__iter_contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedField(**keyword_parameters)
-    return {*field.iter_contents()}
+    embed_field = EmbedField(**keyword_parameters)
+    return {*embed_field.iter_contents()}

@@ -16,10 +16,10 @@ def test__EmbedProvider__clean_copy():
     name = user.mention
     url = 'https://orindance.party/'
     
-    field = EmbedProvider(name = name, url = url)
-    copy = field.clean_copy()
+    embed_provider = EmbedProvider(name = name, url = url)
+    copy = embed_provider.clean_copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_provider, copy)
     
     vampytest.assert_eq(copy.name, f'@{user.name}')
     vampytest.assert_eq(copy.url, url)
@@ -32,12 +32,12 @@ def test__EmbedProvider__copy():
     name = 'orin'
     url = 'https://orindance.party/'
     
-    field = EmbedProvider(name = name, url = url)
-    copy = field.copy()
+    embed_provider = EmbedProvider(name = name, url = url)
+    copy = embed_provider.copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_provider, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(embed_provider, copy)
 
 
 def test__EmbedProvider__copy_with__no_fields():
@@ -49,12 +49,12 @@ def test__EmbedProvider__copy_with__no_fields():
     name = 'orin'
     url = 'https://orindance.party/'
     
-    field = EmbedProvider(name = name, url = url)
-    copy = field.copy_with()
+    embed_provider = EmbedProvider(name = name, url = url)
+    copy = embed_provider.copy_with()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_provider, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(embed_provider, copy)
 
 
 def test__EmbedProvider__copy_with__all_fields():
@@ -69,13 +69,13 @@ def test__EmbedProvider__copy_with__all_fields():
     new_name = 'rin'
     new_url = 'https://www.astil.dev/'
     
-    field = EmbedProvider(name = old_name, url = old_url)
-    copy = field.copy_with(
+    embed_provider = EmbedProvider(name = old_name, url = old_url)
+    copy = embed_provider.copy_with(
         name = new_name,
         url = new_url,
     )
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_provider, copy)
     
     vampytest.assert_eq(copy.name, new_name)
     vampytest.assert_eq(copy.url, new_url)
@@ -105,8 +105,8 @@ def test__EmbedProvider__contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedProvider(**keyword_parameters)
-    output = field.contents
+    embed_provider = EmbedProvider(**keyword_parameters)
+    output = embed_provider.contents
     vampytest.assert_instance(output, list)
     return {*output}
 
@@ -135,5 +135,5 @@ def test__EmbedProvider__iter_contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedProvider(**keyword_parameters)
-    return {*field.iter_contents()}
+    embed_provider = EmbedProvider(**keyword_parameters)
+    return {*embed_provider.iter_contents()}

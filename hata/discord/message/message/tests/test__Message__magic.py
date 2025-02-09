@@ -9,6 +9,7 @@ from ....embed import EmbedAuthor, Embed, EmbedField, EmbedFooter, EmbedProvider
 from ....emoji import Reaction, ReactionMapping, ReactionMappingLine, ReactionType
 from ....interaction import Resolved
 from ....poll import Poll, PollAnswer, PollQuestion
+from ....soundboard import SoundboardSound
 from ....sticker import Sticker
 from ....user import User
 
@@ -76,6 +77,10 @@ def test__Message__repr():
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
     ]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501290014, name = 'whither'),
+        SoundboardSound.precreate(202501290015, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202305040033, name = 'Kirisame'),
         Sticker.precreate(202305040034, name = 'Marisa'),
@@ -109,6 +114,7 @@ def test__Message__repr():
         'resolved': resolved,
         'role_subscription': role_subscription,
         'snapshots': snapshots,
+        'soundboard_sounds': soundboard_sounds,
         'stickers': stickers,
         'thread': thread,
         'tts': tts,
@@ -185,6 +191,10 @@ def test__Message__hash():
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
     ]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501290016, name = 'whither'),
+        SoundboardSound.precreate(202501290017, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202305040051, name = 'Kirisame'),
         Sticker.precreate(202305040052, name = 'Marisa'),
@@ -218,6 +228,7 @@ def test__Message__hash():
         'resolved': resolved,
         'role_subscription': role_subscription,
         'snapshots': snapshots,
+        'soundboard_sounds': soundboard_sounds,
         'stickers': stickers,
         'thread': thread,
         'tts': tts,
@@ -391,6 +402,10 @@ def _iter_options__eq__same_type():
         MessageSnapshot(content = 'Kazami'),
         MessageSnapshot(content = 'Yuuka'),
     ]
+    soundboard_sounds = [
+        SoundboardSound.precreate(202501290018, name = 'whither'),
+        SoundboardSound.precreate(202501290019, name = 'Yuyuko'),
+    ]
     stickers = [
         Sticker.precreate(202305040073, name = 'Kirisame'),
         Sticker.precreate(202305040074, name = 'Marisa'),
@@ -424,6 +439,7 @@ def _iter_options__eq__same_type():
         'resolved': resolved,
         'role_subscription': role_subscription,
         'snapshots': snapshots,
+        'soundboard_sounds': soundboard_sounds,
         'stickers': stickers,
         'thread': thread,
         'tts': tts,
@@ -678,6 +694,18 @@ def _iter_options__eq__same_type():
                 MessageSnapshot(content = 'Mushroom'),
                 MessageSnapshot(content = 'Soup'),
             ]
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'soundboard_sounds': [
+                SoundboardSound.precreate(202501290020, name = 'that'),
+                SoundboardSound.precreate(202501290021, name = 'heart'),
+            ],
         },
         False,
     )

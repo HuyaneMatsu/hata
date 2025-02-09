@@ -24,19 +24,20 @@ from .fields import (
     parse_id, parse_interaction, parse_mentioned_channels_cross_guild, parse_mentioned_everyone,
     parse_mentioned_role_ids, parse_mentioned_users, parse_message_id, parse_nonce, parse_pinned, parse_poll,
     parse_poll_and_change, parse_reactions, parse_referenced_message, parse_resolved, parse_role_subscription,
-    parse_snapshots, parse_stickers, parse_thread, parse_tts, parse_type, put_activity_into, put_application_id_into,
-    put_application_into, put_attachments_into, put_author_into, put_call_into, put_channel_id_into,
-    put_components_into, put_content_into, put_edited_at_into, put_embeds_into, put_flags_into, put_guild_id_into,
-    put_id_into, put_interaction_into, put_mentioned_channels_cross_guild_into, put_mentioned_everyone_into,
-    put_mentioned_role_ids_into, put_mentioned_users_into, put_message_id_into, put_nonce_into, put_pinned_into,
-    put_poll_into, put_reactions_into, put_referenced_message_into, put_resolved_into, put_role_subscription_into,
-    put_snapshots_into, put_stickers_into, put_thread_into, put_tts_into, put_type_into, validate_activity,
-    validate_application, validate_application_id, validate_attachments, validate_author, validate_call,
-    validate_channel_id, validate_components, validate_content, validate_edited_at, validate_embeds, validate_flags,
-    validate_guild_id, validate_id, validate_interaction, validate_mentioned_channels_cross_guild,
-    validate_mentioned_everyone, validate_mentioned_role_ids, validate_mentioned_users, validate_nonce, validate_pinned,
-    validate_poll, validate_reactions, validate_referenced_message, validate_resolved, validate_role_subscription,
-    validate_snapshots, validate_stickers, validate_thread, validate_tts, validate_type
+    parse_snapshots, parse_soundboard_sounds, parse_stickers, parse_thread, parse_tts, parse_type, put_activity_into,
+    put_application_id_into, put_application_into, put_attachments_into, put_author_into, put_call_into,
+    put_channel_id_into, put_components_into, put_content_into, put_edited_at_into, put_embeds_into, put_flags_into,
+    put_guild_id_into, put_id_into, put_interaction_into, put_mentioned_channels_cross_guild_into,
+    put_mentioned_everyone_into, put_mentioned_role_ids_into, put_mentioned_users_into, put_message_id_into,
+    put_nonce_into, put_pinned_into, put_poll_into, put_reactions_into, put_referenced_message_into, put_resolved_into,
+    put_role_subscription_into, put_snapshots_into, put_soundboard_sounds_into, put_stickers_into, put_thread_into,
+    put_tts_into, put_type_into, validate_activity, validate_application, validate_application_id, validate_attachments,
+    validate_author, validate_call, validate_channel_id, validate_components, validate_content, validate_edited_at,
+    validate_embeds, validate_flags, validate_guild_id, validate_id, validate_interaction,
+    validate_mentioned_channels_cross_guild, validate_mentioned_everyone, validate_mentioned_role_ids,
+    validate_mentioned_users, validate_nonce, validate_pinned, validate_poll, validate_reactions,
+    validate_referenced_message, validate_resolved, validate_role_subscription, validate_snapshots,
+    validate_soundboard_sounds, validate_stickers, validate_thread, validate_tts, validate_type
 )
 from .flags import MessageFlag
 from .preinstanced import MESSAGE_DEFAULT_CONVERTER, MessageType
@@ -85,6 +86,7 @@ PRECREATE_FIELDS = {
     'role_subscription': ('role_subscription', validate_role_subscription),
     'snapshots': ('snapshots', validate_snapshots),
     'pinned': ('pinned', validate_pinned),
+    'soundboard_sounds': ('soundboard_sounds', validate_soundboard_sounds),
     'stickers': ('stickers', validate_stickers),
     'thread': ('thread', validate_thread),
     'tts': ('tts', validate_tts),
@@ -205,6 +207,9 @@ class Message(DiscordEntity, immortal = True):
     snapshots : `None`, `tuple` of ``MessageSnapshot``
         Forwarded snapshots of other messages.
     
+    soundboard_sounds : `None | tuple<SoundboardSound>`
+        The soundboard sounds attached to the message. 
+    
     stickers : `None`, `tuple` of ``Sticker``
         The stickers sent with the message. Defaults to `None`.
     
@@ -227,8 +232,8 @@ class Message(DiscordEntity, immortal = True):
         '_cache_mentioned_channels', '_state', 'activity', 'application', 'application_id', 'attachments', 'author',
         'call', 'channel_id', 'components', 'content', 'edited_at', 'embeds', 'flags', 'guild_id', 'interaction',
         'mentioned_channels_cross_guild', 'mentioned_everyone', 'mentioned_role_ids', 'mentioned_users', 'nonce',
-        'pinned', 'poll', 'reactions', 'referenced_message', 'resolved', 'role_subscription', 'snapshots', 'stickers',
-        'thread', 'tts', 'type'
+        'pinned', 'poll', 'reactions', 'referenced_message', 'resolved', 'role_subscription', 'snapshots',
+        'soundboard_sounds', 'stickers', 'thread', 'tts', 'type'
     )
     
     
@@ -260,6 +265,7 @@ class Message(DiscordEntity, immortal = True):
         resolved = ...,
         role_subscription = ...,
         snapshots = ...,
+        soundboard_sounds = ...,
         stickers = ...,
         thread = ...,
         tts = ...,
@@ -344,6 +350,9 @@ class Message(DiscordEntity, immortal = True):
         
         snapshots : `None`, `iterable` of ``MessageSnapshot`, Optional (Keyword only)
             Forwarded snapshots of other messages.
+        
+        soundboard_sounds : `None | iterable<SoundboardSound>`, Optional (Keyword only)
+            Soundboard sounds attached to the message.
         
         stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
             The stickers sent with the message.
@@ -505,6 +514,12 @@ class Message(DiscordEntity, immortal = True):
         else:
             snapshots = validate_snapshots(snapshots)
         
+        # soundboard_sounds
+        if soundboard_sounds is ...:
+            soundboard_sounds = None
+        else:
+            soundboard_sounds = validate_soundboard_sounds(soundboard_sounds)
+        
         # stickers
         if stickers is ...:
             stickers = None
@@ -561,6 +576,7 @@ class Message(DiscordEntity, immortal = True):
         self.resolved = resolved
         self.role_subscription = role_subscription
         self.snapshots = snapshots
+        self.soundboard_sounds = soundboard_sounds
         self.stickers = stickers
         self.thread = thread
         self.tts = tts
@@ -807,6 +823,7 @@ class Message(DiscordEntity, immortal = True):
         self.resolved = parse_resolved(data, guild_id = guild_id)
         self.role_subscription = parse_role_subscription(data)
         self.snapshots = parse_snapshots(data, guild_id)
+        self.soundboard_sounds = parse_soundboard_sounds(data)
         self.stickers = parse_stickers(data)
         self.thread = parse_thread(data, guild_id)
         self.tts = parse_tts(data)
@@ -924,7 +941,7 @@ class Message(DiscordEntity, immortal = True):
             return edited_at
         
         raise ValueError(
-            f'Unknown format code {code!r} for {self.__class__.__name__}; {self!r}. '
+            f'Unknown format code {code!r} for {type(self).__name__}; {self!r}. '
             f'Available format codes: {""!r}, {"c"!r}, {"e"!r}.'
         )
     
@@ -963,6 +980,9 @@ class Message(DiscordEntity, immortal = True):
         -------
         is_equal : `bool`
         """
+        if self is other:
+            return True
+        
         self_id = self.id
         other_id = other.id
         if self_id and other_id:
@@ -1066,6 +1086,10 @@ class Message(DiscordEntity, immortal = True):
         
         # snapshots
         if self.snapshots != other.snapshots:
+            return False
+        
+        # soundboard_sounds
+        if self.soundboard_sounds != other.soundboard_sounds:
             return False
         
         # stickers
@@ -1235,6 +1259,14 @@ class Message(DiscordEntity, immortal = True):
             hash_value ^= len(snapshots) << 35
             for snapshot in snapshots:
                 hash_value ^= hash(snapshot)
+        
+        # soundboard_sounds
+        soundboard_sounds = self.soundboard_sounds
+        if (soundboard_sounds is not None):
+            hash_value ^= len(soundboard_sounds) << 36
+            
+            for soundboard_sound in soundboard_sounds:
+                hash_value ^= hash(soundboard_sound)
         
         # stickers
         stickers = self.stickers
@@ -1746,6 +1778,7 @@ class Message(DiscordEntity, immortal = True):
             put_resolved_into(self.resolved, data, defaults, guild_id = self.guild_id)
             put_role_subscription_into(self.role_subscription, data, defaults)
             put_snapshots_into(self.snapshots, data, defaults, guild_id = self.guild_id)
+            put_soundboard_sounds_into(self.soundboard_sounds, data, defaults)
             put_stickers_into(self.stickers, data, defaults)
             put_thread_into(self.thread, data, defaults)
         
@@ -1824,6 +1857,7 @@ class Message(DiscordEntity, immortal = True):
         self.resolved = None
         self.role_subscription = None
         self.snapshots = None
+        self.soundboard_sounds = None
         self.stickers = None
         self.thread = None
         self.tts = False
@@ -1941,6 +1975,9 @@ class Message(DiscordEntity, immortal = True):
         
         snapshots : `None`, `iterable` of ``MessageSnapshot`, Optional (Keyword only)
             Forwarded snapshots of other messages.
+        
+        soundboard_sounds : `None | iterable<SoundboardSound>`, Optional (Keyword only)
+            Soundboard sounds attached to the message.
         
         stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
             The stickers sent with the message.
@@ -2093,6 +2130,11 @@ class Message(DiscordEntity, immortal = True):
             snapshots = (*(snapshot.copy() for snapshot in snapshots),)
         new.snapshots = snapshots
         
+        soundboard_sounds = self.soundboard_sounds
+        if (soundboard_sounds is not None):
+            soundboard_sounds = (*soundboard_sounds,)
+        new.soundboard_sounds = soundboard_sounds
+        
         stickers = self.stickers
         if (stickers is not None):
             stickers = (*stickers,)
@@ -2133,6 +2175,7 @@ class Message(DiscordEntity, immortal = True):
         resolved = ...,
         role_subscription = ...,
         snapshots = ...,
+        soundboard_sounds = ...,
         stickers = ...,
         thread = ...,
         tts = ...,
@@ -2217,6 +2260,9 @@ class Message(DiscordEntity, immortal = True):
         
         snapshots : `None`, `iterable` of ``MessageSnapshot`, Optional (Keyword only)
             Forwarded snapshots of other messages.
+        
+        soundboard_sounds : `None | iterable<SoundboardSound>`, Optional (Keyword only)
+            Soundboard sounds attached to the message.
         
         stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
             The stickers sent with the message.
@@ -2412,6 +2458,14 @@ class Message(DiscordEntity, immortal = True):
         else:
             snapshots = validate_snapshots(snapshots)
         
+        # soundboard_sounds
+        if soundboard_sounds is ...:
+            soundboard_sounds = self.soundboard_sounds
+            if (soundboard_sounds is not None):
+                soundboard_sounds = (*soundboard_sounds,)
+        else:
+            soundboard_sounds = validate_soundboard_sounds(soundboard_sounds)
+        
         # stickers
         if stickers is ...:
             stickers = self.stickers
@@ -2470,6 +2524,7 @@ class Message(DiscordEntity, immortal = True):
         new.resolved = resolved
         new.role_subscription = role_subscription
         new.snapshots = snapshots
+        new.soundboard_sounds = soundboard_sounds
         new.stickers = stickers
         new.thread = thread
         new.tts = tts
@@ -2808,6 +2863,20 @@ class Message(DiscordEntity, immortal = True):
             return snapshots[0]
     
     @property
+    def soundboard_sound(self):
+        """
+        Returns the message's first soundboard sound.
+        
+        Returns
+        -------
+        soundboard_sound : `None | SoundboardSound`
+        """
+        soundboard_sounds = self.soundboard_sounds
+        if (soundboard_sounds is not None):
+            return soundboard_sounds[0]
+    
+    
+    @property
     def sticker(self):
         """
         Returns the first sticker in the message.
@@ -2978,6 +3047,21 @@ class Message(DiscordEntity, immortal = True):
         snapshots = self.snapshots
         if snapshots is not None:
             yield from snapshots
+    
+    
+    def iter_soundboard_sounds(self):
+        """
+        Iterates over the soundboard sounds of the message.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        soundboard_sounds : ``SoundboardSound``
+        """
+        soundboard_sounds = self.soundboard_sounds
+        if (soundboard_sounds is not None):
+            yield from soundboard_sounds
     
     
     def iter_stickers(self):
@@ -3270,6 +3354,17 @@ class Message(DiscordEntity, immortal = True):
         has_snapshots : `bool`
         """
         return self.snapshots is not None
+    
+    
+    def has_soundboard_sounds(self):
+        """
+        Returns whether the message has ``.soundboard_sounds`` set as its non-default value.
+        
+        Returns
+        -------
+        has_soundboard_sounds : `bool`
+        """
+        return (self.soundboard_sounds is not None)
     
     
     def has_stickers(self):

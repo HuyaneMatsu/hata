@@ -29,6 +29,7 @@ from ...field_validators import (
 )
 from ...poll import Poll
 from ...role import Role
+from ...soundboard import SoundboardSound
 from ...sticker import Sticker, create_partial_sticker_data, create_partial_sticker_from_partial_data
 from ...user import ClientUserBase, User, UserBase, ZEROUSER
 from ...webhook import WebhookBase, WebhookRepr, WebhookType, create_partial_webhook_from_id
@@ -775,8 +776,8 @@ put_role_subscription_into = nullable_entity_optional_putter_factory(
 )
 validate_role_subscription = nullable_entity_validator_factory('role_subscription', MessageRoleSubscription)
 
-# snapshots
 
+# snapshots
 
 def parse_snapshots(data, guild_id = 0):
     """
@@ -833,6 +834,14 @@ def put_snapshots_into(snapshots, data, defaults, *, guild_id = 0):
 
 
 validate_snapshots = nullable_object_array_validator_factory('snapshots', NotImplemented, include = 'MessageSnapshot')
+
+# soundboard_sounds
+
+parse_soundboard_sounds = nullable_entity_array_parser_factory('soundboard_sounds', SoundboardSound)
+put_soundboard_sounds_into = nullable_entity_array_optional_putter_factory(
+    'soundboard_sounds', SoundboardSound, force_include_internals = True
+)
+validate_soundboard_sounds = nullable_entity_array_validator_factory('soundboard_sounds', SoundboardSound)
 
 # stickers
 

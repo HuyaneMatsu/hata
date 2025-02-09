@@ -5,7 +5,7 @@ from ....application import Application
 from ..fields import validate_target_application_id
 
 
-def _iter_options():
+def _iter_options__passing():
     application_id = 202309200000
     application = Application.precreate(application_id)
     
@@ -14,8 +14,13 @@ def _iter_options():
     yield 0, 0
 
 
-@vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__validate_target_application_id__passing(input_value):
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_target_application_id(input_value):
     """
     Tests whether `validate_target_application_id` works as intended.
     
@@ -29,25 +34,11 @@ def test__validate_target_application_id__passing(input_value):
     Returns
     -------
     output : `int`
-    """
-    return validate_target_application_id(input_value)
-
-
-@vampytest.raising(TypeError)
-@vampytest.call_with(12.6)
-def test__validate_target_application_id__type_error(input_value):
-    """
-    Tests whether `validate_target_application_id` works as intended.
-    
-    Case: `TypeError`.
-    
-    Parameters
-    ----------
-    input_value : `object`
-        The value to validate.
     
     Raises
     ------
     TypeError
     """
-    validate_target_application_id(input_value)
+    output = validate_target_application_id(input_value)
+    vampytest.assert_instance(output, int)
+    return output

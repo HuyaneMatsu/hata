@@ -458,9 +458,15 @@ def convert_poll_result(self):
     
     if (winning_answer_votes != -1) and (total_votes != -1):
         content_parts.append(should_add_next)
-        content_parts.append('Winning answer • ')
-        content_parts.append(format(winning_answer_votes * 100 / total_votes, '.0f'))
-        content_parts.append('%')
+        
+        if (winning_answer_votes == 0) and (total_votes == 0):
+            content_parts.append('There was no winner')
+        
+        else:
+            content_parts.append('Winning answer • ')
+            content_parts.append(format(winning_answer_votes * 100 / total_votes, '.0f'))
+            content_parts.append('%')
+    
     
     if content_parts:
         return ''.join(content_parts)

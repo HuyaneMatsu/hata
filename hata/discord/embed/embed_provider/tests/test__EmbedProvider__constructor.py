@@ -3,18 +3,18 @@ import vampytest
 from ..provider import EmbedProvider
 
 
-def _assert_fields_set(field):
+def _assert_fields_set(embed_provider):
     """
     Checks whether every fields of the given embed provider are set.
     
     Parameters
     ----------
-    field : ``EmbedProvider``
+    embed_provider : ``EmbedProvider``
         The field to check.
     """
-    vampytest.assert_instance(field, EmbedProvider)
-    vampytest.assert_instance(field.name, str, nullable = True)
-    vampytest.assert_instance(field.url, str, nullable = True)
+    vampytest.assert_instance(embed_provider, EmbedProvider)
+    vampytest.assert_instance(embed_provider.name, str, nullable = True)
+    vampytest.assert_instance(embed_provider.url, str, nullable = True)
 
 
 def test__EmbedProvider__new__no_fields():
@@ -23,8 +23,8 @@ def test__EmbedProvider__new__no_fields():
     
     Case: Minimal amount of parameters.
     """
-    field = EmbedProvider()
-    _assert_fields_set(field)
+    embed_provider = EmbedProvider()
+    _assert_fields_set(embed_provider)
 
 
 def test__EmbedProvider__new__all_fields():
@@ -36,11 +36,11 @@ def test__EmbedProvider__new__all_fields():
     name = 'orin'
     url = 'https://orindance.party/'
     
-    field = EmbedProvider(name = name, url = url)
-    _assert_fields_set(field)
+    embed_provider = EmbedProvider(name = name, url = url)
+    _assert_fields_set(embed_provider)
     
-    vampytest.assert_eq(field.name, name)
-    vampytest.assert_eq(field.url, url)
+    vampytest.assert_eq(embed_provider.name, name)
+    vampytest.assert_eq(embed_provider.url, url)
 
 
 def test__EmbedProvider__new__string_conversion():
@@ -51,7 +51,7 @@ def test__EmbedProvider__new__string_conversion():
     """
     name = 123
     
-    field = EmbedProvider(name = name)
-    _assert_fields_set(field)
+    embed_provider = EmbedProvider(name = name)
+    _assert_fields_set(embed_provider)
     
-    vampytest.assert_eq(field.name, str(name))
+    vampytest.assert_eq(embed_provider.name, str(name))

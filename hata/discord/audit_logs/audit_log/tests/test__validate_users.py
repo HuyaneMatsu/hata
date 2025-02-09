@@ -19,7 +19,6 @@ def _iter_options__passing():
     yield [user_1, user_0], {user_id_0: user_0, user_id_1: user_1}
 
 
-
 def _iter_options__type_error():
     yield 12.6
     yield [12.6]

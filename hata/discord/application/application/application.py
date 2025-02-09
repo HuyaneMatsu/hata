@@ -1087,7 +1087,7 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -1130,7 +1130,7 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_flags_into(self.flags, data, defaults)
@@ -1154,7 +1154,7 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, object>`
         """
         data = self._to_data_common(defaults, include_internals)
         put_approximate_guild_count_into(self.approximate_guild_count, data, defaults)
@@ -1208,7 +1208,7 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, object>`
         """
         data = self._to_data_common(defaults, include_internals)
         put_embedded_activity_configuration_into(self.embedded_activity_configuration, data, defaults)
@@ -1231,7 +1231,7 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, object>`
         """
         data = self._to_data_common(defaults, include_internals)
         put_aliases_into(self.aliases, data, defaults)
@@ -1263,7 +1263,7 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `str`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_bot_public_into(self.bot_public, data, defaults)

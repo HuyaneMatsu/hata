@@ -57,7 +57,9 @@ async def test__Client__webhook_message_edit__stuffed():
         f'files[{0}]', b'hey', file_name = 'mister.txt', content_type = 'application/octet-stream'
     )
     
-    async def mock_api_webhook_message_edit(input_webhook_id, input_webhook_token, input_message_id, input_message_data):
+    async def mock_api_webhook_message_edit(
+        input_webhook_id, input_webhook_token, input_message_id, input_message_data, input_query
+    ):
         nonlocal mock_api_webhook_message_edit_called
         nonlocal webhook_id
         nonlocal expected_message_data
@@ -68,6 +70,7 @@ async def test__Client__webhook_message_edit__stuffed():
         vampytest.assert_eq(webhook_token, input_webhook_token)
         vampytest.assert_eq(expected_message_data, input_message_data)
         vampytest.assert_eq(message_id, input_message_id)
+        vampytest.assert_eq({'with_components': True}, input_query)
         return {}
     
     api.webhook_message_edit = mock_api_webhook_message_edit

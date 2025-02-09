@@ -11,10 +11,10 @@ def test__EmbedVideo__clean_copy():
     """
     url = 'https://orindance.party/'
     
-    field = EmbedVideo(url)
-    copy = field.clean_copy()
+    embed_video = EmbedVideo(url)
+    copy = embed_video.clean_copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_video, copy)
     
     vampytest.assert_eq(copy.url, url)
 
@@ -25,12 +25,12 @@ def test__EmbedVideo__copy():
     """
     url = 'https://orindance.party/'
     
-    field = EmbedVideo(url)
-    copy = field.copy()
+    embed_video = EmbedVideo(url)
+    copy = embed_video.copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_video, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(embed_video, copy)
 
 
 def test__EmbedVideo__copy_with__no_fields():
@@ -41,12 +41,12 @@ def test__EmbedVideo__copy_with__no_fields():
     """
     url = 'https://orindance.party/'
     
-    field = EmbedVideo(url)
-    copy = field.copy_with()
+    embed_video = EmbedVideo(url)
+    copy = embed_video.copy_with()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_video, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(embed_video, copy)
 
 
 def test__EmbedVideo__copy_with__all_fields():
@@ -59,12 +59,12 @@ def test__EmbedVideo__copy_with__all_fields():
     
     new_url = 'https://www.astil.dev/'
     
-    field = EmbedVideo(old_url)
-    copy = field.copy_with(
+    embed_video = EmbedVideo(old_url)
+    copy = embed_video.copy_with(
         url = new_url,
     )
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(embed_video, copy)
     
     vampytest.assert_eq(copy.url, new_url)
 
@@ -90,8 +90,8 @@ def test__EmbedVideo__contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedVideo(**keyword_parameters)
-    output = field.contents
+    embed_video = EmbedVideo(**keyword_parameters)
+    output = embed_video.contents
     vampytest.assert_instance(output, list)
     return {*output}
 
@@ -117,5 +117,5 @@ def test__EmbedVideo__iter_contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedVideo(**keyword_parameters)
-    return {*field.iter_contents()}
+    embed_video = EmbedVideo(**keyword_parameters)
+    return {*embed_video.iter_contents()}

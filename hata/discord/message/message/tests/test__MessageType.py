@@ -133,6 +133,29 @@ def _iter_options__poll_result():
             f'Winning answer • 50%'
         ),
     )
+    
+    yield (
+        Message(
+            embeds = [
+                Embed(
+                    embed_type = EmbedType.poll_result,
+                ).add_field(
+                    'poll_question_text',
+                    'Hey mister',
+                ).add_field(
+                    'victor_answer_votes',
+                    '0',
+                ).add_field(
+                    'total_votes',
+                    '0',
+                )
+            ],
+        ),
+        (
+            f'The poll Hey mister has closed.\n'
+            f'There was no winner'
+        ),
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options__poll_result()).returning_last())

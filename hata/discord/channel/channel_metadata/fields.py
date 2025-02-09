@@ -259,12 +259,12 @@ def parse_created_at(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Channel data.
     
     Returns
     -------
-    created_at : `int`
+    created_at : `None | DateTime`
     """
     sub_data = data.get('thread_metadata', None)
     if sub_data is None:
@@ -285,16 +285,18 @@ def put_created_at_into(created_at, data, defaults):
     
     Parameters
     ----------
-    created_at : `None`, `datetime`
+    created_at : `None | DateTime`
         When the channel was created.
-    data : `dict` of (`str`, `object`) items
+    
+    data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (created_at is not None):
         try:

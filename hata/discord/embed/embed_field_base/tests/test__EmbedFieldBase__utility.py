@@ -9,22 +9,22 @@ def test__EmbedFieldBase__clean_copy():
     """
     Tests whether ``EmbedFieldBase.clean_copy`` works as intended.
     """
-    field = EmbedFieldBase()
-    copy = field.clean_copy()
+    field_base = EmbedFieldBase()
+    copy = field_base.clean_copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(field_base, copy)
 
 
 def test__EmbedFieldBase__copy():
     """
     Tests whether ``EmbedFieldBase.copy`` works as intended.
     """
-    field = EmbedFieldBase()
-    copy = field.copy()
+    field_base = EmbedFieldBase()
+    copy = field_base.copy()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(field_base, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(field_base, copy)
 
 
 def test__EmbedFieldBase__copy_with__no_fields():
@@ -33,12 +33,12 @@ def test__EmbedFieldBase__copy_with__no_fields():
     
     Case: No fields given.
     """
-    field = EmbedFieldBase()
-    copy = field.copy_with()
+    field_base = EmbedFieldBase()
+    copy = field_base.copy_with()
     _assert_fields_set(copy)
-    vampytest.assert_is_not(field, copy)
+    vampytest.assert_is_not(field_base, copy)
     
-    vampytest.assert_eq(field, copy)
+    vampytest.assert_eq(field_base, copy)
 
 
 def _iter_options__contents():
@@ -59,8 +59,8 @@ def test__EmbedFieldBase__contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedFieldBase(**keyword_parameters)
-    output = field.contents
+    field_base = EmbedFieldBase(**keyword_parameters)
+    output = field_base.contents
     vampytest.assert_instance(output, list)
     return {*output}
 
@@ -83,5 +83,5 @@ def test__EmbedFieldBase__iter_contents(keyword_parameters):
     -------
     output : `set<str>`
     """
-    field = EmbedFieldBase(**keyword_parameters)
-    return {*field.iter_contents()}
+    field_base = EmbedFieldBase(**keyword_parameters)
+    return {*field_base.iter_contents()}

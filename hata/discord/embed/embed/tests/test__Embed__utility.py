@@ -14,6 +14,7 @@ from ...embed_thumbnail import EmbedThumbnail
 from ...embed_video import EmbedVideo
 
 from ..embed import Embed
+from ..flags import EmbedFlag
 from ..preinstanced import EmbedType
 
 from .test__Embed__constructor import _assert_fields_set
@@ -28,6 +29,7 @@ def test__Embed__clear():
     description = 'embed description'
     embed_type = EmbedType.video
     fields = [EmbedField('komeiji', 'koishi'), EmbedField('komeiji', 'satori', inline = True)]
+    flags = EmbedFlag(3)
     footer = EmbedFooter('footer text')
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
@@ -43,6 +45,7 @@ def test__Embed__clear():
         description = description,
         embed_type = embed_type,
         fields = fields,
+        flags = flags,
         footer = footer,
         image = image,
         provider = provider,
@@ -59,6 +62,7 @@ def test__Embed__clear():
     vampytest.assert_is(embed.color, None)
     vampytest.assert_is(embed.description, None)
     vampytest.assert_is(embed.fields, None)
+    vampytest.assert_eq(embed.flags, EmbedFlag())
     vampytest.assert_is(embed.footer, None)
     vampytest.assert_is(embed.image, None)
     vampytest.assert_is(embed.provider, None)
@@ -119,6 +123,7 @@ def test__Embed__copy():
     description = 'embed description'
     embed_type = EmbedType.video
     fields = [EmbedField('komeiji', 'koishi'), EmbedField('komeiji', 'satori', inline = True)]
+    flags = EmbedFlag(3)
     footer = EmbedFooter('footer text')
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
@@ -134,6 +139,7 @@ def test__Embed__copy():
         description = description,
         embed_type = embed_type,
         fields = fields,
+        flags = flags,
         footer = footer,
         image = image,
         provider = provider,
@@ -162,6 +168,7 @@ def test__Embed__copy_with__no_fields():
     description = 'embed description'
     embed_type = EmbedType.video
     fields = [EmbedField('komeiji', 'koishi'), EmbedField('komeiji', 'satori', inline = True)]
+    flags = EmbedFlag(3)
     footer = EmbedFooter('footer text')
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
@@ -177,6 +184,7 @@ def test__Embed__copy_with__no_fields():
         description = description,
         embed_type = embed_type,
         fields = fields,
+        flags = flags,
         footer = footer,
         image = image,
         provider = provider,
@@ -205,6 +213,7 @@ def test__Embed__copy_with__all_fields():
     old_description = 'embed description'
     old_embed_type = EmbedType.video
     old_fields = [EmbedField('komeiji', 'koishi'), EmbedField('komeiji', 'satori', inline = True)]
+    old_flags = EmbedFlag(3)
     old_footer = EmbedFooter('footer text')
     old_image = EmbedImage('attachment://image')
     old_provider = EmbedProvider('provider name')
@@ -219,6 +228,7 @@ def test__Embed__copy_with__all_fields():
     new_description = 'embed derp'
     new_embed_type = EmbedType.gifv
     new_fields = [EmbedField('komeiji', 'yukari', inline = True)]
+    new_flags = EmbedFlag(5)
     new_footer = EmbedFooter('footer derp')
     new_image = EmbedImage('attachment://image_hello')
     new_provider = EmbedProvider('provider derp')
@@ -234,6 +244,7 @@ def test__Embed__copy_with__all_fields():
         description = old_description,
         embed_type = old_embed_type,
         fields = old_fields,
+        flags = old_flags,
         footer = old_footer,
         image = old_image,
         provider = old_provider,
@@ -250,6 +261,7 @@ def test__Embed__copy_with__all_fields():
         description = new_description,
         embed_type = new_embed_type,
         fields = new_fields,
+        flags = new_flags,
         footer = new_footer,
         image = new_image,
         provider = new_provider,
@@ -266,6 +278,7 @@ def test__Embed__copy_with__all_fields():
     vampytest.assert_eq(copy.color, new_color)
     vampytest.assert_eq(copy.description, new_description)
     vampytest.assert_eq(copy.fields, new_fields)
+    vampytest.assert_eq(copy.flags, new_flags)
     vampytest.assert_eq(copy.footer, new_footer)
     vampytest.assert_eq(copy.image, new_image)
     vampytest.assert_eq(copy.provider, new_provider)
@@ -453,6 +466,7 @@ def test__Embed__get_short_repr():
     description = 'embed description'
     embed_type = EmbedType.video
     fields = [EmbedField('komeiji', 'koishi'), EmbedField('komeiji', 'satori', inline = True)]
+    flags = EmbedFlag(3)
     footer = EmbedFooter('footer text')
     image = EmbedImage('attachment://image')
     provider = EmbedProvider('provider name')
@@ -468,6 +482,7 @@ def test__Embed__get_short_repr():
         description = description,
         embed_type = embed_type,
         fields = fields,
+        flags = flags,
         footer = footer,
         image = image,
         provider = provider,

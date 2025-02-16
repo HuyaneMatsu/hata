@@ -20,13 +20,13 @@ from .constants import NAME_ALLOWED_CHARACTERS, NAME_LENGTH_MAX, NAME_LENGTH_MIN
 # animated
 
 parse_animated = bool_parser_factory('animated', False)
-put_animated_into = bool_optional_putter_factory('animated', False)
+put_animated = bool_optional_putter_factory('animated', False)
 validate_animated = bool_validator_factory('animated', False)
 
 # available
 
 parse_available = bool_parser_factory('available', True)
-put_available_into = bool_optional_putter_factory('available', True)
+put_available = bool_optional_putter_factory('available', True)
 validate_available = bool_validator_factory('available', True)
 
 # guild_id
@@ -36,19 +36,19 @@ validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, incl
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('emoji_id')
 
 # managed
 
 parse_managed = bool_parser_factory('managed', False)
-put_managed_into = bool_optional_putter_factory('managed', False)
+put_managed = bool_optional_putter_factory('managed', False)
 validate_managed = bool_validator_factory('managed', False)
 
 # name
 
 parse_name = force_string_parser_factory('name')
-put_name_into = force_string_putter_factory('name')
+put_name = force_string_putter_factory('name')
 
 
 def validate_name(name):
@@ -98,17 +98,17 @@ def validate_name(name):
 # require_colons
 
 parse_require_colons = bool_parser_factory('require_colons', True)
-put_require_colons_into = bool_optional_putter_factory('require_colons', True)
+put_require_colons = bool_optional_putter_factory('require_colons', True)
 validate_require_colons = bool_validator_factory('require_colons', True)
 
 # role_ids
 
 parse_role_ids = entity_id_array_parser_factory('roles')
-put_role_ids_into = optional_entity_id_array_optional_putter_factory('roles')
+put_role_ids = optional_entity_id_array_optional_putter_factory('roles')
 validate_role_ids = entity_id_array_validator_factory('role_ids', Role)
 
 # user
 
 parse_user = default_entity_parser_factory('user', User, default = ZEROUSER)
-put_user_into = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
+put_user = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
 validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)

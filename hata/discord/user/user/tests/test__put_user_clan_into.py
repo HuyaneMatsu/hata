@@ -4,7 +4,7 @@ from ....bases import Icon, IconType
 
 from ...user_clan import UserClan
 
-from ..fields import put_clan_into
+from ..fields import put_clan
 
 
 def _iter_options():
@@ -17,9 +17,9 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_clan_into(input_value, defaults):
+def test__put_clan(input_value, defaults):
     """
-    Tests whether ``put_clan_into`` is working as intended.
+    Tests whether ``put_clan`` is working as intended.
     
     Parameters
     ----------
@@ -32,4 +32,4 @@ def test__put_clan_into(input_value, defaults):
     -------
     output : `dict<str, object>`
     """
-    return put_clan_into(input_value, {}, defaults)
+    return put_clan(input_value, {}, defaults)

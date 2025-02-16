@@ -30,19 +30,19 @@ from .preinstanced import EmbedType
 # author
 
 parse_author = nullable_entity_parser_factory('author', EmbedAuthor)
-put_author_into = nullable_entity_optional_putter_factory('author', EmbedAuthor)
+put_author = nullable_entity_optional_putter_factory('author', EmbedAuthor)
 validate_author = nullable_entity_validator_factory('author', EmbedAuthor)
 
 # color
 
 parse_color = nullable_flag_parser_factory('color', Color)
-put_color_into = nullable_flag_optional_putter_factory('color')
+put_color = nullable_flag_optional_putter_factory('color')
 validate_color = nullable_flag_validator_factory('color', Color)
 
 # description
 
 parse_description = nullable_string_parser_factory('description')
-put_description_into = nullable_string_optional_putter_factory('description')
+put_description = nullable_string_optional_putter_factory('description')
 
 
 def validate_description(description):
@@ -106,7 +106,7 @@ def parse_fields(data):
     return [EmbedField.from_data(field_data) for field_data in field_datas]
 
 
-def put_fields_into(fields, data, defaults):
+def put_fields(fields, data, defaults):
     """
     Puts the given fields into the given data.
     
@@ -181,44 +181,44 @@ def validate_fields(fields):
 # flags
 
 parse_flags = flag_parser_factory('flags', EmbedFlag)
-put_flags_into = flag_optional_putter_factory('flags', EmbedFlag())
+put_flags = flag_optional_putter_factory('flags', EmbedFlag())
 validate_flags = flag_validator_factory('flags', EmbedFlag)
 
 
 # footer
 
 parse_footer = nullable_entity_parser_factory('footer', EmbedFooter)
-put_footer_into = nullable_entity_optional_putter_factory('footer', EmbedFooter)
+put_footer = nullable_entity_optional_putter_factory('footer', EmbedFooter)
 validate_footer = nullable_entity_validator_factory('footer', EmbedFooter)
 
 # image
 
 parse_image = nullable_entity_parser_factory('image', EmbedImage)
-put_image_into = nullable_entity_optional_putter_factory('image', EmbedImage)
+put_image = nullable_entity_optional_putter_factory('image', EmbedImage)
 validate_image = nullable_entity_validator_factory('image', EmbedImage)
 
 # provider
 
 parse_provider = nullable_entity_parser_factory('provider', EmbedProvider)
-put_provider_into = nullable_entity_optional_putter_factory('provider', EmbedProvider)
+put_provider = nullable_entity_optional_putter_factory('provider', EmbedProvider)
 validate_provider = nullable_entity_validator_factory('provider', EmbedProvider)
 
 # thumbnail
 
 parse_thumbnail = nullable_entity_parser_factory('thumbnail', EmbedThumbnail)
-put_thumbnail_into = nullable_entity_optional_putter_factory('thumbnail', EmbedThumbnail)
+put_thumbnail = nullable_entity_optional_putter_factory('thumbnail', EmbedThumbnail)
 validate_thumbnail = nullable_entity_validator_factory('thumbnail', EmbedThumbnail)
 
 # timestamp
 
 parse_timestamp = nullable_date_time_parser_factory('timestamp')
-put_timestamp_into = nullable_date_time_optional_putter_factory('timestamp')
+put_timestamp = nullable_date_time_optional_putter_factory('timestamp')
 validate_timestamp = nullable_date_time_validator_factory('timestamp')
 
 # title
 
 parse_title = nullable_string_parser_factory('title')
-put_title_into = nullable_string_optional_putter_factory('title')
+put_title = nullable_string_optional_putter_factory('title')
 
 
 def validate_title(title):
@@ -262,17 +262,17 @@ def validate_title(title):
 # type
 
 parse_type = preinstanced_parser_factory('type', EmbedType, EmbedType.rich)
-put_type_into = preinstanced_putter_factory('type')
+put_type = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('embed_type', EmbedType)
 
 # url
 
 parse_url = nullable_string_parser_factory('url')
-put_url_into = url_optional_putter_factory('url')
+put_url = url_optional_putter_factory('url')
 validate_url = url_optional_validator_factory('url', length_max = URL_LENGTH_MAX)
 
 # video
 
 parse_video = nullable_entity_parser_factory('video', EmbedVideo)
-put_video_into = nullable_entity_optional_putter_factory('video', EmbedVideo)
+put_video = nullable_entity_optional_putter_factory('video', EmbedVideo)
 validate_video = nullable_entity_validator_factory('video', EmbedVideo)

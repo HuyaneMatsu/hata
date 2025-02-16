@@ -7,7 +7,7 @@ from ...core import GUILDS
 from ...user import create_partial_user_from_id
 
 from .fields import (
-    parse_guild_id, parse_user_id, put_guild_id_into, put_user_id_into, validate_guild_id, validate_user_id
+    parse_guild_id, parse_user_id, put_guild_id, put_user_id, validate_guild_id, validate_user_id
 )
 
 
@@ -95,8 +95,8 @@ class GuildJoinRequestDeleteEvent(EventBase):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_guild_id_into(self.guild_id, data, defaults)
-        put_user_id_into(self.user_id, data, defaults)
+        put_guild_id(self.guild_id, data, defaults)
+        put_user_id(self.user_id, data, defaults)
         return data
     
     

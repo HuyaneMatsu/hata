@@ -15,7 +15,7 @@ from .constants import NAME_LENGTH_MAX, NAME_LENGTH_MIN, VALUE_LENGTH_MAX, VALUE
 # name
 
 parse_name = force_string_parser_factory('name')
-put_name_into = force_string_putter_factory('name')
+put_name = force_string_putter_factory('name')
 
 
 def validate_name(name):
@@ -75,7 +75,7 @@ def validate_name(name):
 parse_name_localizations = nullable_functional_parser_factory(
     'name_localizations', build_locale_dictionary
 )
-put_name_localizations_into = nullable_functional_optional_putter_factory(
+put_name_localizations = nullable_functional_optional_putter_factory(
     'name_localizations', destroy_locale_dictionary
 )
 validate_name_localizations = partial_func(localized_dictionary_builder, parameter_name = 'name_localizations')
@@ -85,7 +85,7 @@ validate_name_localizations = partial_func(localized_dictionary_builder, paramet
 # value
 
 parse_value = field_parser_factory('value')
-put_value_into = field_putter_factory('value')
+put_value = field_putter_factory('value')
 
 
 def validate_value(value):

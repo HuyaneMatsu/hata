@@ -2,7 +2,7 @@ __all__ = ('ApplicationCommandOptionMetadataSubCommand',)
 
 from scarletio import copy_docs
 
-from .fields import parse_default, put_default_into, validate_default
+from .fields import parse_default, put_default, validate_default
 from .nested import ApplicationCommandOptionMetadataNested
 
 
@@ -75,7 +75,7 @@ class ApplicationCommandOptionMetadataSubCommand(ApplicationCommandOptionMetadat
     @copy_docs(ApplicationCommandOptionMetadataNested.to_data)
     def to_data(self, *, defaults = False):
         data = ApplicationCommandOptionMetadataNested.to_data(self, defaults = defaults)
-        put_default_into(self.default, data, defaults)
+        put_default(self.default, data, defaults)
         return data
     
     

@@ -8,7 +8,7 @@ from ...application_command import ApplicationCommandTargetType
 
 from .application_command_autocomplete import InteractionMetadataApplicationCommandAutocomplete
 from .fields import (
-    parse_resolved, parse_target_id, parse_target_type, put_resolved_into, put_target_id_into, put_target_type_into,
+    parse_resolved, parse_target_id, parse_target_type, put_resolved, put_target_id, put_target_type,
     validate_resolved, validate_target_id, validate_target_type
 )
 
@@ -243,9 +243,9 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         data = InteractionMetadataApplicationCommandAutocomplete.to_data(
             self, defaults = defaults, guild_id = guild_id
         )
-        put_resolved_into(self.resolved, data, defaults, guild_id = guild_id)
-        put_target_id_into(self.target_id, data, defaults)
-        put_target_type_into(self.target_type, data, defaults)
+        put_resolved(self.resolved, data, defaults, guild_id = guild_id)
+        put_target_id(self.target_id, data, defaults)
+        put_target_type(self.target_type, data, defaults)
         return data
     
     

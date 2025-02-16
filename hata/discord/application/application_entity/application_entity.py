@@ -3,7 +3,7 @@ __all__ = ('ApplicationEntity',)
 from ...bases import DiscordEntity
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
-from .fields import parse_id, parse_name, put_id_into, put_name_into, validate_id, validate_name
+from .fields import parse_id, parse_name, put_id, put_name, validate_id, validate_name
 
 
 PRECREATE_FIELDS = {
@@ -92,9 +92,9 @@ class ApplicationEntity(DiscordEntity):
         data = {}
         
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         
-        put_name_into(self.name, data, defaults)
+        put_name(self.name, data, defaults)
         
         return data
     

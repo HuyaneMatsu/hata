@@ -12,7 +12,7 @@ from .preinstanced import ReactionType
 # emoji
 
 parse_emoji = functional_parser_factory('emoji', create_partial_emoji_from_data)
-put_emoji_into = functional_putter_factory('emoji', create_partial_emoji_data)
+put_emoji = functional_putter_factory('emoji', create_partial_emoji_data)
 validate_emoji = entity_validator_factory('emoji', Emoji)
 
 # type
@@ -36,7 +36,7 @@ def parse_type(data):
     return ReactionType.standard
 
 
-def put_type_into(reaction_type, data, defaults):
+def put_type(reaction_type, data, defaults):
     """
     Puts the reaction's type into the given `data` json serializable object.
     

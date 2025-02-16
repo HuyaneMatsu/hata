@@ -7,8 +7,8 @@ from scarletio import RichAttributeErrorBaseType
 from ..shared_fields import parse_emoji, put_emoji_into, validate_emoji
 
 from .fields import (
-    parse_default, parse_description, parse_label, parse_value, put_default_into, put_description_into, put_label_into,
-    put_value_into, validate_default, validate_description, validate_label, validate_value
+    parse_default, parse_description, parse_label, parse_value, put_default, put_description, put_label,
+    put_value, validate_default, validate_description, validate_label, validate_value
 )
 
 
@@ -143,11 +143,11 @@ class StringSelectOption(RichAttributeErrorBaseType):
         """
         data = {}
         
-        put_default_into(self.default, data, defaults)
-        put_description_into(self.description, data, defaults)
+        put_default(self.default, data, defaults)
+        put_description(self.description, data, defaults)
         put_emoji_into(self.emoji, data, defaults)
-        put_label_into(self.label, data, defaults)
-        put_value_into(self.value, data, defaults)
+        put_label(self.label, data, defaults)
+        put_value(self.value, data, defaults)
         
         return data
     

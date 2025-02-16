@@ -1,7 +1,7 @@
 __all__ = ('create_partial_sticker_data', 'create_partial_sticker_from_id', 'create_partial_sticker_from_partial_data')
 
 
-from .fields import put_format_into, put_id_into, put_name_into, parse_id, parse_format, parse_name
+from .fields import put_format, put_id, put_name, parse_id, parse_format, parse_name
 from .sticker import Sticker
 from ...core import STICKERS
 
@@ -20,9 +20,9 @@ def create_partial_sticker_data(sticker):
     data : `dict` of (`str`, `object`) items
     """
     data = {}
-    put_format_into(sticker.format, data, True)
-    put_id_into(sticker.id, data, True)
-    put_name_into(sticker.name, data, True)
+    put_format(sticker.format, data, True)
+    put_id(sticker.id, data, True)
+    put_name(sticker.name, data, True)
     return data
 
 

@@ -36,7 +36,7 @@ def parse_emoji(data):
     return create_partial_emoji_from_data(emoji_data)
 
 
-def put_emoji_into(emoji, data, defaults):
+def put_emoji(emoji, data, defaults):
     """
     Puts the `emoji`'s data into the given `data` json serializable object.
     
@@ -74,7 +74,7 @@ validate_emoji = nullable_entity_validator_factory('emoji', Emoji)
 # id
 
 parse_id = entity_id_parser_factory('answer_id')
-put_id_into = entity_id_putter_factory('answer_id')
+put_id = entity_id_putter_factory('answer_id')
 validate_id = entity_id_validator_factory('answer_id')
 
 # text
@@ -103,7 +103,7 @@ def parse_text(data):
     return text
 
 
-def put_text_into(text, data, defaults):
+def put_text(text, data, defaults):
     """
     Serializes the given text into the given data.
     

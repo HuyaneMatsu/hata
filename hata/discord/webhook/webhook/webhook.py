@@ -9,15 +9,15 @@ from ...http import urls as module_urls
 from ...http.urls import WEBHOOK_URL_PATTERN
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ClientUserBase, UserBase, ZEROUSER
-from ...user.user.fields import parse_id, put_id_into, put_webhook_name_into, validate_id, validate_webhook_name
+from ...user.user.fields import parse_id, put_id, put_webhook_name, validate_id, validate_webhook_name
 
 from ..webhook_source_channel import WebhookSourceChannel
 from ..webhook_source_guild import WebhookSourceGuild
 
 from .fields import (
     parse_application_id, parse_channel_id, parse_source_channel, parse_source_guild, parse_token, parse_type,
-    parse_user, put_application_id_into, put_channel_id_into, put_source_channel_into, put_source_guild_into,
-    put_token_into, put_type_into, put_user_into, validate_application_id, validate_channel_id,
+    parse_user, put_application_id, put_channel_id, put_source_channel, put_source_guild,
+    put_token, put_type, put_user, validate_application_id, validate_channel_id,
     validate_source_channel, validate_source_guild, validate_token, validate_type, validate_user
 )
 from .preinstanced import WebhookType
@@ -216,17 +216,17 @@ class Webhook(WebhookBase):
         data = {}
         
         type(self).avatar.put_into(self.avatar, data, defaults, as_data = not include_internals)
-        put_channel_id_into(self.channel_id, data, defaults)
-        put_webhook_name_into(self.name, data, defaults)
+        put_channel_id(self.channel_id, data, defaults)
+        put_webhook_name(self.name, data, defaults)
         
         if include_internals:
-            put_application_id_into(self.application_id, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_source_channel_into(self.source_channel, data, defaults)
-            put_source_guild_into(self.source_guild, data, defaults)
-            put_token_into(self.token, data, defaults)
-            put_type_into(self.type, data, defaults)
-            put_user_into(self.user, data, defaults)
+            put_application_id(self.application_id, data, defaults)
+            put_id(self.id, data, defaults)
+            put_source_channel(self.source_channel, data, defaults)
+            put_source_guild(self.source_guild, data, defaults)
+            put_token(self.token, data, defaults)
+            put_type(self.type, data, defaults)
+            put_user(self.user, data, defaults)
         
         return data
     

@@ -24,9 +24,9 @@ from .constants import DEFAULT_INTERACTION_METADATA, INTERACTION_EVENT_EXPIRE_AF
 from .fields import (
     parse_application_id, parse_application_permissions, parse_authorizer_user_ids, parse_channel, parse_entitlements,
     parse_guild, parse_id, parse_message, parse_token, parse_type, parse_user, parse_user_locale,
-    parse_user_permissions, put_application_id_into, put_application_permissions_into, put_authorizer_user_ids_into,
-    put_channel_into, put_entitlements_into, put_guild_into, put_id_into, put_message_into, put_token_into,
-    put_type_into, put_user_into, put_user_locale_into, put_user_permissions_into, validate_application_id,
+    parse_user_permissions, put_application_id, put_application_permissions, put_authorizer_user_ids,
+    put_channel, put_entitlements, put_guild, put_id, put_message, put_token,
+    put_type, put_user, put_user_locale, put_user_permissions, validate_application_id,
     validate_application_permissions, validate_authorizer_user_ids, validate_channel, validate_entitlements,
     validate_guild, validate_id, validate_interaction, validate_message, validate_token, validate_type, validate_user,
     validate_user_locale, validate_user_permissions
@@ -385,19 +385,19 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_application_id_into(self.application_id, data, defaults)
-        put_application_permissions_into(self.application_permissions, data, defaults)
-        put_authorizer_user_ids_into(self.authorizer_user_ids, data, defaults)
-        put_channel_into(self.channel, data, defaults)
-        put_entitlements_into(self.entitlements, data, defaults)
-        put_guild_into(self.guild, data, defaults)
-        put_id_into(self.id, data, defaults)
-        put_message_into(self.message, data, defaults)
-        put_token_into(self.token, data, defaults)
-        put_type_into(self.type, data, defaults)
-        put_user_into(self.user, data, defaults, guild_id = self.guild_id)
-        put_user_locale_into(self.user_locale, data, defaults)
-        put_user_permissions_into(self.user_permissions, data, defaults)
+        put_application_id(self.application_id, data, defaults)
+        put_application_permissions(self.application_permissions, data, defaults)
+        put_authorizer_user_ids(self.authorizer_user_ids, data, defaults)
+        put_channel(self.channel, data, defaults)
+        put_entitlements(self.entitlements, data, defaults)
+        put_guild(self.guild, data, defaults)
+        put_id(self.id, data, defaults)
+        put_message(self.message, data, defaults)
+        put_token(self.token, data, defaults)
+        put_type(self.type, data, defaults)
+        put_user(self.user, data, defaults, guild_id = self.guild_id)
+        put_user_locale(self.user_locale, data, defaults)
+        put_user_permissions(self.user_permissions, data, defaults)
         data['data'] = self.interaction.to_data(defaults = defaults, guild_id = self.guild_id)
         return data
     

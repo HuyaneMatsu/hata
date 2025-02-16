@@ -6,8 +6,8 @@ from time import time as time_now
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
-    parse_access_token, parse_expires_after, parse_refresh_token, parse_scopes, put_access_token_into,
-    put_expires_after_into, put_refresh_token_into, put_scopes_into, validate_access_token, validate_created_at,
+    parse_access_token, parse_expires_after, parse_refresh_token, parse_scopes, put_access_token,
+    put_expires_after, put_refresh_token, put_scopes, validate_access_token, validate_created_at,
     validate_expires_after, validate_redirect_url, validate_refresh_token, validate_scopes
 )
 from .preinstanced import Oauth2Scope
@@ -175,10 +175,10 @@ class Oauth2Access(RichAttributeErrorBaseType):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_access_token_into(self.access_token, data, defaults)
-        put_expires_after_into(self.expires_after, data, defaults)
-        put_refresh_token_into(self.refresh_token, data, defaults)
-        put_scopes_into(self.scopes, data, defaults)
+        put_access_token(self.access_token, data, defaults)
+        put_expires_after(self.expires_after, data, defaults)
+        put_refresh_token(self.refresh_token, data, defaults)
+        put_scopes(self.scopes, data, defaults)
         return data
     
     

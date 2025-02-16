@@ -41,13 +41,13 @@ Channel = include('Channel')
 # application_id
 
 parse_application_id = entity_id_parser_factory('application_id')
-put_application_id_into = entity_id_optional_putter_factory('application_id')
+put_application_id = entity_id_optional_putter_factory('application_id')
 validate_application_id = entity_id_validator_factory('application_id', NotImplemented, include = 'Application')
 
 # applied_tag_ids
 
 parse_applied_tag_ids = entity_id_array_parser_factory('applied_tags')
-put_applied_tag_ids_into = optional_entity_id_array_optional_putter_factory('applied_tags')
+put_applied_tag_ids = optional_entity_id_array_optional_putter_factory('applied_tags')
 validate_applied_tag_ids = entity_id_array_validator_factory('applied_tag_ids', ForumTag)
 
 # archived
@@ -74,7 +74,7 @@ def parse_archived(data):
     return archived
 
 
-def put_archived_into(archived, data, defaults):
+def put_archived(archived, data, defaults):
     """
     Puts the `archived`'s data into the given `data` json serializable object.
     
@@ -133,7 +133,7 @@ def parse_archived_at(data):
     return archived_at
 
 
-def put_archived_at_into(archived_at, data, defaults):
+def put_archived_at(archived_at, data, defaults):
     """
     Puts the `archived_at`'s data into the given `data` json serializable object.
     
@@ -197,7 +197,7 @@ def parse_auto_archive_after(data):
     return auto_archive_after
 
 
-def put_auto_archive_after_into(auto_archive_after, data, defaults, *, flatten_thread_metadata = False):
+def put_auto_archive_after(auto_archive_after, data, defaults, *, flatten_thread_metadata = False):
     """
     Puts the `auto_archive_after`'s data into the given `data` json serializable object.
     
@@ -237,13 +237,13 @@ validate_auto_archive_after = int_options_validator_factory('auto_archive_after'
 # available_tags
 
 parse_available_tags = nullable_entity_array_parser_factory('available_tags', ForumTag)
-put_available_tags_into = nullable_entity_array_optional_putter_factory('available_tags', ForumTag)
+put_available_tags = nullable_entity_array_optional_putter_factory('available_tags', ForumTag)
 validate_available_tags = nullable_entity_array_validator_factory('available_tags', ForumTag)
 
 # bitrate
 
 parse_bitrate = int_parser_factory('bitrate', BITRATE_DEFAULT)
-put_bitrate_into = int_putter_factory('bitrate')
+put_bitrate = int_putter_factory('bitrate')
 validate_bitrate = int_conditional_validator_factory(
     'bitrate',
     BITRATE_MIN,
@@ -279,7 +279,7 @@ def parse_created_at(data):
     return created_at
 
 
-def put_created_at_into(created_at, data, defaults):
+def put_created_at(created_at, data, defaults):
     """
     Puts the `created_at`'s data into the given `data` json serializable object.
     
@@ -320,13 +320,13 @@ validate_created_at = nullable_date_time_validator_factory('created_at')
 # default_forum_layout
 
 parse_default_forum_layout = preinstanced_parser_factory('default_forum_layout', ForumLayout, ForumLayout.none)
-put_default_forum_layout_into = preinstanced_optional_putter_factory('default_forum_layout', ForumLayout.none)
+put_default_forum_layout = preinstanced_optional_putter_factory('default_forum_layout', ForumLayout.none)
 validate_default_forum_layout = preinstanced_validator_factory('default_forum_layout', ForumLayout)
 
 # default_sort_order
 
 parse_default_sort_order = preinstanced_parser_factory('default_sort_order', SortOrder, SortOrder.latest_activity)
-put_default_sort_order_into = preinstanced_optional_putter_factory('default_sort_order', SortOrder.latest_activity)
+put_default_sort_order = preinstanced_optional_putter_factory('default_sort_order', SortOrder.latest_activity)
 validate_default_sort_order = preinstanced_validator_factory('default_sort_order', SortOrder)
 
 # default_thread_auto_archive_after
@@ -336,7 +336,7 @@ parse_default_thread_auto_archive_after = int_postprocess_parser_factory(
     AUTO_ARCHIVE_DEFAULT,
     (lambda default_thread_auto_archive_after: default_thread_auto_archive_after * 60),
 )
-put_default_thread_auto_archive_after_into = int_optional_postprocess_putter_factory(
+put_default_thread_auto_archive_after = int_optional_postprocess_putter_factory(
     'default_auto_archive_duration',
     AUTO_ARCHIVE_DEFAULT,
     (lambda default_thread_auto_archive_after: default_thread_auto_archive_after // 60),
@@ -369,7 +369,7 @@ def parse_default_thread_reaction_emoji(data):
     return default_thread_reaction_emoji
 
 
-def put_default_thread_reaction_emoji_into(default_thread_reaction_emoji, data, defaults):
+def put_default_thread_reaction_emoji(default_thread_reaction_emoji, data, defaults):
     """
     Puts the `default_thread_reaction_emoji`'s data into the given `data` json serializable object.
     
@@ -402,7 +402,7 @@ validate_default_thread_reaction_emoji = nullable_entity_validator_factory('defa
 # default_thread_slowmode
 
 parse_default_thread_slowmode = int_parser_factory('default_thread_rate_limit_per_user', SLOWMODE_DEFAULT)
-put_default_thread_slowmode_into = nulled_int_optional_putter_factory(
+put_default_thread_slowmode = nulled_int_optional_putter_factory(
     'default_thread_rate_limit_per_user',
     SLOWMODE_DEFAULT,
 )
@@ -419,7 +419,7 @@ validate_default_thread_slowmode = int_conditional_validator_factory(
 # flags
 
 parse_flags = flag_parser_factory('flags', ChannelFlag)
-put_flags_into = flag_optional_putter_factory('flags', ChannelFlag())
+put_flags = flag_optional_putter_factory('flags', ChannelFlag())
 validate_flags = flag_validator_factory('flags', ChannelFlag)
 
 # invitable
@@ -446,7 +446,7 @@ def parse_invitable(data):
     return invitable
 
 
-def put_invitable_into(invitable, data, defaults, *, flatten_thread_metadata = False):
+def put_invitable(invitable, data, defaults, *, flatten_thread_metadata = False):
     """
     Puts the `invitable`'s data into the given `data` json serializable object.
     
@@ -486,13 +486,13 @@ validate_invitable = bool_validator_factory('invitable', True)
 # name
 
 parse_name = force_string_parser_factory('name')
-put_name_into = force_string_putter_factory('name')
+put_name = force_string_putter_factory('name')
 validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LENGTH_MAX)
 
 # nsfw
 
 parse_nsfw = bool_parser_factory('nsfw', False)
-put_nsfw_into = bool_optional_putter_factory('nsfw', False)
+put_nsfw = bool_optional_putter_factory('nsfw', False)
 validate_nsfw = bool_validator_factory('nsfw', False)
 
 # open
@@ -519,7 +519,7 @@ def parse_open(data):
     return open_
 
 
-def put_open_into(open_, data, defaults, *, flatten_thread_metadata = False):
+def put_open(open_, data, defaults, *, flatten_thread_metadata = False):
     """
     Puts the `open`'s data into the given `data` json serializable object.
     
@@ -559,13 +559,13 @@ validate_open = bool_validator_factory('open', True)
 # owner_id
 
 parse_owner_id = entity_id_parser_factory('owner_id')
-put_owner_id_into = entity_id_optional_putter_factory('owner_id')
+put_owner_id = entity_id_optional_putter_factory('owner_id')
 validate_owner_id = entity_id_validator_factory('owner_id', ClientUserBase)
 
 # parent_id
 
 parse_parent_id = entity_id_parser_factory('parent_id')
-put_parent_id_into = entity_id_optional_putter_factory('parent_id')
+put_parent_id = entity_id_optional_putter_factory('parent_id')
 validate_parent_id = entity_id_validator_factory('parent_id', NotImplemented, include = 'Channel')
 
 # permission_overwrites
@@ -596,7 +596,7 @@ def parse_permission_overwrites(data):
     return permission_overwrites
 
 
-def put_permission_overwrites_into(permission_overwrites, data, defaults):
+def put_permission_overwrites(permission_overwrites, data, defaults):
     """
     Puts the `permission_overwrites`'s data into the given `data` json serializable object.
     
@@ -667,7 +667,7 @@ def validate_permission_overwrites(permission_overwrites):
 # position
 
 parse_position = int_parser_factory('position', 0)
-put_position_into = int_putter_factory('position')
+put_position = int_putter_factory('position')
 validate_position = int_conditional_validator_factory(
     'position',
     0,
@@ -678,13 +678,13 @@ validate_position = int_conditional_validator_factory(
 # region
 
 parse_region = preinstanced_parser_factory('rtc_region', VoiceRegion, VoiceRegion.unknown)
-put_region_into = preinstanced_optional_putter_factory('rtc_region', VoiceRegion.unknown)
+put_region = preinstanced_optional_putter_factory('rtc_region', VoiceRegion.unknown)
 validate_region = preinstanced_validator_factory('region', VoiceRegion)
 
 # slowmode
 
 parse_slowmode = int_parser_factory('rate_limit_per_user', SLOWMODE_DEFAULT)
-put_slowmode_into = nulled_int_optional_putter_factory(
+put_slowmode = nulled_int_optional_putter_factory(
     'rate_limit_per_user',
     SLOWMODE_DEFAULT,
 )
@@ -701,19 +701,19 @@ validate_slowmode = int_conditional_validator_factory(
 # status
 
 parse_status = nullable_string_parser_factory('status')
-put_status_into = url_optional_putter_factory('status')
+put_status = url_optional_putter_factory('status')
 validate_status = nullable_string_validator_factory('status', STATUS_LENGTH_MIN, STATUS_LENGTH_MAX)
 
 # topic
 
 parse_topic = nullable_string_parser_factory('topic')
-put_topic_into = nullable_string_putter_factory('topic')
+put_topic = nullable_string_putter_factory('topic')
 validate_topic = nullable_string_validator_factory('topic', TOPIC_LENGTH_MIN, TOPIC_LENGTH_MAX)
 
 # user_limit
 
 parse_user_limit = int_parser_factory('user_limit', USER_LIMIT_DEFAULT)
-put_user_limit_into = int_putter_factory('user_limit')
+put_user_limit = int_putter_factory('user_limit')
 validate_user_limit = int_conditional_validator_factory(
     'user_limit',
     USER_LIMIT_MIN,
@@ -752,7 +752,7 @@ def parse_users(data):
     return users
 
 
-def put_users_into(users, data, defaults):
+def put_users(users, data, defaults):
     """
     Puts the `users`'s data into the given `data` json serializable object.
     
@@ -827,7 +827,7 @@ VIDEO_QUALITY_MODE_AUTO = VideoQualityMode.auto
 parse_video_quality_mode = preinstanced_parser_factory('video_quality_mode', VideoQualityMode, VideoQualityMode.auto)
 
 
-def put_video_quality_mode_into(video_quality_mode, data, defaults):
+def put_video_quality_mode(video_quality_mode, data, defaults):
     """
     Puts the `video_quality_mode`'s data into the given `data` json serializable object.
     

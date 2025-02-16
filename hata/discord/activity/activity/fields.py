@@ -9,5 +9,5 @@ from .preinstanced import ActivityType
 # type
 
 parse_type = preinstanced_parser_factory('type', ActivityType, ActivityType.playing)
-put_type_into = preinstanced_putter_factory('type')
+put_type = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('type', ActivityType)

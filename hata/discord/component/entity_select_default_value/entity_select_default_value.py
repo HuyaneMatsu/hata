@@ -2,7 +2,7 @@ __all__ = ('EntitySelectDefaultValue',)
 
 from scarletio import RichAttributeErrorBaseType
 
-from .fields import parse_id, parse_type, put_id_into, put_type_into, validate_id, validate_type
+from .fields import parse_id, parse_type, put_id, put_type, validate_id, validate_type
 
 
 class EntitySelectDefaultValue(RichAttributeErrorBaseType):
@@ -107,8 +107,8 @@ class EntitySelectDefaultValue(RichAttributeErrorBaseType):
         """
         data = {}
         
-        put_id_into(self.id, data, defaults)
-        put_type_into(self.type, data, defaults)
+        put_id(self.id, data, defaults)
+        put_type(self.type, data, defaults)
         
         return data
     

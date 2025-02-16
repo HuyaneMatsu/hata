@@ -5,7 +5,7 @@ from ...http import urls as module_urls
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
-    parse_description, parse_id, parse_name, put_description_into, put_id_into, put_name_into,
+    parse_description, parse_id, parse_name, put_description, put_id, put_name,
     validate_description, validate_id, validate_name
 )
 
@@ -242,12 +242,12 @@ class MessageApplication(DiscordEntity):
         data = {}
         
         type(self).cover.put_into(self.cover, data, defaults, as_data = not include_internals)
-        put_description_into(self.description, data, defaults)
+        put_description(self.description, data, defaults)
         type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
-        put_name_into(self.name, data, defaults)
+        put_name(self.name, data, defaults)
         
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         
         return data
     

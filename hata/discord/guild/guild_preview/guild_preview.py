@@ -6,8 +6,8 @@ from ...utils import DATETIME_FORMAT_CODE
 
 from .fields import (
     parse_approximate_online_count, parse_approximate_user_count, parse_description, parse_emojis, parse_features,
-    parse_id, parse_name, parse_stickers, put_approximate_online_count_into, put_approximate_user_count_into,
-    put_description_into, put_emojis_into, put_features_into, put_id_into, put_name_into, put_stickers_into,
+    parse_id, parse_name, parse_stickers, put_approximate_online_count, put_approximate_user_count,
+    put_description, put_emojis, put_features, put_id, put_name, put_stickers,
     validate_approximate_online_count, validate_approximate_user_count, validate_description, validate_emojis,
     validate_features, validate_id, validate_name, validate_stickers
 )
@@ -251,17 +251,17 @@ class GuildPreview(DiscordEntity):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_approximate_online_count_into(self.approximate_online_count, data, defaults)
-        put_approximate_user_count_into(self.approximate_user_count, data, defaults)
-        put_description_into(self.description, data, defaults)
+        put_approximate_online_count(self.approximate_online_count, data, defaults)
+        put_approximate_user_count(self.approximate_user_count, data, defaults)
+        put_description(self.description, data, defaults)
         type(self).discovery_splash.put_into(self.discovery_splash, data, defaults)
-        put_emojis_into(self.emojis, data, defaults)
-        put_features_into(self.features, data, defaults)
+        put_emojis(self.emojis, data, defaults)
+        put_features(self.features, data, defaults)
         type(self).icon.put_into(self.icon, data, defaults)
-        put_id_into(self.id, data, defaults)
+        put_id(self.id, data, defaults)
         type(self).invite_splash.put_into(self.invite_splash, data, defaults)
-        put_stickers_into(self.stickers, data, defaults)
-        put_name_into(self.name, data, defaults)
+        put_stickers(self.stickers, data, defaults)
+        put_name(self.name, data, defaults)
         return data
     
     

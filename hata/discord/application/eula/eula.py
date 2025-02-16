@@ -5,7 +5,7 @@ from ...core import EULAS
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
-    parse_content, parse_id, parse_name, put_content_into, put_id_into, put_name_into, validate_content, validate_id,
+    parse_content, parse_id, parse_name, put_content, put_id, put_name, validate_content, validate_id,
     validate_name
 )
 
@@ -118,10 +118,10 @@ class EULA(DiscordEntity, immortal = True):
         data = {}
         
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         
-        put_content_into(self.content, data, defaults)
-        put_name_into(self.name, data, defaults)
+        put_content(self.content, data, defaults)
+        put_name(self.name, data, defaults)
         
         return data
     

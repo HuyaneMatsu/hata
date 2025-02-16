@@ -3,7 +3,7 @@ __all__ = ('ComponentMetadataChannelSelect', )
 from scarletio import copy_docs
 
 from .entity_select_base import ComponentMetadataEntitySelectBase
-from .fields import parse_channel_types, put_channel_types_into, validate_channel_types
+from .fields import parse_channel_types, put_channel_types, validate_channel_types
 
 
 class ComponentMetadataChannelSelect(ComponentMetadataEntitySelectBase):
@@ -182,7 +182,7 @@ class ComponentMetadataChannelSelect(ComponentMetadataEntitySelectBase):
     def to_data(self, *, defaults = False):
         data = ComponentMetadataEntitySelectBase.to_data(self)
         
-        put_channel_types_into(self.channel_types, data, defaults)
+        put_channel_types(self.channel_types, data, defaults)
         
         return data
     

@@ -5,8 +5,8 @@ from scarletio import copy_docs
 from ...bases import Preinstance as P, PreinstancedBase
 
 from .fields import (
-    parse_name, parse_name_localizations, parse_primary, parse_value, put_name_into, put_name_localizations_into,
-    put_primary_into, put_value_into
+    parse_name, parse_name_localizations, parse_primary, parse_value, put_name, put_name_localizations,
+    put_primary, put_value
 )
 
 
@@ -197,11 +197,11 @@ class DiscoveryCategory(PreinstancedBase, value_type = int):
         data : `dict<str, object>`
         """
         data = {}
-        put_primary_into(self.primary, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_name_localizations_into(self.name_localizations, data, defaults)
+        put_primary(self.primary, data, defaults)
+        put_name(self.name, data, defaults)
+        put_name_localizations(self.name_localizations, data, defaults)
         if include_internals:
-            put_value_into(self.value, data, defaults)
+            put_value(self.value, data, defaults)
         
         return data
     

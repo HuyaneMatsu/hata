@@ -29,35 +29,35 @@ from .preinstanced import PrivacyLevel, ScheduledEventEntityType, ScheduledEvent
 # channel_id
 
 parse_channel_id = entity_id_parser_factory('channel_id')
-put_channel_id_into = entity_id_optional_putter_factory('channel_id')
+put_channel_id = entity_id_optional_putter_factory('channel_id')
 validate_channel_id = entity_id_validator_factory('channel_id', Channel)
 
 
 # creator
 
 parse_creator = default_entity_parser_factory('creator', User, default = ZEROUSER)
-put_creator_into = default_entity_putter_factory('creator', ClientUserBase, ZEROUSER, force_include_internals = True)
+put_creator = default_entity_putter_factory('creator', ClientUserBase, ZEROUSER, force_include_internals = True)
 validate_creator = default_entity_validator_factory('creator', ClientUserBase, default = ZEROUSER)
 
 
 # description
 
 parse_description = nullable_string_parser_factory('description')
-put_description_into = nullable_string_optional_putter_factory('description')
+put_description = nullable_string_optional_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX)
 
 
 # end
 
 parse_end = nullable_date_time_parser_factory('scheduled_end_time')
-put_end_into = nullable_date_time_optional_putter_factory('scheduled_end_time')
+put_end = nullable_date_time_optional_putter_factory('scheduled_end_time')
 validate_end = nullable_date_time_validator_factory('end')
 
 
 # entity_id
 
 parse_entity_id = entity_id_parser_factory('entity_id')
-put_entity_id_into = entity_id_optional_putter_factory('entity_id')
+put_entity_id = entity_id_optional_putter_factory('entity_id')
 validate_entity_id = entity_id_validator_factory('entity_id')
 
 
@@ -90,7 +90,7 @@ def parse_entity_metadata(data, entity_type):
     return entity_metadata
 
 
-def put_entity_metadata_into(entity_metadata, data, defaults):
+def put_entity_metadata(entity_metadata, data, defaults):
     """
     Puts the given scheduled event entity's metadata into the given `data` json serializable object.
     
@@ -116,35 +116,35 @@ def put_entity_metadata_into(entity_metadata, data, defaults):
 # entity_type
 
 parse_entity_type = preinstanced_parser_factory('entity_type', ScheduledEventEntityType, ScheduledEventEntityType.none)
-put_entity_type_into = preinstanced_putter_factory('entity_type')
+put_entity_type = preinstanced_putter_factory('entity_type')
 validate_entity_type = preinstanced_validator_factory('entity_type', ScheduledEventEntityType)
 
 
 # guild_id
 
 parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id_into = entity_id_optional_putter_factory('guild_id')
+put_guild_id = entity_id_optional_putter_factory('guild_id')
 validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('scheduled_event_id')
 
 
 # name
 
 parse_name = force_string_parser_factory('name')
-put_name_into = force_string_putter_factory('name')
+put_name = force_string_putter_factory('name')
 validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LENGTH_MAX)
 
 
 # privacy_level
 
 parse_privacy_level = preinstanced_parser_factory('privacy_level', PrivacyLevel, PrivacyLevel.guild_only)
-put_privacy_level_into = preinstanced_putter_factory('privacy_level')
+put_privacy_level = preinstanced_putter_factory('privacy_level')
 validate_privacy_level = preinstanced_validator_factory('privacy_level', PrivacyLevel)
 
 
@@ -153,7 +153,7 @@ validate_privacy_level = preinstanced_validator_factory('privacy_level', Privacy
 parse_schedule = nullable_entity_parser_factory('recurrence_rule', Schedule)
 
 
-def put_schedule_into(schedule, data, defaults, *, start = None):
+def put_schedule(schedule, data, defaults, *, start = None):
     """
     Serialises the given schedule.
     
@@ -189,28 +189,28 @@ validate_schedule = nullable_entity_validator_factory('schedule', Schedule)
 # start
 
 parse_start = nullable_date_time_parser_factory('scheduled_start_time')
-put_start_into = nullable_date_time_optional_putter_factory('scheduled_start_time')
+put_start = nullable_date_time_optional_putter_factory('scheduled_start_time')
 validate_start = nullable_date_time_validator_factory('start')
 
 
 # sku_ids
 
 parse_sku_ids = entity_id_array_parser_factory('sku_ids')
-put_sku_ids_into = optional_entity_id_array_optional_putter_factory('sku_ids')
+put_sku_ids = optional_entity_id_array_optional_putter_factory('sku_ids')
 validate_sku_ids = entity_id_array_validator_factory('sku_ids', NotImplemented, include = 'SKU')
 
 
 # status
 
 parse_status = preinstanced_parser_factory('status', ScheduledEventStatus, ScheduledEventStatus.none)
-put_status_into = preinstanced_optional_putter_factory('status', ScheduledEventStatus.none)
+put_status = preinstanced_optional_putter_factory('status', ScheduledEventStatus.none)
 validate_status = preinstanced_validator_factory('status', ScheduledEventStatus)
 
 
 # user_count
 
 parse_user_count = int_parser_factory('user_count', 0)
-put_user_count_into = int_putter_factory('user_count')
+put_user_count = int_putter_factory('user_count')
 validate_user_count = int_conditional_validator_factory(
     'user_count',
     0,
@@ -319,7 +319,7 @@ def validate_target_stage(stage):
 
 # target
 
-def put_target_into(target, data, defaults):
+def put_target(target, data, defaults):
     """
     Puts the given scheduled event target into the given `data` json serializable object.
     
@@ -339,7 +339,7 @@ def put_target_into(target, data, defaults):
     data : `dict<str, object>`
     """
     entity_type, entity_metadata, channel_id = target
-    put_entity_type_into(entity_type, data, defaults)
-    put_entity_metadata_into(entity_metadata, data, defaults)
-    put_channel_id_into(channel_id, data, defaults)
+    put_entity_type(entity_type, data, defaults)
+    put_entity_metadata(entity_metadata, data, defaults)
+    put_channel_id(channel_id, data, defaults)
     return data

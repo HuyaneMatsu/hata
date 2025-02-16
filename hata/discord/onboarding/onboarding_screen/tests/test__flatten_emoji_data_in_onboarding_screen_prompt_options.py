@@ -97,16 +97,18 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__flatten_emoji_data_in_onboarding_screen_prompt_options(input_value):
+def test__flatten_emoji_data_in_onboarding_screen_prompt_options(prompt_data):
     """
     tests whether ``flatten_emoji_data_in_onboarding_screen_prompt_options`` works as intended.
     
-    input_value : `dict<str, object>`
-        Onboarding prompt data.
+    Parameters
+    ----------
+    prompt_data : `dict<str, object>`
+        Onboarding prompt data..
     
     Returns
     -------
     output : `dict<str, object>`
     """
-    input_value = deep_copy(input_value)
-    return flatten_emoji_data_in_onboarding_screen_prompt_options(input_value)
+    prompt_data = deep_copy(prompt_data)
+    return flatten_emoji_data_in_onboarding_screen_prompt_options(prompt_data)

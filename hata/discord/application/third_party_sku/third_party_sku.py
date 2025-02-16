@@ -3,7 +3,7 @@ __all__ = ('ThirdPartySKU',)
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
-    parse_distributor, parse_id, parse_sku, put_distributor_into, put_id_into, put_sku_into, validate_distributor,
+    parse_distributor, parse_id, parse_sku, put_distributor, put_id, put_sku, validate_distributor,
     validate_id, validate_sku
 )
 
@@ -101,9 +101,9 @@ class ThirdPartySKU(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_distributor_into(self.distributor, data, defaults)
-        put_id_into(self.id, data, defaults)
-        put_sku_into(self.sku, data, defaults)
+        put_distributor(self.distributor, data, defaults)
+        put_id(self.id, data, defaults)
+        put_sku(self.sku, data, defaults)
         return data
     
     

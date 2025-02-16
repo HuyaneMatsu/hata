@@ -13,10 +13,10 @@ from ..helpers import with_translation
 from .fields import (
     parse_application_id, parse_description, parse_description_localizations, parse_guild_id, parse_handler_type,
     parse_id, parse_integration_context_types, parse_integration_types, parse_name, parse_name_localizations,
-    parse_nsfw, parse_options, parse_required_permissions, parse_target_type, parse_version, put_application_id_into,
-    put_description_into, put_description_localizations_into, put_guild_id_into, put_handler_type_into, put_id_into,
-    put_integration_context_types_into, put_integration_types_into, put_name_into, put_name_localizations_into,
-    put_nsfw_into, put_options_into, put_required_permissions_into, put_target_type_into, put_version_into,
+    parse_nsfw, parse_options, parse_required_permissions, parse_target_type, parse_version, put_application_id,
+    put_description, put_description_localizations, put_guild_id, put_handler_type, put_id,
+    put_integration_context_types, put_integration_types, put_name, put_name_localizations,
+    put_nsfw, put_options, put_required_permissions, put_target_type, put_version,
     validate_application_id, validate_description, validate_description_localizations, validate_guild_id,
     validate_handler_type, validate_id, validate_integration_context_types, validate_integration_types, validate_name,
     validate_name_localizations, validate_nsfw, validate_options, validate_required_permissions, validate_target_type,
@@ -485,23 +485,23 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         """
         data = {}
         
-        put_description_into(self.description, data, defaults)
-        put_description_localizations_into(self.description_localizations, data, defaults)
-        put_handler_type_into(self.handler_type, data, defaults)
-        put_integration_context_types_into(self.integration_context_types, data, defaults)
-        put_integration_types_into(self.integration_types, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_name_localizations_into(self.name_localizations, data, defaults)
-        put_nsfw_into(self.nsfw, data, defaults)
-        put_options_into(self.options, data, defaults)
-        put_required_permissions_into(self.required_permissions, data, defaults)
-        put_target_type_into(self.target_type, data, defaults)
+        put_description(self.description, data, defaults)
+        put_description_localizations(self.description_localizations, data, defaults)
+        put_handler_type(self.handler_type, data, defaults)
+        put_integration_context_types(self.integration_context_types, data, defaults)
+        put_integration_types(self.integration_types, data, defaults)
+        put_name(self.name, data, defaults)
+        put_name_localizations(self.name_localizations, data, defaults)
+        put_nsfw(self.nsfw, data, defaults)
+        put_options(self.options, data, defaults)
+        put_required_permissions(self.required_permissions, data, defaults)
+        put_target_type(self.target_type, data, defaults)
         
         if include_internals:
-            put_application_id_into(self.application_id, data, defaults)
-            put_guild_id_into(self.guild_id, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_version_into(self.version, data, defaults)
+            put_application_id(self.application_id, data, defaults)
+            put_guild_id(self.guild_id, data, defaults)
+            put_id(self.id, data, defaults)
+            put_version(self.version, data, defaults)
         
         return data
     

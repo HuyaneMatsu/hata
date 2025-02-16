@@ -12,19 +12,19 @@ from .constants import AUTO_MODERATION_ACTION_TIMEOUT_MAX, CUSTOM_MESSAGE_LENGTH
 # channel_id
 
 parse_channel_id = entity_id_parser_factory('channel_id')
-put_channel_id_into = entity_id_optional_putter_factory('channel_id')
+put_channel_id = entity_id_optional_putter_factory('channel_id')
 validate_channel_id = entity_id_validator_factory('channel_id', Channel)
 
 # custom_message
 
 parse_custom_message = nullable_string_parser_factory('custom_message')
-put_custom_message_into = nullable_string_putter_factory('custom_message')
+put_custom_message = nullable_string_putter_factory('custom_message')
 validate_custom_message = nullable_string_validator_factory('custom_message', 0, CUSTOM_MESSAGE_LENGTH_MAX)
 
 # duration
 
 parse_duration = int_parser_factory('duration_seconds', 0)
-put_duration_into = int_putter_factory('duration_seconds')
+put_duration = int_putter_factory('duration_seconds')
 
 def validate_duration(duration):
     """

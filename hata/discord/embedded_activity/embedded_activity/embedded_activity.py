@@ -10,8 +10,8 @@ from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
     parse_application_id, parse_guild_id, parse_id, parse_launch_id, parse_location, parse_user_states,
-    put_application_id_into, put_guild_id_into, put_id_into, put_launch_id_into, put_location_into,
-    put_user_states_into, validate_application_id, validate_guild_id, validate_id, validate_launch_id,
+    put_application_id, put_guild_id, put_id, put_launch_id, put_location,
+    put_user_states, validate_application_id, validate_guild_id, validate_id, validate_launch_id,
     validate_location, validate_user_states
 )
 from .helpers import _add_embedded_activity_to_guild_cache, _remove_embedded_activity_from_guild_cache
@@ -325,14 +325,14 @@ class EmbeddedActivity(DiscordEntity):
         data : `dict<str, object>`
         """
         data = {}
-        put_application_id_into(self.application_id, data, defaults)
-        put_location_into(self.location, data, defaults)
+        put_application_id(self.application_id, data, defaults)
+        put_location(self.location, data, defaults)
         
         if include_internals:
-            put_guild_id_into(self.guild_id, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_launch_id_into(self.launch_id, data, defaults)
-            put_user_states_into(self.user_states, data, defaults)
+            put_guild_id(self.guild_id, data, defaults)
+            put_id(self.id, data, defaults)
+            put_launch_id(self.launch_id, data, defaults)
+            put_user_states(self.user_states, data, defaults)
         
         return data
     

@@ -27,55 +27,55 @@ from .preinstanced import AutoModerationEventType, AutoModerationRuleTriggerType
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('rule_id')
 
 # actions
 
 parse_actions = nullable_object_array_parser_factory('actions', AutoModerationAction)
-put_actions_into = nullable_object_array_optional_putter_factory('actions')
+put_actions = nullable_object_array_optional_putter_factory('actions')
 validate_actions = nullable_object_array_validator_factory('actions', AutoModerationAction)
 
 # creator_id
 
 parse_creator_id = entity_id_parser_factory('creator_id')
-put_creator_id_into = entity_id_optional_putter_factory('creator_id')
+put_creator_id = entity_id_optional_putter_factory('creator_id')
 validate_creator_id = entity_id_validator_factory('creator_id', ClientUserBase)
 
 # enabled
 
 parse_enabled = bool_parser_factory('enabled', True)
-put_enabled_into = bool_optional_putter_factory('enabled', True)
+put_enabled = bool_optional_putter_factory('enabled', True)
 validate_enabled = bool_validator_factory('enabled', True)
 
 # event_type
 
 parse_event_type = preinstanced_parser_factory('event_type', AutoModerationEventType, AutoModerationEventType.none)
-put_event_type_into = preinstanced_putter_factory('event_type')
+put_event_type = preinstanced_putter_factory('event_type')
 validate_event_type = preinstanced_validator_factory('event_type', AutoModerationEventType)
 
 # excluded_channel_ids
 
 parse_excluded_channel_ids = entity_id_array_parser_factory('exempt_channels')
-put_excluded_channel_ids_into = optional_entity_id_array_optional_putter_factory('exempt_channels')
+put_excluded_channel_ids = optional_entity_id_array_optional_putter_factory('exempt_channels')
 validate_excluded_channel_ids = entity_id_array_validator_factory('excluded_channel_ids', Channel)
 
 # excluded_role_ids
 
 parse_excluded_role_ids = entity_id_array_parser_factory('exempt_roles')
-put_excluded_role_ids_into = optional_entity_id_array_optional_putter_factory('exempt_roles')
+put_excluded_role_ids = optional_entity_id_array_optional_putter_factory('exempt_roles')
 validate_excluded_role_ids = entity_id_array_validator_factory('excluded_role_ids', Role)
 
 # guild_id
 
 parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id_into = entity_id_optional_putter_factory('guild_id')
+put_guild_id = entity_id_optional_putter_factory('guild_id')
 validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 # name
 
 parse_name = force_string_parser_factory('name')
-put_name_into = force_string_putter_factory('name')
+put_name = force_string_putter_factory('name')
 validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LENGTH_MAX)
 
 # trigger_type
@@ -83,7 +83,7 @@ validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LEN
 parse_trigger_type = preinstanced_parser_factory(
     'trigger_type', AutoModerationRuleTriggerType, AutoModerationRuleTriggerType.none
 )
-put_trigger_type_into = preinstanced_putter_factory('trigger_type')
+put_trigger_type = preinstanced_putter_factory('trigger_type')
 validate_trigger_type = preinstanced_validator_factory('trigger_type', AutoModerationRuleTriggerType)
 
 # trigger_metadata
@@ -115,7 +115,7 @@ def parse_trigger_metadata(data, rule_trigger_type):
     return trigger_metadata
 
 
-def put_trigger_metadata_into(trigger_metadata, data, defaults):
+def put_trigger_metadata(trigger_metadata, data, defaults):
     """
     Puts the given rule trigger metadata's data into the given `data` json serializable object.
     

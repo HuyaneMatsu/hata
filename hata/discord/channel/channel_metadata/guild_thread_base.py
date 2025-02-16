@@ -9,8 +9,8 @@ from ...utils import id_to_datetime
 from .constants import AUTO_ARCHIVE_DEFAULT, SLOWMODE_DEFAULT
 from .fields import (
     parse_archived, parse_archived_at, parse_auto_archive_after, parse_created_at, parse_open, parse_owner_id,
-    parse_slowmode, put_archived_at_into, put_archived_into, put_auto_archive_after_into, put_created_at_into,
-    put_open_into, put_owner_id_into, put_slowmode_into, validate_archived, validate_archived_at,
+    parse_slowmode, put_archived_at, put_archived, put_auto_archive_after, put_created_at,
+    put_open, put_owner_id, put_slowmode, validate_archived, validate_archived_at,
     validate_auto_archive_after, validate_created_at, validate_open, validate_owner_id, validate_slowmode
 )
 
@@ -573,29 +573,29 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         
         # archived
         if include_internals:
-            put_archived_into(self.archived, data, defaults)
+            put_archived(self.archived, data, defaults)
         
         # archived_at
         if include_internals:
-            put_archived_at_into(self.archived_at, data, defaults)
+            put_archived_at(self.archived_at, data, defaults)
         
         # auto_archive_after
-        put_auto_archive_after_into(
+        put_auto_archive_after(
             self.auto_archive_after, data, defaults, flatten_thread_metadata = not include_internals
         )
         
         # created_at
         if include_internals:
-            put_created_at_into(self._created_at, data, defaults)
+            put_created_at(self._created_at, data, defaults)
         
         # open
-        put_open_into(self.open, data, defaults, flatten_thread_metadata = not include_internals)
+        put_open(self.open, data, defaults, flatten_thread_metadata = not include_internals)
         
         # owner_id
         if include_internals:
-            put_owner_id_into(self.owner_id, data, defaults)
+            put_owner_id(self.owner_id, data, defaults)
         
         # slowmode
-        put_slowmode_into(self.slowmode, data, defaults)
+        put_slowmode(self.slowmode, data, defaults)
         
         return data

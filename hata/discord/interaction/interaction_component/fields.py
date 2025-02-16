@@ -18,7 +18,7 @@ from ...field_validators import (
 # components
 
 parse_components = nullable_object_array_parser_factory('components', NotImplemented, include = 'InteractionComponent')
-put_components_into = nullable_object_array_optional_putter_factory('components')
+put_components = nullable_object_array_optional_putter_factory('components')
 validate_components = nullable_object_array_validator_factory(
     'components', NotImplemented, include = 'InteractionComponent'
 )
@@ -26,17 +26,17 @@ validate_components = nullable_object_array_validator_factory(
 # custom_id
 
 parse_custom_id = nullable_string_parser_factory('custom_id')
-put_custom_id_into = url_optional_putter_factory('custom_id')
+put_custom_id = url_optional_putter_factory('custom_id')
 validate_custom_id = nullable_string_validator_factory('custom_id', 0, CUSTOM_ID_LENGTH_MAX)
 
 # type
 
 parse_type = preinstanced_parser_factory('type', ComponentType, ComponentType.none)
-put_type_into = preinstanced_putter_factory('type')
+put_type = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('type', ComponentType)
 
 # value
 
 parse_value = field_parser_factory('value')
-put_value_into = nullable_field_optional_putter_factory('value')
+put_value = nullable_field_optional_putter_factory('value')
 validate_value = field_validator_factory('value')

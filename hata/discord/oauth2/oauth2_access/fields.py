@@ -12,7 +12,7 @@ from .preinstanced import Oauth2Scope
 # access_token
 
 parse_access_token = force_string_parser_factory('access_token')
-put_access_token_into = force_string_putter_factory('access_token')
+put_access_token = force_string_putter_factory('access_token')
 validate_access_token = force_string_validator_factory('access_token', 0, 1024)
 
 # created_at
@@ -22,7 +22,7 @@ validate_created_at = force_date_time_validator_factory('created_at')
 # expires_after
 
 parse_expires_after = int_parser_factory('expires_in', 0)
-put_expires_after_into = int_putter_factory('expires_in')
+put_expires_after = int_putter_factory('expires_in')
 validate_expires_after = int_conditional_validator_factory(
     'expires_after',
     0,
@@ -33,7 +33,7 @@ validate_expires_after = int_conditional_validator_factory(
 # refresh_token
 
 parse_refresh_token = force_string_parser_factory('refresh_token')
-put_refresh_token_into = force_string_putter_factory('refresh_token')
+put_refresh_token = force_string_putter_factory('refresh_token')
 validate_refresh_token = force_string_validator_factory('refresh_token', 0, 1024)
 
 # redirect_url
@@ -68,7 +68,7 @@ def parse_scopes(data):
     return tuple(Oauth2Scope(scope) for scope in split_scopes)
 
 
-def put_scopes_into(scopes, data, defaults):
+def put_scopes(scopes, data, defaults):
     """
     Puts the given oauth2 scopes into a json serializable dictionary.
     

@@ -8,8 +8,8 @@ from scarletio import RichAttributeErrorBaseType, export
 from ...application_command import ApplicationCommandOptionType
 
 from .fields import (
-    parse_focused, parse_name, parse_options, parse_type, parse_value, put_focused_into, put_name_into,
-    put_options_into, put_type_into, put_value_into, validate_focused, validate_name, validate_options, validate_type,
+    parse_focused, parse_name, parse_options, parse_type, parse_value, put_focused, put_name,
+    put_options, put_type, put_value, validate_focused, validate_name, validate_options, validate_type,
     validate_value
 )
 
@@ -300,11 +300,11 @@ class InteractionOption(RichAttributeErrorBaseType):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_focused_into(self.focused, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_options_into(self.options, data, defaults)
-        put_type_into(self.type, data, defaults)
-        put_value_into(self.value, data, defaults)
+        put_focused(self.focused, data, defaults)
+        put_name(self.name, data, defaults)
+        put_options(self.options, data, defaults)
+        put_type(self.type, data, defaults)
+        put_value(self.value, data, defaults)
         return data
     
     

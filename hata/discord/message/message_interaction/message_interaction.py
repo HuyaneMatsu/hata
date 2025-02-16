@@ -11,9 +11,9 @@ from ...user import User, ZEROUSER, create_partial_user_from_id
 from .fields import (
     parse_authorizer_user_ids, parse_id, parse_interacted_message_id, parse_name_and_sub_command_name_stack,
     parse_response_message_id, parse_target_message_id, parse_target_user, parse_triggering_interaction, parse_type,
-    parse_user, put_authorizer_user_ids_into, put_id_into, put_interacted_message_id_into,
-    put_name_and_sub_command_name_stack_into, put_response_message_id_into, put_target_message_id_into,
-    put_target_user_into, put_triggering_interaction_into, put_type_into, put_user_into, validate_authorizer_user_ids,
+    parse_user, put_authorizer_user_ids, put_id, put_interacted_message_id,
+    put_name_and_sub_command_name_stack, put_response_message_id, put_target_message_id,
+    put_target_user, put_triggering_interaction, put_type, put_user, validate_authorizer_user_ids,
     validate_id, validate_interacted_message_id, validate_name, validate_response_message_id,
     validate_sub_command_name_stack, validate_target_message_id, validate_target_user, validate_triggering_interaction,
     validate_type, validate_user
@@ -398,20 +398,20 @@ class MessageInteraction(DiscordEntity):
         data : `dict` of (`str`, `object`)
         """
         data = {}
-        put_authorizer_user_ids_into(self.authorizer_user_ids, data, defaults)
-        put_interacted_message_id_into(self.interacted_message_id, data, defaults)
-        put_name_and_sub_command_name_stack_into((self.name, self.sub_command_name_stack), data, defaults)
-        put_response_message_id_into(self.response_message_id, data, defaults)
-        put_target_message_id_into(self.target_message_id, data, defaults)
-        put_target_user_into(self.target_user, data, defaults)
-        put_triggering_interaction_into(
+        put_authorizer_user_ids(self.authorizer_user_ids, data, defaults)
+        put_interacted_message_id(self.interacted_message_id, data, defaults)
+        put_name_and_sub_command_name_stack((self.name, self.sub_command_name_stack), data, defaults)
+        put_response_message_id(self.response_message_id, data, defaults)
+        put_target_message_id(self.target_message_id, data, defaults)
+        put_target_user(self.target_user, data, defaults)
+        put_triggering_interaction(
             self.triggering_interaction, data, defaults, include_internals = include_internals
         )
-        put_type_into(self.type, data, defaults)
+        put_type(self.type, data, defaults)
         
         if include_internals:
-            put_user_into(self.user, data, defaults)
-            put_id_into(self.id, data, defaults)
+            put_user(self.user, data, defaults)
+            put_id(self.id, data, defaults)
         
         return data
     

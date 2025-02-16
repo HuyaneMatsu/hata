@@ -9,7 +9,7 @@ from .constants import NAME_LENGTH_MAX, URL_LENGTH_MAX
 # name
 
 parse_name = nullable_string_parser_factory('name')
-put_name_into = nullable_string_putter_factory('name')
+put_name = nullable_string_putter_factory('name')
 
 
 def validate_name(name):
@@ -52,5 +52,5 @@ def validate_name(name):
 # url
 
 parse_url = nullable_string_parser_factory('url')
-put_url_into = url_optional_putter_factory('url')
+put_url = url_optional_putter_factory('url')
 validate_url = url_optional_validator_factory('url', length_max = URL_LENGTH_MAX)

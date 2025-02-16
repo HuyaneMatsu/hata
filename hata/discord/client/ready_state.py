@@ -455,7 +455,7 @@ class ReadyState:
             pass
         else:
             try:
-                shard_user_requester.remove(guild_id)
+                shard_user_requester.guild_ids.remove(guild_id)
             except KeyError:
                 pass
             else:

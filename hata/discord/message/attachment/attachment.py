@@ -7,10 +7,10 @@ from .constants import DURATION_DEFAULT
 from .fields import (
     parse_application, parse_clip_created_at, parse_clip_users, parse_content_type, parse_description, parse_duration,
     parse_flags, parse_height, parse_id, parse_name, parse_proxy_url, parse_size, parse_temporary, parse_title,
-    parse_url, parse_waveform, parse_width, put_application_into, put_clip_created_at_into, put_clip_users_into,
-    put_content_type_into, put_description_into, put_duration_into, put_flags_into, put_height_into, put_id_into,
-    put_name_into, put_proxy_url_into, put_size_into, put_temporary_into, put_title_into, put_url_into,
-    put_waveform_into, put_width_into, validate_application, validate_clip_created_at, validate_clip_users,
+    parse_url, parse_waveform, parse_width, put_application, put_clip_created_at, put_clip_users,
+    put_content_type, put_description, put_duration, put_flags, put_height, put_id,
+    put_name, put_proxy_url, put_size, put_temporary, put_title, put_url,
+    put_waveform, put_width, validate_application, validate_clip_created_at, validate_clip_users,
     validate_content_type, validate_description, validate_duration, validate_flags, validate_height, validate_id,
     validate_name, validate_proxy_url, validate_size, validate_temporary, validate_title, validate_url,
     validate_waveform, validate_width
@@ -565,25 +565,25 @@ class Attachment(DiscordEntity):
         """
         data = {}
         
-        put_application_into(self.application, data, defaults)
-        put_clip_created_at_into(self.clip_created_at, data, defaults)
-        put_clip_users_into(self.clip_users, data, defaults)
-        put_content_type_into(self.content_type, data, defaults)
-        put_description_into(self.description, data, defaults)
-        put_duration_into(self.duration, data, defaults)
-        put_flags_into(self.flags, data, defaults)
-        put_height_into(self.height, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_size_into(self.size, data, defaults)
-        put_temporary_into(self.temporary, data, defaults)
-        put_title_into(self.title, data, defaults)
-        put_url_into(self.url, data, defaults)
-        put_waveform_into(self.waveform, data, defaults)
-        put_width_into(self.width, data, defaults)
+        put_application(self.application, data, defaults)
+        put_clip_created_at(self.clip_created_at, data, defaults)
+        put_clip_users(self.clip_users, data, defaults)
+        put_content_type(self.content_type, data, defaults)
+        put_description(self.description, data, defaults)
+        put_duration(self.duration, data, defaults)
+        put_flags(self.flags, data, defaults)
+        put_height(self.height, data, defaults)
+        put_name(self.name, data, defaults)
+        put_size(self.size, data, defaults)
+        put_temporary(self.temporary, data, defaults)
+        put_title(self.title, data, defaults)
+        put_url(self.url, data, defaults)
+        put_waveform(self.waveform, data, defaults)
+        put_width(self.width, data, defaults)
         
         if include_internals:
-            put_id_into(self.id, data, defaults)
-            put_proxy_url_into(self.proxy_url, data, defaults)
+            put_id(self.id, data, defaults)
+            put_proxy_url(self.proxy_url, data, defaults)
         
         return data
     

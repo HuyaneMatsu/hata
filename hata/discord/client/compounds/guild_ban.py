@@ -5,7 +5,7 @@ from scarletio import Compound
 from ...http import DiscordApiClient
 from ...guild import BanAddMultipleResult, BanEntry
 from ...guild.ban_add_multiple_result.fields import (
-    put_delete_message_duration_into, put_user_ids_into, validate_delete_message_duration, validate_user_ids
+    put_delete_message_duration, put_user_ids, validate_delete_message_duration, validate_user_ids
 )
 from ...user import User
 from ...utils import log_time_converter
@@ -76,7 +76,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         
         # delete_message_duration
         if (delete_message_duration is not ...):
-            put_delete_message_duration_into(validate_delete_message_duration(delete_message_duration), data, False)
+            put_delete_message_duration(validate_delete_message_duration(delete_message_duration), data, False)
         
         await self.api.guild_ban_add(guild_id, user_id, data, reason)
     
@@ -116,10 +116,10 @@ class ClientCompoundGuildBanEndpoints(Compound):
         
         # delete_message_duration
         if (delete_message_duration is not ...):
-            put_delete_message_duration_into(validate_delete_message_duration(delete_message_duration), data, False)
+            put_delete_message_duration(validate_delete_message_duration(delete_message_duration), data, False)
         
         # user_ids
-        put_user_ids_into(validate_user_ids(user_ids), data, False)
+        put_user_ids(validate_user_ids(user_ids), data, False)
         
         data = await self.api.guild_ban_add_multiple(guild_id, data, reason)
         return BanAddMultipleResult.from_data(data)

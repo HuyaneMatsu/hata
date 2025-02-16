@@ -22,7 +22,7 @@ from ...localization import Locale
 from ...localization.utils import LOCALE_DEFAULT
 from ...message import Message
 from ...message.message_interaction.fields import (
-    parse_authorizer_user_ids, put_authorizer_user_ids_into, validate_authorizer_user_ids
+    parse_authorizer_user_ids, put_authorizer_user_ids, validate_authorizer_user_ids
 )
 from ...permission import Permission
 from ...permission.permission import PERMISSION_PRIVATE
@@ -35,13 +35,13 @@ from .preinstanced import InteractionType
 # application_id
 
 parse_application_id = entity_id_parser_factory('application_id')
-put_application_id_into = entity_id_optional_putter_factory('application_id')
+put_application_id = entity_id_optional_putter_factory('application_id')
 validate_application_id = entity_id_validator_factory('application_id', Application)
 
 # application_permissions
 
 parse_application_permissions = flag_parser_factory('app_permissions', Permission)
-put_application_permissions_into = string_flag_putter_factory('app_permissions')
+put_application_permissions = string_flag_putter_factory('app_permissions')
 validate_application_permissions = flag_validator_factory('application_permissions', Permission)
 
 # authorizer_user_ids
@@ -51,7 +51,7 @@ validate_application_permissions = flag_validator_factory('application_permissio
 # It does not matter where we define them.
 #
 # parse_authorizer_user_ids = ...
-# put_authorizer_user_ids_into = ...
+# put_authorizer_user_ids = ...
 # validate_authorizer_user_ids = ...
 
 # channel
@@ -59,7 +59,7 @@ validate_application_permissions = flag_validator_factory('application_permissio
 parse_channel = default_entity_parser_factory(
     'channel', Channel, default_factory = lambda : create_partial_channel_from_id(0, ChannelType.unknown, 0)
 )
-put_channel_into = entity_putter_factory('channel', Channel, force_include_internals = True)
+put_channel = entity_putter_factory('channel', Channel, force_include_internals = True)
 validate_channel = default_entity_validator_factory(
     'channel', Channel, default_factory = lambda : create_partial_channel_from_id(0, ChannelType.unknown, 0)
 )
@@ -67,7 +67,7 @@ validate_channel = default_entity_validator_factory(
 # entitlements
 
 parse_entitlements = nullable_entity_array_parser_factory('entitlements', Entitlement)
-put_entitlements_into = nullable_entity_array_optional_putter_factory(
+put_entitlements = nullable_entity_array_optional_putter_factory(
     'entitlements', Entitlement, force_include_internals = True,
 )
 validate_entitlements = nullable_entity_array_validator_factory('entitlements', Entitlement)
@@ -98,7 +98,7 @@ def parse_guild(data):
     return None
 
 
-def put_guild_into(guild, data, defaults):
+def put_guild(guild, data, defaults):
     """
     Puts the given `guild''s data into the given interaction data.
     
@@ -137,13 +137,13 @@ validate_guild = nullable_entity_validator_factory('guild', Guild)
 # guild_locale
 
 parse_guild_locale = preinstanced_parser_factory('guild_locale', Locale, LOCALE_DEFAULT)
-put_guild_locale_into = preinstanced_putter_factory('guild_locale')
+put_guild_locale = preinstanced_putter_factory('guild_locale')
 validate_guild_locale = preinstanced_validator_factory('guild_locale', Locale)
 
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('id')
 
 # interaction
@@ -192,7 +192,7 @@ def validate_interaction(interaction, interaction_type):
 
 parse_message = nullable_entity_parser_factory('message', Message)
 
-def put_message_into(message, data, defaults):
+def put_message(message, data, defaults):
     """
     Puts the given `message` into the given data.
     
@@ -224,13 +224,13 @@ validate_message = nullable_entity_validator_factory('message', Message)
 # token
 
 parse_token = force_string_parser_factory('token')
-put_token_into = force_string_putter_factory('token')
+put_token = force_string_putter_factory('token')
 validate_token = force_string_validator_factory('token', 0, 1024)
 
 # type
 
 parse_type = preinstanced_parser_factory('type', InteractionType, InteractionType.none)
-put_type_into = preinstanced_putter_factory('type')
+put_type = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('interaction_type', InteractionType)
 
 # user & user_permissions
@@ -269,7 +269,7 @@ def parse_user(data, guild_id = 0):
     return User.from_data(user_data, guild_profile_data, guild_id)
 
 
-def put_user_into(user, data, defaults, *, guild_id = 0):
+def put_user(user, data, defaults, *, guild_id = 0):
     """
     Puts the given `user` into the given data.
     
@@ -307,7 +307,7 @@ validate_user = default_entity_validator_factory('user', ClientUserBase, default
 # user_locale
 
 parse_user_locale = preinstanced_parser_factory('locale', Locale, LOCALE_DEFAULT)
-put_user_locale_into = preinstanced_putter_factory('locale')
+put_user_locale = preinstanced_putter_factory('locale')
 validate_user_locale = preinstanced_validator_factory('user_locale', Locale)
 
 # user_permissions
@@ -338,7 +338,7 @@ def parse_user_permissions(data):
     return Permission(user_permissions)
 
 
-def put_user_permissions_into(user_permissions, data, defaults):
+def put_user_permissions(user_permissions, data, defaults):
     """
     Puts the given `user_permissions` into the given data.
     

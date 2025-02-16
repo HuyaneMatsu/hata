@@ -5,8 +5,8 @@ from scarletio import copy_docs
 from ..activity_field_base import ActivityFieldBase
 
 from .fields import (
-    parse_image_large, parse_image_small, parse_text_large, parse_text_small, put_image_large_into,
-    put_image_small_into, put_text_large_into, put_text_small_into, validate_image_large, validate_image_small,
+    parse_image_large, parse_image_small, parse_text_large, parse_text_small, put_image_large,
+    put_image_small, put_text_large, put_text_small, validate_image_large, validate_image_small,
     validate_text_large, validate_text_small
 )
 
@@ -96,10 +96,10 @@ class ActivityAssets(ActivityFieldBase):
     @copy_docs(ActivityFieldBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_image_large_into(self.image_large, data, defaults)
-        put_image_small_into(self.image_small, data, defaults)
-        put_text_large_into(self.text_large, data, defaults)
-        put_text_small_into(self.text_small, data, defaults)
+        put_image_large(self.image_large, data, defaults)
+        put_image_small(self.image_small, data, defaults)
+        put_text_large(self.text_large, data, defaults)
+        put_text_small(self.text_small, data, defaults)
         return data
     
     

@@ -7,9 +7,9 @@ from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
     parse_friend_sync, parse_id, parse_integrations, parse_metadata_visibility, parse_name, parse_revoked,
-    parse_show_activity, parse_two_way_link, parse_type, parse_verified, parse_visibility, put_friend_sync_into,
-    put_id_into, put_integrations_into, put_metadata_visibility_into, put_name_into, put_revoked_into,
-    put_show_activity_into, put_two_way_link_into, put_type_into, put_verified_into, put_visibility_into,
+    parse_show_activity, parse_two_way_link, parse_type, parse_verified, parse_visibility, put_friend_sync,
+    put_id, put_integrations, put_metadata_visibility, put_name, put_revoked,
+    put_show_activity, put_two_way_link, put_type, put_verified, put_visibility,
     validate_friend_sync, validate_id, validate_integrations, validate_metadata_visibility, validate_name,
     validate_revoked, validate_show_activity, validate_two_way_link, validate_type, validate_verified,
     validate_visibility
@@ -529,18 +529,18 @@ class Connection(DiscordEntity):
         data = {}
         
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         
-        put_friend_sync_into(self.friend_sync, data, defaults)
-        put_integrations_into(self.integrations, data, defaults, include_internals = include_internals)
-        put_metadata_visibility_into(self.metadata_visibility, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_revoked_into(self.revoked, data, defaults)
-        put_show_activity_into(self.show_activity, data, defaults)
-        put_two_way_link_into(self.two_way_link, data, defaults)
-        put_type_into(self.type, data, defaults)
-        put_verified_into(self.verified, data, defaults)
-        put_visibility_into(self.visibility, data, defaults)
+        put_friend_sync(self.friend_sync, data, defaults)
+        put_integrations(self.integrations, data, defaults, include_internals = include_internals)
+        put_metadata_visibility(self.metadata_visibility, data, defaults)
+        put_name(self.name, data, defaults)
+        put_revoked(self.revoked, data, defaults)
+        put_show_activity(self.show_activity, data, defaults)
+        put_two_way_link(self.two_way_link, data, defaults)
+        put_type(self.type, data, defaults)
+        put_verified(self.verified, data, defaults)
+        put_visibility(self.visibility, data, defaults)
         
         return data
     

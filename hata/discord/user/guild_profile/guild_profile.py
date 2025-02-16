@@ -10,8 +10,8 @@ from ...utils import DISCORD_EPOCH_START
 
 from .fields import (
     parse_avatar_decoration, parse_boosts_since, parse_flags, parse_joined_at, parse_nick, parse_pending,
-    parse_role_ids, parse_timed_out_until, put_avatar_decoration_into, put_boosts_since_into, put_flags_into,
-    put_joined_at_into, put_nick_into, put_pending_into, put_role_ids_into, put_timed_out_until_into,
+    parse_role_ids, parse_timed_out_until, put_avatar_decoration, put_boosts_since, put_flags,
+    put_joined_at, put_nick, put_pending, put_role_ids, put_timed_out_until,
     validate_avatar_decoration, validate_boosts_since, validate_flags, validate_joined_at, validate_nick,
     validate_pending, validate_role_ids, validate_timed_out_until
 )
@@ -351,17 +351,17 @@ class GuildProfile(metaclass = Slotted):
         data = {}
         
         type(self).avatar.put_into(self.avatar, data, defaults, as_data = not include_internals)
-        put_avatar_decoration_into(self.avatar_decoration, data, defaults)
+        put_avatar_decoration(self.avatar_decoration, data, defaults)
         type(self).banner.put_into(self.banner, data, defaults, as_data = not include_internals)
-        put_nick_into(self.nick, data, defaults)
-        put_role_ids_into(self.role_ids, data, defaults)
-        put_timed_out_until_into(self.timed_out_until, data, defaults)
+        put_nick(self.nick, data, defaults)
+        put_role_ids(self.role_ids, data, defaults)
+        put_timed_out_until(self.timed_out_until, data, defaults)
         
         if include_internals:
-            put_boosts_since_into(self.boosts_since, data, defaults)
-            put_flags_into(self.flags, data, defaults)
-            put_joined_at_into(self.joined_at, data, defaults)
-            put_pending_into(self.pending, data, defaults)
+            put_boosts_since(self.boosts_since, data, defaults)
+            put_flags(self.flags, data, defaults)
+            put_joined_at(self.joined_at, data, defaults)
+            put_pending(self.pending, data, defaults)
         
         return data
     

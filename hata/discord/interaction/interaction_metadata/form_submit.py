@@ -4,7 +4,7 @@ from scarletio import copy_docs
 
 from .base import InteractionMetadataBase
 from .fields import (
-    parse_custom_id, parse_components, put_custom_id_into, put_components_into, validate_custom_id, validate_components
+    parse_custom_id, parse_components, put_custom_id, put_components, validate_custom_id, validate_components
 )
 
 
@@ -149,8 +149,8 @@ class InteractionMetadataFormSubmit(InteractionMetadataBase):
     @copy_docs(InteractionMetadataBase.to_data)
     def to_data(self, *, defaults = False, guild_id = 0):
         data = {}
-        put_components_into(self.components, data, defaults)
-        put_custom_id_into(self.custom_id, data, defaults)
+        put_components(self.components, data, defaults)
+        put_custom_id(self.custom_id, data, defaults)
         return data
     
     

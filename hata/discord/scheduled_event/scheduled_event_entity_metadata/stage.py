@@ -3,7 +3,7 @@ __all__ = ('ScheduledEventEntityMetadataStage',)
 from scarletio import copy_docs
 
 from .base import ScheduledEventEntityMetadataBase
-from .fields import parse_speaker_ids, put_speaker_ids_into, validate_speaker_ids
+from .fields import parse_speaker_ids, put_speaker_ids, validate_speaker_ids
 
 
 class ScheduledEventEntityMetadataStage(ScheduledEventEntityMetadataBase):
@@ -63,7 +63,7 @@ class ScheduledEventEntityMetadataStage(ScheduledEventEntityMetadataBase):
     @copy_docs(ScheduledEventEntityMetadataBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_speaker_ids_into(self.speaker_ids, data, defaults)
+        put_speaker_ids(self.speaker_ids, data, defaults)
         return data
     
     

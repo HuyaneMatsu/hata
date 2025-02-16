@@ -34,7 +34,7 @@ def parse_attachments(data):
     return resolved_attachments
 
 
-def put_attachments_into(attachments, data, defaults):
+def put_attachments(attachments, data, defaults):
     """
     Puts the given `attachments` into the given `data` json serializable object.
     
@@ -101,7 +101,7 @@ def parse_channels(data, guild_id = 0):
     return resolved_channels
 
 
-def put_channels_into(channels, data, defaults):
+def put_channels(channels, data, defaults):
     """
     Puts the given `channels` into the given `data` json serializable object.
     
@@ -167,7 +167,7 @@ def parse_roles(data, guild_id = 0):
     return resolved_roles
 
 
-def put_roles_into(roles, data, defaults):
+def put_roles(roles, data, defaults):
     """
     Puts the given `roles` into the given `data` json serializable object.
     
@@ -230,7 +230,7 @@ def parse_messages(data):
     return resolved_messages
 
 
-def put_messages_into(messages, data, defaults):
+def put_messages(messages, data, defaults):
     """
     Puts the given `messages` into the given `data` json serializable object.
     
@@ -304,7 +304,7 @@ def parse_users(data, guild_id = 0):
     return resolved_users
 
 
-def put_users_into(users, data, defaults, *, guild_id = 0):
+def put_users(users, data, defaults, *, guild_id = 0):
     """
     Puts the given `users` into the given `data` json serializable object.
     

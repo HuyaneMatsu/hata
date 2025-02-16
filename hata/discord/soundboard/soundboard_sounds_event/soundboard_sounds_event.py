@@ -5,7 +5,7 @@ from scarletio import copy_docs
 from ...bases import EventBase
 from ...core import GUILDS
 
-from .fields import parse_guild_id, parse_sounds, put_guild_id_into, put_sounds_into, validate_guild_id, validate_sounds
+from .fields import parse_guild_id, parse_sounds, put_guild_id, put_sounds, validate_guild_id, validate_sounds
 
 
 class SoundboardSoundsEvent(EventBase):
@@ -109,8 +109,8 @@ class SoundboardSoundsEvent(EventBase):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_guild_id_into(self.guild_id, data, defaults)
-        put_sounds_into(self.sounds, data, defaults)
+        put_guild_id(self.guild_id, data, defaults)
+        put_sounds(self.sounds, data, defaults)
         return data
     
     

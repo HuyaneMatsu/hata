@@ -11,8 +11,8 @@ from ...localization.utils import LOCALE_DEFAULT
 from ...utils import DATETIME_FORMAT_CODE
 
 from .fields import (
-    parse_name, put_avatar_decoration_into, put_banner_color_into, put_bot_into, put_clan_into, put_discriminator_into,
-    put_display_name_into, put_flags_into, put_id_into, put_name_into, validate_name
+    parse_name, put_avatar_decoration, put_banner_color, put_bot, put_clan, put_discriminator,
+    put_display_name, put_flags, put_id, put_name, validate_name
 )
 from .flags import UserFlag
 from .preinstanced import DefaultAvatar, PremiumType, Status
@@ -236,17 +236,17 @@ class UserBase(DiscordEntity, immortal = True):
         
         USER_AVATAR.put_into(self.avatar, data, defaults, as_data = not include_internals)
         USER_BANNER.put_into(self.banner, data, defaults, as_data = not include_internals)
-        put_avatar_decoration_into(self.avatar_decoration, data, defaults)
-        put_banner_color_into(self.banner_color, data, defaults)
-        put_discriminator_into(self.discriminator, data, defaults)
-        put_display_name_into(self.display_name, data, defaults)
-        put_name_into(self.name, data, defaults)
+        put_avatar_decoration(self.avatar_decoration, data, defaults)
+        put_banner_color(self.banner_color, data, defaults)
+        put_discriminator(self.discriminator, data, defaults)
+        put_display_name(self.display_name, data, defaults)
+        put_name(self.name, data, defaults)
         
         if include_internals:
-            put_bot_into(self.bot, data, defaults)
-            put_clan_into(self.clan, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_flags_into(self.flags, data, defaults)
+            put_bot(self.bot, data, defaults)
+            put_clan(self.clan, data, defaults)
+            put_id(self.id, data, defaults)
+            put_flags(self.flags, data, defaults)
         
         return data
     

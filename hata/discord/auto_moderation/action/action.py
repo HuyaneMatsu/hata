@@ -4,7 +4,7 @@ from scarletio import RichAttributeErrorBaseType, copy_docs
 
 from ..action_metadata import AutoModerationActionMetadataBase
 
-from .fields import parse_metadata, parse_type, put_metadata_into, put_type_into, validate_type
+from .fields import parse_metadata, parse_type, put_metadata, put_type, validate_type
 from .helpers import guess_action_type_from_keyword_parameters
 from .preinstanced import AutoModerationActionType
 
@@ -100,8 +100,8 @@ class AutoModerationAction(RichAttributeErrorBaseType):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_type_into(self.type, data, defaults)
-        put_metadata_into(self.metadata, data, defaults)
+        put_type(self.type, data, defaults)
+        put_metadata(self.metadata, data, defaults)
         return data
     
     

@@ -5,7 +5,7 @@ from scarletio import include
 from ...field_validators import default_entity_validator_factory, entity_validator_factory
 from ...user import ClientUserBase, User, ZEROUSER, create_partial_user_from_id
 
-from ..reaction.fields import parse_emoji, parse_type, put_emoji_into, put_type_into, validate_emoji, validate_type
+from ..reaction.fields import parse_emoji, parse_type, put_emoji, put_type, validate_emoji, validate_type
 
 
 Message = include('Message')
@@ -40,7 +40,7 @@ def parse_user(data, guild_id = 0):
     return create_partial_user_from_id(int(data['user_id']))
 
 
-def put_user_into(user, data, defaults, *, guild_id = 0):
+def put_user(user, data, defaults, *, guild_id = 0):
     """
     Puts the given user's representation into the given reaction event data.
     
@@ -95,7 +95,7 @@ def parse_message(data):
     return Message._create_from_partial_data(data)
 
 
-def put_message_into(message, data, defaults):
+def put_message(message, data, defaults):
     """
     Puts the given message's representation into the given reaction event data.
     

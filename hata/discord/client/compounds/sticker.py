@@ -10,7 +10,7 @@ from ...core import GUILDS, STICKERS
 from ...http import DiscordApiClient, VALID_STICKER_IMAGE_MEDIA_TYPES
 from ...sticker import Sticker, StickerPack, StickerType
 from ...sticker.sticker.fields import (
-    put_description_into, put_name_into, put_tags_into, validate_description, validate_name, validate_tags
+    put_description, put_name, put_tags, validate_description, validate_name, validate_tags
 )
 from ...utils import MEDIA_TYPE_TO_EXTENSION, get_image_media_type
 
@@ -312,9 +312,9 @@ class ClientCompoundStickerEndpoints(Compound):
             description = validate_description(description)
         
         data = {}
-        put_description_into(description, data, True)
-        put_name_into(name, data, True)
-        put_tags_into(tags, data, True)
+        put_description(description, data, True)
+        put_name(name, data, True)
+        put_tags(tags, data, True)
         
         await self.api.sticker_edit(sticker.guild_id, sticker.id, data, reason)
     

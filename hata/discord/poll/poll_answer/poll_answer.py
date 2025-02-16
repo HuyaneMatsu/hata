@@ -5,7 +5,7 @@ from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...utils import sanitize_mentions
 
 from .fields import (
-    parse_emoji, parse_id, parse_text, put_emoji_into, put_id_into, put_text_into, validate_emoji, validate_id,
+    parse_emoji, parse_id, parse_text, put_emoji, put_id, put_text, validate_emoji, validate_id,
     validate_text
 )
 
@@ -220,11 +220,11 @@ class PollAnswer(DiscordEntity):
         """
         data = {}
         
-        put_emoji_into(self.emoji, data, defaults)
-        put_text_into(self.text, data, defaults)
+        put_emoji(self.emoji, data, defaults)
+        put_text(self.text, data, defaults)
         
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         
         return data
     

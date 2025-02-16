@@ -57,13 +57,13 @@ Resolved = include('Resolved')
 # activity
 
 parse_activity = nullable_entity_parser_factory('activity', MessageActivity)
-put_activity_into = nullable_entity_optional_putter_factory('activity', MessageActivity)
+put_activity = nullable_entity_optional_putter_factory('activity', MessageActivity)
 validate_activity = nullable_entity_validator_factory('activity', MessageActivity)
 
 # application
 
 parse_application = nullable_entity_parser_factory('application', MessageApplication)
-put_application_into = nullable_entity_optional_putter_factory(
+put_application = nullable_entity_optional_putter_factory(
     'application', MessageApplication, force_include_internals = True
 )
 validate_application = nullable_entity_validator_factory('application', MessageApplication)
@@ -73,7 +73,7 @@ validate_application = nullable_entity_validator_factory('application', MessageA
 parse_application_id = entity_id_parser_factory('application_id')
 
 
-def put_application_id_into(application_id, data, defaults):
+def put_application_id(application_id, data, defaults):
     """
     Puts the message's application's identifier into the given `data` json serializable object.
     
@@ -107,7 +107,7 @@ validate_application_id = entity_id_validator_factory('application_id', Applicat
 # attachments
 
 parse_attachments = nullable_entity_array_parser_factory('attachments', Attachment)
-put_attachments_into = nullable_entity_array_optional_putter_factory('attachments', Attachment)
+put_attachments = nullable_entity_array_optional_putter_factory('attachments', Attachment)
 validate_attachments = nullable_entity_array_validator_factory('attachments', Attachment)
 
 # author
@@ -152,7 +152,7 @@ def parse_author(data, guild_id = 0, channel_id = 0):
     return User.from_data(author_data, data.get('member', None), guild_id)
 
 
-def put_author_into(author, data, defaults, *, guild_id = 0):
+def put_author(author, data, defaults, *, guild_id = 0):
     """
     Puts the message author's data into the given `data` json serializable object.
     
@@ -195,19 +195,19 @@ validate_author = default_entity_validator_factory('author', UserBase, default =
 # call
 
 parse_call = nullable_entity_parser_factory('call', MessageCall)
-put_call_into = nullable_entity_optional_putter_factory('call', MessageCall)
+put_call = nullable_entity_optional_putter_factory('call', MessageCall)
 validate_call = nullable_entity_validator_factory('call', MessageCall)
 
 # channel_id
 
 parse_channel_id = entity_id_parser_factory('channel_id')
-put_channel_id_into = entity_id_putter_factory('channel_id')
+put_channel_id = entity_id_putter_factory('channel_id')
 validate_channel_id = entity_id_validator_factory('channel_id', NotImplemented, include = 'Channel')
 
 # components
 
 parse_components = nullable_object_array_parser_factory('components', Component)
-put_components_into = nullable_object_array_optional_putter_factory('components')
+put_components = nullable_object_array_optional_putter_factory('components')
 
 
 def validate_components(components):
@@ -268,37 +268,37 @@ def validate_components(components):
 # content
 
 parse_content = nullable_string_parser_factory('content')
-put_content_into = nullable_string_optional_putter_factory('content')
+put_content = nullable_string_optional_putter_factory('content')
 validate_content = nullable_string_validator_factory('content', 0, CONTENT_LENGTH_MAX)
 
 # embed
 
 parse_embeds = nullable_object_array_parser_factory('embeds', Embed)
-put_embeds_into = nullable_object_array_optional_putter_factory('embeds', Embed)
+put_embeds = nullable_object_array_optional_putter_factory('embeds', Embed)
 validate_embeds = nullable_object_array_validator_factory('embeds', Embed)
 
 # edited_at
 
 parse_edited_at = nullable_date_time_parser_factory('edited_timestamp')
-put_edited_at_into = nullable_date_time_optional_putter_factory('edited_timestamp')
+put_edited_at = nullable_date_time_optional_putter_factory('edited_timestamp')
 validate_edited_at = nullable_date_time_validator_factory('edited_at')
 
 # flags
 
 parse_flags = flag_parser_factory('flags', MessageFlag)
-put_flags_into = flag_optional_putter_factory('flags', MessageFlag())
+put_flags = flag_optional_putter_factory('flags', MessageFlag())
 validate_flags = flag_validator_factory('flags', MessageFlag)
 
 # guild_id
 
 parse_guild_id = entity_id_parser_factory('guild_id')
-put_guild_id_into = entity_id_optional_putter_factory('guild_id')
+put_guild_id = entity_id_optional_putter_factory('guild_id')
 validate_guild_id = entity_id_validator_factory('guild_id', NotImplemented, include = 'Guild')
 
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('message_id')
 
 # interaction
@@ -326,7 +326,7 @@ def parse_interaction(data):
         return MessageInteraction.from_data(interaction_data)
 
 
-put_interaction_into = nullable_entity_optional_putter_factory(
+put_interaction = nullable_entity_optional_putter_factory(
     'interaction_metadata', MessageInteraction, force_include_internals = True
 )
 validate_interaction = nullable_entity_validator_factory('interaction', MessageInteraction)
@@ -339,7 +339,7 @@ parse_mentioned_channels_cross_guild = nullable_functional_array_parser_factory(
     include = 'create_partial_channel_from_data',
     sort_key = id_sort_key,
 )
-put_mentioned_channels_cross_guild_into = nullable_functional_array_optional_putter_factory(
+put_mentioned_channels_cross_guild = nullable_functional_array_optional_putter_factory(
     'mention_channels',
     NotImplemented,
     include = 'create_partial_channel_data',
@@ -351,13 +351,13 @@ validate_mentioned_channels_cross_guild = nullable_entity_array_validator_factor
 # mentioned_everyone
 
 parse_mentioned_everyone = bool_parser_factory('mention_everyone', False)
-put_mentioned_everyone_into = bool_optional_putter_factory('mention_everyone', False)
+put_mentioned_everyone = bool_optional_putter_factory('mention_everyone', False)
 validate_mentioned_everyone = bool_validator_factory('mention_everyone', False)
 
 # mentioned_role_ids
 
 parse_mentioned_role_ids = entity_id_array_parser_factory('mention_roles')
-put_mentioned_role_ids_into = optional_entity_id_array_optional_putter_factory('mention_roles')
+put_mentioned_role_ids = optional_entity_id_array_optional_putter_factory('mention_roles')
 validate_mentioned_role_ids = entity_id_array_validator_factory('mentioned_role_ids', Role)
 
 # mentioned_users
@@ -390,7 +390,7 @@ def parse_mentioned_users(data, guild_id = 0):
     ))
 
 
-def put_mentioned_users_into(mentioned_users, data, defaults, *, guild_id = 0):
+def put_mentioned_users(mentioned_users, data, defaults, *, guild_id = 0):
     """
     Puts the message's mentioned users' data into the given `data` json serializable object.
     
@@ -473,18 +473,18 @@ def parse_message_id(data):
     
     return 0
 
-put_message_id_into = entity_id_putter_factory('message_id')
+put_message_id = entity_id_putter_factory('message_id')
 
 # nonce
 
 parse_nonce = nullable_string_parser_factory('nonce')
-put_nonce_into = url_optional_putter_factory('nonce')
+put_nonce = url_optional_putter_factory('nonce')
 validate_nonce = nullable_string_validator_factory('nonce', 0, NONCE_LENGTH_MAX)
 
 # pinned
 
 parse_pinned = bool_parser_factory('pinned', False)
-put_pinned_into = bool_optional_putter_factory('pinned', False)
+put_pinned = bool_optional_putter_factory('pinned', False)
 validate_pinned = bool_validator_factory('pinned', False)
 
 
@@ -558,7 +558,7 @@ def parse_poll_and_change(data, old_poll):
     return poll, change
 
 
-put_poll_into = nullable_entity_optional_putter_factory('poll', Poll)
+put_poll = nullable_entity_optional_putter_factory('poll', Poll)
 validate_poll = nullable_entity_validator_factory('poll', Poll)
 
 # reactions
@@ -587,7 +587,7 @@ def parse_reactions(data, old_reactions = None):
     return merge_update_reaction_mapping(new_reactions, old_reactions)
 
 
-def put_reactions_into(reactions, data, defaults):
+def put_reactions(reactions, data, defaults):
     """
     Puts the message's reactions' data into the given `data` json serializable object.
     
@@ -727,7 +727,7 @@ def parse_resolved(data, guild_id = 0):
         return Resolved.from_data(resolved_data, guild_id)
 
 
-def put_resolved_into(resolved, data, defaults, *, guild_id = 0):
+def put_resolved(resolved, data, defaults, *, guild_id = 0):
     """
     Serialises the given resolved value.
     
@@ -771,7 +771,7 @@ validate_resolved = nullable_entity_validator_factory('resolved', NotImplemented
 # role_subscription
 
 parse_role_subscription = nullable_entity_parser_factory('role_subscription_data', MessageRoleSubscription)
-put_role_subscription_into = nullable_entity_optional_putter_factory(
+put_role_subscription = nullable_entity_optional_putter_factory(
     'role_subscription_data', MessageRoleSubscription
 )
 validate_role_subscription = nullable_entity_validator_factory('role_subscription', MessageRoleSubscription)
@@ -800,7 +800,7 @@ def parse_snapshots(data, guild_id = 0):
         return (*(MessageSnapshot.from_data(snapshot_data, guild_id) for snapshot_data in snapshot_datas),)
 
 
-def put_snapshots_into(snapshots, data, defaults, *, guild_id = 0):
+def put_snapshots(snapshots, data, defaults, *, guild_id = 0):
     """
     Serailises the given snapshots,
     
@@ -838,7 +838,7 @@ validate_snapshots = nullable_object_array_validator_factory('snapshots', NotImp
 # soundboard_sounds
 
 parse_soundboard_sounds = nullable_entity_array_parser_factory('soundboard_sounds', SoundboardSound)
-put_soundboard_sounds_into = nullable_entity_array_optional_putter_factory(
+put_soundboard_sounds = nullable_entity_array_optional_putter_factory(
     'soundboard_sounds', SoundboardSound, force_include_internals = True
 )
 validate_soundboard_sounds = nullable_entity_array_validator_factory('soundboard_sounds', SoundboardSound)
@@ -848,7 +848,7 @@ validate_soundboard_sounds = nullable_entity_array_validator_factory('soundboard
 parse_stickers = nullable_functional_array_parser_factory(
     'sticker_items', create_partial_sticker_from_partial_data, do_sort = False
 )
-put_stickers_into = nullable_functional_array_optional_putter_factory('sticker_items', create_partial_sticker_data)
+put_stickers = nullable_functional_array_optional_putter_factory('sticker_items', create_partial_sticker_data)
 validate_stickers = nullable_entity_array_validator_factory(
     'stickers', Sticker, sort_key = id_sort_key,
 )
@@ -871,7 +871,7 @@ def parse_thread(data, guild_id = 0):
         return Channel.from_data(thread_data, guild_id = guild_id)
 
 
-put_thread_into = nullable_entity_optional_putter_factory(
+put_thread = nullable_entity_optional_putter_factory(
     'thread', NotImplemented, force_include_internals = True
 )
 validate_thread = nullable_entity_validator_factory('thread', NotImplemented, include = 'Channel')
@@ -879,11 +879,11 @@ validate_thread = nullable_entity_validator_factory('thread', NotImplemented, in
 # tts
 
 parse_tts = bool_parser_factory('tts', False)
-put_tts_into = bool_optional_putter_factory('tts', False)
+put_tts = bool_optional_putter_factory('tts', False)
 validate_tts = bool_validator_factory('tts', False)
 
 # type
 
 parse_type = preinstanced_parser_factory('type', MessageType, MessageType.default)
-put_type_into = preinstanced_putter_factory('type')
+put_type = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('type', MessageType)

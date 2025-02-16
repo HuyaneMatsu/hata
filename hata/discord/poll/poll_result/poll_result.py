@@ -3,7 +3,7 @@ __all__ = ('PollResult',)
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
-    parse_answer_id, parse_count, put_answer_id_into, put_count_into, validate_answer_id, validate_count, validate_users
+    parse_answer_id, parse_count, put_answer_id, put_count, validate_answer_id, validate_count, validate_users
 )
 
 
@@ -105,8 +105,8 @@ class PollResult(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_answer_id_into(self.answer_id, data, defaults)
-        put_count_into(self.count, data, defaults)
+        put_answer_id(self.answer_id, data, defaults)
+        put_count(self.count, data, defaults)
         return data
     
     

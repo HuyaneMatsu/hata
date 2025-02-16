@@ -7,7 +7,7 @@ from scarletio import (
     sleep, to_json
 )
 from scarletio.http_client import HTTPClient, RequestContextManager
-from scarletio.web_common import FormData, quote
+from scarletio.web_common import FormData, PayloadError, quote
 from scarletio.web_common.headers import CONTENT_TYPE, METHOD_DELETE, METHOD_GET, METHOD_PATCH, METHOD_POST, METHOD_PUT
 
 from ..core import KOKORO
@@ -171,11 +171,11 @@ class DiscordApiClient(RichAttributeErrorBaseType):
                         self.http._request(method, url, headers, data = data, query = query)
                     ) as response:
                         response_data = await response.text(encoding = 'utf-8')
-                except OSError as err:
+                except (OSError, PayloadError) as exception:
                     if causes is None:
                         causes = []
                     
-                    causes.append(err)
+                    causes.append(exception)
                     
                     if len(causes) >= REQUEST_RETRY_LIMIT:
                         try:

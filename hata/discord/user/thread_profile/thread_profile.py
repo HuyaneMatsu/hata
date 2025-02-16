@@ -5,7 +5,7 @@ from scarletio import RichAttributeErrorBaseType
 from ...utils import DISCORD_EPOCH_START
 
 from .fields import (
-    parse_flags, parse_joined_at, put_flags_into, put_joined_at_into, validate_flags, validate_joined_at
+    parse_flags, parse_joined_at, put_flags, put_joined_at, validate_flags, validate_joined_at
 )
 from .flags import ThreadProfileFlag
 
@@ -136,11 +136,11 @@ class ThreadProfile(RichAttributeErrorBaseType):
         """
         data = {}
         
-        put_flags_into(self.flags, data, defaults)
+        put_flags(self.flags, data, defaults)
         
         # joined_at
         if include_internals:
-            put_joined_at_into(self.joined_at, data, defaults)
+            put_joined_at(self.joined_at, data, defaults)
         
         return data
     

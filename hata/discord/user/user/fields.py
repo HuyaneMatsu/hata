@@ -50,7 +50,7 @@ def parse_activities(data):
     return [Activity.from_data(activity_data) for activity_data in activity_datas]
 
 
-def put_activities_into(activities, data, defaults):
+def put_activities(activities, data, defaults):
     """
     Puts the given activities into the given data.
     
@@ -125,7 +125,7 @@ def validate_activities(activities):
 # avatar_decoration
 
 parse_avatar_decoration = nullable_entity_parser_factory('avatar_decoration_data', AvatarDecoration)
-put_avatar_decoration_into = nullable_entity_optional_putter_factory('avatar_decoration_data', AvatarDecoration)
+put_avatar_decoration = nullable_entity_optional_putter_factory('avatar_decoration_data', AvatarDecoration)
 validate_avatar_decoration = nullable_entity_validator_factory('avatar_decoration', AvatarDecoration)
 
 # banner_color
@@ -150,7 +150,7 @@ def parse_banner_color(data):
     return banner_color
 
 
-def put_banner_color_into(banner_color, data, defaults):
+def put_banner_color(banner_color, data, defaults):
     """
     Puts the given banner color into the given data.
     
@@ -217,20 +217,20 @@ def validate_banner_color(banner_color):
 # bot
 
 parse_bot = bool_parser_factory('bot', False)
-put_bot_into = force_bool_putter_factory('bot')
+put_bot = force_bool_putter_factory('bot')
 validate_bot = bool_validator_factory('bot', False)
 
 # clan
 
 parse_clan = nullable_entity_parser_factory('clan', UserClan)
-put_clan_into = nullable_entity_optional_putter_factory('clan', UserClan)
+put_clan = nullable_entity_optional_putter_factory('clan', UserClan)
 validate_clan = nullable_entity_validator_factory('clan', UserClan)
 
 # discriminator
 
 parse_discriminator = flag_parser_factory('discriminator', int)
 
-def put_discriminator_into(discriminator, data, defaults):
+def put_discriminator(discriminator, data, defaults):
     """
     Puts the given discriminator value into the given data.
     
@@ -303,19 +303,19 @@ def validate_discriminator(discriminator):
 # display_name
 
 parse_display_name = nullable_string_parser_factory('global_name')
-put_display_name_into = url_optional_putter_factory('global_name')
+put_display_name = url_optional_putter_factory('global_name')
 validate_display_name = nullable_string_validator_factory('global_name', 0, DISPLAY_NAME_LENGTH_MAX)
 
 # email
 
 parse_email = nullable_string_parser_factory('email')
-put_email_into = url_optional_putter_factory('email')
+put_email = url_optional_putter_factory('email')
 validate_email = nullable_string_validator_factory('email', 0, 1024)
 
 # email_verified
 
 parse_email_verified = bool_parser_factory('verified', False)
-put_email_verified_into = bool_optional_putter_factory('verified', False)
+put_email_verified = bool_optional_putter_factory('verified', False)
 validate_email_verified = bool_validator_factory('email_verified', False)
 
 # flags
@@ -340,7 +340,7 @@ def parse_flags(data):
     
     return UserFlag(flags)
 
-put_flags_into = flag_putter_factory('public_flags')
+put_flags = flag_putter_factory('public_flags')
 validate_flags = flag_validator_factory('public_flags', UserFlag)
 
 # flags | oauth2_flags
@@ -350,19 +350,19 @@ put_oauth2_flags_into = flag_putter_factory('flags')
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('user_id')
 
 # locale
 
 parse_locale = preinstanced_parser_factory('locale', Locale, LOCALE_DEFAULT)
-put_locale_into = preinstanced_putter_factory('locale')
+put_locale = preinstanced_putter_factory('locale')
 validate_locale = preinstanced_validator_factory('locale', Locale)
 
 # mfa_enabled
 
 parse_mfa_enabled = bool_parser_factory('mfa_enabled', False)
-put_mfa_enabled_into = bool_optional_putter_factory('mfa_enabled', False)
+put_mfa_enabled = bool_optional_putter_factory('mfa_enabled', False)
 validate_mfa_enabled = bool_validator_factory('mfa_enabled', False)
 
 # name
@@ -392,24 +392,24 @@ def parse_name(data):
     return name
 
 
-put_name_into = force_string_putter_factory('username')
+put_name = force_string_putter_factory('username')
 validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LENGTH_MAX)
 
 # name | webhook_name
 
-put_webhook_name_into = force_string_putter_factory('name')
+put_webhook_name = force_string_putter_factory('name')
 validate_webhook_name = force_string_validator_factory('name', WEBHOOK_NAME_LENGTH_MIN, WEBHOOK_NAME_LENGTH_MAX)
 
 # premium_type
 
 parse_premium_type = preinstanced_parser_factory('premium_type', PremiumType, PremiumType.none)
-put_premium_type_into = preinstanced_putter_factory('premium_type')
+put_premium_type = preinstanced_putter_factory('premium_type')
 validate_premium_type = preinstanced_validator_factory('premium_type', PremiumType)
 
 # status
 
 parse_status = preinstanced_parser_factory('status', Status, Status.offline)
-put_status_into = preinstanced_putter_factory('status')
+put_status = preinstanced_putter_factory('status')
 validate_status = preinstanced_validator_factory('status', Status)
 
 # statuses
@@ -434,7 +434,7 @@ def parse_statuses(data):
     return statuses
 
 
-def put_statuses_into(statuses, data, defaults):
+def put_statuses(statuses, data, defaults):
     """
     Puts the given statuses value into the given data.
     

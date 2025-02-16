@@ -13,9 +13,9 @@ from ..embed_video import EmbedVideo
 
 from .fields import (
     parse_author, parse_color, parse_description, parse_fields, parse_flags, parse_footer, parse_image, parse_provider,
-    parse_thumbnail, parse_timestamp, parse_title, parse_type, parse_url, parse_video, put_author_into, put_color_into,
-    put_description_into, put_fields_into, put_flags_into, put_footer_into, put_image_into, put_provider_into,
-    put_thumbnail_into, put_timestamp_into, put_title_into, put_type_into, put_url_into, put_video_into,
+    parse_thumbnail, parse_timestamp, parse_title, parse_type, parse_url, parse_video, put_author, put_color,
+    put_description, put_fields, put_flags, put_footer, put_image, put_provider,
+    put_thumbnail, put_timestamp, put_title, put_type, put_url, put_video,
     validate_author, validate_color, validate_description, validate_fields, validate_flags, validate_footer,
     validate_image, validate_provider, validate_thumbnail, validate_timestamp, validate_title, validate_type,
     validate_url, validate_video
@@ -322,22 +322,22 @@ class Embed(RichAttributeErrorBaseType):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_author_into(self.author, data, defaults, include_internals = include_internals)
-        put_color_into(self.color, data, defaults)
-        put_description_into(self.description, data, defaults)
-        put_fields_into(self.fields, data, defaults)
-        put_footer_into(self.footer, data, defaults, include_internals = include_internals)
-        put_image_into(self.image, data, defaults, include_internals = include_internals)
-        put_thumbnail_into(self.thumbnail, data, defaults, include_internals = include_internals)
-        put_timestamp_into(self.timestamp, data, defaults)
-        put_title_into(self.title, data, defaults)
-        put_type_into(self.type, data, defaults)
-        put_url_into(self.url, data, defaults)
+        put_author(self.author, data, defaults, include_internals = include_internals)
+        put_color(self.color, data, defaults)
+        put_description(self.description, data, defaults)
+        put_fields(self.fields, data, defaults)
+        put_footer(self.footer, data, defaults, include_internals = include_internals)
+        put_image(self.image, data, defaults, include_internals = include_internals)
+        put_thumbnail(self.thumbnail, data, defaults, include_internals = include_internals)
+        put_timestamp(self.timestamp, data, defaults)
+        put_title(self.title, data, defaults)
+        put_type(self.type, data, defaults)
+        put_url(self.url, data, defaults)
         
         if include_internals:
-            put_flags_into(self.flags, data, defaults)
-            put_provider_into(self.provider, data, defaults, include_internals = include_internals)
-            put_video_into(self.video, data, defaults, include_internals = include_internals)
+            put_flags(self.flags, data, defaults)
+            put_provider(self.provider, data, defaults, include_internals = include_internals)
+            put_video(self.video, data, defaults, include_internals = include_internals)
         
         return data
     

@@ -6,8 +6,8 @@ from ...field_validators import (
     int_conditional_validator_factory, nullable_string_validator_factory, url_required_validator_factory
 )
 from ...user.user.fields import (
-    parse_discriminator, parse_id, parse_name, parse_status, put_discriminator_into, put_id_into, put_name_into,
-    put_status_into, validate_discriminator, validate_name, validate_status
+    parse_discriminator, parse_id, parse_name, parse_status, put_discriminator, put_id, put_name,
+    put_status, validate_discriminator, validate_name, validate_status
 )
 
 
@@ -37,7 +37,7 @@ def parse_activity_name(data):
     return activity_name
 
 
-def put_activity_name_into(activity_name, data, defaults):
+def put_activity_name(activity_name, data, defaults):
     """
     Puts the given activity name into a json serializable dictionary.
     
@@ -76,5 +76,5 @@ validate_id = int_conditional_validator_factory(
 # url
 
 parse_avatar_url = force_string_parser_factory('avatar_url')
-put_avatar_url_into = url_optional_putter_factory('avatar_url')
+put_avatar_url = url_optional_putter_factory('avatar_url')
 validate_avatar_url = url_required_validator_factory('avatar_url')

@@ -3,8 +3,8 @@ __all__ = ('ApplicationExecutable',)
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
-    parse_launcher, parse_name, parse_os, parse_parameters, put_launcher_into, put_name_into, put_os_into,
-    put_parameters_into, validate_launcher, validate_name, validate_os, validate_parameters
+    parse_launcher, parse_name, parse_os, parse_parameters, put_launcher, put_name, put_os,
+    put_parameters, validate_launcher, validate_name, validate_os, validate_parameters
 )
 from .preinstanced import OperationSystem
 
@@ -115,10 +115,10 @@ class ApplicationExecutable(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_launcher_into(self.launcher, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_os_into(self.os, data, defaults)
-        put_parameters_into(self.parameters, data, defaults)
+        put_launcher(self.launcher, data, defaults)
+        put_name(self.name, data, defaults)
+        put_os(self.os, data, defaults)
+        put_parameters(self.parameters, data, defaults)
         return data
     
     

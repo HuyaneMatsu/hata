@@ -10,8 +10,8 @@ from ...user import ZEROUSER
 from ..integration_metadata import IntegrationMetadataBase, IntegrationMetadataSubscription
 
 from .fields import (
-    parse_enabled, parse_id, parse_name, parse_type, parse_user, put_enabled_into, put_id_into, put_name_into,
-    put_type_into, put_user_into, validate_enabled, validate_id, validate_name, validate_type, validate_user
+    parse_enabled, parse_id, parse_name, parse_type, parse_user, put_enabled, put_id, put_name,
+    put_type, put_user, validate_enabled, validate_id, validate_name, validate_type, validate_user
 )
 from .preinstanced import IntegrationType
 
@@ -381,18 +381,18 @@ class Integration(DiscordEntity, immortal = True):
         data = self.metadata.to_data(defaults = defaults)
         
         # enabled
-        put_enabled_into(self.enabled, data, defaults)
+        put_enabled(self.enabled, data, defaults)
         
         # name
-        put_name_into(self.name, data, defaults)
+        put_name(self.name, data, defaults)
         
         # type
-        put_type_into(self.type, data, defaults)
+        put_type(self.type, data, defaults)
         
         # user
         if include_internals:
-            put_id_into(self.id, data, defaults)
-            put_user_into(self.user, data, defaults)
+            put_id(self.id, data, defaults)
+            put_user(self.user, data, defaults)
         
         return data
     

@@ -2,7 +2,7 @@ __all__ = ('ChannelMetadataGuildThreadPrivate',)
 
 from scarletio import copy_docs
 
-from .fields import parse_invitable, put_invitable_into, validate_invitable
+from .fields import parse_invitable, put_invitable, validate_invitable
 
 from .guild_thread_base import ChannelMetadataGuildThreadBase
 
@@ -290,6 +290,6 @@ class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
         data = ChannelMetadataGuildThreadBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # invitable
-        put_invitable_into(self.invitable, data, defaults, flatten_thread_metadata = not include_internals)
+        put_invitable(self.invitable, data, defaults, flatten_thread_metadata = not include_internals)
         
         return data

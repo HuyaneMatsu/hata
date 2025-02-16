@@ -24,14 +24,14 @@ from .fields import (
     parse_id, parse_interaction, parse_mentioned_channels_cross_guild, parse_mentioned_everyone,
     parse_mentioned_role_ids, parse_mentioned_users, parse_message_id, parse_nonce, parse_pinned, parse_poll,
     parse_poll_and_change, parse_reactions, parse_referenced_message, parse_resolved, parse_role_subscription,
-    parse_snapshots, parse_soundboard_sounds, parse_stickers, parse_thread, parse_tts, parse_type, put_activity_into,
-    put_application_id_into, put_application_into, put_attachments_into, put_author_into, put_call_into,
-    put_channel_id_into, put_components_into, put_content_into, put_edited_at_into, put_embeds_into, put_flags_into,
-    put_guild_id_into, put_id_into, put_interaction_into, put_mentioned_channels_cross_guild_into,
-    put_mentioned_everyone_into, put_mentioned_role_ids_into, put_mentioned_users_into, put_message_id_into,
-    put_nonce_into, put_pinned_into, put_poll_into, put_reactions_into, put_referenced_message_into, put_resolved_into,
-    put_role_subscription_into, put_snapshots_into, put_soundboard_sounds_into, put_stickers_into, put_thread_into,
-    put_tts_into, put_type_into, validate_activity, validate_application, validate_application_id, validate_attachments,
+    parse_snapshots, parse_soundboard_sounds, parse_stickers, parse_thread, parse_tts, parse_type, put_activity,
+    put_application_id, put_application, put_attachments, put_author, put_call,
+    put_channel_id, put_components, put_content, put_edited_at, put_embeds, put_flags,
+    put_guild_id, put_id, put_interaction, put_mentioned_channels_cross_guild,
+    put_mentioned_everyone, put_mentioned_role_ids, put_mentioned_users, put_message_id,
+    put_nonce, put_pinned, put_poll, put_reactions, put_referenced_message_into, put_resolved,
+    put_role_subscription, put_snapshots, put_soundboard_sounds, put_stickers, put_thread,
+    put_tts, put_type, validate_activity, validate_application, validate_application_id, validate_attachments,
     validate_author, validate_call, validate_channel_id, validate_components, validate_content, validate_edited_at,
     validate_embeds, validate_flags, validate_guild_id, validate_id, validate_interaction,
     validate_mentioned_channels_cross_guild, validate_mentioned_everyone, validate_mentioned_role_ids,
@@ -1754,42 +1754,42 @@ class Message(DiscordEntity, immortal = True):
         data = {}
         
         if include_internals:
-            put_author_into(self.author, data, defaults, guild_id = self.guild_id)
-            put_channel_id_into(self.channel_id, data, defaults)
-            put_guild_id_into(self.guild_id, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_type_into(self.type, data, defaults)
+            put_author(self.author, data, defaults, guild_id = self.guild_id)
+            put_channel_id(self.channel_id, data, defaults)
+            put_guild_id(self.guild_id, data, defaults)
+            put_id(self.id, data, defaults)
+            put_type(self.type, data, defaults)
             
-            put_activity_into(self.activity, data, defaults)
-            put_application_into(self.application, data, defaults)
-            put_application_id_into(self.application_id, data, defaults)
-            put_call_into(self.call, data, defaults)
-            put_edited_at_into(self.edited_at, data, defaults)
-            put_interaction_into(self.interaction, data, defaults)
-            put_mentioned_channels_cross_guild_into(self.mentioned_channels_cross_guild, data, defaults)
-            put_mentioned_everyone_into(self.mentioned_everyone, data, defaults)
-            put_mentioned_role_ids_into(self.mentioned_role_ids, data, defaults)
-            put_mentioned_users_into(self.mentioned_users, data, defaults, guild_id = self.guild_id)
-            put_pinned_into(self.pinned, data, defaults)
-            put_reactions_into(self.reactions, data, defaults)
+            put_activity(self.activity, data, defaults)
+            put_application(self.application, data, defaults)
+            put_application_id(self.application_id, data, defaults)
+            put_call(self.call, data, defaults)
+            put_edited_at(self.edited_at, data, defaults)
+            put_interaction(self.interaction, data, defaults)
+            put_mentioned_channels_cross_guild(self.mentioned_channels_cross_guild, data, defaults)
+            put_mentioned_everyone(self.mentioned_everyone, data, defaults)
+            put_mentioned_role_ids(self.mentioned_role_ids, data, defaults)
+            put_mentioned_users(self.mentioned_users, data, defaults, guild_id = self.guild_id)
+            put_pinned(self.pinned, data, defaults)
+            put_reactions(self.reactions, data, defaults)
             put_referenced_message_into(
                 self.referenced_message, data, defaults, recursive = recursive, message_type = self.type
             )
-            put_resolved_into(self.resolved, data, defaults, guild_id = self.guild_id)
-            put_role_subscription_into(self.role_subscription, data, defaults)
-            put_snapshots_into(self.snapshots, data, defaults, guild_id = self.guild_id)
-            put_soundboard_sounds_into(self.soundboard_sounds, data, defaults)
-            put_stickers_into(self.stickers, data, defaults)
-            put_thread_into(self.thread, data, defaults)
+            put_resolved(self.resolved, data, defaults, guild_id = self.guild_id)
+            put_role_subscription(self.role_subscription, data, defaults)
+            put_snapshots(self.snapshots, data, defaults, guild_id = self.guild_id)
+            put_soundboard_sounds(self.soundboard_sounds, data, defaults)
+            put_stickers(self.stickers, data, defaults)
+            put_thread(self.thread, data, defaults)
         
-        put_attachments_into(self.attachments, data, defaults, include_internals = include_internals)
-        put_components_into(self.components, data, defaults)
-        put_content_into(self.content, data, defaults)
-        put_embeds_into(self.embeds, data, defaults, include_internals = include_internals)
-        put_flags_into(self.flags, data, defaults)
-        put_nonce_into(self.nonce, data, defaults)
-        put_poll_into(self.poll, data, defaults, include_internals = include_internals)
-        put_tts_into(self.tts, data, defaults)
+        put_attachments(self.attachments, data, defaults, include_internals = include_internals)
+        put_components(self.components, data, defaults)
+        put_content(self.content, data, defaults)
+        put_embeds(self.embeds, data, defaults, include_internals = include_internals)
+        put_flags(self.flags, data, defaults)
+        put_nonce(self.nonce, data, defaults)
+        put_poll(self.poll, data, defaults, include_internals = include_internals)
+        put_tts(self.tts, data, defaults)
         
         return data
     
@@ -1803,9 +1803,9 @@ class Message(DiscordEntity, immortal = True):
         data : `dict` of (`str`, `object`)
         """
         data = {}
-        put_message_id_into(self.id, data, True)
-        put_channel_id_into(self.channel_id, data, True)
-        put_guild_id_into(self.guild_id, data, True)
+        put_message_id(self.id, data, True)
+        put_channel_id(self.channel_id, data, True)
+        put_guild_id(self.guild_id, data, True)
         return data
     
     

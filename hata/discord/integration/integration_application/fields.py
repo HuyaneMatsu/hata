@@ -33,7 +33,7 @@ def parse_bot(data):
     return bot
 
 
-def put_bot_into(user, data, defaults, *, include_internals = False):
+def put_bot(user, data, defaults, *, include_internals = False):
     """
     Puts the `bot`'s data into the given `data` json serializable object.
     
@@ -99,17 +99,17 @@ def validate_bot(value):
 # description
 
 parse_description = nullable_string_parser_factory('description')
-put_description_into = nullable_string_putter_factory('description')
+put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX)
 
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('integration_application_id')
 
 # name
 
 parse_name = force_string_parser_factory('name')
-put_name_into = force_string_putter_factory('name')
+put_name = force_string_putter_factory('name')
 validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LENGTH_MAX)

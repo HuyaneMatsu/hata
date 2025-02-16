@@ -4,7 +4,7 @@ from scarletio import copy_docs
 
 from .base import AutoModerationRuleTriggerMetadataBase
 from .fields import (
-    parse_excluded_keywords, parse_keyword_presets, put_excluded_keywords_into, put_keyword_presets_into,
+    parse_excluded_keywords, parse_keyword_presets, put_excluded_keywords, put_keyword_presets,
     validate_excluded_keywords, validate_keyword_presets
 )
 
@@ -120,8 +120,8 @@ class AutoModerationRuleTriggerMetadataKeywordPreset(AutoModerationRuleTriggerMe
     @copy_docs(AutoModerationRuleTriggerMetadataBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_excluded_keywords_into(self.excluded_keywords, data, defaults)
-        put_keyword_presets_into(self.keyword_presets, data, defaults)
+        put_excluded_keywords(self.excluded_keywords, data, defaults)
+        put_keyword_presets(self.keyword_presets, data, defaults)
         return data
     
     

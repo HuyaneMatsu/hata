@@ -65,5 +65,5 @@ def validate_components(components):
 # title
 
 parse_title = nullable_string_parser_factory('title')
-put_title_into = nullable_string_optional_putter_factory('title')
+put_title = nullable_string_optional_putter_factory('title')
 validate_title = nullable_string_validator_factory('title', TITLE_LENGTH_MIN, TITLE_LENGTH_MAX)

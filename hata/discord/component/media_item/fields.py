@@ -14,7 +14,7 @@ from .constants import DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX
 # description
 
 parse_description = nullable_string_parser_factory('description')
-put_description_into = nullable_string_optional_putter_factory('description')
+put_description = nullable_string_optional_putter_factory('description')
 validate_description = nullable_string_validator_factory(
     'description', DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX
 )
@@ -23,12 +23,12 @@ validate_description = nullable_string_validator_factory(
 # spoiler
 
 parse_spoiler = bool_parser_factory('spoiler', False)
-put_spoiler_into = bool_optional_putter_factory('spoiler', False)
+put_spoiler = bool_optional_putter_factory('spoiler', False)
 validate_spoiler = bool_validator_factory('spoiler', False)
 
 
 # url
 
 parse_url = force_string_parser_factory('url')
-put_url_into = url_optional_putter_factory('url')
+put_url = url_optional_putter_factory('url')
 validate_url = url_required_validator_factory('url')

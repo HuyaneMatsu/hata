@@ -5,8 +5,8 @@ from scarletio import copy_docs
 from ..embed_field_base import EmbedFieldBase, EmbedMediaFlag
 
 from .fields import (
-    parse_flags, parse_height, parse_proxy_url, parse_url, parse_width, put_flags_into, put_height_into,
-    put_proxy_url_into, put_url_into, put_width_into, validate_url
+    parse_flags, parse_height, parse_proxy_url, parse_url, parse_width, put_flags, put_height,
+    put_proxy_url, put_url, put_width, validate_url
 )
 
 
@@ -142,13 +142,13 @@ class EmbedImage(EmbedFieldBase):
     def to_data(self, *, defaults = False, include_internals = False):
         data = {}
         
-        put_url_into(self.url, data, defaults)
+        put_url(self.url, data, defaults)
         
         if include_internals:
-            put_flags_into(self.flags, data, defaults)
-            put_height_into(self.height, data, defaults)
-            put_proxy_url_into(self.proxy_url, data, defaults)
-            put_width_into(self.width, data, defaults)
+            put_flags(self.flags, data, defaults)
+            put_height(self.height, data, defaults)
+            put_proxy_url(self.proxy_url, data, defaults)
+            put_width(self.width, data, defaults)
         
         return data
     

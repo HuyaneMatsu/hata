@@ -6,8 +6,8 @@ from ...utils import DATETIME_FORMAT_CODE
 
 from .base import ActivityMetadataBase, _pop_empty_name
 from .fields import (
-    parse_created_at, parse_details, parse_emoji, parse_hang_type, put_created_at_into, put_details_into,
-    put_emoji_into, put_hang_type_into, validate_created_at, validate_details, validate_emoji, validate_hang_type
+    parse_created_at, parse_details, parse_emoji, parse_hang_type, put_created_at, put_details,
+    put_emoji, put_hang_type, validate_created_at, validate_details, validate_emoji, validate_hang_type
 )
 from .preinstanced import HangType
 
@@ -216,15 +216,15 @@ class ActivityMetadataHanging(ActivityMetadataBase):
     def to_data(self, *, defaults = False, include_internals = False, user = False):
         data = {}
         
-        put_hang_type_into(self.hang_type, data, defaults)
+        put_hang_type(self.hang_type, data, defaults)
         
         if user or include_internals:
-            put_details_into(self.details, data, defaults)
-            put_emoji_into(self.emoji, data, defaults)
+            put_details(self.details, data, defaults)
+            put_emoji(self.emoji, data, defaults)
         
         if include_internals:
             data['name'] = 'Hang Status'
-            put_created_at_into(self.created_at, data, defaults)
+            put_created_at(self.created_at, data, defaults)
         
         return data
     

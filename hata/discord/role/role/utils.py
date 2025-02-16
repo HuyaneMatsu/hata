@@ -8,23 +8,23 @@ from ...core import ROLES
 from ...utils import ID_RP, ROLE_MENTION_RP
 
 from .fields import (
-    put_color_into, put_flags_into, put_mentionable_into, put_name_into, put_permissions_into, put_position_into,
-    put_separated_into, put_unicode_emoji_into, validate_color, validate_flags, validate_mentionable, validate_name,
+    put_color, put_flags, put_mentionable, put_name, put_permissions, put_position,
+    put_separated, put_unicode_emoji, validate_color, validate_flags, validate_mentionable, validate_name,
     validate_permissions, validate_position, validate_separated, validate_unicode_emoji
 )
 from .role import ROLE_ICON, Role
 
 
 ROLE_FIELD_CONVERTERS = {
-    'color': (validate_color, put_color_into),
-    'flags': (validate_flags, put_flags_into),
+    'color': (validate_color, put_color),
+    'flags': (validate_flags, put_flags),
     'icon': (partial_func(ROLE_ICON.validate_icon, allow_data = True), partial_func(ROLE_ICON.put_into, as_data = True)),
-    'mentionable': (validate_mentionable, put_mentionable_into),
-    'name': (validate_name, put_name_into),
-    'permissions': (validate_permissions, put_permissions_into),
-    'position': (validate_position, put_position_into),
-    'separated': (validate_separated, put_separated_into),
-    'unicode_emoji': (validate_unicode_emoji, put_unicode_emoji_into),
+    'mentionable': (validate_mentionable, put_mentionable),
+    'name': (validate_name, put_name),
+    'permissions': (validate_permissions, put_permissions),
+    'position': (validate_position, put_position),
+    'separated': (validate_separated, put_separated),
+    'unicode_emoji': (validate_unicode_emoji, put_unicode_emoji),
 }
 
 

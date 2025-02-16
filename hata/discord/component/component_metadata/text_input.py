@@ -10,8 +10,8 @@ from .base import ComponentMetadataBase
 from .constants import MAX_LENGTH_DEFAULT, MIN_LENGTH_DEFAULT, TEXT_INPUT_STYLE_DEFAULT
 from .fields import (
     parse_label, parse_max_length, parse_min_length, parse_placeholder, parse_required, parse_text_input_style,
-    parse_value, put_label_into, put_max_length_into, put_min_length_into, put_placeholder_into, put_required_into,
-    put_text_input_style_into, put_value_into, validate_label, validate_max_length, validate_min_length,
+    parse_value, put_label, put_max_length, put_min_length, put_placeholder, put_required,
+    put_text_input_style, put_value, validate_label, validate_max_length, validate_min_length,
     validate_placeholder, validate_required, validate_text_input_style, validate_value
 )
 
@@ -364,13 +364,13 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         data = {}
         
         put_custom_id_into(self.custom_id, data, defaults)
-        put_label_into(self.label, data, defaults)
-        put_max_length_into(self.max_length, data, defaults)
-        put_min_length_into(self.min_length, data, defaults)
-        put_placeholder_into(self.placeholder, data, defaults)
-        put_required_into(self.required, data, defaults)
-        put_text_input_style_into(self.text_input_style, data, defaults)
-        put_value_into(self.value, data, defaults)
+        put_label(self.label, data, defaults)
+        put_max_length(self.max_length, data, defaults)
+        put_min_length(self.min_length, data, defaults)
+        put_placeholder(self.placeholder, data, defaults)
+        put_required(self.required, data, defaults)
+        put_text_input_style(self.text_input_style, data, defaults)
+        put_value(self.value, data, defaults)
         
         return data
     

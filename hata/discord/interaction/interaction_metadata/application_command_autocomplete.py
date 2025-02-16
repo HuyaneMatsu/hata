@@ -6,7 +6,7 @@ from scarletio import copy_docs
 
 from .base import InteractionMetadataBase
 from .fields import (
-    parse_id, parse_name, parse_options, put_id_into, put_name_into, put_options_into, validate_id, validate_name,
+    parse_id, parse_name, parse_options, put_id, put_name, put_options, validate_id, validate_name,
     validate_options
 )
 
@@ -209,9 +209,9 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
     @copy_docs(InteractionMetadataBase.to_data)
     def to_data(self, *, defaults = False, guild_id = 0):
         data = {}
-        put_id_into(self.id, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_options_into(self.options, data, defaults)
+        put_id(self.id, data, defaults)
+        put_name(self.name, data, defaults)
+        put_options(self.options, data, defaults)
         return data
     
     

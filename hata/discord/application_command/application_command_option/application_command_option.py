@@ -10,7 +10,7 @@ from ..helpers import with_translation
 
 from .fields import (
     parse_description, parse_description_localizations, parse_name, parse_name_localizations, parse_type,
-    put_description_into, put_description_localizations_into, put_name_into, put_name_localizations_into, put_type_into,
+    put_description, put_description_localizations, put_name, put_name_localizations, put_type,
     validate_description, validate_description_localizations, validate_name, validate_name_localizations, validate_type
 )
 from .helpers import _purge_defaults_and_maybe_raise
@@ -212,11 +212,11 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         data : `dict` of (`str`, `object`) items
         """
         data = self.metadata.to_data(defaults = defaults)
-        put_description_into(self.description, data, defaults)
-        put_description_localizations_into(self.description_localizations, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_name_localizations_into(self.name_localizations, data, defaults)
-        put_type_into(self.type, data, defaults)
+        put_description(self.description, data, defaults)
+        put_description_localizations(self.description_localizations, data, defaults)
+        put_name(self.name, data, defaults)
+        put_name_localizations(self.name_localizations, data, defaults)
+        put_type(self.type, data, defaults)
         return data
     
     

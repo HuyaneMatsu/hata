@@ -3,7 +3,7 @@ __all__ = ('ComponentMetadataText',)
 from scarletio import copy_docs
 
 from .base import ComponentMetadataBase
-from .fields import parse_content, put_content_into, validate_content
+from .fields import parse_content, put_content, validate_content
 
 
 class ComponentMetadataText(ComponentMetadataBase):
@@ -100,7 +100,7 @@ class ComponentMetadataText(ComponentMetadataBase):
     def to_data(self, *, defaults = False):
         data = {}
         
-        put_content_into(self.content, data, defaults)
+        put_content(self.content, data, defaults)
         
         return data
     

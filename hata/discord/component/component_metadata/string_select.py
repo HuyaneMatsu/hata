@@ -2,7 +2,7 @@ __all__ = ('ComponentMetadataStringSelect', )
 
 from scarletio import copy_docs
 
-from .fields import parse_options, put_options_into, validate_options
+from .fields import parse_options, put_options, validate_options
 from .select_base import ComponentMetadataSelectBase
 
 
@@ -172,7 +172,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
     def to_data(self, *, defaults = False):
         data = ComponentMetadataSelectBase.to_data(self)
         
-        put_options_into(self.options, data, defaults)
+        put_options(self.options, data, defaults)
         
         return data
     

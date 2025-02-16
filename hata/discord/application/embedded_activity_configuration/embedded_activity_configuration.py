@@ -5,9 +5,9 @@ from scarletio import RichAttributeErrorBaseType
 from .fields import (
     parse_age_gated, parse_client_platform_configurations, parse_content_security_policy_exceptions_exist,
     parse_default_orientation_lock_state, parse_default_tablet_orientation_lock_state, parse_position,
-    parse_preview_video_asset_id, put_age_gated_into, put_client_platform_configurations_into,
-    put_content_security_policy_exceptions_exist_into, put_default_orientation_lock_state_into,
-    put_default_tablet_orientation_lock_state_into, put_position_into, put_preview_video_asset_id_into,
+    parse_preview_video_asset_id, put_age_gated, put_client_platform_configurations,
+    put_content_security_policy_exceptions_exist, put_default_orientation_lock_state,
+    put_default_tablet_orientation_lock_state, put_position, put_preview_video_asset_id,
     validate_age_gated, validate_client_platform_configurations, validate_content_security_policy_exceptions_exist,
     validate_default_orientation_lock_state, validate_default_tablet_orientation_lock_state, validate_position,
     validate_preview_video_asset_id
@@ -179,13 +179,13 @@ class EmbeddedActivityConfiguration(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_age_gated_into(self.age_gated, data, defaults)
-        put_client_platform_configurations_into(self.client_platform_configurations, data, defaults)
-        put_content_security_policy_exceptions_exist_into(self.content_security_policy_exceptions_exist, data, defaults)
-        put_default_orientation_lock_state_into(self.default_orientation_lock_state, data, defaults)
-        put_default_tablet_orientation_lock_state_into(self.default_tablet_orientation_lock_state, data, defaults)
-        put_position_into(self.position, data, defaults)
-        put_preview_video_asset_id_into(self.preview_video_asset_id, data, defaults)
+        put_age_gated(self.age_gated, data, defaults)
+        put_client_platform_configurations(self.client_platform_configurations, data, defaults)
+        put_content_security_policy_exceptions_exist(self.content_security_policy_exceptions_exist, data, defaults)
+        put_default_orientation_lock_state(self.default_orientation_lock_state, data, defaults)
+        put_default_tablet_orientation_lock_state(self.default_tablet_orientation_lock_state, data, defaults)
+        put_position(self.position, data, defaults)
+        put_preview_video_asset_id(self.preview_video_asset_id, data, defaults)
         return data
     
     

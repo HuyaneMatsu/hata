@@ -3,7 +3,7 @@ __all__ = ('AuditLogRole',)
 from ...bases import DiscordEntity
 from ...role import Role
 
-from .fields import parse_id, parse_name, put_id_into, put_name_into, validate_id, validate_name
+from .fields import parse_id, parse_name, put_id, put_name, validate_id, validate_name
 
 
 class AuditLogRole(DiscordEntity):
@@ -89,8 +89,8 @@ class AuditLogRole(DiscordEntity):
         data : `dict<str, object>`
         """
         data = {}
-        put_id_into(self.id, data, defaults)
-        put_name_into(self.name, data, defaults)
+        put_id(self.id, data, defaults)
+        put_name(self.name, data, defaults)
         return data
     
     

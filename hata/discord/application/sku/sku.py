@@ -8,8 +8,8 @@ from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
     parse_access_type, parse_application_id, parse_features, parse_flags, parse_id, parse_name, parse_premium,
-    parse_release_at, parse_slug, parse_type, put_access_type_into, put_application_id_into, put_features_into,
-    put_flags_into, put_id_into, put_name_into, put_premium_into, put_release_at_into, put_slug_into, put_type_into,
+    parse_release_at, parse_slug, parse_type, put_access_type, put_application_id, put_features,
+    put_flags, put_id, put_name, put_premium, put_release_at, put_slug, put_type,
     validate_access_type, validate_application_id, validate_features, validate_flags, validate_id, validate_name,
     validate_premium, validate_release_at, validate_slug, validate_type
 )
@@ -244,18 +244,18 @@ class SKU(DiscordEntity):
         """
         data = {}
         
-        put_access_type_into(self.access_type, data, defaults)
-        put_features_into(self.features, data, defaults)
-        put_flags_into(self.flags, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_premium_into(self.premium, data, defaults)
-        put_release_at_into(self.release_at, data, defaults)
-        put_type_into(self.type, data, defaults)
+        put_access_type(self.access_type, data, defaults)
+        put_features(self.features, data, defaults)
+        put_flags(self.flags, data, defaults)
+        put_name(self.name, data, defaults)
+        put_premium(self.premium, data, defaults)
+        put_release_at(self.release_at, data, defaults)
+        put_type(self.type, data, defaults)
         
         if include_internals:
-            put_application_id_into(self.application_id, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_slug_into(self.slug, data, defaults)
+            put_application_id(self.application_id, data, defaults)
+            put_id(self.id, data, defaults)
+            put_slug(self.slug, data, defaults)
         
         return data
     

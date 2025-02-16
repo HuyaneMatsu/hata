@@ -9,8 +9,8 @@ from ..conversion_helpers.helpers import _hash_dict
 
 from .fields import (
     parse_changes, parse_details, parse_guild_id, parse_id, parse_reason, parse_target_id, parse_type, parse_user_id,
-    put_changes_into, put_details_into, put_guild_id_into, put_id_into, put_reason_into, put_target_id_into,
-    put_type_into, put_user_id_into, validate_changes, validate_details, validate_guild_id, validate_id,
+    put_changes, put_details, put_guild_id, put_id, put_reason, put_target_id,
+    put_type, put_user_id, validate_changes, validate_details, validate_guild_id, validate_id,
     validate_parent, validate_reason, validate_target_id, validate_type, validate_user_id
 )
 from .preinstanced import AuditLogEntryType
@@ -226,14 +226,14 @@ class AuditLogEntry(DiscordEntity):
         """
         data = {}
         entry_type = self.type
-        put_changes_into(self.changes, data, defaults, entry_type = entry_type)
-        put_details_into(self.details, data, defaults, entry_type = entry_type)
-        put_guild_id_into(self.guild_id, data, defaults)
-        put_id_into(self.id, data, defaults)
-        put_reason_into(self.reason, data, defaults)
-        put_target_id_into(self.target_id, data, defaults)
-        put_type_into(entry_type, data, defaults)
-        put_user_id_into(self.user_id, data, defaults)
+        put_changes(self.changes, data, defaults, entry_type = entry_type)
+        put_details(self.details, data, defaults, entry_type = entry_type)
+        put_guild_id(self.guild_id, data, defaults)
+        put_id(self.id, data, defaults)
+        put_reason(self.reason, data, defaults)
+        put_target_id(self.target_id, data, defaults)
+        put_type(entry_type, data, defaults)
+        put_user_id(self.user_id, data, defaults)
         return data
     
     

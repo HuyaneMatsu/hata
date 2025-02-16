@@ -5,7 +5,7 @@ import reprlib
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
-    parse_description, parse_welcome_channels, put_description_into, put_welcome_channels_into, validate_description,
+    parse_description, parse_welcome_channels, put_description, put_welcome_channels, validate_description,
     validate_welcome_channels
 )
 
@@ -90,8 +90,8 @@ class WelcomeScreen(RichAttributeErrorBaseType):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_description_into(self.description, data, defaults)
-        put_welcome_channels_into(self.welcome_channels, data, defaults)
+        put_description(self.description, data, defaults)
+        put_welcome_channels(self.welcome_channels, data, defaults)
         return data
     
     

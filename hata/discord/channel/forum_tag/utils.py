@@ -3,15 +3,15 @@ __all__ = ('create_partial_forum_tag_from_id', )
 from ...core import FORUM_TAGS
 
 from .fields import (
-    put_emoji_into, put_moderated_into, put_name_into, validate_emoji, validate_moderated, validate_name
+    put_emoji, put_moderated, put_name, validate_emoji, validate_moderated, validate_name
 )
 from .forum_tag import ForumTag
 
 
 FORUM_TAG_FIELD_CONVERTERS = {
-    'emoji': (validate_emoji, put_emoji_into),
-    'moderated': (validate_moderated, put_moderated_into),
-    'name': (validate_name, put_name_into),
+    'emoji': (validate_emoji, put_emoji),
+    'moderated': (validate_moderated, put_moderated),
+    'name': (validate_name, put_name),
 }
 
 

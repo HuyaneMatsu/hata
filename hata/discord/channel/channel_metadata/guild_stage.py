@@ -8,7 +8,7 @@ from ...permission.permission import (
     PERMISSION_VOICE_DENY_CONNECTION
 )
 
-from .fields import parse_topic, put_topic_into, validate_topic
+from .fields import parse_topic, put_topic, validate_topic
 from .guild_voice_base import ChannelMetadataGuildVoiceBase
 
 
@@ -275,7 +275,7 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         data = ChannelMetadataGuildVoiceBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # topic
-        put_topic_into(self.topic, data, defaults)
+        put_topic(self.topic, data, defaults)
         
         return data
     

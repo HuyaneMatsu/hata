@@ -11,11 +11,11 @@ from ...core import CHANNELS
 
 from ..channel_metadata.base import CHANNEL_METADATA_ICON_SLOT
 from ..channel_metadata.fields import (
-    put_applied_tag_ids_into, put_auto_archive_after_into, put_bitrate_into, put_default_forum_layout_into,
-    put_default_sort_order_into, put_default_thread_auto_archive_after_into, put_default_thread_reaction_emoji_into,
-    put_default_thread_slowmode_into, put_flags_into, put_invitable_into, put_name_into, put_nsfw_into, put_open_into,
-    put_parent_id_into, put_permission_overwrites_into, put_position_into, put_region_into, put_slowmode_into,
-    put_topic_into, put_user_limit_into, put_video_quality_mode_into, validate_applied_tag_ids,
+    put_applied_tag_ids, put_auto_archive_after, put_bitrate, put_default_forum_layout,
+    put_default_sort_order, put_default_thread_auto_archive_after, put_default_thread_reaction_emoji,
+    put_default_thread_slowmode, put_flags, put_invitable, put_name, put_nsfw, put_open,
+    put_parent_id, put_permission_overwrites, put_position, put_region, put_slowmode,
+    put_topic, put_user_limit, put_video_quality_mode, validate_applied_tag_ids,
     validate_auto_archive_after, validate_bitrate, validate_default_forum_layout, validate_default_sort_order,
     validate_default_thread_auto_archive_after, validate_default_thread_reaction_emoji, validate_default_thread_slowmode,
     validate_flags, validate_invitable, validate_name, validate_nsfw, validate_open, validate_parent_id,
@@ -23,7 +23,7 @@ from ..channel_metadata.fields import (
     validate_user_limit, validate_video_quality_mode
 )
 
-from .fields import parse_id, put_guild_id_into, put_id_into, put_type_into, validate_type
+from .fields import parse_id, put_guild_id, put_id, put_type, validate_type
 from .preinstanced import ChannelType
 
 
@@ -40,27 +40,27 @@ def _deprecated__validate_default_thread_reaction(emoji):
 
 
 CHANNEL_GUILD_MAIN_FIELD_CONVERTERS = {
-    'bitrate': (validate_bitrate, put_bitrate_into),
-    'channel_type': (validate_type, put_type_into),
-    'default_forum_layout': (validate_default_forum_layout, put_default_forum_layout_into),
-    'default_sort_order': (validate_default_sort_order, put_default_sort_order_into),
+    'bitrate': (validate_bitrate, put_bitrate),
+    'channel_type': (validate_type, put_type),
+    'default_forum_layout': (validate_default_forum_layout, put_default_forum_layout),
+    'default_sort_order': (validate_default_sort_order, put_default_sort_order),
     'default_thread_auto_archive_after': (
-        validate_default_thread_auto_archive_after, put_default_thread_auto_archive_after_into
+        validate_default_thread_auto_archive_after, put_default_thread_auto_archive_after
     ),
-    'default_thread_reaction': (_deprecated__validate_default_thread_reaction, put_default_thread_reaction_emoji_into),
-    'default_thread_reaction_emoji': (validate_default_thread_reaction_emoji, put_default_thread_reaction_emoji_into),
-    'default_thread_slowmode': (validate_default_thread_slowmode, put_default_thread_slowmode_into),
-    'flags': (validate_flags, put_flags_into),
-    'name': (validate_name, put_name_into),
-    'nsfw': (validate_nsfw, put_nsfw_into),
-    'parent_id': (validate_parent_id, put_parent_id_into),
-    'permission_overwrites': (validate_permission_overwrites, put_permission_overwrites_into),
-    'position': (validate_position, put_position_into),
-    'region': (validate_region, put_region_into),
-    'slowmode': (validate_slowmode, put_slowmode_into),
-    'topic': (validate_topic, put_topic_into),
-    'user_limit': (validate_user_limit, put_user_limit_into),
-    'video_quality_mode': (validate_video_quality_mode, put_video_quality_mode_into),
+    'default_thread_reaction': (_deprecated__validate_default_thread_reaction, put_default_thread_reaction_emoji),
+    'default_thread_reaction_emoji': (validate_default_thread_reaction_emoji, put_default_thread_reaction_emoji),
+    'default_thread_slowmode': (validate_default_thread_slowmode, put_default_thread_slowmode),
+    'flags': (validate_flags, put_flags),
+    'name': (validate_name, put_name),
+    'nsfw': (validate_nsfw, put_nsfw),
+    'parent_id': (validate_parent_id, put_parent_id),
+    'permission_overwrites': (validate_permission_overwrites, put_permission_overwrites),
+    'position': (validate_position, put_position),
+    'region': (validate_region, put_region),
+    'slowmode': (validate_slowmode, put_slowmode),
+    'topic': (validate_topic, put_topic),
+    'user_limit': (validate_user_limit, put_user_limit),
+    'video_quality_mode': (validate_video_quality_mode, put_video_quality_mode),
 }
 
 
@@ -69,21 +69,21 @@ CHANNEL_PRIVATE_GROUP_FIELD_CONVERTERS = {
         CHANNEL_METADATA_ICON_SLOT.validate_icon,
         partial_func(CHANNEL_METADATA_ICON_SLOT.put_into, as_data = True),
     ),
-    'name': (validate_name, put_name_into),
+    'name': (validate_name, put_name),
 }
 
 
 CHANNEL_GUILD_THREAD_FIELD_CONVERTERS = {
-    'applied_tags': (validate_applied_tag_ids, put_applied_tag_ids_into),
-    'applied_tag_ids': (validate_applied_tag_ids, put_applied_tag_ids_into),
+    'applied_tags': (validate_applied_tag_ids, put_applied_tag_ids),
+    'applied_tag_ids': (validate_applied_tag_ids, put_applied_tag_ids),
     'auto_archive_after': (
-        validate_auto_archive_after, partial_func(put_auto_archive_after_into, flatten_thread_metadata = True)
+        validate_auto_archive_after, partial_func(put_auto_archive_after, flatten_thread_metadata = True)
     ),
-    'flags': (validate_flags, put_flags_into),
-    'invitable': (validate_invitable, partial_func(put_invitable_into, flatten_thread_metadata = True)),
-    'name': (validate_name, put_name_into),
-    'open_': (validate_open, partial_func(put_open_into, flatten_thread_metadata = True)),
-    'slowmode': (validate_slowmode, put_slowmode_into),
+    'flags': (validate_flags, put_flags),
+    'invitable': (validate_invitable, partial_func(put_invitable, flatten_thread_metadata = True)),
+    'name': (validate_name, put_name),
+    'open_': (validate_open, partial_func(put_open, flatten_thread_metadata = True)),
+    'slowmode': (validate_slowmode, put_slowmode),
 }
 
 
@@ -167,10 +167,10 @@ def create_partial_channel_data(channel):
     data : `dict` of (`str`, `object`) items
     """
     data = {}
-    put_id_into(channel.id, data, True)
-    put_guild_id_into(channel.guild_id, data, True)
-    put_type_into(channel.type, data, True)
-    put_name_into(channel.name, data, True)
+    put_id(channel.id, data, True)
+    put_guild_id(channel.guild_id, data, True)
+    put_type(channel.type, data, True)
+    put_name(channel.name, data, True)
     return data
 
 

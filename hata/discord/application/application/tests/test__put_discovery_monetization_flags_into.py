@@ -1,6 +1,6 @@
 import vampytest
 
-from ..fields import put_monetization_eligibility_flags_into
+from ..fields import put_monetization_eligibility_flags
 from ..flags import ApplicationMonetizationEligibilityFlags
 
 
@@ -12,9 +12,9 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_monetization_eligibility_flags_into(input_value, defaults):
+def test__put_monetization_eligibility_flags(input_value, defaults):
     """
-    Tests whether ``put_monetization_eligibility_flags_into`` is working as intended.
+    Tests whether ``put_monetization_eligibility_flags`` is working as intended.
     
     Parameters
     ----------
@@ -27,4 +27,4 @@ def test__put_monetization_eligibility_flags_into(input_value, defaults):
     -------
     data : `dict<str, object>`
     """
-    return put_monetization_eligibility_flags_into(input_value, {}, defaults)
+    return put_monetization_eligibility_flags(input_value, {}, defaults)

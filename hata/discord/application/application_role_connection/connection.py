@@ -3,8 +3,8 @@ __all__ = ('ApplicationRoleConnection',)
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
-    parse_metadata_values, parse_platform_name, parse_platform_user_name, put_metadata_values_into,
-    put_platform_name_into, put_platform_user_name_into, validate_metadata_values, validate_platform_name,
+    parse_metadata_values, parse_platform_name, parse_platform_user_name, put_metadata_values,
+    put_platform_name, put_platform_user_name, validate_metadata_values, validate_platform_name,
     validate_platform_user_name
 )
 
@@ -104,9 +104,9 @@ class ApplicationRoleConnection(RichAttributeErrorBaseType):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_platform_name_into(self.platform_name, data, defaults)
-        put_platform_user_name_into(self.platform_user_name, data, defaults)
-        put_metadata_values_into(self.metadata_values, data, defaults)
+        put_platform_name(self.platform_name, data, defaults)
+        put_platform_user_name(self.platform_user_name, data, defaults)
+        put_metadata_values(self.metadata_values, data, defaults)
         return data
     
     

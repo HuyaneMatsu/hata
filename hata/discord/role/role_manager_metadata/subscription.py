@@ -4,7 +4,7 @@ from scarletio import copy_docs
 
 from .integration import RoleManagerMetadataIntegration
 from .fields import (
-    parse_purchasable, parse_subscription_listing_id, put_purchasable_into, put_subscription_listing_id_into,
+    parse_purchasable, parse_subscription_listing_id, put_purchasable, put_subscription_listing_id,
     validate_purchasable, validate_subscription_listing_id
 )
 
@@ -74,8 +74,8 @@ class RoleManagerMetadataSubscription(RoleManagerMetadataIntegration):
     @copy_docs(RoleManagerMetadataIntegration.to_data)
     def to_data(self, *, defaults = False):
         data = RoleManagerMetadataIntegration.to_data(self)
-        put_purchasable_into(self.purchasable, data, defaults)
-        put_subscription_listing_id_into(self.subscription_listing_id, data, defaults)
+        put_purchasable(self.purchasable, data, defaults)
+        put_subscription_listing_id(self.subscription_listing_id, data, defaults)
         return data
     
     

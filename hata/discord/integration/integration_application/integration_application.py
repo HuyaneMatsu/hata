@@ -6,7 +6,7 @@ from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ZEROUSER
 
 from .fields import (
-    parse_bot, parse_description, parse_id, parse_name, put_bot_into, put_description_into, put_id_into, put_name_into,
+    parse_bot, parse_description, parse_id, parse_name, put_bot, put_description, put_id, put_name,
     validate_bot, validate_description, validate_id, validate_name
 )
 
@@ -224,12 +224,12 @@ class IntegrationApplication(DiscordEntity):
         data = {}
         
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         
-        put_bot_into(self.bot, data, defaults, include_internals = include_internals)
-        put_description_into(self.description, data, defaults)
+        put_bot(self.bot, data, defaults, include_internals = include_internals)
+        put_description(self.description, data, defaults)
         type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
-        put_name_into(self.name, data, defaults)
+        put_name(self.name, data, defaults)
         
         return data
     

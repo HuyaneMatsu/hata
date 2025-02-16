@@ -5,8 +5,8 @@ from scarletio import copy_docs
 from ...localization.utils import LOCALE_DEFAULT
 from ...user import OrinUserBase, PremiumType, UserClan, UserFlag
 from ...user.user.fields import (
-    parse_email, parse_email_verified, parse_id, parse_locale, parse_mfa_enabled, parse_premium_type, put_email_into,
-    put_email_verified_into, put_locale_into, put_mfa_enabled_into, put_oauth2_flags_into, put_premium_type_into,
+    parse_email, parse_email_verified, parse_id, parse_locale, parse_mfa_enabled, parse_premium_type, put_email,
+    put_email_verified, put_locale, put_mfa_enabled, put_oauth2_flags_into, put_premium_type,
     validate_email, validate_email_verified, validate_locale, validate_mfa_enabled, validate_premium_type
 )
 
@@ -196,12 +196,12 @@ class Oauth2User(OrinUserBase):
     @copy_docs(OrinUserBase.to_data)
     def to_data(self, *, defaults = False, include_internals = False):
         data = OrinUserBase.to_data(self, defaults = defaults, include_internals = include_internals)
-        put_email_into(self.email, data, defaults)
-        put_email_verified_into(self.email_verified, data, defaults)
-        put_locale_into(self.locale, data, defaults)
-        put_mfa_enabled_into(self.mfa_enabled, data, defaults)
+        put_email(self.email, data, defaults)
+        put_email_verified(self.email_verified, data, defaults)
+        put_locale(self.locale, data, defaults)
+        put_mfa_enabled(self.mfa_enabled, data, defaults)
         put_oauth2_flags_into(self.flags, data, defaults)
-        put_premium_type_into(self.premium_type, data, defaults)
+        put_premium_type(self.premium_type, data, defaults)
         return data
     
     

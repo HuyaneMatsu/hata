@@ -2,7 +2,7 @@ __all__ = ('GuildInventorySettings', )
 
 from scarletio import RichAttributeErrorBaseType
 
-from .fields import parse_emoji_pack_collectible, put_emoji_pack_collectible_into, validate_emoji_pack_collectible
+from .fields import parse_emoji_pack_collectible, put_emoji_pack_collectible, validate_emoji_pack_collectible
 
 
 class GuildInventorySettings(RichAttributeErrorBaseType):
@@ -77,7 +77,7 @@ class GuildInventorySettings(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_emoji_pack_collectible_into(self.emoji_pack_collectible, data, defaults)
+        put_emoji_pack_collectible(self.emoji_pack_collectible, data, defaults)
         return data
     
     

@@ -10,9 +10,9 @@ from ..schedule_nth_weeks_day import ScheduleNthWeeksDay, ScheduleWeeksDay
 
 from .fields import (
     parse_by_month_days, parse_by_months, parse_by_nth_weeks_days, parse_by_weeks_days, parse_by_year_days, parse_end,
-    parse_frequency, parse_occurrence_count_limit, parse_occurrence_spacing, parse_start, put_by_month_days_into,
-    put_by_months_into, put_by_nth_weeks_days_into, put_by_weeks_days_into, put_by_year_days_into, put_end_into,
-    put_frequency_into, put_occurrence_count_limit_into, put_occurrence_spacing_into, put_start_into,
+    parse_frequency, parse_occurrence_count_limit, parse_occurrence_spacing, parse_start, put_by_month_days,
+    put_by_months, put_by_nth_weeks_days, put_by_weeks_days, put_by_year_days, put_end,
+    put_frequency, put_occurrence_count_limit, put_occurrence_spacing, put_start,
     validate_by_month_days, validate_by_months, validate_by_nth_weeks_days, validate_by_weeks_days,
     validate_by_year_days, validate_end, validate_frequency, validate_occurrence_count_limit,
     validate_occurrence_spacing, validate_start
@@ -424,15 +424,15 @@ class Schedule(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_by_month_days_into(self.by_month_days, data, defaults)
-        put_by_months_into(self.by_months, data, defaults)
-        put_by_nth_weeks_days_into(self.by_nth_weeks_days, data, defaults)
-        put_by_weeks_days_into(self.by_weeks_days, data, defaults)
-        put_by_year_days_into(self.by_year_days, data, defaults)
-        put_end_into(self.end, data, defaults)
-        put_frequency_into(self.frequency, data, defaults)
-        put_occurrence_count_limit_into(self.occurrence_count_limit, data, defaults)
-        put_occurrence_spacing_into(self.occurrence_spacing, data, defaults)
+        put_by_month_days(self.by_month_days, data, defaults)
+        put_by_months(self.by_months, data, defaults)
+        put_by_nth_weeks_days(self.by_nth_weeks_days, data, defaults)
+        put_by_weeks_days(self.by_weeks_days, data, defaults)
+        put_by_year_days(self.by_year_days, data, defaults)
+        put_end(self.end, data, defaults)
+        put_frequency(self.frequency, data, defaults)
+        put_occurrence_count_limit(self.occurrence_count_limit, data, defaults)
+        put_occurrence_spacing(self.occurrence_spacing, data, defaults)
         
         schedule_start = self.start
         if (schedule_start is None):
@@ -441,7 +441,7 @@ class Schedule(RichAttributeErrorBaseType):
             else:
                 schedule_start = start
         
-        put_start_into(schedule_start, data, defaults)
+        put_start(schedule_start, data, defaults)
         
         return data
     

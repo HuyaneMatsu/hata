@@ -1,11 +1,11 @@
 import vampytest
 
-from ..fields import put_default_channel_ids_into
+from ..fields import put_default_channel_ids
 
 
-def test__put_default_channel_ids_into():
+def test__put_default_channel_ids():
     """
-    Tests whether ``put_default_channel_ids_into`` is working as intended.
+    Tests whether ``put_default_channel_ids`` is working as intended.
     """
     channel_id = 202303040031
     
@@ -14,5 +14,5 @@ def test__put_default_channel_ids_into():
         (None, True, {'default_channel_ids': []}),
         ((channel_id, ), False, {'default_channel_ids': [str(channel_id)]}),
     ):
-        data = put_default_channel_ids_into(input_value, {}, defaults)
+        data = put_default_channel_ids(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

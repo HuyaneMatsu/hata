@@ -3,16 +3,16 @@ __all__ = ('create_partial_soundboard_sound_from_id', 'create_partial_soundboard
 from ...core import SOUNDBOARD_SOUNDS
 
 from .fields import (
-    parse_guild_id, parse_id, put_emoji_into, put_name_into, put_volume_into, validate_emoji, validate_name,
+    parse_guild_id, parse_id, put_emoji, put_name, put_volume, validate_emoji, validate_name,
     validate_volume
 )
 from .soundboard_sound import SoundboardSound
 
 
 SOUNDBOARD_SOUND_FIELD_CONVERTERS = {
-    'emoji': (validate_emoji, put_emoji_into),
-    'name': (validate_name, put_name_into),
-    'volume': (validate_volume, put_volume_into),
+    'emoji': (validate_emoji, put_emoji),
+    'name': (validate_name, put_name),
+    'volume': (validate_volume, put_volume),
 }
 
 

@@ -6,8 +6,8 @@ from ...component import Component, ComponentType
 
 from .base import InteractionMetadataBase
 from .fields import (
-    parse_component_type, parse_custom_id, parse_resolved, parse_values, put_component_type_into, put_custom_id_into,
-    put_resolved_into, put_values_into, validate_component_type, validate_custom_id, validate_resolved, validate_values
+    parse_component_type, parse_custom_id, parse_resolved, parse_values, put_component_type, put_custom_id,
+    put_resolved, put_values, validate_component_type, validate_custom_id, validate_resolved, validate_values
 )
 
 
@@ -212,10 +212,10 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
     @copy_docs(InteractionMetadataBase.to_data)
     def to_data(self, *, defaults = False, guild_id = 0):
         data = {}
-        put_component_type_into(self.component_type, data, defaults)
-        put_custom_id_into(self.custom_id, data, defaults)
-        put_resolved_into(self.resolved, data, defaults, guild_id = guild_id)
-        put_values_into(self.values, data, defaults)
+        put_component_type(self.component_type, data, defaults)
+        put_custom_id(self.custom_id, data, defaults)
+        put_resolved(self.resolved, data, defaults, guild_id = guild_id)
+        put_values(self.values, data, defaults)
         return data
     
     

@@ -18,7 +18,8 @@ from ...payload_building import build_edit_payload
 from ...role import Role
 from ...onboarding import OnboardingScreen
 from ...onboarding.onboarding_screen.utils import (
-    ONBOARDING_FIELD_CONVERTERS, flatten_emoji_data_in_onboarding_screen_prompt_options
+    ONBOARDING_FIELD_CONVERTERS, flatten_emoji_data_in_onboarding_screen_prompt_options,
+    populate_prompt_ids_in_onboarding_screen_prompt_options
 )
 from ...user import ClientUserBase, GuildProfile, PremiumType, User, UserFlag
 from ...utils import log_time_converter
@@ -382,6 +383,9 @@ class ClientCompoundGuildEndpoints(Compound):
         
         # https://github.com/discord/discord-api-docs/pull/6479
         data = flatten_emoji_data_in_onboarding_screen_prompt_options(data)
+        
+        # this one has no ticket yet lmeow
+        data = populate_prompt_ids_in_onboarding_screen_prompt_options(data, onboarding_screen_template)
         
         onboarding_screen_data = await self.api.onboarding_screen_edit(guild_id, data, reason)
         return OnboardingScreen.from_data(onboarding_screen_data)

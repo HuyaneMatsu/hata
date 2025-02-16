@@ -5,7 +5,7 @@ from scarletio import RichAttributeErrorBaseType
 from ...user import ZEROUSER
 
 from .fields import (
-    parse_nonce, parse_session_id, parse_user, put_nonce_into, put_session_id_into, put_user_into, validate_nonce,
+    parse_nonce, parse_session_id, parse_user, put_nonce, put_session_id, put_user, validate_nonce,
     validate_session_id, validate_user
 )
 
@@ -176,9 +176,9 @@ class EmbeddedActivityUserState(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_nonce_into(self.nonce, data, defaults)
-        put_session_id_into(self.session_id, data, defaults)
-        put_user_into(self.user, data, defaults, guild_id = guild_id)
+        put_nonce(self.nonce, data, defaults)
+        put_session_id(self.session_id, data, defaults)
+        put_user(self.user, data, defaults, guild_id = guild_id)
         return data
     
     

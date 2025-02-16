@@ -1,0 +1,33 @@
+import vampytest
+
+from ...application_install_parameters import ApplicationInstallParameters
+
+from ..fields import put_install_parameters
+
+
+def _iter_options():
+    install_parameters = ApplicationInstallParameters(permissions = 69)
+    
+    yield None, False, {}
+    yield None, True, {'oauth2_install_params': None}
+    yield install_parameters, False, {'oauth2_install_params': install_parameters.to_data(defaults = False)}
+    yield install_parameters, True, {'oauth2_install_params': install_parameters.to_data(defaults = True)}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_install_parameters(input_value, defaults):
+    """
+    Tests whether ``put_install_parameters`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | EmbeddedActivityConfiguration`
+        Value to serialize.
+    defaults : `bool`
+        Whether fields with their value should be included as well.
+    
+    Returns
+    -------
+    data : `dict<str, object>`
+    """
+    return put_install_parameters(input_value, {}, defaults)

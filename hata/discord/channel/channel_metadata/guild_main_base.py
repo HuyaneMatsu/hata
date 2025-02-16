@@ -10,7 +10,7 @@ from ...permission.permission import (
 from ...user import ClientUserBase
 
 from .fields import (
-    parse_permission_overwrites, parse_position, put_permission_overwrites_into, put_position_into,
+    parse_permission_overwrites, parse_position, put_permission_overwrites, put_position,
     validate_permission_overwrites, validate_position
 )
 
@@ -198,10 +198,10 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
         data = ChannelMetadataGuildBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # position
-        put_position_into(self.position, data, defaults)
+        put_position(self.position, data, defaults)
         
         # permission_overwrites
-        put_permission_overwrites_into(self.permission_overwrites, data, defaults)
+        put_permission_overwrites(self.permission_overwrites, data, defaults)
         
         return data
     

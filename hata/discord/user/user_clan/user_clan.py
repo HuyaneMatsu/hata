@@ -6,7 +6,7 @@ from ...core import GUILDS
 from ...http import urls as module_urls
 
 from .fields import (
-    parse_enabled, parse_guild_id, parse_tag, put_enabled_into, put_guild_id_into, put_tag_into, validate_enabled,
+    parse_enabled, parse_guild_id, parse_tag, put_enabled, put_guild_id, put_tag, validate_enabled,
     validate_guild_id, validate_tag
 )
 
@@ -129,10 +129,10 @@ class UserClan(metaclass = Slotted):
         data : `dict<str, object>`
         """
         data = {}
-        put_enabled_into(self.enabled, data, defaults)
-        put_guild_id_into(self.guild_id, data, defaults)
+        put_enabled(self.enabled, data, defaults)
+        put_guild_id(self.guild_id, data, defaults)
         type(self).icon.put_into(self.icon, data, defaults)
-        put_tag_into(self.tag, data, defaults)
+        put_tag(self.tag, data, defaults)
         return data
     
     

@@ -1,6 +1,6 @@
 import vampytest
 
-from ..fields import put_finalized_into
+from ..fields import put_finalized
 
 
 def _iter_options():
@@ -11,9 +11,9 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_finalized_into(input_value, defaults):
+def test__put_finalized(input_value, defaults):
     """
-    Tests whether ``put_finalized_into`` works as intended.
+    Tests whether ``put_finalized`` works as intended.
     
     Parameters
     ----------
@@ -26,4 +26,4 @@ def test__put_finalized_into(input_value, defaults):
     -------
     output : `dict<str, object>`
     """
-    return put_finalized_into(input_value, {}, defaults)
+    return put_finalized(input_value, {}, defaults)

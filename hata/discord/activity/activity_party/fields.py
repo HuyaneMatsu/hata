@@ -7,7 +7,7 @@ from ...field_validators import int_conditional_validator_factory, nullable_stri
 # id
 
 parse_id = nullable_string_parser_factory('id')
-put_id_into = nullable_string_optional_putter_factory('id')
+put_id = nullable_string_optional_putter_factory('id')
 validate_id = nullable_string_validator_factory('party_id', 0, 1024)
 
 # size # max
@@ -29,7 +29,7 @@ def parse_size_and_max(data):
     return data.get('size', (0, 0))
 
 
-def put_size_and_max_into(size_and_max, data, defaults):
+def put_size_and_max(size_and_max, data, defaults):
     """
     Puts the given size and max value pair into the given data.
     

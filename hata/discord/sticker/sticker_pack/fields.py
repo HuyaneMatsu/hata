@@ -14,37 +14,37 @@ from ..sticker import Sticker
 # banner_id
 
 parse_banner_id = entity_id_parser_factory('banner_asset_id')
-put_banner_id_into = entity_id_optional_putter_factory('banner_asset_id')
+put_banner_id = entity_id_optional_putter_factory('banner_asset_id')
 validate_banner_id = entity_id_validator_factory('banner_id')
 
 # cover_sticker_id
 
 parse_cover_sticker_id = entity_id_parser_factory('cover_sticker_id')
-put_cover_sticker_id_into = entity_id_optional_putter_factory('cover_sticker_id')
+put_cover_sticker_id = entity_id_optional_putter_factory('cover_sticker_id')
 validate_cover_sticker_id = entity_id_validator_factory('cover_sticker_id', Sticker)
 
 # description
 
 parse_description = nullable_string_parser_factory('description')
-put_description_into = nullable_string_putter_factory('description')
+put_description = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', 0, 1024)
 
 # id
 
 parse_id = entity_id_parser_factory('id')
-put_id_into = entity_id_putter_factory('id')
+put_id = entity_id_putter_factory('id')
 validate_id = entity_id_validator_factory('id')
 
 # name
 
 parse_name = force_string_parser_factory('name')
-put_name_into = force_string_putter_factory('name')
+put_name = force_string_putter_factory('name')
 validate_name = force_string_validator_factory('name', 0, 1024)
 
 # sku_id
 
 parse_sku_id = entity_id_parser_factory('sku_id')
-put_sku_id_into = entity_id_optional_putter_factory('sku_id')
+put_sku_id = entity_id_optional_putter_factory('sku_id')
 validate_sku_id = entity_id_validator_factory('sku_id', NotImplemented, include = 'SKU')
 
 # stickers
@@ -67,7 +67,7 @@ def parse_stickers(data):
         return frozenset(Sticker.from_data(sticker_data) for sticker_data in sticker_datas)
 
 
-def put_stickers_into(stickers, data, defaults):
+def put_stickers(stickers, data, defaults):
     """
     Puts the stickers into the given json serializable dictionary.
     

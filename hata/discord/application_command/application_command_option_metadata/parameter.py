@@ -3,7 +3,7 @@ __all__ = ('ApplicationCommandOptionMetadataParameter',)
 from scarletio import copy_docs
 
 from .base import ApplicationCommandOptionMetadataBase
-from .fields import parse_required, put_required_into, validate_required
+from .fields import parse_required, put_required, validate_required
 
 
 class ApplicationCommandOptionMetadataParameter(ApplicationCommandOptionMetadataBase):
@@ -65,7 +65,7 @@ class ApplicationCommandOptionMetadataParameter(ApplicationCommandOptionMetadata
     @copy_docs(ApplicationCommandOptionMetadataBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_required_into(self.required, data, defaults)
+        put_required(self.required, data, defaults)
         return data
     
     

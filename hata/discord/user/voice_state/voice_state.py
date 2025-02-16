@@ -8,9 +8,9 @@ from ..user import create_partial_user_from_id
 
 from .fields import (
     parse_channel_id, parse_deaf, parse_mute, parse_requested_to_speak_at, parse_self_deaf, parse_self_mute,
-    parse_self_stream, parse_self_video, parse_session_id, parse_speaker, parse_user_id, put_channel_id_into,
-    put_deaf_into, put_mute_into, put_requested_to_speak_at_into, put_self_deaf_into, put_self_mute_into,
-    put_self_stream_into, put_self_video_into, put_session_id_into, put_speaker_into, put_user_id_into,
+    parse_self_stream, parse_self_video, parse_session_id, parse_speaker, parse_user_id, put_channel_id,
+    put_deaf, put_mute, put_requested_to_speak_at, put_self_deaf, put_self_mute,
+    put_self_stream, put_self_video, put_session_id, put_speaker, put_user_id,
     validate_channel_id, validate_deaf, validate_guild_id, validate_mute, validate_requested_to_speak_at,
     validate_self_deaf, validate_self_mute, validate_self_stream, validate_self_video, validate_session_id,
     validate_speaker, validate_user_id
@@ -284,17 +284,17 @@ class VoiceState(RichAttributeErrorBaseType):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_channel_id_into(self.channel_id, data, defaults)
-        put_deaf_into(self.deaf, data, defaults)
-        put_mute_into(self.mute, data, defaults)
-        put_requested_to_speak_at_into(self.requested_to_speak_at, data, defaults)
-        put_self_deaf_into(self.self_deaf, data, defaults)
-        put_self_mute_into(self.self_mute, data, defaults)
-        put_self_stream_into(self.self_stream, data, defaults)
-        put_self_video_into(self.self_video, data, defaults)
-        put_session_id_into(self.session_id, data, defaults)
-        put_speaker_into(self.speaker, data, defaults)
-        put_user_id_into(self.user_id, data, defaults)
+        put_channel_id(self.channel_id, data, defaults)
+        put_deaf(self.deaf, data, defaults)
+        put_mute(self.mute, data, defaults)
+        put_requested_to_speak_at(self.requested_to_speak_at, data, defaults)
+        put_self_deaf(self.self_deaf, data, defaults)
+        put_self_mute(self.self_mute, data, defaults)
+        put_self_stream(self.self_stream, data, defaults)
+        put_self_video(self.self_video, data, defaults)
+        put_session_id(self.session_id, data, defaults)
+        put_speaker(self.speaker, data, defaults)
+        put_user_id(self.user_id, data, defaults)
         return data
     
     

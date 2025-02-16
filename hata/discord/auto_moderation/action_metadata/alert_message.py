@@ -3,7 +3,7 @@ __all__ = ('AutoModerationActionMetadataSendAlertMessage',)
 from scarletio import copy_docs
 
 from .base import AutoModerationActionMetadataBase
-from .fields import parse_channel_id, put_channel_id_into, validate_channel_id
+from .fields import parse_channel_id, put_channel_id, validate_channel_id
 
 
 class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataBase):
@@ -63,7 +63,7 @@ class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataB
     def to_data(self, *, defaults = False):
         data = {}
         
-        put_channel_id_into(self.channel_id, data, defaults)
+        put_channel_id(self.channel_id, data, defaults)
         
         return data
     

@@ -5,8 +5,8 @@ from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
     parse_id, parse_in_onboarding, parse_name, parse_options, parse_required, parse_single_select, parse_type,
-    put_id_into, put_in_onboarding_into, put_name_into, put_options_into, put_required_into, put_single_select_into,
-    put_type_into, validate_id, validate_in_onboarding, validate_name, validate_options, validate_required,
+    put_id, put_in_onboarding, put_name, put_options, put_required, put_single_select,
+    put_type, validate_id, validate_in_onboarding, validate_name, validate_options, validate_required,
     validate_single_select, validate_type
 )
 from .preinstanced import OnboardingPromptType
@@ -144,7 +144,7 @@ class OnboardingPrompt(DiscordEntity):
         return self
     
     
-    def to_data(self, *, defaults = False, include_internals = True):
+    def to_data(self, *, defaults = False, include_internals = False):
         """
         Converts the onboarding prompt to json serializable object.
         
@@ -152,6 +152,7 @@ class OnboardingPrompt(DiscordEntity):
         ----------
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether fields with their default value should be included as well.
+        
         include_internals : `bool` = `False`, Optional (Keyword only)
             Whether internal fields should be included as well.
         
@@ -160,15 +161,15 @@ class OnboardingPrompt(DiscordEntity):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_in_onboarding_into(self.in_onboarding, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_options_into(self.options, data, defaults, include_internals = include_internals)
-        put_required_into(self.required, data, defaults)
-        put_single_select_into(self.single_select, data, defaults)
-        put_type_into(self.type, data, defaults)
+        put_in_onboarding(self.in_onboarding, data, defaults)
+        put_name(self.name, data, defaults)
+        put_options(self.options, data, defaults, include_internals = include_internals)
+        put_required(self.required, data, defaults)
+        put_single_select(self.single_select, data, defaults)
+        put_type(self.type, data, defaults)
         
         if include_internals:
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
         
         return data
     
@@ -177,7 +178,7 @@ class OnboardingPrompt(DiscordEntity):
         """Returns the onboarding prompt's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
         ]
         
         prompt_id = self.id

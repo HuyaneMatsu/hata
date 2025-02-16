@@ -5,7 +5,7 @@ from scarletio import RichAttributeErrorBaseType
 from ...utils import DATETIME_FORMAT_CODE
 
 from .fields import (
-    parse_description, parse_edited_at, parse_steps, put_description_into, put_edited_at_into, put_steps_into,
+    parse_description, parse_edited_at, parse_steps, put_description, put_edited_at, put_steps,
     validate_description, validate_edited_at, validate_steps
 )
 
@@ -105,11 +105,11 @@ class VerificationScreen(RichAttributeErrorBaseType):
         """
         data = {}
         
-        put_description_into(self.description, data, defaults)
-        put_steps_into(self.steps, data, defaults)
+        put_description(self.description, data, defaults)
+        put_steps(self.steps, data, defaults)
         
         if include_internals:
-            put_edited_at_into(self.edited_at, data, defaults)
+            put_edited_at(self.edited_at, data, defaults)
         
         return data
     

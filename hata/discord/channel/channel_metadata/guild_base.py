@@ -7,7 +7,7 @@ from scarletio import copy_docs, export, include
 from ...core import GUILDS
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL
 
-from .fields import parse_name, parse_parent_id, put_name_into, put_parent_id_into, validate_name, validate_parent_id
+from .fields import parse_name, parse_parent_id, put_name, put_parent_id, validate_name, validate_parent_id
 
 from .base import ChannelMetadataBase
 
@@ -133,10 +133,10 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         data = ChannelMetadataBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # name
-        put_name_into(self.name, data, defaults)
+        put_name(self.name, data, defaults)
         
         # parent_id
-        put_parent_id_into(self.parent_id, data, defaults)
+        put_parent_id(self.parent_id, data, defaults)
         
         return data
     

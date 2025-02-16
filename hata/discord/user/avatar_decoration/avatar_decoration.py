@@ -2,7 +2,7 @@ __all__ = ('AvatarDecoration', )
 
 from ...bases import IconSlot, IconType, Slotted
 
-from .fields import parse_sku_id, put_sku_id_into, validate_sku_id
+from .fields import parse_sku_id, put_sku_id, validate_sku_id
 
 
 AVATAR_DECORATION_ASSET = IconSlot('asset', 'asset', None, None)
@@ -151,7 +151,7 @@ class AvatarDecoration(metaclass = Slotted):
         data = {}
         
         type(self).asset.put_into(self.asset, data, defaults)
-        put_sku_id_into(self.sku_id, data, defaults)
+        put_sku_id(self.sku_id, data, defaults)
         
         return data
     

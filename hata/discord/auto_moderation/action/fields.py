@@ -11,7 +11,7 @@ from .preinstanced import AutoModerationActionType
 # type
 
 parse_type = preinstanced_parser_factory('type', AutoModerationActionType, AutoModerationActionType.none)
-put_type_into = preinstanced_putter_factory('type')
+put_type = preinstanced_putter_factory('type')
 validate_type = preinstanced_validator_factory('type', AutoModerationActionType)
 
 # metadata
@@ -43,7 +43,7 @@ def parse_metadata(data, action_type):
     return metadata
 
 
-def put_metadata_into(metadata, data, defaults):
+def put_metadata(metadata, data, defaults):
     """
     Puts the given action metadata's metadata into the given `data` json serializable object.
     

@@ -3,7 +3,7 @@ __all__ = ('ComponentMetadataMediaGallery',)
 from scarletio import copy_docs
 
 from .base import ComponentMetadataBase
-from .fields import parse_items, put_items_into, validate_items
+from .fields import parse_items, put_items, validate_items
 
 
 class ComponentMetadataMediaGallery(ComponentMetadataBase):
@@ -103,7 +103,7 @@ class ComponentMetadataMediaGallery(ComponentMetadataBase):
     def to_data(self, *, defaults = False):
         data = {}
         
-        put_items_into(self.items, data, defaults)
+        put_items(self.items, data, defaults)
         
         return data
     

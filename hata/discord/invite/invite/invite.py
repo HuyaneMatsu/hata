@@ -13,11 +13,11 @@ from ...user import ClientUserBase, ZEROUSER
 from .fields import (
     parse_approximate_online_count, parse_approximate_user_count, parse_channel, parse_code, parse_created_at,
     parse_flags, parse_guild, parse_inviter, parse_max_age, parse_max_uses, parse_target_application, parse_target_type,
-    parse_target_user, parse_temporary, parse_type, parse_uses, put_approximate_online_count_into,
-    put_approximate_user_count_into, put_channel_into, put_code_into, put_created_at_into, put_flags_into,
-    put_guild_into, put_inviter_into, put_max_age_into, put_max_uses_into, put_target_application_id_into,
-    put_target_application_into, put_target_type_into, put_target_user_id_into, put_target_user_into,
-    put_temporary_into, put_type_into, put_uses_into, validate_approximate_online_count,
+    parse_target_user, parse_temporary, parse_type, parse_uses, put_approximate_online_count,
+    put_approximate_user_count, put_channel, put_code, put_created_at, put_flags,
+    put_guild, put_inviter, put_max_age, put_max_uses, put_target_application_id,
+    put_target_application, put_target_type, put_target_user_id, put_target_user,
+    put_temporary, put_type, put_uses, validate_approximate_online_count,
     validate_approximate_user_count, validate_channel, validate_code, validate_created_at, validate_flags,
     validate_guild, validate_inviter, validate_max_age, validate_max_uses, validate_target_application,
     validate_target_type, validate_target_user, validate_temporary, validate_type, validate_uses
@@ -277,28 +277,28 @@ class Invite(DiscordEntity, immortal = True):
         """
         data = {}
         
-        put_flags_into(self.flags, data, defaults)
-        put_max_age_into(self.max_age, data, defaults)
-        put_max_uses_into(self.max_uses, data, defaults)
-        put_target_type_into(self.target_type, data, defaults)
-        put_temporary_into(self.temporary, data, defaults)
+        put_flags(self.flags, data, defaults)
+        put_max_age(self.max_age, data, defaults)
+        put_max_uses(self.max_uses, data, defaults)
+        put_target_type(self.target_type, data, defaults)
+        put_temporary(self.temporary, data, defaults)
         
         if include_internals:
-            put_approximate_user_count_into(self.approximate_user_count, data, defaults)
-            put_approximate_online_count_into(self.approximate_online_count, data, defaults)
-            put_channel_into(self.channel, data, defaults)
-            put_code_into(self.code, data, defaults)
-            put_created_at_into(self.created_at, data, defaults)
-            put_guild_into(self.guild, data, defaults)
-            put_inviter_into(self.inviter, data, defaults)
-            put_target_application_into(self.target_application, data, defaults)
-            put_target_user_into(self.target_user, data, defaults)
-            put_type_into(self.type, data, defaults)
-            put_uses_into(self.uses, data, defaults)
+            put_approximate_user_count(self.approximate_user_count, data, defaults)
+            put_approximate_online_count(self.approximate_online_count, data, defaults)
+            put_channel(self.channel, data, defaults)
+            put_code(self.code, data, defaults)
+            put_created_at(self.created_at, data, defaults)
+            put_guild(self.guild, data, defaults)
+            put_inviter(self.inviter, data, defaults)
+            put_target_application(self.target_application, data, defaults)
+            put_target_user(self.target_user, data, defaults)
+            put_type(self.type, data, defaults)
+            put_uses(self.uses, data, defaults)
         
         else:
-            put_target_application_id_into(self.target_application_id, data, defaults)
-            put_target_user_id_into(self.target_user_id, data, defaults)
+            put_target_application_id(self.target_application_id, data, defaults)
+            put_target_user_id(self.target_user_id, data, defaults)
         
         return data
     

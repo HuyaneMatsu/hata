@@ -28,7 +28,7 @@ from ..message_history import MessageHistory, MessageHistoryCollector, message_r
 
 from .preinstanced import ChannelType
 from .fields import (
-    parse_guild_id, parse_id, parse_type, put_guild_id_into, put_id_into, put_type_into, validate_guild_id, validate_id,
+    parse_guild_id, parse_id, parse_type, put_guild_id, put_id, put_type, validate_guild_id, validate_id,
     validate_type
 )
 from .flags import (
@@ -1325,14 +1325,14 @@ class Channel(DiscordEntity, immortal = True):
         data = self.metadata.to_data(defaults = defaults, include_internals = include_internals)
         
         # type
-        put_type_into(self.type, data, defaults)
+        put_type(self.type, data, defaults)
         
         if include_internals:
             # id
-            put_id_into(self.id, data, defaults)
+            put_id(self.id, data, defaults)
             
             # guild_id
-            put_guild_id_into(self.guild_id, data, defaults)
+            put_guild_id(self.guild_id, data, defaults)
         
         return data
     

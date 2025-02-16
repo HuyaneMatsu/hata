@@ -5,7 +5,7 @@ from scarletio import copy_docs
 from ..activity_field_base import ActivityFieldBase
 
 from .fields import (
-    parse_id, parse_size_and_max, put_id_into, put_size_and_max_into, validate_id, validate_max, validate_size
+    parse_id, parse_size_and_max, put_id, put_size_and_max, validate_id, validate_max, validate_size
 )
 
 
@@ -82,8 +82,8 @@ class ActivityParty(ActivityFieldBase):
     @copy_docs(ActivityFieldBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_id_into(self.id, data, defaults)
-        put_size_and_max_into((self.size, self.max), data, defaults)
+        put_id(self.id, data, defaults)
+        put_size_and_max((self.size, self.max), data, defaults)
         return data
     
     

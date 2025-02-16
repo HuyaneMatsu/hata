@@ -67,18 +67,18 @@ from .fields import (
     parse_safety_alerts_channel_id, parse_scheduled_events, parse_soundboard_sounds, parse_stages, parse_stickers,
     parse_system_channel_flags, parse_system_channel_id, parse_threads, parse_user_count, parse_users,
     parse_vanity_code, parse_verification_level, parse_voice_states, parse_widget_channel_id, parse_widget_enabled,
-    put_afk_channel_id_into, put_afk_timeout_into, put_approximate_online_count_into, put_approximate_user_count_into,
-    put_available_into, put_boost_count_into, put_boost_progress_bar_enabled_into, put_channels_into,
-    put_default_message_notification_level_into, put_description_into, put_embedded_activities_into, put_emojis_into,
-    put_explicit_content_filter_level_into, put_features_into, put_hub_type_into, put_id_into, put_incidents_into,
-    put_inventory_settings_into, put_large_into, put_locale_into, put_max_presences_into,
-    put_max_stage_channel_video_users_into, put_max_users_into, put_max_voice_channel_video_users_into,
-    put_mfa_level_into, put_name_into, put_nsfw_level_into, put_owner_id_into, put_premium_tier_into,
-    put_public_updates_channel_id_into, put_roles_into, put_rules_channel_id_into, put_safety_alerts_channel_id_into,
-    put_scheduled_events_into, put_soundboard_sounds_into, put_stages_into, put_stickers_into,
-    put_system_channel_flags_into, put_system_channel_id_into, put_threads_into, put_user_count_into, put_users_into,
-    put_vanity_code_into, put_verification_level_into, put_voice_states_into, put_widget_channel_id_into,
-    put_widget_enabled_into, validate_afk_channel_id, validate_afk_timeout, validate_approximate_online_count,
+    put_afk_channel_id, put_afk_timeout, put_approximate_online_count, put_approximate_user_count,
+    put_available, put_boost_count, put_boost_progress_bar_enabled, put_channels,
+    put_default_message_notification_level, put_description, put_embedded_activities, put_emojis,
+    put_explicit_content_filter_level, put_features, put_hub_type, put_id, put_incidents,
+    put_inventory_settings, put_large, put_locale, put_max_presences,
+    put_max_stage_channel_video_users, put_max_users, put_max_voice_channel_video_users,
+    put_mfa_level, put_name, put_nsfw_level, put_owner_id, put_premium_tier,
+    put_public_updates_channel_id, put_roles, put_rules_channel_id, put_safety_alerts_channel_id,
+    put_scheduled_events, put_soundboard_sounds, put_stages, put_stickers,
+    put_system_channel_flags, put_system_channel_id, put_threads, put_user_count, put_users,
+    put_vanity_code, put_verification_level, put_voice_states, put_widget_channel_id,
+    put_widget_enabled, validate_afk_channel_id, validate_afk_timeout, validate_approximate_online_count,
     validate_approximate_user_count, validate_available, validate_boost_count, validate_boost_progress_bar_enabled,
     validate_channels, validate_default_message_notification_level, validate_description, validate_embedded_activities,
     validate_emojis, validate_explicit_content_filter_level, validate_features, validate_hub_type, validate_id,
@@ -1213,28 +1213,28 @@ class Guild(DiscordEntity, immortal = True):
         """
         data = {}
         
-        put_afk_channel_id_into(self.afk_channel_id, data, defaults)
-        put_afk_timeout_into(self.afk_timeout, data, defaults)
-        put_boost_progress_bar_enabled_into(self.boost_progress_bar_enabled, data, defaults)
-        put_default_message_notification_level_into(self.default_message_notification_level, data, defaults)
-        put_description_into(self.description, data, defaults)
-        put_explicit_content_filter_level_into(self.explicit_content_filter_level, data, defaults)
-        put_features_into(self.features, data, defaults)
-        put_hub_type_into(self.hub_type, data, defaults)
-        put_mfa_level_into(self.mfa_level, data, defaults)
-        put_name_into(self.name, data, defaults)
-        put_nsfw_level_into(self.nsfw_level, data, defaults)
-        put_owner_id_into(self.owner_id, data, defaults)
-        put_locale_into(self.locale, data, defaults)
-        put_public_updates_channel_id_into(self.public_updates_channel_id, data, defaults)
-        put_rules_channel_id_into(self.rules_channel_id, data, defaults)
-        put_safety_alerts_channel_id_into(self.safety_alerts_channel_id, data, defaults)
-        put_system_channel_flags_into(self.system_channel_flags, data, defaults)
-        put_system_channel_id_into(self.system_channel_id, data, defaults)
-        put_vanity_code_into(self.vanity_code, data, defaults)
-        put_verification_level_into(self.verification_level, data, defaults)
-        put_widget_channel_id_into(self.widget_channel_id, data, defaults)
-        put_widget_enabled_into(self.widget_enabled, data, defaults)
+        put_afk_channel_id(self.afk_channel_id, data, defaults)
+        put_afk_timeout(self.afk_timeout, data, defaults)
+        put_boost_progress_bar_enabled(self.boost_progress_bar_enabled, data, defaults)
+        put_default_message_notification_level(self.default_message_notification_level, data, defaults)
+        put_description(self.description, data, defaults)
+        put_explicit_content_filter_level(self.explicit_content_filter_level, data, defaults)
+        put_features(self.features, data, defaults)
+        put_hub_type(self.hub_type, data, defaults)
+        put_mfa_level(self.mfa_level, data, defaults)
+        put_name(self.name, data, defaults)
+        put_nsfw_level(self.nsfw_level, data, defaults)
+        put_owner_id(self.owner_id, data, defaults)
+        put_locale(self.locale, data, defaults)
+        put_public_updates_channel_id(self.public_updates_channel_id, data, defaults)
+        put_rules_channel_id(self.rules_channel_id, data, defaults)
+        put_safety_alerts_channel_id(self.safety_alerts_channel_id, data, defaults)
+        put_system_channel_flags(self.system_channel_flags, data, defaults)
+        put_system_channel_id(self.system_channel_id, data, defaults)
+        put_vanity_code(self.vanity_code, data, defaults)
+        put_verification_level(self.verification_level, data, defaults)
+        put_widget_channel_id(self.widget_channel_id, data, defaults)
+        put_widget_enabled(self.widget_enabled, data, defaults)
         
         type(self).banner.put_into(self.banner, data, defaults, as_data = not include_internals)
         type(self).discovery_splash.put_into(self.discovery_splash, data, defaults, as_data = not include_internals)
@@ -1242,31 +1242,31 @@ class Guild(DiscordEntity, immortal = True):
         type(self).invite_splash.put_into(self.invite_splash, data, defaults, as_data = not include_internals)
         
         if include_internals:
-            put_approximate_online_count_into(self.approximate_online_count, data, defaults)
-            put_approximate_user_count_into(self.approximate_user_count, data, defaults)
-            put_available_into(self.available, data, defaults)
-            put_boost_count_into(self.boost_count, data, defaults)
-            put_channels_into(self.channels, data, defaults)
-            put_embedded_activities_into(self.embedded_activities, data, defaults)
-            put_emojis_into(self.emojis, data, defaults)
-            put_incidents_into(self.incidents, data, defaults)
-            put_inventory_settings_into(self.inventory_settings, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_large_into(self.large, data, defaults)
-            put_max_presences_into(self.max_presences, data, defaults)
-            put_max_stage_channel_video_users_into(self.max_stage_channel_video_users, data, defaults)
-            put_max_users_into(self.max_users, data, defaults)
-            put_max_voice_channel_video_users_into(self.max_voice_channel_video_users, data, defaults)
-            put_premium_tier_into(self.premium_tier, data, defaults)
-            put_roles_into(self.roles, data, defaults)
-            put_scheduled_events_into(self.scheduled_events, data, defaults)
-            put_soundboard_sounds_into(self.soundboard_sounds, data, defaults)
-            put_stages_into(self.stages, data, defaults)
-            put_stickers_into(self.stickers, data, defaults)
-            put_threads_into(self.threads, data, defaults)
-            put_user_count_into(self.user_count, data, defaults)
-            put_users_into(self.users, data, defaults, guild_id = self.id)
-            put_voice_states_into(self.voice_states, data, defaults)
+            put_approximate_online_count(self.approximate_online_count, data, defaults)
+            put_approximate_user_count(self.approximate_user_count, data, defaults)
+            put_available(self.available, data, defaults)
+            put_boost_count(self.boost_count, data, defaults)
+            put_channels(self.channels, data, defaults)
+            put_embedded_activities(self.embedded_activities, data, defaults)
+            put_emojis(self.emojis, data, defaults)
+            put_incidents(self.incidents, data, defaults)
+            put_inventory_settings(self.inventory_settings, data, defaults)
+            put_id(self.id, data, defaults)
+            put_large(self.large, data, defaults)
+            put_max_presences(self.max_presences, data, defaults)
+            put_max_stage_channel_video_users(self.max_stage_channel_video_users, data, defaults)
+            put_max_users(self.max_users, data, defaults)
+            put_max_voice_channel_video_users(self.max_voice_channel_video_users, data, defaults)
+            put_premium_tier(self.premium_tier, data, defaults)
+            put_roles(self.roles, data, defaults)
+            put_scheduled_events(self.scheduled_events, data, defaults)
+            put_soundboard_sounds(self.soundboard_sounds, data, defaults)
+            put_stages(self.stages, data, defaults)
+            put_stickers(self.stickers, data, defaults)
+            put_threads(self.threads, data, defaults)
+            put_user_count(self.user_count, data, defaults)
+            put_users(self.users, data, defaults, guild_id = self.id)
+            put_voice_states(self.voice_states, data, defaults)
         
         return data
     

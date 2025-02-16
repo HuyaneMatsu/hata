@@ -10,8 +10,8 @@ from ...scheduled_event import PrivacyLevel
 
 from .fields import (
     parse_channel_id, parse_discoverable, parse_guild_id, parse_id, parse_invite_code, parse_privacy_level,
-    parse_scheduled_event_id, parse_topic, put_channel_id_into, put_discoverable_into, put_guild_id_into, put_id_into,
-    put_invite_code_into, put_privacy_level_into, put_scheduled_event_id_into, put_topic_into, validate_channel_id,
+    parse_scheduled_event_id, parse_topic, put_channel_id, put_discoverable, put_guild_id, put_id,
+    put_invite_code, put_privacy_level, put_scheduled_event_id, put_topic, validate_channel_id,
     validate_discoverable, validate_guild_id, validate_id, validate_invite_code, validate_privacy_level,
     validate_scheduled_event_id, validate_topic
 )
@@ -175,16 +175,16 @@ class Stage(DiscordEntity, immortal = True):
         data : `dict` of (`str`, `object`) Items
         """
         data = {}
-        put_privacy_level_into(self.privacy_level, data, defaults)
-        put_scheduled_event_id_into(self.scheduled_event_id, data, defaults)
-        put_topic_into(self.topic, data, defaults)
+        put_privacy_level(self.privacy_level, data, defaults)
+        put_scheduled_event_id(self.scheduled_event_id, data, defaults)
+        put_topic(self.topic, data, defaults)
         
         if include_internals:
-            put_channel_id_into(self.channel_id, data, defaults)
-            put_discoverable_into(self.discoverable, data, defaults)
-            put_guild_id_into(self.guild_id, data, defaults)
-            put_id_into(self.id, data, defaults)
-            put_invite_code_into(self.invite_code, data, defaults)
+            put_channel_id(self.channel_id, data, defaults)
+            put_discoverable(self.discoverable, data, defaults)
+            put_guild_id(self.guild_id, data, defaults)
+            put_id(self.id, data, defaults)
+            put_invite_code(self.invite_code, data, defaults)
         
         return data
     

@@ -5,7 +5,7 @@ from scarletio import RichAttributeErrorBaseType
 from ...utils import url_cutter
 
 from .fields import (
-    parse_description, parse_spoiler, parse_url, put_description_into, put_spoiler_into, put_url_into,
+    parse_description, parse_spoiler, parse_url, put_description, put_spoiler, put_url,
     validate_description, validate_spoiler, validate_url,
 )
 
@@ -164,9 +164,9 @@ class MediaItem(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_description_into(self.description, data, defaults)
-        put_spoiler_into(self.spoiler, data, defaults)
-        put_url_into(self.url, data, defaults)
+        put_description(self.description, data, defaults)
+        put_spoiler(self.spoiler, data, defaults)
+        put_url(self.url, data, defaults)
         return data
     
     

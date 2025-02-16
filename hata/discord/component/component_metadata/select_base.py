@@ -10,8 +10,8 @@ from ..shared_helpers import create_auto_custom_id
 from .base import ComponentMetadataBase
 from .constants import MAX_VALUES_DEFAULT, MIN_VALUES_DEFAULT
 from .fields import (
-    parse_enabled, parse_max_values, parse_min_values, parse_placeholder, put_enabled_into, put_max_values_into,
-    put_min_values_into, put_placeholder_into, validate_enabled, validate_max_values, validate_min_values,
+    parse_enabled, parse_max_values, parse_min_values, parse_placeholder, put_enabled, put_max_values,
+    put_min_values, put_placeholder, validate_enabled, validate_max_values, validate_min_values,
     validate_placeholder
 )
 
@@ -254,10 +254,10 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         data = {}
         
         put_custom_id_into(self.custom_id, data, defaults)
-        put_enabled_into(self.enabled, data, defaults)
-        put_max_values_into(self.max_values, data, defaults)
-        put_min_values_into(self.min_values, data, defaults)
-        put_placeholder_into(self.placeholder, data, defaults)
+        put_enabled(self.enabled, data, defaults)
+        put_max_values(self.max_values, data, defaults)
+        put_min_values(self.min_values, data, defaults)
+        put_placeholder(self.placeholder, data, defaults)
         
         return data
     

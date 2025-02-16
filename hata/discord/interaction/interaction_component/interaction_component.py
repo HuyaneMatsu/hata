@@ -7,8 +7,8 @@ from scarletio import RichAttributeErrorBaseType, export
 from ...component import ComponentType
 
 from .fields import (
-    parse_custom_id, parse_components, parse_type, parse_value, put_custom_id_into,
-    put_components_into, put_type_into, put_value_into, validate_custom_id, validate_components, validate_type,
+    parse_custom_id, parse_components, parse_type, parse_value, put_custom_id,
+    put_components, put_type, put_value, validate_custom_id, validate_components, validate_type,
     validate_value
 )
 
@@ -228,10 +228,10 @@ class InteractionComponent(RichAttributeErrorBaseType):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_components_into(self.components, data, defaults)
-        put_custom_id_into(self.custom_id, data, defaults)
-        put_type_into(self.type, data, defaults)
-        put_value_into(self.value, data, defaults)
+        put_components(self.components, data, defaults)
+        put_custom_id(self.custom_id, data, defaults)
+        put_type(self.type, data, defaults)
+        put_value(self.value, data, defaults)
         return data
     
     

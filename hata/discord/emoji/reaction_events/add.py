@@ -9,7 +9,7 @@ from ...permission.permission import PERMISSION_MASK_MANAGE_MESSAGES
 from ..reaction import Reaction, ReactionType
 
 from .fields import (
-    parse_emoji, parse_message, parse_type, parse_user, put_emoji_into, put_message_into, put_type_into, put_user_into,
+    parse_emoji, parse_message, parse_type, parse_user, put_emoji, put_message, put_type, put_user,
     validate_emoji, validate_message, validate_type, validate_user
 )
 from .helpers import _delete_reaction_with_task
@@ -157,11 +157,11 @@ class ReactionAddEvent(EventBase):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_emoji_into(self.emoji, data, defaults)
+        put_emoji(self.emoji, data, defaults)
         message = self.message
-        put_message_into(message, data, defaults)
-        put_type_into(self.type, data, defaults)
-        put_user_into(self.user, data, defaults, guild_id = message.guild_id)
+        put_message(message, data, defaults)
+        put_type(self.type, data, defaults)
+        put_user(self.user, data, defaults, guild_id = message.guild_id)
         return data
     
     

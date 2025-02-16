@@ -23,7 +23,7 @@ def parse_end(data):
         return millisecond_unix_time_to_datetime(end)
 
 
-def put_end_into(end, data, defaults):
+def put_end(end, data, defaults):
     """
     Puts the activity timestamps end into the given data.
     
@@ -71,7 +71,7 @@ def parse_start(data):
         return millisecond_unix_time_to_datetime(start)
 
 
-def put_start_into(start, data, defaults):
+def put_start(start, data, defaults):
     """
     Puts the activity timestamps start into the given data.
     

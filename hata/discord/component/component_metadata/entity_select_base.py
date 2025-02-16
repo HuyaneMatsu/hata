@@ -2,7 +2,7 @@ __all__ = ('ComponentMetadataEntitySelectBase', )
 
 from scarletio import copy_docs
 
-from .fields import parse_default_values, put_default_values_into, validate_default_values
+from .fields import parse_default_values, put_default_values, validate_default_values
 from .select_base import ComponentMetadataSelectBase
 
 
@@ -171,7 +171,7 @@ class ComponentMetadataEntitySelectBase(ComponentMetadataSelectBase):
     def to_data(self, *, defaults = False):
         data = ComponentMetadataSelectBase.to_data(self)
         
-        put_default_values_into(self.default_values, data, defaults)
+        put_default_values(self.default_values, data, defaults)
         
         return data
     

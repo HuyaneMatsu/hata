@@ -46,7 +46,7 @@ def parse_application_commands(data):
     return application_commands
 
 
-def put_application_commands_into(application_commands, data, defaults):
+def put_application_commands(application_commands, data, defaults):
     """
     Serialises the application commands into the given data.
     
@@ -153,7 +153,7 @@ def parse_auto_moderation_rules(data):
     return auto_moderation_rules
 
 
-def put_auto_moderation_rules_into(auto_moderation_rules, data, defaults):
+def put_auto_moderation_rules(auto_moderation_rules, data, defaults):
     """
     Serialises the auto moderation rules into the given data.
     
@@ -266,7 +266,7 @@ def parse_entries(data, parent = None):
     return entries
 
 
-def put_entries_into(entries, data, defaults):
+def put_entries(entries, data, defaults):
     """
     Serialises the entries into the given data.
     
@@ -378,7 +378,7 @@ def parse_integrations(data):
     return integrations
 
 
-def put_integrations_into(integrations, data, defaults):
+def put_integrations(integrations, data, defaults):
     """
     Serialises the integrations into the given data.
     
@@ -485,7 +485,7 @@ def parse_scheduled_events(data):
     return scheduled_events
 
 
-def put_scheduled_events_into(scheduled_events, data, defaults):
+def put_scheduled_events(scheduled_events, data, defaults):
     """
     Serialises the scheduled events into the given data.
     
@@ -594,7 +594,7 @@ def parse_threads(data, guild_id = 0):
     return threads
 
 
-def put_threads_into(threads, data, defaults):
+def put_threads(threads, data, defaults):
     """
     Serialises the threads into the given data.
     
@@ -701,7 +701,7 @@ def parse_users(data):
     return users
 
 
-def put_users_into(users, data, defaults):
+def put_users(users, data, defaults):
     """
     Serialises the users into the given data.
     
@@ -808,7 +808,7 @@ def parse_webhooks(data):
     return webhooks
 
 
-def put_webhooks_into(webhooks, data, defaults):
+def put_webhooks(webhooks, data, defaults):
     """
     Serialises the webhooks into the given data.
     

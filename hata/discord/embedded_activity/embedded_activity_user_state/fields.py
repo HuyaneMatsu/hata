@@ -13,13 +13,13 @@ from .constants import NONCE_LENGTH_MAX, SESSION_ID_LENGTH_MAX, SESSION_ID_LENGT
 # nonce
 
 parse_nonce = nullable_string_parser_factory('nonce')
-put_nonce_into = url_optional_putter_factory('nonce')
+put_nonce = url_optional_putter_factory('nonce')
 validate_nonce = nullable_string_validator_factory('nonce', 0, NONCE_LENGTH_MAX)
 
 # session_id
 
 parse_session_id = force_string_parser_factory('session_id')
-put_session_id_into = force_string_putter_factory('session_id')
+put_session_id = force_string_putter_factory('session_id')
 validate_session_id = force_string_validator_factory('session_id', SESSION_ID_LENGTH_MIN, SESSION_ID_LENGTH_MAX)
 
 # user
@@ -52,7 +52,7 @@ def parse_user(data, guild_id = 0):
     return create_partial_user_from_id(int(data['user_id']))
 
 
-def put_user_into(user, data, defaults, *, guild_id = 0):
+def put_user(user, data, defaults, *, guild_id = 0):
     """
     Puts the given user's representation into the given reaction event data.
     

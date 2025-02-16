@@ -3,8 +3,8 @@ __all__ = ('VerificationScreenStep', )
 from scarletio import RichAttributeErrorBaseType
 
 from .fields import (
-    parse_required, parse_title, parse_type, parse_values, put_required_into, put_title_into, put_type_into,
-    put_values_into, validate_required, validate_title, validate_type, validate_values
+    parse_required, parse_title, parse_type, parse_values, put_required, put_title, put_type,
+    put_values, validate_required, validate_title, validate_type, validate_values
 )
 from .preinstanced import VerificationScreenStepType
 
@@ -114,10 +114,10 @@ class VerificationScreenStep(RichAttributeErrorBaseType):
         data : `dict` of (`str`, `object`)
         """
         data = {}
-        put_required_into(self.required, data, defaults)
-        put_title_into(self.title, data, defaults)
-        put_type_into(self.type, data, defaults)
-        put_values_into(self.values, data, defaults)
+        put_required(self.required, data, defaults)
+        put_title(self.title, data, defaults)
+        put_type(self.type, data, defaults)
+        put_values(self.values, data, defaults)
         return data
     
     

@@ -13,9 +13,9 @@ from ..message.constants import MESSAGE_STATE_MASK_CACHE_MENTIONED_CHANNELS
 from .fields import (
     parse_attachments, parse_components, parse_content, parse_created_at, parse_edited_at, parse_embeds, parse_flags,
     parse_mentioned_role_ids, parse_mentioned_users, parse_soundboard_sounds, parse_stickers, parse_type,
-    put_attachments_into, put_components_into, put_content_into, put_created_at_into, put_edited_at_into,
-    put_embeds_into, put_flags_into, put_mentioned_role_ids_into, put_mentioned_users_into, put_soundboard_sounds_into,
-    put_stickers_into, put_type_into, validate_attachments, validate_components, validate_content, validate_created_at,
+    put_attachments, put_components, put_content, put_created_at, put_edited_at,
+    put_embeds, put_flags, put_mentioned_role_ids, put_mentioned_users, put_soundboard_sounds,
+    put_stickers, put_type, validate_attachments, validate_components, validate_content, validate_created_at,
     validate_edited_at, validate_embeds, validate_flags, validate_mentioned_role_ids, validate_mentioned_users,
     validate_soundboard_sounds, validate_stickers, validate_type
 )
@@ -283,18 +283,18 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = {}
-        put_attachments_into(self.attachments, data, defaults)
-        put_components_into(self.components, data, defaults)
-        put_content_into(self.content, data, defaults)
-        put_created_at_into(self.created_at, data, defaults)
-        put_edited_at_into(self.edited_at, data, defaults)
-        put_embeds_into(self.embeds, data, defaults)
-        put_flags_into(self.flags, data, defaults)
-        put_mentioned_role_ids_into(self.mentioned_role_ids, data, defaults)
-        put_mentioned_users_into(self.mentioned_users, data, defaults, guild_id = guild_id)
-        put_soundboard_sounds_into(self.soundboard_sounds, data, defaults)
-        put_stickers_into(self.stickers, data, defaults)
-        put_type_into(self.type, data, defaults)
+        put_attachments(self.attachments, data, defaults)
+        put_components(self.components, data, defaults)
+        put_content(self.content, data, defaults)
+        put_created_at(self.created_at, data, defaults)
+        put_edited_at(self.edited_at, data, defaults)
+        put_embeds(self.embeds, data, defaults)
+        put_flags(self.flags, data, defaults)
+        put_mentioned_role_ids(self.mentioned_role_ids, data, defaults)
+        put_mentioned_users(self.mentioned_users, data, defaults, guild_id = guild_id)
+        put_soundboard_sounds(self.soundboard_sounds, data, defaults)
+        put_stickers(self.stickers, data, defaults)
+        put_type(self.type, data, defaults)
         return data
     
     

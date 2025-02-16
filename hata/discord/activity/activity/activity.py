@@ -10,7 +10,7 @@ from .constants import (
     ACTIVITY_COLOR_GAME, ACTIVITY_COLOR_NONE, ACTIVITY_COLOR_SPOTIFY, ACTIVITY_COLOR_STREAM, ACTIVITY_CUSTOM_IDS,
     ACTIVITY_CUSTOM_ID_DEFAULT
 )
-from .fields import parse_type, put_type_into, validate_type
+from .fields import parse_type, put_type, validate_type
 from .preinstanced import ActivityType
 
 
@@ -215,7 +215,7 @@ class Activity(RichAttributeErrorBaseType):
         data : `dict<str, object>`
         """
         data = self.metadata.to_data(defaults = defaults, include_internals = include_internals, user = user)
-        put_type_into(self.type, data, defaults)
+        put_type(self.type, data, defaults)
         data['type'] = self.type.value
         
         if include_internals:

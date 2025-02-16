@@ -4,7 +4,7 @@ from scarletio import include
 
 from ...bases import DiscordEntity
 
-from .fields import validate_id, validate_name, parse_id, parse_name, put_id_into, put_name_into
+from .fields import validate_id, validate_name, parse_id, parse_name, put_id, put_name
 
 
 ChannelMetadataGuildBase = include('ChannelMetadataGuildBase')
@@ -116,8 +116,8 @@ class WebhookSourceChannel(DiscordEntity):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_id_into(self.id, data, defaults)
-        put_name_into(self.name, data, defaults)
+        put_id(self.id, data, defaults)
+        put_name(self.name, data, defaults)
         return data
     
     

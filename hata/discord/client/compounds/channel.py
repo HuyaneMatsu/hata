@@ -11,7 +11,7 @@ from ...channel.permission_overwrite.utils import (
 )
 from ...channel.forum_tag.utils import FORUM_TAG_FIELD_CONVERTERS
 from ...channel.channel_metadata.fields import (
-    put_status_into as put_channel_status_into, validate_status as validate_channel_status
+    put_status as put_channel_status, validate_status as validate_channel_status
 )
 from ...guild import Guild, create_partial_guild_from_id
 from ...http import DiscordApiClient
@@ -666,7 +666,7 @@ class ClientCompoundChannelEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         channel_id = get_channel_id(channel, Channel.is_guild_voice)
-        data = put_channel_status_into(validate_channel_status(status), {}, True)
+        data = put_channel_status(validate_channel_status(status), {}, True)
         await self.api.channel_edit(channel_id, data, reason)
     
     

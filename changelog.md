@@ -1,4 +1,19 @@
-## 1.3.74 *\[2024-00-08\]*
+## 1.3.75 *\[2024-02-16\]*
+
+### Improvements
+
+- Rename putter functions from `put_..._into`-s to `put_...`.
+    This was something I acknowledged as an issue for a long time, just never got to fix it.
+- Handle unexpectedly closed sockets in `DiscordApiClient.discord_request`.
+- Add a second onboarding "feature" workaround.
+
+### Bug fixes
+
+- `ReadyState.discard_guild` could raise `AttributeError`.
+
+## 1.3.74 *\[2024-02-08\]*
+
+### Improvements
 
 - Add `Message.soundboard_sounds`.
 - Add `Message.soundboard_sound`.

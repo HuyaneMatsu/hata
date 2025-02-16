@@ -2,7 +2,7 @@ __all__ = ('IntegrationAccount', )
 
 from scarletio import RichAttributeErrorBaseType
 
-from .fields import parse_name, parse_id, validate_name, validate_id, put_name_into, put_id_into
+from .fields import parse_name, parse_id, validate_name, validate_id, put_name, put_id
 
 
 class IntegrationAccount(RichAttributeErrorBaseType):
@@ -92,8 +92,8 @@ class IntegrationAccount(RichAttributeErrorBaseType):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_id_into(self.id, data, defaults)
-        put_name_into(self.name, data, defaults)
+        put_id(self.id, data, defaults)
+        put_name(self.name, data, defaults)
         return data
     
     

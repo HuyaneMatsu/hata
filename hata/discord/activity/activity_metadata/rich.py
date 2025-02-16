@@ -6,9 +6,9 @@ from .base import ActivityMetadataBase
 from .fields import (
     parse_application_id, parse_assets, parse_buttons, parse_created_at, parse_details, parse_flags, parse_id,
     parse_name, parse_party, parse_secrets, parse_session_id, parse_state, parse_sync_id, parse_timestamps, parse_url,
-    put_application_id_into, put_assets_into, put_buttons_into, put_created_at_into, put_details_into, put_flags_into,
-    put_id_into, put_name_into, put_party_into, put_secrets_into, put_session_id_into, put_state_into, put_sync_id_into,
-    put_timestamps_into, put_url_into, validate_application_id, validate_assets, validate_buttons, validate_created_at,
+    put_application_id, put_assets, put_buttons, put_created_at, put_details, put_flags,
+    put_id, put_name, put_party, put_secrets, put_session_id, put_state, put_sync_id,
+    put_timestamps, put_url, validate_application_id, validate_assets, validate_buttons, validate_created_at,
     validate_details, validate_flags, validate_id, validate_name, validate_party, validate_secrets, validate_session_id,
     validate_state, validate_sync_id, validate_timestamps, validate_url
 )
@@ -445,28 +445,28 @@ class ActivityMetadataRich(ActivityMetadataBase):
     def to_data(self, *, defaults = False, include_internals = False, user = False):
         data = {}
         
-        put_name_into(self.name, data, defaults)
-        put_state_into(self.state, data, defaults)
-        put_url_into(self.url, data, defaults)
+        put_name(self.name, data, defaults)
+        put_state(self.state, data, defaults)
+        put_url(self.url, data, defaults)
         
         if user or include_internals:
-            put_assets_into(self.assets, data, defaults)
-            put_buttons_into(self.buttons, data, defaults)
-            put_details_into(self.details, data, defaults)
-            put_party_into(self.party, data, defaults)
-            put_secrets_into(self.secrets, data, defaults)
-            put_timestamps_into(self.timestamps, data, defaults)
+            put_assets(self.assets, data, defaults)
+            put_buttons(self.buttons, data, defaults)
+            put_details(self.details, data, defaults)
+            put_party(self.party, data, defaults)
+            put_secrets(self.secrets, data, defaults)
+            put_timestamps(self.timestamps, data, defaults)
         
         if include_internals:
             # receive only?
-            put_application_id_into(self.application_id, data, defaults)
-            put_created_at_into(self.created_at, data, defaults)
-            put_id_into(self.id, data, defaults)
+            put_application_id(self.application_id, data, defaults)
+            put_created_at(self.created_at, data, defaults)
+            put_id(self.id, data, defaults)
             
             # spotify only?
-            put_flags_into(self.flags, data, defaults)
-            put_session_id_into(self.session_id, data, defaults)
-            put_sync_id_into(self.sync_id, data, defaults)
+            put_flags(self.flags, data, defaults)
+            put_session_id(self.session_id, data, defaults)
+            put_sync_id(self.sync_id, data, defaults)
         
         return data
     

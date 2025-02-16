@@ -3,7 +3,7 @@ __all__ = ('AutoModerationActionMetadataBlock',)
 from scarletio import copy_docs
 
 from .base import AutoModerationActionMetadataBase
-from .fields import parse_custom_message, put_custom_message_into, validate_custom_message
+from .fields import parse_custom_message, put_custom_message, validate_custom_message
 
 
 class AutoModerationActionMetadataBlock(AutoModerationActionMetadataBase):
@@ -64,7 +64,7 @@ class AutoModerationActionMetadataBlock(AutoModerationActionMetadataBase):
     @copy_docs(AutoModerationActionMetadataBase.to_data)
     def to_data(self, *, defaults = False):
         data = {}
-        put_custom_message_into(self.custom_message, data, defaults)
+        put_custom_message(self.custom_message, data, defaults)
         return data
     
     

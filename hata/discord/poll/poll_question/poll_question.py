@@ -4,7 +4,7 @@ from scarletio import RichAttributeErrorBaseType
 
 from ...utils import sanitize_mentions
 
-from .fields import parse_text, put_text_into, validate_text
+from .fields import parse_text, put_text, validate_text
 
 
 class PollQuestion(RichAttributeErrorBaseType):
@@ -141,7 +141,7 @@ class PollQuestion(RichAttributeErrorBaseType):
         """
         data = {}
         
-        put_text_into(self.text, data, defaults)
+        put_text(self.text, data, defaults)
         return data
     
     

@@ -10,17 +10,17 @@ from .preinstanced import TeamMemberRole, TeamMembershipState
 # role
 
 parse_role = preinstanced_parser_factory('role', TeamMemberRole, TeamMemberRole.none)
-put_role_into = preinstanced_putter_factory('role')
+put_role = preinstanced_putter_factory('role')
 validate_role = preinstanced_validator_factory('role', TeamMemberRole)
 
 # state
 
 parse_state = preinstanced_parser_factory('membership_state', TeamMembershipState, TeamMembershipState.none)
-put_state_into = preinstanced_putter_factory('membership_state')
+put_state = preinstanced_putter_factory('membership_state')
 validate_state = preinstanced_validator_factory('state', TeamMembershipState)
 
 # user
 
 parse_user = default_entity_parser_factory('user', User, default = ZEROUSER)
-put_user_into = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
+put_user = default_entity_putter_factory('user', ClientUserBase, ZEROUSER, force_include_internals = True)
 validate_user = default_entity_validator_factory('user', ClientUserBase, default = ZEROUSER)

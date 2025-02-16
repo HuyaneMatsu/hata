@@ -9,7 +9,7 @@ from ..shared_fields import (
 )
 from ..shared_helpers import create_auto_custom_id
 
-from .fields import parse_title, put_title_into, validate_components, validate_title
+from .fields import parse_title, put_title, validate_components, validate_title
 
 
 class InteractionForm(RichAttributeErrorBaseType):
@@ -103,7 +103,7 @@ class InteractionForm(RichAttributeErrorBaseType):
         
         put_components_into(self.components, data, defaults)
         put_custom_id_into(self.custom_id, data, defaults)
-        put_title_into(self.title, data, defaults)
+        put_title(self.title, data, defaults)
         
         return data
     

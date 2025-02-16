@@ -14,8 +14,8 @@ from ..shared_helpers import create_auto_custom_id
 from .base import ComponentMetadataBase
 from .constants import BUTTON_STYLE_DEFAULT
 from .fields import (
-    parse_button_style, parse_enabled, parse_label, parse_sku_id, parse_url, put_button_style_into, put_enabled_into,
-    put_label_into, put_sku_id_into, put_url_into, validate_button_style, validate_enabled, validate_label,
+    parse_button_style, parse_enabled, parse_label, parse_sku_id, parse_url, put_button_style, put_enabled,
+    put_label, put_sku_id, put_url, validate_button_style, validate_enabled, validate_label,
     validate_sku_id, validate_url
 )
 from .preinstanced import ButtonStyle
@@ -344,13 +344,13 @@ class ComponentMetadataButton(ComponentMetadataBase):
     def to_data(self, *, defaults = False):
         data = {}
         
-        put_button_style_into(self.button_style, data, defaults)
+        put_button_style(self.button_style, data, defaults)
         put_custom_id_into(self.custom_id, data, defaults)
         put_emoji_into(self.emoji, data, defaults)
-        put_enabled_into(self.enabled, data, defaults)
-        put_label_into(self.label, data, defaults)
-        put_sku_id_into(self.sku_id, data, defaults)
-        put_url_into(self.url, data, defaults)
+        put_enabled(self.enabled, data, defaults)
+        put_label(self.label, data, defaults)
+        put_sku_id(self.sku_id, data, defaults)
+        put_url(self.url, data, defaults)
         
         return data
     

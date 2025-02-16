@@ -11,7 +11,7 @@ from ..component_metadata.fields import (
 )
 from ..shared_fields import validate_components, validate_custom_id, validate_emoji
 
-from .fields import parse_type, put_type_into, validate_type
+from .fields import parse_type, put_type, validate_type
 from .preinstanced import ComponentType
 
 
@@ -236,7 +236,7 @@ class Component(RichAttributeErrorBaseType):
         data = self.metadata.to_data(defaults = defaults)
         
         # type
-        put_type_into(self.type, data, defaults)
+        put_type(self.type, data, defaults)
         
         return data
     

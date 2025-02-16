@@ -5,7 +5,7 @@ from scarletio import copy_docs
 from .constants import SEPARATOR_SPACING_SIZE_DEFAULT
 from .base import ComponentMetadataBase
 from .fields import (
-    parse_divider, parse_spacing_size, put_divider_into, put_spacing_size_into, validate_divider, validate_spacing_size
+    parse_divider, parse_spacing_size, put_divider, put_spacing_size, validate_divider, validate_spacing_size
 )
 
 
@@ -142,8 +142,8 @@ class ComponentMetadataSeparator(ComponentMetadataBase):
     def to_data(self, *, defaults = False):
         data = {}
         
-        put_divider_into(self.divider, data, defaults)
-        put_spacing_size_into(self.spacing_size, data, defaults)
+        put_divider(self.divider, data, defaults)
+        put_spacing_size(self.spacing_size, data, defaults)
         
         return data
     

@@ -8,7 +8,7 @@ from ...role import create_partial_role_from_id
 from ...user import create_partial_user_from_id
 
 from .fields import (
-    parse_allow, parse_target_id, parse_target_type, put_allow_into, put_target_id_into, put_target_type_into,
+    parse_allow, parse_target_id, parse_target_type, put_allow, put_target_id, put_target_type,
     validate_allow
 )
 from .helpers import validate_application_command_permission_overwrite_target
@@ -125,9 +125,9 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         data : `dict` of (`str`, `object`) items
         """
         data = {}
-        put_allow_into(self.allow, data, defaults)
-        put_target_id_into(self.target_id, data, defaults)
-        put_target_type_into(self.target_type, data, defaults)
+        put_allow(self.allow, data, defaults)
+        put_target_id(self.target_id, data, defaults)
+        put_target_type(self.target_type, data, defaults)
         return data
     
     

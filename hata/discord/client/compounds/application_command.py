@@ -697,7 +697,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         Notes
         -----
-        Íf the application command has no permission overwrites in the guild, Discord will drop the following error:
+        If the application command has no permission overwrites in the guild, Discord will drop the following error:
         
         ```py
         DiscordException Not Found (404), code = 10066: Unknown application command permissions

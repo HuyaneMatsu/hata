@@ -4,6 +4,7 @@ import vampytest
 
 from ....application import Application
 from ....user import User
+from ....utils import id_to_datetime
 
 from ..attachment import Attachment
 from ..flags import AttachmentFlag
@@ -258,8 +259,8 @@ def test__Attachment__copy_with__all_fields():
 
 
 def _iter_options__display_name():
-    yield 'orin', 'okuu', 'okuu'
-    yield 'orin', None, 'orin'
+    yield 'orin.txt', 'okuu', 'okuu.txt'
+    yield 'orin.txt', None, 'orin.txt'
     yield None, 'okuu', 'okuu'
     yield None, None, ''
 
@@ -284,6 +285,39 @@ def test__Attachment__display_name(name, title):
     attachment = Attachment(name = name, title = title)
     output = attachment.display_name
     vampytest.assert_instance(output, str)
+    return output
+
+
+def _iter_options__content_created_at():
+    attachment_id_0 = 202503050000_000000
+    attachment_id_1 = 202503050001_000000
+    
+    date_0 = DateTime(2016, 5, 14, tzinfo = TimeZone.utc)
+    
+    yield attachment_id_0, None, id_to_datetime(attachment_id_0)
+    yield attachment_id_1, date_0, date_0
+
+
+@vampytest._(vampytest.call_from(_iter_options__content_created_at()).returning_last())
+def test__Attachment__content_created_at(attachment_id, clip_created_at):
+    """
+    Tests whether ``Attachment.content_created_at`` works as intended.
+    
+    Parameters
+    ----------
+    attachment_id : `int`
+        Identifier to create the attachment_with
+    
+    clip_created_at : `DateTime`
+        If the attachment is a clip then when the clip was created.
+    
+    Returns
+    -------
+    output : `DateTime`
+    """
+    attachment = Attachment.precreate(attachment_id, clip_created_at = clip_created_at)
+    output = attachment.content_created_at
+    vampytest.assert_instance(output, DateTime)
     return output
 
 

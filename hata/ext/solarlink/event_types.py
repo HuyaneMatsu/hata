@@ -4,7 +4,7 @@ import reprlib
 
 from scarletio import copy_docs
 
-from ...discord.bases.event_types import EventBase
+from ...discord.bases import EventBase
 
 from .constants import (
     LAVALINK_KEY_END_REASON, LAVALINK_KEY_EXCEPTION_REASON_DEPRECATED, LAVALINK_KEY_EXCEPTION_REASON_OBJECT,

@@ -933,15 +933,44 @@ class Attachment(DiscordEntity):
         """
         Returns the displayed name of the attachment.
         
+        Displayed name is not the upload name, but something hata tries to construct to imitate it as close as possible.
+        `attachment.name` do not include unicodes and `attachment.title` that was added to address this issue is
+        not including the extension. So if there are any unicodes in extension they are omitted.
+        To make this worse, uploaded attachment through interaction commands do not even have `.title`.
+        
+        Include a lot of cursing in this section.
+        
         Returns
         -------
         display_name : `str`
         """
         title = self.title
-        if (title is not None):
+        name = self.name
+        
+        if (title is None):
+            return name
+        
+        extension_dot_index = name.find('.')
+        if extension_dot_index == -1:
             return title
         
-        return self.name
+        return title + name[extension_dot_index:]
+    
+    
+    @property
+    def content_created_at(self):
+        """
+        Returns when the attachment's content was created if known.
+        
+        Returns
+        -------
+        modified_at : `DateTime`
+        """
+        content_created_at = self.clip_created_at
+        if (content_created_at is not None):
+            return content_created_at
+        
+        return self.created_at
     
     
     def iter_clip_users(self):

@@ -487,7 +487,7 @@ class SubterraneanHelpHelp:
 
 
 class SubterraneanHelpCommand:
-    __class_doc__ = (
+    __type_doc__ = (
     """
     A default help command shipped with hata's commands v2 extension.
     

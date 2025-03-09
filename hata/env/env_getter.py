@@ -73,17 +73,19 @@ class EnvGetter(RichAttributeErrorBaseType):
         return self
     
     
-    def __exit__(self, exception_type, exception, exception_traceback):
+    def __exit__(self, exception_type, exception_value, exception_traceback):
         """
         Exits the context manager.
         
         Parameters
         ----------
-        exception_type : `None`, `type<BaseException>`
+        exception_type : `None | type<BaseException>`
             The occurred exception's type if any.
-        exception : `None`, `BaseException`
+        
+        exception_value : `None | BaseException`
             The occurred exception if any.
-        exception_traceback : `None`, `TracebackType`
+        
+        exception_traceback : `None | TracebackType`
             the exception's traceback if any.
         
         Returns

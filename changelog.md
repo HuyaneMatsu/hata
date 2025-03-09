@@ -1,3 +1,14 @@
+## 1.3.76 *\[2025-03-09\]*
+
+### Improvements
+
+- `Attachment.display_name` now includes its extension.
+- Add `Attachment.content_created_at`.
+
+### Bug fixes
+
+- `GuildPremiumPerks` 0 and `GuildPremiumPerks` 1 had their upload limit reversed.
+
 ## 1.3.75 *\[2024-02-16\]*
 
 ### Improvements
@@ -11,7 +22,7 @@
 
 - `ReadyState.discard_guild` could raise `AttributeError`.
 
-## 1.3.74 *\[2024-02-08\]*
+## 1.3.74 *\[2025-02-08\]*
 
 ### Improvements
 
@@ -40,7 +51,7 @@
 - Add `EmbedImage.flags`.
 - Add `EmbedThumbnail.flags`.
 
-## 1.3.73 *\[2024-01-28\]*
+## 1.3.73 *\[2025-01-28\]*
 
 ### Improvements
 

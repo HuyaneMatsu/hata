@@ -13,12 +13,12 @@ def build_locale_dictionary(dictionary):
     
     Parameters
     ----------
-    dictionary : `dict` of (`str`, `object`) items
+    dictionary : `None | dict<str, object>`
         The dictionary to process.
     
     Returns
     -------
-    transformed : `dict` of (``Locale``, `object`) items
+    transformed : `None | dict<Locale, object>`
     """
     if (dictionary is not None) and dictionary:
         return {Locale(key): value for key, value in dictionary.items()}
@@ -30,12 +30,12 @@ def destroy_locale_dictionary(dictionary):
     
     Parameters
     ----------
-    dictionary : `dict` of (`Locale`, `object`) items
+    dictionary : `None w dict<Locale | object>`
         The dictionary to process.
     
     Returns
     -------
-    transformed : `dict` of (`str`, `object`) items
+    transformed : `None | dict<str, object>`
     """
     if dictionary is not None:
         return {key.value: value for key, value in dictionary.items()}
@@ -47,7 +47,7 @@ def hash_locale_dictionary(dictionary):
     
     Parameters
     ----------
-    dictionary : `dict` of (`str`, `object`) items
+    dictionary : `dict<Locale, object>`
         The dictionary to process.
     
     Returns

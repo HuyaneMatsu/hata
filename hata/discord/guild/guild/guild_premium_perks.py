@@ -120,7 +120,7 @@ TIER_0 = GuildPremiumPerks(
     8,
     5,
     0,
-    26214400,
+    8388608,
 )
 
 
@@ -137,7 +137,7 @@ TIER_1 = GuildPremiumPerks(
     24,
     15,
     1,
-    8388608,
+    26214400,
 )
 
 

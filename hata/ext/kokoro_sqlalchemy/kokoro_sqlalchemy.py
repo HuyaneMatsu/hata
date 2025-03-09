@@ -270,8 +270,9 @@ class EngineTransactionContextManager:
     __slots__ = ('_close_with_result', '_context', '_engine', 'executor',)
 
     def __init__(self, engine, close_with_result, executor):
-        self._engine = engine
         self._close_with_result = close_with_result
+        self._context = None
+        self._engine = engine
         self.executor = executor
     
     

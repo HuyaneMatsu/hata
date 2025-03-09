@@ -100,7 +100,7 @@ class ReactionAddEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Reaction event data.
         
         Returns
@@ -154,7 +154,7 @@ class ReactionAddEvent(EventBase):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_emoji(self.emoji, data, defaults)
@@ -167,7 +167,7 @@ class ReactionAddEvent(EventBase):
     
     @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         repr_parts.append(' message = ')
         repr_parts.append(repr(self.message))

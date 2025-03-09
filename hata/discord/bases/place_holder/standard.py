@@ -6,7 +6,7 @@ from .base import PlaceHolderBase
 
 
 class PlaceHolder(PlaceHolderBase):
-    __class_doc__ = (
+    __type_doc__ = (
     """
     Slot place holder returning a default value.
     

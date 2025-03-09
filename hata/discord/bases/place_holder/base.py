@@ -4,7 +4,7 @@ from scarletio import RichAttributeErrorBaseType, docs_property
 
 
 class PlaceHolderBase(RichAttributeErrorBaseType):
-    __class_doc__ = (
+    __type_doc__ = (
     """
     Base type of place holders.
     

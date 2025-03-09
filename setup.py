@@ -73,6 +73,8 @@ setup(
         'hata.discord.auto_moderation.rule',
         'hata.discord.auto_moderation.trigger_metadata',
         'hata.discord.bases',
+        'hata.discord.bases.entity',
+        'hata.discord.bases.event',
         'hata.discord.bases.flags',
         'hata.discord.bases.place_holder',
         'hata.discord.bases.preinstanced',
@@ -299,7 +301,7 @@ setup(
     },
     python_requires = '>=3.6',
     install_requires = [
-        'scarletio>=1.0.84',
+        'scarletio>=1.0.89',
         'chardet>=2.0',
     ],
     extras_require = {

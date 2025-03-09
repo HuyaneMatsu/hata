@@ -748,7 +748,7 @@ def create_alternative_icon_type_for(icon_type, prefix):
 
 class IconSlot:
     if DOCS_ENABLED:
-        __class_doc__ = (
+        __type_doc__ = (
     """
     Internal icon slotter to represent an icon of a discord entity.
     

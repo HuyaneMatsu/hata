@@ -1,7 +1,5 @@
 __all__ = ('ComponentMetadataSelectBase', )
 
-import reprlib
-
 from scarletio import copy_docs
 
 from ..shared_fields import parse_custom_id, put_custom_id_into, validate_custom_id
@@ -133,7 +131,7 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         
         # custom_id
         repr_parts.append(' custom_id = ')
-        repr_parts.append(reprlib.repr(self.custom_id))
+        repr_parts.append(repr(self.custom_id))
         
         # Type specific fields
         self._add_type_specific_repr_fields_into(repr_parts)

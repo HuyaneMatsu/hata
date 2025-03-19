@@ -284,6 +284,7 @@ def test__SlashCommandParameterAutoCompleter__bind_parent__with_old_parent():
 
 
 def _iter_options__is_deeper_than():
+    yield APPLICATION_COMMAND_FUNCTION_DEEPNESS, APPLICATION_COMMAND_FUNCTION_DEEPNESS, False
     yield APPLICATION_COMMAND_FUNCTION_DEEPNESS, 2, True
     yield 2, APPLICATION_COMMAND_FUNCTION_DEEPNESS, False
     yield 2, 2, False

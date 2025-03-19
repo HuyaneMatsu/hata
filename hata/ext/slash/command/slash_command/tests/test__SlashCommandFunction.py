@@ -11,7 +11,7 @@ from ......discord.interaction import (
 
 from ....converters import (
     ANNOTATION_TYPE_SELF_CLIENT, ANNOTATION_TYPE_SELF_INTERACTION_EVENT, ANNOTATION_TYPE_STR,
-    InternalParameterConverter, SlashCommandParameterConverter, converter_self_client, converter_self_interaction_event,
+    ParameterConverterInternal, ParameterConverterSlashCommand, converter_self_client, converter_self_interaction_event,
     converter_str
 )
 from ....response_modifier import ResponseModifier
@@ -78,7 +78,7 @@ def test__SlashCommandFunction__repr():
         return None
     
     parameter_converters = (
-        SlashCommandParameterConverter(
+        ParameterConverterSlashCommand(
             'pudding',
             ANNOTATION_TYPE_STR,
             converter_str,
@@ -345,10 +345,10 @@ async def test__SlashCommandFunction__invoke():
         func_called += 1
     
     parameter_converters = (
-        InternalParameterConverter(
+        ParameterConverterInternal(
             'input_client', ANNOTATION_TYPE_SELF_CLIENT, converter_self_client
         ),
-        InternalParameterConverter(
+        ParameterConverterInternal(
             'input_interaction_event', ANNOTATION_TYPE_SELF_INTERACTION_EVENT, converter_self_interaction_event
         )
     )
@@ -633,7 +633,7 @@ def test__SlashCommandFunction__autocomplete():
     async def auto_complete_function(value):
         return None
     
-    parameter_converter = SlashCommandParameterConverter(
+    parameter_converter = ParameterConverterSlashCommand(
         'value',
         ANNOTATION_TYPE_STR,
         converter_str,
@@ -720,7 +720,7 @@ def test__SlashCommandFunction__try_resolve_auto_completer__with_match():
     )
     
     parameter_converter_0, parameter_converter_1, parameter_converter_2 = (
-        SlashCommandParameterConverter(
+        ParameterConverterSlashCommand(
             parameter_name,
             ANNOTATION_TYPE_STR,
             converter_str,
@@ -795,7 +795,7 @@ async def test__SlashCommandFunction__invoke_auto_completion():
         func_called += 1
         return None
     
-    parameter_converter = SlashCommandParameterConverter(
+    parameter_converter = ParameterConverterSlashCommand(
         'value',
         ANNOTATION_TYPE_STR,
         converter_str,

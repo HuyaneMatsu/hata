@@ -2,7 +2,12 @@ from re import I as re_ignore_case, compile as re_compile
 
 import vampytest
 
-from ..converters import Pattern, RegexMatch, RegexMatcher
+from ..converters import RegexMatch, RegexMatcher
+
+try:
+    from re import Pattern
+except ImportError:
+    from re import _pattern_type as Pattern
 
 
 def _assert_fields_set(regex_matcher):

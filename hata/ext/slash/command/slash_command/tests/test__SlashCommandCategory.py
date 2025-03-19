@@ -10,7 +10,7 @@ from ......discord.interaction import (
 )
 
 from ....converters import (
-    ANNOTATION_TYPE_SELF_CLIENT, ANNOTATION_TYPE_SELF_INTERACTION_EVENT, InternalParameterConverter,
+    ANNOTATION_TYPE_SELF_CLIENT, ANNOTATION_TYPE_SELF_INTERACTION_EVENT, ParameterConverterInternal,
     converter_self_client, converter_self_interaction_event
 )
 from ....utils import SYNC_ID_GLOBAL
@@ -326,10 +326,10 @@ async def test__SlashCommandCategory__invoke__with_sub_command():
     )
     
     parameter_converters = (
-        InternalParameterConverter(
+        ParameterConverterInternal(
             'input_client', ANNOTATION_TYPE_SELF_CLIENT, converter_self_client
         ),
-        InternalParameterConverter(
+        ParameterConverterInternal(
             'input_interaction_event', ANNOTATION_TYPE_SELF_INTERACTION_EVENT, converter_self_interaction_event
         )
     )

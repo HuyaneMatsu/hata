@@ -28,7 +28,7 @@ class SlashCommandParameterAutoCompleter(CommandInterface, ExceptionHandlerInter
     _exception_handlers : `None | list<CoroutineFunction>`
         Exception handlers added with ``.error`` to the interaction handler.
     
-    _parameter_converters : `tuple<ParameterConverter>`
+    _parameter_converters : `tuple<ParameterConverterBase>`
         Parsers to parse command parameters.
     
     _parent_reference : `None | WeakReferer<SelfReferenceInterface | object>`
@@ -309,10 +309,10 @@ class SlashCommandParameterAutoCompleter(CommandInterface, ExceptionHandlerInter
         other : ``SlashCommandParameterAutoCompleter``
         """
         self_deepness = self.deepness
-        if self_deepness == APPLICATION_COMMAND_FUNCTION_DEEPNESS:
-            return True
-        
         other_deepness = other.deepness
+        if self_deepness == APPLICATION_COMMAND_FUNCTION_DEEPNESS:
+            return self_deepness != other_deepness
+        
         if other_deepness == APPLICATION_COMMAND_FUNCTION_DEEPNESS:
             return False
         
@@ -328,12 +328,12 @@ class SlashCommandParameterAutoCompleter(CommandInterface, ExceptionHandlerInter
         
         Parameters
         ----------
-        auto_completable_parameters : `set<SlashCommandParameterConverter>`
+        auto_completable_parameters : `set<ParameterConverterSlashCommand>`
             Auto completable parameters.
         
         Returns
         -------
-        matched : `list<SlashCommandParameterConverter>`
+        matched : `list<ParameterConverterSlashCommand>`
             The matched parameters.
         """
         matched = []

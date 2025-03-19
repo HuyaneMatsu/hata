@@ -651,6 +651,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | cannot_update_onboarding_requirements_not_met                     | 350001    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| cannot_remove_read_messages_permission_of_onboarding_channel      | 350003    | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | guild_limited_access_default                                      | 400000    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | guild_limited_access_upload                                       | 400001    | -         |
@@ -1032,6 +1034,7 @@ user_limited_access_max = 349999
 
 cannot_enable_onboarding_requirements_not_met = 350000
 cannot_update_onboarding_requirements_not_met = 350001
+cannot_remove_read_messages_permission_of_onboarding_channel = 350003
 
 guild_limited_access_default = 400000
 guild_limited_access_upload = 400001

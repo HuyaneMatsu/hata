@@ -747,7 +747,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
     @property
     def mention(self):
         """
-        Returns the mention of teh soundboard sound.
+        Returns the mention of the soundboard sound.
         
         Returns
         -------

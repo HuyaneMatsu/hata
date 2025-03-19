@@ -28,16 +28,16 @@ class FormSubmitCommand(CommandBaseCustomId):
     _exception_handlers : `None | list<CoroutineFunction>`
         Exception handlers added with ``.error`` to the interaction handler.
     
-    _keyword_parameter_converters : `tuple<ParameterConverter>`
+    _keyword_parameter_converters : `tuple<ParameterConverterBase>`
         Parameter converters for keyword parameters.
     
-    _multi_parameter_converter : `None | ParameterConverter`
+    _multi_parameter_converter : `None | ParameterConverterBase`
         Parameter converter for positional parameter.
     
     _parent_reference : `None | WeakReferer<SelfReferenceInterface>`
         The parent slasher of the component command.
     
-    _parameter_converters : `tuple<ParameterConverter>`
+    _parameter_converters : `tuple<ParameterConverterBase>`
         Parsers to parse command parameters.
     
     _string_custom_ids : `None | tuple<str>`

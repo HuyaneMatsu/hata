@@ -1,7 +1,5 @@
 __all__ = ('ComponentMetadataTextInput',)
 
-import reprlib
-
 from scarletio import copy_docs
 
 from ..shared_fields import parse_custom_id, put_custom_id_into, validate_custom_id
@@ -207,7 +205,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         custom_id = self.custom_id
         if (custom_id is not None):
             repr_parts.append(', custom_id = ')
-            repr_parts.append(reprlib.repr(custom_id))
+            repr_parts.append(repr(custom_id))
         
         # Text fields : label & placeholder & value
         
@@ -215,7 +213,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         label = self.label
         if (label is not None):
             repr_parts.append(', label = ')
-            repr_parts.append(reprlib.repr(label))
+            repr_parts.append(repr(label))
         
         # placeholder
         placeholder = self.placeholder

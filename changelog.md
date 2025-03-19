@@ -1,3 +1,17 @@
+## 1.3.77 *\[2025-03-19\]*
+
+### Improvements
+
+- Add `ERROR_CODES.cannot_remove_read_messages_permission_of_onboarding_channel`.
+- Sorting string fields in `Component` representation has been removed to make testing easier.
+
+### Bug fixes
+
+#### ext.slash
+- Fix `TypeError` when registering a command with multiple regex custom id-s.
+- `SlashCommandParameterAutoCompleter._is_deeper_than` did not handle if both is max deepness.
+- `ParameterConverterRegex.required` was set the opposite way.
+
 ## 1.3.76 *\[2025-03-09\]*
 
 ### Improvements
@@ -88,7 +102,6 @@
 - Add `Client.interaction_embedded_activity_launch`.
 
 #### ext.slash
-
 - Add `CommandBaseApplicationCommand.handler_type`.
 - Add `EmbeddedActivityLaunchCommand`.
 - Commands now respond correctly to if

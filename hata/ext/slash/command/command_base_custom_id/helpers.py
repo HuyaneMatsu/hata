@@ -151,6 +151,22 @@ def _validate_name(name):
     return name
 
 
+def _regex_custom_id_sort_key(regex_custom_id):
+    """
+    Sort key used to sort regex patterns.
+    
+    Parameters
+    ----------
+    regex_custom_id : `re.Pattern`
+        Regex custom id.
+    
+    Returns
+    -------
+    sort_key : `str`
+    """
+    return regex_custom_id.pattern
+
+
 def split_and_check_satisfaction(custom_ids, parameter_converters):
     """
     Splits custom id-s to `str` and to `re.Pattern`-s and validates them.
@@ -160,13 +176,14 @@ def split_and_check_satisfaction(custom_ids, parameter_converters):
     custom_ids : `set<str, re.Pattern>`
         The custom-ids to split and validate.
     
-    parameter_converters : `tuple<ParameterConverter>`
+    parameter_converters : `tuple<ParameterConverterBase>`
         The parameter converters generated from a component command.
     
     Returns
     -------
     string_custom_ids : `None | tuple<str>`
         String custom ids.
+    
     regex_custom_ids : `None | tuple<RegexMatcher>`
         Regex custom ids.
     
@@ -196,7 +213,7 @@ def split_and_check_satisfaction(custom_ids, parameter_converters):
         string_custom_ids = tuple(string_custom_ids)
     
     if (regex_custom_ids is not None):
-        regex_custom_ids.sort()
+        regex_custom_ids.sort(key = _regex_custom_id_sort_key)
         regex_custom_ids = tuple(RegexMatcher(regex_custom_id) for regex_custom_id in regex_custom_ids)
     
     # Check

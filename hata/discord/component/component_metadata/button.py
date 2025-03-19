@@ -1,7 +1,5 @@
 __all__ = ('ComponentMetadataButton', )
 
-import reprlib
-
 from scarletio import copy_docs
 
 from ...utils import url_cutter
@@ -213,7 +211,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         custom_id = self.custom_id
         if (custom_id is not None):
             repr_parts.append(', custom_id = ')
-            repr_parts.append(reprlib.repr(custom_id))
+            repr_parts.append(repr(custom_id))
         
         # Text fields : emoji & label
         
@@ -227,7 +225,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         label = self.label
         if (label is not None):
             repr_parts.append(', label = ')
-            repr_parts.append(reprlib.repr(label))
+            repr_parts.append(repr(label))
         
         
         # Optional descriptive fields: url & enabled

@@ -300,7 +300,7 @@ setup(
             'libopus-0.x86.dll',
         ],
     },
-    python_requires = '>=3.6',
+    python_requires = '>=3.6,<3.13',
     install_requires = [
         'scarletio>=1.0.89',
         'chardet>=2.0',

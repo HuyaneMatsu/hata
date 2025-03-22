@@ -132,7 +132,7 @@ And you are good to go! Hata has native pypy support as well if you need some mo
 
 #### Requirements
 
-- Python >= 3.6, < 3.13
+- Python >= 3.6, < 3.12
 - [chardet](https://pypi.python.org/pypi/chardet) / [cchardet](https://pypi.org/project/cchardet/)
 
 #### Optional

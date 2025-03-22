@@ -9,17 +9,17 @@ from .graver import (
 
 
 SECTION_NAME_RP = re.compile('(?:[A-Z][a-z]*)(?: [A-Z][a-z]*)*')
-SECTION_UNDERLINE_RP = re.compile('[\-]+')
-TABLE_BORDER_PATTERN = '\+(?:[\-=]+\+)+'
-TABLE_TEXT_PATTERN = '\|(?:[^\|]+\|)+'
+SECTION_UNDERLINE_RP = re.compile(r'[\-]+')
+TABLE_BORDER_PATTERN = r'\+(?:[\-=]+\+)+'
+TABLE_TEXT_PATTERN = r'\|(?:[^\|]+\|)+'
 TABLE_BORDER_RP = re.compile(TABLE_BORDER_PATTERN)
 TABLE_TEXT_RP = re.compile(TABLE_TEXT_PATTERN)
 TABLE_ANY_RP = re.compile(f'{TABLE_BORDER_PATTERN}|{TABLE_TEXT_PATTERN}')
-TABLE_TEXT_SPLITTER = re.compile('(?:\| )?(.*?) \|')
-LISTING_HEAD_LINE_RP = re.compile('[\-]+[ \t]*(.*)')
+TABLE_TEXT_SPLITTER = re.compile(r'(?:\| )?(.*?) \|')
+LISTING_HEAD_LINE_RP = re.compile(r'[\-]+[ \t]*(.*)')
 
 ATTRIBUTE_SECTION_NAME_RP = re.compile('.*?attributes?', re.I)
-ATTRIBUTE_NAME_RP = re.compile('([A-Za-z_][0-9A-Za-z_]*) *([\:\(]) *')
+ATTRIBUTE_NAME_RP = re.compile(r'([A-Za-z_][0-9A-Za-z_]*) *([\:\(]) *')
 
 del TABLE_BORDER_PATTERN
 del TABLE_TEXT_PATTERN

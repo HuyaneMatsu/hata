@@ -609,7 +609,7 @@ def render_readme_section_structure_plugins_init(into, project_name):
     into.append('### ./')
     into.append(project_name)
     into.append(
-        '/plugins/\_\_init\_\_.py\n'
+        r'/plugins/\_\_init\_\_.py\n'
         '\n'
         'This `__init__.py` is required for cross-plugin imports.\n'
         '\n'

@@ -980,8 +980,8 @@ class AttributeSection:
         
         return Structure(title, prefixed_title, children)
 
-PARAMETER_NAME_RP = re.compile('(\*{0,2}[a-zA-Z_]+[a-zA-Z_0-9]*)(?: *\: *(.+)?)?')
-PARAMETER_OPTIONALITY_RP = re.compile('(.*?)(?:,? *([Oo]ptional)(?:,? *\(?([Kk]eyword [Oo]nly)\)?)?)?')
+PARAMETER_NAME_RP = re.compile(r'(\*{0,2}[a-zA-Z_]+[a-zA-Z_0-9]*)(?: *\: *(.+)?)?')
+PARAMETER_OPTIONALITY_RP = re.compile(r'(.*?)(?:,? *([Oo]ptional)(?:,? *\(?([Kk]eyword [Oo]nly)\)?)?)?')
 PARAMETER_DEFAULT_START_RP = re.compile('(.*?) *= *(.*?)')
 
 PARAMETER_SHIFT_NAME = 0

@@ -10,7 +10,7 @@ from .graver import (
 
 INDENT_SIZE_DEFAULT = 4
 
-DO_NOT_PREVIEW_RP = re.compile('this [a-z]+ is a [a-z]+\.?', re.I)
+DO_NOT_PREVIEW_RP = re.compile(r'this [a-z]+ is a [a-z]+\.?', re.I)
 
 SPACE_CHAR_DEFAULT = ' '
 SPACE_CHAR_UNICODE = (b'\xe2\xa0\x80').decode()
@@ -249,7 +249,7 @@ def graved_to_escaped_words(graved):
             else:
                 add_space_before = False
             
-            local_words = element.replace('_', '\_').split(' ')
+            local_words = element.replace('_', r'\_').split(' ')
             if (not add_space_before) and words:
                 words[-1] = words[-1] + local_words.pop(0)
             

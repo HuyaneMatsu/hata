@@ -94,7 +94,7 @@ def test__parse_all_emojis__coloned_builtin_name__2():
     emoji_1 = BUILTIN_EMOJIS['heart']
     emoji_2 = BUILTIN_EMOJIS['leg']
     
-    text = f'\:{emoji_1.name}::{emoji_2.name}:'
+    text = fr'\:{emoji_1.name}::{emoji_2.name}:'
     
     parsed_emojis = parse_all_emojis(text)
     vampytest.assert_eq({emoji_2}, parsed_emojis)
@@ -109,7 +109,7 @@ def test__parse_all_emojis__coloned_builtin_name__3():
     emoji_1 = BUILTIN_EMOJIS['heart']
     emoji_2 = BUILTIN_EMOJIS['leg']
     
-    text = f':{emoji_1.name}\::{emoji_2.name}:'
+    text = fr':{emoji_1.name}\::{emoji_2.name}:'
     
     parsed_emojis = parse_all_emojis(text)
     vampytest.assert_eq({emoji_2}, parsed_emojis)
@@ -124,7 +124,7 @@ def test__parse_all_emojis__coloned_builtin_name__4():
     emoji_1 = BUILTIN_EMOJIS['heart']
     emoji_2 = BUILTIN_EMOJIS['leg']
     
-    text = f':{emoji_1.name}:\:{emoji_2.name}:'
+    text = fr':{emoji_1.name}:\:{emoji_2.name}:'
     
     parsed_emojis = parse_all_emojis(text)
     vampytest.assert_eq({emoji_1}, parsed_emojis)

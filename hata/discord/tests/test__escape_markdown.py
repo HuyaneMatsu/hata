@@ -7,7 +7,7 @@ def iter_options():
     yield None, None
     yield '', ''
     yield 'aya', 'aya'
-    yield 'aya_aya', r'aya\_aya'
+    yield 'aya_aya', 'aya\\_aya'
     yield '\\', '\\\\'
     yield '_', '\\_'
     yield '*', '\\*'

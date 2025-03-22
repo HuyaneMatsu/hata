@@ -249,7 +249,7 @@ def graved_to_escaped_words(graved):
             else:
                 add_space_before = False
             
-            local_words = element.replace('_', r'\_').split(' ')
+            local_words = element.replace('_', '\\_').split(' ')
             if (not add_space_before) and words:
                 words[-1] = words[-1] + local_words.pop(0)
             

@@ -25,7 +25,7 @@ def test__put_emoji(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | Emoji`
+    input_value : ``None | Emoji``
         Value to serialize.
     defaults : `bool`
         Whether values with their value should be included as well.

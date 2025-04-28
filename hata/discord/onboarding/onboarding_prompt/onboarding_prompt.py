@@ -126,7 +126,7 @@ class OnboardingPrompt(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Onboarding prompt option data.
         
         Returns
@@ -158,7 +158,7 @@ class OnboardingPrompt(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_in_onboarding(self.in_onboarding, data, defaults)

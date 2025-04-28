@@ -49,7 +49,7 @@ def parse_account__discord(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Integration account data.
     
     Returns
@@ -74,14 +74,14 @@ def put_account__discord(account, data, defaults):
     ----------
     account : ``ClientUserBase``
         Integration account of a discord integration.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default fields should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     data['account'] = {
         'id': str(account.id),
@@ -120,7 +120,7 @@ validate_expire_behavior = preinstanced_validator_factory('expire_behavior', Int
 
 parse_expire_grace_period = int_parser_factory('expire_grace_period', EXPIRE_GRACE_PERIOD_DEFAULT)
 put_expire_grace_period = int_optional_putter_factory('expire_grace_period', EXPIRE_GRACE_PERIOD_DEFAULT)
-validate_expire_grace_period = int_options_validator_factory('expire_grace_period', EXPIRE_GRACE_PERIOD_OPTIONS)
+validate_expire_grace_period = int_options_validator_factory('expire_grace_period', EXPIRE_GRACE_PERIOD_OPTIONS, 0)
 
 # revoked
 

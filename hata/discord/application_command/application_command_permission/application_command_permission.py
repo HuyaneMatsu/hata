@@ -78,7 +78,7 @@ class ApplicationCommandPermission(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application command data.
         
         Returns
@@ -107,7 +107,7 @@ class ApplicationCommandPermission(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_application_command_id(self.application_command_id, data, defaults)

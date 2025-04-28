@@ -11,7 +11,7 @@ def try_get_scheduled_event_metadata_type_from_data(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Scheduled event metadata data.
     
     Returns

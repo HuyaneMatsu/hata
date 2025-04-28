@@ -29,7 +29,7 @@ def _assert__guild_ban_get_chunk__limit(limit):
     """
     if (limit is not None) and (not isinstance(limit, int)):
         raise AssertionError(
-            f'`limit` can be `None`, `int`, got {limit.__class__.__name__}; {limit!r}.'
+            f'`limit` can be `None | int`, got {type(limit).__name__}; {limit!r}.'
         )
     
     return True
@@ -48,7 +48,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild from where the user will be banned.
         
         user : ``ClientUserBase``, `int`
@@ -89,7 +89,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild from where the user will be banned.
         
         user_ids : `None`, `iterable` of `int`, `iterable` of ``ClientUserBase``
@@ -133,7 +133,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild from where the user will be unbanned.
         user : ``ClientUserBase``, `int`
             The user to unban at the guild.
@@ -164,11 +164,11 @@ class ClientCompoundGuildBanEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, what's bans will be requested
-        after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
+        after : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
             The timestamp after the banned users were created.
-        before : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
+        before : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
             The timestamp before the banned users were created.
         limit : `int` = `0`, Optional (Keyword only)
             The amount of ban entries to request. Can be in range [0:1000]
@@ -183,7 +183,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` was not given neither as ``Guild``, `int`.
+            - If `guild` was not given as ``int | Guild``.
             - If `after`, `before` was passed with an unexpected type.
         ConnectionError
             No internet connection.
@@ -226,7 +226,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, what's bans will be requested
         
         Returns
@@ -237,7 +237,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `guild` was not given neither as ``Guild``, `int`.
+            If `guild` was not given as ``int | Guild``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -274,7 +274,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild where the user banned.
         user : ``ClientUserBase``, `int`
             The user's or their id, who's entry is requested.
@@ -287,7 +287,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` was not passed neither as ``Guild``, `int`.
+            - If `guild` was not passed as ``int | Guild``.
             - If `user` was not given neither as ``ClientUserBase``, `int`.
         ConnectionError
             No internet connection.

@@ -482,7 +482,7 @@ def parse_channel_mention(part, message):
         
     Returns
     -------
-    channel : `None`, ``Channel``
+    channel : ``None | Channel``
     """
     mentioned_channels = message.mentioned_channels
     if mentioned_channels is None:

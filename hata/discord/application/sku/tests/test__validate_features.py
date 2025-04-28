@@ -40,4 +40,6 @@ def test__validate_features(input_value):
     ------
     TypeError
     """
-    return validate_features(input_value)
+    output = validate_features(input_value)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    return output

@@ -740,7 +740,7 @@ class PluginLoader(RichAttributeErrorBaseType):
             The plugin's name.
         parameters : `tuple` of `object`
             Additional parameters to create the plugin with.
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Additional parameters to create the plugin with.
         
         Returns

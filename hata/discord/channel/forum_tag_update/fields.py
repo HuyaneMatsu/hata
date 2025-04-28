@@ -16,12 +16,12 @@ def validate_old_attributes(old_attributes):
     
     Parameters
     ----------
-    old_attributes : `None`, `dict` of (`str`, `object`) items
+    old_attributes : `None`, `dict<str, object>`
         The `old_attributes` value to validate.
     
     Returns
     -------
-    old_attributes : `dict` of (`str`, `object`) items
+    old_attributes : `dict<str, object>`
     
     Raises
     ------
@@ -33,7 +33,7 @@ def validate_old_attributes(old_attributes):
     
     if not isinstance(old_attributes, dict):
         raise TypeError(
-            f'`old_attributes` can be `None`, `dict` of (`str`, `object`) items, '
+            f'`old_attributes` can be `None`, `dict<str, object>`, '
             f'got {old_attributes.__class__.__name__}; {old_attributes!r}.'
         )
     

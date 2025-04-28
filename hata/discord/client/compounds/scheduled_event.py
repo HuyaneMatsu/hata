@@ -33,7 +33,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, where to create the scheduled event.
         
         scheduled_event_template : `None`, ``ScheduledEvent``` = `None`, Optional
@@ -65,13 +65,13 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         schedule : `None | Schedule` = `None`, Optional (Keyword only)
             How the scheduled event should re-occur.
         
-        stage : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
+        stage : ``None | int | Channel`` = `None`, Optional (Keyword only)
             The stage channel, where the event will take place.
         
         start : `datetime`, Optional (Keyword only)
             When the event will start.
         
-        voice : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
+        voice : ``None | int | Channel`` = `None`, Optional (Keyword only)
             The voice channel, where the event will take place.
         
         Returns
@@ -250,7 +250,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild to get it's scheduled of.
         
         Returns
@@ -281,11 +281,11 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         ----------
         scheduled_event : ``ScheduledEvent``, `tuple` `int` and `int`
             The scheduled event to get.
-        after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
+        after : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
             The timestamp after the subscribed users were created.
-        before : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
+        before : ``None | int | DiscordEntity | DateTime`` = `None`, Optional (Keyword only)
             The timestamp before the subscribed users were created.
-        limit : `None`, `int` = `None`, Optional (Keyword only)
+        limit : `None | int` = `None`, Optional (Keyword only)
             The amount of scheduled event users to request. Can be between 1 and 100.
         
         Returns

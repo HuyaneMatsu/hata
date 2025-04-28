@@ -765,7 +765,7 @@ class Application(DiscordEntity, immortal = True):
         self : `None`, `instance<cls>>`
             The application instance the method was called if any.
         
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -805,7 +805,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -837,7 +837,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -867,7 +867,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -888,7 +888,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -909,7 +909,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -930,7 +930,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data.
         
         Returns
@@ -948,7 +948,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items, Optional
+        data : `dict<str, object>`, Optional
             Application data.
         """
         self.flags = parse_flags(data)
@@ -960,7 +960,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items, Optional
+        data : `dict<str, object>`, Optional
             Application data.
         """
         self._update_attributes_common(data)
@@ -1005,7 +1005,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items, Optional
+        data : `dict<str, object>`, Optional
             Application data.
         """
         self._update_attributes_common(data)
@@ -1020,7 +1020,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items, Optional
+        data : `dict<str, object>`, Optional
             Application data.
         """
         self._update_attributes_common(data)
@@ -1045,7 +1045,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items, Optional
+        data : `dict<str, object>`, Optional
             Application data.
         """
         self.bot_public = parse_bot_public(data)
@@ -2024,7 +2024,7 @@ class Application(DiscordEntity, immortal = True):
         publishers : `None`, `iterable` of ``ApplicationEntity``, Optional (Keyword only)
             A list of the application's games' publishers.
     
-        redirect_urls : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        redirect_urls : `None | str | iterable<str>`, Optional (Keyword only)
             Configured oauth2 redirect urls.
         
         role_connection_verification_url : `None`, `str`, Optional (Keyword only)
@@ -2244,7 +2244,7 @@ class Application(DiscordEntity, immortal = True):
         publishers : `None`, `iterable` of ``ApplicationEntity``, Optional (Keyword only)
             A list of the application's games' publishers.
     
-        redirect_urls : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        redirect_urls : `None | str | iterable<str>`, Optional (Keyword only)
             Configured oauth2 redirect urls.
         
         role_connection_verification_url : `None`, `str`, Optional (Keyword only)
@@ -2473,7 +2473,7 @@ class Application(DiscordEntity, immortal = True):
         publishers : `None`, `iterable` of ``ApplicationEntity``, Optional (Keyword only)
             A list of the application's games' publishers.
     
-        redirect_urls : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        redirect_urls : `None | str | iterable<str>`, Optional (Keyword only)
             Configured oauth2 redirect urls.
         
         role_connection_verification_url : `None`, `str`, Optional (Keyword only)

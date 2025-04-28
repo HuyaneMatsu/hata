@@ -22,7 +22,7 @@ def parse_metadata(data, action_type):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Auto moderation action data.
     
     action_type : ``AutoModerationActionType``
@@ -51,14 +51,14 @@ def put_metadata(metadata, data, defaults):
     ----------
     metadata : ``AutoModerationActionMetadataBase``
         Action metadata.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (type(metadata) is not AutoModerationActionMetadataBase):
         data['metadata'] = metadata.to_data(defaults = defaults)

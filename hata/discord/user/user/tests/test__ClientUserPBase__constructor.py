@@ -4,9 +4,9 @@ from ....activity import Activity, ActivityType
 from ....bases import Icon, IconType
 from ....client import Client
 from ....color import Color
+from ....guild import GuildBadge
 
-from ...avatar_decoration import AvatarDecoration
-from ...user_clan import UserClan
+from ...avatar_decoration import AvatarDecoration 
 
 from ...guild_profile import GuildProfile
 from ...thread_profile import ThreadProfile
@@ -30,12 +30,12 @@ def _assert_fields_set(user):
     vampytest.assert_instance(user.avatar_decoration, AvatarDecoration, nullable = True)
     vampytest.assert_instance(user.banner, Icon)
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
-    vampytest.assert_instance(user.clan, UserClan, nullable = True)
     vampytest.assert_instance(user.discriminator, int)
     vampytest.assert_instance(user.display_name, str, nullable = True)
     vampytest.assert_instance(user.flags, UserFlag)
     vampytest.assert_instance(user.id, int)
     vampytest.assert_instance(user.name, str)
+    vampytest.assert_instance(user.primary_guild_badge, GuildBadge, nullable = True)
     vampytest.assert_instance(user.bot, bool)
     vampytest.assert_instance(user.guild_profiles, dict)
     vampytest.assert_instance(user.thread_profiles, dict, nullable = True)
@@ -64,11 +64,11 @@ def test__ClientUserPBase__new__all_fields():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160055)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
-    clan = UserClan(guild_id = 202405180043, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'voice in the dark'
+    primary_guild_badge = GuildBadge(guild_id = 202405180043, tag = 'miau')
     bot = True
     activities = [Activity('orin dance', activity_type = ActivityType.playing)]
     status = Status.online
@@ -79,11 +79,11 @@ def test__ClientUserPBase__new__all_fields():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
-        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        primary_guild_badge = primary_guild_badge,
         bot = bot,
         activities = activities,
         status = status,
@@ -95,11 +95,11 @@ def test__ClientUserPBase__new__all_fields():
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
-    vampytest.assert_eq(user.clan, clan)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.name, name)
+    vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
     vampytest.assert_eq(user.bot, bot)
     vampytest.assert_eq(user.activities, activities)
     vampytest.assert_is(user.status, status)
@@ -127,11 +127,11 @@ def test_ClientUserPBase___from_client__0():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160056)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
-    clan = UserClan(guild_id = 202405180044, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'voice in the dark'
+    primary_guild_badge = GuildBadge(guild_id = 202405180044, tag = 'miau')
     bot = True
     
     user_id = 202302070001
@@ -149,11 +149,11 @@ def test_ClientUserPBase___from_client__0():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
-        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        primary_guild_badge = primary_guild_badge,
         bot = bot,
     )
 
@@ -173,11 +173,11 @@ def test_ClientUserPBase___from_client__0():
         vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
         vampytest.assert_eq(user.banner, banner)
         vampytest.assert_eq(user.banner_color, banner_color)
-        vampytest.assert_eq(user.clan, clan)
         vampytest.assert_eq(user.discriminator, discriminator)
         vampytest.assert_eq(user.display_name, display_name)
         vampytest.assert_eq(user.flags, flags)
         vampytest.assert_eq(user.name, name)
+        vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
         vampytest.assert_eq(user.bot, bot)
         
         vampytest.assert_eq(user.id, user_id)
@@ -205,11 +205,11 @@ def test_ClientUserPBase___from_client__1():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160057)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
-    clan = UserClan(guild_id = 202405180045, tag = 'miau')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'voice in the dark'
+    primary_guild_badge = GuildBadge(guild_id = 202405180045, tag = 'miau')
     bot = True
     
     user_id = 202302070004
@@ -227,11 +227,11 @@ def test_ClientUserPBase___from_client__1():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
-        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        primary_guild_badge = primary_guild_badge,
         bot = bot,
     )
     
@@ -251,11 +251,11 @@ def test_ClientUserPBase___from_client__1():
         vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
         vampytest.assert_eq(user.banner, banner)
         vampytest.assert_eq(user.banner_color, banner_color)
-        vampytest.assert_eq(user.clan, clan)
         vampytest.assert_eq(user.discriminator, discriminator)
         vampytest.assert_eq(user.display_name, display_name)
         vampytest.assert_eq(user.flags, flags)
         vampytest.assert_eq(user.name, name)
+        vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
         vampytest.assert_eq(user.bot, bot)
         
         vampytest.assert_eq(user.id, 0)

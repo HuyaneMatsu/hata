@@ -225,7 +225,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_components(self.components, data, defaults)

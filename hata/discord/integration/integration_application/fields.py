@@ -17,7 +17,7 @@ def parse_bot(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Integration application data.
     
     Returns
@@ -41,7 +41,7 @@ def put_bot(user, data, defaults, *, include_internals = False):
     ----------
     user : ``ClientUserBase``
         The integration application's bot.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
@@ -50,7 +50,7 @@ def put_bot(user, data, defaults, *, include_internals = False):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (user is not ZEROUSER):
         if user is ZEROUSER:
@@ -71,7 +71,7 @@ def validate_bot(value):
     
     Parameters
     ----------
-    value : `None`, ``ClientUserBase``
+    value : ``None | ClientUserBase``
         The integration application bot.
     
     Returns

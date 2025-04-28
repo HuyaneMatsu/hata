@@ -4,14 +4,13 @@ from ....bases import Icon, IconType
 from ....color import Color
 from ....core import BUILTIN_EMOJIS
 from ....emoji import Emoji
-from ....guild import Guild
+from ....guild import Guild, GuildBadge
 from ....localization import Locale
 from ....message import Message
 from ....role import Role
 from ....utils import is_url
 
 from ...avatar_decoration import AvatarDecoration
-from ...user_clan import UserClan
 
 from ..flags import UserFlag
 from ..preinstanced import DefaultAvatar, PremiumType, Status
@@ -29,7 +28,6 @@ def test__UserBase__placeholders():
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
     vampytest.assert_instance(user.banner_hash, int)
     vampytest.assert_instance(user.banner_type, IconType)
-    vampytest.assert_instance(user.clan, UserClan, nullable = True)
     vampytest.assert_instance(user.bot, bool)
     vampytest.assert_instance(user.discriminator, int)
     vampytest.assert_instance(user.display_name, str, nullable = True)
@@ -40,6 +38,7 @@ def test__UserBase__placeholders():
     vampytest.assert_instance(user.locale, Locale)
     vampytest.assert_instance(user.mfa_enabled, bool)
     vampytest.assert_instance(user.premium_type, PremiumType)
+    vampytest.assert_instance(user.primary_guild_badge, GuildBadge, nullable = True)
     vampytest.assert_instance(user.status, Status)
     vampytest.assert_instance(user.statuses, dict, nullable = True)
     vampytest.assert_instance(user.thread_profiles, dict, nullable = True)

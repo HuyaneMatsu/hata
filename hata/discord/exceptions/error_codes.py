@@ -249,6 +249,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | max_saved_messages                                                | 30074     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| max_friend_requests                                               | 30078     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | rate_limit_resource                                               | 31002     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | unauthorized                                                      | 40001     | -         |
@@ -261,7 +263,11 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | request_too_large                                                 | 40005     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| message_entity_too_large                                          | 40005     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | feature_disabled                                                  | 40006     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| message_entity_empty                                              | 40006     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | user_banned                                                       | 40007     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -423,6 +429,8 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | event_entity_type_different_from_the_entitys                      | 50091     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| invalid_gift_redemption_previously_owned                          | 50092     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | invalid_country_code                                              | 50095     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | cannot_friend_self                                                | 50096     | -         |
@@ -435,7 +443,7 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | activity_launch_no_access                                         | 50106     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| activity_launch_premium_tier                                      | 50107     | -         |
+| activity_launch_boost_level                                       | 50107     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | activity_launch_concurrent_activities                             | 50108     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -489,6 +497,12 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | handler_valid_only_for_primary_entry_points                       | 50227     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
+| activity_does_not_support_flatform                                | 50231     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| invalid_message_create_game_friend_private_channel                | 50251     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| invalid_message_create_provisional_account_offline                | 50252     | -         |
++-------------------------------------------------------------------+-----------+-----------+
 | missing_permissions_to_use_sticker                                | 50600     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | mfa_enabled                                                       | 60001     | -         |
@@ -526,6 +540,8 @@ Error Codes
 | relationship_invalid_discord_tag                                  | 80004     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | relationship_already_friends                                      | 80007     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| relationship_invalid_not_confirmed                                | 80013     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | reaction_blocked                                                  | 90001     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -588,6 +604,8 @@ Error Codes
 | resource_overloaded                                               | 130000    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | stage_already_open                                                | 150006    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| guild_join_request_user_ineligible                                | 150023    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | cannot_reply_without_read_message_history_permission              | 160002    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -698,6 +716,14 @@ Error Codes
 | dsa_rsl_report_ineligible                                         | 521004    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | dsa_appeal_request_deflection                                     | 522001    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| content_inventory_entry_invalid_permissions                       | 560006    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| account_revert_invalid_token                                      | 620000    | -         |
++--------------------------------------------'-----------------------+-----------+-----------+
+| account_revert_email_used                                         | 620001    | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| account_revert_account_not_found                                  | 620002    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 """
 unknown_account = 10001
@@ -811,14 +837,15 @@ max_blocked_users = 30059
 channels_too_large = 30061
 max_published_product_listing = 30065
 max_saved_messages = 30074
+max_friend_requests = 30078
 rate_limit_resource = 31002
 
 unauthorized = 40001
 email_verification_required = 40002
 rate_limit_private_channel_opening = 40003
 send_message_temporarily_disabled = 40004
-request_too_large = 40005
-feature_disabled = 40006
+message_entity_too_large = 40005
+message_entity_empty = 40006
 user_banned = 40007
 connection_revoked = 40012
 cannot_consume_non_consumable_sku = 40018
@@ -900,13 +927,14 @@ invalid_thread_notification_setting = 50084
 before_value_earlier_than_creation_time = 50085
 community_and_rules_channel_cannot_be_changed_to_announcement = 50086
 event_entity_type_different_from_the_entitys = 50091
+invalid_gift_redemption_previously_owned = 50092
 invalid_country_code = 50095
 cannot_friend_self = 50096
 guild_monetization_required = 50097
 not_enough_guild_boosters = 50101
 invalid_user_settings_data = 50105
 activity_launch_no_access = 50106
-activity_launch_premium_tier = 50107
+activity_launch_boost_level = 50107
 activity_launch_concurrent_activities = 50108
 invalid_json = 50109
 file_invalid = 50110
@@ -933,6 +961,9 @@ file_duration_invalid = 50192
 invalid_gift_redemption_incorrect_user = 50194
 invalid_activity_launch_incorrect_guild_size = 50209
 handler_valid_only_for_primary_entry_points = 50227
+activity_does_not_support_flatform = 50231
+invalid_message_create_game_friend_private_channel = 50251
+invalid_message_create_provisional_account_offline = 50252
 missing_permissions_to_use_sticker = 50600
 
 mfa_enabled = 60001
@@ -955,6 +986,7 @@ relationship_invalid_target_bot = 80002
 relationship_invalid_target_self = 80003
 relationship_invalid_discord_tag = 80004
 relationship_already_friends = 80007
+relationship_invalid_not_confirmed = 80013
 
 reaction_blocked = 90001
 user_cannot_burst_react = 90002
@@ -992,6 +1024,7 @@ listing_join_blocked = 120002
 resource_overloaded = 130000
 
 stage_already_open = 150006
+guild_join_request_user_ineligible = 150023
 
 cannot_reply_without_read_message_history_permission = 160002
 message_has_thread = 160004
@@ -1064,17 +1097,16 @@ dsa_rsl_limited_time = 521003
 dsa_rsl_report_ineligible = 521004
 dsa_appeal_request_deflection = 522001
 
+content_inventory_entry_invalid_permissions = 560006
+
+account_revert_invalid_token = 620000
+account_revert_email_used = 620001
+account_revert_account_not_found = 620002
 
 __deprecations__ = {
-    'MFA_enabled': ('mfa_enabled', '2024 April', mfa_enabled),
-    'MFA_disabled': ('mfa_disabled', '2024 April', mfa_disabled),
-    'MFA_required': ('mfa_required', '2024 April', mfa_required),
-    'MFA_unverified': ('mfa_unverified', '2024 April', mfa_unverified),
-    'MFA_invalid_secret': ('mfa_invalid_secret', '2024 April', mfa_invalid_secret),
-    'MFA_invalid_ticket': ('mfa_invalid_ticket', '2024 April', mfa_invalid_ticket),
-    'MFA_invalid_code':  ('mfa_invalid_code', '2024 April', mfa_invalid_code),
-    'MFA_invalid_session': ('mfa_invalid_session', '2024 April', mfa_invalid_session),
-    'invalid_MFA_level': ('invalid_mfa_level', '2024 April', invalid_mfa_level),
+    'activity_launch_premium_tier': ('activity_launch_boost_level', '2025 November', activity_launch_boost_level),
+    'request_too_large': ('request_too_large', '2025 November', message_entity_too_large),
+    'feature_disabled': ('<removed>', '2025 November', 0)
 }
 
 

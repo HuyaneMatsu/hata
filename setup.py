@@ -131,6 +131,10 @@ setup(
         'hata.discord.guild.discovery',
         'hata.discord.guild.discovery_category',
         'hata.discord.guild.guild',
+        'hata.discord.guild.guild_activity_overview',
+        'hata.discord.guild.guild_activity_overview_activity',
+        'hata.discord.guild.guild_activity_overview_tag',
+        'hata.discord.guild.guild_badge',
         'hata.discord.guild.guild_incidents',
         'hata.discord.guild.guild_inventory_settings',
         'hata.discord.guild.guild_join_request',
@@ -214,7 +218,6 @@ setup(
         'hata.discord.user.guild_profile',
         'hata.discord.user.thread_profile',
         'hata.discord.user.user',
-        'hata.discord.user.user_clan',
         'hata.discord.user.voice_state',
         'hata.discord.voice',
         'hata.discord.voice.audio_settings',
@@ -302,7 +305,7 @@ setup(
     },
     python_requires = '>=3.6,<3.12',
     install_requires = [
-        'scarletio>=1.0.89',
+        'scarletio>=1.0.91',
         'chardet>=2.0',
     ],
     extras_require = {

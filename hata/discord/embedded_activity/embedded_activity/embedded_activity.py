@@ -1,8 +1,5 @@
 __all__ = ('EmbeddedActivity',)
 
-from warnings import warn
-
-from ...activity import Activity
 from ...bases import DiscordEntity
 from ...channel import ChannelType, create_partial_channel_from_id
 from ...core import EMBEDDED_ACTIVITIES, GUILDS
@@ -605,7 +602,7 @@ class EmbeddedActivity(DiscordEntity):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         return GUILDS.get(self.guild_id, None)
     
@@ -671,53 +668,3 @@ class EmbeddedActivity(DiscordEntity):
         """
         for user_state in self.user_states.values():
             yield user_state.user
-    
-    
-    # Deprecated
-    
-    @property
-    def activity(self):
-        """
-        Deprecated and will be removed in 2025 February.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.activity` is deprecated and will be removed in 2025 February.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return Activity()
-    
-    
-    @property
-    def user_ids(self):
-        """
-        Deprecated and will be removed in 2025 February.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.user_ids` is deprecated and will be removed in 2025 February.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return {user_state.user_id for user_state in self.iter_user_states()}
-    
-
-    @property
-    def users(self):
-        """
-        Deprecated and will be removed in 2025 February.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.users` is deprecated and will be removed in 2025 February.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return [user_state.user for user_state in self.iter_user_states()]

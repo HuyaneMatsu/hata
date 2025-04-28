@@ -114,6 +114,12 @@ class ApplicationFlag(FlagBase):
     +-----------------------------------+-------------------+
     | iframe_form                       | 26                |
     +-----------------------------------+-------------------+
+    | social_layer_integration          | 27                |
+    +-----------------------------------+-------------------+
+    | advertised                        | 29                |
+    +-----------------------------------+-------------------+
+    | partnered                         | 30                |
+    +-----------------------------------+-------------------+
     """
     embedded_released = F(1)
     managed_emoji = F(2)
@@ -130,9 +136,15 @@ class ApplicationFlag(FlagBase):
     gateway_message_content = F(18)
     gateway_message_content_limited = F(19)
     embedded_first_party = F(20)
+    # ??
     application_command_badge = F(23)
     active = F(24)
+    # ??
     iframe_form = F(26)
+    social_layer_integration = F(27)
+    # ??
+    advertised = F(29)
+    partnered = F(30)
 
 
 class ApplicationMonetizationEligibilityFlags(FlagBase):

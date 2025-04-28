@@ -96,7 +96,7 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             The received application command permission overwrite data.
         
         Returns
@@ -122,7 +122,7 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_allow(self.allow, data, defaults)

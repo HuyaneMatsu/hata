@@ -195,7 +195,7 @@ class Emoji(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Emoji data received from Discord.
         guild_id : `int` = `0`, Optional
             The emoji's guild's identifier.
@@ -252,7 +252,7 @@ class Emoji(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -290,9 +290,9 @@ class Emoji(DiscordEntity, immortal = True):
              Whether the emoji is animated.
         available : `bool`, Optional (Keyword only)
              Whether the emoji is available.
-        guild : ``Guild``, `int`, Optional (Keyword only)
+        guild : ``int | Guild``, Optional (Keyword only)
             Alternative for `guild_id`.
-        guild_id : ``Guild``, `int`, Optional (Keyword only)
+        guild_id : ``int | Guild``, Optional (Keyword only)
              The emoji's guild's identifier.
         managed : `bool`, Optional (Keyword only)
             Whether the emoji is managed by an integration.
@@ -661,7 +661,7 @@ class Emoji(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Emoji  data.
         guild_id : `int`
             The emoji's guild's identifier.
@@ -679,7 +679,7 @@ class Emoji(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Emoji's data received from Discord.
         """
         self.animated = parse_animated(data)
@@ -702,12 +702,12 @@ class Emoji(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Emoji data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
         
         Returned Data Structure

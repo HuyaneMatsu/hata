@@ -95,7 +95,7 @@ def parse_user(data, guild_id = 0):
         
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction event data.
     guild_id : `int` = `0`, Optional (Keyword only)
         The respective guild's identifier.

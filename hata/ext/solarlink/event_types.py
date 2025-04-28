@@ -35,7 +35,7 @@ class TrackStartEvent(EventBase):
         ----------
         player : ``SolarPlayerBase``
             The player associated with the event.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Event payload.
         """
         track = player.get_current()
@@ -117,7 +117,7 @@ class TrackEndEvent(EventBase):
         ----------
         player : ``SolarPlayerBase``
             The player associated with the event.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Event payload.
         """
         track = player.get_current()
@@ -225,7 +225,7 @@ class TrackStuckEvent(EventBase):
         ----------
         player : ``SolarPlayerBase``
             The player associated with the event.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Event payload.
         """
         track = player.get_current()
@@ -331,7 +331,7 @@ class TrackExceptionEvent(EventBase):
         ----------
         player : ``SolarPlayerBase``
             The player associated with the event.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Event payload.
         """
         try:
@@ -460,7 +460,7 @@ class PlayerWebSocketClosedEvent(EventBase):
         ----------
         player : ``SolarPlayerBase``
             The player associated with the event.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Event payload.
         """
         close_code = data[LAVALINK_KEY_WEBSOCKET_CLOSE_CODE]

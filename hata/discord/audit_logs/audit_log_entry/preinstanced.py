@@ -471,6 +471,18 @@ class AuditLogEntryType(PreinstancedBase, value_type = int):
     +---------------------------------------+---------------------------------------+-------+-----------------------------------+
     | channel_status_delete                 | channel status delete                 | 193   | channel                           |
     +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | clyde_ai_update                       | clyde ai update                       | 194   | none                              |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | scheduled_event_exception_create      | scheduled event exception create      | 200   | none                              |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | scheduled_event_exception_update      | scheduled event exception update      | 201   | none                              |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | scheduled_event_exception_delete      | scheduled event exception delete      | 202   | none                              |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | user_verification_update              | user verification update              | 210   | none                              |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
+    | guild_overview_update                 | guild overview update                 | 211   | guild                             |
+    +---------------------------------------+---------------------------------------+-------+-----------------------------------+
     """
     __slots__ = ('target_type',)
     
@@ -644,3 +656,11 @@ class AuditLogEntryType(PreinstancedBase, value_type = int):
     home_screen_update = P(191, 'home screen update', AuditLogEntryTargetType.none)
     channel_status_update = P(192, 'channel status update', AuditLogEntryTargetType.channel)
     channel_status_delete = P(193, 'channel status delete', AuditLogEntryTargetType.channel)
+    clyde_ai_update = P(194, 'clyde ai update', AuditLogEntryTargetType.none)
+    
+    scheduled_event_exception_create = P(200, 'scheduled event exception create', AuditLogEntryTargetType.none)
+    scheduled_event_exception_update = P(201, 'scheduled event exception update', AuditLogEntryTargetType.none)
+    scheduled_event_exception_delete = P(202, 'scheduled event exception delete', AuditLogEntryTargetType.none)
+    
+    user_verification_update = P(201, 'user verification update', AuditLogEntryTargetType.none)
+    guild_overview_update = P(202, 'guild overview update', AuditLogEntryTargetType.guild)

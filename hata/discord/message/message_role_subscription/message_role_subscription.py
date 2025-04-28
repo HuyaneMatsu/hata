@@ -88,7 +88,7 @@ class MessageRoleSubscription(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message role subscription data.
         
         Returns
@@ -114,7 +114,7 @@ class MessageRoleSubscription(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_renewal(self.renewal, data, defaults)

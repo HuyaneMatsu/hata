@@ -36,12 +36,12 @@ class AutoModerationAction(RichAttributeErrorBaseType):
         
         Other Parameters
         ----------------
-        channel_id : `None`, ``Channel``, `int`, Optional (Keyword only)
+        channel_id : ``None | int | Channel``, Optional (Keyword only)
             The channel where the alert messages should be sent.
             
             > Mutually exclusive with the `duration` parameter.
         
-        duration : `None`, `int`, `float`, Optional (Keyword only)
+        duration : `None | int | float`, Optional (Keyword only)
             The timeout's duration applied on trigger.
             
             > Mutually exclusive with the `channel` parameter.
@@ -69,7 +69,7 @@ class AutoModerationAction(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received auto moderation action data.
         
         Returns
@@ -97,7 +97,7 @@ class AutoModerationAction(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_type(self.type, data, defaults)
@@ -187,12 +187,12 @@ class AutoModerationAction(RichAttributeErrorBaseType):
         
         Other Parameters
         ----------------
-        channel_id : `None`, ``Channel``, `int`, Optional (Keyword only)
+        channel_id : ``None | int | Channel``, Optional (Keyword only)
             The channel where the alert messages should be sent.
             
             > Mutually exclusive with the `duration` parameter.
         
-        duration : `None`, `int`, `float`, Optional (Keyword only)
+        duration : `None | int | float`, Optional (Keyword only)
             The timeout's duration applied on trigger.
             
             > Mutually exclusive with the `channel` parameter.

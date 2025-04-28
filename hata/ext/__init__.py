@@ -8,7 +8,7 @@ Hook registrations can be done with the ``add_library_extension_hook`` function.
 """
 __all__ = ()
 
-import warnings
+from warnings import warn
 from importlib.util import find_spec
 from importlib import import_module
 
@@ -99,7 +99,7 @@ class SetupFunction:
         ----------
         client : ``Client``
             The client on who the extension should be setupped.
-        input_keyword_parameters : `dict` of (`str`, `object`) items
+        input_keyword_parameters : `dict<str, object>`
             Keyword parameters to get the extension's parameters from.
         """
         positional_parameters = []
@@ -291,7 +291,7 @@ def get_setup_functions(extensions, keyword_parameters):
                 exhaustible_parameters.difference_update(optional_parameters)
     
     if exhaustible_parameters:
-        warnings.warn(
+        warn(
             (
                 f'`get_setup_functions` received unused parameters: '
                 f'{", ".join(f"{name} = {keyword_parameters[name]!r}" for name in exhaustible_parameters)}.'
@@ -313,7 +313,7 @@ def run_setup_functions(client, setup_functions, keyword_parameters):
         The client on who the extensions should be setupped.
     setup_functions : `None`, `set` of ``SetupFunction``
         The setup functions to run with the client.
-    keyword_parameters : `dict` of (`str`, `object`) items
+    keyword_parameters : `dict<str, object>`
         Keyword parameters to get the extensions's parameters from.
     """
     if (setup_functions is not None):

@@ -1469,6 +1469,22 @@ Group Details
     - Limit : `5`
     - Resets after : `5.0`
 
+- guild_activity_overview_get
+    - Endpoint : `/guilds/{guild_id}/profile`
+    - Method : `GET`
+    - Required auth : `user`
+    - Limiter : `guild_id`
+    - Limit : `OPT`
+    - Resets after : `OPT`
+
+- guild_activity_overview_edit
+    - Endpoint : `/guilds/{guild_id}/profile`
+    - Method : `PATCH`
+    - Required auth : `user`
+    - Limiter : `guild_id`
+    - Limit : `OPT`
+    - Resets after : `OPT`
+
 - guild_prune_estimate
     - Endpoint : `/guilds/{guild_id}/prune`
     - Method : `GET`
@@ -2431,6 +2447,8 @@ user_role_add = GROUP_USER_ROLE_MODIFY
 onboarding_screen_get = RateLimitGroup(LIMITER_GUILD)
 onboarding_screen_edit = RateLimitGroup(LIMITER_GUILD)
 guild_preview_get = RateLimitGroup()
+guild_activity_overview_get = RateLimitGroup(LIMITER_GUILD, optimistic = True)
+guild_activity_overview_edit = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_prune_estimate = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_prune = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_voice_region_get_all = RateLimitGroup(LIMITER_GUILD, optimistic = True)

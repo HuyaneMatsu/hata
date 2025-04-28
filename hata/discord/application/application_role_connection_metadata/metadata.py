@@ -128,7 +128,7 @@ class ApplicationRoleConnectionMetadata(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Role connection data.
         
         Returns
@@ -156,7 +156,7 @@ class ApplicationRoleConnectionMetadata(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_description(self.description, data, defaults)

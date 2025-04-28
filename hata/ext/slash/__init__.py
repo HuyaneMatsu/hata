@@ -80,7 +80,7 @@ def setup_ext_slash(client, **kwargs):
     
     Other Parameters
     ----------------
-    assert_application_command_permission_missmatch_at : `None`, `int`, ``Guild``, `iterable` of (`int`, ``Guild``)
+    assert_application_command_permission_missmatch_at : ``None | int | Guild | iterable<int> | iterable<Guild>``
             = `None`, Optional (Keyword only)
         Guilds, where permission overwrites missmatch should be asserted.
     

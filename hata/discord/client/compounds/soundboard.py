@@ -50,7 +50,7 @@ class ClientCompoundSoundBoardEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild where the soundboard sound will be created.
         
         sound : `bytes-like`

@@ -23,7 +23,7 @@ def test__validate_max_age__passing(input_value):
     
     Returns
     -------
-    output : `None`, `int`
+    output : `None | int`
     """
     return validate_max_age(input_value)
 

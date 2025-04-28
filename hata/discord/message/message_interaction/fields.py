@@ -164,7 +164,7 @@ def parse_name_and_sub_command_name_stack(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Message interaction data.
     
     Returns
@@ -206,14 +206,14 @@ def put_name_and_sub_command_name_stack(name_and_sub_command_name_stack, data, d
     ----------
     name_and_sub_command_name_stack : `tuple` (`str`, `None` | `tuple` of `str`)
        Message interaction name and sub command name stack.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     name, sub_command_name_stack = name_and_sub_command_name_stack
     if sub_command_name_stack is None:

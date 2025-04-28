@@ -29,7 +29,7 @@ def test__parse_emoji(input_data):
     
     Returns
     -------
-    output : `None | Emoji`
+    output : ``None | Emoji``
     """
     output = parse_emoji(input_data)
     vampytest.assert_instance(output, Emoji, nullable = True)

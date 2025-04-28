@@ -89,7 +89,7 @@ class VerificationScreenStep(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Verification screen step data.
         """
         self = object.__new__(cls)

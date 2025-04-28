@@ -338,7 +338,7 @@ class Integration(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Integration data received from Discord.
         
         Returns
@@ -375,7 +375,7 @@ class Integration(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         # metadata
         data = self.metadata.to_data(defaults = defaults)
@@ -405,7 +405,7 @@ class Integration(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Integration data received from Discord.
         """
         integration_type = parse_type(data)

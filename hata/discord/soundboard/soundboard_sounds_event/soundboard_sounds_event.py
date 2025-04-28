@@ -70,7 +70,7 @@ class SoundboardSoundsEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Voice channel effect event data.
         
         Returns
@@ -106,7 +106,7 @@ class SoundboardSoundsEvent(EventBase):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_guild_id(self.guild_id, data, defaults)
@@ -260,7 +260,7 @@ class SoundboardSoundsEvent(EventBase):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

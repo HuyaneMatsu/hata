@@ -60,30 +60,30 @@ class DiscordException(Exception):
     
     Attributes
     ----------
-    _code : `None`, `int`
+    _code : `None | int`
         Cache of the `.code` property.
         
         If the response data does not contains `code`, then this attribute is set to `0`.
     
-    _debug_info : `None`, `str`
+    _debug_info : `None | str`
         cache of the `.debug_info` property.
     
-    _errors : `None`, `list` of `str`
+    _errors : `None | list<str>`
         Cache of the `errors` property.
     
-    _request_info : `None`, `str`
+    _request_info : `None | str`
         Cache of the `.request_info` property.
     
-    _retry_after : `None`, `float`
+    _retry_after : `None | float`
         Cache pf the `.retry_after` property.
     
-    _message : `None`,  `str`
+    _message : `None | str`
         Cache of the `.message` property.
     
-    _status : `None`, `int`
+    _status : `None | int`
         Cache of the `.status` property.
     
-    debug_options : `None`, `set` of `str`
+    debug_options : `None | set<str>`
         Debug options of the http client.
     
     received_data : `object`

@@ -74,7 +74,7 @@ class Track(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Track data.
         """
         self = object.__new__(cls)
@@ -295,7 +295,7 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    _added_attributes : `None`, `dict` of (`str`, `object`) items
+    _added_attributes : `None`, `dict<str, object>`
         Additionally passed attributes when registering a track.
     
     end_time : `float`
@@ -658,7 +658,7 @@ class GetTracksResult(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Response data.
         """
         playlist_data = data[LAVALINK_KEY_PLAYLIST]

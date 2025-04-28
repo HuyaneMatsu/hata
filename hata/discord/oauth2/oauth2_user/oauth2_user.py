@@ -3,7 +3,7 @@ __all__ = ('Oauth2User',)
 from scarletio import copy_docs
 
 from ...localization.utils import LOCALE_DEFAULT
-from ...user import OrinUserBase, PremiumType, UserClan, UserFlag
+from ...user import OrinUserBase, PremiumType, UserFlag
 from ...user.user.fields import (
     parse_email, parse_email_verified, parse_id, parse_locale, parse_mfa_enabled, parse_premium_type, put_email,
     put_email_verified, put_locale, put_mfa_enabled, put_oauth2_flags_into, put_premium_type,
@@ -22,40 +22,57 @@ class Oauth2User(OrinUserBase):
     ----------
     access : ``Oauth2Access``
         Source oauth2 access.
+    
     avatar_hash : `int`
         The user's avatar's hash in `uint128`.
+    
     avatar_type : ``IconType``
         The user's avatar's type.
+    
     avatar_decoration : `None`, ``AvatarDecoration``
         The user's avatar decorations.
+    
     banner_color : `None`, ``Color``
         The user's banner color if has any.
+    
     banner_hash : `int`
         The user's banner's hash in `uint128`.
+    
     banner_type : ``IconType``
         The user's banner's type.
-    clan : `None`, ``UserClan``
-        The user's primary clan.
+    
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
+    
     display_name : `None`, `str`
         The user's non-unique display name.
+    
     email : `None`, `str`
         The user's email. Defaults to `None`.
+    
     email_verified : `bool`
         Whether the email of the user is verified.
+    
     flags : ``UserFlag``
         The user's user flags.
+    
     id : `int`
         The user's unique identifier number.
+    
     locale : ``Locale``
         The preferred locale by the user.
+    
     mfa_enabled : `bool`
         Whether the user has two factor authorization enabled on the account.
+    
     name : str
         The user's username.
+    
     premium_type : ``PremiumType``
         The Nitro subscription type of the user.
+    
+    primary_guild_badge : ``None | GuildBadge``
+        The user's primary guild's badge.
     """
     __slots__ = ('access', 'email', 'email_verified', 'locale', 'mfa_enabled', 'premium_type')
     
@@ -66,7 +83,6 @@ class Oauth2User(OrinUserBase):
         avatar_decoration = ...,
         banner = ...,
         banner_color = ...,
-        clan = ...,
         discriminator = ...,
         display_name = ...,
         email = ...,
@@ -76,6 +92,7 @@ class Oauth2User(OrinUserBase):
         mfa_enabled = ...,
         name = ...,
         premium_type = ...,
+        primary_guild_badge = ...,
     ):
         """
         Creates a new partial oauth2 user with the given fields.
@@ -84,32 +101,45 @@ class Oauth2User(OrinUserBase):
         ----------
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        
         avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
+        
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.
+        
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
             The user's banner color.
-        user_clan : `None`, ``UserClan``, Optional (Keyword only)
-            The user's primary clan.
+        
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
+        
         display_name : `None`, `str`, Optional (Keyword only)
             The user's non-unique display name.
+        
         email : `None, `str`, Optional (Keyword only)
             The user's email.
+        
         email_verified : `bool`, Optional (Keyword only)
             Whether the email of the user is verified.
+        
         flags : `int`, ``UserFlag``, Optional (Keyword only)
             The user's flags.
+        
         locale : ``Locale``, `str`, Optional (Keyword only)
             The preferred locale by the user.
+        
         mfa_enabled : `bool`, Optional (Keyword only)
             Whether the user has two factor authorization enabled on the account.
+        
         name : `str`, Optional (Keyword only)
             The user's name.
-        premium_type : ``PremiumType``, `int`, Optional (Keyword only)
+        
+        premium_type : ``None | PremiumType | int``, Optional (Keyword only)
             The Nitro subscription type of the user.
+        
+        primary_guild_badge : ``None | GuildBadge``, Optional (Keyword only)
+            The user's primary guild's badge.
         
         Raises
         ------
@@ -155,11 +185,11 @@ class Oauth2User(OrinUserBase):
             avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
-            clan = clan,
             discriminator = discriminator,
             display_name = display_name,
             flags = flags,
             name = name,
+            primary_guild_badge = primary_guild_badge,
         )
         self.access = Oauth2Access()
         self.email = email
@@ -177,7 +207,7 @@ class Oauth2User(OrinUserBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             User data.
         access : ``Oauth2Access``
             Source oauth2 access.
@@ -279,7 +309,6 @@ class Oauth2User(OrinUserBase):
         avatar_decoration = ...,
         banner = ...,
         banner_color = ...,
-        clan = ...,
         discriminator = ...,
         display_name = ...,
         email = ...,
@@ -289,6 +318,7 @@ class Oauth2User(OrinUserBase):
         mfa_enabled = ...,
         name = ...,
         premium_type = ...,
+        primary_guild_badge = ...,
     ):
         """
         Creates a new partial oauth2 user with the given fields.
@@ -297,32 +327,45 @@ class Oauth2User(OrinUserBase):
         ----------
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        
         avatar_decoration : `None`, ``AvatarDecoration``, Optional (Keyword only)
             The user's avatar decoration.
+        
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.
+        
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
             The user's banner color.
-        clan : `None`, ``UserClan``, Optional (Keyword only)
-            The user's primary clan.
+        
         discriminator : `str`, `int`, Optional (Keyword only)
             The user's discriminator.
+        
         display_name : `None`, `str`, Optional (Keyword only)
             The user's non-unique display name.
+        
         email : `None, `str`, Optional (Keyword only)
             The user's email.
+        
         email_verified : `bool`, Optional (Keyword only)
             Whether the email of the user is verified.
+        
         flags : `int`, ``UserFlag``, Optional (Keyword only)
             The user's flags.
+        
         locale : ``Locale``, `str`, Optional (Keyword only)
             The preferred locale by the user.
+        
         mfa_enabled : `bool`, Optional (Keyword only)
             Whether the user has two factor authorization enabled on the account.
+        
         name : `str`, Optional (Keyword only)
             The user's name.
-        premium_type : ``PremiumType``, `int`, Optional (Keyword only)
+        
+        premium_type : ``None | PremiumType | int``, Optional (Keyword only)
             The Nitro subscription type of the user.
+        
+        primary_guild_badge : ``None | GuildBadge``, Optional (Keyword only)
+            The user's primary guild's badge.
         
         Raises
         ------
@@ -368,11 +411,11 @@ class Oauth2User(OrinUserBase):
             avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
-            clan = clan,
             discriminator = discriminator,
             display_name = display_name,
             flags = flags,
             name = name,
+            primary_guild_badge = primary_guild_badge,
         )
         new.access = Oauth2Access()
         new.email = email

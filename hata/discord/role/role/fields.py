@@ -66,7 +66,7 @@ def parse_manager(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Role data.
     
     Returns
@@ -130,7 +130,7 @@ def put_manager(manager, data, defaults):
     manager : `tuple` (``RoleManagerType``, ``RoleManagerMetadataBase``)
         The role's manager as a tuple containing it's identifier and type.
     
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Role data.
     
     defaults : `bool`
@@ -138,7 +138,7 @@ def put_manager(manager, data, defaults):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     manager_type, manager_metadata = manager
     

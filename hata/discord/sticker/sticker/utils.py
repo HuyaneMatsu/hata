@@ -17,7 +17,7 @@ def create_partial_sticker_data(sticker):
     
     Returns
     ------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     data = {}
     put_format(sticker.format, data, True)
@@ -32,7 +32,7 @@ def create_partial_sticker_from_partial_data(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Sticker data.
     
     Returns

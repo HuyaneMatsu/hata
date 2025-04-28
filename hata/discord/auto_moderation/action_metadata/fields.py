@@ -32,7 +32,7 @@ def validate_duration(duration):
     
     Parameters
     ----------
-    duration : `None`, `int`, `float`
+    duration : `None | int | float`
         The timeout's duration applied on trigger.
     
     Returns
@@ -55,7 +55,7 @@ def validate_duration(duration):
     
     else:
         raise TypeError(
-            f'`duration` can be `None`, `int`, `float`, got {duration.__class__.__name__}; {duration!r}.'
+            f'`duration` can be `None | int | float`, got {type(duration).__name__}; {duration!r}.'
         )
     
     if duration < 0:

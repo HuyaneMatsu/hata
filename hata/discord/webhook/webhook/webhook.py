@@ -51,24 +51,34 @@ class Webhook(WebhookBase):
     ----------
     application_id : `int`
         The application's identifier what created the webhook. Defaults to `0` if not applicable.
+    
     avatar_hash : `int`
         The webhook's avatar's hash in `uint128`.
+    
     avatar_type : ``IconType``
         The webhook's avatar's type.
+    
     channel_id : `int`
         The channel's identifier, where the webhook is going to send it's messages.
+    
     id : `int`
         The webhook's unique identifier number.
+    
     name : str
         The webhook's name.
+    
     source_channel : `None`, ``WebhookSourceChannel``
         Representation of the webhook's source channel. Applicable for ``WebhookType.server`` webhooks.
+    
     source_guild : `None`, ``WebhookSourceGuild``
         Representation of the webhook's source guild. Applicable for ``WebhookType.server`` webhooks.
+    
     token : `str`
         The webhook's token. You need an `id` and a `token` to send webhook message. Defaults to empty string.
+    
     type : ``WebhookType``
         The webhook's type.
+    
     user : ``ClientUserBase``
         The creator of the webhook, or `ZEROUSER` if unknown.
     
@@ -98,20 +108,28 @@ class Webhook(WebhookBase):
         ----------
         application_id : `int`, ``Application``, Optional (Keyword only)
             The application's identifier what created the webhook.
+        
         channel_id : `int`, Optional (Keyword only)
             The channel's identifier, where the webhook is going to send it's messages.
+        
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        
         source_channel : `None`, ``WebhookSourceChannel``, Optional (Keyword only)
             Representation of the webhook's source channel.
+        
         source_guild : `None`, ``WebhookSourceGuild``, Optional (Keyword only)
             Representation of the webhook's source guild.
+        
         name : `str`, Optional (Keyword only)
             The user's name.
+        
         token : `str`, Optional (Keyword only)
             The webhook's token.
+        
         user : ``ClientUserBase``, Optional (Keyword only)
             The creator of the webhook.
+        
         webhook_type : ``WebhookType``, `int`, Optional (Keyword only)
             The webhook's type.
         
@@ -176,7 +194,7 @@ class Webhook(WebhookBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received webhook data.
         
         Returns
@@ -211,7 +229,7 @@ class Webhook(WebhookBase):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -269,20 +287,28 @@ class Webhook(WebhookBase):
         ----------
         application_id : `int`, ``Application``, Optional (Keyword only)
             The application's identifier what created the webhook.
+        
         channel_id : `int`, Optional (Keyword only)
             The channel's identifier, where the webhook is going to send it's messages.
+        
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        
         source_channel : `None`, ``WebhookSourceChannel``, Optional (Keyword only)
             Representation of the webhook's source channel.
+        
         source_guild : `None`, ``WebhookSourceGuild``, Optional (Keyword only)
             Representation of the webhook's source guild.
+        
         name : `str`, Optional (Keyword only)
             The user's name.
+        
         token : `str`, Optional (Keyword only)
             The webhook's token.
+        
         user : ``ClientUserBase``, Optional (Keyword only)
             The creator of the webhook.
+        
         webhook_type : ``WebhookType``, `int`, Optional (Keyword only)
             The webhook's type.
         
@@ -384,7 +410,7 @@ class Webhook(WebhookBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received webhook data.
         """
         self._update_attributes(data)
@@ -552,12 +578,15 @@ class Webhook(WebhookBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received webhook data.
+        
         source_channel : ``Channel``
             The followed channel.
+        
         target_channel_id : `int`
             The target channel's identifier where the webhook messages will be sent.
+        
         client : ``Client``
             The client who created the webhook.
         

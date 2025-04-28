@@ -305,7 +305,7 @@ class Category:
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
-        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`) = `None`
+        aliases : `None | str | list<str> | tuple<None | Ellipsis | str | list<str>>` = `None`
                 , Optional
             The aliases of the command.
         category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`) = `None`

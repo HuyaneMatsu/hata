@@ -846,6 +846,24 @@ class DiscordApiClient(RichAttributeErrorBaseType):
         )
     
     
+    async def guild_activity_overview_get(self, guild_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_activity_overview_get, guild_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/guilds/{guild_id}/profile',
+        )
+    
+    
+    async def guild_activity_overview_edit(self, guild_id, data, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_activity_overview_get, guild_id),
+            METHOD_PATCH,
+            f'{API_ENDPOINT}/guilds/{guild_id}/profile',
+            data,
+            reason = reason,
+        )
+    
+    
     async def guild_user_delete(self, guild_id, user_id, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.guild_user_delete, NO_SPECIFIC_RATE_LIMITER),

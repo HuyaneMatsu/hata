@@ -142,7 +142,7 @@ class StickerPack(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             sticker-pack data.
         force_update : `bool` = `False`, Optional (Keyword only)
             Whether the sticker should be updated.
@@ -174,7 +174,7 @@ class StickerPack(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Sticker-pack data.
         """
         self.banner_id = parse_banner_id(data)
@@ -196,7 +196,7 @@ class StickerPack(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_banner_id(self.banner_id, data, defaults)

@@ -22,7 +22,7 @@ class CommandContext:
         Trace of command categories till to the command to invoke if applicable.
     command_function : `None`, ``CommandFunction``
         The command's function to run.
-    command_keyword_parameters : `dict` of (`str`, `object`) items
+    command_keyword_parameters : `dict<str, object>`
         Keyword parameters to pass to the command function.
     command_positional_parameters : `list` of `object`
         Positional parameters to pass to the command function.
@@ -113,7 +113,7 @@ class CommandContext:
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         return self.message.guild
     

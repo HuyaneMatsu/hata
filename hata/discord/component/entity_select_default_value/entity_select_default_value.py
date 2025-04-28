@@ -79,7 +79,7 @@ class EntitySelectDefaultValue(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             String select option data.
         
         Returns
@@ -103,7 +103,7 @@ class EntitySelectDefaultValue(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         

@@ -9,7 +9,7 @@ def guess_scheduled_event_entity_type_from_keyword_parameters(keyword_parameters
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Scheduled event metadata data.
     
     Returns

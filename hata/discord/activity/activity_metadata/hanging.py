@@ -24,7 +24,7 @@ class ActivityMetadataHanging(ActivityMetadataBase):
     details : `None | str`
         The activity's text next to the emoji.
     
-    emoji : `None | Emoji`
+    emoji : ``None | Emoji``
         The emoji of the activity.
     
     hang_type : ``HangType``

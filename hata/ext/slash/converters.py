@@ -154,7 +154,7 @@ async def converter_int(client, interaction_event, value):
     
     Returns
     -------
-    value : `None`, `int`
+    value : `None | int`
         If conversion fails, then returns `None`.
     """
     if not isinstance(value, int):
@@ -321,7 +321,7 @@ async def converter_user(client, interaction_event, value):
     
     Returns
     -------
-    user : `None`, ``ClientUserBase``
+    user : ``None | ClientUserBase``
         If conversion fails, then returns `None`.
     """
     user_id = await converter_snowflake(client, interaction_event, value)
@@ -387,7 +387,7 @@ async def converter_channel(client, interaction_event, value):
     
     Returns
     -------
-    value : `None`, ``Channel``
+    value : ``None | Channel``
         If conversion fails, then returns `None`.
     """
     channel_id = await converter_snowflake(client, interaction_event, value)
@@ -796,13 +796,13 @@ class SlashParameter(RichAttributeErrorBaseType):
         The accepted channel types.
     description : `None`, `str` = `None`, Optional
         Description for the annotation.
-    max_length : `None`, `int`
+    max_length : `None | int`
         The maximum input length allowed for this option.
-    max_value : `None`, `int`, `float`
+    max_value : `None | int | float`
         The maximal accepted value by the parameter.
-    min_length : `None`, `int`
+    min_length : `None | int`
         The minimum input length allowed for this option.
-    min_value : `None`, `int`, `float`
+    min_value : `None | int | float`
         The minimal accepted value by the parameter.
     name : `None`, `str` = `None`, Optional
         Name to use instead of the parameter's.
@@ -842,13 +842,13 @@ class SlashParameter(RichAttributeErrorBaseType):
             Auto complete function for the parameter.
         channel_types : `None`, `iterable` of (`int`, ``ChannelType``) = `None`, Optional (Keyword only)
             The accepted channel types.
-        max_length : `None`, `int` = `None`, Optional (Keyword only)
+        max_length : `None | int` = `None`, Optional (Keyword only)
             The maximum input length allowed for this option.
-        max_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
+        max_value : `None | int | float` = `None`, Optional (Keyword only)
             The maximal accepted value by the parameter.
-        min_length : `None`, `int` = `None`, Optional (Keyword only)
+        min_length : `None | int` = `None`, Optional (Keyword only)
             The minimum input length allowed for this option.
-        min_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
+        min_value : `None | int | float` = `None`, Optional (Keyword only)
             The minimal accepted value by the parameter.
         """
         self = object.__new__(cls)
@@ -1062,7 +1062,7 @@ def process_max_and_min_value(type_, value, value_name):
     ----------
     type_ : `int`
         The value's type's respective internal identifier.
-    value : `None`, `int`, `float`
+    value : `None | int | float`
         The given value.
     value_name : `str`
         The value's name. Used when generating. exception messages.
@@ -1071,7 +1071,7 @@ def process_max_and_min_value(type_, value, value_name):
     -------
     type_ : `int`
         The value's type's respective internal identifier.
-    value : `None`, `int`, `float`
+    value : `None | int | float`
         The min or max value.
     
     Raises
@@ -1116,7 +1116,7 @@ def process_max_length(max_length, option_type):
     
     Parameters
     ----------
-    max_length : `None`, `int`
+    max_length : `None | int`
         The maximum input length allowed for this option.
     
     option_type : ``ApplicationCommandOptionType``
@@ -1153,7 +1153,7 @@ def process_min_length(min_length, option_type):
     
     Parameters
     ----------
-    min_length : `None`, `int`
+    min_length : `None | int`
         The minimum input length allowed for this option.
     
     option_type : ``ApplicationCommandOptionType``
@@ -1664,9 +1664,9 @@ def parse_annotation_tuple(parameter, annotation_tuple):
         The parameter's internal type identifier.
     channel_types : `None`, `tuple` of ``ChannelType``
         The accepted channel types.
-    max_value : `None`, `int`, `float`
+    max_value : `None | int | float`
         The maximal accepted value.
-    min_value : `None`, `int`, `float`
+    min_value : `None | int | float`
         The minimal accepted value.
     autocomplete : `None`, `CoroutineFunction`
         Autocomplete function.
@@ -1741,9 +1741,9 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
         The parameter's internal type identifier.
     channel_types : `None`, `tuple` of ``ChannelType``
         The accepted channel types.
-    max_value : `None`, `int`, `float`
+    max_value : `None | int | float`
         The maximal accepted value.
-    min_value : `None`, `int`, `float`
+    min_value : `None | int | float`
         The minimal accepted value.
     autocomplete : `None`, `CoroutineFunction`
         Autocomplete function.
@@ -1845,9 +1845,9 @@ def parse_pep_593_typing(parameter, annotation_value):
         The parameter's internal type identifier.
     channel_types : `None`, `tuple` of ``ChannelType``
         The accepted channel types.
-    max_value : `None`, `int`, `float`
+    max_value : `None | int | float`
         The maximal accepted value.
-    min_value : `None`, `int`, `float`
+    min_value : `None | int | float`
         The minimal accepted value.
     autocomplete : `None`, `CoroutineFunction`
         Autocomplete function.
@@ -1914,9 +1914,9 @@ def parse_annotation_fallback(parameter, annotation_value):
         The parameter's internal type identifier.
     channel_types : `None`, `tuple` of ``ChannelType``
         The accepted channel types.
-    max_value : `None`, `int`, `float`
+    max_value : `None | int | float`
         The maximal accepted value.
-    min_value : `None`, `int`, `float`
+    min_value : `None | int | float`
         The minimal accepted value.
     autocomplete : `None`, `CoroutineFunction`
         Autocomplete function.
@@ -1965,7 +1965,7 @@ def parse_annotation_internal(annotation):
     
     Returns
     -------
-    annotation_type : `None`, `int`
+    annotation_type : `None | int`
         The parsed annotation type. Returns `None` if the annotation type not refers to an internal type.
     """
     if isinstance(annotation, type):
@@ -2010,9 +2010,9 @@ def parse_annotation(parameter):
         The parameter's internal type identifier.
     channel_types : `None`, `tuple` of ``ChannelType``
         The accepted channel types.
-    max_value : `None`, `int`, `float`
+    max_value : `None | int | float`
         The maximal accepted value.
-    min_value : `None`, `int`, `float`
+    min_value : `None | int | float`
         The minimal accepted value.
     autocomplete : `None`, `CoroutineFunction`
         Autocomplete function.

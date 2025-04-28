@@ -19,7 +19,7 @@ class SolarPlayer(SolarPlayerBase):
     
     Attributes
     ----------
-    _forward_data : `None`, `dict` of (`str`, `object`) items
+    _forward_data : `None`, `dict<str, object>`
         Json to forward to the player's node as necessary.
     _position : `float`
         The position of the current track.

@@ -55,7 +55,7 @@ def parse_created_at(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Activity timestamp data.
     
     Returns
@@ -75,14 +75,14 @@ def put_created_at(created_at, data, defaults):
     ----------
     created_at : `None`, `datetime`
         Activity timestamps created_at.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (created_at is not None):
         if (created_at is not None):
@@ -133,7 +133,7 @@ def parse_id(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Activity data.
     
     Returns
@@ -159,14 +159,14 @@ def put_id(activity_id, data, defaults):
     ----------
     activity_id : `int`
         Activity's identifier.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if activity_id:
         data['id'] = format(activity_id, 'x')

@@ -38,9 +38,9 @@ class ClientCompoundPollEndpoints(Compound):
             The message whats voters should be requested.
         poll_answer : ``PollAnswer``, `int`
             The poll answer to request the users for.
-        limit : `None`, `int`, Optional (Keyword only)
+        limit : `None | int`, Optional (Keyword only)
             The amount of users to request. Can be in range [1:100].
-        after : `None`, `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+        after : ``None | int | DiscordEntity | DateTime``, Optional (Keyword only)
             The timestamp after the voters were created.
         
         Returns
@@ -71,7 +71,7 @@ class ClientCompoundPollEndpoints(Compound):
         
         else:
             raise TypeError(
-                f'`limit` can be `None`, `int`, got {type(limit).__name__}; {limit!r}.'
+                f'`limit` can be `None | int`, got {type(limit).__name__}; {limit!r}.'
             )
         
         message, channel_id, message_id = get_message_and_channel_id_and_message_id(message)

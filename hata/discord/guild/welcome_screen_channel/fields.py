@@ -35,16 +35,18 @@ def put_emoji(emoji, data, defaults):
     
     Parameters
     ----------
-    emoji : `None`, ``Emoji``
+    emoji : ``None | Emoji``
         The emoji.
-    data : `dict` of (`str`, `object`) items
+    
+    data : `dict<str, object>`
         Json serializable dictionary.
+    
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (emoji is not None):
         put_partial_emoji_inline_data_into(emoji, data)

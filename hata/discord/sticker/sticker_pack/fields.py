@@ -55,7 +55,7 @@ def parse_stickers(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Sticker-pack data.
     
     Returns
@@ -75,14 +75,14 @@ def put_stickers(stickers, data, defaults):
     ----------
     stickers : `None`, `frozenset` of `Sticker`
         Stickers.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if stickers is None:
         sticker_datas = []

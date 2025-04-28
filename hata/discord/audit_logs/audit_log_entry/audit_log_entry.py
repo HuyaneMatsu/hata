@@ -98,7 +98,7 @@ class AuditLogEntry(DiscordEntity):
         target_id : `int`, Optional (Keyword only)
             The entry's target's identifier.
         
-        user_id : `int`, `None`, ``ClientUserBase```, Optional (Keyword only)
+        user_id : `int`, ``None | ClientUserBase```, Optional (Keyword only)
             The user's identifier who triggered the event.
         
         Raises
@@ -171,7 +171,7 @@ class AuditLogEntry(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Data received from Discord.
         
         parent : `None`, ``AuditLog`` = `None`, Optional
@@ -265,7 +265,7 @@ class AuditLogEntry(DiscordEntity):
         Other Parameters
         ----------------
         
-        guild : `int`, `None`, ``Guild``, Optional (Keyword only)
+        guild : `int`, ``None | Guild``, Optional (Keyword only)
             Alternative for `guild_id`.
         
         guild_id : `int`, `None`, ``Guild``, Optional (Keyword only)
@@ -277,10 +277,10 @@ class AuditLogEntry(DiscordEntity):
         target_id : `int`, Optional (Keyword only)
             The entry's target's identifier.
         
-        user : `int`, `None`, ``ClientUserBase```, Optional (Keyword only)
+        user : `int`, ``None | ClientUserBase```, Optional (Keyword only)
             Alternative for `user_id`.
         
-        user_id : `int`, `None`, ``ClientUserBase```, Optional (Keyword only)
+        user_id : `int`, ``None | ClientUserBase```, Optional (Keyword only)
             The user's identifier who triggered the event.
         
         Returns
@@ -416,7 +416,7 @@ class AuditLogEntry(DiscordEntity):
         target_id : `int`, Optional (Keyword only)
             The entry's target's identifier.
         
-        user_id : `int`, `None`, ``ClientUserBase```, Optional (Keyword only)
+        user_id : `int`, ``None | ClientUserBase```, Optional (Keyword only)
             The user's identifier who triggered the event.
         Returns
         -------
@@ -536,7 +536,7 @@ class AuditLogEntry(DiscordEntity):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:
@@ -550,7 +550,7 @@ class AuditLogEntry(DiscordEntity):
         
         Returns
         -------
-        user : `None`, ``ClientUserBase``
+        user : ``None | ClientUserBase``
             Returns ˙None` if not an user triggered it.
         """
         user_id = self.user_id

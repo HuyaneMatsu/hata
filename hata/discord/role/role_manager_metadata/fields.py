@@ -27,7 +27,7 @@ def parse_purchasable(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Role manager data.
     
     Returns
@@ -45,14 +45,14 @@ def put_purchasable(purchasable, data, defaults):
     ----------
     purchasable : `bool`
         Whether the role is available for purchase.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if purchasable:
         data[PURCHASABLE_KEY] = None

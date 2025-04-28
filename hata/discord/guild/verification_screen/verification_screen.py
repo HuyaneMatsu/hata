@@ -78,7 +78,7 @@ class VerificationScreen(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Verification screen data.
         """
         self = object.__new__(cls)
@@ -101,7 +101,7 @@ class VerificationScreen(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         

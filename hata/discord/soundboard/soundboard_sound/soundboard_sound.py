@@ -33,7 +33,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
     
     Attributes
     ----------
-    _cache_user : `None`, ``ClientUserBase``
+    _cache_user : ``None | ClientUserBase``
         Cache field used by the ``.user`` property.
     available : `bool`
         Whether the sound is available.
@@ -287,7 +287,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -691,7 +691,7 @@ class SoundboardSound(DiscordEntity, immortal = True):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

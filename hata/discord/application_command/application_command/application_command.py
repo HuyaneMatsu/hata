@@ -170,7 +170,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         required_permissions : `None`, ``Permission``, `int`, Optional (Keyword only)
             The required permissions to use the application command inside of a guild.
         
-        target_type : `None`, `int`, ``ApplicationCommandTargetType``, Optional (Keyword only)
+        target_type : ``None | ApplicationCommandTargetType | int``, Optional (Keyword only)
             The application command's target type.
             
             Defaults to `ApplicationCommandTargetType.chat`.
@@ -335,7 +335,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         required_permissions : `None`, ``Permission``, `int`, Optional (Keyword only)
             The required permissions to use the application command inside of a guild.
         
-        target_type : `None`, `int`, ``ApplicationCommandTargetType``, Optional (Keyword only)
+        target_type : ``None | ApplicationCommandTargetType | int``, Optional (Keyword only)
             The application command's target type.
         
         version : `int`, Optional (Keyword only)
@@ -414,7 +414,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received application command data.
         
         Returns
@@ -444,7 +444,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application command data returned by it's ``.to_data`` method.
         application_command_id : `int`
             The unique identifier number of the newly created application command.
@@ -481,7 +481,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -512,7 +512,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received application command data.
         """
         self.description = parse_description(data)
@@ -536,12 +536,12 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received application command data.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             The updated attributes.
             
             Every item in the returned dict is optional and can contain the following ones:
@@ -1166,7 +1166,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         required_permissions : `None`, ``Permission``, `int`, Optional (Keyword only)
             The required permissions to use the application command inside of a guild.
         
-        target_type : `None`, `int`, ``ApplicationCommandTargetType``, Optional (Keyword only)
+        target_type : ``None | ApplicationCommandTargetType | int``, Optional (Keyword only)
             The application command's target type.
         
         Returns
@@ -1455,7 +1455,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

@@ -92,7 +92,7 @@ def parse_fields(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         User presence data.
     
     Returns
@@ -114,14 +114,14 @@ def put_fields(fields, data, defaults):
     ----------
     fields : `None`, `list` of ``EmbedField``
         Activities.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (fields is not None):
         if fields is None:
@@ -253,7 +253,7 @@ def validate_title(title):
     
     if title_length > TITLE_LENGTH_MAX:
         raise ValueError(
-            f'`title` length` must be <= {TITLE_LENGTH_MAX}, '
+            f'`title` length must be <= {TITLE_LENGTH_MAX}, '
             f'got {title_length}; title = {title!r}.'
         )
     

@@ -213,7 +213,7 @@ class Message(DiscordEntity, immortal = True):
     stickers : `None`, `tuple` of ``Sticker``
         The stickers sent with the message. Defaults to `None`.
     
-    thread : `None`, ``Channel``
+    thread : ``None | Channel``
         The thread that was started from this message. Defaults to `None`.
     
     tts : `bool`
@@ -281,7 +281,7 @@ class Message(DiscordEntity, immortal = True):
         application : `None`, ``MessageApplication``, Optional (Keyword only)
             Message's application information, sent with rich presence related embeds.
         
-        application_id : `None`, ``Application``, Optional (Keyword only)
+        application_id : ``None | int | Application``, Optional (Keyword only)
             The application or its identifier who sent the message.
         
         attachments : `None`, `iterable` of ``Attachment``, Optional (Keyword only)
@@ -357,7 +357,7 @@ class Message(DiscordEntity, immortal = True):
         stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
             The stickers sent with the message.
         
-        thread : `None`, ``Channel``, Optional (Keyword only)
+        thread : ``None | Channel``, Optional (Keyword only)
             The thread that was started from this message.
         
         tts : `bool`, Optional (Keyword only)
@@ -592,7 +592,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message data.
         
         Returns
@@ -645,7 +645,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message data.
         
         Returns
@@ -693,7 +693,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message reference data.
         
         Returns
@@ -766,7 +766,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message data.
         creation : `bool` = `True`, Optional
             Whether the entity was just created.
@@ -849,7 +849,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message data.
         """
         if self.flags.loading:
@@ -1301,12 +1301,12 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -1427,7 +1427,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message data received from Discord.
         """
         self.edited_at = parse_edited_at(data)
@@ -1449,7 +1449,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message data received from Discord.
         """
         self._clear_cache()
@@ -1476,7 +1476,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message data received from Discord.
         
         Returns
@@ -1566,7 +1566,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message data received from Discord.
         """
         embeds = self.embeds
@@ -1749,7 +1749,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -1891,7 +1891,7 @@ class Message(DiscordEntity, immortal = True):
         application : `None`, ``MessageApplication``, Optional (Keyword only)
             Message's application information, sent with rich presence related embeds.
         
-        application_id : `None`, ``Application``, Optional (Keyword only)
+        application_id : ``None | int | Application``, Optional (Keyword only)
             The application or its identifier who sent the message.
         
         attachments : `None`, `iterable` of ``Attachment``, Optional (Keyword only)
@@ -1982,7 +1982,7 @@ class Message(DiscordEntity, immortal = True):
         stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
             The stickers sent with the message.
         
-        thread : `None`, ``Channel``, Optional (Keyword only)
+        thread : ``None | Channel``, Optional (Keyword only)
             The thread that was started from this message.
         
         tts : `bool`, Optional (Keyword only)
@@ -2191,7 +2191,7 @@ class Message(DiscordEntity, immortal = True):
         application : `None`, ``MessageApplication``, Optional (Keyword only)
             Message's application information, sent with rich presence related embeds.
         
-        application_id : `None`, ``Application``, Optional (Keyword only)
+        application_id : ``None | int | Application``, Optional (Keyword only)
             The application or its identifier who sent the message.
         
         attachments : `None`, `iterable` of ``Attachment``, Optional (Keyword only)
@@ -2267,7 +2267,7 @@ class Message(DiscordEntity, immortal = True):
         stickers : `None`, `iterable` of ``Sticker``, Optional (Keyword only)
             The stickers sent with the message.
         
-        thread : `None`, ``Channel``, Optional (Keyword only)
+        thread : ``None | Channel``, Optional (Keyword only)
             The thread that was started from this message.
         
         tts : `bool`, Optional (Keyword only)
@@ -2632,7 +2632,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

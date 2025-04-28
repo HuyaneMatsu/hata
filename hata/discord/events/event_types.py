@@ -37,7 +37,7 @@ class VoiceServerUpdateEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Voice server update data.
         """
         guild_id = data.get('guild_id', None)
@@ -131,7 +131,7 @@ class VoiceServerUpdateEvent(EventBase):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:
@@ -165,7 +165,7 @@ class WebhookUpdateEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Webhook update data.
         """
         channel_id = int(data['channel_id'])
@@ -257,7 +257,7 @@ class WebhookUpdateEvent(EventBase):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:
@@ -291,7 +291,7 @@ class ApplicationCommandCountUpdate(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application command count update data.
         """
         raw_counts = data['application_command_counts']
@@ -395,7 +395,7 @@ class ApplicationCommandCountUpdate(EventBase):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

@@ -2,7 +2,7 @@ __all__ = (
     'FailingAddress', 'RoutePlannerBase', 'RoutePlannerNanoIP', 'RoutePlannerRotatingIp', 'RoutePlannerRotatingNanoIP'
 )
 
-import warnings
+from warnings import warn
 
 from scarletio import RichAttributeErrorBaseType, copy_docs
 
@@ -39,7 +39,7 @@ class FailingAddress(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Failing address data.
         """
         self = object.__new__(cls)
@@ -49,7 +49,7 @@ class FailingAddress(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the failing address's representation."""
-        return f'<{self.__class__.__name__} address={self.address!r}, time={self.time:{DATETIME_FORMAT_CODE}}>'
+        return f'<{type(self).__name__} address = {self.address!r}, time = {self.time:{DATETIME_FORMAT_CODE}}>'
 
 
 def _route_planner_base_repr_generator(route_planner):
@@ -130,7 +130,7 @@ class RoutePlannerBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Route planner data.
         """
         self = object.__new__(cls)
@@ -301,7 +301,7 @@ def get_route_planner(data):
         try:
             route_planner_type = ROUTE_PLANNER_TYPES[route_planner_type_name]
         except KeyError:
-            warnings.warn(
+            warn(
                 f'Undefined route planner type : {route_planner_type_name!r}\nPlease open an issue with this message.',
                 RuntimeWarning,
             )

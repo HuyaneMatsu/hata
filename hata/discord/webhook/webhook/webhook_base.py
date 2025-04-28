@@ -24,14 +24,19 @@ class WebhookBase(UserBase):
     ----------
     avatar_hash : `int`
         The webhook's avatar's hash in `uint128`.
+    
     avatar_type : ``IconType``
         The webhook's avatar's type.
+    
     channel_id : `int`
         The channel's identifier, where the webhook is going to send it's messages.
+    
     id : `int`
         The webhook's unique identifier number.
+    
     name : str
         The webhook's username.
+    
     type : ``WebhookType``
         The webhook's type.
     """
@@ -52,10 +57,13 @@ class WebhookBase(UserBase):
         ----------
         channel_id : `int`, Optional (Keyword only)
             The channel's identifier, where the webhook is going to send it's messages.
+        
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        
         name : `str`, Optional (Keyword only)
             The user's name.
+        
         webhook_type : ``WebhookType``, `int`, Optional (Keyword only)
             The webhook's type.
         
@@ -127,10 +135,13 @@ class WebhookBase(UserBase):
         ----------
         channel_id : `int`, Optional (Keyword only)
             The channel's identifier, where the webhook is going to send it's messages.
+        
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        
         name : `str`, Optional (Keyword only)
             The user's name.
+        
         webhook_type : ``WebhookType``, `int`, Optional (Keyword only)
             The webhook's type.
         
@@ -351,7 +362,7 @@ class WebhookBase(UserBase):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         try:
             channel = CHANNELS[self.channel_id]

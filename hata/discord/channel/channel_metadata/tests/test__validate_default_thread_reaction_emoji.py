@@ -29,7 +29,7 @@ def test__validate_default_thread_reaction_emoji(input_value):
     
     Returns
     -------
-    output : `None | Emoji`
+    output : ``None | Emoji``
     
     Raises
     ------

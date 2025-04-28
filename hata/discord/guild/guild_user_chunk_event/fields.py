@@ -150,7 +150,7 @@ def put_users(users, data, defaults, *, guild_id = 0):
     ----------
     users : `list` of ``ClientUserBase``
         Resolved users.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction resolved data.
     defaults : `bool`
         Whether default fields values should be included as well.
@@ -159,7 +159,7 @@ def put_users(users, data, defaults, *, guild_id = 0):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     guild_profiles_datas = []
     

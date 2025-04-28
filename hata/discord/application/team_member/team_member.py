@@ -107,7 +107,7 @@ class TeamMember(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_role(self.role, data, defaults)

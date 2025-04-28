@@ -42,6 +42,7 @@ from .constants import (
     MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT, MAX_USERS_DEFAULT, MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT, NAME_LENGTH_MAX,
     NAME_LENGTH_MIN
 )
+from .guild_boost_perks import LEVELS
 from .flags import SystemChannelFlag
 from .preinstanced import (
     ExplicitContentFilterLevel, GuildFeature, HubType, MfaLevel, MessageNotificationLevel, NsfwLevel, VerificationLevel
@@ -57,7 +58,7 @@ validate_afk_channel_id = entity_id_validator_factory('afk_channel_id', Channel)
 
 parse_afk_timeout = int_parser_factory('afk_timeout', AFK_TIMEOUT_DEFAULT)
 put_afk_timeout = int_optional_putter_factory('afk_timeout', AFK_TIMEOUT_DEFAULT)
-validate_afk_timeout = int_options_validator_factory('afk_timeout', AFK_TIMEOUT_OPTIONS)
+validate_afk_timeout = int_options_validator_factory('afk_timeout', AFK_TIMEOUT_OPTIONS, 0)
 
 # approximate_online_count
 
@@ -87,11 +88,6 @@ parse_available = negated_bool_parser_factory('unavailable', True)
 put_available = negated_bool_optional_putter_factory('unavailable', True)
 validate_available = bool_validator_factory('unavailable', True)
 
-# boost_progress_bar_enabled
-
-parse_boost_progress_bar_enabled = bool_parser_factory('premium_progress_bar_enabled', False)
-put_boost_progress_bar_enabled = bool_optional_putter_factory('premium_progress_bar_enabled', False)
-validate_boost_progress_bar_enabled = bool_validator_factory('boost_progress_bar_enabled', False)
 
 # boost_count
 
@@ -103,6 +99,21 @@ validate_boost_count = int_conditional_validator_factory(
     lambda boost_count : boost_count >= 0,
     '>= 0',
 )
+
+
+# boost_level
+
+parse_boost_level = int_parser_factory('premium_tier', 0)
+put_boost_level = int_putter_factory('premium_tier')
+validate_boost_level = int_options_validator_factory('boost_level', frozenset(LEVELS.keys()), 0)
+
+
+# boost_progress_bar_enabled
+
+parse_boost_progress_bar_enabled = bool_parser_factory('premium_progress_bar_enabled', False)
+put_boost_progress_bar_enabled = bool_optional_putter_factory('premium_progress_bar_enabled', False)
+validate_boost_progress_bar_enabled = bool_validator_factory('boost_progress_bar_enabled', False)
+
 
 # channels
 
@@ -480,11 +491,6 @@ def put_locale(locale, data, defaults):
 
 validate_locale = preinstanced_validator_factory('locale', Locale)
 
-# premium_tier
-
-parse_premium_tier = int_parser_factory('premium_tier', 0)
-put_premium_tier = int_putter_factory('premium_tier')
-validate_premium_tier = int_options_validator_factory('premium_tier', frozenset((range(4))))
 
 # public_updates_channel_id
 
@@ -835,7 +841,7 @@ def put_users(users, data, defaults, *, guild_id = 0):
     ----------
     users : `dict`, ``WeakValueDictionary``  of (`int`, ``ClientUserBase``) items
         Resolved users.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction resolved data.
     defaults : `bool`
         Whether default fields values should be included as well.
@@ -844,7 +850,7 @@ def put_users(users, data, defaults, *, guild_id = 0):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     guild_profiles_datas = []
     
@@ -1085,14 +1091,14 @@ def put_channels_and_channel_datas(channels, data, defaults):
     ----------
     channels : `None`, `list` of (``Channel``, `dict`)
         Channels or channel datas.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     channel_datas = []
     
@@ -1116,14 +1122,14 @@ def put_roles_and_role_datas(roles, data, defaults):
     ----------
     roles : `None`, `list` of (``Role``, `dict`)
         Roles or role datas.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     role_datas = []
     

@@ -23,7 +23,7 @@ from ..constants import GUILD_STATE_MASK_CACHE_ALL, GUILD_STATE_MASK_CACHE_BOOST
 from ..emoji_counts import EmojiCounts
 from ..flags import SystemChannelFlag
 from ..guild import Guild
-from ..guild_premium_perks import GuildPremiumPerks, TIER_0, TIER_MAX
+from ..guild_boost_perks import GuildBoostPerks, LEVEL_0, LEVEL_MAX
 from ..preinstanced import (
     ExplicitContentFilterLevel, GuildFeature, HubType, MfaLevel, MessageNotificationLevel, NsfwLevel, VerificationLevel
 )
@@ -44,6 +44,7 @@ def test__Guild__copy():
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     features = [GuildFeature.animated_icon]
+    home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
     invite_splash = Icon(IconType.animated, 18)
@@ -72,6 +73,7 @@ def test__Guild__copy():
         description = description,
         discovery_splash = discovery_splash,
         features = features,
+        home_splash = home_splash,
         hub_type = hub_type,
         icon = icon,
         invite_splash = invite_splash,
@@ -112,6 +114,7 @@ def test__Guild__copy_with__0():
     description = 'Koishi'
     discovery_splash = Icon(IconType.animated, 14)
     features = [GuildFeature.animated_icon]
+    home_splash = Icon(IconType.animated, 36)
     hub_type = HubType.college
     icon = Icon(IconType.animated, 16)
     invite_splash = Icon(IconType.animated, 18)
@@ -140,6 +143,7 @@ def test__Guild__copy_with__0():
         description = description,
         discovery_splash = discovery_splash,
         features = features,
+        home_splash = home_splash,
         hub_type = hub_type,
         icon = icon,
         invite_splash = invite_splash,
@@ -180,6 +184,7 @@ def test__Guild__copy_with__1():
     old_description = 'Koishi'
     old_discovery_splash = Icon(IconType.animated, 14)
     old_features = [GuildFeature.animated_icon]
+    old_home_splash = Icon(IconType.animated, 36)
     old_hub_type = HubType.college
     old_icon = Icon(IconType.animated, 16)
     old_invite_splash = Icon(IconType.animated, 18)
@@ -207,6 +212,7 @@ def test__Guild__copy_with__1():
     new_description = 'Okuu'
     new_discovery_splash = Icon(IconType.animated, 114)
     new_features = [GuildFeature.animated_banner]
+    new_home_splash = Icon(IconType.animated, 37)
     new_hub_type = HubType.high_school
     new_icon = Icon(IconType.animated, 116)
     new_invite_splash = Icon(IconType.animated, 118)
@@ -235,6 +241,7 @@ def test__Guild__copy_with__1():
         description = old_description,
         discovery_splash = old_discovery_splash,
         features = old_features,
+        home_splash = old_home_splash,
         hub_type = old_hub_type,
         icon = old_icon,
         invite_splash = old_invite_splash,
@@ -264,6 +271,7 @@ def test__Guild__copy_with__1():
         description = new_description,
         discovery_splash = new_discovery_splash,
         features = new_features,
+        home_splash = new_home_splash,
         hub_type = new_hub_type,
         icon = new_icon,
         invite_splash = new_invite_splash,
@@ -297,6 +305,7 @@ def test__Guild__copy_with__1():
     vampytest.assert_eq(copy.description, new_description)
     vampytest.assert_eq(copy.discovery_splash, new_discovery_splash)
     vampytest.assert_eq(copy.features, tuple(new_features))
+    vampytest.assert_eq(copy.home_splash, new_home_splash)
     vampytest.assert_is(copy.hub_type, new_hub_type)
     vampytest.assert_eq(copy.icon, new_icon)
     vampytest.assert_eq(copy.invite_splash, new_invite_splash)
@@ -571,124 +580,140 @@ def test__Guild__has_feature(guild, feature):
     return guild.has_feature(feature)
 
 
-def test__Guild__premium_perks():
+def test__Guild__boost_perks():
     """
-    Tests whether ``Guild.premium_perks`` works as intended.
+    Tests whether ``Guild.boost_perks`` works as intended.
     """
-    premium_tier = 2
+    boost_level = 2
     
-    guild = Guild.precreate(202212190039, premium_tier = premium_tier)
-    premium_perks = guild.premium_perks
-    vampytest.assert_instance(premium_perks, GuildPremiumPerks)
-    vampytest.assert_eq(premium_perks.tier, premium_tier)
+    guild = Guild.precreate(202212190039, boost_level = boost_level)
+    boost_perks = guild.boost_perks
+    vampytest.assert_instance(boost_perks, GuildBoostPerks)
+    vampytest.assert_eq(boost_perks.level, boost_level)
 
 
 def _iter_options__emoji_limit():
-    yield Guild.precreate(202212200000, premium_tier = 0), TIER_0.emoji_limit
-    yield Guild.precreate(202212200001, premium_tier = TIER_MAX.tier), TIER_MAX.emoji_limit
-    yield Guild.precreate(202212200002, premium_tier = 1, features = [GuildFeature.more_emoji]), 200
-    yield (
-        Guild.precreate(202212200003, premium_tier = TIER_MAX.tier, features = [GuildFeature.more_emoji]),
-        TIER_MAX.emoji_limit,
-    )
-    
+    yield 202212200000, 0, None, LEVEL_0.emoji_limit
+    yield 202212200001, LEVEL_MAX.level, None, LEVEL_MAX.emoji_limit
+    yield 202212200002, 1, [GuildFeature.more_emoji], 200
+    yield 202212200003, LEVEL_MAX.level, [GuildFeature.more_emoji], LEVEL_MAX.emoji_limit
+
 
 @vampytest._(vampytest.call_from(_iter_options__emoji_limit()).returning_last())
-def test__Guild__emoji_limit(guild):
+def test__Guild__emoji_limit(guild_id, boost_level, features):
     """
     Tests whether ``Guild.emoji_limit`` works as intended.
     
     Parameters
     ----------
-    guild : ``Guild``
-        The guild to get its emoji limit of.
+    guild_id : `int`
+        Guild identifier to create the guild with.
+    
+    boost_level : `int`
+        The boost level of the guild.
+    
+    features : `None | list<GuildFeature>`
+        Features to create the guild with.
     
     Returns
     -------
     output : `int`
     """
+    guild = Guild.precreate(guild_id, boost_level = boost_level, features = features)
     emoji_limit = guild.emoji_limit
     vampytest.assert_instance(emoji_limit, int)
     return emoji_limit
 
 
 def _iter_options__bitrate_limit():
-    yield Guild.precreate(202212200004, premium_tier = 0), TIER_0.bitrate_limit
-    yield Guild.precreate(202212200005, premium_tier = TIER_MAX.tier), TIER_MAX.bitrate_limit
-    yield Guild.precreate(202212200006, premium_tier = 1, features = [GuildFeature.vip_voice_regions]), 128000
-    yield (
-        Guild.precreate(202212200007, premium_tier = TIER_MAX.tier, features = [GuildFeature.vip_voice_regions]),
-        TIER_MAX.bitrate_limit,
-    )
+    yield 202212200004, 0, None, LEVEL_0.bitrate_limit
+    yield 202212200005, LEVEL_MAX.level, None, LEVEL_MAX.bitrate_limit
+    yield 202212200006, 1, [GuildFeature.vip_voice_regions], 128000
+    yield 202212200007, LEVEL_MAX.level, [GuildFeature.vip_voice_regions], LEVEL_MAX.bitrate_limit
 
 
 @vampytest._(vampytest.call_from(_iter_options__bitrate_limit()).returning_last())
-def test__Guild__bitrate_limit(guild):
+def test__Guild__bitrate_limit(guild_id, boost_level, features):
     """
     Tests whether ``Guild.bitrate_limit`` works as intended.
     
     Parameters
     ----------
-    guild : ``Guild``
-        The guild to get its bitrate limit of.
+    guild_id : `int`
+        Guild identifier to create the guild with.
+    
+    boost_level : `int`
+        The boost level of the guild.
+    
+    features : `None | list<GuildFeature>`
+        Features to create the guild with.
     
     Returns
     -------
     output : `int`
     """
+    guild = Guild.precreate(guild_id, boost_level = boost_level, features = features)
     bitrate_limit = guild.bitrate_limit
     vampytest.assert_instance(bitrate_limit, int)
     return bitrate_limit
 
 
-def _iter_options__upload_limit():
-    yield Guild.precreate(202212200008, premium_tier = 0), TIER_0.upload_limit
-    yield Guild.precreate(202212200009, premium_tier = TIER_MAX.tier), TIER_MAX.upload_limit
+def _iter_options__attachment_size_limit():
+    yield 202212200008, 0, LEVEL_0.attachment_size_limit
+    yield 202212200009, LEVEL_MAX.level, LEVEL_MAX.attachment_size_limit
 
 
-@vampytest._(vampytest.call_from(_iter_options__upload_limit()).returning_last())
-def test__Guild__upload_limit(guild):
+@vampytest._(vampytest.call_from(_iter_options__attachment_size_limit()).returning_last())
+def test__Guild__attachment_size_limit(guild_id, boost_level):
     """
-    Tests whether ``Guild.upload_limit`` works as intended.
+    Tests whether ``Guild.attachment_size_limit`` works as intended.
     
     Parameters
     ----------
-    guild : ``Guild``
-        The guild to get its upload limit of.
+    guild_id : `int`
+        Identifier to create guild with.
+    
+    boost_level : `int`
+        Boost level to create the guild with.
     
     Returns
     -------
     output : `int`
     """
-    upload_limit = guild.upload_limit
-    vampytest.assert_instance(upload_limit, int)
-    return upload_limit
+    guild = Guild.precreate(guild_id, boost_level = boost_level)
+    attachment_size_limit = guild.attachment_size_limit
+    vampytest.assert_instance(attachment_size_limit, int)
+    return attachment_size_limit
 
 
 def _iter_options__sticker_limit():
-    yield Guild.precreate(202212200010, premium_tier = 0), TIER_0.sticker_limit
-    yield Guild.precreate(202212200011, premium_tier = TIER_MAX.tier), TIER_MAX.sticker_limit
-    yield Guild.precreate(202212200012, premium_tier = 1, features = [GuildFeature.more_sticker]), 30
-    yield (
-        Guild.precreate(202212200013, premium_tier = TIER_MAX.tier, features = [GuildFeature.more_sticker]),
-        TIER_MAX.sticker_limit,
-    )
+    yield 202212200010, 0, None, LEVEL_0.sticker_limit
+    yield 202212200011, LEVEL_MAX.level, None, LEVEL_MAX.sticker_limit
+    yield 202212200012, 1, [GuildFeature.more_sticker], 30
+    yield 202212200013, LEVEL_MAX.level, [GuildFeature.more_sticker], LEVEL_MAX.sticker_limit
 
 
 @vampytest._(vampytest.call_from(_iter_options__sticker_limit()).returning_last())
-def test__Guild__sticker_limit(guild):
+def test__Guild__sticker_limit(guild_id, boost_level, features):
     """
     Tests whether ``Guild.sticker_limit`` works as intended.
     
     Parameters
     ----------
-    guild : ``Guild``
-        The guild to get its sticker limit of.
+    guild_id : `int`
+        Guild identifier to create the guild with.
+    
+    boost_level : `int`
+        The boost level of the guild.
+    
+    features : `None | list<GuildFeature>`
+        Features to create the guild with.
     
     Returns
     -------
     output : `int`
     """
+    guild = Guild.precreate(guild_id, boost_level = boost_level, features = features)
     sticker_limit = guild.sticker_limit
     vampytest.assert_instance(sticker_limit, int)
     return sticker_limit
@@ -1363,7 +1388,7 @@ def test__Guild__get_channel(guild, name, type_checker):
     
     Returns
     -------
-    output : `None`, ``Channel``
+    output : ``None | Channel``
     """
     return guild.get_channel(name, type_checker = type_checker)
 
@@ -1412,7 +1437,7 @@ def test__Guild__get_channel_like(guild, name, type_checker):
     
     Returns
     -------
-    output : `None`, ``Channel``
+    output : ``None | Channel``
     """
     return guild.get_channel_like(name, type_checker = type_checker)
 
@@ -1512,7 +1537,7 @@ def test__Guild__get_user(guild, name):
     
     Returns
     -------
-    output : `None`, ``ClientUserBase``
+    output : ``None | ClientUserBase``
     """
     return guild.get_user(name)
 
@@ -1577,7 +1602,7 @@ def test__Guild__get_user_like(guild, name):
     
     Returns
     -------
-    output : `None`, ``ClientUserBase``
+    output : ``None | ClientUserBase``
     """
     return guild.get_user_like(name)
 
@@ -1987,7 +2012,7 @@ def test__Guild__afk_channel(guild):
     
     Returns
     -------
-    output : `None`, ``Channel``
+    output : ``None | Channel``
     """
     return guild.afk_channel
 
@@ -2015,7 +2040,7 @@ def test__Guild__rules_channel(guild):
     
     Returns
     -------
-    output : `None`, ``Channel``
+    output : ``None | Channel``
     """
     return guild.rules_channel
 
@@ -2043,7 +2068,7 @@ def test__Guild__safety_alerts_channel(guild):
     
     Returns
     -------
-    output : `None`, ``Channel``
+    output : ``None | Channel``
     """
     return guild.safety_alerts_channel
 
@@ -2071,7 +2096,7 @@ def test__Guild__system_channel(guild):
     
     Returns
     -------
-    output : `None`, ``Channel``
+    output : ``None | Channel``
     """
     return guild.system_channel
 
@@ -2099,7 +2124,7 @@ def test__Guild__widget_channel(guild):
     
     Returns
     -------
-    output : `None`, ``Channel``
+    output : ``None | Channel``
     """
     return guild.widget_channel
 

@@ -463,11 +463,11 @@ class MessageNotificationLevel(PreinstancedBase, value_type = int):
     +-----------------------+---------------+-------+
     | Type attribute name   | name          | value |
     +=======================+===============+=======+
-    | all_messages          | all_messages  | 0     |
+    | all_messages          | all messages  | 0     |
     +-----------------------+---------------+-------+
-    | only_mentions         | only_mentions | 1     |
+    | only_mentions         | only mentions | 1     |
     +-----------------------+---------------+-------+
-    | no_message            | no_messages   | 2     |
+    | no_message            | no messages   | 2     |
     +-----------------------+---------------+-------+
     | none                  | none          | 3     |
     +-----------------------+---------------+-------+
@@ -475,9 +475,9 @@ class MessageNotificationLevel(PreinstancedBase, value_type = int):
     __slots__ = ()
     
     # predefined
-    all_messages = P(0, 'all_messages')
-    only_mentions = P(1, 'only_mentions')
-    no_messages = P(2, 'no_messages')
+    all_messages = P(0, 'all messages')
+    only_mentions = P(1, 'only mentions')
+    no_messages = P(2, 'no messages')
     none = P(3, 'none')
 
 

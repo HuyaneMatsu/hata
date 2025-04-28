@@ -59,7 +59,7 @@ class SKU(DiscordEntity):
     premium : `bool`
         Whether the stock keeping unit is a premium one.
     
-    release_at : `None`, `DateTime`
+    release_at : `None | DateTime`
         When the stock keeping unit has its release.
         Can be both in the past and in the future as well.
     
@@ -109,7 +109,7 @@ class SKU(DiscordEntity):
         premium : `bool`, Optional (Keyword only)
             Whether the stock keeping unit is a premium one.
             
-        release_at : `None`, `DateTime`, Optional (Keyword only)
+        release_at : `None | DateTime`, Optional (Keyword only)
             When the stock keeping unit has its release.
         
         sku_type : ``SKUType``, `int`, Optional (Keyword only)
@@ -240,7 +240,7 @@ class SKU(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -324,7 +324,7 @@ class SKU(DiscordEntity):
         premium : `bool`, Optional (Keyword only)
             Whether the stock keeping unit is a premium one.
             
-        release_at : `None`, `DateTime`, Optional (Keyword only)
+        release_at : `None | DateTime`, Optional (Keyword only)
             When the stock keeping unit has its release.
         
         slug : `None`, `str`, Optional (Keyword only)
@@ -562,7 +562,7 @@ class SKU(DiscordEntity):
         premium : `bool`, Optional (Keyword only)
             Whether the stock keeping unit is a premium one.
             
-        release_at : `None`, `DateTime`, Optional (Keyword only)
+        release_at : `None | DateTime`, Optional (Keyword only)
             When the stock keeping unit has its release.
         
         sku_type : ``SKUType``, `int`, Optional (Keyword only)

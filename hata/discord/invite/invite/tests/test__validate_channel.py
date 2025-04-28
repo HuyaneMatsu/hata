@@ -21,12 +21,12 @@ def test__validate_channel__passing(input_value):
     
     Parameters
     ----------
-    input_value : `None`, ``Channel``
+    input_value : ``None | Channel``
         The channel to validate.
     
     Returns
     -------
-    output : `None`, ``Channel``
+    output : ``None | Channel``
     """
     return validate_channel(input_value)
 

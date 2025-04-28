@@ -78,7 +78,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             The received application command option choice data.
         
         Returns
@@ -104,7 +104,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_name(self.name, data, defaults)

@@ -11,9 +11,10 @@ from ...core import KOKORO
 from ...events import IntentFlag
 from ...events.event_handler_manager import EventHandlerManager
 from ...gateway.client_base import DiscordGatewayClientBase
+from ...guild import GuildBadge
 from ...http import DiscordApiClient
 from ...localization import Locale
-from ...user import AvatarDecoration, PremiumType, Status, UserClan, UserFlag
+from ...user import AvatarDecoration, PremiumType, Status, UserFlag
 
 from ..client import Client
 from ..ready_state import ReadyState
@@ -46,7 +47,6 @@ def _assert_fields_set(client):
     vampytest.assert_instance(client.banner_color, int, nullable = True)
     vampytest.assert_instance(client.banner, Icon)
     vampytest.assert_instance(client.bot, bool)
-    vampytest.assert_instance(client.clan, UserClan, nullable = True)
     vampytest.assert_instance(client.discriminator, int)
     vampytest.assert_instance(client.display_name, str, nullable = True)
     vampytest.assert_instance(client.email, str, nullable = True)
@@ -64,6 +64,7 @@ def _assert_fields_set(client):
     vampytest.assert_instance(client.mfa_enabled, bool)
     vampytest.assert_instance(client.name, str)
     vampytest.assert_instance(client.premium_type, PremiumType)
+    vampytest.assert_instance(client.primary_guild_badge, GuildBadge, nullable = True)
     vampytest.assert_instance(client.private_channels, dict)
     vampytest.assert_instance(client.ready_state, ReadyState, nullable = True)
     vampytest.assert_instance(client.relationships, dict)
@@ -106,11 +107,11 @@ def test__Client__new__all_fields():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160015)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
-    clan = UserClan(guild_id = 202405180059, tag = 'meow')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'voice in the dark'
+    primary_guild_badge = GuildBadge(guild_id = 202405180059, tag = 'meow')
     bot = True
 
     email = 'rin@orindance.party'
@@ -128,11 +129,11 @@ def test__Client__new__all_fields():
         avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
-        clan = clan,
         discriminator = discriminator,
         display_name = display_name,
         flags = flags,
         name = name,
+        primary_guild_badge = primary_guild_badge,
         bot = bot,
         
         email = email,
@@ -152,11 +153,11 @@ def test__Client__new__all_fields():
         vampytest.assert_eq(client.avatar_decoration, avatar_decoration)
         vampytest.assert_eq(client.banner, banner)
         vampytest.assert_eq(client.banner_color, banner_color)
-        vampytest.assert_eq(client.clan, clan)
         vampytest.assert_eq(client.discriminator, discriminator)
         vampytest.assert_eq(client.display_name, display_name)
         vampytest.assert_eq(client.flags, flags)
         vampytest.assert_eq(client.name, name)
+        vampytest.assert_eq(client.primary_guild_badge, primary_guild_badge)
         vampytest.assert_eq(client.bot, bot)
     
         vampytest.assert_eq(client.email, email)

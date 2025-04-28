@@ -83,7 +83,7 @@ def parse_tags(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Sticker data
     
     Returns
@@ -107,14 +107,14 @@ def put_tags(tags, data, defaults):
     ----------
     tags : `None`, `frozenset` of `str`
         Sticker tags.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if tags is None:
         raw_tags = ''
@@ -130,7 +130,7 @@ def validate_tags(tags):
     
     Parameters
     ----------
-    tags : `None`, `str`, `iterable` of `str`
+    tags : `None | str | iterable<str>`
         Sticker tags to validate.
     
     Returns
@@ -153,7 +153,7 @@ def validate_tags(tags):
     
     if getattr(type(tags), '__iter__', None) is None:
         raise TypeError(
-            f'`tags` can be `None`, `str`, `iterable` of `str`, got {type(tags).__name__}; {tags!r}.'
+            f'`tags` can be `None | str | iterable<str>`, got {type(tags).__name__}; {tags!r}.'
         )
     
     validated_tags = None

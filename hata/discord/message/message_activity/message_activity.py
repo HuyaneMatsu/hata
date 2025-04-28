@@ -63,7 +63,7 @@ class MessageActivity(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message activity data.
         
         Returns

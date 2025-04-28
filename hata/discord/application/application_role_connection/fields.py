@@ -33,7 +33,7 @@ def parse_metadata_values(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Application role connection data.
     
     Returns
@@ -53,14 +53,14 @@ def put_metadata_values(metadata_values, data, defaults):
     ----------
     metadata_values : `None`, `dict` of (`str`, `str`) items
         Metadata values.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (metadata_values is not None):
         if metadata_values is None:

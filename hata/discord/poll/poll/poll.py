@@ -493,7 +493,7 @@ class Poll(RichAttributeErrorBaseType):
             
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -508,7 +508,7 @@ class Poll(RichAttributeErrorBaseType):
         +---------------------------+-----------------------------------+
         | duration                  | `int`                             |
         +---------------------------+-----------------------------------+
-        | expires_at                | `None`, `DateTime`                |
+        | expires_at                | `None | DateTime`                 |
         +---------------------------+-----------------------------------+
         | finalized                 | `bool`                            |
         +---------------------------+-----------------------------------+
@@ -606,7 +606,7 @@ class Poll(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        guild : `None`, ``Guild`` = `None`, Optional
+        guild : ``None | Guild`` = `None`, Optional
             The respective guild as a context to look up guild specific names of entities.
         
         Returns

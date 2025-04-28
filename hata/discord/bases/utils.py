@@ -292,7 +292,7 @@ def maybe_snowflake(value):
     
     Returns
     -------
-    value : `None`, `int`
+    value : `None | int`
     
     Raises
     ------

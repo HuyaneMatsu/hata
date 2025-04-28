@@ -23,4 +23,7 @@ def test__value_deserializer_id(input_value):
     -------
     output : `int`
     """
-    return value_deserializer_id(input_value)
+    output = value_deserializer_id(input_value)
+    vampytest.assert_instance(output, int)
+    return output
+

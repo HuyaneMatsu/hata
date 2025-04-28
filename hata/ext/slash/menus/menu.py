@@ -551,7 +551,7 @@ class MenuStructure(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        class_attributes : `dict` of (`str`, `object`) items
+        class_attributes : `dict<str, object>`
             Class attributes of a type.
         
         Raises
@@ -742,7 +742,7 @@ def _iter_attributes(class_parents, class_attributes):
     ----------
     class_parents : `tuple` of `type`
         Parent classes.
-    class_attributes : `dict` of (`str`, `object`) items
+    class_attributes : `dict<str, object>`
         Class attributes of the source type.
     
     Yields
@@ -813,7 +813,7 @@ class MenuType(type):
             The created class's name.
         class_parents : `tuple` of `type`
             The superclasses of the creates type.
-        class_attributes : `dict` of (`str`, `object`) items
+        class_attributes : `dict<str, object>`
             The class attributes of the created type.
         
         Returns
@@ -932,7 +932,7 @@ class Menu(RichAttributeErrorBaseType, metaclass = MenuType):
         +-------------------------------+-------+
     _timeouter : `None`, ``Timeouter``
         Executes the timeout feature on the menu.
-    _tracked_changes : `dict` of (`str`, `object`) items
+    _tracked_changes : `dict<str, object>`
         The tracked changes by parameter name.
     channel : ``Channel``
         The channel where the menu is executed.

@@ -76,14 +76,14 @@ def put_scopes(scopes, data, defaults):
     ----------
     activity_id : `int`
         Activity's identifier.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if scopes is None:
         joined_scopes = ''

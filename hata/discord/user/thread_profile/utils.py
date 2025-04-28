@@ -20,7 +20,7 @@ def create_user_from_thread_user_data(thread_channel, thread_user_data):
     ----------
     thread_channel : ``Channel``
         The respective thread.
-    thread_user_data : `dict` of (`str`, `object`) items
+    thread_user_data : `dict<str, object>`
         Received thread profile data.
     
     Returns
@@ -52,7 +52,7 @@ def thread_user_create(thread_channel, user, thread_profile_data):
         The respective thread.
     user : ``ClientUserBase``
         The respective user to add or update in the thread.
-    thread_profile_data : `dict` of (`str`, `object`) items
+    thread_profile_data : `dict<str, object>`
         Received thread profile data.
     
     Returns
@@ -91,12 +91,12 @@ def thread_user_difference_update(thread_channel, user, thread_profile_data):
         The respective thread.
     user : ``ClientUserBase``
         The respective user to add or update in the thread.
-    thread_profile_data : `dict` of (`str`, `object`) items
+    thread_profile_data : `dict<str, object>`
         Received thread profile data.
     
     Returns
     -------
-    old_attributes : `None`, `dict` of (`str`, `object`) items
+    old_attributes : `None`, `dict<str, object>`
     """
     thread_users = thread_channel.thread_users
     if thread_users is None:

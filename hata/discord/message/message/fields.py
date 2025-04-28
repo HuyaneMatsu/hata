@@ -81,14 +81,14 @@ def put_application_id(application_id, data, defaults):
     ----------
     application_id : `int`
         Application identifier.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if application_id:
         raw_application_id = str(application_id)
@@ -118,7 +118,7 @@ def parse_author(data, guild_id = 0, channel_id = 0):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Message data.
     guild_id : `int` = `0`, Optional
         The guild's id where the message was created at.
@@ -160,7 +160,7 @@ def put_author(author, data, defaults, *, guild_id = 0):
     ----------
     author : ``UserBase``
         Message author.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
@@ -169,7 +169,7 @@ def put_author(author, data, defaults, *, guild_id = 0):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     data['author'] =  author.to_data(defaults = defaults, include_internals = True)
     
@@ -368,7 +368,7 @@ def parse_mentioned_users(data, guild_id = 0):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Message data.
     guild_id : `int` = `0`, Optional
         The guild's id where the message was created at.
@@ -398,7 +398,7 @@ def put_mentioned_users(mentioned_users, data, defaults, *, guild_id = 0):
     ----------
     mentioned_users : `None`, `tuple` of ``ClientUserBase``
         The mentioned users.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
@@ -407,7 +407,7 @@ def put_mentioned_users(mentioned_users, data, defaults, *, guild_id = 0):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (mentioned_users is not None):
         user_mention_datas = []
@@ -444,7 +444,7 @@ def parse_message_id(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Message data.
     
     Returns
@@ -569,7 +569,7 @@ def parse_reactions(data, old_reactions = None):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Message data.
     old_reactions : `None`, ``ReactionMapping`` = `None`, Optional
         The old reactions on the message.
@@ -595,14 +595,14 @@ def put_reactions(reactions, data, defaults):
     ----------
     reactions : `None`, ``ReactionMapping``
         The message's reactions.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if (reactions is not None):
         data['reactions'] = reactions.to_data()
@@ -646,7 +646,7 @@ def parse_referenced_message(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Message data.
     
     Returns
@@ -673,7 +673,7 @@ def put_referenced_message_into(
     referenced_message : `None`, ``Message``
         The referenced message.
     
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     
     defaults : `bool`
@@ -687,7 +687,7 @@ def put_referenced_message_into(
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if (referenced_message is not None):
         data['message_reference'] = referenced_message.to_message_reference_data()
@@ -861,7 +861,7 @@ def parse_thread(data, guild_id = 0):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Message data.
     guild_id : `int` = `0`, Optional
         The guild's identifier where the message was sent to.

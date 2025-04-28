@@ -13,7 +13,7 @@ from ..embedded_activity import EmbeddedActivity
 from ..emoji import Emoji, Reaction, ReactionType
 from ..guild import Guild
 from ..message import Message
-from ..oauth2 import Achievement, Oauth2Access, Oauth2User
+from ..oauth2 import Oauth2Access, Oauth2User
 from ..role import Role
 from ..poll import PollAnswer
 from ..scheduled_event import ScheduledEvent
@@ -181,10 +181,8 @@ def get_channel_and_id(channel, type_checker = None):
     
     Returns
     -------
-    channel : `None`, ``Channel``
-        The channel if found.
-    channel_id : `int`
-        The channel's identifier.
+    channel_and_channel_id : ``(None | Channel, int)``
+        The channel if found and the channel's identifier.
     
     Raises
     ------
@@ -345,7 +343,7 @@ def get_user_and_id(user):
     
     Returns
     -------
-    user : `None`, ``ClientUserBase``
+    user : ``None | ClientUserBase``
         The user if found.
     user_id : `int`
         The user's identifier.
@@ -386,7 +384,7 @@ def get_user_id_nullable(user):
     
     Parameters
     ----------
-    user : `None`, ``ClientUserBase``, `int`
+    user : ``None | int | ClientUserBase`
         The user, or it's identifier.
     
     Returns
@@ -420,7 +418,7 @@ def get_guild_id(guild):
     
     Parameters
     ----------
-    guild : ``Guild``, `int`
+    guild : ``int | Guild``
         The guild, or it's identifier.
     
     Returns
@@ -451,12 +449,12 @@ def get_guild_and_id(guild):
     
     Parameters
     ----------
-    guild : ``Guild``, `int`
+    guild : ``int | Guild``
         The guild, or it's identifier.
     
     Returns
     -------
-    guild : `None`, ``Guild``
+    guild : ``None | Guild``
         The guild if found.
     guild_id : `int`
         The guild's identifier.
@@ -478,74 +476,6 @@ def get_guild_and_id(guild):
         guild = GUILDS.get(guild_id, None)
     
     return guild, guild_id
-
-
-def get_achievement_id(achievement):
-    """
-    Gets the achievement identifier from the given achievement or of it's identifier.
-    
-    Parameters
-    ----------
-    achievement : ``Achievement``, `int`
-        The achievement, or it's identifier.
-    
-    Returns
-    -------
-    achievement_id : `int`
-        The achievement's identifier.
-    
-    Raises
-    ------
-    TypeError
-        If `achievement`'s type is incorrect.
-    """
-    if isinstance(achievement, Achievement):
-        achievement_id = achievement.id
-    else:
-        achievement_id = maybe_snowflake(achievement)
-        if achievement_id is None:
-            raise TypeError(
-                f'`achievement` can be `{Achievement.__name__}`, `int`, got '
-                f'{type(achievement).__name__}; {achievement!r}.'
-            )
-    
-    return achievement_id
-
-
-def get_achievement_and_id(achievement):
-    """
-    Gets the achievement and it's identifier from the given achievement or of it's identifier.
-    
-    Parameters
-    ----------
-    achievement : ``Achievement``, `int`
-        The achievement, or it's identifier.
-    
-    Returns
-    -------
-    achievement : ``Achievement``, `None`
-        The achievement if found.
-    achievement_id : `int`
-        The achievement's identifier.
-    
-    Raises
-    ------
-    TypeError
-        If `achievement`'s type is incorrect.
-    """
-    if isinstance(achievement, Achievement):
-        achievement_id = achievement.id
-    else:
-        achievement_id = maybe_snowflake(achievement)
-        if achievement_id is None:
-            raise TypeError(
-                f'`achievement` can be `{Achievement.__name__}`, `int`, got '
-                f'{achievement.__class__.__name__}; {achievement!r}.'
-            )
-        
-        achievement = None
-    
-    return achievement, achievement_id
 
 
 def get_channel_id_and_message_id(message):
@@ -1564,7 +1494,7 @@ def get_oauth2_access_token_and_user_id(access, user, required_scope = None):
     ------
     TypeError
         - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
-        - If `user` is not `None`, ``ClientUserBase``.
+        - If `user` is not ``None | ClientUserBase``.
         - If `user.id` could not be determined.
     ValueError
         - If the given `access` is not providing the required scope.

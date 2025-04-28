@@ -1,7 +1,6 @@
 __all__ = ('InteractionOption',)
 
 import reprlib
-from warnings import warn
 
 from scarletio import RichAttributeErrorBaseType, export
 
@@ -46,7 +45,6 @@ class InteractionOption(RichAttributeErrorBaseType):
         name = ...,
         option_type = ...,
         options = ...,
-        type_ = ...,
         value = ...,
     ):
         """
@@ -76,20 +74,6 @@ class InteractionOption(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # type_ - Deprecated
-        if type_ is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.__new__`\' `type_` parameter is deprecated '
-                    f'and will be removed in 2024 December. '
-                    f'Please use `option_type` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            option_type = type_
-        
         # focused
         if focused is ...:
             focused = False
@@ -176,7 +160,6 @@ class InteractionOption(RichAttributeErrorBaseType):
         name = ...,
         option_type = ...,
         options = ...,
-        type_ = ...,
         value = ...,
     ):
         """
@@ -210,20 +193,6 @@ class InteractionOption(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # type - Deprecated
-        if type_ is not ...:
-            warn(
-                (
-                    f'`{type(self).__name__}.copy_with`\' `type_` parameter is deprecated '
-                    f'and will be removed in 2024 December. '
-                    f'Please use `option_type` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            option_type = type_
-        
         # focused
         if focused is ...:
             focused = self.focused
@@ -297,7 +266,7 @@ class InteractionOption(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_focused(self.focused, data, defaults)

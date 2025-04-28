@@ -335,7 +335,7 @@ class ForumTag(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Forum tag data.
         
         Returns
@@ -361,7 +361,7 @@ class ForumTag(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Forum tag data.
         """
         # id
@@ -384,12 +384,12 @@ class ForumTag(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Forum tag data.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             The updated attributes.
             
             Every item in the dictionary is optional.
@@ -437,12 +437,12 @@ class ForumTag(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Forum tag data.
         
         Returns
         -------
-        forum_tag_and_difference : ``ForumTag``, (`None`, `dict` of (`str`, `object`) items)
+        forum_tag_and_difference : ``ForumTag``, (`None`, `dict<str, object>`)
         """
         forum_tag_id = parse_id(data)
         
@@ -475,7 +475,7 @@ class ForumTag(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         

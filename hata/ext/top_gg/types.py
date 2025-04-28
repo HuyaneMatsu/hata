@@ -103,7 +103,7 @@ class BotInfo(metaclass = Slotted):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Deserialized bot info data.
         
         Returns
@@ -220,7 +220,7 @@ class BotStats:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Deserialized bot stats data.
         
         Returns
@@ -307,7 +307,7 @@ class UserInfo(metaclass = Slotted):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Deserialized user info data.
         
         Returns
@@ -393,7 +393,7 @@ class UserConnections:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Deserialized user info data.
         
         Returns
@@ -458,7 +458,7 @@ class BriefUserInfo(metaclass = Slotted):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Deserialized user info data.
         
         Returns
@@ -514,7 +514,7 @@ class BotsQueryResult:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Deserialized bots query result data.
         
         Returns
@@ -599,7 +599,7 @@ class VoteBase:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Deserialized vote webhook data.
         
         Returns

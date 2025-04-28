@@ -195,11 +195,11 @@ class ClientCompoundStickerEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild to create the sticker in.
         name : `str`
             The sticker's name.
-        tags : `None`, `str`, `iterable` of `str`
+        tags : `None | str | iterable<str>`
             The tags of the sticker.
         image : `bytes-like`
             The sticker's image in bytes.
@@ -361,7 +361,7 @@ class ClientCompoundStickerEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, what's stickers will be synced.
         
         Returns

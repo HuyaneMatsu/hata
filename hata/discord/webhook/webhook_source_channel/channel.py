@@ -69,7 +69,7 @@ class WebhookSourceChannel(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Webhook source channel data.
         
         Returns
@@ -113,7 +113,7 @@ class WebhookSourceChannel(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_id(self.id, data, defaults)

@@ -1,6 +1,5 @@
 __all__ = ('SolarNode', )
 
-from warnings import warn
 
 from scarletio import (
     Future, RichAttributeErrorBaseType, Task, from_json, repeat_timeout, sleep, to_json, write_exception_async
@@ -545,19 +544,3 @@ class SolarNode(RichAttributeErrorBaseType):
         repr_parts.append('>')
         
         return ''.join(repr_parts)
-    
-    
-    @property
-    def websocket(self):
-        """
-        Deprecated and will be removed in 2025 April. Use ``.web_socket`` instead.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.websocket` is deprecated and will be removed in 2025 April. '
-                'Please use `.web_socket` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.web_socket

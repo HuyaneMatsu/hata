@@ -19,7 +19,6 @@ from ...localization import Locale
 from ...localization.utils import LOCALE_DEFAULT
 
 from ..avatar_decoration import AvatarDecoration
-from ..user_clan import UserClan
 
 from .constants import (
     DISCRIMINATOR_VALUE_MAX, DISCRIMINATOR_VALUE_MIN, DISPLAY_NAME_LENGTH_MAX, NAME_LENGTH_MAX, NAME_LENGTH_MIN,
@@ -27,6 +26,7 @@ from .constants import (
 )
 from .flags import UserFlag
 from .preinstanced import PremiumType, Status
+
 
 # activities
 
@@ -36,7 +36,7 @@ def parse_activities(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         User presence data.
     
     Returns
@@ -58,14 +58,14 @@ def put_activities(activities, data, defaults):
     ----------
     activities : `None`, `list` of ``Activity``
         Activities.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if activities is None:
         activity_datas = []
@@ -136,7 +136,7 @@ def parse_banner_color(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         User data.
     
     Returns
@@ -158,14 +158,14 @@ def put_banner_color(banner_color, data, defaults):
     ----------
     banner_color : `None`, ``Color``
         Banner color.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (banner_color is not None):
         if (banner_color is not None):
@@ -220,11 +220,19 @@ parse_bot = bool_parser_factory('bot', False)
 put_bot = force_bool_putter_factory('bot')
 validate_bot = bool_validator_factory('bot', False)
 
-# clan
 
-parse_clan = nullable_entity_parser_factory('clan', UserClan)
-put_clan = nullable_entity_optional_putter_factory('clan', UserClan)
-validate_clan = nullable_entity_validator_factory('clan', UserClan)
+# primary_guild_badge
+
+parse_primary_guild_badge = nullable_entity_parser_factory(
+    'primary_guild', NotImplemented, include = 'GuildBadge'
+)
+put_primary_guild_badge = nullable_entity_optional_putter_factory(
+    'primary_guild', NotImplemented, include = 'GuildBadge'
+)
+validate_primary_guild_badge = nullable_entity_validator_factory(
+    'primary_guild_badge', NotImplemented, include = 'GuildBadge'
+)
+
 
 # discriminator
 
@@ -238,14 +246,14 @@ def put_discriminator(discriminator, data, defaults):
     ----------
     discriminator : `int`
         Discriminator value.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     data['discriminator'] = str(discriminator).rjust(4, '0')
     return data
@@ -326,7 +334,7 @@ def parse_flags(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         User data.
     
     Returns
@@ -373,7 +381,7 @@ def parse_name(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         User data.
     
     Returns
@@ -420,7 +428,7 @@ def parse_statuses(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         User presence data.
     
     Returns
@@ -442,14 +450,14 @@ def put_statuses(statuses, data, defaults):
     ----------
     statuses : `None`, `dict` of (`str`, `str`) items
         user statuses by platform.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if (statuses is None):
         statuses = {}

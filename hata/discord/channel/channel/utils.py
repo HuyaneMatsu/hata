@@ -100,14 +100,14 @@ def create_partial_channel_from_data(data, guild_id = 0):
     
     Parameters
     ----------
-    data : `None`, `dict` of (`str`, `object`) items
+    data : `None`, `dict<str, object>`
         Partial channel data received from Discord.
     guild_id : `int` = `0`, Optional (Keyword only)
         The channel's guild's identifier.
     
     Returns
     -------
-    channel : `None`, ``Channel``
+    channel : ``None | Channel``
         The created partial channel, or `None`, if no data was received.
     """
     channel_id = parse_id(data)
@@ -164,7 +164,7 @@ def create_partial_channel_data(channel):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     data = {}
     put_id(channel.id, data, True)

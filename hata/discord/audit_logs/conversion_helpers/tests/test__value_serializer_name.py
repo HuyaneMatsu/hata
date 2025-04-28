@@ -23,4 +23,7 @@ def test__value_serializer_name(input_value):
     -------
     output : `str`
     """
-    return value_serializer_name(input_value)
+    output = value_serializer_name(input_value)
+    vampytest.assert_instance(output, str)
+    return output
+

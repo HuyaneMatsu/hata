@@ -1,13 +1,12 @@
 import vampytest
 
 from ....core import USERS
-from ....guild import Guild
 from ....bases import Icon, IconType
 from ....color import Color
+from ....guild import Guild, GuildBadge
 
 from ...avatar_decoration import AvatarDecoration
 from ...guild_profile import GuildProfile
-from ...user_clan import UserClan
 
 from ..flags import UserFlag
 from ..user import User
@@ -26,21 +25,21 @@ def test__User__from_data__user_data_only():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160076)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
-    clan = UserClan(guild_id = 202405180056, tag = 'meow')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
+    primary_guild_badge = GuildBadge(guild_id = 202405180056, tag = 'meow')
     bot = True
     
     user_data = {
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
-        'clan': clan.to_data(),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
         'username': name,
+        'primary_guild': primary_guild_badge.to_data(),
         'banner': banner.as_base_16_hash,
         'id': str(user_id),
         'public_flags': int(flags),
@@ -55,10 +54,10 @@ def test__User__from_data__user_data_only():
     vampytest.assert_eq(user.avatar, avatar)
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
-    vampytest.assert_eq(user.clan, clan)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.name, name)
+    vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.bot, bot)
@@ -146,11 +145,11 @@ def test__User__from_data_and_difference_update_profile__user_missing():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160077)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
-    clan = UserClan(guild_id = 202405180057, tag = 'meow')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
+    primary_guild_badge = GuildBadge(guild_id = 202405180057, tag = 'meow')
     bot = True
     
     guild_profile = GuildProfile(nick = 'ibuki')
@@ -159,10 +158,10 @@ def test__User__from_data_and_difference_update_profile__user_missing():
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
-        'clan': clan.to_data(),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
         'username': name,
+        'primary_guild': primary_guild_badge.to_data(),
         'banner': banner.as_base_16_hash,
         'id': str(user_id),
         'public_flags': int(flags),
@@ -186,10 +185,10 @@ def test__User__from_data_and_difference_update_profile__user_missing():
     vampytest.assert_eq(user.avatar, avatar)
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
-    vampytest.assert_eq(user.clan, clan)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.name, name)
+    vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.bot, bot)
@@ -292,11 +291,11 @@ def test__User__from_data_and_update_profile__user_missing_cache():
     avatar_decoration = AvatarDecoration(asset = Icon(IconType.static, 2), sku_id = 202310160078)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
-    clan = UserClan(guild_id = 202405180058, tag = 'meow')
     discriminator = 2222
     display_name = 'Far'
     flags = UserFlag(1)
     name = 'suika'
+    primary_guild_badge = GuildBadge(guild_id = 202405180058, tag = 'meow')
     bot = True
     
     guild = Guild.precreate(guild_id)
@@ -307,10 +306,10 @@ def test__User__from_data_and_update_profile__user_missing_cache():
         'avatar': avatar.as_base_16_hash,
         'avatar_decoration_data': avatar_decoration.to_data(),
         'accent_color': int(banner_color),
-        'clan': clan.to_data(),
         'discriminator': str(discriminator).rjust(4, '0'),
         'global_name': display_name,
         'username': name,
+        'primary_guild': primary_guild_badge.to_data(),
         'banner': banner.as_base_16_hash,
         'id': str(user_id),
         'public_flags': int(flags),
@@ -334,10 +333,10 @@ def test__User__from_data_and_update_profile__user_missing_cache():
     vampytest.assert_eq(user.avatar, avatar)
     vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
-    vampytest.assert_eq(user.clan, clan)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.display_name, display_name)
     vampytest.assert_eq(user.name, name)
+    vampytest.assert_eq(user.primary_guild_badge, primary_guild_badge)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.flags, flags)
     vampytest.assert_eq(user.bot, bot)

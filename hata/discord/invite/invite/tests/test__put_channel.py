@@ -43,7 +43,7 @@ def test__put_channel(channel):
     
     Parameters
     ----------
-    channel : `None`, ``Channel``
+    channel : ``None | Channel``
         The channel to serialise.
     
     Returns

@@ -13,8 +13,8 @@ from .client_user_base import ClientUserBase
 from .client_user_presence_base import ClientUserPBase
 from .fields import (
     parse_bot, parse_id, validate_activities, validate_avatar_decoration, validate_banner_color, validate_bot,
-    validate_clan, validate_discriminator, validate_display_name, validate_flags, validate_id, validate_name,
-    validate_status, validate_statuses
+    validate_discriminator, validate_display_name, validate_flags, validate_id, validate_name,
+    validate_primary_guild_badge, validate_status, validate_statuses
 )
 from .flags import UserFlag
 from .orin_user_base import USER_BANNER
@@ -28,11 +28,11 @@ PRECREATE_FIELDS = {
     'banner': ('banner', USER_BANNER.validate_icon),
     'banner_color': ('banner_color', validate_banner_color),
     'bot': ('bot', validate_bot),
-    'clan': ('clan', validate_clan),
     'discriminator': ('discriminator', validate_discriminator),
     'display_name': ('display_name', validate_display_name),
     'flags': ('flags', validate_flags),
     'name': ('name', validate_name),
+    'primary_guild_badge': ('primary_guild_badge', validate_primary_guild_badge),
 }
 
 if not CACHE_PRESENCE:
@@ -81,9 +81,6 @@ class User(USER_BASE_TYPE):
     bot : `bool`
         Whether the user is a bot or a user account.
     
-    clan : `None`, ``UserClan``
-        The user's primary clan.
-    
     discriminator : `int`
         The user's discriminator. Given to avoid overlapping names.
     
@@ -102,6 +99,9 @@ class User(USER_BASE_TYPE):
     
     name : `str`
         The user's name.
+    
+    primary_guild_badge : ``None | GuildBadge``
+        The user's primary guild's badge.
     
     status : ``Status``
         The user's display status.
@@ -272,9 +272,6 @@ class User(USER_BASE_TYPE):
         banner_color : `None`, ``Color``
             The user's banner color.
         
-        clan : `None`, ``UserClan``, Optional (Keyword only)
-            The user's primary clan.
-        
         bot : `bool`, Optional (Keyword only)
             Whether the user is a bot account.
         
@@ -283,6 +280,9 @@ class User(USER_BASE_TYPE):
         
         name : `str`, Optional (Keyword only)
             The user's ``.name``.
+        
+        primary_guild_badge : ``None | GuildBadge``, Optional (Keyword only)
+            The user's primary guild's badge.
         
         discriminator : `int`, `str`, Optional (Keyword only)
             The user's discriminator.

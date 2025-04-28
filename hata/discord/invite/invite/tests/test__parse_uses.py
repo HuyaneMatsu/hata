@@ -22,6 +22,6 @@ def test__parse_uses(input_data):
     
     Returns
     -------
-    output : `None`, `int`
+    output : `None | int`
     """
     return parse_uses(input_data)

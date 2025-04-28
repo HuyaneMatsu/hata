@@ -67,7 +67,7 @@ class WelcomeScreen(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Welcome screen data.
         """
         self = object.__new__(cls)
@@ -87,7 +87,7 @@ class WelcomeScreen(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_description(self.description, data, defaults)

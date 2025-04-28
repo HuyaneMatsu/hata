@@ -43,10 +43,11 @@ def entity_id_parser_factory(field_key):
         
         return entity_id
     
+    
     return parser
 
 
-def entity_id_array_parser_factory(field_key):
+def entity_id_array_parser_factory(field_key, *, ordered = True):
     """
     Returns a new entity id array parser.
     
@@ -55,11 +56,39 @@ def entity_id_array_parser_factory(field_key):
     field_key : `str`
         The field's key used in payload.
     
+    ordered : `bool` = `True`, Optional (Keyword only)
+        Whether the output should be ordered.
+    
     Returns
     -------
     parser : `FunctionType`
     """
-    def parser(data):
+    if ordered:
+        def parser(data):
+            nonlocal field_key
+                    
+            entity_id_array = data.get(field_key, None)
+            if (entity_id_array is None) or (not entity_id_array):
+                entity_id_array = None
+            else:
+                entity_id_array = tuple(sorted(int(entity_id) for entity_id in entity_id_array))
+            
+            return entity_id_array
+    
+    else:
+        def parser(data):
+            nonlocal field_key
+                    
+            entity_id_array = data.get(field_key, None)
+            if (entity_id_array is None) or (not entity_id_array):
+                entity_id_array = None
+            else:
+                entity_id_array = (*(int(entity_id) for entity_id in entity_id_array),)
+            
+            return entity_id_array
+    
+    set_docs(
+        parser,
         """
         Parses out an entity id field from the given data.
         
@@ -74,16 +103,7 @@ def entity_id_array_parser_factory(field_key):
         -------
         entity_id_array : `None`, `tuple` of `int`
         """
-        nonlocal field_key
-                
-        entity_id_array = data.get(field_key, None)
-        if (entity_id_array is None) or (not entity_id_array):
-            entity_id_array = None
-        else:
-            entity_id_array = tuple(sorted(int(entity_id) for entity_id in entity_id_array))
-        
-        return entity_id_array
-    
+    )
     return parser
 
 
@@ -497,7 +517,7 @@ def default_date_time_parser_factory(field_key, default):
         
         Returns
         -------
-        field_value : `None`, `DateTime`
+        field_value : `None | DateTime`
         """
         nonlocal default
         nonlocal field_key
@@ -1222,7 +1242,7 @@ def nullable_int_parser_factory(field_key):
         
         Returns
         -------
-        field_value : `None`, `int`
+        field_value : `None | int`
         """
         nonlocal field_key
         

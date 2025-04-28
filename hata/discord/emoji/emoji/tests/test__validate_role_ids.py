@@ -5,34 +5,41 @@ from ....role import Role
 from ..fields import validate_role_ids
 
 
-def test__validate_role_ids__0():
+def _iter_options__passing():
+    role_id_0 = 202212310008
+    role_id_1 = 202212310009
+    
+    yield None, None
+    yield [], None
+    yield [role_id_0, role_id_1], (role_id_0, role_id_1)
+    yield [role_id_1, role_id_0], (role_id_0, role_id_1)
+    yield [Role.precreate(role_id_0), Role.precreate(role_id_1)], (role_id_0, role_id_1)
+
+
+def _iter_options__type_error():
+    yield 12.6
+    yield [12.6]
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_role_ids(input_value):
     """
     Tests whether `validate_role_ids` works as intended.
     
-    Case: passing.
-    """
-    role_id_1 = 202212310008
-    role_id_2 = 202212310009
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    for input_value, expected_output in (
-        (None, None),
-        ([], None),
-        ([role_id_2, role_id_1], (role_id_1, role_id_2)),
-        ([Role.precreate(role_id_1)], (role_id_1, )),
-    ):
-        output = validate_role_ids(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_role_ids__1():
-    """
-    Tests whether `validate_role_ids` works as intended.
+    Returns
+    -------
+    output : `None | tuple<int>`
     
-    Case: `TypeError`.
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-        [12.6],
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_role_ids(input_value)
+    output = validate_role_ids(input_value)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    return output

@@ -698,7 +698,7 @@ class RPCClient(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild or it's identifier.
         
         Returns
@@ -805,7 +805,7 @@ class RPCClient(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild or it's identifier.
         
         Returns
@@ -930,7 +930,7 @@ class RPCClient(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        channel : `None`, ``Channel``, `int`
+        channel : ``None | int | Channel``
             The channel to select or `None` to leave.
         force : `bool` = `False`, Optional (Keyword only)
             Forces the user to join the voice channel.
@@ -944,7 +944,7 @@ class RPCClient(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            If `channel` is neither `None`, ``Channel``, `int`.
+            If `channel` is neither ``None | int | Channel``.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -1029,7 +1029,7 @@ class RPCClient(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        channel : `None`, ``Channel``, `int`
+        channel : ``None | int | Channel``
             The channel to select or `None` to leave.
         
         Returns
@@ -1039,7 +1039,7 @@ class RPCClient(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            If `channel` is neither `None`, ``Channel`` nor `int`.
+            If `channel` is not ``None | int | Channel``.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -1363,7 +1363,7 @@ class RPCClient(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild to subscribe for the event to.
         
         Raises
@@ -1391,7 +1391,7 @@ class RPCClient(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild to unsubscribe for the event to.
         
         Raises

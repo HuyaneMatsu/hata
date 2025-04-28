@@ -1041,7 +1041,7 @@ class IconSlot:
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters passed to parse the icon from.
         
         Returns
@@ -1070,7 +1070,7 @@ class IconSlot:
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters passed to parse the icon from.
         allow_data : `bool` = `False`, Optional (Keyword only)
             Whether data parsing is allowed.
@@ -1168,7 +1168,7 @@ class IconSlot:
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters passed to the respective preconverter.
         processable : `list` of `tuple` (`str`, `object`)
             A list of instance attributes which will be set when all the passed keyword_parameters are validated.
@@ -1199,7 +1199,7 @@ class IconSlot:
         ----------
         icon : ``Icon``
             The icon to serialize.
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             The data put the icon into.
         defaults : `bool`
             Whether the `icon`'s value should be put even if it is the default value.
@@ -1208,7 +1208,7 @@ class IconSlot:
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         if icon is None:
             field_value = None

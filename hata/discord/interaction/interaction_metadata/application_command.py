@@ -1,6 +1,5 @@
 __all__ = ('InteractionMetadataApplicationCommand',)
 
-from warnings import warn
 
 from scarletio import copy_docs
 
@@ -140,7 +139,6 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         self,
         *,
         application_command_id = ...,
-        id = ...,
         name = ...,
         options = ...,
         resolved = ...,
@@ -181,20 +179,6 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
         ValueError
             - If a parameter's value is incorrect.
         """
-        # id - Deprecated
-        if id is not ...:
-            warn(
-                (
-                    f'`{type(self).__name__}.copy_with`\' `id` parameter is deprecated '
-                    f'and will be removed in 2024 December. '
-                    f'Please use `application_command_id` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            application_command_id = id
-        
         # resolved
         if resolved is ...:
             resolved = self.resolved

@@ -10,7 +10,7 @@ if API_VERSION in (6, 7):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received permission overwrite data.
         
         Returns
@@ -29,7 +29,7 @@ else:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received permission overwrite data.
         
         Returns

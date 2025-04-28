@@ -59,7 +59,7 @@ class Stats(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Deserialized json.
         """
         self.uptime = data[LAVALINK_KEY_STATS_UPTIME]*1000.0

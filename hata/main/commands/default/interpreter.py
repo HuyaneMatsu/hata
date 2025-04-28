@@ -48,7 +48,7 @@ def collect_variables():
     
     Returns
     -------
-    module_variables : `dict` of (`str`, `object`) items
+    module_variables : `dict<str, object>`
     """
     module = get_frame_module(get_last_module_frame())
     if (module is None) or is_module_library_main(module):

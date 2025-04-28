@@ -74,15 +74,29 @@ def test__Webhook__hash():
     vampytest.assert_instance(repr(webhook), str)
 
 
-def test__Webhook__eq():
+def test__Webhook__eq__non_partial_and_different_object():
     """
     Tests whether ``Webhook.__eq__`` works as intended.
-    """
-    webhook_id = 202302050035
     
+    Case: non partial and non user object.
+    """
+    user_id = 202504260016
+    
+    name = 'Orin'
+    
+    user = Webhook(name = name)
+    vampytest.assert_eq(user, user)
+    vampytest.assert_ne(user, object())
+    
+    test_user = Webhook._create_empty(user_id)
+    vampytest.assert_eq(test_user, test_user)
+    vampytest.assert_ne(user, test_user)
+
+
+def _iter_options__eq():
     avatar = Icon(IconType.static, 14)
     name = 'orin'
-    channel_id = 202302050036
+    channel_id = 202302050007
     webhook_type = WebhookType.server
     application_id = 202302050091
     source_channel = WebhookSourceChannel(channel_id = 202302050092, name = 'keine')
@@ -102,27 +116,117 @@ def test__Webhook__eq():
         'user': user,
     }
     
-    webhook = Webhook(**keyword_parameters)
-    vampytest.assert_eq(webhook, webhook)
-    vampytest.assert_ne(webhook, object())
-
-    test_webhook = Webhook._create_empty(webhook_id)
-    vampytest.assert_eq(test_webhook, test_webhook)
-    vampytest.assert_ne(webhook, test_webhook)
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
     
-    for field_name, field_value in (
-        ('avatar', None),
-        ('name', 'okuu'),
-        ('channel_id', 0),
-        ('webhook_type', WebhookType.bot),
-        ('application_id', 0),
-        ('source_channel', None),
-        ('source_guild', None),
-        ('token', ''),
-        ('user', ZEROUSER),
-    ):
-        test_webhook = Webhook(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(webhook, test_webhook)
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'avatar': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'name': 'okuu',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'channel_id': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'webhook_type': WebhookType.bot,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'application_id': 0,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'source_channel': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'source_guild': None,
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'token': '',
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'user': ZEROUSER,
+        },
+        False,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__Webhook__eq(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``Webhook.__eq__`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    instance_0 = Webhook(**keyword_parameters_0)
+    instance_1 = Webhook(**keyword_parameters_1)
+    
+    output = instance_0 == instance_1
+    vampytest.assert_instance(output, bool)
+    return output
 
 
 def test__Webhook__format():

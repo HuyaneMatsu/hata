@@ -19,7 +19,7 @@ def parse_activity_name(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Guild widget user data.
     
     Returns
@@ -45,14 +45,14 @@ def put_activity_name(activity_name, data, defaults):
     ----------
     activity_name : `str`
         Activity's name.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if (activity_name is not None) or defaults:
         if activity_name is None:

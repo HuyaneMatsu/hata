@@ -53,7 +53,7 @@ def parse_emojis(data, entities, guild_id):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Guild preview data.
     entities : `dict` of (`int`, ``Emoji``) items
         The entity container to populate.
@@ -87,14 +87,14 @@ def put_emojis(entities, data, defaults):
     ----------
     entities : `dict` of (`int`, ``Emoji``) items
         Emojis to put into the given data.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Guild preview data.
     defaults : `bool`
         Whether values with their default fields should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     data['emojis'] = [
         entity.to_data(defaults = defaults, include_internals = True) for entity in sorted(entities.values())
@@ -164,7 +164,7 @@ def parse_stickers(data, entities):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Guild preview data.
     entities : `dict` of (`int`, ``Sticker``) items
         The entity container to populate.
@@ -196,14 +196,14 @@ def put_stickers(entities, data, defaults):
     ----------
     entities : `dict` of (`int`, ``Sticker``) items
         Stickers to put into the given data.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Guild preview data.
     defaults : `bool`
         Whether values with their default fields should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     data['stickers'] = [
         entity.to_data(defaults = defaults, include_internals = True) for entity in sorted(entities.values())

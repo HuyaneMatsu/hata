@@ -50,7 +50,7 @@ class IntegrationApplication(DiscordEntity):
         
         Parameters
         ----------
-        bot : `None`, ``ClientUserBase``, Optional (Keyword only)
+        bot : ``None | ClientUserBase``, Optional (Keyword only)
             The application's bot if applicable.
         
         icon : `None`, `bytes`, `bytearray`, `memoryview`, ``Icon``, Optional (Keyword only)
@@ -118,7 +118,7 @@ class IntegrationApplication(DiscordEntity):
         
         Other Parameters
         ----------------
-        bot : `None`, ``ClientUserBase``, Optional (Keyword only)
+        bot : ``None | ClientUserBase``, Optional (Keyword only)
             The application's bot if applicable.
         
         description : `None`, `str`, Optional (Keyword only)
@@ -190,7 +190,7 @@ class IntegrationApplication(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data included within integration payload.
         
         Returns
@@ -219,7 +219,7 @@ class IntegrationApplication(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -375,7 +375,7 @@ class IntegrationApplication(DiscordEntity):
         
         Parameters
         ----------
-        bot : `None`, ``ClientUserBase``, Optional (Keyword only)
+        bot : ``None | ClientUserBase``, Optional (Keyword only)
             The application's bot if applicable.
         
         icon : `None`, `bytes`, `bytearray`, `memoryview`, ``Icon``, Optional (Keyword only)

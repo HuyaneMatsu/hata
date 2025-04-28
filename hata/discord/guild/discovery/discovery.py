@@ -131,7 +131,7 @@ class GuildDiscovery(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Guild discovery data.
         
         Returns

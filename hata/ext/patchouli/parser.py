@@ -10,12 +10,12 @@ from .graver import (
 
 SECTION_NAME_RP = re.compile('(?:[A-Z][a-z]*)(?: [A-Z][a-z]*)*')
 SECTION_UNDERLINE_RP = re.compile('[\\-]+')
-TABLE_BORDER_PATTERN = r'\+(?:[\-=]+\+)+'
-TABLE_TEXT_PATTERN = r'\|(?:[^\|]+\|)+'
+TABLE_BORDER_PATTERN = '\\+(?:[\\-=]+\\+)+'
+TABLE_TEXT_PATTERN = '\\|(?:[^\\|]+\\|)+'
 TABLE_BORDER_RP = re.compile(TABLE_BORDER_PATTERN)
 TABLE_TEXT_RP = re.compile(TABLE_TEXT_PATTERN)
 TABLE_ANY_RP = re.compile(f'{TABLE_BORDER_PATTERN}|{TABLE_TEXT_PATTERN}')
-TABLE_TEXT_SPLITTER = re.compile('(?:\\| )?(.*?) \\|')
+TABLE_TEXT_SPLITTER = re.compile('(?:\\| )?((?:[^`\\|]*?(?:(?:``|`)[^`]*(?:``|`))?)*) \\|')
 LISTING_HEAD_LINE_RP = re.compile('[\\-]+[ \t]*(.*)')
 
 ATTRIBUTE_SECTION_NAME_RP = re.compile('.*?attributes?', re.I)
@@ -140,8 +140,11 @@ def parse_sections(lines):
         line = lines[index]
         
         # If there are at least 2 lines and we can match:
-        if (limit - index) > 2 and (SECTION_NAME_RP.fullmatch(line) is not None) and \
-                (SECTION_UNDERLINE_RP.fullmatch(lines[index + 1]) is not None):
+        if (
+            (limit - index) > 2 and
+            (SECTION_NAME_RP.fullmatch(line) is not None) and
+            (SECTION_UNDERLINE_RP.fullmatch(lines[index + 1]) is not None)
+        ):
             # Get the current line out.
             while section_lines:
                 if section_lines[-1]:
@@ -171,6 +174,7 @@ def parse_sections(lines):
             break
     
     return sections
+
 
 def detect_table(lines, index, limit):
     """
@@ -208,6 +212,7 @@ def detect_table(lines, index, limit):
                     break
     
     return index
+
 
 class TextTable:
     """
@@ -263,16 +268,14 @@ class TextTable:
                 if not splitted_line[-1]:
                     # Remove last element, if empty.
                     del splitted_line[-1]
-                
-                if not splitted_line:
-                    break
+                    if not splitted_line:
+                        break
                 
                 if not splitted_line[0]:
                     # Remove first element if empty
                     del splitted_line[0]
-                    
-                if not splitted_line:
-                    break
+                    if not splitted_line:
+                        break
                 
                 # Replace empty elements with None and also strip the lines down as well.
                 for index in range(len(splitted_line)):
@@ -474,7 +477,7 @@ class TextTable:
         """Returns the table's representation."""
         result = [
             '<',
-            self.__class__.__name__,
+            type(self).__name__,
             ', size = ',
             repr(self._size),
             ', table = [',
@@ -573,7 +576,7 @@ class TextDescription:
     
     def __repr__(self):
         """Returns the description's representation."""
-        return f'<{self.__class__.__name__} content={self._content!r}>'
+        return f'<{type(self).__name__} content={self._content!r}>'
     
     def graved(self, path):
         """
@@ -814,7 +817,7 @@ class TextCodeBlock:
     
     def __repr__(self):
         """Returns the code blocks' representation."""
-        result = ['<', self.__class__.__name__]
+        result = ['<', type(self).__name__]
         
         language = self._language
         if language is None:
@@ -925,14 +928,14 @@ def parse_section(lines):
             break
         
         for detector, builder in (
-                (detect_void, build_void),
-                (detect_indent, build_indent),
-                (detect_table, TextTable),
-                (detect_listing, TextListing),
-                (detect_code_block, TextCodeBlock),
-                (detect_block_quote, TextBlockQuote),
-                (detect_description, TextDescription),
-                    ):
+            (detect_void, build_void),
+            (detect_indent, build_indent),
+            (detect_table, TextTable),
+            (detect_listing, TextListing),
+            (detect_code_block, TextCodeBlock),
+            (detect_block_quote, TextBlockQuote),
+            (detect_description, TextDescription),
+        ):
             
             detected_end = detector(lines, index, limit)
             if detected_end == index:
@@ -1130,7 +1133,7 @@ class TextListingElement:
         """Returns the listing element's representation."""
         repr_parts = [
             '<',
-            self.__class__.__name__
+            type(self).__name__
         ]
         
         head = self._head
@@ -1261,7 +1264,7 @@ class TextListing:
     
     def __repr__(self):
         """Returns the listing's representation."""
-        return f'<{self.__class__.__name__} elements={self._elements!r}>'
+        return f'<{type(self).__name__} elements = {self._elements!r}>'
     
     def graved(self, path):
         """
@@ -1417,7 +1420,7 @@ class TextBlockQuote:
     
     def __repr__(self):
         """Returns the description's representation."""
-        return f'<{self.__class__.__name__} descriptions={self._descriptions!r}>'
+        return f'<{type(self).__name__} descriptions = {self._descriptions!r}>'
     
     def graved(self, path):
         """
@@ -1626,7 +1629,7 @@ class DocString:
     
     def __repr__(self):
         """Returns the docstring's representation."""
-        return f'<{self.__class__.__name__} sections={self.sections!r}>'
+        return f'<{type(self).__name__} sections={self.sections!r}>'
     
     @classmethod
     def _create_attribute_docstring_part(cls, attr_name, attr_separator, attr_head, attr_body):

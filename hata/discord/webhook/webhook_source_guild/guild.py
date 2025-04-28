@@ -88,7 +88,7 @@ class WebhookSourceGuild(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Webhook source guild data.
         
         Returns
@@ -114,7 +114,7 @@ class WebhookSourceGuild(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         type(self).icon.put_into(self.icon, data, defaults)

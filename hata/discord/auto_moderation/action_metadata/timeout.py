@@ -23,7 +23,7 @@ class AutoModerationActionMetadataTimeout(AutoModerationActionMetadataBase):
         
         Parameters
         ----------
-        duration : `None`, `int`, `float` = `None`, Optional
+        duration : `None | int | float` = `None`, Optional
             The timeout's duration applied on trigger.
         
         Raises
@@ -98,7 +98,7 @@ class AutoModerationActionMetadataTimeout(AutoModerationActionMetadataBase):
         
         Parameters
         ----------
-        duration : `None`, `int`, `float`, Optional (Keyword only)
+        duration : `None | int | float`, Optional (Keyword only)
             The timeout's duration applied on trigger.
         
         Returns

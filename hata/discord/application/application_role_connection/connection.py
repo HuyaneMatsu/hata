@@ -76,7 +76,7 @@ class ApplicationRoleConnection(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Role connection data.
         
         Returns
@@ -101,7 +101,7 @@ class ApplicationRoleConnection(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_platform_name(self.platform_name, data, defaults)

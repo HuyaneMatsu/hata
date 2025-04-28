@@ -35,7 +35,7 @@ class EmbeddedActivityLocation(RichAttributeErrorBaseType):
         channel_id : `int | Channel`, Optional (Keyword only)
             The location's channel's identifier.
     
-        guild_id : `int | Guild`, Optional (Keyword only)
+        guild_id : ``int | Guild``, Optional (Keyword only)
             The location's guild's identifier.
     
         location_type : `EmbeddedActivityLocationType | str`, Optional (Keyword only)
@@ -194,10 +194,10 @@ class EmbeddedActivityLocation(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        channel_id : `int | Channel`, Optional (Keyword only)
+        channel_id : ``int | Channel``, Optional (Keyword only)
             The location's channel's identifier.
     
-        guild_id : `int | Guild`, Optional (Keyword only)
+        guild_id : ``int | Guild``, Optional (Keyword only)
             The location's guild's identifier.
     
         location_type : `EmbeddedActivityLocationType | str`, Optional (Keyword only)

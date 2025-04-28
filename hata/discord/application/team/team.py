@@ -126,7 +126,7 @@ class Team(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Team data.
         
         Returns
@@ -243,7 +243,7 @@ class Team(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -264,7 +264,7 @@ class Team(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         team_id = self.id
         
@@ -284,7 +284,7 @@ class Team(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `None`, `dict` of (`str`, `object`) items
+        data : `None`, `dict<str, object>`
             Team dat.
         """
         self._set_icon(data)

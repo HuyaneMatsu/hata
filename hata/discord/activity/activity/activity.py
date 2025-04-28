@@ -176,7 +176,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `None`, `dict` of (`str`, `object`) items
+        data : `None`, `dict<str, object>`
             Activity data received from Discord.
         
         Returns
@@ -232,7 +232,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Data received from Discord.
         """
         activity_type = parse_type(data)
@@ -254,12 +254,12 @@ class Activity(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -272,7 +272,7 @@ class Activity(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | buttons           | `None`, `tuple` of `str`          |
         +-------------------+-----------------------------------+
-        | created_at        | `None`, `DateTime`                |
+        | created_at        | `None | DateTime`                 |
         +-------------------+-----------------------------------+
         | details           | `None`, `str`                     |
         +-------------------+-----------------------------------+
@@ -801,7 +801,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        start : `None`, `DateTime`
+        start : `None | DateTime`
         """
         timestamps = self.timestamps
         if (timestamps is not None):
@@ -815,7 +815,7 @@ class Activity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        start : `None`, `DateTime`
+        start : `None | DateTime`
         """
         timestamps = self.timestamps
         if (timestamps is not None):

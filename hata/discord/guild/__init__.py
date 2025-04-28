@@ -3,6 +3,10 @@ from .ban_entry import *
 from .discovery import *
 from .discovery_category import *
 from .guild import *
+from .guild_activity_overview import *
+from .guild_activity_overview_activity import *
+from .guild_activity_overview_tag import *
+from .guild_badge import *
 from .guild_incidents import *
 from .guild_inventory_settings import *
 from .guild_join_request import *
@@ -25,6 +29,10 @@ __all__ = (
     *discovery.__all__,
     *discovery_category.__all__,
     *guild.__all__,
+    *guild_activity_overview.__all__,
+    *guild_activity_overview_activity.__all__,
+    *guild_activity_overview_tag.__all__,
+    *guild_badge.__all__,
     *guild_incidents.__all__,
     *guild_inventory_settings.__all__,
     *guild_join_request.__all__,

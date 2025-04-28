@@ -2,7 +2,7 @@ import vampytest
 
 from ....application import Application
 from ....channel import Channel
-from ....guild import Guild
+from ....guild import Guild, GuildActivityOverview
 from ....user import User
 from ....utils import is_url
 
@@ -140,7 +140,7 @@ def test__test__Invite__channel_id(code, channel):
     ----------
     code : `str`
         Invite code.
-    channel : `None`, ``Channel``
+    channel : ``None | Channel``
         Channel to create the invite with.
     
     Returns
@@ -166,7 +166,7 @@ def test__test__Invite__guild_id(code, guild):
     ----------
     code : `str`
         Invite code.
-    guild : `None`, ``Guild``
+    guild : ``None | Guild``
         Guild to create the invite with.
     
     Returns
@@ -218,7 +218,7 @@ def test__test__Invite__target_application_id(code, target_application):
     ----------
     code : `str`
         Invite code.
-    target_application : `None`, ``Application``
+    target_application : ``None | Application``
         Application to create the invite with.
     
     Returns
@@ -244,7 +244,7 @@ def test__test__Invite__target_user_id(code, target_user):
     ----------
     code : `str`
         Invite code.
-    target_user : `None`, ``ClientUserBase``
+    target_user : ``None | ClientUserBase``
         User to create the invite with.
     
     Returns
@@ -297,7 +297,7 @@ def test__test__Invite__inviter_id(code, inviter):
     ----------
     code : `str`
         Invite code.
-    inviter : `None`, ``ClientUserBase``
+    inviter : ``None | ClientUserBase``
         User to create the invite with.
     
     Returns

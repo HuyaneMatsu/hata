@@ -16,14 +16,19 @@ class WebhookRepr(WebhookBase):
     ----------
     avatar_hash : `int`
         The webhook representation's avatar's hash in `uint128`.
+    
     avatar_type : ``IconType``
         The webhook representation's avatar's type.
+    
     channel_id : `int`
         The channel, where the webhook is going to send it's messages.
+    
     id : `int`
         The webhook representation's unique identifier number.
+    
     name : str
         The webhook representation's username.
+    
     type : ``WebhookType``
         The webhook's type.
     
@@ -40,12 +45,15 @@ class WebhookRepr(WebhookBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Included user data.
+        
         webhook_id : `int`
             The respective webhook's identifier number.
+        
         webhook_type : ``WebhookType``
             The respective webhook's type.
+        
         channel_id : `int`
             The respective webhook's channel's identifier.
         

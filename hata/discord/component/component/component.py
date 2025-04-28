@@ -202,7 +202,7 @@ class Component(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Component data.
         
         Returns
@@ -230,7 +230,7 @@ class Component(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         # metadata
         data = self.metadata.to_data(defaults = defaults)

@@ -108,13 +108,13 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         enabled : `bool` , Optional (Keyword only)
             Whether the rule is enabled.
         
-        event_type : `None`, `int`, ``AutoModerationEventType``, Optional (Keyword only)
+        event_type : ``None | AutoModerationEventType | int``, Optional (Keyword only)
             For which events is the rule applied.
         
-        excluded_channel_ids : `None`, `int`, ``Channel``, `iterable` of (`int`, ``Channel``), Optional (Keyword only)
+        excluded_channel_ids : ``None | int | Channel | iterable<int> | iterable<Channel>``, Optional (Keyword only)
             Excluded channels from the rule.
         
-        excluded_role_ids : `None`, `int`, ``Role``, `iterable` of (`int`, ``Role``), Optional (Keyword only)
+        excluded_role_ids : ``None | int | Role | iterable<int> | iterable<Role>``, Optional (Keyword only)
             Excluded roles from the rule.
         
         **keyword_parameters : Keyword parameters
@@ -122,17 +122,17 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
-        excluded_keywords : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        excluded_keywords : `None | str | iterable<str>`, Optional (Keyword only)
             Excluded keywords from preset filter.
         
-        keyword_presets : `None`, `int`, ``AutoModerationKeywordPresetType``, \
-                `iterable` of (`int`, ``AutoModerationKeywordPresetType``), Optional (Keyword only)
+        keyword_presets : ``None | int, AutoModerationKeywordPresetType | iterable<int> | iterable<AutoModerationKeywordPresetType>`` \
+                , Optional (Keyword only)
             Keyword preset defined by Discord which will be searched for in content.
             
-        keywords : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        keywords : `None | str | iterable<str>`, Optional (Keyword only)
             Substrings which will be searched for in content.
         
-        mention_limit : `None`, `int`, Optional (Keyword only)
+        mention_limit : `None | int`, Optional (Keyword only)
             The amount of mentions in a message after the rule is triggered.
         
         regex_patterns : `None`, `tuple` of `str`, Optional (Keyword only)
@@ -213,7 +213,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received auto moderation rule data.
         
         Returns
@@ -251,7 +251,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
                 
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -282,7 +282,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received guild profile data.
         """        
         self.creator_id = parse_creator_id(data)
@@ -297,7 +297,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received guild profile data.
         """
         self.actions = parse_actions(data)
@@ -320,12 +320,12 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received guild profile data.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
             
             Might contain the following items:
@@ -775,13 +775,13 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         enabled : `bool` , Optional (Keyword only)
             Whether the rule is enabled.
         
-        event_type : `None`, `int`, ``AutoModerationEventType``, Optional (Keyword only)
+        event_type : ``None | AutoModerationEventType | int``, Optional (Keyword only)
             For which events is the rule applied.
         
-        excluded_channel_ids : `None`, `int`, ``Channel``, `iterable` of (`int`, ``Channel``), Optional (Keyword only)
+        excluded_channel_ids : ``None | int | Channel | iterable<int> | iterable<Channel>``, Optional (Keyword only)
             Excluded channels from the rule.
         
-        excluded_role_ids : `None`, `int`, ``Role``, `iterable` of (`int`, ``Role``), Optional (Keyword only)
+        excluded_role_ids : ``None | int | Role | iterable<int> | iterable<Role>``, Optional (Keyword only)
             Excluded roles from the rule.
         
         name : `str`, Optional (Keyword only)
@@ -795,17 +795,17 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
-        excluded_keywords : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        excluded_keywords : `None | str | iterable<str>`, Optional (Keyword only)
             Excluded keywords from preset filter.
         
-        keyword_presets : `None`, `int`, ``AutoModerationKeywordPresetType``, \
-                `iterable` of (`int`, ``AutoModerationKeywordPresetType``), Optional (Keyword only)
+        keyword_presets : ``None | int, AutoModerationKeywordPresetType | iterable<int> | iterable<AutoModerationKeywordPresetType>`` \
+                , Optional (Keyword only)
             Keyword preset defined by Discord which will be searched for in content.
             
-        keywords : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        keywords : `None | str | iterable<str>`, Optional (Keyword only)
             Substrings which will be searched for in content.
         
-        mention_limit : `None`, `int`, Optional (Keyword only)
+        mention_limit : `None | int`, Optional (Keyword only)
             The amount of mentions in a message after the rule is triggered.
         
         regex_patterns : `None`, `tuple` of `str`, Optional (Keyword only)
@@ -950,13 +950,13 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         enabled : `bool` , Optional (Keyword only)
             Whether the rule is enabled.
         
-        event_type : `None`, `int`, ``AutoModerationEventType``, Optional (Keyword only)
+        event_type : ``None | AutoModerationEventType | int``, Optional (Keyword only)
             For which events is the rule applied.
         
-        excluded_channel_ids : `None`, `int`, ``Channel``, `iterable` of (`int`, ``Channel``), Optional (Keyword only)
+        excluded_channel_ids : ``None | int | Channel | iterable<int> | iterable<Channel>``, Optional (Keyword only)
             Excluded channels from the rule.
         
-        excluded_role_ids : `None`, `int`, ``Role``, `iterable` of (`int`, ``Role``), Optional (Keyword only)
+        excluded_role_ids : ``None | int | Role | iterable<int> | iterable<Role>``, Optional (Keyword only)
             Excluded roles from the rule.
         
         guild_id : `int`, ``Guild``, Optional (Keyword only)
@@ -968,17 +968,17 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         trigger_type : ``AutoModerationRuleTriggerType``, `int`, Optional (Keyword only)
             Auto moderation trigger type.
         
-        excluded_keywords : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        excluded_keywords : `None | str | iterable<str>`, Optional (Keyword only)
             Excluded keywords from preset filter.
         
-        keyword_presets : `None`, `int`, ``AutoModerationKeywordPresetType``, \
-                `iterable` of (`int`, ``AutoModerationKeywordPresetType``), Optional (Keyword only)
+        keyword_presets : ``None | int, AutoModerationKeywordPresetType | iterable<int> | iterable<AutoModerationKeywordPresetType>`` \
+                , Optional (Keyword only)
             Keyword preset defined by Discord which will be searched for in content.
             
-        keywords : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        keywords : `None | str | iterable<str>`, Optional (Keyword only)
             Substrings which will be searched for in content.
         
-        mention_limit : `None`, `int`, Optional (Keyword only)
+        mention_limit : `None | int`, Optional (Keyword only)
             The amount of mentions in a message after the rule is triggered.
         
         regex_patterns : `None`, `tuple` of `str`, Optional (Keyword only)
@@ -1091,7 +1091,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

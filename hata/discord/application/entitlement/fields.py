@@ -75,14 +75,14 @@ def put_owner(owner, data, defaults):
     ----------
     owner : `(EntitlementOwnerType, int)`
         The entitlement's owner represented by an ``EntitlementOwnerType`` and its identifier.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     put_owner_type(owner[0], data, defaults)
     put_owner_id(owner[1], data, defaults)
@@ -95,7 +95,7 @@ def validate_owner(owner):
     
     Parameters
     ----------
-    owner : `None`, ``ClientUserBase``, ``Guild``, `(int | EntitlementOwnerType, int | str)`
+    owner : ``None | ClientUserBase | Guild | (int | EntitlementOwnerType, int | str)``
         The owner to validate.
     
     Returns

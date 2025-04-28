@@ -18,13 +18,13 @@ class GuildIncidents(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    direct_message_spam_detected_at : `None`, `DateTime`
+    direct_message_spam_detected_at : `None | DateTime`
         When direct message spam was detected.
-    direct_messages_disabled_until : `None`, `DateTime`
+    direct_messages_disabled_until : `None | DateTime`
         Until when are the direct messages disabled in the guild.
-    invites_disabled_until : `None`, `DateTime`
+    invites_disabled_until : `None | DateTime`
        Until when are the invites disabled of the guild.
-    raid_detected_at : `None`, `DateTime`
+    raid_detected_at : `None | DateTime`
         When raid was detected.
     """
     __slots__ = (
@@ -45,13 +45,13 @@ class GuildIncidents(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        direct_message_spam_detected_at : `None`, `DateTime`, Optional (Keyword only)
+        direct_message_spam_detected_at : `None | DateTime`, Optional (Keyword only)
             When direct message spam was detected.
-        direct_messages_disabled_until : `None`, `DateTime`, Optional (Keyword only)
+        direct_messages_disabled_until : `None | DateTime`, Optional (Keyword only)
             Until when are the direct messages disabled in the guild.
-        invites_disabled_until : `None`, `DateTime`, Optional (Keyword only)
+        invites_disabled_until : `None | DateTime`, Optional (Keyword only)
            Until when are the invites disabled of the guild.
-        raid_detected_at : `None`, `DateTime`, Optional (Keyword only)
+        raid_detected_at : `None | DateTime`, Optional (Keyword only)
             When raid was detected.
         
         Raises
@@ -285,13 +285,13 @@ class GuildIncidents(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        direct_message_spam_detected_at : `None`, `DateTime`, Optional (Keyword only)
+        direct_message_spam_detected_at : `None | DateTime`, Optional (Keyword only)
             When direct message spam was detected.
-        direct_messages_disabled_until : `None`, `DateTime`, Optional (Keyword only)
+        direct_messages_disabled_until : `None | DateTime`, Optional (Keyword only)
             Until when are the direct messages disabled in the guild.
-        invites_disabled_until : `None`, `DateTime`, Optional (Keyword only)
+        invites_disabled_until : `None | DateTime`, Optional (Keyword only)
            Until when are the invites disabled of the guild.
-        raid_detected_at : `None`, `DateTime`, Optional (Keyword only)
+        raid_detected_at : `None | DateTime`, Optional (Keyword only)
             When raid was detected.
         
         Returns

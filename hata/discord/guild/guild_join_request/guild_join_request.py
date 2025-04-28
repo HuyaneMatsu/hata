@@ -26,7 +26,7 @@ class GuildJoinRequest(EventBase):
     
     Attributes
     ----------
-    actioned_by : `None`, ``ClientUserBase``
+    actioned_by : ``None | ClientUserBase``
         The user who action the join request.
     actioned_at : `None`, `datetime`
         When the join request was actioned at.
@@ -68,7 +68,7 @@ class GuildJoinRequest(EventBase):
         
         Parameters
         ----------
-        actioned_by : `None`, ``ClientUserBase``, Optional (Keyword only)
+        actioned_by : ``None | ClientUserBase``, Optional (Keyword only)
             The user who action the join request.
         actioned_at : `None`, `datetime`, Optional (Keyword only)
             When the join request was actioned at.
@@ -170,7 +170,7 @@ class GuildJoinRequest(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received data.
         
         Returns
@@ -201,7 +201,7 @@ class GuildJoinRequest(EventBase):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_actioned_by(self.actioned_by, data, defaults)
@@ -419,7 +419,7 @@ class GuildJoinRequest(EventBase):
         
         Parameters
         ----------
-        actioned_by : `None`, ``ClientUserBase``, Optional (Keyword only)
+        actioned_by : ``None | ClientUserBase``, Optional (Keyword only)
             The user who action the join request.
         actioned_at : `None`, `datetime`, Optional (Keyword only)
             When the join request was actioned at.

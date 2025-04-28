@@ -70,7 +70,7 @@ class PollVoteAddEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Vote event data.
         
         Returns
@@ -120,7 +120,7 @@ class PollVoteAddEvent(EventBase):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_answer_id(self.answer_id, data, defaults)

@@ -4,20 +4,24 @@ from ...application import Application, Entitlement
 from ...channel import Channel, ChannelType, create_partial_channel_from_id
 from ...field_parsers import (
     default_entity_parser_factory, entity_id_parser_factory, flag_parser_factory, force_string_parser_factory,
-    nullable_entity_array_parser_factory, nullable_entity_parser_factory, preinstanced_parser_factory
+    int_parser_factory, nullable_entity_array_parser_factory, nullable_entity_parser_factory,
+    preinstanced_parser_factory
 )
 from ...field_putters import (
     entity_id_optional_putter_factory, entity_id_putter_factory, entity_putter_factory, force_string_putter_factory,
-    nullable_entity_array_optional_putter_factory, preinstanced_putter_factory, string_flag_putter_factory
+    int_putter_factory, nullable_entity_array_optional_putter_factory, preinstanced_putter_factory,
+    string_flag_putter_factory
 )
 from ...field_validators import (
     default_entity_validator_factory, entity_id_validator_factory, flag_validator_factory,
-    force_string_validator_factory, nullable_entity_array_validator_factory, nullable_entity_validator_factory,
-    preinstanced_validator_factory
+    force_string_validator_factory, int_conditional_validator_factory, nullable_entity_array_validator_factory,
+    nullable_entity_validator_factory, preinstanced_validator_factory
 )
 from ...guild import (
-    Guild, create_interaction_guild_data, create_partial_guild_from_id, create_partial_guild_from_interaction_guild_data
+    Guild, create_interaction_guild_data, create_partial_guild_from_id,
+    create_partial_guild_from_interaction_guild_data
 )
+from ...guild.guild.guild_boost_perks import LEVEL_0, LEVEL_MAX
 from ...localization import Locale
 from ...localization.utils import LOCALE_DEFAULT
 from ...message import Message
@@ -32,17 +36,35 @@ from ..interaction_metadata import InteractionMetadataBase
 
 from .preinstanced import InteractionType
 
+
 # application_id
 
 parse_application_id = entity_id_parser_factory('application_id')
 put_application_id = entity_id_optional_putter_factory('application_id')
 validate_application_id = entity_id_validator_factory('application_id', Application)
 
+
 # application_permissions
 
 parse_application_permissions = flag_parser_factory('app_permissions', Permission)
 put_application_permissions = string_flag_putter_factory('app_permissions')
 validate_application_permissions = flag_validator_factory('application_permissions', Permission)
+
+
+# attachment_size_limit
+
+parse_attachment_size_limit = int_parser_factory('attachment_size_limit', LEVEL_0.attachment_size_limit)
+put_attachment_size_limit = int_putter_factory('attachment_size_limit')
+validate_attachment_size_limit = int_conditional_validator_factory(
+    'attachment_size_limit',
+    LEVEL_0.attachment_size_limit,
+    (
+        lambda attachment_size_limit:
+        attachment_size_limit >= LEVEL_0.attachment_size_limit and attachment_size_limit <= LEVEL_MAX.attachment_size_limit
+    ),
+    f'>= {LEVEL_0.attachment_size_limit} and <= {LEVEL_MAX.attachment_size_limit}',
+)
+
 
 # authorizer_user_ids
 
@@ -53,6 +75,7 @@ validate_application_permissions = flag_validator_factory('application_permissio
 # parse_authorizer_user_ids = ...
 # put_authorizer_user_ids = ...
 # validate_authorizer_user_ids = ...
+
 
 # channel
 
@@ -106,14 +129,14 @@ def put_guild(guild, data, defaults):
     ----------
     guild : `None | Guild`
         The guild to serialize.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default fields should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if (guild is not None) or defaults:
         if guild is None:
@@ -175,7 +198,7 @@ def validate_interaction(interaction, interaction_type):
     if not isinstance(interaction, InteractionMetadataBase):
         raise TypeError(
             f'`interaction` can be `None`, `{InteractionMetadataBase.__name__}` instance, got '
-            f'{interaction.__class__.__name__}; {interaction!r}.'
+            f'{type(interaction).__name__}; {interaction!r}.'
         )
     
     if not isinstance(interaction, interaction_type.metadata_type):
@@ -183,7 +206,7 @@ def validate_interaction(interaction, interaction_type):
             f'Interactions of `{interaction_type!r}` type event can only be '
             f'`{interaction_type.metadata_type.__name__}` instances. '
             f'Make sure to pass the correct `interaction_type` parameter. '
-            f'Got {interaction.__class__.__name__}; {interaction!r}.'
+            f'Got {type(interaction).__name__}; {interaction!r}.'
         )
     
     return interaction
@@ -200,14 +223,14 @@ def put_message(message, data, defaults):
     ----------
     message : `None`, ``Message``
         The message to put into the given `data`.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default fields should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (message is not None):
         if message is None:
@@ -241,7 +264,7 @@ def parse_user(data, guild_id = 0):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction event data.
     guild_id : `int` = `0`, Optional (Keyword only)
         The respective guild's identifier.
@@ -277,7 +300,7 @@ def put_user(user, data, defaults, *, guild_id = 0):
     ----------
     user : ``ClientUserBase``
         The user to put into the given `data`.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default fields should be included as well.
@@ -286,7 +309,7 @@ def put_user(user, data, defaults, *, guild_id = 0):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     try:
         guild_profile = user.guild_profiles[guild_id]
@@ -318,7 +341,7 @@ def parse_user_permissions(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction data.
     
     Return
@@ -346,14 +369,14 @@ def put_user_permissions(user_permissions, data, defaults):
     ----------
     user_permissions : ``Permission``
         The permission to put into the given `data`.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default fields should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     try:
         guild_profile_data = data['member']

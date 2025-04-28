@@ -122,7 +122,7 @@ class AvatarDecoration(metaclass = Slotted):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received avatar decoration data.
         
         Returns
@@ -146,7 +146,7 @@ class AvatarDecoration(metaclass = Slotted):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         

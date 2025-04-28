@@ -84,7 +84,7 @@ class Resolved(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Resolved data.
         
         guild_id : `int` = `0`, Optional (Keyword only)
@@ -117,7 +117,7 @@ class Resolved(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_attachments(self.attachments, data, defaults)
@@ -311,7 +311,7 @@ class Resolved(RichAttributeErrorBaseType):
         
         Yields
         ------
-        container : `None`, `dict` of (`str`, `object`) items
+        container : `None`, `dict<str, object>`
         """
         yield self.attachments
         yield self.channels
@@ -350,7 +350,7 @@ class Resolved(RichAttributeErrorBaseType):
         
         Returns
         -------
-        channel : `None`, ``Channel``
+        channel : ``None | Channel``
         """
         channels = self.channels
         if (channels is not None):
@@ -404,7 +404,7 @@ class Resolved(RichAttributeErrorBaseType):
         
         Returns
         -------
-        user : `None`, ``ClientUserBase``
+        user : ``None | ClientUserBase``
         """
         users = self.users
         if (users is not None):

@@ -23,7 +23,7 @@ def test__validate_uses__passing(input_value):
     
     Returns
     -------
-    output : `None`, `int`
+    output : `None | int`
     """
     return validate_uses(input_value)
 

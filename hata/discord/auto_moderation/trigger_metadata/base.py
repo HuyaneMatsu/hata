@@ -29,7 +29,7 @@ class AutoModerationRuleTriggerMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Auto moderation rule trigger metadata payload.
         
         Returns
@@ -50,7 +50,7 @@ class AutoModerationRuleTriggerMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         return {}
     

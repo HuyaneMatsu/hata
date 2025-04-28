@@ -1,7 +1,5 @@
 __all__ = ('ChannelMetadataGuildForumBase',)
 
-from warnings import warn
-
 from scarletio import copy_docs
 
 from ...permission import Permission
@@ -77,7 +75,6 @@ class ChannelMetadataGuildForumBase(ChannelMetadataGuildMainBase):
         default_forum_layout = ...,
         default_sort_order = ...,
         default_thread_auto_archive_after = ...,
-        default_thread_reaction = ...,
         default_thread_reaction_emoji = ...,
         default_thread_slowmode = ...,
         flags = ...,
@@ -124,16 +121,6 @@ class ChannelMetadataGuildForumBase(ChannelMetadataGuildMainBase):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # Deprecated fields
-        if default_thread_reaction is not ...:
-            warn(
-                '`default_thread_reaction` parameter is deprecated. Please use `default_thread_reaction_emoji` instead.',
-                FutureWarning,
-                stacklevel = 3,
-            )
-            default_thread_reaction_emoji = default_thread_reaction
-        
-        
         # available_tags
         if available_tags is ...:
             available_tags = None
@@ -211,7 +198,6 @@ class ChannelMetadataGuildForumBase(ChannelMetadataGuildMainBase):
             default_forum_layout = keyword_parameters.pop('default_forum_layout', ...),
             default_sort_order = keyword_parameters.pop('default_sort_order', ...),
             default_thread_auto_archive_after = keyword_parameters.pop('default_thread_auto_archive_after', ...),
-            default_thread_reaction = keyword_parameters.pop('default_thread_reaction', ...),
             default_thread_reaction_emoji = keyword_parameters.pop('default_thread_reaction_emoji', ...),
             default_thread_slowmode = keyword_parameters.pop('default_thread_slowmode', ...),
             flags = keyword_parameters.pop('flags', ...),
@@ -352,7 +338,6 @@ class ChannelMetadataGuildForumBase(ChannelMetadataGuildMainBase):
         default_forum_layout = ...,
         default_sort_order = ...,
         default_thread_auto_archive_after = ...,
-        default_thread_reaction = ...,
         default_thread_reaction_emoji = ...,
         default_thread_slowmode = ...,
         flags = ...,
@@ -403,16 +388,6 @@ class ChannelMetadataGuildForumBase(ChannelMetadataGuildMainBase):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # Deprecated fields
-        if default_thread_reaction is not ...:
-            warn(
-                '`default_thread_reaction` parameter is deprecated. Please use `default_thread_reaction_emoji` instead.',
-                FutureWarning,
-                stacklevel = 3,
-            )
-            default_thread_reaction_emoji = default_thread_reaction
-        
-        
         # available_tags
         if available_tags is ...:
             available_tags = self.available_tags
@@ -491,7 +466,6 @@ class ChannelMetadataGuildForumBase(ChannelMetadataGuildMainBase):
             default_forum_layout = keyword_parameters.pop('default_forum_layout', ...),
             default_sort_order = keyword_parameters.pop('default_sort_order', ...),
             default_thread_auto_archive_after = keyword_parameters.pop('default_thread_auto_archive_after', ...),
-            default_thread_reaction = keyword_parameters.pop('default_thread_reaction', ...),
             default_thread_reaction_emoji = keyword_parameters.pop('default_thread_reaction_emoji', ...),
             default_thread_slowmode = keyword_parameters.pop('default_thread_slowmode', ...),
             flags = keyword_parameters.pop('flags', ...),
@@ -592,7 +566,7 @@ class ChannelMetadataGuildForumBase(ChannelMetadataGuildMainBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Channel data.
         
         Returns

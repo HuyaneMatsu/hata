@@ -121,7 +121,7 @@ class GuildWidgetUser(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Guild widget user data.
         
         Returns
@@ -149,7 +149,7 @@ class GuildWidgetUser(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_activity_name(self.activity_name, data, defaults)

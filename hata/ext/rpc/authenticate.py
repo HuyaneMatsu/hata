@@ -31,7 +31,7 @@ class AuthenticateResponse:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Authenticate response data.
         
         Returns
@@ -95,7 +95,7 @@ class Oauth2Application(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application oauth2 data.
         
         Returns

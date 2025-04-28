@@ -18,7 +18,7 @@ def parse_emoji(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Channel data.
     
     Returns
@@ -36,14 +36,14 @@ def put_emoji(emoji, data, defaults):
     ----------
     emoji : `None`, ``Emoji``
         The forum tag's emoji.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (emoji is not None):
         put_exclusive_emoji_inline_data_into(emoji, data)

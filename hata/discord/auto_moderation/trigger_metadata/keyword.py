@@ -89,13 +89,13 @@ class AutoModerationRuleTriggerMetadataKeyword(AutoModerationRuleTriggerMetadata
         
         Parameters
         ----------
-        keywords : `None`, `str`, `iterable` of `str`, Optional
+        keywords : `None | str | iterable<str>`, Optional
             Substrings which will be searched for in content.
         
         regex_patterns : `None`, `tuple` of `str`, Optional
             Regular expression patterns which are matched against content.
         
-        excluded_keywords : `None`, `str`, `iterable` of `str`, Optional
+        excluded_keywords : `None | str | iterable<str>`, Optional
             Excluded keywords from the preset.
         
         Raises
@@ -298,7 +298,7 @@ class AutoModerationRuleTriggerMetadataKeyword(AutoModerationRuleTriggerMetadata
         excluded_keywords : `None`, `str`, `iterable` of `str, Optional (Keyword only)
             Excluded keywords from the rule.
         
-        keywords : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        keywords : `None | str | iterable<str>`, Optional (Keyword only)
             Substrings which will be searched for in content.
         
         regex_patterns : `None`, `tuple` of `str`, Optional (Keyword only)

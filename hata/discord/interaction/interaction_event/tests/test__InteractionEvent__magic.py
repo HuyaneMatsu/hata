@@ -20,6 +20,7 @@ def test__InteractionEvent__repr():
     """
     application_id = 202211070025
     application_permissions = Permission(123)
+    attachment_size_limit = 10 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170008,
         ApplicationIntegrationType.guild_install: 202407170009,
@@ -40,6 +41,7 @@ def test__InteractionEvent__repr():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
+        attachment_size_limit = attachment_size_limit,
         authorizer_user_ids = authorizer_user_ids,
         channel = channel,
         entitlements = entitlements,
@@ -62,6 +64,7 @@ def test__InteractionEvent__hash():
     """
     application_id = 202211070031
     application_permissions = Permission(123)
+    attachment_size_limit = 10 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170010,
         ApplicationIntegrationType.guild_install: 202407170011,
@@ -82,6 +85,7 @@ def test__InteractionEvent__hash():
         interaction_id,
         application_id = application_id,
         application_permissions = application_permissions,
+        attachment_size_limit = attachment_size_limit,
         authorizer_user_ids = authorizer_user_ids,
         channel = channel,
         entitlements = entitlements,
@@ -98,10 +102,10 @@ def test__InteractionEvent__hash():
     vampytest.assert_instance(hash(interaction_event), int)
 
 
-
 def _iter_options__eq():
     application_id = 202211070036
     application_permissions = Permission(123)
+    attachment_size_limit = 10 << 20
     authorizer_user_ids = {
         ApplicationIntegrationType.user_install: 202407170015,
         ApplicationIntegrationType.guild_install: 202407170016,
@@ -120,6 +124,7 @@ def _iter_options__eq():
     keyword_parameters = {
         'application_id': application_id,
         'application_permissions': application_permissions,
+        'attachment_size_limit': attachment_size_limit,
         'authorizer_user_ids': authorizer_user_ids,
         'channel': channel,
         'entitlements': entitlements,
@@ -159,6 +164,15 @@ def _iter_options__eq():
         {
             **keyword_parameters,
             'application_permissions': Permission(456),
+        },
+        False,
+    )
+    
+    yield (
+        keyword_parameters,
+        {
+            **keyword_parameters,
+            'application_permissions': 11 << 20,
         },
         False,
     )

@@ -18,7 +18,7 @@ def parse_size_and_max(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Activity party data.
     
     Returns
@@ -37,14 +37,14 @@ def put_size_and_max(size_and_max, data, defaults):
     ----------
     size_and_max : `tuple` (`int`, `int`)
         Size and max pair.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or any(size_and_max):
         data['size'] = size_and_max

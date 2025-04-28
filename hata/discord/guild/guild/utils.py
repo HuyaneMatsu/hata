@@ -4,7 +4,6 @@ __all__ = (
 )
 
 from functools import partial as partial_func
-from warnings import warn
 
 from scarletio import export
 
@@ -85,7 +84,7 @@ def create_partial_guild_from_data(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Partial channel data received from Discord.
     
     Returns
@@ -185,8 +184,6 @@ def create_new_guild_data(
     afk_channel_id = ...,
     afk_timeout = ...,
     channels = ...,
-    content_filter = ...,
-    message_notification = ...,
     default_message_notification_level = ...,
     explicit_content_filter_level = ...,
     icon = ...,
@@ -201,10 +198,10 @@ def create_new_guild_data(
     
     Parameters
     ----------
-    afk_channel_id : `None`, `int`, Optional (Keyword only)
+    afk_channel_id : `None | int`, Optional (Keyword only)
         The id of the guild's afk channel. The id should be one of the channel's id from `channels`.
     
-    afk_timeout : `None`, `int` = `None`, Optional (Keyword only)
+    afk_timeout : `None | int` = `None`, Optional (Keyword only)
         The afk timeout for the users at the guild's afk channel.
     
     channels : `None`, `list` of `dict`, Optional (Keyword only)
@@ -263,37 +260,11 @@ def create_new_guild_data(
     else:
         channels = validate_channels_and_channel_datas(channels)
     
-    
-    if message_notification is not ...:
-        warn(
-            (
-                f'`{create_new_guild_data.__name__}`\'s `message_notification` parameter is deprecated. '
-                f'And will be removed in 2024 April. '
-                f'Please use `default_message_notification_level` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        default_message_notification_level = message_notification
-    
     # default_message_notification_level
     if default_message_notification_level is ...:
         default_message_notification_level = MessageNotificationLevel.all_messages
     else:
         default_message_notification_level = validate_default_message_notification_level(default_message_notification_level)
-    
-    
-    if content_filter is not ...:
-        warn(
-            (
-                f'`{create_new_guild_data.__name__}`\'s `content_filter` parameter is deprecated. '
-                f'And will be removed in 2024 April. '
-                f'Please use `explicit_content_filter_level` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        explicit_content_filter_level = content_filter
     
     # explicit_content_filter_level
     if explicit_content_filter_level is ...:

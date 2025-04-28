@@ -8,7 +8,3 @@ __all__ = (
     *embedded_activity_location.__all__,
     *embedded_activity_user_state.__all__,
 )
-
-# remove on 2025 February
-from ...utils.module_deprecation import deprecated_import
-deprecated_import(EmbeddedActivity, 'EmbeddedActivityState')

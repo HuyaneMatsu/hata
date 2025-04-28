@@ -61,7 +61,7 @@ class ScheduledEvent(DiscordEntity):
         The event's creator.
     description : `None`, `str`
         Description of the event.
-    end : `None`, `DateTime`
+    end : `None | DateTime`
         The scheduled end time of the event.
     entity_id : `int`
         The event's entity's identifier.
@@ -83,7 +83,7 @@ class ScheduledEvent(DiscordEntity):
         The privacy level of the event.
     schedule : `None | Schedule`
         How the scheduled event should re-occur.
-    start : `None`, `DateTime`
+    start : `None | DateTime`
         The scheduled start time of the event.
     sku_ids : `None`, `tuple` of `int`
         Stock keeping unit identifiers used at the event.
@@ -260,7 +260,7 @@ class ScheduledEvent(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Guild scheduled event data.
         strong_cache : `bool` = `True`, Optional (Keyword only)
             Whether the instance should be put into its strong cache.
@@ -310,7 +310,7 @@ class ScheduledEvent(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Guild scheduled event data.
         
         Returns
@@ -358,7 +358,7 @@ class ScheduledEvent(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Guild event data.
         
         Returns
@@ -424,7 +424,7 @@ class ScheduledEvent(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -457,7 +457,7 @@ class ScheduledEvent(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Scheduled event data.
         """
         self.creator = parse_creator(data)
@@ -473,7 +473,7 @@ class ScheduledEvent(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Scheduled event data.
         """
         self._set_image(data)
@@ -500,12 +500,12 @@ class ScheduledEvent(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Scheduled event data.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             The updated attributes.
             
             The returned dictionary might contain the following items:
@@ -517,7 +517,7 @@ class ScheduledEvent(DiscordEntity):
             +---------------------------+-----------------------------------------------+
             | description               | `None`, `str`                                 |
             +---------------------------+-----------------------------------------------+
-            | end                       | `None`, `DateTime`                            |
+            | end                       | `None | DateTime`                             |
             +---------------------------+-----------------------------------------------+
             | entity_id                 | `int`                                         |
             +---------------------------+-----------------------------------------------+
@@ -535,7 +535,7 @@ class ScheduledEvent(DiscordEntity):
             +---------------------------+-----------------------------------------------+
             | sku_ids                   | `None`, `tuple` of `int`                      |
             +---------------------------+-----------------------------------------------+
-            | start                     | `None`, `DateTime`                            |
+            | start                     | `None | DateTime`                             |
             +---------------------------+-----------------------------------------------+
             | status                    | ``ScheduledEventStatus``                      |
             +---------------------------+-----------------------------------------------+
@@ -624,7 +624,7 @@ class ScheduledEvent(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Scheduled event data.
         """
         try:
@@ -1197,7 +1197,7 @@ class ScheduledEvent(DiscordEntity):
         
         Returns
         -------
-        entity : `None`, ``Channel``
+        entity : ``None | Channel``
         """
         entity_id = self.entity_id
         if entity_id:
@@ -1223,7 +1223,7 @@ class ScheduledEvent(DiscordEntity):
         
         Returns
         -------
-        channel : `None`, ``Channel``
+        channel : ``None | Channel``
         """
         channel_id = self.channel_id
         if channel_id:
@@ -1237,7 +1237,7 @@ class ScheduledEvent(DiscordEntity):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

@@ -1,8 +1,6 @@
 __all__ = ('FlagBase', 'FlagBaseReversed')
 
-from warnings import warn
-
-from scarletio import class_property, copy_docs
+from scarletio import copy_docs
 
 from .flag_meta import FlagMeta
 
@@ -190,19 +188,6 @@ class FlagBase(int, metaclass = FlagMeta):
                     new ^= (1 << shift)
         
         return int.__new__(type(self), new)
-
-    
-    @class_property
-    def __keys__(cls):
-        """
-        Deprecated and will be removed in 2025 April. Please use `.__shifts__` instead.
-        """
-        warn(
-            'Deprecated and will be removed in 2025 April. Please use `.__shifts__` instead.',
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return cls.__shifts__
 
 
 class FlagBaseReversed(FlagBase, reverse_descriptors = True):

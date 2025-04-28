@@ -16,12 +16,12 @@ def build_edit_payload(old_entity, new_entity, field_converters, keyword_paramet
     field_converters : `dict` of (`str`, `tuple` (`callable`, `callable`)) items
         Fields converters to use.
     
-    keyword_parameters : `dict` of (`str`, `object`) items
+    keyword_parameters : `dict<str, object>`
         Keyword parameters passed to the original function.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         The built payload.
     
     Raises
@@ -60,12 +60,12 @@ def build_create_payload(entity, field_converters, keyword_parameters):
     field_converters : `dict` of (`str`, `tuple` (`callable`, `callable`)) items
         Fields converters to use.
     
-    keyword_parameters : `dict` of (`str`, `object`) items
+    keyword_parameters : `dict<str, object>`
         Keyword parameters passed to the original function.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         The built payload.
     
     Raises
@@ -95,10 +95,10 @@ def add_payload_fields_from_keyword_parameters(
     field_converters : `dict` of (`str`, `tuple` (`callable`, `callable`)) items
         Fields converters to use.
     
-    keyword_parameters : `dict` of (`str`, `object`) items
+    keyword_parameters : `dict<str, object>`
         Keyword parameters passed to the original function.
     
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         The built payload.
     
     defaults : `bool`

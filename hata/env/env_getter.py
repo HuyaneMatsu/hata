@@ -266,8 +266,7 @@ class EnvGetter(RichAttributeErrorBaseType):
         
         Returns
         -------
-        error_type : `int`
-        error_message : `None`, `str`
+        error_type_and_error_message : `(int, None | str)`
         """
         captured = self._captured
         if captured is None:

@@ -120,7 +120,7 @@ class Stage(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Stage data.
         strong_cache : `bool` = `True`, Optional (Keyword only)
             Whether the instance should be put into its strong cache.
@@ -195,7 +195,7 @@ class Stage(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Stage data.
         """
         self.channel_id = parse_channel_id(data)
@@ -211,7 +211,7 @@ class Stage(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Stage data.
         """
         self.discoverable = parse_discoverable(data)
@@ -227,12 +227,12 @@ class Stage(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Stage data.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             The changed attributes of the stage.
             
             Each item in the returned dictionary is optional.
@@ -604,7 +604,7 @@ class Stage(DiscordEntity, immortal = True):
         
         Returns
         -------
-        channel : `None`, ``Channel``
+        channel : ``None | Channel``
         """
         return create_partial_channel_from_id(self.channel_id, ChannelType.guild_stage, self.guild_id)
     
@@ -616,7 +616,7 @@ class Stage(DiscordEntity, immortal = True):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

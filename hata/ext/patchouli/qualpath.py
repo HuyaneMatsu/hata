@@ -6,7 +6,7 @@ class QualPath:
     
     Attributes
     ----------
-    _hash : `None`, `int`
+    _hash : `None | int`
         Cached slot for the hash of the qual-path.
     _str : `None`, `str`
         Cached slot for `str` of the qual-path.

@@ -261,9 +261,9 @@ class Entitlement(DiscordEntity):
             +---------------------------+-----------------------------------------------+
             | deleted                   | `bool`                                        |
             +---------------------------+-----------------------------------------------+
-            | ends_at                   | `None`, `DateTime`                            |
+            | ends_at                   | `None | DateTime`                             |
             +---------------------------+-----------------------------------------------+
-            | starts_at                 | `None`, `DateTime`                            |
+            | starts_at                 | `None | DateTime`                             |
             +---------------------------+-----------------------------------------------+
         """
         old_attributes = {}
@@ -389,7 +389,7 @@ class Entitlement(DiscordEntity):
         deleted : `bool`, Optional (Keyword only)
             Whether the entitlement is deleted.
         
-        ends_at : `None`, `DateTime`, Optional (Keyword only)
+        ends_at : `None | DateTime`, Optional (Keyword only)
             When the entitlement ends.
         
         entitlement_type : ``EntitlementType``, `int`, Optional (Keyword only)
@@ -407,7 +407,7 @@ class Entitlement(DiscordEntity):
         sku_id : `int`, ``SKU``, Optional (Keyword only)
             The stock keeping unit's identifier the this entitlement grants access to.
     
-        starts_at : `None`, `DateTime`, Optional (Keyword only)
+        starts_at : `None | DateTime`, Optional (Keyword only)
             When the entitlement starts.
         
         subscription : `int`, Optional (Keyword only)

@@ -54,7 +54,7 @@ def _forum_tag_data_array_sort_key(forum_tag_data):
     
     Parameters
     ----------
-    forum_tag_data : `dict` of (`str`, `object`) items
+    forum_tag_data : `dict<str, object>`
         Forum tag data.
     
     Returns
@@ -176,7 +176,7 @@ class ClientCompoundChannelEndpoints(Compound):
         channel : ``Channel``, `int`
             The channel to edit.
         
-        channel_template : `None`, ``Channel`` = `None`, Optional
+        channel_template : ``None | Channel`` = `None`, Optional
             A channel to use as a template.
         
         **keyword_parameters : Keyword parameters
@@ -331,7 +331,7 @@ class ClientCompoundChannelEndpoints(Compound):
             The channel to be moved.
         visual_position : `int`
             The visual position where the channel should go.
-        parent : `None`, ``Channel``, Optional (Keyword only)
+        parent : ``None | Channel``, Optional (Keyword only)
             If not set, then the channel will keep it's current parent. If the parameter is set ``Guild`` or to
             `None`, then the  channel will be moved under the guild itself, Or if passed as ``Channel``,
             then the channel will be moved under it.
@@ -347,7 +347,7 @@ class ClientCompoundChannelEndpoints(Compound):
             - If parent channel would be moved under an other category.
         TypeError
             - If `channel` was isn ot movable.
-            - If `parent` was not given as `None`, ``Channel``.
+            - If `parent` was not given as ``None | Channel``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -550,7 +550,7 @@ class ClientCompoundChannelEndpoints(Compound):
         channel : ``Channel``, `int`
             The channel to edit.
         
-        channel_template : `None`, ``Channel`` = `None`, Optional
+        channel_template : ``None | Channel`` = `None`, Optional
             A channel to use as a template.
         
         reason : `None`, `str` = `None`, Optional (Keyword only)
@@ -597,7 +597,7 @@ class ClientCompoundChannelEndpoints(Compound):
         open_ : `bool`, Optional (Keyword only)
             Whether the thread channel is open.
         
-        parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
         
         permission_overwrites : `None`, list` of ``PermissionOverwrite``, Optional (Keyword only)
@@ -685,10 +685,10 @@ class ClientCompoundChannelEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild where the channel will be created.
         
-        channel_template : `None`, ``Channel`` = `None`, Optional
+        channel_template : ``None | Channel`` = `None`, Optional
             Channel entity to use as a template.
         
         reason : `None`, `str` = `None`, Optional (Keyword only)
@@ -729,7 +729,7 @@ class ClientCompoundChannelEndpoints(Compound):
         nsfw : `bool`, Optional (Keyword only)
             Whether the channel is marked as non safe for work.
         
-        parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
         
         permission_overwrites : `None`, list` of ``PermissionOverwrite``, Optional (Keyword only)
@@ -1064,7 +1064,7 @@ class ClientCompoundChannelEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, what's channels will be requested.
         
         Returns

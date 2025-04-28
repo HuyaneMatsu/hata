@@ -77,7 +77,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        channel_type : `None`, `int`, ``ChanelType``, Optional (Keyword only)
+        channel_type : ``None | ChannelType | int``, Optional (Keyword only)
             The channel's type.
         
         **keyword_parameters : Keyword parameters
@@ -148,7 +148,7 @@ class Channel(DiscordEntity, immortal = True):
         owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
             The channel's owner's or creator's identifier.
         
-        parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
         
         permission_overwrites : `None`, list` of ``PermissionOverwrite``, Optional (Keyword only)
@@ -210,7 +210,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Channel data receive from Discord.
         client : `None`, ``Client`` = `None`, Optional
             The client, who received the channel's data, if any.
@@ -856,7 +856,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:
@@ -902,7 +902,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Channel data received from Discord.
         """
         channel_type = parse_type(data)
@@ -922,12 +922,12 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Channel data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
             
             Might contain the following items:
@@ -1016,7 +1016,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Channel status update data received from Discord.
         """
         self.metadata._update_status(data)
@@ -1029,12 +1029,12 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Channel status update data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
             
             Might contain the following items:
@@ -1089,7 +1089,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `None`, `dict` of (`str`, `object`) items
+        data : `None`, `dict<str, object>`
             Partial channel data.
         channel_id : `int`
             The channel's id.
@@ -1237,7 +1237,7 @@ class Channel(DiscordEntity, immortal = True):
         owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
             The channel's owner's or creator's identifier.
         
-        parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
         
         permission_overwrites : `None`, list` of ``PermissionOverwrite``, Optional (Keyword only)
@@ -1320,7 +1320,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = self.metadata.to_data(defaults = defaults, include_internals = include_internals)
         
@@ -1737,7 +1737,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Returns
         -------
-        parent : `None`, ``Channel``
+        parent : ``None | Channel``
         """
         parent_id = self.metadata.parent_id
         if parent_id:
@@ -2020,7 +2020,7 @@ class Channel(DiscordEntity, immortal = True):
         channel_id : `int`, `str`
             The channel's id.
         
-        channel_type : `None`, `int`, ``ChanelType``, Optional (Keyword only)
+        channel_type : ``None | ChannelType | int``, Optional (Keyword only)
             The channel's type.
 
         guild_id : `int`, ``Guild``, Optional (Keyword only)
@@ -2106,7 +2106,7 @@ class Channel(DiscordEntity, immortal = True):
         owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
             The channel's owner's or creator's identifier.
         
-        parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
+        parent_id : ``None | int | Channel``, Optional (Keyword only)
             The channel's parent's identifier.
         
         permission_overwrites : `None`, list` of ``PermissionOverwrite``, Optional (Keyword only)
@@ -2296,7 +2296,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        message_data : `dict` of (`str`, `object`) items
+        message_data : `dict<str, object>`
             Message data received from Discord.
         
         Returns
@@ -2349,7 +2349,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        message_data : `dict` of (`str`, `object`) items
+        message_data : `dict<str, object>`
             Message data received from Discord.
         
         Returns
@@ -2382,7 +2382,7 @@ class Channel(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        message_data : `dict` of (`str`, `object`) items
+        message_data : `dict<str, object>`
             The message's data to find or create.
         chained : `bool`
             Whether the created message should be chained to the channel's message history's end, if not found.

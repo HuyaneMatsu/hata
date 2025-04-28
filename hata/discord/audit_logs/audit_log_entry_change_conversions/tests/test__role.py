@@ -369,7 +369,7 @@ def test__UNICODE_EMOJI_CONVERSION__value_deserializer(input_value):
     
     Returns
     -------
-    output : `None | Emoji`
+    output : ``None | Emoji``
     """
     return UNICODE_EMOJI_CONVERSION.value_deserializer(input_value)
 
@@ -387,7 +387,7 @@ def test__UNICODE_EMOJI_CONVERSION__value_serializer(input_value):
     
     Parameters
     ----------
-    input_value : `None | Emoji`
+    input_value : ``None | Emoji``
         Processed value.
     
     Returns

@@ -42,7 +42,7 @@ def process_message_chunk(message_datas, channel):
     
     Parameters
     ----------
-    message_datas : `list` of (`dict` of (`str`, `object`) items) elements
+    message_datas : `list` of (`dict<str, object>`) elements
         A list of message's data received from Discord.
     channel : ``Channel``, `None`
         The channels to which the messages are bound to if any.

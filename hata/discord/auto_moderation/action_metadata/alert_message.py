@@ -23,7 +23,7 @@ class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataB
         
         Parameters
         ----------
-        channel_id : `None`, ``Channel``, `int` = `None`, Optional
+        channel_id : ``None | int | Channel`` = `None`, Optional
             The channel where the alert message should be sent.
                
         Raises
@@ -97,7 +97,7 @@ class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataB
         
         Parameters
         ----------
-        channel_id : `None`, ``Channel``, `int`, Optional (Keyword only)
+        channel_id : ``None | int | Channel``, Optional (Keyword only)
             The channel where the alert message should be sent.
         
         Returns

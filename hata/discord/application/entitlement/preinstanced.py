@@ -19,27 +19,35 @@ class EntitlementType(PreinstancedBase, value_type = int):
     ---------------
     Every predefined entitlement type can be accessed as type attribute as well:
     
-    +---------------------------+---------------------------+-------+
-    | Type attribute name       | Name                      | Value |
-    +===========================+===========================+=======+
-    | none                      | none                      | 0     |
-    +---------------------------+---------------------------+-------+
-    | purchase                  | purchase                  | 1     |
-    +---------------------------+---------------------------+-------+
-    | premium_subscription      | premium subscription      | 2     |
-    +---------------------------+---------------------------+-------+
-    | developer_gift            | developer gift            | 3     |
-    +---------------------------+---------------------------+-------+
-    | test_mode_purchase        | test mode purchase        | 4     |
-    +---------------------------+---------------------------+-------+
-    | free_purchase             | free purchase             | 5     |
-    +---------------------------+---------------------------+-------+
-    | user_gift                 | user gift                 | 6     |
-    +---------------------------+---------------------------+-------+
-    | premium_purchase          | premium purchase          | 7     |
-    +---------------------------+---------------------------+-------+
-    | application_subscription  | application subscription  | 8     |
-    +---------------------------+---------------------------+-------+
+    +-------------------------------+-------------------------------+-------+
+    | Type attribute name           | Name                          | Value |
+    +===============================+===============================+=======+
+    | none                          | none                          | 0     |
+    +-------------------------------+-------------------------------+-------+
+    | purchase                      | purchase                      | 1     |
+    +-------------------------------+-------------------------------+-------+
+    | premium_subscription          | premium subscription          | 2     |
+    +-------------------------------+-------------------------------+-------+
+    | developer_gift                | developer gift                | 3     |
+    +-------------------------------+-------------------------------+-------+
+    | test_mode_purchase            | test mode purchase            | 4     |
+    +-------------------------------+-------------------------------+-------+
+    | free_purchase                 | free purchase                 | 5     |
+    +-------------------------------+-------------------------------+-------+
+    | user_gift                     | user gift                     | 6     |
+    +-------------------------------+-------------------------------+-------+
+    | premium_purchase              | premium purchase              | 7     |
+    +-------------------------------+-------------------------------+-------+
+    | application_subscription      | application subscription      | 8     |
+    +-------------------------------+-------------------------------+-------+
+    | free_staff_purchase           | free staff purchase           | 9     |
+    +-------------------------------+-------------------------------+-------+
+    | quest_reward                  | quest reward                  | 10    |
+    +-------------------------------+-------------------------------+-------+
+    | fractional_redemption         | fractional redemption         | 11    |
+    +-------------------------------+-------------------------------+-------+
+    | virtual_currency_redemption   | virtual currency redemption   | 12    |
+    +-------------------------------+-------------------------------+-------+
     """
     __slots__ = ()
     
@@ -53,6 +61,10 @@ class EntitlementType(PreinstancedBase, value_type = int):
     user_gift = P(6, 'user gift')
     premium_purchase = P(7, 'premium purchase')
     application_subscription = P(8, 'application subscription')
+    free_staff_purchase = P(9, 'free staff purchase')
+    quest_reward = P(10, 'quest reward')
+    fractional_redemption = P(11, 'fractional redemption')
+    virtual_currency_redemption = P(12, 'virtual currency redemption')
 
 
 class EntitlementOwnerType(PreinstancedBase, value_type = int):

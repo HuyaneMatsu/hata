@@ -72,7 +72,7 @@ def parse_resolved(data, guild_id = 0):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction metadata data.
     
     guild_id : `int` = `0`, Optional
@@ -96,7 +96,7 @@ def put_resolved(resolved, data, defaults, *, guild_id = 0):
     resolved  : `None`, ``Resolved``
         The instance to serialise.
         
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Interaction metadata data.
     
     defaults : `bool`
@@ -107,7 +107,7 @@ def put_resolved(resolved, data, defaults, *, guild_id = 0):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     # Cpython devs: "We do not need goto in python".
     # Also them: *uSeS gOtO TwIcE iN EveRy C fUnCTiOn*.

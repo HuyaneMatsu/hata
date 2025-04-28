@@ -83,7 +83,7 @@ class ClientCompoundRoleEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, what's roles will be requested.
         
         Returns
@@ -118,7 +118,7 @@ class ClientCompoundRoleEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild where the role will be created.
         
         role_template : `None`, ``Role`` = `None`, Optional
@@ -361,12 +361,12 @@ class ClientCompoundRoleEndpoints(Compound):
         -------
         role : ``Role``
             The validated role.
-        guild : ``None`, ``Guild``
+        guild : ```None | Guild``
             The role's guild.
         
         Yields
         ------
-        item : `None`, `tuple` (``Role``, ``Guild``, `int`)
+        item : ``None | (Role, Guild, int)``
         
         Raises
         ------
@@ -428,7 +428,7 @@ class ClientCompoundRoleEndpoints(Compound):
         
         Yields
         ------
-        item : `None`, `tuple` (``Role``, ``Guild``, `int`)
+        item : ``None | (Role, Guild, int)``
         
         Raises
         ------

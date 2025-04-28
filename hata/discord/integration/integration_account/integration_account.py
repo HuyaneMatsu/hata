@@ -65,7 +65,7 @@ class IntegrationAccount(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Integration account data.
         
         Returns
@@ -89,7 +89,7 @@ class IntegrationAccount(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_id(self.id, data, defaults)

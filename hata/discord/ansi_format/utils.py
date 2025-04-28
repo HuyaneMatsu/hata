@@ -22,34 +22,34 @@ def create_ansi_format_code(text_decoration = None, background_color = None, for
     -------
     format_code : `str`
     """
-    format_code_parst = ['\u001b[']
+    format_code_parts = ['\u001b[']
     
     field_added = False
     
     if (text_decoration is not None):
         field_added = True
         
-        format_code_parst.append(str(text_decoration.value))
+        format_code_parts.append(str(text_decoration.value))
     
     if (background_color is not None):
         if field_added:
-            format_code_parst.append(';')
+            format_code_parts.append(';')
         else:
             field_added = True
         
-        format_code_parst.append(str(background_color.value))
+        format_code_parts.append(str(background_color.value))
     
     if (foreground_color is not None):
         if field_added:
-            format_code_parst.append(';')
+            format_code_parts.append(';')
         else:
             field_added = True
         
-        format_code_parst.append(str(foreground_color.value))
+        format_code_parts.append(str(foreground_color.value))
     
     if not field_added:
-        format_code_parst.append('0')
+        format_code_parts.append('0')
     
-    format_code_parst.append('m')
+    format_code_parts.append('m')
     
-    return ''.join(format_code_parst)
+    return ''.join(format_code_parts)

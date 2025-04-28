@@ -125,18 +125,21 @@ class PrivacyLevel(PreinstancedBase, value_type = int):
     ---------------
     Every predefined privacy level can be accessed as type attribute as well:
     
-    +-----------------------+---------------+-------+
-    | Type attribute name   | Name          | Value |
-    +=======================+===============+=======+
-    | none                  | none          | 0     |
-    +-----------------------+---------------+-------+
-    | public                | public        | 1     |
-    +-----------------------+---------------+-------+
-    | guild_only            | guild_only    | 2     |
-    +-----------------------+---------------+-------+
+    +---------------------------+---------------------------+-------+
+    | Type attribute name       | Name                      | Value |
+    +===========================+===========================+=======+
+    | none                      | none                      | 0     |
+    +---------------------------+---------------------------+-------+
+    | public                    | public                    | 1     |
+    +---------------------------+---------------------------+-------+
+    | guild_only                | guild only                | 2     |
+    +---------------------------+---------------------------+-------+
+    | public_with_join_request  | public with join request  | 3     |
+    +---------------------------+---------------------------+-------+
     """
     __slots__ = ()
     
     none = P(0, 'none')
     public = P(1, 'public')
-    guild_only = P(2, 'guild_only')
+    guild_only = P(2, 'guild only')
+    public_with_join_request = P(3, 'public with join request')

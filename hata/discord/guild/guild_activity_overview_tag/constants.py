@@ -1,0 +1,5 @@
+__all__ = ()
+
+
+TITLE_LENGTH_MIN = 1
+TITLE_LENGTH_MAX = 24

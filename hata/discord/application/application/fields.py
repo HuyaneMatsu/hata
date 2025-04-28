@@ -305,14 +305,14 @@ def put_integration_types_configuration(integration_types_configuration, data, d
     ----------
     integration_types_configuration : `None | dict<ApplicationIntegrationType, ApplicationIntegrationTypeConfiguration>`
         Integration types configuration to serialize.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     configurations_data = {}
     
@@ -513,7 +513,7 @@ def parse_owner(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Application data.
     
     Returns
@@ -541,14 +541,14 @@ def put_owner(owner, data, defaults):
     ----------
     owner : ``ClientUserBase``, ``Team``
         The application's owner.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if owner is ZEROUSER:
         team_data = None
@@ -581,12 +581,12 @@ def validate_owner(owner):
     
     Parameters
     ----------
-    owner : `None`, ``ClientUserBase``, ``Team``
+    owner : ``None | ClientUserBase | Team``
         The application's owner.
     
     Returns
     -------
-    owner : ``ClientUserBase``, ``Team``
+    owner : ``ClientUserBase | Team``
     
     Raises
     ------
@@ -727,14 +727,14 @@ def put_type(application_type, data, defaults):
     ----------
     application_type : ``ApplicationType``
         The application's type.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if application_type is ApplicationType.none:
         value = None

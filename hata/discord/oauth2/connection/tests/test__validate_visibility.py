@@ -4,28 +4,35 @@ from ..fields import validate_visibility
 from ..preinstanced import ConnectionVisibility
 
 
-def test__validate_visibility__0():
+def _iter_options__passing():
+    yield None, ConnectionVisibility.user_only
+    yield ConnectionVisibility.everyone, ConnectionVisibility.everyone
+    yield ConnectionVisibility.everyone.value, ConnectionVisibility.everyone
+
+
+def _iter_options__type_error():
+    yield 12.6
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+def test__validate_visibility(input_value):
     """
     Tests whether `validate_visibility` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (ConnectionVisibility.user_only, ConnectionVisibility.user_only),
-        (ConnectionVisibility.user_only.value, ConnectionVisibility.user_only)
-    ):
-        output = validate_visibility(input_value)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_visibility__1():
-    """
-    Tests whether `validate_visibility` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
     
-    Case: `TypeError`.
+    Returns
+    -------
+    output : ``ConnectionVisibility``
+    
+    Raises
+    ------
+    TypeError
     """
-    for input_value in (
-        12.6,
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_visibility(input_value)
+    output = validate_visibility(input_value)
+    vampytest.assert_instance(output, ConnectionVisibility)
+    return output

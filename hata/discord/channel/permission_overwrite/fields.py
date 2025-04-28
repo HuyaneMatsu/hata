@@ -40,7 +40,7 @@ def put_target(target, data, defaults, *, include_internals = False):
     ----------
     target : `tuple` (`int`, ``PermissionOverwriteTargetType``)
         Permission overwrite `target-id`, `target_type` pair.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
@@ -49,7 +49,7 @@ def put_target(target, data, defaults, *, include_internals = False):
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     target_id, target_type = target
     
@@ -119,7 +119,7 @@ def parse_target_type(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Permission overwrite data.
     
     Returns

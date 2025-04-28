@@ -1,12 +1,10 @@
 __all__ = ('MessageInteraction',)
 
-from warnings import warn
-
 from scarletio import export, include
 
 from ...bases import DiscordEntity
 from ...precreate_helpers import process_precreate_parameters_and_raise_extra
-from ...user import User, ZEROUSER, create_partial_user_from_id
+from ...user import ZEROUSER, create_partial_user_from_id
 
 from .fields import (
     parse_authorizer_user_ids, parse_id, parse_interacted_message_id, parse_name_and_sub_command_name_stack,
@@ -99,7 +97,6 @@ class MessageInteraction(DiscordEntity):
         target_user = ...,
         triggering_interaction = ...,
         user = ...,
-        user_id = ...,
     ):
         """
         Creates a new message interaction with the given fields.
@@ -134,7 +131,7 @@ class MessageInteraction(DiscordEntity):
         triggering_interaction : `None | MessageInteraction`, Optional (Keyword only)
             Represents the source form interaction. Present if the message is created from a form interaction.
         
-        user : `None`, ``ClientUserBase``, Optional (Keyword only)
+        user : ``None | ClientUserBase``, Optional (Keyword only)
             The user who invoked the interaction.
         
         Raises
@@ -144,18 +141,6 @@ class MessageInteraction(DiscordEntity):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # Deprecations
-        if user_id is not ...:
-            warn(
-                (
-                    f'`{cls.__name__}.__new__`\' `user_id` parameter is deprecated and will be removed in 2025 January. '
-                    f'Please use `user` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            user = User.precreate(user_id)
-        
         # authorizer_user_ids
         if authorizer_user_ids is ...:
             authorizer_user_ids = None
@@ -291,7 +276,7 @@ class MessageInteraction(DiscordEntity):
         triggering_interaction : `None | MessageInteraction`, Optional (Keyword only)
             Represents the source form interaction. Present if the message is created from a form interaction.
         
-        user : `None`, ``ClientUserBase``, Optional (Keyword only)
+        user : ``None | ClientUserBase``, Optional (Keyword only)
             The user who invoked the interaction.
         
         Returns
@@ -358,7 +343,7 @@ class MessageInteraction(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Message interaction data.
         
         Returns
@@ -685,7 +670,6 @@ class MessageInteraction(DiscordEntity):
         target_user = ...,
         triggering_interaction = ...,
         user = ...,
-        user_id = ...,
     ):
         """
         Copies the message interaction with the given fields returning a new partial one.
@@ -720,7 +704,7 @@ class MessageInteraction(DiscordEntity):
         triggering_interaction : `None | MessageInteraction`, Optional (Keyword only)
             Represents the source form interaction. Present if the message is created from a form interaction.
         
-        user : `None`, ``ClientUserBase``, Optional (Keyword only)
+        user : ``None | ClientUserBase``, Optional (Keyword only)
             The user who invoked the interaction.
         
         Returns
@@ -734,18 +718,6 @@ class MessageInteraction(DiscordEntity):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # Deprecations
-        if user_id is not ...:
-            warn(
-                (
-                    f'`{type(self).__name__}.copy_with`\' `user_id` parameter is deprecated '
-                    f'and will be removed in 2024 December. Please use `user` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            user = User.precreate(user_id)
-        
         # authorizer_user_ids
         if authorizer_user_ids is ...:
             authorizer_user_ids = self.authorizer_user_ids

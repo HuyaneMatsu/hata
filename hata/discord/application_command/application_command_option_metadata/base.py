@@ -34,7 +34,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters passed to ``ApplicationCommandOption.__new__``.
         
         Returns
@@ -58,7 +58,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application command option data.
         
         Returns
@@ -79,7 +79,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         return {}
     
@@ -165,7 +165,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
+        keyword_parameters : `dict<str, object>`
             Keyword parameters passed to ``ApplicationCommandOption.copy_with``.
         
         Returns
@@ -261,7 +261,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        max_value : `None`, `int`, `float`
+        max_value : `None | int | float`
         """
     )
     
@@ -289,7 +289,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        min_value : `None`, `int`, `float`
+        min_value : `None | int | float`
         """
     )
     

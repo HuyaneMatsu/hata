@@ -1,7 +1,5 @@
 __all__ = ('ReactionMapping', )
 
-from warnings import warn
-
 from scarletio import RichAttributeErrorBaseType
 
 from ..emoji import Emoji, create_partial_emoji_data, create_partial_emoji_from_data
@@ -493,74 +491,3 @@ class ReactionMapping(RichAttributeErrorBaseType):
         lines = self.lines
         if (lines is not None):
             yield from lines.items()
-    
-    
-    
-    @property
-    def fully_loaded(self):
-        """
-        Returns whether the reaction mapping line is fully loaded.
-        
-        Deprecated and will be removed in 2025 Jan.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.fully_loaded` is deprecated and will be removed in 2025 Jan.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        for result in self.iter_result():
-            if result.unknown:
-                return False
-        
-        return True
-    
-    
-    def keys(self):
-        """
-        Deprecated and will be removed in 2025 Jan. Use ``.iter_reactions`` instead.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.keys` is deprecated and will be removed in 2025 Jan. '
-                f'Use `.iter_reactions` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.iter_reactions()
-
-
-    def values(self):
-        """
-        Deprecated and will be removed in 2025 Jan. Use ``.iter_lines`` instead.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.values` is deprecated and will be removed in 2025 Jan. '
-                f'Use `.iter_lines` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.iter_lines()
-
-
-    def items(self):
-        """
-        Deprecated and will be removed in 2025 Jan. Use ``.iter_items`` instead.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.items` is deprecated and will be removed in 2025 Jan. '
-                f'Use `.iter_items` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.iter_items()

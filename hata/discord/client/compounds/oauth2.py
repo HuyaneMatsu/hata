@@ -317,13 +317,13 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, where the user is going to be added.
         
         access: ``Oauth2Access``, ``Oauth2User``, `str`
             The access of the user, who will be added.
         
-        user : `None`, ```ClientUserBase`` = `None`, `int`, Optional
+        user : `None`, ```ClientUserBase`` = `None`, Optional
             Defines which user will be added to the guild. The `access` must refer to this specified user.
             
             This field is optional if access is passed as an ``Oauth2User`` object.
@@ -343,7 +343,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         Raises
         ------
         TypeError:
-            - If `user` was not given neither as `None`, ``ClientUserBase``, `int`.
+            - If `user` is not ``None | int | ClientUserBase``.
             - If `user` was passed as `None` and `access` was passed as ``Oauth2Access``, `str`.
             - If `access` was not given as ``Oauth2Access``, ``Oauth2User``, nether as `str`.
             - If the given `access` not grants `'guilds.join'` scope.

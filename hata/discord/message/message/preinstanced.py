@@ -578,7 +578,7 @@ class MessageType(PreinstancedBase, value_type = int):
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | guild_incidents_report_false_alarm        | guild incidents report false alarm        | 39    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | guild_chat_revive                         | guild chat revive                         | 40    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    | guild_channel_revive                      | guild channel revive                      | 40    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | custom_gift                               | custom gift                               | 41    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
@@ -588,9 +588,31 @@ class MessageType(PreinstancedBase, value_type = int):
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | purchase_notification                     | purchase notification                     | 44    | MESSAGE_DEFAULT_CONVERTER                         | false     |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
-    | ???                                       | ???                                       | 45    | ???                                               | ???       |
+    | voice_hangout_invite                      | voice hangout invite                      | 45    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | poll_result                               | poll result                               | 46    | convert_poll_result                               | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | changelog                                 | changelog                                 | 47    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | nitro_notification                        | nitro notification                        | 48    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | channel_linked_to_lobby                   | channel linked to lobby                   | 49    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | gifting_prompt                            | gifting prompt                            | 50    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | in_activity_message                       | in activity message                       | 51    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | guild_join_request_accept                 | guild join request accept                 | 52    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | guild_join_request_reject                 | guild join request reject                 | 53    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | guild_join_request_withdraw               | guild join request withdraw               | 54    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | streaming_quality_upgraded                | streaming quality upgraded                | 55    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | channel_wallpaper_set                     | channel wallpaper set                     | 56    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | channel_wallpaper_removed                  | channel wallpaper removed                | 57    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     """
     __slots__ = ('converter', 'deletable',)
@@ -684,13 +706,24 @@ class MessageType(PreinstancedBase, value_type = int):
     guild_incidents_disable = P(37, 'guild incidents disable', convert_guild_incidents_disable, False)
     guild_incidents_report_raid = P(38, 'guild incidents report raid', MESSAGE_DEFAULT_CONVERTER, False)
     guild_incidents_report_false_alarm = P(39, 'guild incidents report false alarm', MESSAGE_DEFAULT_CONVERTER, False)
-    guild_chat_revive = P(40, 'guild chat revive', MESSAGE_DEFAULT_CONVERTER, True)
+    guild_channel_revive = P(40, 'guild channel revive', MESSAGE_DEFAULT_CONVERTER, True)
     custom_gift = P(41, 'custom gif', MESSAGE_DEFAULT_CONVERTER, True)
     guild_gaming_stats = P(42, 'guild gaming stats', MESSAGE_DEFAULT_CONVERTER, True)
     poll = P(43, 'poll', MESSAGE_DEFAULT_CONVERTER, True)
     purchase_notification = P(44, 'purchase notification', convert_purchase_notification, False)
-    # 45 ???
+    voice_hangout_invite = P(45, 'voice hangout invite', MESSAGE_DEFAULT_CONVERTER, True)
     poll_result = P(46, 'poll result', convert_poll_result, True)
+    changelog = P(47, 'changelog', MESSAGE_DEFAULT_CONVERTER, True)
+    nitro_notification = P(48, 'nitro notification', MESSAGE_DEFAULT_CONVERTER, True)
+    channel_linked_to_lobby = P(49, 'channel linked to lobby', MESSAGE_DEFAULT_CONVERTER, True)
+    gifting_prompt = P(50, 'gifting prompt', MESSAGE_DEFAULT_CONVERTER, True)
+    in_activity_message = P(51, 'in activity message', MESSAGE_DEFAULT_CONVERTER, True)
+    guild_join_request_accept = P(52, 'guild join request accept', MESSAGE_DEFAULT_CONVERTER, True)
+    guild_join_request_reject = P(53, 'guild join request reject', MESSAGE_DEFAULT_CONVERTER, True)
+    guild_join_request_withdraw = P(54, 'guild join request withdraw', MESSAGE_DEFAULT_CONVERTER, True)
+    streaming_quality_upgraded = P(55, 'streaming quality upgraded', MESSAGE_DEFAULT_CONVERTER, True)
+    channel_wallpaper_set = P(56, 'channel wallpaper set', MESSAGE_DEFAULT_CONVERTER, True)
+    channel_wallpaper_removed = P(57, 'channel wallpaper removed', MESSAGE_DEFAULT_CONVERTER, True)
 
 
 GENERIC_MESSAGE_TYPES = frozenset((
@@ -699,4 +732,6 @@ GENERIC_MESSAGE_TYPES = frozenset((
     MessageType.slash_command,
     MessageType.thread_started,
     MessageType.context_command,
+    MessageType.changelog,
+    MessageType.in_activity_message,
 ))

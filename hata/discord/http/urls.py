@@ -9,8 +9,8 @@ import re
 from scarletio import export, include
 
 from ...env import (
-    API_VERSION, CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_MEDIA_ENDPOINT,
-    CUSTOM_STATUS_ENDPOINT
+    API_VERSION, CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_INVITE_ENDPOINT,
+    CUSTOM_MEDIA_ENDPOINT, CUSTOM_STATUS_ENDPOINT
 )
 
 
@@ -23,6 +23,7 @@ CDN_ENDPOINT = 'https://cdn.discordapp.com' if (CUSTOM_CDN_ENDPOINT is None) els
 DISCORD_ENDPOINT = 'https://discord.com' if (CUSTOM_DISCORD_ENDPOINT is None) else CUSTOM_DISCORD_ENDPOINT
 STATUS_ENDPOINT = 'https://status.discord.com/api/v2' if (CUSTOM_STATUS_ENDPOINT is None) else CUSTOM_STATUS_ENDPOINT
 MEDIA_ENDPOINT =  'https://media.discordapp.net' if (CUSTOM_MEDIA_ENDPOINT is None) else CUSTOM_MEDIA_ENDPOINT
+INVITE_ENDPOINT = 'https://discord.gg' if (CUSTOM_INVITE_ENDPOINT is None) else CUSTOM_INVITE_ENDPOINT
 
 del CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_STATUS_ENDPOINT, API_VERSION
 
@@ -58,7 +59,7 @@ def _validate_extension(icon_type, ext):
     ----------
     icon_type : ``IconType``
         The respective icon type.
-    ext : `None`, `str`
+    ext : `None | str`
         The received extension.
     
     Returns
@@ -89,7 +90,7 @@ def _build_end(size):
     
     Parameters
     ----------
-    size : `None`, `int`
+    size : `None | int`
         The received size.
     
     Returns
@@ -232,7 +233,7 @@ def guild_icon_url(guild):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     icon_type = guild.icon_type
     if not icon_type.can_create_url():
@@ -252,15 +253,15 @@ def guild_icon_url_as(guild, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the guild has
         animated icon, it can `'gif'` as well.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the image's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -286,7 +287,7 @@ def guild_invite_splash_url(guild):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     icon_type = guild.invite_splash_type
     if not icon_type.can_create_url():
@@ -306,14 +307,14 @@ def guild_invite_splash_url_as(guild, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the image's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -339,7 +340,7 @@ def guild_discovery_splash_url(guild):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     icon_type = guild.discovery_splash_type
     if not icon_type.can_create_url():
@@ -359,14 +360,14 @@ def guild_discovery_splash_url_as(guild, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the image's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -392,7 +393,7 @@ def guild_banner_url(guild):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     icon_type = guild.banner_type
     if not icon_type.can_create_url():
@@ -412,14 +413,14 @@ def guild_banner_url_as(guild, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`, `'gif'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the image's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -489,6 +490,60 @@ def guild_widget_json_url(guild):
     return  f'{API_ENDPOINT}/guilds/{guild.id}/widget.json'
 
 
+def guild_home_splash_url(guild):
+    """
+    Returns the guild's home splash's image's url. If the guild has no home splash, then returns `None`.
+    
+    This function is a shared property of ``Guild``-s.
+    
+    Returns
+    -------
+    url : `None | str`
+    """
+    icon_type = guild.home_splash_type
+    if not icon_type.can_create_url():
+        return None
+    
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
+    
+    return f'{CDN_ENDPOINT}/home-headers/{guild.id}/{prefix}{guild.home_splash_hash:0>32x}.{ext}'
+
+
+def guild_home_splash_url_as(guild, ext = None, size = None):
+    """
+    Returns the guild's home splash's image's url. If the guild has no home splash, then returns `None`.
+    
+    This function is a shared method of ``Guild``-s.
+    
+    Parameters
+    ----------
+    ext : `None | str` = `None`, Optional
+        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+    
+    size : `None | int` = `None`, Optional
+        The preferred minimal size of the image's url.
+    
+    Returns
+    -------
+    url : `None | str`
+    
+    Raises
+    ------
+    ValueError
+        If `ext`, `size` was not passed as any of the expected values.
+    """
+    icon_type = guild.home_splash_type
+    if not icon_type.can_create_url():
+        return None
+    
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
+    
+    return f'{CDN_ENDPOINT}/home-headers/{guild.id}/{prefix}{guild.home_splash_hash:0>32x}.{ext}{end}'
+
+
 def channel_group_icon_url(channel):
     """
     Returns the group channel's icon's image's url. If the channel has no icon, then returns `None`.
@@ -497,16 +552,17 @@ def channel_group_icon_url(channel):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
-    icon_type = channel.icon_type
+    icon = channel.icon
+    icon_type = icon.type
     if not icon_type.can_create_url():
         return None
     
     prefix = icon_type.prefix
     ext = icon_type.default_postfix
     
-    return f'{CDN_ENDPOINT}/channel-icons/{channel.id}/{prefix}{channel.icon_hash:0>32x}.{ext}'
+    return f'{CDN_ENDPOINT}/channel-icons/{channel.id}/{prefix}{icon.hash:0>32x}.{ext}'
     
     
 def channel_group_icon_url_as(channel, ext = None, size = None):
@@ -517,21 +573,22 @@ def channel_group_icon_url_as(channel, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the image's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
     ValueError
         If `ext`, `size` was not passed as any of the expected values.
     """
-    icon_type = channel.icon_type
+    icon = channel.icon
+    icon_type = icon.type
     if not icon_type.can_create_url():
         return None
     
@@ -539,7 +596,7 @@ def channel_group_icon_url_as(channel, ext = None, size = None):
     ext = _validate_extension(icon_type, ext)
     end = _build_end(size)
     
-    return f'{CDN_ENDPOINT}/channel-icons/{channel.id}/{prefix}{channel.icon_hash:0>32x}.{ext}{end}'
+    return f'{CDN_ENDPOINT}/channel-icons/{channel.id}/{prefix}{icon.hash:0>32x}.{ext}{end}'
 
 
 def emoji_url(emoji):
@@ -550,7 +607,7 @@ def emoji_url(emoji):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     if not emoji.is_custom_emoji():
         return None
@@ -571,15 +628,15 @@ def emoji_url_as(emoji, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If emoji is
         animated, it can `'gif'` as well.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the image's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -629,22 +686,6 @@ WEBHOOK_URL_PATTERN = re.compile(
 )
 
 
-def _build_invite_url(invite_code):
-    """
-    Builds an invite's url from the given core.
-    
-    Parameters
-    ----------
-    invite_code : `str`
-        An invite's code.
-    
-    Returns
-    -------
-    url : `str`
-    """
-    return f'http://discord.gg/{invite_code}'
-
-
 def invite_url(invite):
     """
     Returns the invite's url.
@@ -655,7 +696,7 @@ def invite_url(invite):
     -------
     url : `str`
     """
-    return _build_invite_url(invite.code)
+    return f'{INVITE_ENDPOINT}/{invite.code}'
 
 
 def guild_vanity_invite_url(guild):
@@ -666,11 +707,11 @@ def guild_vanity_invite_url(guild):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     vanity_code = guild.vanity_code
     if (vanity_code is not None):
-        return _build_invite_url(vanity_code)
+        return f'{INVITE_ENDPOINT}/{vanity_code}'
 
 
 INVITE_URL_RP = re.compile('(?:https?://)?discord(?:\\.gg|(?:app)?\\.com/invite)/([a-zA-Z0-9-]+)')
@@ -684,7 +725,7 @@ def activity_asset_image_large_url(activity):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     application_id = activity.application_id
     if not application_id:
@@ -712,14 +753,14 @@ def activity_asset_image_large_url_as(activity, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the image's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -764,7 +805,7 @@ def activity_asset_image_small_url(activity):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     application_id = activity.application_id
     if not application_id:
@@ -792,14 +833,14 @@ def activity_asset_image_small_url_as(activity, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the image's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -844,7 +885,7 @@ def user_banner_url(user):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     icon_type = user.banner_type
     if not icon_type.can_create_url():
@@ -864,15 +905,15 @@ def user_banner_url_as(user, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
         animated banner, it can `'gif'` as well.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the avatar's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -898,12 +939,12 @@ def user_banner_url_for(user, guild):
     
     Parameters
     ----------
-    guild : ``Guild``, `int`
+    guild : ``int | Guild``
         The respective guild or it's identifier.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     guild_id = _try_get_guild_id(guild)
     
@@ -930,16 +971,16 @@ def user_banner_url_for_as(user, guild, ext = None, size = None):
     
     Parameters
     ----------
-    guild : ``Guild``, `int`
+    guild : ``int | Guild``
         The respective guild or it's identifier.
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'` and `'gif'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the banner's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -974,12 +1015,12 @@ def user_banner_url_at(user, guild):
     
     Parameters
     ----------
-    guild : ``Guild``, `int`
+    guild : ``int | Guild``
         The respective guild or it's identifier.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     banner_url = user_banner_url_for(user, guild)
     if banner_url is None:
@@ -996,16 +1037,16 @@ def user_banner_url_at_as(user, guild, ext = None, size = None):
     
     Parameters
     ----------
-    guild : ``Guild``, `int`
+    guild : ``int | Guild``
         The respective guild or it's identifier.
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'` and `'gif'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the banner's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -1027,7 +1068,7 @@ def user_avatar_url(user):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     icon_type = user.avatar_type
     if not icon_type.can_create_url():
@@ -1047,15 +1088,15 @@ def user_avatar_url_as(user, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
         animated avatar, it can `'gif'` as well.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the avatar's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -1081,12 +1122,12 @@ def user_avatar_url_for(user, guild):
     
     Parameters
     ----------
-    guild : ``Guild``, `int`
+    guild : ``int | Guild``
         The respective guild or it's identifier.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     guild_id = _try_get_guild_id(guild)
     
@@ -1113,17 +1154,17 @@ def user_avatar_url_for_as(user, guild, ext = None, size = None):
     
     Parameters
     ----------
-    guild : ``Guild``, `int`
+    guild : ``int | Guild``
         The respective guild or it's identifier.
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
         animated avatar, it can `'gif'` as well.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the avatar's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -1158,12 +1199,12 @@ def user_avatar_url_at(user, guild):
     
     Parameters
     ----------
-    guild : ``Guild``, `int`
+    guild : ``int | Guild``
         The respective guild or it's identifier.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     avatar_url = user_avatar_url_for(user, guild)
     if avatar_url is None:
@@ -1180,17 +1221,17 @@ def user_avatar_url_at_as(user, guild, ext = None, size = None):
     
     Parameters
     ----------
-    guild : ``Guild``, `int`
+    guild : ``int | Guild``
         The respective guild or it's identifier.
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
         animated avatar, it can `'gif'` as well.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the avatar's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -1225,7 +1266,7 @@ def application_icon_url(application):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     icon_type = application.icon_type
     if not icon_type.can_create_url():
@@ -1245,14 +1286,14 @@ def application_icon_url_as(application, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the icon's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -1278,7 +1319,7 @@ def application_cover_url(application):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     icon_type = application.cover_type
     if not icon_type.can_create_url():
@@ -1298,14 +1339,14 @@ def application_cover_url_as(application, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the cover's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the cover's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -1331,7 +1372,7 @@ def team_icon_url(team):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     icon_type = team.icon_type
     if not icon_type.can_create_url():
@@ -1351,14 +1392,14 @@ def team_icon_url_as(team, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the icon's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -1376,63 +1417,6 @@ def team_icon_url_as(team, ext = None, size = None):
     return f'{CDN_ENDPOINT}/team-icons/{team.id}/{prefix}{team.icon_hash:0>32x}.{ext}{end}'
 
 
-def achievement_icon_url(achievement):
-    """
-    Returns the achievement's icon's url.
-    
-    This function is a shared property of ``Achievement``-s.
-    
-    Returns
-    -------
-    url : `None`, `str`
-    """
-    icon_type = achievement.icon_type
-    if not icon_type.can_create_url():
-        return None
-    
-    prefix = icon_type.prefix
-    ext = icon_type.default_postfix
-    
-    return f'{CDN_ENDPOINT}/app-assets/{achievement.application_id}/achievements/{achievement.id}/icons/{prefix}' \
-           f'{achievement.icon_hash:0>32x}.{ext}'
-
-
-def achievement_icon_url_as(achievement, ext = None, size = None):
-    """
-    Returns the achievement's icon's url.
-    
-    This function is a shared method of ``Achievement``-s.
-    
-    Parameters
-    ----------
-    ext : `None`, `str` = `None`, Optional
-        The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `None`, `int` = `None`, Optional
-        The preferred minimal size of the icon's url.
-    
-    Returns
-    -------
-    url : `None`, `str`
-    
-    Raises
-    ------
-    ValueError
-        If `ext`, `size` was not passed as any of the expected values.
-    """
-    icon_type = achievement.icon_type
-    if not icon_type.can_create_url():
-        return None
-    
-    prefix = icon_type.prefix
-    ext = _validate_extension(icon_type, ext)
-    end = _build_end(size)
-    
-    return (
-        f'{CDN_ENDPOINT}/app-assets/{achievement.application_id}/achievements/{achievement.id}/icons/{prefix}'
-       f'{achievement.icon_hash:0>32x}.{ext}{end}'
-    )
-
-
 def sticker_url(sticker):
     """
     Returns the sticker's url.
@@ -1441,7 +1425,7 @@ def sticker_url(sticker):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     sticker_format = sticker.format
     if sticker_format is StickerFormat.none:
@@ -1463,14 +1447,14 @@ def sticker_url_as(sticker, size = None, preview = False):
     
     Parameters
     ----------
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the icon's url.
     preview : `bool` = `False`, Optional
         Whether preview url should be generated.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -1514,7 +1498,7 @@ def sticker_pack_banner(sticker_pack):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     banner_id = sticker_pack.banner_id
     if banner_id:
@@ -1529,20 +1513,24 @@ def sticker_pack_banner_as(sticker_pack, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the banner's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the banner's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
     ValueError
         If `ext`, `size` was not passed as any of the expected values.
     """
+    banner_id = sticker_pack.banner_id
+    if not banner_id:
+        return
+    
     end = _build_end(size)
     
     if ext is None:
@@ -1554,7 +1542,7 @@ def sticker_pack_banner_as(sticker_pack, ext = None, size = None):
                 f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.'
             )
     
-    return f'{CDN_ENDPOINT}/app-assets/710982414301790216/store/{sticker_pack.banner_id}.{ext}{end}'
+    return f'{CDN_ENDPOINT}/app-assets/710982414301790216/store/{banner_id}.{ext}{end}'
 
 
 def role_icon_url(role):
@@ -1565,7 +1553,7 @@ def role_icon_url(role):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     icon_type = role.icon_type
     if not icon_type.can_create_url():
@@ -1585,14 +1573,14 @@ def role_icon_url_as(role, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`, `'gif'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the image's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -1618,7 +1606,7 @@ def scheduled_event_image_url(scheduled_event):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     icon_type = scheduled_event.image_type
     if not icon_type.can_create_url():
@@ -1638,14 +1626,14 @@ def scheduled_event_image_url_as(scheduled_event, ext = None, size = None):
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the image's url.
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Raises
     ------
@@ -1684,7 +1672,7 @@ def user_avatar_decoration_url(user_or_guild_profile):
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
     avatar_decoration = user_or_guild_profile.avatar_decoration
     if avatar_decoration is None:
@@ -1708,13 +1696,13 @@ def user_avatar_decoration_url_as(user_or_guild_profile, ext = None, size = None
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
+    ext : `None | str` = `None`, Optional
         The extension of the image's url. Can be any of: `png`.
-    size : `None`, `int` = `None`, Optional
+    size : `None | int` = `None`, Optional
         The preferred minimal size of the image's url.
     
     Raises
@@ -1750,50 +1738,59 @@ def soundboard_sound_url(sound):
     return f'{CDN_ENDPOINT}/soundboard-sounds/{sound.id}'
 
 
-def clan_icon_url(clan):
+def _get_guild_badge_icon_url(guild_id, icon_type, icon_hash):
     """
-    Returns the clan's icon's image's url. If the clan has no icon, then returns `None`.
+    Gets the url for a guild badge's icon.
     
-    This function is a property of ``UserClan``
+    Parameters
+    ----------
+    guild_id : `int`
+        The guild's identifier.
+    
+    icon_type : ``IconType``
+        The icon's type.
+    
+    icon_hash : `int`
+        The icon's hash (uint128).
     
     Returns
     -------
-    url : `None`, `str`
+    url : `None | str`
     """
-    icon_type = clan.icon_type
     if not icon_type.can_create_url():
         return None
     
     prefix = icon_type.prefix
     ext = icon_type.default_postfix
     
-    return f'{CDN_ENDPOINT}/clan-badges/{clan.guild_id}/{prefix}{clan.icon_hash:0>32x}.{ext}'
+    return f'{CDN_ENDPOINT}/badge-icons/{guild_id}/{prefix}{icon_hash:0>32x}.{ext}'
 
 
-def clan_icon_url_as(clan, ext = None, size = None):
+def _get_guild_badge_icon_url_as(guild_id, icon_type, icon_hash, ext, size):
     """
-    Returns the clan's icon's url. If the clan has no icon, then returns `None`.
-    
-    This function is a method of ``UserClan``.
+    Gets the url for a guild badge's icon.
     
     Parameters
     ----------
-    ext : `None`, `str` = `None`, Optional
-        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the clan has
-        animated icon, it can `'gif'` as well.
-    size : `None`, `int` = `None`, Optional
+    guild_id : `int`
+        The guild's identifier.
+    
+    icon_type : ``IconType``
+        The icon's type.
+    
+    icon_hash : `int`
+        The icon's hash (uint128).
+    
+    ext : `None | str`
+        The extension of the image's url.
+    
+    size : `None | int`
         The preferred minimal size of the image's url.
     
     Returns
     -------
-    url : `None`, `str`
-    
-    Raises
-    ------
-    ValueError
-        If `ext`, `size` was not passed as any of the expected values.
+    url : `None | str`
     """
-    icon_type = clan.icon_type
     if not icon_type.can_create_url():
         return None
     
@@ -1801,4 +1798,96 @@ def clan_icon_url_as(clan, ext = None, size = None):
     ext = _validate_extension(icon_type, ext)
     end = _build_end(size)
     
-    return f'{CDN_ENDPOINT}/clan-badges/{clan.guild_id}/{prefix}{clan.icon_hash:0>32x}.{ext}{end}'
+    return f'{CDN_ENDPOINT}/badge-icons/{guild_id}/{prefix}{icon_hash:0>32x}.{ext}{end}'
+
+
+def guild_badge_icon_url(guild_badge):
+    """
+    Returns the guild badge's icon's image's url. If the guild badge has no icon, then returns `None`.
+    
+    This function is a property of ``UserClan``
+    
+    Returns
+    -------
+    url : `None | str`
+    """
+    return _get_guild_badge_icon_url(guild_badge.guild_id, guild_badge.icon_type, guild_badge.icon_hash)
+
+
+def guild_badge_icon_url_as(guild_badge, ext = None, size = None):
+    """
+    Returns the guild badge's icon's url. If the guild badge has no icon, then returns `None`.
+    
+    This function is a method of ``GuildBadge``.
+    
+    Parameters
+    ----------
+    ext : `None | str` = `None`, Optional
+        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        If the guild badge has animated icon, it can be `'gif'` as well.
+    
+    size : `None | int` = `None`, Optional
+        The preferred minimal size of the image's url.
+    
+    Returns
+    -------
+    url : `None | str`
+    
+    Raises
+    ------
+    ValueError
+        If `ext`, `size` was not passed as any of the expected values.
+    """
+    return _get_guild_badge_icon_url_as(guild_badge.guild_id, guild_badge.icon_type, guild_badge.icon_hash, ext, size)
+
+
+def guild_activity_overview_badge_icon_url(guild_activity_overview):
+    """
+    Returns the guild activity overview guild's badge's icon's image's url.
+    If the guild badge has no icon, then returns `None`.
+    
+    This function is a property of ``GuildActivityOverview``
+    
+    Returns
+    -------
+    url : `None | str`
+    """
+    return _get_guild_badge_icon_url(
+        guild_activity_overview.id,
+        guild_activity_overview.badge_icon_type,
+        guild_activity_overview.badge_icon_hash,
+    )
+
+
+def guild_activity_overview_badge_icon_url_as(guild_activity_overview, ext = None, size = None):
+    """
+    Returns the guild activity overview guild's badge's icon's image's url.
+    If the guild's badge has no icon, then returns `None`.
+    
+    This function is a property of ``GuildActivityOverview``
+    
+    Parameters
+    ----------
+    ext : `None | str` = `None`, Optional
+        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        If the guild's badge has animated icon, it can be `'gif'` as well.
+    
+    size : `None | int` = `None`, Optional
+        The preferred minimal size of the image's url.
+    
+    Returns
+    -------
+    url : `None | str`
+    
+    Raises
+    ------
+    ValueError
+        If `ext`, `size` was not passed as any of the expected values.
+    """
+    return _get_guild_badge_icon_url_as(
+        guild_activity_overview.id,
+        guild_activity_overview.badge_icon_type,
+        guild_activity_overview.badge_icon_hash,
+        ext,
+        size,
+    )

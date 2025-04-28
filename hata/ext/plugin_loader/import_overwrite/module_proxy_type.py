@@ -1,7 +1,7 @@
 __all__ = ('PluginModuleProxyType',)
 
-import warnings
 from types import ModuleType
+from warnings import warn
 
 from scarletio import get_last_module_frame, include
 
@@ -60,9 +60,10 @@ class PluginModuleProxyType(ModuleType):
             if (spec is None) or is_spec_in_test_directory(spec):
                 return
         
-        warnings.warn(
+        warn(
             f'Unallowed attribute assignment: `{attribute_name} = {attribute_value!r}` of type '
             f'`{type(attribute_value).__name__}` to `{self.__spec__.name}`',
+            ResourceWarning,
             stacklevel = 2,
         )
     

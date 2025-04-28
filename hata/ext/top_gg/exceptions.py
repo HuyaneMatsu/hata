@@ -42,7 +42,7 @@ class TopGGHttpException(Exception):
         ----------
         response : ``ClientResponse``
             Response from top.gg.
-        response_data : `str`, `dict` of (`str`, `object`) items
+        response_data : `str`, `dict<str, object>`
             Response data.
         """
         if isinstance(response_data, str):

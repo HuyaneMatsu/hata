@@ -213,7 +213,7 @@ class GuildPreview(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received guild preview data.
         
         Returns
@@ -248,7 +248,7 @@ class GuildPreview(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_approximate_online_count(self.approximate_online_count, data, defaults)

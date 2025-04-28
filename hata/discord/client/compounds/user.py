@@ -86,7 +86,7 @@ class ClientCompoundUserEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             Where the user will be edited.
         
         user : ``ClientUserBase``, `int`
@@ -109,7 +109,7 @@ class ClientCompoundUserEndpoints(Compound):
         nick : `None`, `str`, Optional (Keyword only)
             The new nick of the user. You can remove the current one by passing it as `None`, an empty string.
         
-        voice_channel : `None`, ``Channel``, `int` , Optional (Keyword only)
+        voice_channel : ``None | int | Channel`` , Optional (Keyword only)
             Moves the user to the given voice channel. Only applicable if the user is already at a voice channel.
             
             Pass it as `None` to disconnect the user from it's voice channel.
@@ -120,7 +120,7 @@ class ClientCompoundUserEndpoints(Compound):
         roles : `None`, `iterable` of (``Role``, `int`), Optional (Keyword only)
             Alternative of `role_ids`.
         
-        timed_out_until : `None`, `DateTime`, Optional (Keyword only)
+        timed_out_until : `None | DateTime`, Optional (Keyword only)
             Until when the user is timed out.
         
         timeout_duration : `int`, `float`, `TimeDelta`, Optional (Keyword only)
@@ -128,10 +128,10 @@ class ClientCompoundUserEndpoints(Compound):
         
             The max allowed value equals to 28 days.
         
-        voice_channel : `None`, ``Channel``, `int` , Optional (Keyword only)
+        voice_channel : ``None | int | Channel`` , Optional (Keyword only)
             Alternative of `voice_channel_id`.
         
-        voice_channel_id : `None`, ``Channel``, `int` , Optional (Keyword only)
+        voice_channel_id : ``None | int | Channel`` , Optional (Keyword only)
             Moves the user to the given voice channel. Only applicable if the user is already at a voice channel.
             
             Pass it as `None` to disconnect the user from it's voice channel.
@@ -385,7 +385,7 @@ class ClientCompoundUserEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, where the user is.
         user : ```ClientUserBase``, `int`
             The user's id, who will be requested.
@@ -475,7 +475,7 @@ class ClientCompoundUserEndpoints(Compound):
         ----------
         user : ```ClientUserBase``, `int`
             The user who will be kicked from the voice channel.
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild from what's voice channel the user will be kicked.
         
         Raises
@@ -501,7 +501,7 @@ class ClientCompoundUserEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The respective guild.
         user : ```ClientUserBase``, `int`
             The user to get its voice state.
@@ -561,7 +561,7 @@ class ClientCompoundUserEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The respective guild.
         force_update : `bool` = `False`, Optional (Keyword only)
             Whether the user should be requested even if it supposed to be up to date.

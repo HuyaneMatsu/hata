@@ -23,7 +23,7 @@ def test__validate_max_uses__passing(input_value):
     
     Returns
     -------
-    output : `None`, `int`
+    output : `None | int`
     """
     return validate_max_uses(input_value)
 

@@ -25,8 +25,9 @@ def test__put_emoji(input_value, defaults):
     
     Parameters
     ----------
-    input_value : ``Emoji``
+    input_value : ``None | Emoji``
         Input value.
+    
     defaults : `bool`
         Whether fields with their default values should be included as well.
     

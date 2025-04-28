@@ -358,7 +358,7 @@ def parse_parameters_into(parameter_values, start_index, command_parameters, pos
         Parameters of the respective command.
     positional_parameters : `list` of `object`
         Positional parameters to call the respective function with.
-    keyword_parameters : `dict` of (`str`, `object`) items
+    keyword_parameters : `dict<str, object>`
         Keyword parameters to call the respective function with.
     
     Returns

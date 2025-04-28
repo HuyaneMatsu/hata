@@ -25,7 +25,7 @@ def parse_message(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Vote event data.
     
     Returns
@@ -43,14 +43,14 @@ def put_message(message, data, defaults):
     ----------
     message : ``Message``
         The message to serialize.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Vote event data.
     defaults : `bool`
         Whether fields with their default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     data['message_id'] = str(message.id)
     data['channel_id'] = str(message.channel_id)

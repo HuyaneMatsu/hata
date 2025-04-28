@@ -217,7 +217,7 @@ class VoiceState(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Voice state data.
         guild_id : `int`
             The voice state's guild's identifier.
@@ -281,7 +281,7 @@ class VoiceState(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_channel_id(self.channel_id, data, defaults)
@@ -304,7 +304,7 @@ class VoiceState(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Voice state data.
         """
         self.deaf = parse_deaf(data)
@@ -324,12 +324,12 @@ class VoiceState(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Voice state data.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dictionary is optional.
         
         Returned Data Structure
@@ -406,7 +406,7 @@ class VoiceState(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Voice state data.
         
         Returns
@@ -782,6 +782,6 @@ class VoiceState(RichAttributeErrorBaseType):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         return GUILDS.get(self.guild_id, None)

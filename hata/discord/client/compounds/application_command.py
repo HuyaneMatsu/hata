@@ -441,7 +441,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, which application commands will be requested.
         
         Returns
@@ -484,7 +484,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, where application commands will be created.
         application_command : ``ApplicationCommand``
             The application command to create.
@@ -522,7 +522,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, to what the application command is bound to.
         old_application_command : ``ApplicationCommand``, `int`
             The application command to edit. Can be given as the application command's id as well.
@@ -562,7 +562,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, to what the application command is bound to.
         application_command : ``ApplicationCommand``, `int`
             The application command delete edit. Can be given as the application command's id as well.
@@ -676,7 +676,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The respective guild.
         application_command : ``ApplicationCommand``, `int`
             The respective application command.
@@ -741,7 +741,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         access : ``Oauth2Access``, ``Oauth2User``, `str`
             A user's access token to use.
         
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The respective guild.
         
         application_command : `None`, ``ApplicationCommand``, `int`
@@ -851,7 +851,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild to request application command permissions from.
         
         Returns

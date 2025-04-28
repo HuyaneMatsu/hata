@@ -319,7 +319,7 @@ class GuildProfile(metaclass = Slotted):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received guild profile data.
         
         Returns
@@ -346,7 +346,7 @@ class GuildProfile(metaclass = Slotted):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -372,7 +372,7 @@ class GuildProfile(metaclass = Slotted):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received guild profile data.
         """
         if self.joined_at is None:
@@ -385,7 +385,7 @@ class GuildProfile(metaclass = Slotted):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received guild profile data.
         """
         self._set_avatar(data)
@@ -406,12 +406,12 @@ class GuildProfile(metaclass = Slotted):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -426,7 +426,7 @@ class GuildProfile(metaclass = Slotted):
         +-------------------+-------------------------------+
         | banner            | ``Icon``                      |
         +-------------------+-------------------------------+
-        | boosts_since      | `None`, `DateTime`            |
+        | boosts_since      | `None | DateTime`             |
         +-------------------+-------------------------------+
         | flags             | `None`, ``GuildProfileFlags`` |
         +-------------------+-------------------------------+
@@ -436,7 +436,7 @@ class GuildProfile(metaclass = Slotted):
         +-------------------+-------------------------------+
         | role_ids          | `None`, `tuple` of `int`      |
         +-------------------+-------------------------------+
-        | timed_out_until   | `None`, `DateTime`            |
+        | timed_out_until   | `None | DateTime`             |
         +-------------------+-------------------------------+
         """
         old_attributes = {}

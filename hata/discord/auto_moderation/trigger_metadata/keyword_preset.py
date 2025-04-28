@@ -29,11 +29,11 @@ class AutoModerationRuleTriggerMetadataKeywordPreset(AutoModerationRuleTriggerMe
         
         Parameters
         ----------
-        keyword_presets : `None`, `int`, ``AutoModerationKeywordPresetType``, \
-                `iterable` of (`int`, ``AutoModerationKeywordPresetType``), Optional
+        keyword_presets : ``None | int, AutoModerationKeywordPresetType | iterable<int> | iterable<AutoModerationKeywordPresetType>`` \
+                , Optional
             Keyword preset defined by Discord which will be searched for in content.
         
-        excluded_keywords : `None`, `str`, `iterable` of `str`, Optional
+        excluded_keywords : `None | str | iterable<str>`, Optional
             Excluded keywords from the preset.
         
         Raises
@@ -196,8 +196,8 @@ class AutoModerationRuleTriggerMetadataKeywordPreset(AutoModerationRuleTriggerMe
         excluded_keywords : `None`, `str`, `iterable` of `str, Optional (Keyword only)
             Excluded keywords from the rule.
         
-        keyword_presets : `None`, `int`, ``AutoModerationKeywordPresetType``, \
-                `iterable` of (`int`, ``AutoModerationKeywordPresetType``), Optional (Keyword only)
+        keyword_presets : ``None | int, AutoModerationKeywordPresetType | iterable<int> | iterable<AutoModerationKeywordPresetType>`` \
+                , Optional (Keyword only)
             Keyword preset defined by Discord which will be searched for in content.
         
         Returns

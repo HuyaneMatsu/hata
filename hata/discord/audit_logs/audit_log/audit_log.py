@@ -594,7 +594,7 @@ class AuditLog(RichAttributeErrorBaseType):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         return GUILDS.get(self.guild_id, None)
     

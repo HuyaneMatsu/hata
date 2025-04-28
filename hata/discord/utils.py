@@ -552,7 +552,7 @@ def log_time_converter(value):
     
     Parameters
     ----------
-    value : `None`, `int`, ``DiscordEntity``, `DateTime`
+    value : ``None | int | DiscordEntity | DateTime``
         If the value is given as `int`, returns it. If given as a ``DiscordEntity``, then returns it's id and if it
         is given as a `DateTime` object, then converts that to snowflake then returns it.
     
@@ -578,8 +578,8 @@ def log_time_converter(value):
         return datetime_to_id(value)
     
     raise TypeError(
-        f'Expected `None`, `int`, `{DiscordEntity.__name__}`, `DateTime`, got '
-        f'{value.__class__.__name__}; {value!r}.'
+        f'Expected `None | int | {DiscordEntity.__name__} | DateTime`, got '
+        f'{type(value).__name__}; {value!r}.'
     )
 
 
@@ -1288,7 +1288,7 @@ class Gift:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Gift data received from Discord.
         """
         self.uses = data['uses']
@@ -1534,7 +1534,7 @@ def sanitize_mentions(content, guild = None):
     ----------
     content : `None`, `str`
         The content to sanitize.
-    guild : `None`, ``Guild`` = `None`, Optional
+    guild : ``None | Guild`` = `None`, Optional
         Respective context to look up guild specific names of entities.
     
     Returns
@@ -1591,7 +1591,7 @@ def sanitize_content(content, guild = None):
     ----------
     content : `None`, `str`
         The content to sanitize.
-    guild : `None`, ``Guild`` = `None`, Optional
+    guild : ``None | Guild`` = `None`, Optional
         Respective context to look up guild specific names of entities.
     
     Returns

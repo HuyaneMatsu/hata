@@ -11,7 +11,7 @@ class CONVERSION_FLAGS(Conversion):
     
     name = 'flags'
     name_aliases = None
-    expected_types_messages = f'`None`, `int`, `{MessageFlag.__name__}`'
+    expected_types_messages = f'`None | int | {MessageFlag.__name__}`'
     kind = CONVERSION_KIND_FIELD
     output_conversion = None
     

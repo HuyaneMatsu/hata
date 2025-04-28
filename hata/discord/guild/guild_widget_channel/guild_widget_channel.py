@@ -83,7 +83,7 @@ class GuildWidgetChannel(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Guild widget channel data.
         
         Returns
@@ -108,7 +108,7 @@ class GuildWidgetChannel(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_id(self.id, data, defaults)

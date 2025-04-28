@@ -464,7 +464,7 @@ class TopGGClient:
             Query offset
         sort_by : `None`, `str` = `None`, Optional (Keyword only)
             Which field to sort by the bots.
-        search : `None`, `dict` of (`str`, `object`) items = `None`, Optional (Keyword only)
+        search : `None`, `dict<str, object>` = `None`, Optional (Keyword only)
             Fields an expected values to search for.
         
         Returns
@@ -599,7 +599,7 @@ class TopGGClient:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Bot stats.
         
         Returns
@@ -713,7 +713,7 @@ class TopGGClient:
         
         Parameters
         ----------
-        query : `dict` of (`str`, `object`) items
+        query : `dict<str, object>`
             Query parameters.
             
         Returns
@@ -777,7 +777,7 @@ class TopGGClient:
         
         Parameters
         ----------
-        query : `dict` of (`str`, `object`) items
+        query : `dict<str, object>`
             Query parameters.
         
         Returns

@@ -208,7 +208,7 @@ class MessageApplication(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Application data included within message payload.
         
         Returns
@@ -237,7 +237,7 @@ class MessageApplication(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         

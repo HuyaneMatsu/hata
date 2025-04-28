@@ -14,7 +14,7 @@ def register(func = ..., *, available = True, aliases = None, description = None
     ----------
     func : `None`, `FunctionType`
         The function to register.
-    aliases : `None`, `str`, `iterable` of `str` = `None`, Optional (Keyword only)
+    aliases : `None | str | iterable<str>` = `None`, Optional (Keyword only)
         Alternative names for the command.
     available : `bool` = `True`, Optional (Keyword only)
         Whether the command is available.

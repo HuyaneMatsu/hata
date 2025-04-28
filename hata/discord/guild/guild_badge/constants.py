@@ -1,0 +1,5 @@
+__all__ = ()
+
+
+BADGE_TAG_LENGTH_MIN = 3
+BADGE_TAG_LENGTH_MAX = 4

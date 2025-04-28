@@ -927,7 +927,7 @@ class AllowedMentionProxy(RichAttributeErrorBaseType):
     def allow_replied_user(self, allow_replied_user_input):
         if (allow_replied_user_input is not None) and (not isinstance(allow_replied_user_input, bool)):
             raise TypeError(
-                f'`allow_replied_user` can be `None`, `int`, got '
+                f'`allow_replied_user` can be `None | int`, got '
                 f'{type(allow_replied_user_input).__name__}; {allow_replied_user_input!r}.'
             )
         

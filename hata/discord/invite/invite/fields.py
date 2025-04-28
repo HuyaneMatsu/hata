@@ -20,7 +20,9 @@ from ...field_validators import (
     force_string_validator_factory, int_conditional_validator_factory, nullable_date_time_validator_factory,
     nullable_entity_validator_factory, preinstanced_validator_factory
 )
-from ...guild import Guild, create_partial_guild_data, create_partial_guild_from_data, create_partial_guild_from_id
+from ...guild import (
+    Guild, GuildActivityOverview, create_partial_guild_data, create_partial_guild_from_data, create_partial_guild_from_id
+)
 from ...user import ClientUserBase, User, ZEROUSER
 
 from .flags import InviteFlag
@@ -64,7 +66,7 @@ def parse_channel(data, guild_id = 0):
     
     Returns
     -------
-    channel : `None`, ``Channel``
+    channel : ``None | Channel``
     """
     channel_data = data.get('channel', None)
     if (channel_data is not None):
@@ -84,7 +86,7 @@ def put_channel(channel, data, defaults):
     
     Parameters
     ----------
-    channel : `None`, ``Channel``
+    channel : ``None | Channel``
         The channel to serialize.
     data : `dict<str, object>` items
         Json serializable dictionary.
@@ -146,7 +148,7 @@ def parse_guild(data):
     
     Returns
     -------
-    guild : `None`, ``Guild``
+    guild : ``None | Guild``
     """
     guild_data = data.get('guild', None)
     if (guild_data is not None):
@@ -166,7 +168,7 @@ def put_guild(guild, data, defaults):
     
     Parameters
     ----------
-    guild : `None`, ``Guild``
+    guild : ``None | Guild``
         The guild to serialize.
     data : `dict<str, object>` items
         Json serializable dictionary.
@@ -191,6 +193,16 @@ def put_guild(guild, data, defaults):
 
 
 validate_guild = nullable_entity_validator_factory('guild', Guild)
+
+
+# guild_activity_overview
+
+parse_guild_activity_overview = nullable_entity_parser_factory('profile', GuildActivityOverview)
+put_guild_activity_overview = nullable_entity_optional_putter_factory(
+    'profile', GuildActivityOverview, force_include_internals = True
+)
+validate_guild_activity_overview = nullable_entity_validator_factory('guild_activity_overview', GuildActivityOverview)
+
 
 # guild_id
 
@@ -239,7 +251,7 @@ def put_target_application(target_application, data, defaults):
     
     Parameters
     ----------
-    target_application : `None`, ``Application``
+    target_application : ``None | Application``
         The application to serialize.
     data : `dict<str, object>` items
         Json serializable dictionary.

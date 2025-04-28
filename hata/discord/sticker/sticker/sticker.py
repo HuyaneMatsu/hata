@@ -194,7 +194,7 @@ class Sticker(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Sticker data.
         
         Returns
@@ -249,7 +249,7 @@ class Sticker(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         
@@ -291,9 +291,9 @@ class Sticker(DiscordEntity, immortal = True):
             Whether the sticker is available.
         description : `None`, `str`, Optional (Keyword only)
             The sticker's description.
-        guild : ``Guild``, `int`, Optional (Keyword only)
+        guild : ``int | Guild``, Optional (Keyword only)
             Alternative for `guild_id`.
-        guild_id : ``Guild``, `int`, Optional (Keyword only)
+        guild_id : ``int | Guild``, Optional (Keyword only)
              The sticker's guild's identifier.
         name : `str`, Optional (Keyword only)
             The sticker's name.
@@ -666,7 +666,7 @@ class Sticker(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Sticker data.
         """
         self.format = parse_format(data)
@@ -684,7 +684,7 @@ class Sticker(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Sticker data.
         """
         self.available = parse_available(data)
@@ -706,12 +706,12 @@ class Sticker(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Sticker data.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `object`) items
+        old_attributes : `dict<str, object>`
             All item in the returned dictionary is optional.
             
             +-----------------------+-----------------------------------+

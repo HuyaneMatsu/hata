@@ -58,6 +58,8 @@ class UserFlag(FlagBase):
     +-------------------------------+-------------------+
     | active_developer              | 22                |
     +-------------------------------+-------------------+
+    | provisional_account           | 23                |
+    +-------------------------------+-------------------+
     | quarantined                   | 44                |
     +-------------------------------+-------------------+
     | collaborator                  | 50                |
@@ -88,7 +90,10 @@ class UserFlag(FlagBase):
     spammer = F(20)
     premium_disabled = F(21)
     active_developer = F(22)
+    provisional_account = F(23)
+    # ?????????????????????????????
     quarantined = F(44)
+    # ???????
     collaborator = F(50)
     collaborator_restricted = F(51)
 

@@ -60,8 +60,9 @@ def test__put_guild(guild, defaults):
     
     Parameters
     ----------
-    guild : `None`, ``Guild``
+    guild : ``None | Guild``
         The guild to serialise.
+    
     defaults : `bool`
         Whether default values should be included as well.
     

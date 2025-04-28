@@ -5,44 +5,43 @@ from ....color import Color
 from ..fields import validate_banner_color
 
 
-def test__validate_banner_color__0():
+def _iter_options__passing():
+    color = Color.from_rgb(33, 128, 1)
+    
+    yield None, None
+    yield int(color), color
+    yield color, color
+
+
+def _iter_options__type_error():
+    yield 12.6
+
+
+def _iter_options__value_error():
+    yield -1
+    yield 999999999
+
+
+@vampytest._(vampytest.call_from(_iter_options__passing()).returning_last())
+@vampytest._(vampytest.call_from(_iter_options__type_error()).raising(TypeError))
+@vampytest._(vampytest.call_from(_iter_options__value_error()).raising(ValueError))
+def test__validate_banner_color(input_value):
     """
     Tests whether `validate_banner_color` works as intended.
     
-    Case: passing.
-    """
-    for input_value, expected_output in (
-        (1, Color(1)),
-        (Color(1), Color(1)),
-        (None, None),
-    ):
-        output = validate_banner_color(input_value)
-        vampytest.assert_instance(output, Color, nullable = True)
-        vampytest.assert_eq(output, expected_output)
-
-
-def test__validate_banner_color__1():
-    """
-    Tests whether `validate_banner_color` works as intended.
+    Parameters
+    ----------
+    input_value : `object`
+        The value to validate.
     
-    Case: `TypeError`.
-    """
-    for input_value in (
-        'a',
-    ):
-        with vampytest.assert_raises(TypeError):
-            validate_banner_color(input_value)
-
-
-def test__validate_banner_color__2():
-    """
-    Tests whether `validate_banner_color` works as intended.
+    Returns
+    -------
+    output : `None | Color`
     
-    Case: `ValueError`.
+    Raises
+    ------
+    TypeError
+    ValueError
     """
-    for input_value in (
-        -1,
-        999999999,
-    ):
-        with vampytest.assert_raises(ValueError):
-            validate_banner_color(input_value)
+    return validate_banner_color(input_value)
+

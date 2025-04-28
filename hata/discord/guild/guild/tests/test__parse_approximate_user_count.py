@@ -5,6 +5,7 @@ from ..fields import parse_approximate_user_count
 
 def _iter_options():
     yield {}, 0
+    yield {'approximate_member_count': None}, 0
     yield {'approximate_member_count': 1}, 1
 
 

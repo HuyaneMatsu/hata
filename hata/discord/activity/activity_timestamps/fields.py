@@ -11,7 +11,7 @@ def parse_end(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Activity timestamp data.
     
     Returns
@@ -31,14 +31,14 @@ def put_end(end, data, defaults):
     ----------
     end : `None`, `datetime`
         Activity timestamps end.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (end is not None):
         if (end is not None):
@@ -59,7 +59,7 @@ def parse_start(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Activity timestamp data.
     
     Returns
@@ -79,14 +79,14 @@ def put_start(start, data, defaults):
     ----------
     start : `None`, `datetime`
         Activity timestamps start.
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
     """
     if defaults or (start is not None):
         if (start is not None):

@@ -1,7 +1,6 @@
 __all__ = ()
 
 from time import perf_counter
-from warnings import warn
 
 from scarletio import Task, copy_docs, from_json, repeat_timeout, sleep, to_json
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, URL, WebSocketProtocolError
@@ -815,19 +814,3 @@ class DiscordGatewayVoice(DiscordGatewayVoiceBase):
         Clears current session data, disabling the option of resuming the connection.
         """
         self.sequence = -1
-    
-    
-    @property
-    def websocket(self):
-        """
-        Deprecated and will be removed in 2025 April. Use ``.web_socket`` instead.
-        """
-        warn(
-            (
-                f'`{type(self).__name__}.websocket` is deprecated and will be removed in 2025 April. '
-                'Please use `.web_socket` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.web_socket

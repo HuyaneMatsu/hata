@@ -115,7 +115,7 @@ class OnboardingPromptOption(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Onboarding prompt option data.
         
         Returns
@@ -145,7 +145,7 @@ class OnboardingPromptOption(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_channel_ids(self.channel_ids, data, defaults)

@@ -1,4 +1,3 @@
-
 import vampytest
 
 from ....emoji import Emoji

@@ -155,7 +155,7 @@ class VoiceChannelEffect(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Voice channel effect event data.
         
         Returns
@@ -188,7 +188,7 @@ class VoiceChannelEffect(EventBase):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_animation_id(self.animation_id, data, defaults)
@@ -475,7 +475,7 @@ class VoiceChannelEffect(EventBase):
         
         Returns
         -------
-        guild : `None`, ``Guild``
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

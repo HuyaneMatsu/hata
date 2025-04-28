@@ -319,7 +319,7 @@ class Embed(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_author(self.author, data, defaults, include_internals = include_internals)
@@ -374,7 +374,7 @@ class Embed(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Embed data received from Discord.
         
         Returns
@@ -432,7 +432,7 @@ class Embed(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Embed data received from Discord.
         """
         try:

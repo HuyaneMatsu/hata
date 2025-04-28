@@ -9,9 +9,7 @@ from ..field_parsers import (
 from ..field_putters import (
     nullable_entity_array_putter_factory, nullable_functional_optional_putter_factory, url_optional_putter_factory
 )
-from ..field_validators import (
-    nullable_entity_validator_factory, nullable_object_array_validator_factory, nullable_string_validator_factory
-)
+from ..field_validators import nullable_entity_validator_factory, nullable_string_validator_factory
 
 from .shared_constants import CUSTOM_ID_LENGTH_MAX
 

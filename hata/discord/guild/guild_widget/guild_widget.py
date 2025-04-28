@@ -123,7 +123,7 @@ class GuildWidget(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             The requested guild widget data.
         
         Returns
@@ -151,7 +151,7 @@ class GuildWidget(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_approximate_online_count(self.approximate_online_count, data, defaults)

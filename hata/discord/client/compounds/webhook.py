@@ -301,7 +301,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
+        guild : ``int | Guild``
             The guild, what's webhooks will be requested.
         
         Returns
@@ -598,7 +598,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         *positional_parameters : Positional parameters
             Additional parameters to create the message with.
         
-        thread : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
+        thread : ``None | int | Channel`` = `None`, Optional (Keyword only)
             The thread of the webhook's channel where the message should be sent.
         
         wait : `None`, `bool` = `None`, Optional (Keyword only)

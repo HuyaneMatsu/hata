@@ -140,7 +140,7 @@ class Oauth2Access(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received access data.
         redirect_url : `str`
             The redirect url with what the user granted the authorization code for the oauth2 scopes for the
@@ -172,7 +172,7 @@ class Oauth2Access(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = {}
         put_access_token(self.access_token, data, defaults)

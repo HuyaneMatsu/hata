@@ -86,7 +86,7 @@ def parse_role(text, guild = None):
     text : `str`
         The text to parse the role out.
     
-    guild : `None`, ``Guild`` = `None`, Optional
+    guild : ``None | Guild`` = `None`, Optional
         Context for name based parsing.
     
     Returns

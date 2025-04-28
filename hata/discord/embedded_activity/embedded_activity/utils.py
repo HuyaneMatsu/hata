@@ -13,7 +13,7 @@ def difference_handle_embedded_activity_update_event(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Embedded activity update event.
     
     Returns
@@ -81,7 +81,7 @@ def handle_embedded_activity_update_event(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `object`) items
+    data : `dict<str, object>`
         Embedded activity update event.
     """
     embedded_activity, created = EmbeddedActivity.from_data_is_created(data)

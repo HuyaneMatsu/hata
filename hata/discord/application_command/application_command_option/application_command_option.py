@@ -100,22 +100,22 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             Whether the option is the default one.
         
             
-        max_length : `None`, `int`, Optional (Keyword only)
+        max_length : `None | int`, Optional (Keyword only)
             The maximum input length allowed for this option.
             
             Only applicable for string options.
         
-        max_value : `None`, `int`, `float`, Optional (Keyword only)
+        max_value : `None | int | float`, Optional (Keyword only)
             The maximal value permitted for this option.
             
             Only applicable for integer as `int`, and for float options as `float`.
         
-        min_length : `None`, `int`, Optional (Keyword only)
+        min_length : `None | int`, Optional (Keyword only)
             The minimum input length allowed for this option.
             
             Only applicable for string options.
             
-        min_value : `None`, `int`, `float`, Optional (Keyword only)
+        min_value : `None | int | float`, Optional (Keyword only)
             The minimum value permitted for this option.
             
             Only applicable for integer as `int`, and for float options as `float`.
@@ -177,7 +177,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
             Received application command option data.
         
         Returns
@@ -209,7 +209,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) items
+        data : `dict<str, object>`
         """
         data = self.metadata.to_data(defaults = defaults)
         put_description(self.description, data, defaults)
@@ -629,22 +629,22 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         default : `bool` = `False`, Optional (Keyword only)
             Whether the option is the default one.
         
-        max_length : `None`, `int`, Optional (Keyword only)
+        max_length : `None | int`, Optional (Keyword only)
             The maximum input length allowed for this option.
             
             Only applicable for string options.
         
-        max_value : `None`, `int`, `float`, Optional (Keyword only)
+        max_value : `None | int | float`, Optional (Keyword only)
             The maximal value permitted for this option.
             
             Only applicable for integer as `int`, and for float options as `float`.
         
-        min_length : `None`, `int`, Optional (Keyword only)
+        min_length : `None | int`, Optional (Keyword only)
             The minimum input length allowed for this option.
             
             Only applicable for string options.
             
-        min_value : `None`, `int`, `float`, Optional (Keyword only)
+        min_value : `None | int | float`, Optional (Keyword only)
             The minimum value permitted for this option.
             
             Only applicable for integer as `int`, and for float options as `float`.

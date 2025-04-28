@@ -48,7 +48,7 @@ def test__MessageType__new__min_fields():
     
     Case: minimal amount of fields given.
     """
-    value = 50
+    value = 500000
     
     try:
         output = MessageType(value)

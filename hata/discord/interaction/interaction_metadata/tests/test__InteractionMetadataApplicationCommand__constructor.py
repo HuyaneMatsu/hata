@@ -9,7 +9,7 @@ from ...resolved import Resolved
 from ..application_command import InteractionMetadataApplicationCommand
 
 
-def _check_is_all_field_set(interaction_metadata):
+def _assert_fields_set(interaction_metadata):
     """
     Checks whether all fields of the given interaction metadata are set.
     
@@ -34,7 +34,7 @@ def test__InteractionMetadataApplicationCommand__new__no_fields():
     Case: No fields given.
     """
     interaction_metadata = InteractionMetadataApplicationCommand()
-    _check_is_all_field_set(interaction_metadata)
+    _assert_fields_set(interaction_metadata)
 
 
 def test__InteractionMetadataApplicationCommand__new__all_fields():
@@ -58,7 +58,7 @@ def test__InteractionMetadataApplicationCommand__new__all_fields():
         target_id = target_id,
         target_type = target_type,
     )
-    _check_is_all_field_set(interaction_metadata)
+    _assert_fields_set(interaction_metadata)
     
     vampytest.assert_eq(interaction_metadata.id, application_command_id)
     vampytest.assert_eq(interaction_metadata.name, name)
@@ -73,4 +73,4 @@ def test__InteractionMetadataApplicationCommand__create_empty():
     Tests whether ``InteractionMetadataApplicationCommand._create_empty`` works as intended.
     """
     interaction_metadata = InteractionMetadataApplicationCommand._create_empty()
-    _check_is_all_field_set(interaction_metadata)
+    _assert_fields_set(interaction_metadata)

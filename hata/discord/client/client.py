@@ -130,10 +130,10 @@ class Client(
     discriminator : `int`
         The client's discriminator. Given to avoid overlapping names.
     
-    display_name : `None`, `str`
+    display_name : `None | str`
         The clients' non-unique display name.
     
-    email : `None`, `str`
+    email : `None | str`
         The client's email.
     
     email_verified : `bool`
@@ -337,7 +337,7 @@ class Client(
         discriminator : `str`, `int`, Optional (Keyword only)
             The client's discriminator.
         
-        display_name : `None`, `str`, Optional (Keyword only)
+        display_name : `None | str`, Optional (Keyword only)
             The client's non-unique display name.
         
         email : `None, `str`, Optional (Keyword only)

@@ -203,7 +203,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
             Interaction component data.
         """
         self = object.__new__(cls)

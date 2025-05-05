@@ -3,7 +3,8 @@ from datetime import datetime as DateTime, timezone as TimeZone
 import vampytest
 
 from ....color import Color
-from ....user import User
+from ....guild import Guild
+from ....user import GuildProfile, User
 
 from ...embed_author import EmbedAuthor
 from ...embed_field import EmbedField
@@ -78,13 +79,23 @@ def test__Embed__clean_copy():
     """
     Tests whether ``Embed.clean_copy`` works as intended.
     """
+    guild_id = 202505030010
+    guild = Guild.precreate(guild_id)
+    
     user_0 = User.precreate(2023004010000, name = 'koishi')
+    user_0.guild_profiles[202505030010] = GuildProfile(nick = 'koi')
     user_1 = User.precreate(2023004010001, name = 'satori')
+    user_1.guild_profiles[202505030010] = GuildProfile(nick = 'sato')
     user_2 = User.precreate(2023004010002, name = 'reimu')
+    user_2.guild_profiles[202505030010] = GuildProfile(nick = 'rei')
     user_3 = User.precreate(2023004010003, name = 'marisa')
+    user_3.guild_profiles[202505030010] = GuildProfile(nick = 'mari')
     user_4 = User.precreate(2023004010004, name = 'sanae')
-    user_5 = User.precreate(2023004010005, name = 'orin')
-    user_6 = User.precreate(2023004010006, name = 'okuu')
+    user_4.guild_profiles[202505030010] = GuildProfile(nick = 'sana')
+    user_5 = User.precreate(2023004010005, name = 'rin')
+    user_5.guild_profiles[202505030010] = GuildProfile(nick = 'orin')
+    user_6 = User.precreate(2023004010006, name = 'utsuho')
+    user_6.guild_profiles[202505030010] = GuildProfile(nick = 'okuu')
     
     author = EmbedAuthor(user_0.mention)
     description = user_1.mention
@@ -102,16 +113,21 @@ def test__Embed__clean_copy():
         title = title,
     )
     
-    copy = embed.clean_copy()
+    copy = embed.clean_copy(guild)
     _assert_fields_set(copy)
     vampytest.assert_is_not(embed, copy)
     
-    vampytest.assert_eq(copy.author, EmbedAuthor(f'@{user_0.name}'))
-    vampytest.assert_eq(copy.description, f'@{user_1.name}')
-    vampytest.assert_eq(copy.fields, [EmbedField(f'@{user_2.name}', f'@{user_3.name}', inline = True)])
-    vampytest.assert_eq(copy.footer, EmbedFooter(f'@{user_4.name}'))
-    vampytest.assert_eq(copy.provider, EmbedProvider(f'@{user_5.name}'))
-    vampytest.assert_eq(copy.title, f'@{user_6.name}')
+    vampytest.assert_eq(copy.author, EmbedAuthor(f'@{user_0.name_at(guild)}'))
+    vampytest.assert_eq(copy.description, f'@{user_1.name_at(guild)}')
+    vampytest.assert_eq(
+        copy.fields,
+        [
+            EmbedField(f'@{user_2.name_at(guild)}', f'@{user_3.name_at(guild)}', inline = True),
+        ],
+    )
+    vampytest.assert_eq(copy.footer, EmbedFooter(f'@{user_4.name_at(guild)}'))
+    vampytest.assert_eq(copy.provider, EmbedProvider(f'@{user_5.name_at(guild)}'))
+    vampytest.assert_eq(copy.title, f'@{user_6.name_at(guild)}')
 
 
 def test__Embed__copy():

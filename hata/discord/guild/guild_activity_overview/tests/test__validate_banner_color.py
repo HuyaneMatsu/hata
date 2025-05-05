@@ -36,11 +36,13 @@ def test__validate_banner_color(input_value):
     
     Returns
     -------
-    output : `None | Color`
+    output : ``None | Color``
     
     Raises
     ------
     TypeError
     ValueError
     """
-    return validate_banner_color(input_value)
+    output = validate_banner_color(input_value)
+    vampytest.assert_instance(output, Color, nullable = True)
+    return output

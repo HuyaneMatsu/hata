@@ -87,7 +87,7 @@ class MessageActivity(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
         """
         data = {}
         put_party_id(self.party_id, data, defaults)

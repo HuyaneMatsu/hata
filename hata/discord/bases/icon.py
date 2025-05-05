@@ -767,7 +767,7 @@ class IconSlot:
     
     Class Attributes
     ----------------
-    _compile_globals : `dict` of (`str`, `object`)
+    _compile_globals : `dict<str, object>`
         Compile time globals for the generated functions.
     """)
         

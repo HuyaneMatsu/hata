@@ -123,7 +123,7 @@ class SolarPlayer(SolarPlayerBase):
             Where the track will start in seconds.
         end_time : `float` = `0.0`, Optional
             Where the track will start in seconds.
-        **added_attributes : `dict` of (`str`, `object`)
+        **added_attributes : `dict<str, object>`
             Additional user defined attributes.
         
         Returns

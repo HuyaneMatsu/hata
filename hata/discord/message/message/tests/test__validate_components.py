@@ -32,9 +32,14 @@ def test__validate_components(input_value):
     """
     Tests whether `validate_components` works as intended.
     
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
     Returns
     -------
-    output : `None | tuple<Component>`
+    output : ``None | tuple<Component>``
     
     Raises
     ------

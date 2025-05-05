@@ -158,7 +158,7 @@ def test__Role__guild(role_id, guild_id):
     
     Returns
     -------
-    output : `None | Guild`
+    output : ``None | Guild``
     """
     role = Role.precreate(role_id, guild_id = guild_id)
     output = role.guild

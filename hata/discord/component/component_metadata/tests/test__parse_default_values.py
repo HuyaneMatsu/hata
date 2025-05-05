@@ -28,6 +28,8 @@ def test__parse_default_values(input_data):
     
     Returns
     -------
-    output : `None | tuple<EntitySelectDefaultValue>`
+    output : ``None | tuple<EntitySelectDefaultValue>``
     """
-    return parse_default_values(input_data)
+    output = parse_default_values(input_data)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    return output

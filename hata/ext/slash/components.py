@@ -1,6 +1,6 @@
 __all__ = (
     'Button', 'ButtonStyle', 'ChannelSelect', 'Form', 'MediaGallery', 'MentionableSelect', 'Option', 'RoleSelect',
-    'Row', 'Select', 'Separator', 'SeparatorSpacingSize', 'StringSelect', 'Text', 'TextInput', 'TextInputStyle',
+    'Row', 'Select', 'Separator', 'SeparatorSpacingSize', 'StringSelect', 'TextDisplay', 'TextInput', 'TextInputStyle',
     'UserSelect'
 )
 
@@ -9,7 +9,7 @@ from ...discord.component import (
     create_button as Button, create_channel_select as ChannelSelect, create_media_gallery as  MediaGallery,
     create_mentionable_select as MentionableSelect, create_role_select as RoleSelect, create_row as Row,
     create_string_select as Select, create_separator as Separator, create_string_select as StringSelect,
-    create_text as Text, create_text_input as TextInput, create_user_select as UserSelect
+    create_text_display as TextDisplay, create_text_input as TextInput, create_user_select as UserSelect
 )
 from ...discord.core import APPLICATION_ID_TO_CLIENT
 from ...discord.exceptions import DiscordException, ERROR_CODES

@@ -157,8 +157,8 @@ class CertifiedDevice:
             iterator = getattr(type(related), '__iter__', None)
             if iterator is None:
                 raise TypeError(
-                    f'`related` can be `None`, `str`, `{UUID.__name__}`, `iterable` of '
-                    f'`str`, `{UUID.__name__}`, got {type(related).__name__}; {related!r}.'
+                    f'`related` can be `None | str | {UUID.__name__} | iterable<str> | iterable<{UUID.__name__}>`, '
+                    f'got {type(related).__name__}; {related!r}.'
                 )
             
             related_device_uuids = set()

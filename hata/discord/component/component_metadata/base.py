@@ -104,7 +104,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         return object.__new__(cls)
     
     
-    def to_data(self, *, defaults = False):
+    def to_data(self, *, defaults = False, include_internals = False):
         """
         Returns the component metadata's json serializable representation.
         
@@ -113,11 +113,30 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether fields with default values should be included as well.
         
+        include_internals : `bool` = `False`, Optional (Keyword only)
+            Whether internal fields should be included as well.
+        
         Returns
         -------
         data : `dict<str, object>`
         """
         return {}
+    
+    
+    def clean_copy(self, guild = None):
+        """
+        Creates a clean copy of the component metadata by removing the mentions in it's contents.
+        
+        Parameters
+        ----------
+        guild : ``None | Guild`` = `None`, Optional
+            The respective guild as a context to look up guild specific names of entities.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        return object.__new__(type(self))
     
     
     def copy(self):
@@ -174,6 +193,20 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         return self.copy_with()
     
     
+    def iter_contents(self):
+        """
+        Iterates over the contents of the component metadata.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        content : `str`
+        """
+        return
+        yield
+    
+    
     # Field placeholders
     
     button_style = PlaceHolder(
@@ -195,7 +228,18 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        channel_types : `None`, `tuple` of ``ChannelType``
+        channel_types : ``None | tuple<ChannelType>``
+        """
+    )
+    
+    
+    color = PlaceHolder(
+        None,
+        """
+        The color of the component. At the case of container components it means the strip on the left.
+        Passing `0` means black.
+        
+        color : ``None | Color``
         """
     )
     
@@ -207,7 +251,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        components : `None`, `tuple` of ``Component``
+        components : ``None | tuple<Component>``
         """
     )
     
@@ -219,7 +263,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        content : `None`, `str`
+        content : `None | str`
         """
     )
     
@@ -233,7 +277,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        custom_id : `None`, `str`
+        custom_id : `None | str`
         """
     )
     
@@ -245,7 +289,19 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        default_values : `None`, `tuple` of ``EntitySelectDefaultValue``
+        default_values : ``None | tuple<EntitySelectDefaultValue>``
+        """
+    )
+    
+    
+    description = PlaceHolder(
+        None,
+        """
+        Description of the component's media.
+        
+        Returns
+        -------
+        description : `None | str`
         """
     )
     
@@ -269,7 +325,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        emoji : `None` ``Emoji``
+        emoji : ``None | Emoji``
         """
     )
     
@@ -293,7 +349,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        items : `None`, `tuple` of ``MediaItem``
+        items : ``None | tuple<MediaItem>``
         """
     )
     
@@ -305,7 +361,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        label : `None`, `str`
+        label : `None | str`
         """
     )
     
@@ -330,6 +386,18 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         Returns
         -------
         max_values : `int`
+        """
+    )
+    
+    
+    media = PlaceHolder(
+        None,
+        """
+        The media of the component.
+        
+        Returns
+        -------
+        media : ``None | MediaInfo``
         """
     )
     
@@ -365,7 +433,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        options : `None`, `tuple` of ``StringSelectOption``
+        options : ``None | tuple<StringSelectOption>``
         """
     )
     
@@ -373,11 +441,11 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
     placeholder = PlaceHolder(
         None,
         """
-        Placeholder text of the select.
+        Place holder text of the select.
         
         Returns
         -------
-        placeholder : `None`, `str`
+        placeholder : `None | str`
         """
     )
     
@@ -420,6 +488,18 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
     )
     
     
+    spoiler = PlaceHolder(
+        False,
+        """
+        Whether the media or the content of the component is spoilered.
+        
+        Returns
+        -------
+        spoiler : `bool`
+        """
+    )
+    
+    
     text_input_style = PlaceHolder(
         TextInputStyle.none,
         """
@@ -428,6 +508,18 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         Returns
         -------
         text_input_style : ``TextInputStyle``
+        """
+    )
+    
+    
+    thumbnail = PlaceHolder(
+        None,
+        """
+        The thumbnail or other accessory (button) of a section component.
+        
+        Returns
+        -------
+        thumbnail : ``Component``
         """
     )
     
@@ -441,7 +533,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        url : `None`, `str`
+        url : `None | str`
         """
     )
     
@@ -453,6 +545,6 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        value : `None`, `str`
+        value : `None | str`
         """
     )

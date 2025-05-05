@@ -1,8 +1,37 @@
 import vampytest
 
+from ....guild import Guild
+
 from ..select_base import ComponentMetadataSelectBase
 
 from .test__ComponentMetadataSelectBase__constructor import _assert_fields_set
+
+
+def test__ComponentMetadataSelectBase__clean_copy():
+    """
+    Tests whether ``ComponentMetadataSelectBase.clean_copy`` works as intended.
+    """
+    guild_id = 202505030028
+    guild = Guild.precreate(guild_id)
+    
+    custom_id = 'oriental'
+    enabled = False
+    max_values = 10
+    min_values = 9
+    placeholder = 'swing'
+    
+    component_metadata = ComponentMetadataSelectBase(
+        custom_id = custom_id,
+        enabled = enabled,
+        max_values = max_values,
+        min_values = min_values,
+        placeholder = placeholder,
+    )
+    copy = component_metadata.clean_copy(guild)
+    
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(copy, component_metadata)
+    vampytest.assert_eq(copy, component_metadata)
 
 
 def test__ComponentMetadataSelectBase__copy():
@@ -70,14 +99,15 @@ def test__ComponentMetadataSelectBase__copy_with__1():
     Case: All fields.
     """
     old_custom_id = 'oriental'
-    new_custom_id = 'uta'
     old_enabled = False
-    new_enabled = True
     old_max_values = 10
-    new_max_values = 11
     old_min_values = 9
-    new_min_values = 8
     old_placeholder = 'swing'
+    
+    new_custom_id = 'uta'
+    new_enabled = True
+    new_max_values = 11
+    new_min_values = 8
     new_placeholder = 'kotoba'
     
     component_metadata = ComponentMetadataSelectBase(
@@ -141,14 +171,15 @@ def test__ComponentMetadataSelectBase__copy_with_keyword_parameters__1():
     Case: All fields.
     """
     old_custom_id = 'oriental'
-    new_custom_id = 'uta'
     old_enabled = False
-    new_enabled = True
     old_max_values = 10
-    new_max_values = 11
     old_min_values = 9
-    new_min_values = 8
     old_placeholder = 'swing'
+    
+    new_custom_id = 'uta'
+    new_enabled = True
+    new_max_values = 11
+    new_min_values = 8
     new_placeholder = 'kotoba'
     
     component_metadata = ComponentMetadataSelectBase(
@@ -173,3 +204,50 @@ def test__ComponentMetadataSelectBase__copy_with_keyword_parameters__1():
     vampytest.assert_eq(copy.max_values, new_max_values)
     vampytest.assert_eq(copy.min_values, new_min_values)
     vampytest.assert_eq(copy.placeholder, new_placeholder)
+
+
+def _iter_options__iter_contents():
+    custom_id = 'oriental'
+    enabled = False
+    max_values = 10
+    min_values = 9
+    placeholder = 'swing'
+    
+    yield (
+        {},
+        [],
+    )
+    
+    yield (
+        {
+            'custom_id': custom_id,
+            'enabled': enabled,
+            'max_values': max_values,
+            'min_values': min_values,
+            'placeholder': placeholder,
+        },
+        [],
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_contents()).returning_last())
+def test__ComponentMetadataSelectBase__iter_contents(keyword_parameters):
+    """
+    Tests whether ``ComponentMetadataSelectBase.iter_contents`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `list<str>`
+    """
+    component_metadata = ComponentMetadataSelectBase(**keyword_parameters)
+    output = [*component_metadata.iter_contents()]
+    
+    for element in output:
+        vampytest.assert_instance(element, str)
+    
+    return output

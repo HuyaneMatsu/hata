@@ -491,7 +491,7 @@ class Connection(DiscordEntity):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
             Received connection data.
         """
         self = object.__new__(cls)

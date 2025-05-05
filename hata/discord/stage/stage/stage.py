@@ -172,7 +172,7 @@ class Stage(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) Items
+        data : `dict<str, object>`
         """
         data = {}
         put_privacy_level(self.privacy_level, data, defaults)

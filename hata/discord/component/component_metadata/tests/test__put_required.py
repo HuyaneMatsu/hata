@@ -3,14 +3,28 @@ import vampytest
 from ..fields import put_required
 
 
-def test__put_required():
+def _iter_options():
+    yield False, False, {'required': False}
+    yield False, True, {'required': False}
+    yield True, False, {}
+    yield True, True, {'required': True}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_required(input_value, defaults):
     """
-    Tests whether ``put_required`` is working as intended.
+    Tests whether ``put_required`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `bool`
+        The value to serialise.
+    
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
     """
-    for input_value, required, expected_output in (
-        (True, False, {}),
-        (False, False, {'required': False}),
-        (True, True, {'required': True}),
-    ):
-        data = put_required(input_value, {}, required)
-        vampytest.assert_eq(data, expected_output)
+    return put_required(input_value, {}, defaults)

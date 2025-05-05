@@ -5,7 +5,7 @@ from ...interaction_option import InteractionOption
 from ..application_command_autocomplete import InteractionMetadataApplicationCommandAutocomplete
 
 
-def _check_is_all_field_set(interaction_metadata):
+def _assert_fields_set(interaction_metadata):
     """
     Checks whether all fields of the given interaction metadata are set.
     
@@ -27,7 +27,7 @@ def test__InteractionMetadataApplicationCommandAutocomplete__new__0():
     Case: No fields given.
     """
     interaction_metadata = InteractionMetadataApplicationCommandAutocomplete()
-    _check_is_all_field_set(interaction_metadata)
+    _assert_fields_set(interaction_metadata)
 
 
 def test__InteractionMetadataApplicationCommandAutocomplete__new__1():
@@ -45,7 +45,7 @@ def test__InteractionMetadataApplicationCommandAutocomplete__new__1():
         name = name,
         options = options,
     )
-    _check_is_all_field_set(interaction_metadata)
+    _assert_fields_set(interaction_metadata)
     
     vampytest.assert_eq(interaction_metadata.id, application_command_id)
     vampytest.assert_eq(interaction_metadata.name, name)
@@ -57,4 +57,4 @@ def test__InteractionMetadataApplicationCommandAutocomplete__create_empty():
     Tests whether ``InteractionMetadataApplicationCommandAutocomplete._create_empty`` works as intended.
     """
     interaction_metadata = InteractionMetadataApplicationCommandAutocomplete._create_empty()
-    _check_is_all_field_set(interaction_metadata)
+    _assert_fields_set(interaction_metadata)

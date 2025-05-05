@@ -4,7 +4,7 @@ from ...interaction_option import InteractionOption
 
 from ..application_command_autocomplete import InteractionMetadataApplicationCommandAutocomplete
 
-from .test__InteractionMetadataApplicationCommandAutocomplete__constructor import _check_is_all_field_set
+from .test__InteractionMetadataApplicationCommandAutocomplete__constructor import _assert_fields_set
 
 
 def test__InteractionMetadataApplicationCommandAutocomplete__copy():
@@ -21,7 +21,7 @@ def test__InteractionMetadataApplicationCommandAutocomplete__copy():
         options = options,
     )
     copy = interaction_metadata.copy()
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     vampytest.assert_eq(copy, interaction_metadata)
 
@@ -42,7 +42,7 @@ def test__InteractionMetadataApplicationCommandAutocomplete__copy_with__0():
         options = options,
     )
     copy = interaction_metadata.copy_with()
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     vampytest.assert_eq(copy, interaction_metadata)
 
@@ -71,7 +71,7 @@ def test__InteractionMetadataApplicationCommandAutocomplete__copy_with__1():
         name = new_name,
         options = new_options,
     )
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     
     vampytest.assert_eq(copy.id, new_application_command_id)

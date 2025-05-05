@@ -108,7 +108,7 @@ def parse_guild(data):
     
     Returns
     -------
-    guild : `None | Guild`
+    guild : ``None | Guild``
     """
     guild_data = data.get('guild', None)
     if (guild_data is not None):
@@ -127,7 +127,7 @@ def put_guild(guild, data, defaults):
     
     Parameters
     ----------
-    guild : `None | Guild`
+    guild : ``None | Guild``
         The guild to serialize.
     data : `dict<str, object>`
         Json serializable dictionary.

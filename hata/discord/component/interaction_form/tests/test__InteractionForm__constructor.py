@@ -20,11 +20,11 @@ def _check_are_fields_set(interaction_form):
     vampytest.assert_instance(interaction_form.title, str, nullable = True)
 
 
-def test__InteractionForm__new__0():
+def test__InteractionForm__new__no_fields():
     """
     Test whether ``InteractionForm.__new__`` works as intended.
     
-    Case: empty.
+    Case: no fields given.
     """
     title = None
     components = None
@@ -34,14 +34,14 @@ def test__InteractionForm__new__0():
     _check_are_fields_set(interaction_form)
 
 
-def test__InteractionForm__new__1():
+def test__InteractionForm__new__all_fields():
     """
     Test whether ``InteractionForm.__new__`` works as intended.
     
-    Case: Stuff it full.
+    Case: all fields given.
     """
     title = 'important'
-    components = [Component(ComponentType.button, label = 'chata')]
+    components = [Component(ComponentType.text_input, label = 'chata')]
     custom_id = 'lie'
     
     rows = tuple(Component(ComponentType.row, components = [component]) for component in components)

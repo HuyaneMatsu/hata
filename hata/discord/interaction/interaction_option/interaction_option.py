@@ -243,7 +243,7 @@ class InteractionOption(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
             Interaction option data.
         """
         self = object.__new__(cls)

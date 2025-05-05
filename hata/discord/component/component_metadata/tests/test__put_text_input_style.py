@@ -4,13 +4,28 @@ from ..fields import put_text_input_style
 from ..preinstanced import TextInputStyle
 
 
-def test__put_text_input_style():
+def _iter_options():
+    yield TextInputStyle.short, False, {'style': TextInputStyle.short.value}
+    yield TextInputStyle.short, True, {'style': TextInputStyle.short.value}
+    yield TextInputStyle.paragraph, False, {'style': TextInputStyle.paragraph.value}
+    yield TextInputStyle.paragraph, True, {'style': TextInputStyle.paragraph.value}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_text_input_style(input_value, defaults):
     """
     Tests whether ``put_text_input_style`` is working as intended.
+    
+    Parameters
+    ----------
+    input_value : ``SeparatorSpacingSize``
+        The value to serialise.
+    
+    defaults : `bool`
+        Whether values with their default value should be included in the output as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
     """
-    for input_value, defaults, expected_output in (
-        (TextInputStyle.short, False, {'style': TextInputStyle.short.value}),
-        (TextInputStyle.paragraph, True, {'style': TextInputStyle.paragraph.value}),
-    ):
-        data = put_text_input_style(input_value, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    return put_text_input_style(input_value, {}, defaults)

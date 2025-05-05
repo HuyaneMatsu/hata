@@ -195,7 +195,7 @@ def test__AuditLogEntry__guild(audit_log_entry):
     
     Returns
     -------
-    output : `None | Guild`
+    output : ``None | Guild``
     """
     return audit_log_entry.guild
 

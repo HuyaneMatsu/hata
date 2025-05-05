@@ -251,9 +251,9 @@ def build_graves(text):
     
     Returns
     -------
-    content : `list` of `str`, ``Grave``
+    content : ``list<str> | Grave``
         Broke down content.
-    warnings : `list` of `str`
+    warnings : `list<str>`
         Detected graving mistakes inside of the given text.
     """
     content = []
@@ -612,7 +612,7 @@ class GravedCodeBlock:
     ----------
     language : `None`, `str`
         The language of the code if applicable.
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the code-block
     """
     __slots__ = ('language', 'lines', )
@@ -787,7 +787,7 @@ def apply_warnings_to_path(warnings, path):
     
     Parameters
     ----------
-    warnings : `list` of `str`
+    warnings : `list<str>`
         The warning to apply.
     path : ``QualPath``
         The path of the respective docstring.

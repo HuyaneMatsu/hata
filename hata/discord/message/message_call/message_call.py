@@ -90,7 +90,7 @@ class MessageCall(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
         """
         data = {}
         put_ended_at(self.ended_at, data, defaults)

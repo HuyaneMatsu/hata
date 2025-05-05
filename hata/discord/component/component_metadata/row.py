@@ -2,9 +2,8 @@ __all__ = ('ComponentMetadataRow', )
 
 from scarletio import copy_docs
 
-from ..shared_fields import parse_components, put_components_into, validate_components
-
 from .base import ComponentMetadataBase
+from .fields import parse_components, put_components, validate_components__row
 
 
 class ComponentMetadataRow(ComponentMetadataBase):
@@ -13,7 +12,7 @@ class ComponentMetadataRow(ComponentMetadataBase):
     
     Attributes
     ----------
-    components : `None`, `tuple` of ``Component``
+    components : ``None | tuple<Component>``
         The contained components.
     """
     __slots__ = ('components',)
@@ -25,7 +24,7 @@ class ComponentMetadataRow(ComponentMetadataBase):
         
         Parameters
         ----------
-        components : `None`, `iterable` of ``Component``, Optional (Keyword only)
+        components : ``None | iterable<Component | (tuple | list)<Component>>``, Optional (Keyword only)
             The contained components.
         
         Raises
@@ -39,7 +38,7 @@ class ComponentMetadataRow(ComponentMetadataBase):
         if components is ...:
             components = None
         else:
-            components = validate_components(components)
+            components = validate_components__row(components)
         
         # Construct
         self = object.__new__(cls)
@@ -57,7 +56,7 @@ class ComponentMetadataRow(ComponentMetadataBase):
     
     @copy_docs(ComponentMetadataBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', type(self).__name__]
         
         # sub-component fields : components
         
@@ -124,12 +123,26 @@ class ComponentMetadataRow(ComponentMetadataBase):
     
     
     @copy_docs(ComponentMetadataBase.to_data)
-    def to_data(self, *, defaults = False):
+    def to_data(self, *, defaults = False, include_internals = False):
         data = {}
         
-        put_components_into(self.components, data, defaults)
+        put_components(self.components, data, defaults, include_internals = include_internals)
         
         return data
+    
+    
+    @copy_docs(ComponentMetadataBase.clean_copy)
+    def clean_copy(self, guild = None):
+        new = object.__new__(type(self))
+        
+        # components
+        components = self.components
+        if (components is not None):
+            components = tuple(component.clean_copy(guild) for component in self.components)
+        
+        new.components = components
+        
+        return new
     
     
     @copy_docs(ComponentMetadataBase.copy)
@@ -152,7 +165,7 @@ class ComponentMetadataRow(ComponentMetadataBase):
         
         Parameters
         ----------
-        components : `None`, `iterable` of ``Component``, Optional (Keyword only)
+        components : ``None | iterable<Component | (tuple | list)<Component>>``, Optional (Keyword only)
             The contained components.
         
         Raises
@@ -168,7 +181,7 @@ class ComponentMetadataRow(ComponentMetadataBase):
             if (components is not None):
                 components = tuple(component.copy() for component in self.components)
         else:
-            components = validate_components(components)
+            components = validate_components__row(components)
         
         # Construct
         
@@ -182,3 +195,11 @@ class ComponentMetadataRow(ComponentMetadataBase):
         return self.copy_with(
             components = keyword_parameters.pop('components', ...),
         )
+    
+    
+    @copy_docs(ComponentMetadataBase.iter_contents)
+    def iter_contents(self):
+        components = self.components
+        if (components is not None):
+            for component in components:
+                yield from component.iter_contents()

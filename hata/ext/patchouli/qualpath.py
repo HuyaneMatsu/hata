@@ -10,7 +10,7 @@ class QualPath:
         Cached slot for the hash of the qual-path.
     _str : `None`, `str`
         Cached slot for `str` of the qual-path.
-    parts : `list` of `str`
+    parts : `list<str>`
         Broken down parts of the module path.
     """
     __slots__ = ('_hash', '_str', 'parts',)

@@ -310,7 +310,7 @@ def test__ScheduledEvent__guild(scheduled_event_id, guild_id):
     
     Returns
     -------
-    output : `None | Guild`
+    output : ``None | Guild``
     """
     scheduled_event = ScheduledEvent.precreate(scheduled_event_id, guild_id = guild_id)
     output = scheduled_event.guild

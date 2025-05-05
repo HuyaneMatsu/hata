@@ -19,6 +19,7 @@ def test__put_divider(input_value, defaults):
     ----------
     input_value : `bool`
         The value to serialise.
+    
     defaults : `bool`
         Whether default values should be included as well.
     

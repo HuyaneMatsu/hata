@@ -21,7 +21,9 @@ Hata has tutorials in guides.
     With continuation:
     - [integration](integration.md): Integration commands with users.
     - [auto-completion](auto_completion.md): Auto-completing slash command parameters.
-    - [components](components.md): Using components and interacting with them.
+    - [components](components.md): Introduction to components and layouting.
+    - [content components](content_components.md): Building messages with content components.
+    - [interactive components](interactive_components.md): Defining interactive components and handling their events.
     - [forms](forms.md): Building forms and receiving them.
     - [embedded activity launching](embedded_activity_launch.md): Defining a command to launch embedded activity.
     - [typing](typing_interactions.md): Typing interactions on the [pep 484](https://peps.python.org/pep-0484/) way.

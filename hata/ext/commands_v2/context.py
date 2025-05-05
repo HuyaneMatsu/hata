@@ -30,7 +30,7 @@ class CommandContext:
         The message's content after prefix.
     message : ``Message``
         The received message.
-    parameters : `None`, `dict` of (`str`, `object`)
+    parameters : `None | dict<str, object>`
         The parsed parameters.
     prefix : `str`
         The matched prefix or the client's prefix for the given respective message.
@@ -178,7 +178,7 @@ class CommandContext:
             
             If given as ``Embed``, then is sent as the message's embed.
             
-        embed : ``Embed``, `list` of ``Embed``, Optional (Keyword only)
+        embed : ``Embed | list<Embed>``, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
@@ -245,7 +245,7 @@ class CommandContext:
             
             If given as ``Embed``, then is sent as the message's embed.
             
-        embed : ``Embed``, `list` of ``Embed``, Optional (Keyword only)
+        embed : ``Embed | list<Embed>``, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.

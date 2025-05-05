@@ -4,7 +4,7 @@ from scarletio import include
 
 from ...application import Application
 from ...bases import id_sort_key
-from ...component import Component
+from ...component import Component, ComponentTypeLayoutFlag
 from ...embed import Embed
 from ...emoji import ReactionMapping, merge_update_reaction_mapping
 from ...field_parsers import (
@@ -206,8 +206,13 @@ validate_channel_id = entity_id_validator_factory('channel_id', NotImplemented, 
 
 # components
 
+COMPONENT_TYPE_LAYOUT_MAS_REQUIRED = ComponentTypeLayoutFlag().update_by_keys(
+    allowed_in_message = True,
+    top_level = True,
+)
+
 parse_components = nullable_object_array_parser_factory('components', Component)
-put_components = nullable_object_array_optional_putter_factory('components')
+put_components = nullable_object_array_optional_putter_factory('components', Component)
 
 
 def validate_components(components):
@@ -216,12 +221,12 @@ def validate_components(components):
     
     Parameters
     ----------
-    components : `None | iterable<Component>`
+    components : ``None | iterable<Component | (tuple | list)<Component>>``
         The components to validate.
     
     Returns
     -------
-    components_processed : `None | tuple<Component>`
+    components_processed : ``None | tuple<Component>``
     
     Raises
     ------
@@ -248,9 +253,9 @@ def validate_components(components):
                 f'{type(component).__name__}; {component!r}; components = {components!r}.'
             )
         
-        if not component.type.layout_flags.top_level:
+        if component.type.layout_flags & COMPONENT_TYPE_LAYOUT_MAS_REQUIRED != COMPONENT_TYPE_LAYOUT_MAS_REQUIRED:
             raise ValueError(
-                f'Cannot add top level component of type {component.type.name}, '
+                f'Component of type {component.type.name}, cannot be used as a top level component in messages, '
                 f'got {component!r}; components = {components!r}.'
             )
         

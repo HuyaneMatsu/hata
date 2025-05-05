@@ -112,7 +112,7 @@ def test__GuildBadge__guild(guild_id):
     
     Returns
     -------
-    guild : `None | Guild`
+    guild : ``None | Guild``
     """
     guild_badge = GuildBadge(
         guild_id = guild_id,

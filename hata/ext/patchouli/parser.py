@@ -32,12 +32,12 @@ def remove_indents(lines):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         Input lines.
     
     Returns
     -------
-    lines : `None` or (`list` of `str`)
+    lines : `None | list<str>`
     """
     if not lines:
         return None
@@ -121,7 +121,7 @@ def parse_sections(lines):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         Unindented lines of a docstring.
     
     Returns
@@ -182,7 +182,7 @@ def detect_table(lines, index, limit):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the table.
@@ -233,7 +233,7 @@ class TextTable:
         
         Parameters
         ----------
-        lines : `list` of `str`
+        lines : `list<str>`
             Line to create the table from.
         start : `int`
             The first line's index, where the table starts.
@@ -513,7 +513,7 @@ def detect_description(lines, index, limit):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the description.
@@ -561,7 +561,7 @@ class TextDescription:
         
         Parameters
         ----------
-        lines : `list` of `str`
+        lines : `list<str>`
             Lines to create the description from.
         start : `int`
             The first line's index, where the description starts.
@@ -600,7 +600,7 @@ def detect_indent(lines, index, limit):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the indent.
@@ -642,7 +642,7 @@ def build_indent(lines, start, end):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         Lines to create the section from.
     start : `int`
         The first line's index, where the section starts.
@@ -668,7 +668,7 @@ def detect_code_block(lines, index, limit):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the code block.
@@ -718,7 +718,7 @@ class TextCodeBlock:
     ----------
     _language : `None`, `str`
         The code block's language's name if any. Always lower case.
-    _lines : `list` of `str`
+    _lines : `list<str>`
         The internal lines of the code block.
     """
     __slots__ = ('_language', '_lines',)
@@ -729,7 +729,7 @@ class TextCodeBlock:
         
         Parameters
         ----------
-        lines : `list` of `str`
+        lines : `list<str>`
             Lines to create the code block from.
         start : `int`
             The first line's index, where the code block starts.
@@ -860,7 +860,7 @@ def detect_void(lines, index, limit):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the void..
@@ -890,7 +890,7 @@ def build_void(lines, start, end):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     start : `int`
         The starting index of the void.
@@ -910,7 +910,7 @@ def parse_section(lines):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         Lines to build the section from.
     
     Returns
@@ -999,7 +999,7 @@ def detect_listing(lines, index, limit):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the listing.
@@ -1063,7 +1063,7 @@ class TextListingElement:
         
         Parameters
         ----------
-        lines : `list` of `str`
+        lines : `list<str>`
             The lines to create the element from.
         
         Returns
@@ -1190,7 +1190,7 @@ class TextListing:
         
         Parameters
         ----------
-        lines : `list` of `str`
+        lines : `list<str>`
             Lines to build the listing from.
         start : `int`
             The first lines index of the listing.
@@ -1288,7 +1288,7 @@ def detect_block_quote(lines, index, limit):
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         The lines of the section.
     index : `int`
         The starting index of the block quote.
@@ -1314,18 +1314,19 @@ def detect_block_quote(lines, index, limit):
         index += 1
         continue
 
+
 def remove_block_quote_indents(lines):
     """
     Removes the dedent from the given lines returning a new list with the lines without them.
     
     Parameters
     ----------
-    lines : `list` of `str`
+    lines : `list<str>`
         Input lines.
     
     Returns
     -------
-    lines : `None` or (`list` of `str`)
+    lines : `None | list<str>`
     """
     if not lines:
         return None
@@ -1368,7 +1369,7 @@ class TextBlockQuote:
         
         Parameters
         ----------
-        lines : `list` of `str`
+        lines : `list<str>`
             Lines to create the block quote from.
         start : `int`
             The first line's index, where the block quote starts.

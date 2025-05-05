@@ -3,7 +3,7 @@ import vampytest
 from ..base import InteractionMetadataBase
 
 
-def _check_is_all_field_set(interaction_metadata):
+def _assert_fields_set(interaction_metadata):
     """
     Checks whether all fields of the given interaction metadata are set.
     
@@ -22,7 +22,7 @@ def test__InteractionMetadataBase__new__0():
     Case: No fields given.
     """
     interaction_metadata = InteractionMetadataBase()
-    _check_is_all_field_set(interaction_metadata)
+    _assert_fields_set(interaction_metadata)
 
 
 def test__InteractionMetadataBase__create_empty():
@@ -30,4 +30,4 @@ def test__InteractionMetadataBase__create_empty():
     Tests whether ``InteractionMetadataBase._create_empty`` works as intended.
     """
     interaction_metadata = InteractionMetadataBase._create_empty()
-    _check_is_all_field_set(interaction_metadata)
+    _assert_fields_set(interaction_metadata)

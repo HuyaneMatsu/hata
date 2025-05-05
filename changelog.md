@@ -1,3 +1,51 @@
+## 1.3.79 *\[2025-05-05\]*
+
+### Improvements
+
+- Replace `MediaItem.url` with `MediaItem.media`.
+- Add `MediaItem.url` property.
+- Add `ComponentTypeLayoutFlag.version_1`.
+- Add `ComponentTypeLayoutFlag.version_2`.
+- Add `MediaInfo`.
+- Add `ComponentMetadataBase.media`.
+- Add `ComponentMetadataBase.spoiler`.
+- Add `Component.media`.
+- Add `Component.spoiler`.
+- Add `ComponentMetadataAttachmentMedia`.
+- Add `ComponentType.attachment_media`.
+- Add `create_attachment_media`.
+- Add `ComponentTypeLayoutFlag.section_thumbnail`.
+- Add `ComponentMetadataBase.description`.
+- Add `Component.description`.
+- Add `ComponentMetadataThumbnailMedia`.
+- Add `ComponentType.thumbnail_media`.
+- Add `create_thumbnail_media`.
+- Add `ComponentMetadataBase.color`.
+- Add `Component.color`.
+- Add `ComponentTypeLayoutFlag.nestable_into_container`.
+- Add `ComponentTypeLayoutFlag.allowed_in_message`.
+- Add `ComponentTypeLayoutFlag.allowed_in_form`.
+- Add `ComponentMetadataContainer`.
+- Add `ComponentType.container`.
+- Add `create_container`.
+- Add `ComponentMetadataBase.thumbnail`.
+- Add `Component.thumbnail`.
+- Add `ComponentTypeLayoutFlag.nestable_into_section`.
+- Add `ComponentMetadataSection`.
+- Add `ComponentType.section`.
+- Add `ComponentMetadataBase.iter_contents`.
+- Add `Component.iter_contents`.
+- Add `Component.contents`.
+- Add `Component.__len__`.
+- Add `ComponentMetadataBase.clean_copy`.
+- Add `Component.clean_copy`.
+- Add `Message.clean_components`.
+
+### Renames, Deprecations & Removals
+
+- Rename `ComponentTypeLayoutFlag.nestable` to `ComponentTypeLayoutFlag.nestable_into_row`. Deprecate `.nestable`.
+- Rename `ComponentType.text` to `.text_display` and every related types & functions.
+
 ## 1.3.78 *\[2025-04-28\]*
 
 ### Improvements

@@ -967,7 +967,7 @@ def preprocess_channel_types(channel_types):
     
     Returns
     -------
-    processed_channel_types : `None`, `tuple` of ``ChannelType``
+    processed_channel_types : ``None | tuple<ChannelType>``
     
     Raises
     ------
@@ -1022,14 +1022,14 @@ def postprocess_channel_types(processed_channel_types, parsed_channel_types):
     
     Parameters
     ----------
-    processed_channel_types : `None`, `tuple` of ``ChannelType``
+    processed_channel_types : ``None | tuple<ChannelType>``
         Channel types detected from `channel_types` field.
-    parsed_channel_types : `None`, `tuple` of ``ChannelType``
+    parsed_channel_types : ``None | tuple<ChannelType>``
         Channel types processed from the `type_or_choice` field.
     
     Returns
     -------
-    channel_types : `None`, `tuple` of ``ChannelType``
+    channel_types : ``None | tuple<ChannelType>``
         The selected channel types.
     
     Raises
@@ -1416,7 +1416,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         Choices if applicable.
     choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.
-    channel_types : `None`, `tuple` of ``ChannelType``
+    channel_types : ``None | tuple<ChannelType>``
         The accepted channel types.
     
     TypeError
@@ -1662,7 +1662,7 @@ def parse_annotation_tuple(parameter, annotation_tuple):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
-    channel_types : `None`, `tuple` of ``ChannelType``
+    channel_types : ``None | tuple<ChannelType>``
         The accepted channel types.
     max_value : `None | int | float`
         The maximal accepted value.
@@ -1739,7 +1739,7 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
-    channel_types : `None`, `tuple` of ``ChannelType``
+    channel_types : ``None | tuple<ChannelType>``
         The accepted channel types.
     max_value : `None | int | float`
         The maximal accepted value.
@@ -1843,7 +1843,7 @@ def parse_pep_593_typing(parameter, annotation_value):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
-    channel_types : `None`, `tuple` of ``ChannelType``
+    channel_types : ``None | tuple<ChannelType>``
         The accepted channel types.
     max_value : `None | int | float`
         The maximal accepted value.
@@ -1912,7 +1912,7 @@ def parse_annotation_fallback(parameter, annotation_value):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
-    channel_types : `None`, `tuple` of ``ChannelType``
+    channel_types : ``None | tuple<ChannelType>``
         The accepted channel types.
     max_value : `None | int | float`
         The maximal accepted value.
@@ -2008,7 +2008,7 @@ def parse_annotation(parameter):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
-    channel_types : `None`, `tuple` of ``ChannelType``
+    channel_types : ``None | tuple<ChannelType>``
         The accepted channel types.
     max_value : `None | int | float`
         The maximal accepted value.

@@ -388,7 +388,7 @@ def test__AuditLog__guild(guild_id):
     
     Returns
     -------
-    output : `None | Guild`
+    output : ``None | Guild``
     """
     role = AuditLog(guild_id = guild_id)
     output = role.guild

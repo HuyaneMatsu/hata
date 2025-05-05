@@ -105,7 +105,7 @@ def _validate_aliases(aliases):
     
     Parameters
     ----------
-    aliases : `None`, `str`, `list` of `str`
+    aliases : `None | str | list<str>`
         Command aliases.
     
     Returns
@@ -153,7 +153,7 @@ def _validate_aliases(aliases):
             aliases = {aliases}
         else:
             raise TypeError(
-                '`aliases` can be `str`, `list` of `str`, got {aliases.__class__.__name__}; {aliases!r}'
+                f'`aliases` can be `str`, `list` of `str`, got {type(aliases).__name__}; {aliases!r}'
             )
     
     return aliases

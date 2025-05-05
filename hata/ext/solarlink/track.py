@@ -325,7 +325,7 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
             Where the track will start in seconds.
         end_time : `float`
             Where the track will start in seconds.
-        added_attributes : `dict` of (`str`, `object`)
+        added_attributes : `dict<str, object>`
             Additional user defined attributes.
         
         Raises

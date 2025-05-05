@@ -9,21 +9,80 @@ def _iter_options():
     component_0 = Component(ComponentType.button, label = 'Hell')
     component_1 = Component(ComponentType.row, components = [Component(ComponentType.button, label = 'Rose')])
 
-    yield None, False, {}
-    yield None, True, {'message': {'components': []}}
-    
-    yield (component_0, ), False, {'message': {'components': [component_0.to_data()]}}
-    yield (component_0, ), True, {'message': {'components': [component_0.to_data(defaults = True)]}}
-    
     yield (
-        (component_0, component_1),
+        None,
         False,
-        {'message': {'components': [component_0.to_data(), component_1.to_data()]}},
+        {},
     )
+    
     yield (
-        (component_0, component_1),
+        None,
         True,
-        {'message': {'components': [component_0.to_data(defaults = True), component_1.to_data(defaults = True)]}},
+        {
+            'message': {
+                'components': [],
+            },
+        },
+    )
+    
+    yield (
+        (
+            component_0,
+        ),
+        False,
+        {
+            'message': {
+                'components': [
+                    component_0.to_data(defaults = False, include_internals = True),
+                ],
+            },
+        },
+    )
+    
+    yield (
+        (
+            component_0,
+        ),
+        True,
+        {
+            'message': {
+                'components': [
+                    component_0.to_data(defaults = True, include_internals = True),
+                ],
+            },
+        },
+    )
+    
+    yield (
+        (
+            component_0,
+            component_1,
+        ),
+        False,
+        {
+            'message': {
+                'components': [
+                    component_0.to_data(defaults = False, include_internals = True),
+                    component_1.to_data(defaults = False, include_internals = True),
+                ],
+            },
+        },
+    )
+    
+    yield (
+        (
+            component_0,
+            component_1,
+        ),
+        True,
+        {
+            'message': {
+                'components': [
+                    component_0.to_data(defaults = True, include_internals = True),
+                    component_1.to_data(defaults = True, include_internals = True),
+                ],
+            },
+        },
     )
 
 
@@ -34,7 +93,7 @@ def test__put_components(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | tuple<Component>`
+    input_value : ``None | tuple<Component>``
         The components to serialize.
     
     defaults : `bool`

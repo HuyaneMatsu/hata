@@ -21,6 +21,7 @@ def test__put_spacing_size(input_value, defaults):
     ----------
     input_value : ``SeparatorSpacingSize``
         The value to serialise.
+    
     defaults : `bool`
         Whether values with their default value should be included in the output as well.
     

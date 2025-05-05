@@ -30,8 +30,9 @@ def test__put_default_values(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | tuple<EntitySelectDefaultValue>`
+    input_value : ``None | tuple<EntitySelectDefaultValue>``
         Input value.
+    
     defaults : `bool`
         Whether fields with their default values should be included as well.
     

@@ -17,6 +17,7 @@ class ComponentMetadataSeparator(ComponentMetadataBase):
     ----------
     divider : `bool`
         Whether the separator should contain a divider.
+    
     spacing_size : ``SeparatorSpacingSize``
         The separator's spacing's size.
     """
@@ -35,7 +36,8 @@ class ComponentMetadataSeparator(ComponentMetadataBase):
         ----------
         divider : `bool`, Optional (Keyword only)
             Whether the separator should contain a divider.
-        spacing_size : ``SeparatorSpacingSize``, `int`, Optional (Keyword only)
+        
+        spacing_size : ``int | SeparatorSpacingSize``, Optional (Keyword only)
             The separator's spacing's size.
         
         Raises
@@ -139,13 +141,23 @@ class ComponentMetadataSeparator(ComponentMetadataBase):
     
     
     @copy_docs(ComponentMetadataBase.to_data)
-    def to_data(self, *, defaults = False):
+    def to_data(self, *, defaults = False, include_internals = False):
         data = {}
         
         put_divider(self.divider, data, defaults)
         put_spacing_size(self.spacing_size, data, defaults)
         
         return data
+    
+    
+    @copy_docs(ComponentMetadataBase.clean_copy)
+    def clean_copy(self, guild = None):
+        new = object.__new__(type(self))
+        
+        new.divider = self.divider
+        new.spacing_size = self.spacing_size
+        
+        return new
     
     
     @copy_docs(ComponentMetadataBase.copy)
@@ -171,7 +183,8 @@ class ComponentMetadataSeparator(ComponentMetadataBase):
         ----------
         divider : `bool`, Optional (Keyword only)
             Whether the separator should contain a divider.
-        spacing_size : ``SeparatorSpacingSize``, `int`, Optional (Keyword only)
+        
+        spacing_size : ``int | SeparatorSpacingSize``, Optional (Keyword only)
             The separator's spacing's size.
         
         Returns

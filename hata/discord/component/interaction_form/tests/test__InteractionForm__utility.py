@@ -12,7 +12,7 @@ def test__InteractionForm__copy():
     Test whether ``InteractionForm.copy`` works as intended.
     """
     title = 'important'
-    components = [Component(ComponentType.button, label = 'chata')]
+    components = [Component(ComponentType.text_input, label = 'chata')]
     custom_id = 'lie'
     
     rows = tuple(Component(ComponentType.row, components = [component]) for component in components)
@@ -27,14 +27,14 @@ def test__InteractionForm__copy():
     vampytest.assert_eq(copy.custom_id, custom_id)
 
 
-def test__InteractionForm__copy_with__0():
+def test__InteractionForm__copy_with__no_fields():
     """
     Test whether ``InteractionForm.copy_with`` works as intended.
     
-    Case: no parameters.
+    Case: no fields given.
     """
     title = 'important'
-    components = [Component(ComponentType.button, label = 'chata')]
+    components = [Component(ComponentType.text_input, label = 'chata')]
     custom_id = 'lie'
     
     rows = tuple(Component(ComponentType.row, components = [component]) for component in components)
@@ -49,17 +49,18 @@ def test__InteractionForm__copy_with__0():
     vampytest.assert_eq(copy.custom_id, custom_id)
 
 
-def test__InteractionForm__copy_with__1():
+def test__InteractionForm__copy_with__all_fields():
     """
     Test whether ``InteractionForm.copy_with`` works as intended.
     
-    Case: stuff it full.
+    Case: All fields given.
     """
     old_title = 'important'
-    new_title = 'fire'
-    old_components = [Component(ComponentType.button, label = 'chata')]
-    new_components = [Component(ComponentType.text_input, label = 'in my')]
+    old_components = [Component(ComponentType.text_input, label = 'chata')]
     old_custom_id = 'lie'
+    
+    new_title = 'fire'
+    new_components = [Component(ComponentType.text_input, label = 'in my')]
     new_custom_id = 'heart'
     
     rows = tuple(Component(ComponentType.row, components = [component]) for component in new_components)
@@ -75,8 +76,8 @@ def test__InteractionForm__copy_with__1():
 
 
 def _iter_options__iter_components():
-    component_0 = Component(ComponentType.row, components = [Component(ComponentType.button, label = 'chata')])
-    component_1 = Component(ComponentType.row, components = [Component(ComponentType.button, label = 'izna')])
+    component_0 = Component(ComponentType.row, components = [Component(ComponentType.text_input, label = 'chata')])
+    component_1 = Component(ComponentType.row, components = [Component(ComponentType.text_input, label = 'izna')])
     
     yield None, []
     yield [component_0], [component_0]

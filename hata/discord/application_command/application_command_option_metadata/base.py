@@ -205,7 +205,7 @@ class ApplicationCommandOptionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        channel_types : `None`, `tuple` of ``ChannelType``
+        channel_types : ``None | tuple<ChannelType>``
         """
     )
     

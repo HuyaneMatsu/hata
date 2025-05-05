@@ -95,7 +95,7 @@ class Entitlement(DiscordEntity):
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild's identifier that was granted access to the stock keeping unit.
     
-        sku_id : `int`, ``SKU``, Optional (Keyword only)
+        sku_id : ``int | SKU``, Optional (Keyword only)
             The stock keeping unit's identifier the this entitlement grants access to.
         
         user_id : `int`, ``ClientUserBase``, Optional (Keyword only)
@@ -401,10 +401,10 @@ class Entitlement(DiscordEntity):
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild's identifier that was granted access to the stock keeping unit.
         
-        sku : `int`, ``SKU``, Optional (Keyword only)
+        sku : ``int | SKU``, Optional (Keyword only)
             Alternative for `sku_id`.
         
-        sku_id : `int`, ``SKU``, Optional (Keyword only)
+        sku_id : ``int | SKU``, Optional (Keyword only)
             The stock keeping unit's identifier the this entitlement grants access to.
     
         starts_at : `None | DateTime`, Optional (Keyword only)
@@ -605,7 +605,7 @@ class Entitlement(DiscordEntity):
         guild_id : `int`, ``Guild``, Optional (Keyword only)
             The guild's identifier that was granted access to the stock keeping unit.
     
-        sku_id : `int`, ``SKU``, Optional (Keyword only)
+        sku_id : ``int | SKU``, Optional (Keyword only)
             The stock keeping unit's identifier the this entitlement grants access to.
         
         user_id : `int`, ``ClientUserBase``, Optional (Keyword only)

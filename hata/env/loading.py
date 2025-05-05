@@ -23,7 +23,7 @@ def find_launched_location():
     
     Returns
     -------
-    location : `None`, `str`
+    location : `None | str`
     """
     frame = get_frame()
     
@@ -61,7 +61,7 @@ def find_dot_env_file_in_launched_location():
     
     Returns
     -------
-    file_path : `None`, `str`
+    file_path : `None | str`
     """
     location = find_launched_location()
     if (location is not None):
@@ -76,7 +76,7 @@ def find_dot_env_file_in_current_working_directory():
     
     Returns
     -------
-    file_path : `None`, `str`
+    file_path : `None | str`
     """
     location = get_current_working_directory()
     if (location is not None):
@@ -198,7 +198,7 @@ def load_dot_env(value, file_path = None):
     ----------
     value : `str`
         The value to parse.
-    file_path : `None`, `str`
+    file_path : `None | str`
         File path to show u
     
     Returns

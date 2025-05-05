@@ -46,7 +46,7 @@ def test__ComponentMetadataTextInput__to_data():
     """
     Tests whether ``ComponentMetadataTextInput.to_data`` works as intended.
     
-    Case: include defaults.
+    Case: include defaults and internals.
     """
     custom_id = 'night'
     label = 'end'
@@ -71,6 +71,7 @@ def test__ComponentMetadataTextInput__to_data():
     vampytest.assert_eq(
         component_metadata.to_data(
             defaults = True,
+            include_internals = True,
         ),
         {
             'custom_id': custom_id,

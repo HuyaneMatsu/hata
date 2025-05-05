@@ -1,18 +1,20 @@
-__all__ = ('ComponentMetadataText',)
+__all__ = ('ComponentMetadataTextDisplay',)
 
 from scarletio import copy_docs
+
+from ...utils import sanitize_mentions
 
 from .base import ComponentMetadataBase
 from .fields import parse_content, put_content, validate_content
 
 
-class ComponentMetadataText(ComponentMetadataBase):
+class ComponentMetadataTextDisplay(ComponentMetadataBase):
     """
     Represents the metadata of a text component used inside of a form.
     
     Attributes
     ----------
-    content : `None`, `str`
+    content : `None | str`
         The content shown on the component.
     """
     __slots__ = ('content',)
@@ -23,7 +25,7 @@ class ComponentMetadataText(ComponentMetadataBase):
         
         Parameters
         ----------
-        content : `None`, `str`, Optional (Keyword only)
+        content : `None | str`, Optional (Keyword only)
             The content shown on the component.
         
         Raises
@@ -97,7 +99,7 @@ class ComponentMetadataText(ComponentMetadataBase):
     
     
     @copy_docs(ComponentMetadataBase.to_data)
-    def to_data(self, *, defaults = False):
+    def to_data(self, *, defaults = False, include_internals = False):
         data = {}
         
         put_content(self.content, data, defaults)
@@ -105,10 +107,21 @@ class ComponentMetadataText(ComponentMetadataBase):
         return data
     
     
+    @copy_docs(ComponentMetadataBase.clean_copy)
+    def clean_copy(self, guild = None):
+        new = object.__new__(type(self))
+        
+        # content
+        new.content = sanitize_mentions(self.content, guild)
+        
+        return new
+    
+    
     @copy_docs(ComponentMetadataBase.copy)
     def copy(self):
         new = object.__new__(type(self))
         
+        # content
         new.content = self.content
         
         return new
@@ -124,7 +137,7 @@ class ComponentMetadataText(ComponentMetadataBase):
         
         Parameters
         ----------
-        content : `None`, `str`, Optional (Keyword only)
+        content : `None | str`, Optional (Keyword only)
             The content shown on the component.
         
         Returns
@@ -155,3 +168,10 @@ class ComponentMetadataText(ComponentMetadataBase):
         return self.copy_with(
             content = keyword_parameters.pop('content', ...),
         )
+    
+    
+    @copy_docs(ComponentMetadataBase.iter_contents)
+    def iter_contents(self):
+        content = self.content
+        if (content is not None):
+            yield content

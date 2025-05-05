@@ -380,7 +380,7 @@ class MessageInteraction(DiscordEntity):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
         """
         data = {}
         put_authorizer_user_ids(self.authorizer_user_ids, data, defaults)

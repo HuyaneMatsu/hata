@@ -9,30 +9,38 @@ def test__ComponentMetadataRow__repr():
     """
     Tests whether ``ComponentMetadataRow.__repr__`` works as intended.
     """
-    components = [Component(ComponentType.button, label = 'chata')]
+    components = [
+        Component(ComponentType.button, label = 'chata'),
+    ]
     
     component_metadata = ComponentMetadataRow(
         components = components,
     )
     
-    vampytest.assert_instance(repr(component_metadata), str)
+    output = repr(component_metadata)
+    vampytest.assert_instance(output, str)
 
 
 def test__ComponentMetadataRow__hash():
     """
     Tests whether ``ComponentMetadataRow.__hash__`` works as intended.
     """
-    components = [Component(ComponentType.button, label = 'chata')]
+    components = [
+        Component(ComponentType.button, label = 'chata'),
+    ]
     
     component_metadata = ComponentMetadataRow(
         components = components,
     )
     
-    vampytest.assert_instance(hash(component_metadata), int)
+    output = hash(component_metadata)
+    vampytest.assert_instance(output, int)
 
 
 def _iter_options__eq__same_type():
-    components = [Component(ComponentType.button, label = 'chata')]
+    components = [
+        Component(ComponentType.button, label = 'chata'),
+    ]
     
     keyword_parameters = {
         'components': components,
@@ -63,6 +71,7 @@ def test__ComponentMetadataRow__eq(keyword_parameters_0, keyword_parameters_1):
     ----------
     keyword_parameters_0 : `dict<str, object>`
         Keyword parameters to create instance with.
+    
     keyword_parameters_1 : `dict<str, object>`
         Keyword parameters to create instance with.
     

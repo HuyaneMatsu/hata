@@ -2,7 +2,7 @@ import vampytest
 
 from ..base import InteractionMetadataBase
 
-from .test__InteractionMetadataBase__constructor import _check_is_all_field_set
+from .test__InteractionMetadataBase__constructor import _assert_fields_set
 
 
 def test__InteractionMetadataBase__copy():
@@ -11,7 +11,7 @@ def test__InteractionMetadataBase__copy():
     """
     interaction_metadata = InteractionMetadataBase()
     copy = interaction_metadata.copy()
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     vampytest.assert_eq(copy, interaction_metadata)
 
@@ -24,6 +24,6 @@ def test__InteractionMetadataBase__copy_with__0():
     """
     interaction_metadata = InteractionMetadataBase()
     copy = interaction_metadata.copy_with()
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     vampytest.assert_eq(copy, interaction_metadata)

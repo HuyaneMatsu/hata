@@ -33,7 +33,7 @@ class Embed(RichAttributeErrorBaseType):
     author : `None | EmbedAuthor`
         Author information.
     
-    color : `None | Color`
+    color : ``None | Color``
         The color code of the embed. Passing `0` means black, not like at the case of roles.
     
     description : `None | str`
@@ -314,6 +314,7 @@ class Embed(RichAttributeErrorBaseType):
         ----------
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether default values should be included as well.
+        
         include_internals : `bool` = `False`, Optional (Keyword only)
             Whether internal fields should be included as well.
         
@@ -885,7 +886,7 @@ class Embed(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        guild : `None | Guild` = `None`, Optional
+        guild : ``None | Guild`` = `None`, Optional
             The respective guild as a context to look up guild specific names of entities.
         
         Returns

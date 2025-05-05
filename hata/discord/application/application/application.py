@@ -2788,7 +2788,7 @@ class Application(DiscordEntity, immortal = True):
         
         Returns
         -------
-        guild : `None | Guild`
+        guild : ``None | Guild``
         """
         guild_id = self.guild_id
         if guild_id:

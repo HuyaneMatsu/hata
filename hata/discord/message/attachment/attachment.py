@@ -314,6 +314,10 @@ class Attachment(DiscordEntity):
         ----------
         data : `dict<str, object>`
             Received attachment data.
+        
+        Returns
+        -------
+        self : `instance<cls>`
         """
         self = object.__new__(cls)
         self.application = parse_application(data)

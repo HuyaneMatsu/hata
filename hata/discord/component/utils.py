@@ -1,7 +1,7 @@
 __all__ = (
-    'create_button', 'create_channel_select', 'create_media_gallery', 'create_mentionable_select',
-    'create_role_select', 'create_row', 'create_separator', 'create_string_select', 'create_text', 'create_text_input',
-    'create_user_select'
+    'create_attachment_media', 'create_button', 'create_channel_select', 'create_container', 'create_media_gallery',
+    'create_mentionable_select', 'create_role_select', 'create_row', 'create_section', 'create_separator',
+    'create_string_select', 'create_text_display', 'create_text_input', 'create_thumbnail_media', 'create_user_select'
 )
 
 from .component import Component, ComponentType
@@ -36,12 +36,12 @@ def create_button(
     enabled : `bool`, Optional (Keyword only)
         Whether the button is enabled.
     
-    sku_id : `int`, ``SKU``, Optional (Keyword only)
+    sku_id : ``int | SKU``, Optional (Keyword only)
         Purchasable stock keeping unit identifier.
         
         > Mutually exclusive with the `custom_id` and `url` fields.
     
-    style : `None`, ``ButtonStyle``, `int`, Optional (Keyword only)
+    style : `None`, ``int | ButtonStyle``, Optional (Keyword only)
         The button's style.
     
     url : `None`, `str`, Optional (Keyword only)
@@ -444,11 +444,42 @@ def create_channel_select(
     )
 
 
-def create_text(
+def create_section(
+    *components,
+    thumbnail = ...,
+):
+    """
+    Creates a section component from the given components.
+    
+    Parameters
+    ----------
+    *components : ``Component``
+        Sub components.
+    
+    thumbnail : ``None | Component``, Optional (Keyword only)
+        The thumbnail or other accessory (button) of a section component.
+    
+    Returns
+    -------
+    row : ``Component``
+    
+    Raises
+    ------
+    TypeError
+        - If a parameter's type is incorrect.
+    """
+    return Component(
+        ComponentType.section,
+        components = components,
+        thumbnail = thumbnail,
+    )
+
+
+def create_text_display(
     content = ...,
 ):
     """
-    Creates a new text component. Can be used inside of forms.
+    Creates a new text display component. Can be used inside of forms.
     
     Parameters
     ----------
@@ -467,8 +498,47 @@ def create_text(
         - If a parameter's value is incorrect.
     """
     return Component(
-        ComponentType.text,
+        ComponentType.text_display,
         content = content,
+    )
+
+
+def create_thumbnail_media(
+    media,
+    *,
+    description = ...,
+    spoiler = ...,
+):
+    """
+    Creates a new thumbnail media component. Can be used inside of forms.
+    
+    Parameters
+    ----------
+    media : ``str | MediaInfo``
+        The media of the component.
+    
+    description : `None | str`, Optional (Keyword only)
+        Description of the component's media.
+    
+    spoiler : `bool` Optional (Keyword only)
+        Whether the media should be spoilered.
+    
+    Returns
+    -------
+    separator : ``Component``
+    
+    Raises
+    ------
+    TypeError
+        - If a parameter's type is incorrect.
+    ValueError
+        - If a parameter's value is incorrect.
+    """
+    return Component(
+        ComponentType.thumbnail_media,
+        description = description,
+        media = media,
+        spoiler = spoiler,
     )
 
 
@@ -480,12 +550,12 @@ def create_media_gallery(
     
     Parameters
     ----------
-    *items : ``MediaItem``
+    *items : ``str | MediaItem``
         The media items shown on the component.
     
     Returns
     -------
-    text : ``Component``
+    media_gallery : ``Component``
     
     Raises
     ------
@@ -497,6 +567,40 @@ def create_media_gallery(
     return Component(
         ComponentType.media_gallery,
         items = items,
+    )
+
+
+def create_attachment_media(
+    media,
+    *,
+    spoiler = ...,
+):
+    """
+    Creates a new attachment media component. Can be used inside of forms.
+    
+    Parameters
+    ----------
+    media : ``str | MediaInfo``
+        The media of the component.
+    
+    spoiler : `bool` Optional (Keyword only)
+        Whether the media should be spoilered.
+    
+    Returns
+    -------
+    separator : ``Component``
+    
+    Raises
+    ------
+    TypeError
+        - If a parameter's type is incorrect.
+    ValueError
+        - If a parameter's value is incorrect.
+    """
+    return Component(
+        ComponentType.attachment_media,
+        media = media,
+        spoiler = spoiler,
     )
 
 
@@ -512,7 +616,8 @@ def create_separator(
     ----------
     divider : `bool`, Optional (Keyword only)
         Whether the separator should contain a divider.
-    spacing_size : ``SeparatorSpacingSize``, `int`, Optional (Keyword only)
+    
+    spacing_size : ``int | SeparatorSpacingSize``, Optional (Keyword only)
         The separator's spacing's size.
     
     Returns
@@ -530,4 +635,40 @@ def create_separator(
         ComponentType.separator,
         divider = divider,
         spacing_size = spacing_size,
+    )
+
+
+def create_container(
+    *components,
+    color = ...,
+    spoiler = ...,
+):
+    """
+    Creates a container component from the given components.
+    
+    Parameters
+    ----------
+    *components : ``Component``
+        Sub components.
+    
+    color : ``None | Color``
+        The color of the strip on the left.
+    
+    spoiler : `bool`, Optional (Keyword only)
+        Whether the content of the component is spoilered.
+    
+    Returns
+    -------
+    container : ``Component``
+    
+    Raises
+    ------
+    TypeError
+        - If a parameter's type is incorrect.
+    """
+    return Component(
+        ComponentType.container,
+        components = components,
+        color = color,
+        spoiler = spoiler,
     )

@@ -86,7 +86,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             
             Mutually exclusive with the `choices` parameter. Only applicable for string type parameters.
         
-        channel_types : `None`, `iterable` of (``ChannelType``, `int`), Optional (Keyword only)
+        channel_types : ``None | iterable<int> | iterable<ChannelType>``, Optional (Keyword only)
             The accepted channel types by the option.
             
             Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
@@ -616,7 +616,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             
             Mutually exclusive with the `choices` parameter. Only applicable for string type parameters.
         
-        channel_types : `None`, `iterable` of (``ChannelType``, `int`), Optional (Keyword only)
+        channel_types : ``None | iterable<int> | iterable<ChannelType>``, Optional (Keyword only)
             The accepted channel types by the option.
             
             Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.

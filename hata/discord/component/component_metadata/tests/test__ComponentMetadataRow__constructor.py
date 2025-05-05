@@ -34,12 +34,15 @@ def test__ComponentMetadataRow__new__all_fields():
     
     Case: All fields.
     """
-    components = [Component(ComponentType.button, label = 'chata')]
+    components = [
+        Component(ComponentType.button, label = 'chata'),
+    ]
     
     component_metadata = ComponentMetadataRow(
         components = components,
     )
     _assert_fields_set(component_metadata)
+    
     vampytest.assert_eq(component_metadata.components, tuple(components))
 
 
@@ -61,7 +64,9 @@ def test__ComponentMetadataRow__from_keyword_parameters__all_fields():
     
     Case: All fields.
     """
-    components = [Component(ComponentType.button, label = 'chata')]
+    components = [
+        Component(ComponentType.button, label = 'chata'),
+    ]
     
     keyword_parameters = {
         'components': components,
@@ -69,4 +74,5 @@ def test__ComponentMetadataRow__from_keyword_parameters__all_fields():
     
     component_metadata = ComponentMetadataRow.from_keyword_parameters(keyword_parameters)
     _assert_fields_set(component_metadata)
+    
     vampytest.assert_eq(component_metadata.components, tuple(components))

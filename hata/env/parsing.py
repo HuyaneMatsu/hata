@@ -100,7 +100,7 @@ class ParserState(RichAttributeErrorBaseType):
         Where the current line is started.
     position : `int`
         The current position.
-    value : `list` of `str`
+    value : `list<str>`
         The value to parse by character.
     """
     __slots__ = ('end', 'line_index', 'line_start', 'position', 'value')
@@ -166,14 +166,14 @@ def render_escaped_string_into(into, string):
     
     Parameters
     ----------
-    into : `list` of `str`
+    into : `list<str>`
         String parts to extend.
     string : `str`
         The string to render.
     
     Returns
     -------
-    into : `list` of `str`
+    into : `list<str>`
     """
     for character in string:
         try:
@@ -194,7 +194,7 @@ def render_string_hidden_representation_into(into, string, cut_at):
     
     Parameters
     ----------
-    into : `list` of `str`
+    into : `list<str>`
         String parts to extend.
     string : `str`
         The string to render.
@@ -203,7 +203,7 @@ def render_string_hidden_representation_into(into, string, cut_at):
     
     Returns
     -------
-    into : `list` of `str`
+    into : `list<str>`
     """
     string_length = len(string)
     

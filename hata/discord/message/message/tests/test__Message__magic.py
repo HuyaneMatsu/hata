@@ -786,6 +786,8 @@ def test__Message__len__all_contents():
     poll_question_text = 'marisa'
     poll_answer_0_text = 'junko'
     poll_answer_1_text = 'clown'
+    component_0_content = 'mayumi'
+    component_1_content = 'keiki'
     
     embed_0 = Embed(title = embed_0_title, description = embed_0_description)
     embed_0.author = EmbedAuthor(embed_0_author_name)
@@ -803,13 +805,29 @@ def test__Message__len__all_contents():
         question = PollQuestion(text = poll_question_text),
     )
     
-    message = Message(content = message_content, embeds = [embed_0, embed_1], poll = poll)
+    component_0 = Component(
+        ComponentType.text_display,
+        content = component_0_content,
+    )
+    
+    component_1 = Component(
+        ComponentType.text_display,
+        content = component_1_content,
+    )
+    
+    message = Message(
+        components = [component_0, component_1],
+        content = message_content,
+        embeds = [embed_0, embed_1],
+        poll = poll,
+    )
     
     length = sum(
         len(value) for value in (
             embed_0_title, embed_0_author_name, embed_0_description, embed_0_field_0_name, embed_0_field_0_value,
             embed_0_field_1_name, embed_0_field_1_value, embed_0_footer_text, embed_0_provider_name,
-            message_content, embed_1_title, poll_question_text, poll_answer_0_text, poll_answer_1_text
+            message_content, embed_1_title, poll_question_text, poll_answer_0_text, poll_answer_1_text,
+            component_0_content, component_1_content
         )
     )
     

@@ -883,7 +883,7 @@ def test__Application__guild(application):
     
     Returns
     -------
-    output : `None | Guild`
+    output : ``None | Guild``
     """
     return application.guild
 

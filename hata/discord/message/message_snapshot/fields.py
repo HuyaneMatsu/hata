@@ -86,7 +86,7 @@ def parse_components(data):
     
     Returns
     -------
-    components : `None | tuple<Component>`
+    components : ``None | tuple<Component>``
     """
     message_data = data.get('message', None)
     if message_data is None:
@@ -101,10 +101,12 @@ def put_components(components, data, defaults):
     
     Parameters
     ----------
-    components : `None | tuple<Component>`
+    components : ``None | tuple<Component>``
         The components to serialize.
+    
     data : `dict<str, object>`
         Reaction event data.
+    
     defaults : `bool`
         Whether fields with their default values should be included as well.
     
@@ -121,7 +123,10 @@ def put_components(components, data, defaults):
         if components is None:
             component_datas = []
         else:
-            component_datas = [component.to_data(defaults = defaults) for component in components]
+            component_datas = [
+                component.to_data(defaults = defaults, include_internals = True)
+                for component in components
+            ]
         
         message_data['components'] = component_datas
     

@@ -111,7 +111,7 @@ class VerificationScreenStep(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
         """
         data = {}
         put_required(self.required, data, defaults)

@@ -8,7 +8,7 @@ from ...resolved import Resolved
 from ..message_component import InteractionMetadataMessageComponent
 
 
-def _check_is_all_field_set(interaction_metadata):
+def _assert_fields_set(interaction_metadata):
     """
     Checks whether all fields of the given interaction metadata are set.
     
@@ -31,7 +31,7 @@ def test__InteractionMetadataMessageComponent__new__0():
     Case: No fields given.
     """
     interaction_metadata = InteractionMetadataMessageComponent()
-    _check_is_all_field_set(interaction_metadata)
+    _assert_fields_set(interaction_metadata)
 
 
 def test__InteractionMetadataMessageComponent__new__1():
@@ -51,7 +51,7 @@ def test__InteractionMetadataMessageComponent__new__1():
         resolved = resolved,
         values = values,
     )
-    _check_is_all_field_set(interaction_metadata)
+    _assert_fields_set(interaction_metadata)
     
     vampytest.assert_eq(interaction_metadata.component_type, component_type)
     vampytest.assert_eq(interaction_metadata.custom_id, custom_id)
@@ -64,4 +64,4 @@ def test__InteractionMetadataMessageComponent__create_empty():
     Tests whether ``InteractionMetadataMessageComponent._create_empty`` works as intended.
     """
     interaction_metadata = InteractionMetadataMessageComponent._create_empty()
-    _check_is_all_field_set(interaction_metadata)
+    _assert_fields_set(interaction_metadata)

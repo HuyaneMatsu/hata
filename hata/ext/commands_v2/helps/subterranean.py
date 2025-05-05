@@ -283,7 +283,7 @@ def get_sub_commands(command):
     
     Returns
     -------
-    command_paths_and_functions : `list` of `str`, ``CommandFunction``
+    command_paths_and_functions : `list<str>`, ``CommandFunction``
     Sorted command paths and functions.
     """
     return sorted(iter_sub_commands(command, []))
@@ -893,9 +893,9 @@ class SubterraneanHelpCommand:
         ----------
         command_context : ``CommandContext``
             The called command's context.
-        command_names : `list` of `str`
+        command_names : `list<str>`
             The command's names to display.
-        category_name : `None or `str`
+        category_name : `None | str`
             The respective category's name.
         """
         pages = []

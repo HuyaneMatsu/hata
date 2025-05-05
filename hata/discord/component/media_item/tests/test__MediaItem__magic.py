@@ -1,5 +1,7 @@
 import vampytest
 
+from ...media_info import MediaInfo
+
 from ..media_item import MediaItem
 
 
@@ -8,13 +10,13 @@ def test__MediaItem__repr():
     Tests whether ``MediaItem.__repr__`` works as intended.
     """
     description = 'orin'
+    media = MediaInfo('https://orindance.party/')
     spoiler = True
-    url = 'https://orindance.party/'
     
     media_item = MediaItem(
+        media,
         description = description,
         spoiler = spoiler,
-        url = url,
     )
     vampytest.assert_instance(repr(media_item), str)
 
@@ -24,26 +26,26 @@ def test__MediaItem__hash():
     Tests whether ``MediaItem.__hash__`` works as intended.
     """
     description = 'orin'
+    media = MediaInfo('https://orindance.party/')
     spoiler = True
-    url = 'https://orindance.party/'
     
     media_item = MediaItem(
+        media,
         description = description,
         spoiler = spoiler,
-        url = url,
     )
     vampytest.assert_instance(hash(media_item), int)
 
 
 def _iter_options__eq__same_type():
     description = 'orin'
+    media = MediaInfo('https://orindance.party/')
     spoiler = True
-    url = 'https://orindance.party/'
     
     keyword_parameters = {
         'description': description,
+        'media': media,
         'spoiler': spoiler,
-        'url': url,
     }
     
     yield (
@@ -65,7 +67,7 @@ def _iter_options__eq__same_type():
         keyword_parameters,
         {
             **keyword_parameters,
-            'spoiler': False,
+            'media': MediaInfo('https://www.astil.dev/'),
         },
         False,
     )
@@ -74,7 +76,7 @@ def _iter_options__eq__same_type():
         keyword_parameters,
         {
             **keyword_parameters,
-            'url': 'https://www.astil.dev/',
+            'spoiler': False,
         },
         False,
     )
@@ -91,6 +93,7 @@ def test__MediaItem__eq__same_type(keyword_parameters_0, keyword_parameters_1):
     ----------
     keyword_parameters_0 : `dict<str, object>`
         Keyword parameters to create instance with.
+    
     keyword_parameters_1 : `dict<str, object>`
         Keyword parameters to create instance with.
     

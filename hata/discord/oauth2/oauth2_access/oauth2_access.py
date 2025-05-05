@@ -302,7 +302,7 @@ class Oauth2Access(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `None` or (`dict` of (`str`, `object`))
+        data : `None | dict<str, object>`
             Requested access data.
         """
         self.created_at = DateTime.now(TimeZone.utc)

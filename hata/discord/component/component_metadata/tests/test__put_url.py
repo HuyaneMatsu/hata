@@ -19,6 +19,7 @@ def test__put_url(input_value, defaults):
     ----------
     input_value : `None | str`
         Value to serialize.
+    
     defaults : `bool`
         Whether fields with their value should be included as well.
     

@@ -1,11 +1,13 @@
 import vampytest
 
 from ....channel import ChannelType
+from ....color import Color
 from ....core import BUILTIN_EMOJIS
 from ....emoji import Emoji
 
 from ...component_metadata import ButtonStyle, SeparatorSpacingSize, TextInputStyle
 from ...entity_select_default_value import EntitySelectDefaultValue, EntitySelectDefaultValueType
+from ...media_info import MediaInfo
 from ...media_item import MediaItem
 from ...string_select_option import StringSelectOption
 
@@ -23,10 +25,12 @@ def test__Component__proxies__reading_defaults():
     
     vampytest.assert_instance(component.button_style, ButtonStyle)
     vampytest.assert_instance(component.channel_types, tuple, nullable = True)
+    vampytest.assert_instance(component.color, Color, nullable = True)
     vampytest.assert_instance(component.components, tuple, nullable = True)
     vampytest.assert_instance(component.content, str, nullable = True)
     vampytest.assert_instance(component.custom_id, str, nullable = True)
     vampytest.assert_instance(component.default_values, tuple, nullable = True)
+    vampytest.assert_instance(component.description, str, nullable = True)
     vampytest.assert_instance(component.emoji, Emoji, nullable = True)
     vampytest.assert_instance(component.enabled, bool)
     vampytest.assert_instance(component.divider, bool)
@@ -34,6 +38,7 @@ def test__Component__proxies__reading_defaults():
     vampytest.assert_instance(component.items, tuple, nullable = True)
     vampytest.assert_instance(component.max_length, int)
     vampytest.assert_instance(component.max_values, int)
+    vampytest.assert_instance(component.media, MediaInfo, nullable = True)
     vampytest.assert_instance(component.min_length, int)
     vampytest.assert_instance(component.min_values, int)
     vampytest.assert_instance(component.options, tuple, nullable = True)
@@ -41,6 +46,7 @@ def test__Component__proxies__reading_defaults():
     vampytest.assert_instance(component.required, bool)
     vampytest.assert_instance(component.sku_id, int)
     vampytest.assert_instance(component.spacing_size, SeparatorSpacingSize)
+    vampytest.assert_instance(component.spoiler, bool)
     vampytest.assert_instance(component.text_input_style, TextInputStyle)
     vampytest.assert_instance(component.url, str, nullable = True)
     vampytest.assert_instance(component.value, str, nullable = True)
@@ -124,7 +130,9 @@ def test__Component__proxies__read_row():
     
     Case: reading row fields.
     """
-    components = [Component(ComponentType.button, label = 'mokou')]
+    components = [
+        Component(ComponentType.button, label = 'mokou'),
+    ]
     
     component = Component(
         ComponentType.row,
@@ -132,6 +140,31 @@ def test__Component__proxies__read_row():
     )
     
     vampytest.assert_eq(component.components, tuple(components))
+
+
+
+def test__Component__proxies__read_section():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading section fields.
+    """
+    components = [
+        Component(ComponentType.text_display, content = 'mokou'),
+    ]
+    thumbnail = Component(
+        ComponentType.thumbnail_media,
+        media = MediaInfo('attachment://orin.png'),
+    )
+    
+    component = Component(
+        ComponentType.section,
+        components = components,
+        thumbnail = thumbnail,
+    )
+    
+    vampytest.assert_eq(component.components, tuple(components))
+    vampytest.assert_eq(component.thumbnail, thumbnail)
 
 
 def test__Component__proxies__read_text_input():
@@ -191,7 +224,7 @@ def test__Component__proxies__read_button_style():
     vampytest.assert_is(component.button_style, button_style)
 
 
-def test__Component__proxies__read_text():
+def test__Component__proxies__read_text_display():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -200,18 +233,40 @@ def test__Component__proxies__read_text():
     content = 'remilia'
     
     component = Component(
-        ComponentType.text,
+        ComponentType.text_display,
         content = content,
     )
     
     vampytest.assert_eq(component.content, content)
 
 
+def test__Component__proxies__read_thumbnail_media():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading thumbnail media.
+    """
+    description = 'Its Orin <3'
+    media = MediaInfo('attachment://big_braids_orin.png')
+    spoiler = True
+    
+    component = Component(
+        ComponentType.thumbnail_media,
+        description = description,
+        media = media,
+        spoiler = spoiler,
+    )
+    
+    vampytest.assert_eq(component.description, description)
+    vampytest.assert_eq(component.media, media)
+    vampytest.assert_eq(component.spoiler, spoiler)
+
+
 def test__Component__proxies__read_media_gallery():
     """
     Tests whether ``Component`` field proxies work as intended.
     
-    Case: reading string media gallery.
+    Case: reading media gallery.
     """
     items = [MediaItem('https://orindance.party/')]
     
@@ -223,11 +278,30 @@ def test__Component__proxies__read_media_gallery():
     vampytest.assert_eq(component.items, tuple(items))
 
 
+def test__Component__proxies__read_attachment_media():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading attachment media.
+    """
+    media = MediaInfo('attachment://big_braids_orin.png')
+    spoiler = True
+    
+    component = Component(
+        ComponentType.attachment_media,
+        media = media,
+        spoiler = spoiler,
+    )
+    
+    vampytest.assert_eq(component.media, media)
+    vampytest.assert_eq(component.spoiler, spoiler)
+
+
 def test__Component__proxies__read_separator():
     """
     Tests whether ``Component`` field proxies work as intended.
     
-    Case: reading string separator.
+    Case: reading separator.
     """
     divider = False
     spacing_size = SeparatorSpacingSize.large
@@ -240,6 +314,31 @@ def test__Component__proxies__read_separator():
     
     vampytest.assert_eq(component.divider, divider)
     vampytest.assert_is(component.spacing_size, spacing_size)
+
+
+
+def test__Component__proxies__read_container():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading container fields.
+    """
+    color = Color.from_rgb(5, 6, 7)
+    components = [
+        Component(ComponentType.text_display, content = 'mokou'),
+    ]
+    spoiler = True
+    
+    component = Component(
+        ComponentType.container,
+        color = color,
+        components = components,
+        spoiler = spoiler
+    )
+    
+    vampytest.assert_eq(component.color, color)
+    vampytest.assert_eq(component.components, tuple(components))
+    vampytest.assert_eq(component.spoiler, spoiler)
 
 
 def test__Component__proxies__write_button__generic():
@@ -311,13 +410,38 @@ def test__Component__proxies__write_channel_select():
     vampytest.assert_eq(component.placeholder, placeholder)
 
 
+def test__Component__proxies__write_section():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: writing section fields.
+    """
+    components = [
+        Component(ComponentType.button, label = 'mokou'),
+    ]
+    thumbnail = Component(
+        ComponentType.thumbnail_media,
+        media = MediaInfo('attachment://orin.png'),
+    )
+    
+    component = Component(ComponentType.section)
+    
+    component.components = components
+    component.thumbnail = thumbnail
+    
+    vampytest.assert_eq(component.components, tuple(components))
+    vampytest.assert_eq(component.thumbnail, thumbnail)
+
+
 def test__Component__proxies__write_row():
     """
     Tests whether ``Component`` field proxies work as intended.
     
     Case: writing row fields.
     """
-    components = [Component(ComponentType.button, label = 'mokou')]
+    components = [
+        Component(ComponentType.button, label = 'mokou'),
+    ]
     
     component = Component(ComponentType.row)
     
@@ -380,7 +504,7 @@ def test__Component__proxies__write_button_style():
     vampytest.assert_is(component.button_style, button_style)
 
 
-def test__Component__proxies__write_text():
+def test__Component__proxies__write_text_display():
     """
     Tests whether ``Component`` field proxies work as intended.
     
@@ -388,11 +512,34 @@ def test__Component__proxies__write_text():
     """
     content = 'remilia'
     
-    component = Component(ComponentType.text)
+    component = Component(ComponentType.text_display)
     
     component.content = content
     
     vampytest.assert_eq(component.content, content)
+
+
+def test__Component__proxies__write_thumbnail_media():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading thumbnail media.
+    """
+    description = 'Its Orin <3'
+    media = MediaInfo('attachment://big_braids_orin.png')
+    spoiler = True
+    
+    component = Component(
+        ComponentType.thumbnail_media,
+    )
+    
+    component.description = description
+    component.media = media
+    component.spoiler = spoiler
+    
+    vampytest.assert_eq(component.description, description)
+    vampytest.assert_eq(component.media, media)
+    vampytest.assert_eq(component.spoiler, spoiler)
 
 
 def test__Component__proxies__write_media_gallery():
@@ -408,6 +555,26 @@ def test__Component__proxies__write_media_gallery():
     component.items = items
     
     vampytest.assert_eq(component.items, tuple(items))
+
+
+def test__Component__proxies__write_attachment_media():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: reading attachment media.
+    """
+    media = MediaInfo('attachment://big_braids_orin.png')
+    spoiler = True
+    
+    component = Component(
+        ComponentType.attachment_media,
+    )
+    
+    component.media = media
+    component.spoiler = spoiler
+    
+    vampytest.assert_eq(component.media, media)
+    vampytest.assert_eq(component.spoiler, spoiler)
 
 
 def test__Component__proxies__write_separator():
@@ -426,3 +593,28 @@ def test__Component__proxies__write_separator():
     
     vampytest.assert_eq(component.divider, divider)
     vampytest.assert_is(component.spacing_size, spacing_size)
+
+
+def test__Component__proxies__write_container():
+    """
+    Tests whether ``Component`` field proxies work as intended.
+    
+    Case: writing container fields.
+    """
+    color = Color.from_rgb(5, 6, 7)
+    components = [
+        Component(ComponentType.text_display, content = 'mokou'),
+    ]
+    spoiler = True
+    
+    component = Component(
+        ComponentType.container,
+    )
+    
+    component.color = color
+    component.components = components
+    component.spoiler = spoiler
+    
+    vampytest.assert_eq(component.color, color)
+    vampytest.assert_eq(component.components, tuple(components))
+    vampytest.assert_eq(component.spoiler, spoiler)

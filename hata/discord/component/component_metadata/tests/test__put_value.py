@@ -3,13 +3,28 @@ import vampytest
 from ..fields import put_value
 
 
-def test__put_value():
+def _iter_options():
+    yield None, False, {}
+    yield None, True, {'value': ''}
+    yield 'a', False, {'value': 'a'}
+    yield 'a', True, {'value': 'a'}
+
+
+@vampytest._(vampytest.call_from(_iter_options()).returning_last())
+def test__put_value(input_value, defaults):
     """
-    Tests whether ``put_value`` is working as intended.
+    Tests whether ``put_value`` works as intended.
+    
+    Parameters
+    ----------
+    input_value : `None | str`
+        Value to serialize.
+    
+    defaults : `bool`
+        Whether values of their default value should be included as well.
+    
+    Returns
+    -------
+    output : `dict<str, object>`
     """
-    for input_value, defaults, expected_output in (
-        (None, False, {}),
-        ('a', False, {'value': 'a'}),
-    ):
-        data = put_value(input_value, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+    return put_value(input_value, {}, defaults)

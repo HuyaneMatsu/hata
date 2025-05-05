@@ -29,9 +29,14 @@ def test__validate_components(input_value):
     """
     Tests whether `validate_components` works as intended.
     
+    Parameters
+    ----------
+    input_value : `object`
+        Value to validate.
+    
     Returns
     -------
-    output : `None | tuple<InteractionComponent>`
+    output : ``None | tuple<InteractionComponent>``
     
     Raises
     ------

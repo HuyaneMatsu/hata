@@ -200,8 +200,6 @@ class PlaceHolderBase(RichAttributeErrorBaseType):
         attribute_name = self.attribute_name
         if attribute_name is None:
             attribute_name = 'unknown'
-        else:
-            attribute_name = repr(attribute_name)
         
         raise NotImplementedError(
             f'Setting `{type_name}.{attribute_name}` is not supported; '
@@ -225,8 +223,6 @@ class PlaceHolderBase(RichAttributeErrorBaseType):
         attribute_name = self.attribute_name
         if attribute_name is None:
             attribute_name = 'unknown'
-        else:
-            attribute_name = repr(attribute_name)
         
         raise NotImplementedError(
             f'Deleting `{type_name}.{attribute_name}` is not supported; '

@@ -2,7 +2,8 @@ __all__ = ('CONVERSION_COMPONENTS',)
 
 from ....builder.constants import CONVERSION_KIND_FIELD
 from ....builder.conversion import Conversion
-from ....component import Component, ComponentType, create_row
+from ....component import Component, ComponentType
+from ....message import MessageFlag
 
 
 def _is_component_listing(value):
@@ -18,20 +19,26 @@ def _is_component_listing(value):
     
     Yields
     ------
-    components : `list<Component>`
+    components : ``list<Component>``
     """
     built = None
     
     for element in value:
         if isinstance(element, Component):
             if not element.type.layout_flags.top_level:
-                element = create_row(element)
+                element = Component(
+                    ComponentType.row,
+                    components = (element,),
+                )
         
         elif isinstance(element, list) or isinstance(element, tuple):
             if not all(isinstance(nested_element, Component) for nested_element in element):
                 return
             
-            element = create_row(*element)
+            element = Component(
+                ComponentType.row,
+                components = element,
+            )
         
         else:
             return
@@ -44,6 +51,8 @@ def _is_component_listing(value):
     yield built
     return
 
+
+MESSAGE_FLAG_COMPONENTS_V2 = MessageFlag().update_by_keys(components_v2 = True)
 
 
 class CONVERSION_COMPONENTS(Conversion):
@@ -67,7 +76,10 @@ class CONVERSION_COMPONENTS(Conversion):
     
     def set_type_processor(value):
         if not value.type.layout_flags.top_level:
-            value = create_row(value)
+            value = Component(
+                ComponentType.row,
+                components = (value,),
+            )
         
         return [value]
     
@@ -85,7 +97,10 @@ class CONVERSION_COMPONENTS(Conversion):
         # Component
         if isinstance(value, Component):
             if not value.type.layout_flags.top_level:
-                value = create_row(value)
+                value = Component(
+                    ComponentType.row,
+                    components = (value,),
+                )
             
             yield [value]
             return
@@ -111,20 +126,24 @@ class CONVERSION_COMPONENTS(Conversion):
     
     # Serialization
     
-    serializer_key = 'components'
-    
-    def serializer_optional(value):
-        if value is not None:
-            yield [element.to_data() for element in value]
+    serializer_key = None
+    serializer_optional = None
+    serializer_required = None
     
     
-    def serializer_required(value):
-        if value is None:
-            return []
+    def serializer_putter(data, defaults, value):
+        if (value is None):
+            if defaults:
+                data['components'] = []
         
-        return [element.to_data() for element in value]
-    
+        else:
+            data['components'] = [element.to_data() for element in value]
+            
+            if any(element.type.layout_flags.version_2 for element in value) or (len(value) > 5):
+                data['flags'] = data.get('flags', 0) | MESSAGE_FLAG_COMPONENTS_V2
+        
+        return data
     
     # Sorting
     
-    sort_priority = 1400
+    sort_priority = 8000

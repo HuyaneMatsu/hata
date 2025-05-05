@@ -19,6 +19,7 @@ def test__put_enabled(input_value, defaults):
     ----------
     input_value : `bool`
         Value to serialize.
+    
     defaults : `bool`
         Whether fields of their default value should be included in the output.
     

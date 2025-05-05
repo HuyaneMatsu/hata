@@ -50,7 +50,7 @@ class ContentParameterParserContextBase(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    _cache : `dict` of (`str`, `object`)
+    _cache : `dict<str, object>`
         Cache used by cached properties.
     _parsed : `re.Match`
         The parsed regex.
@@ -165,7 +165,7 @@ class ContentParameterParserContextSeparator(ContentParameterParserContextBase):
     
     Attributes
     ----------
-    _cache : `dict` of (`str`, `object`)
+    _cache : `dict<str, object>`
         Cache used by cached properties.
     _parsed : `re.Match`
         The parsed regex.
@@ -196,7 +196,7 @@ class ContentParameterParserContextEncapsulator(ContentParameterParserContextBas
     
     Attributes
     ----------
-    _cache : `dict` of (`str`, `object`)
+    _cache : `dict<str, object>`
         Cache used by cached properties.
     _parsed : `re.Match`
         The parsed regex.

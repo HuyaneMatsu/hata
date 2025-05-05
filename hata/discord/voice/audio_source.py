@@ -555,7 +555,7 @@ else:
             -------
             path : `str`
                 The title of the downloaded audio.
-            data : `dict` of (`str`, `object`)
+            data : `dict<str, object>`
                 All extracted data by YTDL.
             args : `list` of `str`
                 Subprocess parameters.

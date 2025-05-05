@@ -39,7 +39,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
     attachments : `None | tuple<Attachment>`
         The snapshotted message's attachments.
     
-    components : `None | tuple<Component>`
+    components : ``None | tuple<Component>``
         The snapshotted message's components.
     
     content : `None | str`
@@ -101,7 +101,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         attachments : `None | iterable<Attachment>`, Optional (Keyword only)
             The snapshotted message's attachments.
         
-        components : `None | iterable<Component>`, Optional (Keyword only)
+        components : ``None | iterable<Component>``, Optional (Keyword only)
             The snapshotted message's components.
         
         content : `None | str`, Optional (Keyword only)
@@ -664,7 +664,7 @@ class MessageSnapshot(RichAttributeErrorBaseType):
         attachments : `None | iterable<Attachment>`, Optional (Keyword only)
             The snapshotted message's attachments.
         
-        components : `None | iterable<Component>`, Optional (Keyword only)
+        components : ``None | iterable<Component>``, Optional (Keyword only)
             The snapshotted message's components.
         
         content : `None | str`, Optional (Keyword only)

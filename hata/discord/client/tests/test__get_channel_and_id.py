@@ -99,7 +99,7 @@ def test__get_channel_and_id(channel, type_checker, client_id, guild, extra):
         Type checker for `channel`.
     client_id : `int`
         Client identifier to instance.
-    guild : `None | Guild`
+    guild : ``None | Guild``
         The channel's guild if any.
     extra : `list<object>`
         Additional objects to keep in cache.

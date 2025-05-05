@@ -8,22 +8,22 @@ from .fields import parse_items, put_items, validate_items
 
 class ComponentMetadataMediaGallery(ComponentMetadataBase):
     """
-    Represents the metadata of a text component used inside of a form.
+    Represents the metadata of a media gallery component that is mainly used to show multiple images.
     
     Attributes
     ----------
-    items : `None`, `tuple` of ``MediaItem``
+    items : ``None | tuple<MediaItem>``
         The media items shown on the component.
     """
     __slots__ = ('items',)
     
     def __new__(cls, *, items = ...):
         """
-        Creates a text component metadata.
+        Creates a media gallery component metadata.
         
         Parameters
         ----------
-        items : `None`, `tuple` of ``MediaItem``, Optional (Keyword only)
+        items : ``None | iterable<str> | iterable<MediaItem>``, Optional (Keyword only)
             The media items shown on the component.
         
         Raises
@@ -100,19 +100,34 @@ class ComponentMetadataMediaGallery(ComponentMetadataBase):
     
     
     @copy_docs(ComponentMetadataBase.to_data)
-    def to_data(self, *, defaults = False):
+    def to_data(self, *, defaults = False, include_internals = False):
         data = {}
         
-        put_items(self.items, data, defaults)
+        put_items(self.items, data, defaults, include_internals = include_internals)
         
         return data
+    
+    
+    @copy_docs(ComponentMetadataBase.clean_copy)
+    def clean_copy(self, guild = None):
+        new = object.__new__(type(self))
+        
+        items = self.items
+        if (items is not None):
+            items = (*(item.copy() for item in self.items),)
+        new.items = items
+        
+        return new
     
     
     @copy_docs(ComponentMetadataBase.copy)
     def copy(self):
         new = object.__new__(type(self))
         
-        new.items = self.items
+        items = self.items
+        if (items is not None):
+            items = (*(item.copy() for item in self.items),)
+        new.items = items
         
         return new
     
@@ -123,11 +138,11 @@ class ComponentMetadataMediaGallery(ComponentMetadataBase):
         items = ...,
     ):
         """
-        Copies the text component metadata with the given fields.
+        Copies the media gallery component metadata with the given fields.
         
         Parameters
         ----------
-        items : `None`, `tuple` of ``MediaItem``, Optional (Keyword only)
+        items : ``None | iterable<str> | iterable<MediaItem>``, Optional (Keyword only)
             The media items shown on the component.
         
         Returns
@@ -144,6 +159,8 @@ class ComponentMetadataMediaGallery(ComponentMetadataBase):
         # items
         if items is ...:
             items = self.items
+            if (items is not None):
+                items = (*(item.copy() for item in self.items),)
         else:
             items = validate_items(items)
         

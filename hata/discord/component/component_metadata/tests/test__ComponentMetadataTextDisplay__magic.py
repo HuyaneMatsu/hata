@@ -1,28 +1,28 @@
 import vampytest
 
-from ..text import ComponentMetadataText
+from ..text_display import ComponentMetadataTextDisplay
 
 
-def test__ComponentMetadataText__repr():
+def test__ComponentMetadataTextDisplay__repr():
     """
-    Tests whether ``ComponentMetadataText.__repr__`` works as intended.
+    Tests whether ``ComponentMetadataTextDisplay.__repr__`` works as intended.
     """
     content = 'hey sister'
     
-    component_metadata = ComponentMetadataText(
+    component_metadata = ComponentMetadataTextDisplay(
         content = content,
     )
     
     vampytest.assert_instance(repr(component_metadata), str)
 
 
-def test__ComponentMetadataText__hash():
+def test__ComponentMetadataTextDisplay__hash():
     """
-    Tests whether ``ComponentMetadataText.__hash__`` works as intended.
+    Tests whether ``ComponentMetadataTextDisplay.__hash__`` works as intended.
     """
     content = 'hey sister'
     
-    component_metadata = ComponentMetadataText(
+    component_metadata = ComponentMetadataTextDisplay(
         content = content,
     )
     
@@ -53,9 +53,9 @@ def _iter_options__eq__same_type():
 
 
 @vampytest._(vampytest.call_from(_iter_options__eq__same_type()).returning_last())
-def test__ComponentMetadataText__eq(keyword_parameters_0, keyword_parameters_1):
+def test__ComponentMetadataTextDisplay__eq(keyword_parameters_0, keyword_parameters_1):
     """
-    Tests whether ``ComponentMetadataText.__eq__`` works as intended.
+    Tests whether ``ComponentMetadataTextDisplay.__eq__`` works as intended.
     
     Parameters
     ----------
@@ -68,8 +68,8 @@ def test__ComponentMetadataText__eq(keyword_parameters_0, keyword_parameters_1):
     -------
     output : `bool`
     """
-    component_metadata_0 = ComponentMetadataText(**keyword_parameters_0)
-    component_metadata_1 = ComponentMetadataText(**keyword_parameters_1)
+    component_metadata_0 = ComponentMetadataTextDisplay(**keyword_parameters_0)
+    component_metadata_1 = ComponentMetadataTextDisplay(**keyword_parameters_1)
     
     output = component_metadata_0 == component_metadata_1
     vampytest.assert_instance(output, bool)

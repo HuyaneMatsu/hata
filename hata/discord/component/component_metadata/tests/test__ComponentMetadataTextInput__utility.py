@@ -1,5 +1,7 @@
 import vampytest
 
+from ....guild import Guild
+
 from ..preinstanced import TextInputStyle
 from ..text_input import ComponentMetadataTextInput
 
@@ -89,20 +91,21 @@ def test__ComponentMetadataTextInput__copy_with__1():
     Case: all fields.
     """
     old_custom_id = 'night'
-    new_custom_id = 'kagami'
     old_label = 'end'
-    new_label = 'kagerou'
     old_max_length = 11
-    new_max_length = 12
     old_min_length = 10
-    new_min_length = 9
     old_required = True
-    new_required = False
     old_placeholder = 'green'
-    new_placeholder = 'yuuka'
     old_text_input_style = TextInputStyle.paragraph
-    new_text_input_style = TextInputStyle.short
     old_value = 'sanatorium'
+    
+    new_custom_id = 'kagami'
+    new_label = 'kagerou'
+    new_max_length = 12
+    new_min_length = 9
+    new_required = False
+    new_placeholder = 'yuuka'
+    new_text_input_style = TextInputStyle.short
     new_value = 'hana'
     
     component_metadata = ComponentMetadataTextInput(
@@ -184,20 +187,21 @@ def test__ComponentMetadataTextInput__copy_with_keyword_parameters__1():
     Case: all fields.
     """
     old_custom_id = 'night'
-    new_custom_id = 'kagami'
     old_label = 'end'
-    new_label = 'kagerou'
     old_max_length = 11
-    new_max_length = 12
     old_min_length = 10
-    new_min_length = 9
     old_required = True
-    new_required = False
     old_placeholder = 'green'
-    new_placeholder = 'yuuka'
     old_text_input_style = TextInputStyle.paragraph
-    new_text_input_style = TextInputStyle.short
     old_value = 'sanatorium'
+    
+    new_custom_id = 'kagami'
+    new_label = 'kagerou'
+    new_max_length = 12
+    new_min_length = 9
+    new_required = False
+    new_placeholder = 'yuuka'
+    new_text_input_style = TextInputStyle.short
     new_value = 'hana'
     
     component_metadata = ComponentMetadataTextInput(
@@ -231,3 +235,56 @@ def test__ComponentMetadataTextInput__copy_with_keyword_parameters__1():
     vampytest.assert_eq(copy.required, new_required)
     vampytest.assert_is(copy.text_input_style, new_text_input_style)
     vampytest.assert_eq(copy.value, new_value)
+
+
+def _iter_options__iter_contents():
+    custom_id = 'night'
+    label = 'end'
+    max_length = 11
+    min_length = 10
+    required = True
+    placeholder = 'green'
+    text_input_style = TextInputStyle.paragraph
+    value = 'sanatorium'
+    
+    yield (
+        {},
+        [],
+    )
+    
+    yield (
+        {
+            'custom_id': custom_id,
+            'label': label,
+            'max_length': max_length,
+            'min_length': min_length,
+            'placeholder': placeholder,
+            'required': required,
+            'text_input_style': text_input_style,
+            'value': value,
+        },
+        [],
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__iter_contents()).returning_last())
+def test__ComponentMetadataTextInput__iter_contents(keyword_parameters):
+    """
+    Tests whether ``ComponentMetadataTextInput.iter_contents`` works as intended.
+    
+    Parameters
+    ----------
+    keyword_parameters : `dict<str, object>`
+        Keyword parameters to create instance with.
+    
+    Returns
+    -------
+    output : `list<str>`
+    """
+    component_metadata = ComponentMetadataTextInput(**keyword_parameters)
+    output = [*component_metadata.iter_contents()]
+    
+    for element in output:
+        vampytest.assert_instance(element, str)
+    
+    return output

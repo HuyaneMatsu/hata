@@ -78,10 +78,10 @@ class ClientCompoundApplicationEndpoints(Compound):
         owner_type : ``EntitlementOwnerType``, `int`, Optional (Keyword only)
             The entitlement's owner's type.
         
-        sku : `int`, ``SKU``, Optional (Keyword only)
+        sku : ``int | SKU``, Optional (Keyword only)
             Alternative for `sku_id`.
         
-        sku_id : `int`, ``SKU``, Optional (Keyword only)
+        sku_id : ``int | SKU``, Optional (Keyword only)
             Stock keeping unit to create the entitlement for.
         
         Returns
@@ -466,7 +466,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         
         Parameters
         ----------
-        sku : `int`, ``SKU``
+        sku : ``int | SKU``
             Stock keeping unit to get subscriptions for.
         
         user : `int`, ``ClientUserBase``
@@ -529,7 +529,7 @@ class ClientCompoundApplicationEndpoints(Compound):
         
         Parameters
         ----------
-        sku : `int`, ``SKU``
+        sku : ``int | SKU``
             Stock keeping unit to get subscriptions for.
         
         user : `int`, ``ClientUserBase``

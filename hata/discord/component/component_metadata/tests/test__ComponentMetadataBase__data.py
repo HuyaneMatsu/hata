@@ -19,13 +19,14 @@ def test__ComponentMetadataBase__to_data():
     """
     Tests whether ``ComponentMetadataBase.to_data`` works as intended.
     
-    Case: include defaults.
+    Case: include defaults and internals.
     """
     component_metadata = ComponentMetadataBase()
     
     vampytest.assert_eq(
         component_metadata.to_data(
             defaults = True,
+            include_internals = True,
         ),
         {},
     )

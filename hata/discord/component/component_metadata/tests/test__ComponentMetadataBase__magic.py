@@ -21,17 +21,49 @@ def test__ComponentMetadataBase__hash():
     vampytest.assert_instance(hash(component_metadata), int)
 
 
-def test__ComponentMetadataBase__eq():
+def test__ComponentMetadataBase__eq__different_type():
     """
     Tests whether ``ComponentMetadataBase.__eq__`` works as intended.
-    """
-    keyword_parameters = {}
     
+    Case: different type.
+    """
     component_metadata = ComponentMetadataBase()
     
-    vampytest.assert_eq(component_metadata, component_metadata)
     vampytest.assert_ne(component_metadata, object())
 
-    for field_name, field_value in ():
-        test_component_metadata = ComponentMetadataBase(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(component_metadata, test_component_metadata)
+
+def _iter_options__eq():
+    keyword_parameters = {}
+    
+    yield (
+        keyword_parameters,
+        keyword_parameters,
+        True,
+    )
+
+
+@vampytest._(vampytest.call_from(_iter_options__eq()).returning_last())
+def test__ComponentMetadataBase__eq__same_type(keyword_parameters_0, keyword_parameters_1):
+    """
+    Tests whether ``ComponentMetadataBase.__eq__`` works as intended.
+    
+    Case: same type.
+    
+    Parameters
+    ----------
+    keyword_parameters_0 : `dict<str, object>`
+        Keyword parameters to create from.
+    
+    keyword_parameters_1 : `dict<str, object>`
+        Keyword parameters to create instance from.
+    
+    Returns
+    -------
+    output : `bool`
+    """
+    component_metadata_0 = ComponentMetadataBase(**keyword_parameters_0)
+    component_metadata_1 = ComponentMetadataBase(**keyword_parameters_1)
+    
+    output = component_metadata_0 == component_metadata_1
+    vampytest.assert_instance(output, bool)
+    return output

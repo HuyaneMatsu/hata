@@ -13,7 +13,7 @@ from ....poll import Poll, PollAnswer, PollQuestion, PollResult
 from ....role import Role
 from ....soundboard import SoundboardSound
 from ....sticker import Sticker
-from ....user import User
+from ....user import GuildProfile, User
 
 from ...attachment import Attachment
 from ...message_activity import MessageActivity
@@ -50,6 +50,8 @@ def test__Message__iter_contents__all_contents():
     poll_question_text = 'marisa'
     poll_answer_0_text = 'junko'
     poll_answer_1_text = 'clown'
+    component_0_content = 'mayumi'
+    component_1_content = 'keiki'
     
     embed_0 = Embed(title = embed_0_title, description = embed_0_description)
     embed_0.author = EmbedAuthor(embed_0_author_name)
@@ -67,13 +69,28 @@ def test__Message__iter_contents__all_contents():
         question = PollQuestion(text = poll_question_text),
     )
     
-    message = Message(content = message_content, embeds = [embed_0, embed_1], poll = poll)
+    component_0 = Component(
+        ComponentType.text_display,
+        content = component_0_content,
+    )
     
+    component_1 = Component(
+        ComponentType.text_display,
+        content = component_1_content,
+    )
+    
+    message = Message(
+        components = [component_0, component_1],
+        content = message_content,
+        embeds = [embed_0, embed_1],
+        poll = poll,
+    )
     
     contents = {
         embed_0_title, embed_0_author_name, embed_0_description, embed_0_field_0_name, embed_0_field_0_value,
         embed_0_field_1_name, embed_0_field_1_value, embed_0_footer_text, embed_0_provider_name,
-        message_content, embed_1_title, poll_question_text, poll_answer_0_text, poll_answer_1_text
+        message_content, embed_1_title, poll_question_text, poll_answer_0_text, poll_answer_1_text,
+        component_0_content, component_1_content
     }
     
     vampytest.assert_eq({*message.iter_contents()}, contents)
@@ -839,7 +856,7 @@ def test__Message__guild(message_id, input_value):
     
     Returns
     -------
-    output : `None | Guild`
+    output : ``None | Guild``
     """
     message = Message.precreate(message_id, guild_id = input_value)
     output = message.guild
@@ -922,24 +939,59 @@ def test__Message__clean_embeds():
     """
     Tests whether ``Message.clean_embeds`` works as intended.
     """
-    channel_id = 202305050011
-    channel_name = 'yukari'
+    guild_id = 202505030050
+    guild = Guild.precreate(guild_id)
     
-    channel = Channel.precreate(channel_id, name = channel_name, channel_type = ChannelType.guild_text)
+    user_0 = User.precreate(202505030051, name = 'koishi')
+    user_0.guild_profiles[guild_id] = GuildProfile(nick = 'koi')
     
     embeds = [
-        Embed(description = channel.mention),
+        Embed(description = f'{user_0.mention}'),
         Embed(embed_type = EmbedType.image),
     ]
     
-    message = Message(embeds = embeds)
+    message = Message.precreate(
+        202505030052,
+        embeds = embeds,
+        guild_id = guild_id,
+    )
     
     output = message.clean_embeds
     vampytest.assert_instance(output, list)
     vampytest.assert_eq(
         output,
         [
-            Embed(description = '#' + channel.name)
+            Embed(description = f'@{user_0.name_at(guild)}')
+        ],
+    )
+
+    
+def test__Message__clean_components():
+    """
+    Tests whether ``Message.clean_components`` works as intended.
+    """
+    guild_id = 202505030053
+    guild = Guild.precreate(guild_id)
+    
+    user_0 = User.precreate(202505030054, name = 'koishi')
+    user_0.guild_profiles[guild_id] = GuildProfile(nick = 'koi')
+    
+    components = [
+        Component(ComponentType.text_display, content = f'{user_0.mention}'),
+    ]
+    
+    message = Message.precreate(
+        202505030055,
+        components = components,
+        guild_id = guild_id,
+    )
+    
+    output = message.clean_components
+    vampytest.assert_instance(output, list)
+    vampytest.assert_eq(
+        output,
+        [
+            Component(ComponentType.text_display, content = f'@{user_0.name_at(guild)}')
         ],
     )
 

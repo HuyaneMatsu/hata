@@ -6,9 +6,31 @@ from ..preinstanced import SeparatorSpacingSize
 
 
 def _iter_options():
-    yield {}, SEPARATOR_SPACING_SIZE_DEFAULT
-    yield {'spacing': SEPARATOR_SPACING_SIZE_DEFAULT.value}, SEPARATOR_SPACING_SIZE_DEFAULT
-    yield {'spacing': SeparatorSpacingSize.large.value}, SeparatorSpacingSize.large
+    yield (
+        {},
+        SEPARATOR_SPACING_SIZE_DEFAULT,
+    )
+    
+    yield (
+        {
+            'spacing': None,
+        },
+        SeparatorSpacingSize.none,
+    )
+    
+    yield (
+        {
+            'spacing': SEPARATOR_SPACING_SIZE_DEFAULT.value,
+        },
+        SEPARATOR_SPACING_SIZE_DEFAULT,
+    )
+    
+    yield (
+        {
+            'spacing': SeparatorSpacingSize.large.value,
+        },
+        SeparatorSpacingSize.large,
+    )
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())

@@ -129,10 +129,10 @@ class Message(DiscordEntity, immortal = True):
     channel_id : `int`
         The channel's identifier where the message is sent. Defaults to `0`
     
-    components : `None`, `tuple` of ``Component``
+    components : ``None | tuple<Component>``
         Components attached to the message. Defaults to `None`.
     
-    content : `None`, `str`
+    content : `None | str`
         The message's content. Defaults to `None`.
     
     edited_at : `None`, `datetime`
@@ -174,7 +174,7 @@ class Message(DiscordEntity, immortal = True):
     mentioned_users : `None`, `tuple` of ``ClientUserBase``
         The mentioned users by the message. Defaults to `None`.
     
-    nonce : `None`, `str`
+    nonce : `None | str`
         A nonce that is used for optimistic message sending. If a message is created with a nonce, then it should
         be shown up at the message's received payload as well. Defaults to `None`.
     
@@ -293,10 +293,10 @@ class Message(DiscordEntity, immortal = True):
         call : `None`, ``MessageCall``, Optional (Keyword only)
             Call information of the message.
         
-        components : `None`, `iterable` of ``Component``, Optional (Keyword only)
+        components : ``None | iterable<Component>``, Optional (Keyword only)
             Components attached to the message.
         
-        content : `None`, `str`, Optional (Keyword only)
+        content : `None | str`, Optional (Keyword only)
             The message's content.
         
         edited_at : `None`, `datetime`
@@ -326,7 +326,7 @@ class Message(DiscordEntity, immortal = True):
         message_type : ``MessageType``, `int`, Optional (Keyword only)
             The type of the message.
         
-        nonce : `None`, `str`, Optional (Keyword only)
+        nonce : `None | str`, Optional (Keyword only)
             A nonce that is used for optimistic message sending. If a message is created with a nonce, then it should
             be shown up at the message's received payload as well.
         
@@ -1319,9 +1319,9 @@ class Message(DiscordEntity, immortal = True):
         +-----------------------------------+-----------------------------------------------------------------------+
         | call                              | `None`, ``MessageCall``                                               |
         +-----------------------------------+-----------------------------------------------------------------------+
-        | components                        | `None`, `tuple` of ``Component``                                      |
+        | components                        | ``None | tuple<Component>``                                           |
         +-----------------------------------+-----------------------------------------------------------------------+
-        | content                           | `None`, `str`                                                         |
+        | content                           | `None | str`                                                         |
         +-----------------------------------+-----------------------------------------------------------------------+
         | edited_at                         | `None`, `datetime`                                                    |
         +-----------------------------------+-----------------------------------------------------------------------+
@@ -1783,7 +1783,7 @@ class Message(DiscordEntity, immortal = True):
             put_thread(self.thread, data, defaults)
         
         put_attachments(self.attachments, data, defaults, include_internals = include_internals)
-        put_components(self.components, data, defaults)
+        put_components(self.components, data, defaults, include_internals = include_internals)
         put_content(self.content, data, defaults)
         put_embeds(self.embeds, data, defaults, include_internals = include_internals)
         put_flags(self.flags, data, defaults)
@@ -1800,7 +1800,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`)
+        data : `dict<str, object>`
         """
         data = {}
         put_message_id(self.id, data, True)
@@ -1909,10 +1909,10 @@ class Message(DiscordEntity, immortal = True):
         channel_id : `int`, ``Channel``, Optional (Keyword only)
             The channel's identifier where the message was created at.
         
-        components : `None`, `iterable` of ``Component``, Optional (Keyword only)
+        components : ``None | iterable<Component>``, Optional (Keyword only)
             Components attached to the message.
         
-        content : `None`, `str`, Optional (Keyword only)
+        content : `None | str`, Optional (Keyword only)
             The message's content.
         
         edited_at : `None`, `datetime`
@@ -1951,7 +1951,7 @@ class Message(DiscordEntity, immortal = True):
         message_type : ``MessageType``, `int`, Optional (Keyword only)
             The type of the message.
         
-        nonce : `None`, `str`, Optional (Keyword only)
+        nonce : `None | str`, Optional (Keyword only)
             A nonce that is used for optimistic message sending. If a message is created with a nonce, then it should
             be shown up at the message's received payload as well.
         
@@ -2203,10 +2203,10 @@ class Message(DiscordEntity, immortal = True):
         call : `None`, ``MessageCall``, Optional (Keyword only)
             Call information of the message.
         
-        components : `None`, `iterable` of ``Component``, Optional (Keyword only)
+        components : ``None | iterable<Component>``, Optional (Keyword only)
             Components attached to the message.
         
-        content : `None`, `str`, Optional (Keyword only)
+        content : `None | str`, Optional (Keyword only)
             The message's content.
         
         edited_at : `None`, `datetime`
@@ -2236,7 +2236,7 @@ class Message(DiscordEntity, immortal = True):
         message_type : ``MessageType``, `int`, Optional (Keyword only)
             The type of the message.
         
-        nonce : `None`, `str`, Optional (Keyword only)
+        nonce : `None | str`, Optional (Keyword only)
             A nonce that is used for optimistic message sending. If a message is created with a nonce, then it should
             be shown up at the message's received payload as well.
         
@@ -2647,7 +2647,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        clean_content : `None`, `str`
+        clean_content : `None | str`
         
         Notes
         -----
@@ -2684,7 +2684,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        contents : `list` of `str`
+        contents : `list<str>`
         """
         return [*self.iter_contents()]
     
@@ -2696,7 +2696,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        clean_embeds : `list` of ``Embed``
+        clean_embeds : ``list<Embed>``
         
         Notes
         -----
@@ -2706,13 +2706,40 @@ class Message(DiscordEntity, immortal = True):
         
         embeds = self.embeds
         if (embeds is not None):
+            guild = self.guild
+            
             for embed in embeds:
                 if embed.type in EXTRA_EMBED_TYPES:
                     continue
                 
-                clean_embeds.append(embed.clean_copy(self))
+                clean_embeds.append(embed.clean_copy(guild))
         
         return clean_embeds
+    
+    
+    @property
+    def clean_components(self):
+        """
+        Returns the message's not link typed components with converted content without mentions.
+        
+        Returns
+        -------
+        clean_components : ``list<Component>``
+        
+        Notes
+        -----
+        Not changes the original components of the message.
+        """
+        clean_components = []
+        
+        components = self.components
+        if (components is not None):
+            guild = self.guild
+            
+            for component in components:
+                clean_components.append(component.clean_copy(guild))
+        
+        return clean_components
     
     
     def _get_mentioned_channels(self):
@@ -2941,6 +2968,9 @@ class Message(DiscordEntity, immortal = True):
         poll = self.poll
         if (poll is not None):
             yield from poll.iter_contents()
+        
+        for component in self.iter_components():
+            yield from component.iter_contents()
     
     
     def iter_embeds(self):

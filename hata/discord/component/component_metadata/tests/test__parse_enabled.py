@@ -5,6 +5,7 @@ from ..fields import parse_enabled
 
 def _iter_options():
     yield {}, True
+    yield {'disabled': None}, True
     yield {'disabled': False}, True
     yield {'disabled': True}, False
 

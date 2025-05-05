@@ -7,7 +7,7 @@ from ...resolved import Resolved
 
 from ..message_component import InteractionMetadataMessageComponent
 
-from .test__InteractionMetadataMessageComponent__constructor import _check_is_all_field_set
+from .test__InteractionMetadataMessageComponent__constructor import _assert_fields_set
 
 
 def test__InteractionMetadataMessageComponent__copy():
@@ -26,7 +26,7 @@ def test__InteractionMetadataMessageComponent__copy():
         values = values,
     )
     copy = interaction_metadata.copy()
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     vampytest.assert_eq(copy, interaction_metadata)
 
@@ -49,7 +49,7 @@ def test__InteractionMetadataMessageComponent__copy_with__0():
         values = values,
     )
     copy = interaction_metadata.copy_with()
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     vampytest.assert_eq(copy, interaction_metadata)
 
@@ -82,7 +82,7 @@ def test__InteractionMetadataMessageComponent__copy_with__1():
         resolved = new_resolved,
         values = new_values,
     )
-    _check_is_all_field_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(copy, interaction_metadata)
     
     vampytest.assert_eq(copy.component_type, new_component_type)

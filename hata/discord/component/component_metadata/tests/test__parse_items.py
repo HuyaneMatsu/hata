@@ -28,6 +28,8 @@ def test__parse_items(input_data):
     
     Returns
     -------
-    output : `None | tuple<MediaItem>`
+    output : ``None | tuple<MediaItem>``
     """
-    return parse_items(input_data)
+    output = parse_items(input_data)
+    vampytest.assert_instance(output, tuple, nullable = True)
+    return output

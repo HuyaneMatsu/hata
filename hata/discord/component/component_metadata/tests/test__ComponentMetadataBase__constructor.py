@@ -6,6 +6,11 @@ from ..base import ComponentMetadataBase
 def _assert_fields_set(component_metadata):
     """
     Checks whether the ``ComponentMetadataBase`` has all it's attributes set.
+    
+    Parameters
+    ----------
+    component_metadata : ``ComponentMetadataBase``
+        Component metadata to check.
     """
     vampytest.assert_instance(component_metadata, ComponentMetadataBase)
 

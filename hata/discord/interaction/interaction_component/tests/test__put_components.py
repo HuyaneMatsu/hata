@@ -37,7 +37,7 @@ def test__put_components(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | tuple<InteractionComponent>`
+    input_value : ``None | tuple<InteractionComponent>``
         The components to serialize.
     
     defaults : `bool`

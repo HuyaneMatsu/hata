@@ -30,8 +30,9 @@ def test__put_options(input_value, defaults):
     
     Parameters
     ----------
-    input_value : `None | tuple<StringSelectOption>`
+    input_value : ``None | tuple<StringSelectOption>``
         Input value.
+    
     defaults : `bool`
         Whether fields with their default values should be included as well.
     

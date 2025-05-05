@@ -3,7 +3,7 @@ import vampytest
 from ...core import BUILTIN_EMOJIS
 from ...emoji import Emoji
 
-from ..shared_fields import put_emoji_into
+from ..shared_fields import put_emoji
 
 
 def _iter_options():
@@ -19,14 +19,15 @@ def _iter_options():
 
 
 @vampytest._(vampytest.call_from(_iter_options()).returning_last())
-def test__put_emoji_into(input_value, defaults):
+def test__put_emoji(input_value, defaults):
     """
-    Tests whether ``put_emoji_into`` works as intended.
+    Tests whether ``put_emoji`` works as intended.
     
     Parameters
     ----------
     input_value : ``Emoji``
         Input value.
+    
     defaults : `bool`
         Whether fields with their default values should be included as well.
     
@@ -34,4 +35,4 @@ def test__put_emoji_into(input_value, defaults):
     -------
     data : `dict<str, object>`
     """
-    return put_emoji_into(input_value, {}, defaults)
+    return put_emoji(input_value, {}, defaults)

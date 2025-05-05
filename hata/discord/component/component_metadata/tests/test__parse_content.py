@@ -24,4 +24,6 @@ def test__parse_content(input_data):
     -------
     content : `None | str`
     """
-    return parse_content(input_data)
+    output = parse_content(input_data)
+    vampytest.assert_instance(output, str, nullable = True)
+    return output

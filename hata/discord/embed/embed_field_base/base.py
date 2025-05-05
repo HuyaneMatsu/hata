@@ -108,6 +108,7 @@ class EmbedFieldBase(RichAttributeErrorBaseType):
         ----------
         defaults : `bool` = `False`, Optional (Keyword only)
             Whether default values should be included as well.
+        
         include_internals : `bool` = `False`, Optional (Keyword only)
             Whether we want to include identifiers as well.
         
@@ -170,7 +171,7 @@ class EmbedFieldBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        contents : `list` of `str`
+        contents : `list<str>`
         """
         return [*self.iter_contents()]
     

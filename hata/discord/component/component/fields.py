@@ -6,6 +6,7 @@ from ...field_validators import preinstanced_validator_factory
 
 from .preinstanced import ComponentType
 
+
 # type
 
 parse_type = preinstanced_parser_factory('type', ComponentType, ComponentType.none)

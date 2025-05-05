@@ -12,7 +12,7 @@ class ApplicationCommandOptionMetadataChannel(ApplicationCommandOptionMetadataPa
     
     Parameters
     ----------
-    channel_types : `None`, `tuple` of ``ChannelType``
+    channel_types : ``None | tuple<ChannelType>``
         The accepted channel types by the option. Defaults to `None`
     
     required : `bool`
@@ -26,7 +26,7 @@ class ApplicationCommandOptionMetadataChannel(ApplicationCommandOptionMetadataPa
         
         Parameters
         ----------
-        channel_types : `None`, `iterable` of (``ChannelType``, `int`), Optional (Keyword only)
+        channel_types : ``None | iterable<int> | iterable<ChannelType>``, Optional (Keyword only)
             The accepted channel types by the option.
         
         required : `bool`, Optional (Keyword only)
@@ -130,7 +130,7 @@ class ApplicationCommandOptionMetadataChannel(ApplicationCommandOptionMetadataPa
         
         Parameters
         ----------
-        channel_types : `None`, `iterable` of (``ChannelType``, `int`), Optional (Keyword only)
+        channel_types : ``None | iterable<int> | iterable<ChannelType>``, Optional (Keyword only)
             The accepted channel types by the option.
         
         required : `bool`, Optional (Keyword only)

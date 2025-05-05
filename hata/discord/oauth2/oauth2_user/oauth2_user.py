@@ -456,7 +456,7 @@ class Oauth2User(OrinUserBase):
         
         Parameters
         ----------
-        data : `None` or (`dict` of (`str`, `object`))
+        data : `None | dict<str, object>`
             Requested access data.
         """
         self.access._renew(data)
